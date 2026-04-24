@@ -14,6 +14,6 @@ exports.make_message_list = (filter_terms, opts = {}) => {
         }),
         is_node_test: true,
     });
-    default_message_list.data.participants.humans = new Set(opts.visible_participants ?? []);
+    default_message_list.data.participants.humans = new Set(opts.visible_participants);
     return default_message_list;
 };

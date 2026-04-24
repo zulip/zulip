@@ -164,6 +164,7 @@ import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
+import * as mouse_drag from "./mouse_drag.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {get_string_diff, the} from "./util.ts";
 
@@ -219,9 +220,9 @@ export type TypeaheadInputElement =
 export class Typeahead<ItemType extends string | object> {
     input_element: TypeaheadInputElement;
     items: number;
-    matcher: (item: ItemType, query: string) => boolean;
+    matcher: (query: string) => (item: ItemType) => boolean;
     sorter: (items: ItemType[], query: string) => ItemType[];
-    item_html: (item: ItemType, query: string) => string | undefined;
+    item_html: (query: string) => (item: ItemType) => string | undefined;
     updater: (
         item: ItemType,
         query: string,
@@ -237,7 +238,7 @@ export class Typeahead<ItemType extends string | object> {
     trigger_selection: (event: JQuery.KeyDownEvent) => boolean;
     on_escape: (() => void) | undefined;
     // returns a string to show in typeahead footer or false.
-    footer_html: () => string | false;
+    footer_html: (matching_items: ItemType[]) => string | false;
     // returns a string to show in typeahead items or false.
     option_label: (matching_items: ItemType[], item: ItemType) => string | false;
     suppressKeyPressRepeat = false;
@@ -246,6 +247,8 @@ export class Typeahead<ItemType extends string | object> {
     shown = false;
     // To trigger updater when Esc is pressed only during the stream topic typeahead in composebox.
     select_on_escape_condition: () => boolean;
+    // Used to clear tooltip instances attached to typeahead container.
+    clear_typeahead_tooltip: (() => void) | undefined;
     openInputFieldOnKeyUp: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
@@ -279,7 +282,7 @@ export class Typeahead<ItemType extends string | object> {
             assert(!this.input_element.$element.is("[contenteditable]"));
         }
         this.items = options.items ?? MAX_ITEMS;
-        this.matcher = options.matcher ?? ((item, query) => this.defaultMatcher(item, query));
+        this.matcher = options.matcher ?? ((query) => (item) => this.defaultMatcher(item, query));
         this.sorter = options.sorter;
         this.item_html = options.item_html;
         this.updater = options.updater ?? ((items) => this.defaultUpdater(items));
@@ -293,6 +296,7 @@ export class Typeahead<ItemType extends string | object> {
         this.dropup = options.dropup ?? false;
         this.automated = options.automated ?? (() => false);
         this.trigger_selection = options.trigger_selection ?? (() => false);
+        this.clear_typeahead_tooltip = options.clear_typeahead_tooltip;
         this.on_escape = options.on_escape;
         // return a string to show in typeahead footer or false.
         this.footer_html = options.footer_html ?? (() => false);
@@ -318,6 +322,9 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     select(e?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): this {
+        if (e?.type === "click" && mouse_drag.is_drag(e)) {
+            return this;
+        }
         const active_option = this.$menu.find(".active")[0];
         const val = active_option ? this.values.get(active_option) : undefined;
         // It's possible that we got here from pressing enter with nothing highlighted.
@@ -465,6 +472,45 @@ export class Typeahead<ItemType extends string | object> {
                         // the placement of typeahead.
                         void instance.popperInstance?.update();
                     });
+
+                    // While the above requestAnimationFrame call works well in
+                    // fast environments, it fails to preventOverflow if the
+                    // typeahead has still not completely rendered after 1 frame.
+                    // So, this is a safe guard to ensure that typeahead never
+                    // overflows.
+                    function check_and_update_position(): boolean {
+                        if (!instance.state.isVisible) {
+                            return true;
+                        }
+
+                        const popper_rect = instance.popper.getBoundingClientRect();
+                        if (popper_rect.x + popper_rect.width <= window.innerWidth) {
+                            return true;
+                        }
+                        void instance.popperInstance?.update();
+                        return false;
+                    }
+
+                    function scheduleCheck(attempts: number): void {
+                        if (check_and_update_position() || attempts <= 0) {
+                            return;
+                        }
+                        setTimeout(() => {
+                            scheduleCheck(attempts - 1);
+                        }, 10);
+                    }
+
+                    const MAX_ATTEMPTS = 5;
+                    // In chrome browser for @amanagr, just one call at 1ms is
+                    // sufficient to preventOverflow of typeahead.
+                    setTimeout(() => {
+                        void instance.popperInstance?.update();
+                        scheduleCheck(MAX_ATTEMPTS);
+                    }, 1);
+                },
+                onHidden: (instance) => {
+                    this.clear_typeahead_tooltip?.();
+                    instance.destroy();
                 },
             });
         }
@@ -493,15 +539,18 @@ export class Typeahead<ItemType extends string | object> {
         return this;
     }
 
-    lookup(hideOnEmpty: boolean): this {
+    lookup(hideOnEmpty: boolean, force_lookup?: boolean): this {
         this.query =
             this.input_element.type === "contenteditable"
                 ? this.input_element.$element.text()
                 : (this.input_element.$element.val() ?? "");
 
+        // The force_lookup parameter allows specific code paths to override
+        // the helpOnEmptyStrings configured for the typeahead element.
         if (
             (!this.helpOnEmptyStrings || hideOnEmpty) &&
-            (!this.query || this.query.length < MIN_LENGTH)
+            (!this.query || this.query.length < MIN_LENGTH) &&
+            !force_lookup
         ) {
             return this.shown ? this.hide() : this;
         }
@@ -515,7 +564,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     process(items: ItemType[]): this {
-        const matching_items = $.grep(items, (item) => this.matcher(item, this.query));
+        const matching_items = $.grep(items, this.matcher(this.query));
 
         const final_items = this.sorter(matching_items, this.query);
 
@@ -541,10 +590,11 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     render(final_items: ItemType[], matching_items: ItemType[]): this {
+        const render_item = this.item_html(this.query);
         const $items: JQuery[] = final_items.map((item) => {
             const $i = $(ITEM_HTML);
             this.values.set(the($i), item);
-            const item_html = this.item_html(item, this.query) ?? "";
+            const item_html = render_item(item) ?? "";
             const $item_html = $i.find("a").html(item_html);
 
             const option_label_html = this.option_label(matching_items, item);
@@ -564,7 +614,10 @@ export class Typeahead<ItemType extends string | object> {
         // in user's string since once typeahead is shown after `@`,
         // footer might change depending on whether next character is
         // `_` (silent mention) or not.
-        const footer_text_html = this.footer_html();
+        const footer_text_html = this.footer_html(matching_items);
+        // We want to clear tooltip instance on each re render since
+        // emoji may have shifted its position.
+        this.clear_typeahead_tooltip?.();
 
         if (footer_text_html) {
             this.$footer.find("span#typeahead-footer-text").html(footer_text_html);
@@ -633,7 +686,13 @@ export class Typeahead<ItemType extends string | object> {
         this.$menu
             .on("click", "li", this.click.bind(this))
             .on("mouseenter", "li", this.mouseenter.bind(this))
-            .on("mousemove", "li", this.mousemove.bind(this));
+            .on("mousemove", "li", this.mousemove.bind(this))
+            .on("blur", "li", (e) => {
+                // Selecting typeahead item content followed by blur
+                // should hide the typeahead if the relatedTarget is
+                // outside the typeahead.
+                this.blur(e);
+            });
 
         $(window).on("resize", this.resizeHandler.bind(this));
     }
@@ -894,7 +953,7 @@ export class Typeahead<ItemType extends string | object> {
  * =========================== */
 
 type TypeaheadOptions<ItemType> = {
-    item_html: (item: ItemType, query: string) => string | undefined;
+    item_html: (query: string) => (item: ItemType) => string | undefined;
     items?: number;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     // optional options
@@ -902,11 +961,12 @@ type TypeaheadOptions<ItemType> = {
     automated?: () => boolean;
     closeInputFieldOnHide?: () => void;
     dropup?: boolean;
-    footer_html?: () => string | false;
+    footer_html?: (matching_items: ItemType[]) => string | false;
     helpOnEmptyStrings?: boolean;
     hideOnEmptyAfterBackspace?: boolean;
-    matcher?: (item: ItemType, query: string) => boolean;
+    matcher?: (query: string) => (item: ItemType) => boolean;
     on_escape?: () => void;
+    clear_typeahead_tooltip?: () => void;
     openInputFieldOnKeyUp?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
     non_tippy_parent_element?: string;

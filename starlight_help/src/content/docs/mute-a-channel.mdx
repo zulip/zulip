@@ -2,64 +2,36 @@
 title: Mute or unmute a channel
 ---
 
-import {TabItem, Tabs} from "@astrojs/starlight/components";
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ChannelActions from "../include/_ChannelActions.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import MuteUnmuteIntro from "../include/_MuteUnmuteIntro.mdx";
 import SelectChannelViewPersonal from "../include/_SelectChannelViewPersonal.mdx";
 
 <MuteUnmuteIntro />
 
-## Mute a channel
+## Viewing muted channels
+
+When you view the [channel feed](/help/channel-feed) or [list of
+topics](/help/list-of-topics) for a muted channel, messages and topics are
+displayed just as they would be in an unmuted channel. [Muted
+topics](/help/mute-a-topic) are hidden by default, just as in unmuted channels.
+
+## Mute or unmute a channel
 
 <Tabs>
-  <TabItem label="Desktop/Web">
+  <TabItem label="Via left sidebar">
     <FlattenedSteps>
       <ChannelActions />
 
-      1. Click **Mute channel**.
+      1. Click **Mute channel** or **Unmute channel**.
     </FlattenedSteps>
   </TabItem>
 
-  <TabItem label="Mobile">
-    Access this feature by following the web app instructions in your
-    mobile device browser.
-
-    Implementation of this feature in the mobile app is tracked [on
-    GitHub](https://github.com/zulip/zulip-flutter/issues/347). If
-    you're interested in this feature, please react to the issue's
-    description with 👍.
-  </TabItem>
-</Tabs>
-
-## Unmute a channel
-
-<Tabs>
-  <TabItem label="Desktop/Web">
-    <FlattenedSteps>
-      <ChannelActions />
-
-      1. Click **Unmute channel**.
-    </FlattenedSteps>
-  </TabItem>
-
-  <TabItem label="Mobile">
-    Access this feature by following the web app instructions in your
-    mobile device browser.
-
-    Implementation of this feature in the mobile app is tracked [on
-    GitHub](https://github.com/zulip/zulip-flutter/issues/347). If
-    you're interested in this feature, please react to the issue's
-    description with 👍.
-  </TabItem>
-</Tabs>
-
-## Alternate method to mute or unmute a channel
-
-<Tabs>
-  <TabItem label="Desktop/Web">
+  <TabItem label="Via channel settings">
     <FlattenedSteps>
       <NavigationSteps target="relative/gear/channel-settings" />
 
@@ -69,6 +41,32 @@ import SelectChannelViewPersonal from "../include/_SelectChannelViewPersonal.mdx
 
       1. Under **Notification settings**, toggle **Mute channel**.
     </FlattenedSteps>
+
+    <ChannelSettingsNavbarTip />
+  </TabItem>
+
+  <TabItem label="Mobile">
+    Access this feature by following the web app instructions in your
+    mobile device browser.
+
+    Implementation of this feature in the mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/347). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+## Reveal or hide muted channels
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. In the left sidebar, scroll to the bottom of the list of channels in the
+         [folder](/help/channel-folders) you're viewing.
+      1. Click **inactive or muted** or **muted** to toggle whether muted
+         channels are hidden. If you don't see this button, there are no muted
+         channels.
+    </Steps>
   </TabItem>
 </Tabs>
 

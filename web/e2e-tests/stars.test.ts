@@ -83,4 +83,4 @@ async function stars_test(page: Page): Promise<void> {
     assert.strictEqual(await stars_count(page), 0, "Message was not unstarred correctly.");
 }
 
-common.run_test(stars_test);
+await common.run_test(stars_test);

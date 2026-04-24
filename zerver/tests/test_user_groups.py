@@ -37,7 +37,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
+from zerver.lib.types import GroupPermissionSetting, UserGroupMembersData, UserGroupMembersDict
 from zerver.lib.user_groups import (
     check_user_has_permission_by_role,
     get_direct_user_groups,
@@ -55,7 +55,9 @@ from zerver.lib.user_groups import (
     has_user_group_access_for_subgroup,
     is_any_user_in_group,
     is_user_in_group,
+    user_group_ids_to_user_groups,
     user_groups_in_realm_serialized,
+    user_has_permission_for_group_setting,
 )
 from zerver.models import (
     GroupGroupMembership,
@@ -142,7 +144,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[1]["direct_subgroup_ids"], [])
         self.assertEqual(user_groups[1]["can_manage_group"], user_group.id)
         self.assertEqual(user_groups[1]["can_mention_group"], user_group.id)
-        self.assertFalse(user_groups[0]["deactivated"])
+        self.assertFalse(user_groups[1]["deactivated"])
 
         admins_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm
@@ -172,7 +174,7 @@ class UserGroupTestCase(ZulipTestCase):
             UserGroupMembersDict(direct_members=[11], direct_subgroups=[]),
         )
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
-        self.assertFalse(user_groups[0]["deactivated"])
+        self.assertFalse(user_groups[9]["deactivated"])
 
         othello = self.example_user("othello")
         hamletcharacters_group = NamedUserGroup.objects.get(
@@ -217,7 +219,7 @@ class UserGroupTestCase(ZulipTestCase):
             user_groups[10]["can_mention_group"]["direct_subgroups"],
             [admins_system_group.id, hamletcharacters_group.id],
         )
-        self.assertFalse(user_groups[0]["deactivated"])
+        self.assertFalse(user_groups[10]["deactivated"])
 
         hamlet = self.example_user("hamlet")
         another_new_group = check_add_user_group(realm, "newgroup3", [hamlet], acting_user=hamlet)
@@ -716,6 +718,98 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertTrue(
             check_user_has_permission_by_role(polonius, everyone_group.id, system_groups_name_dict)
         )
+
+        internet_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE_ON_INTERNET,
+            realm_for_sharding=realm,
+            is_system_group=True,
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(polonius, internet_group.id, system_groups_name_dict)
+        )
+
+    def test_user_has_permission_for_group_setting_with_internet_group(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        internet_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE_ON_INTERNET,
+            realm_for_sharding=realm,
+            is_system_group=True,
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS,
+            realm_for_sharding=realm,
+            is_system_group=True,
+        )
+
+        # We do not have any setting with allow_internet_group as
+        # True currently, but this test is added for coverage.
+        setting_with_internet = GroupPermissionSetting(
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            allow_internet_group=True,
+            default_group_name=SystemGroups.EVERYONE_ON_INTERNET,
+        )
+
+        # When allow_internet_group is True and the setting is set to the
+        # internet group, all users (including guests) have permission.
+        self.assertTrue(
+            user_has_permission_for_group_setting(internet_group.id, hamlet, setting_with_internet)
+        )
+        self.assertTrue(
+            user_has_permission_for_group_setting(
+                internet_group.id, polonius, setting_with_internet
+            )
+        )
+
+        # A non-internet group still works normally regardless of
+        # allow_internet_group.
+        self.assertTrue(
+            user_has_permission_for_group_setting(members_group.id, hamlet, setting_with_internet)
+        )
+        self.assertFalse(
+            user_has_permission_for_group_setting(members_group.id, polonius, setting_with_internet)
+        )
+
+    def test_user_group_ids_to_user_groups(self) -> None:
+        realm = get_realm("zulip")
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        self.assertCountEqual(
+            user_group_ids_to_user_groups(
+                [hamletcharacters_group.id, admins_group.id, members_group.id], realm
+            ),
+            [hamletcharacters_group, admins_group, members_group],
+        )
+        self.assertCountEqual(
+            user_group_ids_to_user_groups([hamletcharacters_group.id, members_group.id], realm),
+            [hamletcharacters_group, members_group],
+        )
+
+        with self.assertRaises(JsonableError):
+            user_group_ids_to_user_groups([199, hamletcharacters_group.id], realm)
+
+        do_deactivate_user_group(hamletcharacters_group, acting_user=None)
+
+        self.assertCountEqual(
+            user_group_ids_to_user_groups(
+                [hamletcharacters_group.id, admins_group.id], realm, allow_deactivated=True
+            ),
+            [hamletcharacters_group, admins_group],
+        )
+
+        with self.assertRaises(JsonableError):
+            user_group_ids_to_user_groups([hamletcharacters_group.id, admins_group.id], realm)
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
@@ -1373,6 +1467,109 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             self.do_test_update_user_group_permission_settings(setting_name)
+
+    def test_updating_group_membership_management_settings(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm
+        )
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=realm
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm
+        )
+
+        group_settings_map = {
+            "can_manage_group": admins_group,
+            "can_add_members_group": admins_group,
+            "can_leave_group": admins_group,
+        }
+        test_group = check_add_user_group(
+            realm, "test", [iago], "", group_settings_map, acting_user=iago
+        )
+        support_group = check_add_user_group(
+            realm, "support", [hamlet], "", group_settings_map, acting_user=iago
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", test_group, acting_user=None
+        )
+
+        self.login("desdemona")
+        # Changing setting for a group not being used for workplace_users_group works.
+        params = {"can_add_members_group": orjson.dumps({"new": moderators_group.id}).decode()}
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", params)
+        self.assert_json_success(result)
+        support_group.refresh_from_db()
+        self.assertEqual(support_group.can_add_members_group_id, moderators_group.id)
+
+        # Changing membership management setting to moderators is not allowed.
+        result = self.client_patch(f"/json/user_groups/{test_group.id}", params)
+        self.assert_json_error(
+            result,
+            "'can_add_members_group' must be restricted to organization administrators for groups used in 'workplace_users_group'.",
+        )
+
+        # Changing membership management setting to an anonymous group is not allowed.
+        params = {
+            "can_manage_group": orjson.dumps(
+                {"new": {"direct_members": [iago.id], "direct_subgroups": [owners_group.id]}}
+            ).decode()
+        }
+        result = self.client_patch(f"/json/user_groups/{test_group.id}", params)
+        self.assert_json_error(
+            result,
+            "'can_manage_group' must be restricted to organization administrators for groups used in 'workplace_users_group'.",
+        )
+
+        # Changing membership management setting for a subgroup of a group
+        # used for workplace_users_group is also not allowed.
+        add_subgroups_to_user_group(test_group, [support_group], acting_user=None)
+        params = {"can_leave_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()}
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", params)
+        self.assert_json_error(
+            result,
+            "'can_leave_group' must be restricted to organization administrators for groups used in 'workplace_users_group'.",
+        )
+
+        # Changing membership management setting for a subgroup of an anonymous
+        # group used for workplace_users_group is also not allowed.
+        anonymous_workplace_group = self.create_or_update_anonymous_group_for_setting(
+            [], [support_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", anonymous_workplace_group, acting_user=None
+        )
+        params = {
+            "can_remove_members_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", params)
+        self.assert_json_error(
+            result,
+            "'can_remove_members_group' must be restricted to organization administrators for groups used in 'workplace_users_group'.",
+        )
+
+        # Settings can be changed to nobody, owners or admins group.
+        params = {"can_remove_members_group": orjson.dumps({"new": nobody_group.id}).decode()}
+        result = self.client_patch(f"/json/user_groups/{test_group.id}", params)
+        self.assert_json_success(result)
+        support_group.refresh_from_db()
+        self.assertEqual(support_group.can_remove_members_group_id, nobody_group.id)
+
+        params = {"can_remove_members_group": orjson.dumps({"new": owners_group.id}).decode()}
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", params)
+        self.assert_json_success(result)
+        support_group.refresh_from_db()
+        self.assertEqual(support_group.can_remove_members_group_id, owners_group.id)
 
     def test_user_group_update_to_already_existing_name(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -2037,7 +2234,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         with (
             mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"),
-            self.assert_database_query_count(15),
+            self.assert_database_query_count(16),
         ):
             result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
@@ -2187,6 +2384,164 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
         self.assert_user_membership(user_group, [hamlet])
+
+    def test_adding_subgroups_to_group_used_for_workplace_users_group(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm
+        )
+
+        test_group_1 = check_add_user_group(realm, "Test group 1", [hamlet], acting_user=iago)
+        test_group_2 = check_add_user_group(realm, "Test group 2", [hamlet], acting_user=iago)
+        group_settings_map = {
+            "can_leave_group": admins_group,
+            "can_manage_group": admins_group,
+            "can_add_members_group": admins_group,
+        }
+        test_group_3 = check_add_user_group(
+            realm, "Test group 3", [hamlet], "", group_settings_map, acting_user=iago
+        )
+        test_group_4 = check_add_user_group(
+            realm, "Test group 4", [hamlet], "", group_settings_map, acting_user=iago
+        )
+
+        add_subgroups_to_user_group(test_group_3, [test_group_2], acting_user=None)
+
+        support_group = check_add_user_group(
+            realm, "support", [hamlet], "", group_settings_map, acting_user=iago
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_add_members_group", nobody_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_manage_group", nobody_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_leave_group", nobody_group, acting_user=None
+        )
+
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", hamletcharacters_group, acting_user=None
+        )
+
+        self.login("desdemona")
+
+        # For test_group_1, some of the membership management permissions are set to an
+        # anonymous group, so it cannot be added as a subgroup of hamletcharacters group.
+        params = {"add_subgroups": orjson.dumps([test_group_1.id, moderators_group.id]).decode()}
+        result = self.client_post(
+            f"/json/user_groups/{hamletcharacters_group.id}/members", info=params
+        )
+        self.assert_json_error(
+            result,
+            "Subgroups of a group used for 'workplace_users_group' must allow only organization administrators to manage their membership.",
+        )
+
+        # For test_group_3, some of the membership management permissions for its subgroup
+        # test_group_2 are set to anonymous group, so it cannot be added as a subgroup of
+        # hamletcharacters group.
+        params = {"add_subgroups": orjson.dumps([test_group_3.id, moderators_group.id]).decode()}
+        result = self.client_post(
+            f"/json/user_groups/{hamletcharacters_group.id}/members", info=params
+        )
+        self.assert_json_error(
+            result,
+            "Subgroups of a group used for 'workplace_users_group' must allow only organization administrators to manage their membership.",
+        )
+
+        # For test_group_4, all membership management permissions are set to admins group
+        # or nobody group.
+        params = {"add_subgroups": orjson.dumps([test_group_4.id, moderators_group.id]).decode()}
+        result = self.client_post(
+            f"/json/user_groups/{hamletcharacters_group.id}/members", info=params
+        )
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(hamletcharacters_group, [test_group_4, moderators_group])
+
+        # Test all the above cases when the supergroup is part of the
+        # workplace_users_group anonymous group.
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            [self.example_user("cordelia")], [support_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", anonymous_group, acting_user=None
+        )
+
+        # For test_group_1, some of the membership management permissions are set to an
+        # anonymous group, so it cannot be added as a subgroup of support group.
+        params = {"add_subgroups": orjson.dumps([test_group_1.id, moderators_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/members", info=params)
+        self.assert_json_error(
+            result,
+            "Subgroups of a group used for 'workplace_users_group' must allow only organization administrators to manage their membership.",
+        )
+
+        # For test_group_3, some of the membership management permissions for its subgroup
+        # test_group_2 are set to anonymous group, so it cannot be added as a subgroup of
+        # support group.
+        params = {"add_subgroups": orjson.dumps([test_group_3.id, moderators_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/members", info=params)
+        self.assert_json_error(
+            result,
+            "Subgroups of a group used for 'workplace_users_group' must allow only organization administrators to manage their membership.",
+        )
+
+        # For test_group_4, all membership management permissions are set to admins group
+        # or nobody group.
+        params = {"add_subgroups": orjson.dumps([test_group_4.id, moderators_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/members", info=params)
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [test_group_4, moderators_group])
+
+        # Remove subgroups from support_group to reset the state.
+        remove_subgroups_from_user_group(
+            support_group, [test_group_4, moderators_group], acting_user=None
+        )
+
+        # Test all the cases again when the supergroup is subgroup of the named user group
+        # used as workplace_users_group.
+        add_subgroups_to_user_group(hamletcharacters_group, [support_group], acting_user=None)
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", hamletcharacters_group, acting_user=None
+        )
+
+        # For test_group_1, some of the membership management permissions are set to an
+        # anonymous group, so it cannot be added as a subgroup of support group.
+        params = {"add_subgroups": orjson.dumps([test_group_1.id, moderators_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/members", info=params)
+        self.assert_json_error(
+            result,
+            "Subgroups of a group used for 'workplace_users_group' must allow only organization administrators to manage their membership.",
+        )
+
+        # For test_group_3, some of the membership management permissions for its subgroup
+        # test_group_2 are set to anonymous group, so it cannot be added as a subgroup of
+        # support group.
+        params = {"add_subgroups": orjson.dumps([test_group_3.id, moderators_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/members", info=params)
+        self.assert_json_error(
+            result,
+            "Subgroups of a group used for 'workplace_users_group' must allow only organization administrators to manage their membership.",
+        )
+
+        # For test_group_4, all membership management permissions are set to admins group
+        # or nobody group.
+        params = {"add_subgroups": orjson.dumps([test_group_4.id, moderators_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/members", info=params)
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [test_group_4, moderators_group])
 
     def test_mentions(self) -> None:
         cordelia = self.example_user("cordelia")

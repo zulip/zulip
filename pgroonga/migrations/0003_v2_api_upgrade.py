@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import migrations
 
 
@@ -9,7 +8,6 @@ class Migration(migrations.Migration):
         ("pgroonga", "0002_html_escape_subject"),
     ]
 
-    database_setting = settings.DATABASES["default"]
     operations = [
         # This migration does the following things:
         # * Undoes the `search_path` changes from the original migration 0001,
@@ -22,43 +20,23 @@ class Migration(migrations.Migration):
         #   on the message.search_pgroonga column (which was populated in
         #   migration 0002).
         migrations.RunSQL(
-            [
+            sql=[
+                "ALTER ROLE CURRENT_USER SET search_path TO zulip,public",
+                "SET search_path = zulip,public",
+                "DROP INDEX IF EXISTS zerver_message_search_pgroonga",
                 (
-                    """
-DO $$BEGIN
-EXECUTE format('ALTER ROLE %%I SET search_path TO %%L,public', %(USER)s, %(SCHEMA)s);
-
-SET search_path = %(SCHEMA)s,public;
-
-DROP INDEX IF EXISTS zerver_message_search_pgroonga;
-END$$
-""",
-                    database_setting,
+                    "CREATE INDEX CONCURRENTLY zerver_message_search_pgroonga ON zerver_message "
+                    "USING pgroonga(search_pgroonga pgroonga_text_full_text_search_ops_v2)"
                 ),
-                """
-
-CREATE INDEX CONCURRENTLY zerver_message_search_pgroonga ON zerver_message
-  USING pgroonga(search_pgroonga pgroonga_text_full_text_search_ops_v2);
-""",
             ],
-            [
+            reverse_sql=[
+                "ALTER ROLE CURRENT_USER SET search_path TO zulip,public,pgroonga,pg_catalog",
+                "SET search_path = zulip,public,pgroonga,pg_catalog",
+                "DROP INDEX IF EXISTS zerver_message_search_pgroonga",
                 (
-                    """
-DO $$BEGIN
-EXECUTE format('ALTER ROLE %%I SET search_path TO %%L,public,pgroonga,pg_catalog', %(USER)s, %(SCHEMA)s);
-
-SET search_path = %(SCHEMA)s,public,pgroonga,pg_catalog;
-
-DROP INDEX IF EXISTS zerver_message_search_pgroonga;
-END$$
-""",
-                    database_setting,
+                    "CREATE INDEX CONCURRENTLY zerver_message_search_pgroonga ON zerver_message "
+                    "USING pgroonga(search_pgroonga pgroonga.text_full_text_search_ops)"
                 ),
-                """
-
-CREATE INDEX CONCURRENTLY zerver_message_search_pgroonga ON zerver_message
-  USING pgroonga(search_pgroonga pgroonga.text_full_text_search_ops);
-        """,
             ],
         ),
     ]

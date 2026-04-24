@@ -15,6 +15,10 @@ export let set_partner = (user_id: number): void => {
     partners.add(user_id);
 };
 
+export function get_partners(): number[] {
+    return [...partners];
+}
+
 export function rewire_set_partner(value: typeof set_partner): void {
     set_partner = value;
 }

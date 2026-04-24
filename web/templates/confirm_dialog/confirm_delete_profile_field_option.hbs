@@ -19,8 +19,8 @@
         {{t "Deleted options:" }}
     {{/if}}
 </div>
-<ul>
-    {{#each deleted_values}}
+<ul class="modal-options-list">
+    {{#each (object_values deleted_values)}}
         <li>{{this}}</li>
     {{/each}}
 </ul>

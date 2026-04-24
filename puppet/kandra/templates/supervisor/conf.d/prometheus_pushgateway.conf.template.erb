@@ -1,0 +1,8 @@
+[program:prometheus_pushgateway]
+command=<%= @bin %>
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/pushgateway.log

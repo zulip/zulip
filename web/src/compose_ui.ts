@@ -11,6 +11,7 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
+import type Template from "uri-template-lite";
 import * as z from "zod/mini";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
@@ -20,8 +21,10 @@ import * as common from "./common.ts";
 import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as linkifiers from "./linkifiers.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
+import {message_render_response_schema} from "./message_store.ts";
 import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
@@ -64,12 +67,6 @@ type SelectedLinesSections = {
     separating_new_line_after: boolean;
     after_lines: string;
 };
-
-const message_render_response_schema = z.object({
-    msg: z.string(),
-    result: z.string(),
-    rendered: z.string(),
-});
 
 export let compose_spinner_visible = false;
 
@@ -175,10 +172,6 @@ export function maybe_show_scrolling_formatting_buttons(container_selector: stri
 
     // Set these values as data attributes for ready access by
     // other scrolling logic
-    //
-    // TODO: Modify eslint config, if we wish to avoid dataset
-    //
-    /* eslint unicorn/prefer-dom-node-dataset: "off" */
     button_container.setAttribute("data-button-container-width", button_container_width.toString());
     button_container.setAttribute("data-button-bar-width", button_bar_width.toString());
     button_container.setAttribute(
@@ -218,7 +211,8 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         if (
             opts.trigger === "clear topic button" ||
             opts.trigger === "compose_hotkey" ||
-            opts.trigger === "inbox_nofocus"
+            opts.trigger === "inbox_nofocus" ||
+            opts.trigger === "zoomed new topic"
         ) {
             return "input#stream_message_recipient_topic";
         }
@@ -552,9 +546,17 @@ export function make_compose_box_original_size(): void {
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen
-    autosize($("textarea#compose-textarea"));
+    const $compose_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
+    autosize($compose_textarea);
 
-    $("textarea#compose-textarea").trigger("focus");
+    // If the preview area is open, reset the min-height for it to
+    // ensure a smooth back-and-forth for toggling preview mode.
+    const $preview_message_area = $("#compose .preview_message_area");
+    if ($preview_message_area.length > 0) {
+        const edit_height = $compose_textarea.height();
+        $preview_message_area.css({"min-height": edit_height + "px"});
+    }
+    $compose_textarea.trigger("focus");
 }
 
 export function handle_scrolling_formatting_buttons(event: JQuery.ScrollEvent): void {
@@ -601,6 +603,8 @@ export function handle_keydown(
         type = "italic";
     } else if (key === "l" && event.shiftKey) {
         type = "link";
+    } else if (key === "c" && event.shiftKey) {
+        type = "code";
     }
 
     // detect Cmd and Ctrl key
@@ -624,6 +628,46 @@ export function handle_keyup(
     rtl.set_rtl_class_for_textarea($textarea);
 }
 
+/**
+ * True if the cursor in `$textarea` for the current line sits between an opening run
+ * of backticks (`, ```, ...) and its still‑missing matching closer
+ * where the cursor is placed.
+ */
+export function cursor_inside_inline_code_span($textarea: JQuery<HTMLTextAreaElement>): boolean {
+    const text_area_element = $textarea[0];
+    if (!text_area_element) {
+        return false;
+    }
+    // jQuery.val() can be string | number | string[] | undefined.
+    const val = $textarea.val();
+    assert(typeof val === "string");
+    const caret = text_area_element.selectionStart;
+
+    const last_newline = val.lastIndexOf("\n", caret - 1);
+    const line_start = last_newline === -1 ? 0 : last_newline + 1;
+    const current_line_prefix = val.slice(line_start, caret);
+
+    let open_backtick_count = 0;
+    for (let i = 0; i < current_line_prefix.length; i += 1) {
+        if (current_line_prefix[i] === "`") {
+            let consecutive_count = 1;
+            while (i + 1 < current_line_prefix.length && current_line_prefix[i + 1] === "`") {
+                consecutive_count += 1;
+                i += 1;
+            }
+
+            // A code span can be opened with any number of consecutive backticks,
+            // and can only be closed with the same number of consecutive backticks.
+            if (open_backtick_count === 0) {
+                open_backtick_count = consecutive_count;
+            } else if (consecutive_count === open_backtick_count) {
+                open_backtick_count = 0;
+            }
+        }
+    }
+    return open_backtick_count > 0;
+}
+
 export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
     // Returns whether the cursor is at a point that would be inside
     // a code block on rendering the textarea content as markdown.
@@ -644,6 +688,120 @@ export function position_inside_code_block(content: string, position: number): b
     const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
     const code_blocks = rendered_html.querySelectorAll("pre > code");
     return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
+}
+
+// A function with the same name implements this on the Python side.
+// Please replicate any changes here to that function as well.
+function expand_reverse_template(
+    reverse_template: string,
+    variables: Record<string, string>,
+): string {
+    const output: string[] = [];
+    let index = 0;
+    while (index < reverse_template.length) {
+        if (reverse_template.startsWith("{{", index)) {
+            output.push("{");
+            index += 2;
+        } else if (reverse_template.startsWith("}}", index)) {
+            output.push("}");
+            index += 2;
+        } else if (reverse_template[index] === "{") {
+            const end_index = reverse_template.indexOf("}", index + 1);
+            // This should not fail with a valid reverse_template.
+            assert(end_index !== -1);
+
+            const name = reverse_template.slice(index + 1, end_index);
+            // This should not fail with a valid reverse_template.
+            assert(name !== "");
+
+            const value = variables[name];
+            // This should not fail with a valid reverse_template.
+            assert(value !== undefined);
+
+            output.push(value);
+            index = end_index + 1;
+        } else {
+            output.push(reverse_template[index]!);
+            index += 1;
+        }
+    }
+    return output.join("");
+}
+
+function expand_url_template_from_match(
+    match: RegExpExecArray,
+    url_template: Template,
+    group_number_to_name: Record<number, string>,
+): string | null {
+    const context: Record<string, string> = {};
+    const capturing_groups = match.slice(1).entries();
+    for (const [index, capturing_group] of capturing_groups) {
+        const name = group_number_to_name[index + 1];
+        if (!name) {
+            return null;
+        }
+        context[name] = capturing_group;
+    }
+    return url_template.expand(context);
+}
+
+function reverse_linkify_segment(segment: string): string | null {
+    const linkifier_map = linkifiers.get_linkifier_map();
+    for (const [
+        pattern,
+        {url_template, group_number_to_name, reverse_template, alternative_url_templates},
+    ] of linkifier_map) {
+        if (!reverse_template) {
+            continue;
+        }
+
+        const all_templates = [url_template, ...alternative_url_templates];
+        for (const template of all_templates) {
+            const template_context = template.match(segment);
+            if (!template_context) {
+                continue;
+            }
+
+            const reversed_text = expand_reverse_template(reverse_template, template_context);
+            pattern.lastIndex = 0;
+            const match = pattern.exec(reversed_text);
+            if (!match) {
+                continue;
+            }
+
+            // Validate that expanding the captured groups round-trips to the original URL.
+            const expanded_url = expand_url_template_from_match(
+                match,
+                template,
+                group_number_to_name,
+            );
+            if (expanded_url !== segment) {
+                continue;
+            }
+            return reversed_text;
+        }
+    }
+    return null;
+}
+
+export function reverse_linkify_text(text: string): string | null {
+    // We keep the spaces around in a capturing group so we can join it later.
+    const segments = text.split(/(\s+)/);
+    let changed = false;
+
+    for (let i = 0; i < segments.length; i += 1) {
+        const segment = segments[i]!;
+        if (segment.trim() === "") {
+            continue;
+        }
+        const replacement = reverse_linkify_segment(segment) ?? segment;
+        if (replacement !== segment) {
+            changed = true;
+            segments[i] = replacement;
+        }
+    }
+
+    return changed ? segments.join("") : null;
 }
 
 export let format_text = (
@@ -737,15 +895,12 @@ export let format_text = (
 
     const format_list = (type: string): void => {
         let is_marked: (line: string) => boolean;
-        let mark: (line: string, i: number) => string;
         let strip_marking: (line: string) => string;
         if (type === "bulleted") {
             is_marked = bulleted_numbered_list_util.is_bulleted;
-            mark = (line: string) => "- " + line;
             strip_marking = bulleted_numbered_list_util.strip_bullet;
         } else {
             is_marked = bulleted_numbered_list_util.is_numbered;
-            mark = (line, i) => i + 1 + ". " + line;
             strip_marking = bulleted_numbered_list_util.strip_numbering;
         }
         // We toggle complete lines even when they are partially selected (and just selecting the
@@ -756,10 +911,23 @@ export let format_text = (
         // If there is even a single unmarked line selected, we mark all.
         const should_mark = selected_lines.split("\n").some((line) => !is_marked(line));
         if (should_mark) {
-            selected_lines = selected_lines
-                .split("\n")
-                .map((line, i) => mark(line, i))
-                .join("\n");
+            const lines = selected_lines.split("\n");
+            const processed_lines = [];
+            let counter = 1;
+            for (const line of lines) {
+                if (line.trim() === "") {
+                    processed_lines.push(line);
+                } else {
+                    if (type === "bulleted") {
+                        processed_lines.push("- " + line);
+                    } else {
+                        processed_lines.push(counter + ". " + line);
+                        counter += 1;
+                    }
+                }
+            }
+            selected_lines = processed_lines.join("\n");
+
             // We always ensure a blank line after the list, as we want
             // a clean separation between the list and the rest of the text, especially
             // when the markdown is rendered.
@@ -1209,6 +1377,7 @@ export let format_text = (
             break;
         }
         case "code": {
+            // Ctrl + Shift + C: Toggle code syntax on selection.
             const inline_code_syntax = "`";
             let block_code_syntax_start = "```\n";
             let block_code_syntax_end = "\n```";
@@ -1317,12 +1486,160 @@ export function show_compose_spinner(): void {
     $(".compose-submit-button").addClass("compose-button-disabled");
 }
 
+let thumbnail_poll_timeout: ReturnType<typeof setTimeout> | null = null;
+let pending_thumbnail_paths = new Set<string>();
+const MAX_THUMBNAIL_RETRIES = 5;
+
+function extract_thumbnail_paths($preview_content: JQuery): Set<string> {
+    const paths = new Set<string>();
+
+    $preview_content.find(".image-loading-placeholder").each(function () {
+        const $img = $(this);
+        const $link = $img.closest("a");
+        const href = $link.attr("href");
+
+        if (href?.startsWith("/user_uploads/")) {
+            paths.add(href.slice("/user_uploads/".length));
+        }
+    });
+
+    return paths;
+}
+
+async function check_thumbnail_status(path_id: string): Promise<boolean> {
+    const thumbnail_status_schema = z.object({
+        has_thumbnail: z.boolean(),
+    });
+
+    try {
+        const response: unknown = await channel.get({
+            url: `/json/thumbnail/status/${path_id}`,
+        });
+        const data = thumbnail_status_schema.parse(response);
+        return data.has_thumbnail;
+    } catch {
+        return false;
+    }
+}
+
+async function poll_thumbnail_status(
+    $preview_container: JQuery,
+    $preview_spinner: JQuery,
+    $preview_content_box: JQuery,
+    content: string,
+    attempt = 1,
+): Promise<void> {
+    if (attempt > MAX_THUMBNAIL_RETRIES) {
+        pending_thumbnail_paths.clear();
+        return;
+    }
+
+    if (pending_thumbnail_paths.size === 0 || !$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+
+    // Check all pending thumbnails in parallel
+    const thumbnails_to_check = [...pending_thumbnail_paths];
+    const thumbnail_status_results = await Promise.all(
+        thumbnails_to_check.map(async (path_id) => ({
+            path_id,
+            ready: await check_thumbnail_status(path_id),
+        })),
+    );
+
+    // Remove thumbnails that are now ready
+    let any_thumbnail_ready = false;
+    for (const {path_id, ready} of thumbnail_status_results) {
+        if (ready) {
+            pending_thumbnail_paths.delete(path_id);
+            any_thumbnail_ready = true;
+        }
+    }
+
+    // We check preview mode again since the user could have exited preview
+    // while we were waiting for the thumbnail status
+    if ($preview_container.hasClass("preview_mode")) {
+        if (any_thumbnail_ready) {
+            render_and_show_preview(
+                $preview_container,
+                $preview_spinner,
+                $preview_content_box,
+                content,
+                false,
+            );
+            return;
+        }
+
+        if (pending_thumbnail_paths.size > 0) {
+            const retry_delay_secs = util.get_retry_backoff_seconds(undefined, attempt, true);
+            thumbnail_poll_timeout = setTimeout(() => {
+                void poll_thumbnail_status(
+                    $preview_container,
+                    $preview_spinner,
+                    $preview_content_box,
+                    content,
+                    attempt + 1,
+                );
+            }, retry_delay_secs * 1000);
+        }
+    }
+}
+
+export function clear_thumbnail_polling(): void {
+    if (thumbnail_poll_timeout !== null) {
+        clearTimeout(thumbnail_poll_timeout);
+        thumbnail_poll_timeout = null;
+    }
+    pending_thumbnail_paths.clear();
+}
+
+// We use this module-level variable to suppress the preview spinner for
+// the next render cycle. We need this state because the preview update
+// is triggered via a global input event listener when we modify the textarea
+// (e.g. cancelling an upload). We cannot pass a "no spinner" argument
+// through the standard event chain because the event listener format is fixed.
+let prevent_next_spinner = false;
+
+export function set_prevent_next_spinner(value: boolean): void {
+    prevent_next_spinner = value;
+}
+
+export function enter_preview_mode($container: JQuery): void {
+    // Disable unneeded compose_control_buttons as we don't
+    // need them in preview mode.
+    $container.addClass("preview_mode");
+    $container.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
+
+    $container.find(".markdown_preview").hide();
+    $container.find(".undo_markdown_preview").show();
+    $container.find(".undo_markdown_preview").trigger("focus");
+}
+
+export function exit_preview_mode($container: JQuery): void {
+    $container.find("textarea.message-textarea").trigger("focus");
+
+    // While in preview mode we disable unneeded compose_control_buttons,
+    // so here we are re-enabling those compose_control_buttons
+    $container.removeClass("preview_mode");
+    $container.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
+
+    $container.find(".undo_markdown_preview").hide();
+    $container.find(".preview_message_area").hide();
+    $container.find(".preview_content").empty();
+    $container.find(".markdown_preview").show();
+}
+
 export function render_and_show_preview(
     $preview_container: JQuery,
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
+    show_spinner = true,
 ): void {
+    if (prevent_next_spinner) {
+        show_spinner = false;
+    }
+
     const preview_render_count = compose_state.get_preview_render_count() + 1;
     compose_state.set_preview_render_count(preview_render_count);
 
@@ -1343,12 +1660,25 @@ export function render_and_show_preview(
 
         $preview_content_box.html(postprocess_content(rendered_preview_html));
         rendered_markdown.update_elements($preview_content_box);
+
+        // Check for thumbnail loading placeholders and start polling
+        clear_thumbnail_polling();
+        pending_thumbnail_paths = extract_thumbnail_paths($preview_content_box);
+
+        if (pending_thumbnail_paths.size > 0) {
+            void poll_thumbnail_status(
+                $preview_container,
+                $preview_spinner,
+                $preview_content_box,
+                content,
+            );
+        }
     }
 
     if (content.length === 0) {
         show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
-        if (markdown.contains_backend_only_syntax(content)) {
+        if (markdown.contains_backend_only_syntax(content) && show_spinner) {
             const $spinner = $preview_spinner.expectOne();
             loading.make_indicator($spinner);
         } else {
@@ -1360,7 +1690,8 @@ export function render_and_show_preview(
             // wrong, users will see a brief flicker of the locally
             // echoed frontend rendering before receiving the
             // authoritative backend rendering from the server).
-            markdown.render(content);
+            const rendered_content = markdown.render(content).content;
+            show_preview(rendered_content);
         }
         void channel.post({
             url: "/json/messages/render",

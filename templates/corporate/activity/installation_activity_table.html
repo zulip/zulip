@@ -34,6 +34,18 @@
     <li><strong>Human message</strong> - message sent by non-bot user, and not with known-bot client</li>
 </ul>
 
+<div class="installation-activity-filter-container">
+    <h4>Current filter: {{ current_filter }}</h4>
+    <p>
+        <b>Filters:</b>
+        <a href="/activity?filter=all">All</a> |
+        <a href="/activity?filter=demo">Demo</a> |
+        <a href="/activity?filter=sponsored">100% sponsored</a> |
+        <a href="/activity?filter=free">On free plan</a> |
+        <a href="/activity?filter=paid">On paid plan</a>
+    </p>
+</div>
+
 <table class="table summary-table sortable table-striped table-bordered">
 
     <thead class="activity-head">

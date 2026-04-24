@@ -144,6 +144,7 @@ export function create({
     onPillCreateAction,
     onPillRemoveAction,
     add_button_pill_update_callback,
+    onTextInputCallback,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
@@ -152,6 +153,7 @@ export function create({
     onPillCreateAction?: (pill_user_ids: number[]) => void;
     onPillRemoveAction?: (pill_user_ids: number[]) => void;
     add_button_pill_update_callback?: () => void;
+    onTextInputCallback?: () => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -166,7 +168,7 @@ export function create({
         pill_widget.onPillCreate(() => {
             void (async () => {
                 loading.make_indicator($(".add-subscriber-loading-spinner"), {
-                    height: 56, // 4em at 14px / 1em
+                    height: 28, // 2em at 14px / 1em
                 });
                 const user_ids = await get_pill_user_ids(pill_widget);
                 onPillCreateAction(user_ids);
@@ -181,6 +183,12 @@ export function create({
                 const user_ids = await get_pill_user_ids(pill_widget);
                 onPillRemoveAction(user_ids);
             })();
+        });
+    }
+
+    if (onTextInputCallback) {
+        pill_widget.onTextInputHook(() => {
+            onTextInputCallback();
         });
     }
 
@@ -280,7 +288,7 @@ export function set_up_handlers({
         const pill_widget = get_pill_widget();
         void (async () => {
             loading.make_indicator($(".add-subscriber-loading-spinner"), {
-                height: 56, // 4em at 14px / 1em
+                height: 28, // 2em at 14px / 1em
             });
             const pill_user_ids = await get_pill_user_ids(pill_widget);
             // If we're no longer in the same view after fetching

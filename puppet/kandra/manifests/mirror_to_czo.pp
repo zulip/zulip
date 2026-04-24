@@ -1,4 +1,5 @@
 class kandra::mirror_to_czo {
+  include zulip::hooks::base
   include zulip::supervisor
 
   # We embed the hash of the contents into the name of the process, so
@@ -28,4 +29,6 @@ class kandra::mirror_to_czo {
     content => template('kandra/supervisor/conf.d/mirror_to_czo.conf.template.erb'),
     notify  => Service[supervisor],
   }
+
+  kandra::hooks::file { 'post-deploy.d/restart_mirror_to_czo.hook': }
 }

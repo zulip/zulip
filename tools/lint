@@ -60,7 +60,6 @@ def run() -> None:
                 "cjs",
                 "css",
                 "cts",
-                "flow",
                 "hbs",
                 "html",
                 "js",

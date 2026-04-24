@@ -198,14 +198,6 @@
         border-radius: 4px;
         margin-top: 0;
 
-        &.emoji-small {
-            display: inline-block;
-            width: 1.25em;
-            box-shadow: none;
-            border: none;
-            vertical-align: text-top;
-        }
-
         &.emoji-big {
             display: inline-block;
             width: 1.5em;
@@ -220,6 +212,7 @@
             box-shadow: none;
             border: none;
             vertical-align: text-top;
+            margin-bottom: 0;
         }
     }
 
@@ -265,6 +258,5 @@ footer {
     height: 1em;
     margin-left: 0.4em;
     background: currentcolor;
-    mask: url("../../../web/shared/icons/external-link.svg") no-repeat center /
-        contain;
+    mask: url("../../../web/icons/external-link.svg") no-repeat center / contain;
 }

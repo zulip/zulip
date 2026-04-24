@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
+os_info="$(. /etc/os-release && printf '%s\n' "$ID" "$VERSION_ID" "$VERSION_CODENAME")"
+{
+    read -r os_id
+    read -r os_version_id
+    read -r os_version_codename
+} <<<"$os_info"
+
+if [ ! -e /usr/share/doc/groonga-apt-source/copyright ] && [ "$os_id $os_version_id" != "ubuntu 26.04" ]; then
     pgroonga_apt_sign_key=$(readlink -f "$LIST_PATH/pgroonga-packages.groonga.org.asc")
 
     remove_pgroonga_apt_tmp_dir() {
@@ -21,16 +28,11 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
                 | cut --delimiter=: --fields=10 \
                 | head --lines=1
         )
-        os_info="$(. /etc/os-release && printf '%s\n' "$ID" "$VERSION_CODENAME")"
-        {
-            read -r distribution
-            read -r release
-        } <<<"$os_info"
 
-        groonga_apt_source_deb="groonga-apt-source-latest-$release.deb"
+        groonga_apt_source_deb="groonga-apt-source-latest-$os_version_codename.deb"
         groonga_apt_source_deb_sign="$groonga_apt_source_deb.asc.$pgroonga_apt_sign_key_fingerprint"
-        curl -fLO --retry 3 "https://packages.groonga.org/$distribution/$groonga_apt_source_deb"
-        curl -fLO --retry 3 "https://packages.groonga.org/$distribution/$groonga_apt_source_deb_sign"
+        curl -fLO --retry 3 "https://packages.groonga.org/$os_id/$groonga_apt_source_deb"
+        curl -fLO --retry 3 "https://packages.groonga.org/$os_id/$groonga_apt_source_deb_sign"
         gpg \
             --homedir="$tmp_gpg_home" \
             --verify \
@@ -38,7 +40,7 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
             "$groonga_apt_source_deb"
         # To suppress the following warning by "apt-get install":
         #   N: Download is performed unsandboxed as root as file
-        #   '.../groonga-apt-source-latest-$release.deb' couldn't be
+        #   '.../groonga-apt-source-latest-$os_version_codename.deb' couldn't be
         #   accessed by user '_apt'. - pkgAcquire::Run (13: Permission denied)
         chown _apt .
 

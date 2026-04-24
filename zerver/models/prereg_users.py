@@ -118,6 +118,18 @@ class PreregistrationUser(models.Model):
 
     include_realm_default_subscriptions = models.BooleanField(default=True)
 
+    # Used in realm import flow to allow importer (the person
+    # whose email is set as PreregistrationRealm.email) to create
+    # a new user if a imported user with the matching
+    # email was not found.
+    is_realm_importer = models.BooleanField(default=False)
+
+    # Used in the SAML authentication flow to pass the external auth ID
+    # from the authentication step to user creation, so that an ExternalAuthID
+    # record can be created for the new user.
+    external_auth_method_name = models.CharField(max_length=100, null=True, default=None)
+    external_auth_id = models.CharField(max_length=255, null=True, default=None)
+
     class Meta:
         indexes = [
             models.Index(Upper("email"), name="upper_preregistration_email_idx"),

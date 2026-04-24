@@ -8,23 +8,21 @@ const {run_test} = require("./lib/test.cjs");
 const {password_quality, password_warning} = zrequire("password_quality");
 
 function password_field(min_length, max_length, min_guesses) {
-    const self = {};
-
-    self.attr = (name) => {
-        switch (name) {
-            case "data-min-length":
-                return min_length;
-            case "data-min-guesses":
-                return min_guesses;
-            case "data-max-length":
-                return max_length;
-            /* istanbul ignore next */
-            default:
-                throw new Error(`Unknown attribute ${name}`);
-        }
+    return {
+        attr(name) {
+            switch (name) {
+                case "data-min-length":
+                    return min_length;
+                case "data-min-guesses":
+                    return min_guesses;
+                case "data-max-length":
+                    return max_length;
+                /* istanbul ignore next */
+                default:
+                    throw new Error(`Unknown attribute ${name}`);
+            }
+        },
     };
-
-    return self;
 }
 
 run_test("basics w/progress bar", () => {

@@ -72,7 +72,7 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
         return looking_at("<!--")
 
     def looking_at_handlebars_comment() -> bool:
-        return looking_at("{{!")
+        return looking_at("{{!") or looking_at("{{~!")
 
     def looking_at_djangocomment() -> bool:
         return template_format == "django" and looking_at("{#")
@@ -434,7 +434,7 @@ def validate(
                     # We are not completely rigorous about having a sensible
                     # order of if/elif/elif/else, but we catch obviously
                     # mismatching else tags.
-                    if start_tag not in ("if", "else", "unless"):
+                    if start_tag not in ("if", "else", "unless", "list_each"):
                         return f"Unexpected else/elif tag encountered after {start_tag} tag."
                 elif start_tag != end_tag:
                     return f"Mismatched tags: ({start_tag} != {end_tag})"
@@ -669,7 +669,7 @@ def get_handlebars_triple_stache_tag(text: str, i: int) -> str:
 
 def get_spaces(text: str, i: int) -> str:
     s = ""
-    while i < len(text) and text[i] in " ":
+    while i < len(text) and text[i] == " ":
         s += text[i]
         i += 1
     return s
@@ -677,7 +677,7 @@ def get_spaces(text: str, i: int) -> str:
 
 def get_code(text: str, i: int) -> str:
     s = ""
-    while i < len(text) and text[i] not in "<":
+    while i < len(text) and text[i] != "<":
         s += text[i]
         i += 1
     return s
@@ -737,10 +737,13 @@ def get_html_comment(text: str, i: int) -> str:
 
 
 def get_handlebars_comment(text: str, i: int) -> str:
+    long = text[i : i + 5] == "{{!--" or text[i : i + 6] == "{{~!--"
     end = i + 5
     unclosed_end = 0
     while end <= len(text):
-        if text[end - 2 : end] == "}}":
+        if text[end - 2 : end] == "}}" and (
+            not long or text[end - 4 : end] == "--}}" or text[end - 5 : end] == "--~}}"
+        ):
             return text[i:end]
         if not unclosed_end and text[end] == "<":
             unclosed_end = end

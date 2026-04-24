@@ -20,11 +20,135 @@ const group_permission_setting_schema = z.object({
 });
 export type GroupPermissionSetting = z.output<typeof group_permission_setting_schema>;
 
-export const narrow_term_schema = z.object({
-    negated: z.optional(z.boolean()),
-    operator: z.string(),
-    operand: z.string(),
-});
+// We cannot parse the operand since it is incomplete,
+// only used for generating suggestions.
+export type NarrowTermSuggestion = {
+    operator: NarrowTerm["operator"];
+    operand: string;
+    negated?: boolean | undefined;
+};
+
+export type NarrowCanonicalTermSuggestion = {
+    operator: NarrowCanonicalTerm["operator"];
+    operand: string;
+    negated?: boolean | undefined;
+};
+
+export const narrow_canonical_operator_schema = z.enum([
+    "", // Used for search suggestions.
+    "channel",
+    "channels",
+    "dm",
+    "dm-including",
+    "has",
+    "id",
+    "in",
+    "is",
+    "near",
+    "search",
+    "sender",
+    "topic",
+    "with",
+]);
+export type NarrowCanonicalOperator = z.output<typeof narrow_canonical_operator_schema>;
+
+const narrow_legacy_operator_schema = z.enum([
+    "pm-with",
+    "group-pm-with",
+    "from",
+    "stream",
+    "streams",
+    "subject",
+]);
+
+export const narrow_operator_schema = z.union([
+    narrow_canonical_operator_schema,
+    narrow_legacy_operator_schema,
+]);
+export type NarrowOperator = z.output<typeof narrow_operator_schema>;
+
+export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
+    z.object({
+        operator: z.literal(""),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("channel"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("channels"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("has"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("id"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("in"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("is"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("near"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("search"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("topic"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("with"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("sender"),
+        operand: z.number(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("dm-including"),
+        operand: z.array(z.number()),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("dm"),
+        operand: z.array(z.number()),
+        negated: z.optional(z.boolean()),
+    }),
+]);
+export type NarrowCanonicalTerm = z.output<typeof narrow_canonical_term_schema>;
+
+export const narrow_term_schema = z.union([
+    narrow_canonical_term_schema,
+    z.object({
+        negated: z.optional(z.boolean()),
+        operator: narrow_legacy_operator_schema,
+        operand: z.string(),
+    }),
+]);
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
 
 export const custom_profile_field_schema = z.object({
@@ -37,6 +161,7 @@ export const custom_profile_field_schema = z.object({
     order: z.number(),
     required: z.boolean(),
     type: z.number(),
+    use_for_user_matching: z.optional(z.boolean()),
 });
 
 export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
@@ -91,12 +216,14 @@ export const user_schema = z.intersection(
         is_owner: z.boolean(),
         is_admin: z.boolean(),
         is_guest: z.boolean(),
+        is_deleted: z.optional(z.literal(true)),
         is_moderator: z.optional(z.boolean()),
         role: z.number(),
         timezone: z.optional(z.string()),
         avatar_url: z.nullish(z.string()),
         avatar_version: z.number(),
         profile_data: z.optional(z.record(z.coerce.number<string>(), profile_datum_schema)),
+        is_imported_stub: z.boolean(),
         // used for fake user objects.
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
@@ -163,9 +290,11 @@ export const channel_folder_schema = z.object({
 
 export const navigation_view_schema = z.object({
     fragment: z.string(),
-    name: z.string(),
+    name: z.nullable(z.string()),
     is_pinned: z.boolean(),
 });
+
+export type NavigationView = z.infer<typeof navigation_view_schema>;
 
 export const user_topic_schema = z.object({
     stream_id: z.number(),
@@ -245,6 +374,7 @@ const current_user_schema = z.object({
     email: z.string(),
     full_name: z.string(),
     has_zoom_token: z.boolean(),
+    has_webex_token: z.boolean(),
     is_admin: z.boolean(),
     is_guest: z.boolean(),
     is_moderator: z.boolean(),
@@ -254,9 +384,9 @@ const current_user_schema = z.object({
 
 const custom_profile_field_types_schema = z.object({
     SHORT_TEXT: z.object({id: z.number(), name: z.string()}),
-    LONG_TEXT: z.object({id: z.number(), name: z.string()}),
+    PARAGRAPH: z.object({id: z.number(), name: z.string()}),
     DATE: z.object({id: z.number(), name: z.string()}),
-    SELECT: z.object({id: z.number(), name: z.string()}),
+    DROPDOWN: z.object({id: z.number(), name: z.string()}),
     URL: z.object({id: z.number(), name: z.string()}),
     EXTERNAL_ACCOUNT: z.object({id: z.number(), name: z.string()}),
     USER: z.object({id: z.number(), name: z.string()}),
@@ -281,6 +411,14 @@ export const realm_linkifier_schema = z.object({
     pattern: z.string(),
     url_template: z.string(),
     id: z.number(),
+    example_input: z.optional(z.nullable(z.string())),
+    reverse_template: z.optional(z.nullable(z.string())),
+    alternative_url_templates: z.optional(z.array(z.string())),
+});
+
+export const realm_report_message_types = z.object({
+    key: z.string(),
+    name: z.string(),
 });
 
 // Sync this with zerver.lib.events.do_events_register.
@@ -289,7 +427,7 @@ export const realm_schema = z.object({
     custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
     giphy_api_key: z.string(),
-    giphy_rating_options: z.intersection(
+    gif_rating_policy_options: z.intersection(
         z.record(z.string(), z.object({id: z.number(), name: z.string()})),
         z.object({disabled: z.object({id: z.number(), name: z.string()})}),
     ),
@@ -323,6 +461,9 @@ export const realm_schema = z.object({
         zoom: z.optional(z.object({name: z.string(), id: z.number()})),
         zoom_server_to_server: z.optional(z.object({name: z.string(), id: z.number()})),
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
+        constructor_groups: z.optional(z.object({name: z.string(), id: z.number()})),
+        nextcloud_talk: z.optional(z.object({name: z.string(), id: z.number()})),
+        webex: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
     realm_bot_domain: z.string(),
@@ -349,6 +490,7 @@ export const realm_schema = z.object({
     realm_can_summarize_topics_group: group_setting_value_schema,
     realm_create_multiuse_invite_group: group_setting_value_schema,
     realm_date_created: z.number(),
+    realm_default_avatar_source: z.enum(["G", "J"]),
     realm_default_code_block_language: z.string(),
     realm_default_external_accounts: z.record(
         z.string(),
@@ -381,7 +523,7 @@ export const realm_schema = z.object({
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
-    realm_giphy_rating: z.number(),
+    realm_gif_rating_policy: z.number(),
     realm_icon_source: z.string(),
     realm_icon_url: z.string(),
     realm_incoming_webhook_bots: z.array(
@@ -403,12 +545,13 @@ export const realm_schema = z.object({
                     z.object({
                         key: z.string(),
                         label: z.string(),
-                        validator: z.string(),
+                        input_type: z.string(),
                     }),
                 ),
             ),
         }),
     ),
+    realm_media_preview_size: z.number(),
     realm_inline_image_preview: z.boolean(),
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),
@@ -421,6 +564,7 @@ export const realm_schema = z.object({
     realm_message_content_delete_limit_seconds: z.nullable(z.number()),
     realm_message_edit_history_visibility_policy: z.enum(["all", "moves", "none"]),
     realm_message_retention_days: z.number(),
+    realm_moderation_request_channel_id: z.number(),
     realm_move_messages_between_streams_limit_seconds: z.nullable(z.number()),
     realm_move_messages_within_stream_limit_seconds: z.nullable(z.number()),
     realm_name_changes_disabled: z.boolean(),
@@ -429,6 +573,7 @@ export const realm_schema = z.object({
     realm_night_logo_source: z.string(),
     realm_night_logo_url: z.string(),
     realm_org_type: z.number(),
+    realm_owner_full_content_access: z.boolean(),
     realm_password_auth_enabled: z.boolean(),
     realm_plan_type: z.number(),
     realm_playgrounds: z.array(realm_playground_schema),
@@ -437,6 +582,7 @@ export const realm_schema = z.object({
     realm_push_notifications_enabled_end_timestamp: z.nullable(z.number()),
     realm_require_e2ee_push_notifications: z.boolean(),
     realm_require_unique_names: z.boolean(),
+    realm_send_channel_events_messages: z.boolean(),
     realm_send_welcome_emails: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
     realm_topics_policy: z.enum(["allow_empty_topic", "disable_empty_topic"]),
@@ -446,6 +592,7 @@ export const realm_schema = z.object({
     realm_waiting_period_threshold: z.number(),
     realm_want_advertise_in_communities_directory: z.boolean(),
     realm_welcome_message_custom_text: z.string(),
+    realm_workplace_users_group: group_setting_value_schema,
     realm_zulip_update_announcements_stream_id: z.number(),
     server_avatar_changes_disabled: z.boolean(),
     server_can_summarize_topics: z.boolean(),
@@ -459,6 +606,7 @@ export const realm_schema = z.object({
     server_needs_upgrade: z.boolean(),
     server_presence_offline_threshold_seconds: z.number(),
     server_presence_ping_interval_seconds: z.number(),
+    server_report_message_types: z.array(realm_report_message_types),
     server_supported_permission_settings: z.object({
         realm: z.record(z.string(), group_permission_setting_schema),
         stream: z.record(z.string(), group_permission_setting_schema),
@@ -471,6 +619,8 @@ export const realm_schema = z.object({
     server_web_public_streams_enabled: z.boolean(),
     settings_send_digest_emails: z.boolean(),
     stop_words: z.array(z.string()),
+    tenor_api_key: z.string(),
+    klipy_api_key: z.string(),
     upgrade_text_for_wide_organization_logo: z.string(),
     zulip_feature_level: z.number(),
     zulip_merge_base: z.string(),

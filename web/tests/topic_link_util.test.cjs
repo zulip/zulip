@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -17,37 +18,37 @@ mock_esm("../src/state_data", {
     realm: {realm_empty_topic_display_name: "general chat"},
 });
 
-const sweden_stream = {
+const sweden_stream = make_stream({
     name: "Sweden",
     description: "Cold, mountains and home decor.",
     stream_id: 1,
     subscribed: true,
     type: "stream",
-};
+});
 
-const denmark_stream = {
+const denmark_stream = make_stream({
     name: "Denmark",
     description: "Vikings and boats, in a serene and cold weather.",
     stream_id: 2,
     subscribed: true,
     type: "stream",
-};
+});
 
-const dollar_stream = {
+const dollar_stream = make_stream({
     name: "$$MONEY$$",
     description: "Money money money",
     stream_id: 6,
     subscribed: true,
     type: "stream",
-};
+});
 
-const markdown_stream = {
+const markdown_stream = make_stream({
     name: "Markdown [md]",
     description: "markdown",
     stream_id: 7,
     subscribed: true,
     type: "stream",
-};
+});
 
 stream_data.add_sub_for_tests(sweden_stream);
 stream_data.add_sub_for_tests(denmark_stream);
@@ -59,7 +60,7 @@ run_test("stream_link_syntax_test", () => {
     assert.equal(topic_link_util.get_stream_link_syntax("Denmark"), "#**Denmark**");
     assert.equal(
         topic_link_util.get_stream_link_syntax("$$MONEY$$"),
-        "[#&#36;&#36;MONEY&#36;&#36;](#narrow/channel/6-.24.24MONEY.24.24)",
+        "[#&#36;&#36;MONEY&#36;&#36;](#narrow/channel/6)",
     );
     assert.equal(
         topic_link_util.get_stream_link_syntax("Markdown [md]"),
@@ -82,11 +83,11 @@ run_test("stream_topic_link_syntax_test", () => {
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "error due to *"),
-        "[#Sweden > error due to &#42;](#narrow/channel/1-Sweden/topic/error.20due.20to.20*)",
+        "[#Sweden > error due to &#42;](#narrow/channel/1-Sweden/topic/error.20due.20to.20.2A)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "*asterisk"),
-        "[#Sweden > &#42;asterisk](#narrow/channel/1-Sweden/topic/*asterisk)",
+        "[#Sweden > &#42;asterisk](#narrow/channel/1-Sweden/topic/.2Aasterisk)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "greaterthan>"),
@@ -94,7 +95,7 @@ run_test("stream_topic_link_syntax_test", () => {
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("$$MONEY$$", "dollar"),
-        "[#&#36;&#36;MONEY&#36;&#36; > dollar](#narrow/channel/6-.24.24MONEY.24.24/topic/dollar)",
+        "[#&#36;&#36;MONEY&#36;&#36; > dollar](#narrow/channel/6/topic/dollar)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "swe$$dish"),
@@ -107,7 +108,7 @@ run_test("stream_topic_link_syntax_test", () => {
 
     assert.equal(
         topic_link_util.get_fallback_markdown_link("$$MONEY$$"),
-        "[#&#36;&#36;MONEY&#36;&#36;](#narrow/channel/6-.24.24MONEY.24.24)",
+        "[#&#36;&#36;MONEY&#36;&#36;](#narrow/channel/6)",
     );
     assert.equal(
         topic_link_util.get_fallback_markdown_link("Markdown [md]"),
@@ -132,7 +133,7 @@ run_test("stream_topic_link_syntax_test", () => {
 
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("$$MONEY$$", ""),
-        "[#&#36;&#36;MONEY&#36;&#36; > translated: general chat](#narrow/channel/6-.24.24MONEY.24.24/topic/)",
+        "[#&#36;&#36;MONEY&#36;&#36; > translated: general chat](#narrow/channel/6/topic/)",
     );
 
     assert.equal(
@@ -155,5 +156,61 @@ run_test("stream_topic_link_syntax_test", () => {
     assert.equal(
         topic_link_util.html_unescape_invalid_stream_topic_characters("&#36;&#36;MONEY&#36;&#36;"),
         "$$MONEY$$",
+    );
+});
+
+run_test("get_topic_link_content_with_stream_name", () => {
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_name({
+            stream_name: sweden_stream.name,
+            topic_name: "abc",
+            message_id: 123,
+        }),
+        {
+            label_text_markdown: "#Sweden > abc @ 💬",
+            label_text_plain: "#Sweden > abc @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/abc/near/123",
+        },
+    );
+
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_name({
+            stream_name: sweden_stream.name,
+            topic_name: "a![b](c)",
+            message_id: 123,
+        }),
+        {
+            label_text_markdown: "#Sweden > a!&#91;b&#93;(c) @ 💬",
+            label_text_plain: "#Sweden > a![b](c) @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/a.21.5Bb.5D.28c.29/near/123",
+        },
+    );
+});
+
+run_test("get_topic_link_content_with_stream_id", () => {
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_id({
+            stream_id: sweden_stream.stream_id,
+            topic_name: "abc",
+            message_id: 123,
+        }),
+        {
+            label_text_markdown: "#Sweden > abc @ 💬",
+            label_text_plain: "#Sweden > abc @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/abc/near/123",
+        },
+    );
+
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_id({
+            stream_id: sweden_stream.stream_id,
+            topic_name: "<abc>",
+            message_id: 123,
+        }),
+        {
+            label_text_markdown: "#Sweden > <abc&gt; @ 💬",
+            label_text_plain: "#Sweden > <abc> @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/.3Cabc.3E/near/123",
+        },
     );
 });

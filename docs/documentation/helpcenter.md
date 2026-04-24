@@ -119,6 +119,11 @@ will allow users to navigate the help center much more effectively.
 
 ### Adding a new article
 
+To add a help center article, create a new file in
+`starlight_help/src/content/docs/`, and add a sidebar link to it in
+`starlight_help/astro.config.mjs`. Don't forget to `git add` your new
+file!
+
 If the feature you're documenting needs a new article, here are some
 things to keep in mind, in addition to the points made above for
 updating existing documentation:

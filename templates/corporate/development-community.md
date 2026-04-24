@@ -45,6 +45,9 @@ for exploring the product in action in the development community.
     - **Not good**: Does anyone need a review on **his** PR?
 - Aim to **communicate professionally**, using full sentences with correct spelling
   and grammar.
+- **Do not post AI-generated messages** -- we want to read your own genuine
+  expression of your thoughts. It's fine to use whatever tools you like for help
+  with spelling, grammar, or translation.
 - Follow the community **[code of
   conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html)**.
 

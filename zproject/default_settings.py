@@ -39,6 +39,7 @@ TOKENIZED_NOREPLY_EMAIL_ADDRESS = Address(
 ).addr_spec
 PHYSICAL_ADDRESS = ""
 FAKE_EMAIL_DOMAIN = EXTERNAL_HOST_WITHOUT_PORT
+EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES: int | None = 0
 
 # SMTP settings
 EMAIL_HOST: str | None = None
@@ -85,6 +86,7 @@ SOCIAL_AUTH_GITLAB_KEY = get_secret("social_auth_gitlab_key", development_only=T
 SOCIAL_AUTH_SUBDOMAIN: str | None = None
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = get_secret("social_auth_azuread_oauth2_key", development_only=True)
 SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key", development_only=True)
+SOCIAL_AUTH_DISCORD_KEY = get_secret("social_auth_discord_key", development_only=True)
 # SAML:
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: str | None = None
 SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
@@ -120,9 +122,14 @@ SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str | list[str | tupl
 SSO_APPEND_DOMAIN: str | None = None
 CUSTOM_HOME_NOT_LOGGED_IN: str | None = None
 
+VIDEO_ZOOM_API_URL: str = "https://api.zoom.us"
+VIDEO_ZOOM_OAUTH_URL: str = "https://zoom.us"
 VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = get_secret("video_zoom_account_id", development_only=True)
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
+VIDEO_WEBEX_API_URL: str = "https://webexapis.com/v1/"
+VIDEO_WEBEX_CLIENT_ID = get_secret("video_webex_client_id", development_only=True)
+VIDEO_WEBEX_CLIENT_SECRET = get_secret("video_webex_client_secret")
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""
@@ -172,9 +179,13 @@ LOCAL_UPLOADS_DIR: str | None = None
 LOCAL_AVATARS_DIR: str | None = None
 LOCAL_FILES_DIR: str | None = None
 MAX_FILE_UPLOAD_SIZE = 100
-# How many GB an organization on a paid plan can upload per user,
+# How many GB an organization on a cloud standard plan can upload per user,
 # on zulipchat.com.
-UPLOAD_QUOTA_PER_USER_GB = 5
+UPLOAD_QUOTA_PER_USER_GB_FOR_STANDARD = 5
+
+# How many GB an organization on a cloud plus plan can upload per user,
+# on zulipchat.com.
+UPLOAD_QUOTA_PER_USER_GB_FOR_PLUS = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL: str | None = "https://meet.jit.si"
@@ -182,9 +193,22 @@ JITSI_SERVER_URL: str | None = "https://meet.jit.si"
 # GIPHY API key.
 GIPHY_API_KEY = get_secret("giphy_api_key")
 
+# Tenor API key
+TENOR_API_KEY = get_secret("tenor_api_key")
+
+# Klipy API key
+KLIPY_API_KEY = get_secret("klipy_api_key")
+
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
 BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
+
+# Allow setting Constructor Groups URL in development.
+CONSTRUCTOR_GROUPS_URL = get_secret("constructor_groups_url", development_only=True)
+
+# Allow setting Nextcloud Talk settings in zulip-secrets.conf in
+# development; this is useful since there are no public Nextcloud Talk servers.
+NEXTCLOUD_SERVER = get_secret("nextcloud_server", development_only=True)
 
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
@@ -206,8 +230,8 @@ RABBITMQ_USE_TLS = False
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
 REMOTE_POSTGRES_HOST = ""
-REMOTE_POSTGRES_PORT = ""
-REMOTE_POSTGRES_SSLMODE = ""
+REMOTE_POSTGRES_PORT = 5432
+REMOTE_POSTGRES_SSLMODE = "verify-full"
 
 TORNADO_PORTS: list[int] = []
 USING_TORNADO = True
@@ -224,7 +248,7 @@ INLINE_IMAGE_PREVIEW = True
 INLINE_URL_EMBED_PREVIEW = True
 NAME_CHANGES_DISABLED = False
 AVATAR_CHANGES_DISABLED = False
-PASSWORD_MIN_LENGTH = 6
+PASSWORD_MIN_LENGTH = 8
 PASSWORD_MAX_LENGTH = 100
 PASSWORD_MIN_GUESSES = 10000
 
@@ -338,6 +362,17 @@ DEFAULT_RATE_LIMITING_RULES = {
         # 10 emails per day
         (86400, 10),
     ],
+    # Limits how many demo organizations can be created per IP
+    # address. This is important to prevent abuse of the demo
+    # organization feature.
+    "demo_realm_creation_by_ip": [
+        # 10 demos per day
+        (86400, 10),
+    ],
+    "transfer_remote_server_registration_endpoint_by_ip": [
+        # 10 transfer registration requests per day per IP
+        (86400, 10),
+    ],
 }
 # Rate limiting defaults can be individually overridden by adding
 # entries in this object, which is merged with
@@ -425,7 +460,7 @@ WEB_PUBLIC_STREAMS_ENABLED = False
 SYSTEM_ONLY_REALMS = {"zulip"}
 
 # Default deadline for demo organizations
-DEMO_ORG_DEADLINE_DAYS = 30
+DEMO_ORG_DEADLINE_DAYS: int | None = None
 
 # Alternate hostnames to serve particular realms on, in addition to
 # their usual subdomains.  Keys are realm string_ids (aka subdomains),

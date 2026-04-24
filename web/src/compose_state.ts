@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
-import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 
@@ -236,24 +235,19 @@ export function focus_in_empty_compose(
     return false;
 }
 
-export function private_message_recipient_emails(): string;
-export function private_message_recipient_emails(value: string): undefined;
-export function private_message_recipient_emails(value?: string): string | undefined {
-    if (typeof value === "string") {
-        compose_pm_pill.set_from_emails(value);
-        return undefined;
-    }
+export function private_message_recipient_emails(): string {
     return compose_pm_pill.get_emails();
 }
 
-export function private_message_recipient_ids(): number[];
-export function private_message_recipient_ids(value: number[]): undefined;
-export function private_message_recipient_ids(value?: number[]): number[] | undefined {
-    if (value === undefined) {
-        return compose_pm_pill.get_user_ids();
-    }
-    compose_pm_pill.set_from_user_ids(value);
-    return undefined;
+export function private_message_recipient_ids(): number[] {
+    return compose_pm_pill.get_user_ids();
+}
+
+// This sets new user ids with `skip_pill_callbacks=true`.
+// If anything in `UserPillWidget.onPillCreate` is desired, call
+// that directly after calling `set_private_message_recipient_ids`.
+export function set_private_message_recipient_ids(value: number[]): void {
+    compose_pm_pill.set_from_user_ids(value, true);
 }
 
 export function has_message_content(): boolean {
@@ -275,18 +269,6 @@ export function has_full_recipient(): boolean {
         return stream_id() !== undefined && has_topic;
     }
     return private_message_recipient_ids().length > 0;
-}
-
-export function update_email(user_id: number, new_email: string): void {
-    let reply_to = private_message_recipient_emails();
-
-    if (!reply_to) {
-        return;
-    }
-
-    reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
-
-    private_message_recipient_emails(reply_to);
 }
 
 let _can_restore_drafts = true;

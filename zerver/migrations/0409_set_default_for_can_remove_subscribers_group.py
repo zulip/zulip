@@ -12,7 +12,7 @@ def set_default_value_for_can_remove_subscribers_group(
     Realm = apps.get_model("zerver", "Realm")
     UserGroup = apps.get_model("zerver", "UserGroup")
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         admins_group = UserGroup.objects.get(
             name="@role:administrators", realm=realm, is_system_group=True
         )

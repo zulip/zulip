@@ -1,0 +1,4 @@
+<div class="alternative-url-template-row">
+    <input type="text" class="modal_text_input" {{#if show_placeholder}}placeholder="https://github.com/zulip/zulip/pull/{id}" {{/if}}value="{{value}}" />
+    {{> ../components/icon_button intent="danger" custom_classes="delete-alternative-url-template tippy-zulip-tooltip" icon="trash" data-tippy-content=(t "Delete") aria-label=(t "Delete") }}
+</div>

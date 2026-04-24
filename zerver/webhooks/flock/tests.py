@@ -2,10 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FlockHookTests(WebhookTestCase):
-    CHANNEL_NAME = "test"
-    URL_TEMPLATE = "/api/v1/external/flock?api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "flock"
-
     def test_flock_message(self) -> None:
         expected_topic_name = "Flock notifications"
         expected_message = "This is the welcome message!"

@@ -89,7 +89,7 @@ ONLY perform this on customer request from an authorized person.
                         "This realm does not have enough licenses to change a guest user's role."
                     )
             old_role_name = UserProfile.ROLE_ID_TO_NAME_MAP[user.role]
-            do_change_user_role(user, new_role, acting_user=None)
+            do_change_user_role(user, new_role, acting_user=None, notify=True)
             new_role_name = UserProfile.ROLE_ID_TO_NAME_MAP[user.role]
             print(
                 f"Role for {user.delivery_email} changed from {old_role_name} to {new_role_name}."

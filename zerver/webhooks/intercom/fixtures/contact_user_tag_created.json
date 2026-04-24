@@ -1,0 +1,132 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "contact_tag",
+            "tag": {
+                "type": "tag",
+                "id": "12934044",
+                "name": "Feature Request"
+            },
+            "contact": {
+                "type": "contact",
+                "id": "6961f1c19b981fb5a0b90afb",
+                "workspace_id": "u7iknh8e",
+                "external_id": null,
+                "role": "user",
+                "email": "merge_user_fixture@example.com",
+                "phone": null,
+                "name": "Merge User Fixture",
+                "avatar": null,
+                "owner_id": null,
+                "social_profiles": {
+                    "type": "list",
+                    "data": []
+                },
+                "has_hard_bounced": false,
+                "marked_email_as_spam": false,
+                "unsubscribed_from_emails": false,
+                "created_at": "2026-01-10T06:29:21.953+00:00",
+                "updated_at": "2026-01-12T15:23:19.730+00:00",
+                "signed_up_at": null,
+                "last_seen_at": null,
+                "last_replied_at": null,
+                "last_contacted_at": null,
+                "last_email_opened_at": null,
+                "last_email_clicked_at": null,
+                "language_override": null,
+                "browser": null,
+                "browser_version": null,
+                "browser_language": null,
+                "os": null,
+                "location": {
+                    "type": "location",
+                    "country": null,
+                    "region": null,
+                    "city": null,
+                    "country_code": null,
+                    "continent_code": null
+                },
+                "android_app_name": null,
+                "android_app_version": null,
+                "android_device": null,
+                "android_os_version": null,
+                "android_sdk_version": null,
+                "android_last_seen_at": null,
+                "ios_app_name": null,
+                "ios_app_version": null,
+                "ios_device": null,
+                "ios_os_version": null,
+                "ios_sdk_version": null,
+                "ios_last_seen_at": null,
+                "custom_attributes": {},
+                "tags": {
+                    "type": "list",
+                    "data": [
+                        {
+                            "id": "12986331",
+                            "type": "tag",
+                            "url": "/tags/12986331"
+                        },
+                        {
+                            "id": "12934044",
+                            "type": "tag",
+                            "url": "/tags/12934044"
+                        }
+                    ],
+                    "url": "/contacts/6961f1c19b981fb5a0b90afb/tags",
+                    "total_count": 2,
+                    "has_more": false
+                },
+                "notes": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f1c19b981fb5a0b90afb/notes",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "companies": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f1c19b981fb5a0b90afb/companies",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "opted_out_subscription_types": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f1c19b981fb5a0b90afb/subscriptions",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "opted_in_subscription_types": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f1c19b981fb5a0b90afb/subscriptions",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "utm_campaign": null,
+                "utm_content": null,
+                "utm_medium": null,
+                "utm_source": null,
+                "utm_term": null,
+                "referrer": null,
+                "sms_consent": false,
+                "unsubscribed_from_sms": false,
+                "enabled_push_messaging": null
+            }
+        }
+    },
+    "links": {},
+    "id": "notif_2be5716c-6ecd-4852-b6b2-3e66b0e3ede3",
+    "topic": "contact.user.tag.created",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768231400,
+    "created_at": 1768231399,
+    "self": null
+}

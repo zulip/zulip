@@ -95,7 +95,7 @@ class CountStat:
         # We just want to check we are not using BaseCount, otherwise all
         # `output_table` have `objects` property.
         assert self.data_collector.output_table == UserCount
-        result = self.data_collector.output_table.objects.filter(  # type: ignore[attr-defined] # see above
+        result = self.data_collector.output_table.objects.filter(
             user=user,
             property=self.property,
             end_time__gt=start_of_month,

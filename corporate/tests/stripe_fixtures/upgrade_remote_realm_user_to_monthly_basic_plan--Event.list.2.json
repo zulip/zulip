@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -62,7 +62,7 @@
           "payment_method_details": {
             "card": {
               "amount_authorized": 1850,
-              "authorization_code": null,
+              "authorization_code": "381358",
               "brand": "visa",
               "checks": {
                 "address_line1_check": "pass",
@@ -90,7 +90,7 @@
               "network_token": {
                 "used": false
               },
-              "network_transaction_id": "100110997670110",
+              "network_transaction_id": "749857738210088",
               "overcapture": {
                 "maximum_amount_capturable": 1850,
                 "status": "unavailable"
@@ -128,7 +128,7 @@
       "type": "charge.succeeded"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -168,7 +168,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -336,7 +336,7 @@
       "type": "invoice.finalized"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -376,7 +376,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -560,7 +560,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -582,6 +582,7 @@
           "currency": "usd",
           "customer": "upgrade_remote_realm_user_to_monthly_basic_plan--Customer.create.1.json",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "upgrade_remote_realm_user_to_monthly_basic_plan--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": null,
@@ -631,7 +632,7 @@
       "type": "payment_intent.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -671,7 +672,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -892,7 +893,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -907,6 +908,7 @@
           "invoice": "upgrade_remote_realm_user_to_monthly_basic_plan--Event.list.2.json",
           "livemode": false,
           "metadata": {},
+          "net_amount": -2000,
           "object": "invoiceitem",
           "parent": null,
           "period": {
@@ -938,7 +940,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -978,7 +980,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -1118,7 +1120,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1133,6 +1135,7 @@
           "invoice": "upgrade_remote_realm_user_to_monthly_basic_plan--Event.list.2.json",
           "livemode": false,
           "metadata": {},
+          "net_amount": 3850,
           "object": "invoiceitem",
           "parent": null,
           "period": {
@@ -1164,7 +1167,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1204,7 +1207,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -1291,7 +1294,7 @@
       "type": "invoice.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1301,7 +1304,7 @@
           "currency": "usd",
           "default_source": null,
           "delinquent": false,
-          "description": "zulip.testserver 5ae8113e-cd0",
+          "description": "zulip.testserver 696c2d4f-86b",
           "discount": null,
           "email": "hamlet@zulip.com",
           "id": "upgrade_remote_realm_user_to_monthly_basic_plan--Customer.create.1.json",
@@ -1315,7 +1318,7 @@
           "livemode": false,
           "metadata": {
             "remote_realm_host": "zulip.testserver",
-            "remote_realm_uuid": "5ae8113e-cd0a-4aaf-990c-a2ddb35b37d8"
+            "remote_realm_uuid": "696c2d4f-86ba-44c0-9137-8d2908ba59b6"
           },
           "name": null,
           "next_invoice_sequence": 1,

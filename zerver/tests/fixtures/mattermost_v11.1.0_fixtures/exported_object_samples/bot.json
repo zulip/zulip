@@ -1,0 +1,10 @@
+{
+    "type": "bot",
+    "bot": {
+        "username": "system-bot",
+        "owner": "admin_username",
+        "display_name": "System",
+        "description": "",
+        "delete_at": 0
+    }
+}

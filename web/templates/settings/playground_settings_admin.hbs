@@ -35,7 +35,7 @@
 
         {{#if is_admin}}
         <form class="admin-playground-form">
-            <div class="add-new-playground-box grey-box">
+            <div class="add-new-playground-box settings-highlight-box">
                 <div class="new-playground-form wrapper">
                     <div class="settings-section-title">
                         {{t "Add a new code playground" }}
@@ -57,7 +57,7 @@
                     {{> ../components/action_button
                       id="submit_playground_button"
                       label=(t "Add code playground")
-                      attention="quiet"
+                      variant="subtle"
                       intent="brand"
                       type="submit"
                       }}

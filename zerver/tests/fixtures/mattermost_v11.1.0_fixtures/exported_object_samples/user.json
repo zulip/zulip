@@ -1,0 +1,103 @@
+{
+    "type": "user",
+    "user": {
+        "profile_image": "users/19hyyxn9nbdwxe8hykj5fxmgwe/profile.png",
+        "username": "sysadmin",
+        "email": "sysadmin@sample.mattermost.com",
+        "auth_service": null,
+        "nickname": "",
+        "first_name": "Kenneth",
+        "last_name": "Moreno",
+        "position": "Software Test Engineer ",
+        "roles": "system_admin system_user",
+        "locale": "en",
+        "delete_at": 0,
+        "teams": [
+            {
+                "name": "ad-1",
+                "roles": "team_user",
+                "channels": [
+                    {
+                        "name": "sequi-7",
+                        "roles": "channel_user",
+                        "notify_props": {
+                            "desktop": "default",
+                            "mobile": "default",
+                            "mark_unread": "all"
+                        },
+                        "favorite": false,
+                        "mention_count": 0,
+                        "mention_count_root": 0,
+                        "urgend_mention_count": 0,
+                        "msg_count": 0,
+                        "msg_count_root": 0,
+                        "last_viewed_at": 0
+                    },
+                    {
+                        "name": "ratione-1",
+                        "roles": "channel_admin channel_user",
+                        "notify_props": {
+                            "desktop": "default",
+                            "mobile": "default",
+                            "mark_unread": "all"
+                        },
+                        "favorite": false,
+                        "mention_count": 0,
+                        "mention_count_root": 0,
+                        "urgend_mention_count": 0,
+                        "msg_count": 0,
+                        "msg_count_root": 0,
+                        "last_viewed_at": 0
+                    },
+                    {
+                        "name": "minus-6",
+                        "roles": "channel_user",
+                        "notify_props": {
+                            "desktop": "default",
+                            "mobile": "default",
+                            "mark_unread": "all"
+                        },
+                        "favorite": false,
+                        "mention_count": 0,
+                        "mention_count_root": 0,
+                        "urgend_mention_count": 0,
+                        "msg_count": 0,
+                        "msg_count_root": 0,
+                        "last_viewed_at": 0
+                    },
+                    {
+                        "name": "town-square",
+                        "roles": "channel_user",
+                        "notify_props": {
+                            "desktop": "default",
+                            "mobile": "default",
+                            "mark_unread": "all"
+                        },
+                        "favorite": false,
+                        "mention_count": 0,
+                        "mention_count_root": 0,
+                        "urgend_mention_count": 0,
+                        "msg_count": 0,
+                        "msg_count_root": 0,
+                        "last_viewed_at": 0
+                    }
+                ]
+            }
+        ],
+        "military_time": "false",
+        "link_previews": "false",
+        "message_display": "clean",
+        "channel_display_mode": "full",
+        "tutorial_step": "999",
+        "notify_props": {
+            "desktop": "mention",
+            "desktop_sound": "true",
+            "email": "true",
+            "mobile": "mention",
+            "mobile_push_status": "online",
+            "channel": "true",
+            "comments": "never",
+            "mention_keys": ""
+        }
+    }
+}

@@ -6,6 +6,7 @@ import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as buddy_list_presence from "./buddy_list_presence.ts";
 import * as keydown_util from "./keydown_util.ts";
 import {ListCursor} from "./list_cursor.ts";
 import * as loading from "./loading.ts";
@@ -27,7 +28,11 @@ export let user_cursor: ListCursor<number> | undefined;
 export let user_filter: UserSearch | undefined;
 
 // Function initialized from `ui_init` to avoid importing narrow.js and causing circular imports.
-let narrow_by_email: (email: string) => void;
+let narrow_by_user_id: (user_id: number) => void;
+
+export function get_narrow_by_user_id_function_for_test_code(): (user_id: number) => void {
+    return narrow_by_user_id;
+}
 
 function get_pm_list_item(user_id: string): JQuery | undefined {
     return buddy_list.find_li({
@@ -60,29 +65,6 @@ export function clear_for_testing(): void {
     user_filter = undefined;
 }
 
-export let update_presence_indicators = (): void => {
-    $("[data-presence-indicator-user-id]").each(function () {
-        const user_id = Number.parseInt($(this).attr("data-presence-indicator-user-id") ?? "", 10);
-        const is_deactivated = !people.is_active_user_for_popover(user_id || 0);
-        assert(!Number.isNaN(user_id));
-        const user_circle_class = buddy_data.get_user_circle_class(user_id, is_deactivated);
-        const user_circle_class_with_icon = `${user_circle_class} zulip-icon-${user_circle_class}`;
-        $(this)
-            .removeClass(
-                `
-                user-circle-active zulip-icon-user-circle-active
-                user-circle-idle zulip-icon-user-circle-idle
-                user-circle-offline zulip-icon-user-circle-offline
-            `,
-            )
-            .addClass(user_circle_class_with_icon);
-    });
-};
-
-export function rewire_update_presence_indicators(value: typeof update_presence_indicators): void {
-    update_presence_indicators = value;
-}
-
 export function redraw_user(user_id: number): void {
     if (realm.realm_presence_disabled) {
         return;
@@ -95,7 +77,7 @@ export function redraw_user(user_id: number): void {
     }
 
     buddy_list.insert_or_move([user_id]);
-    update_presence_indicators();
+    buddy_list_presence.update_indicators();
 }
 
 export function rerender_user_sidebar_participants(): void {
@@ -185,7 +167,7 @@ function do_update_users_for_search(): void {
         (async () => {
             $("#buddy_list_wrapper").hide();
             loading.make_indicator($("#buddy-list-loading-subscribers"));
-            await peer_data.maybe_fetch_stream_subscribers(stream_id);
+            await peer_data.fetch_stream_subscribers(stream_id);
             all_pending_fetches_for_search.delete(stream_id);
 
             // If we changed narrows during the fetch, don't rebuild the sidebar
@@ -205,8 +187,8 @@ function do_update_users_for_search(): void {
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
 
-export function initialize(opts: {narrow_by_email: (email: string) => void}): void {
-    narrow_by_email = opts.narrow_by_email;
+export function initialize(opts: {narrow_by_user_id: (user_id: number) => void}): void {
+    narrow_by_user_id = opts.narrow_by_user_id;
 
     set_cursor_and_filter();
 
@@ -252,7 +234,7 @@ export function redraw(): void {
     assert(user_cursor !== undefined);
     user_cursor.redraw();
     pm_list.update_private_messages();
-    update_presence_indicators();
+    buddy_list_presence.update_indicators();
 }
 
 export function reset_users(): void {
@@ -268,11 +250,8 @@ export function narrow_for_user(opts: {$li: JQuery}): void {
 }
 
 export function narrow_for_user_id(opts: {user_id: number}): void {
-    const person = people.get_by_user_id(opts.user_id);
-    const email = person.email;
-
-    assert(narrow_by_email);
-    narrow_by_email(email);
+    assert(narrow_by_user_id);
+    narrow_by_user_id(opts.user_id);
     assert(user_filter !== undefined);
     user_filter.clear_search();
 }
@@ -289,7 +268,143 @@ function keydown_enter_key(): void {
     popovers.hide_all();
 }
 
-export function set_cursor_and_filter(): void {
+function focus_user_row($row: JQuery): void {
+    util.the($row.find("a.user-presence-link")).focus({preventScroll: true});
+}
+
+// Helpers that find the nearest visible user row relative to a section header
+// or link. "Visible" means not inside a collapsed section.
+
+function first_user_in_or_after($section: JQuery): JQuery {
+    if (!$section.hasClass("collapsed")) {
+        const $entry = $section.find("li.user_sidebar_entry").first();
+        if ($entry.length > 0) {
+            return $entry;
+        }
+    }
+    return first_user_after($section);
+}
+function first_user_after($section: JQuery): JQuery {
+    return $section.nextAll(":not(.collapsed)").find("li.user_sidebar_entry").first();
+}
+function last_user_before($section: JQuery): JQuery {
+    return $section.prevAll(":not(.collapsed)").find("li.user_sidebar_entry").last();
+}
+function last_user_in_or_before($section: JQuery): JQuery {
+    if (!$section.hasClass("collapsed")) {
+        const $entry = $section.find("li.user_sidebar_entry").last();
+        if ($entry.length > 0) {
+            return $entry;
+        }
+    }
+    return last_user_before($section);
+}
+function last_user_in_buddy_list(): JQuery {
+    return $(
+        "#buddy_list_wrapper .buddy-list-section-container:not(.collapsed) li.user_sidebar_entry",
+    ).last();
+}
+
+// Given the currently-focused element and arrow-key direction, return the user
+// row we should land on. Returns undefined to do nothing (e.g., ArrowDown from
+// the last element in the buddy list).
+function resolve_arrow_target($active: JQuery, direction: "up" | "down"): JQuery | undefined {
+    const $active_user_row = $active.closest("li.user_sidebar_entry");
+    if ($active_user_row.length > 0) {
+        // Focus is inside a user row (e.g., the user's name link or the vdot
+        // menu icon). Return that row; the caller syncs the cursor to it and
+        // then steps prev/next, because the cursor already knows which rows
+        // are visible — DOM traversal would have to replicate that logic.
+        return $active_user_row;
+    }
+
+    const $section = $active.closest(".buddy-list-section-container");
+    if ($active.closest(".buddy-list-subsection-header").length > 0) {
+        // Focus is on a section header (the toggle triangle or the heading).
+        // ArrowDown lands on the first user in this section if it's expanded,
+        // or the first user in the next expanded section. ArrowUp lands on
+        // the last user in the previous expanded section.
+        return direction === "down" ? first_user_in_or_after($section) : last_user_before($section);
+    }
+    if ($active.closest(".view-all-subscribers-link").length > 0) {
+        // Focus is on the "View all subscribers" link, which sits below the
+        // users in the "users matching view" section. ArrowDown crosses into
+        // the next section's first user; ArrowUp goes back to the last user
+        // of the current section.
+        return direction === "down" ? first_user_after($section) : last_user_in_or_before($section);
+    }
+    if (
+        $active.closest(".view-all-users-link").length > 0 ||
+        $active.closest(".invite-user-shortcut").length > 0
+    ) {
+        // Focus is on one of the two links at the very bottom of the buddy
+        // list ("View all users" or "Invite to organization"). ArrowDown has
+        // nowhere to go; ArrowUp lands on the last visible user row.
+        return direction === "down" ? undefined : last_user_in_buddy_list();
+    }
+    // We've installed this handler on #buddy_list_wrapper, so every focusable
+    // descendant should be covered by a branch above. Log and bail if not.
+    blueslip.error("Unexpected focused element in buddy list", {
+        element: $active[0]?.nodeName,
+        class: $active[0]?.className,
+    });
+    return undefined;
+}
+
+// Handle arrow key navigation when a buddy list element has Tab focus,
+// so that Tab and arrow key navigation stay in sync. Three steps:
+//   (a) resolve which user row we should land on,
+//   (b) sync the cursor to it,
+//   (c) move DOM focus to it.
+function handle_buddy_list_arrow_navigation(e: JQuery.KeyDownEvent): void {
+    // This handler is registered inside set_cursor_and_filter, which creates
+    // user_cursor, so it's always defined by the time we get here.
+    assert(user_cursor !== undefined);
+
+    if (e.key === "Tab") {
+        // Tab is handled by the browser, but we clear the cursor highlight
+        // so it doesn't remain painted on the arrow-navigated row after
+        // focus moves elsewhere.
+        user_cursor.clear();
+        return;
+    }
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+        return;
+    }
+    if (e.altKey || e.ctrlKey || e.shiftKey || !(document.activeElement instanceof HTMLElement)) {
+        return;
+    }
+
+    const direction = e.key === "ArrowDown" ? "down" : "up";
+    const $active = $(document.activeElement);
+    const $landing_row = resolve_arrow_target($active, direction);
+    if ($landing_row === undefined || $landing_row.length === 0) {
+        return;
+    }
+
+    user_cursor.set_is_highlight_visible(true);
+    user_cursor.go_to(buddy_list.get_user_id_from_li({$li: $landing_row}));
+
+    // If focus was inside a user row, we landed on *that* user; step the
+    // cursor one further in the arrow direction.
+    let $focus_row = $landing_row;
+    if ($active.closest("li.user_sidebar_entry").length > 0) {
+        if (direction === "down") {
+            user_cursor.next();
+        } else {
+            user_cursor.prev();
+        }
+        const new_user_id = user_cursor.get_key();
+        assert(new_user_id !== undefined);
+        $focus_row = buddy_list.find_li({key: new_user_id, force_render: true})!;
+    }
+
+    focus_user_row($focus_row);
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+export let set_cursor_and_filter = (): void => {
     user_cursor = new ListCursor({
         list: buddy_list,
         highlight_class: "highlighted_user",
@@ -327,8 +442,25 @@ export function set_cursor_and_filter(): void {
                 user_cursor!.next();
                 return true;
             },
+            Tab() {
+                // If the user navigated to a row with arrow keys, Tab should focus that
+                // row instead of the next element in DOM order.
+                assert(user_cursor !== undefined);
+                const cursor_key = user_cursor.get_key();
+                if (cursor_key !== undefined && user_cursor.is_highlight_visible) {
+                    focus_user_row(buddy_list.find_li({key: cursor_key, force_render: true})!);
+                }
+                user_cursor.clear();
+                return false;
+            },
         },
     });
+
+    $("#buddy_list_wrapper").on("keydown", handle_buddy_list_arrow_navigation);
+};
+
+export function rewire_set_cursor_and_filter(value: typeof set_cursor_and_filter): void {
+    set_cursor_and_filter = value;
 }
 
 export function initiate_search(): void {

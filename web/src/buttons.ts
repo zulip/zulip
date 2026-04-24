@@ -4,15 +4,16 @@ import * as loading from "./loading.ts";
 import {COMPONENT_INTENT_VALUES} from "./types.ts";
 import type {ComponentIntent} from "./types.ts";
 
-export const ACTION_BUTTON_ATTENTION_VALUES = ["primary", "quiet", "borderless"] as const;
+export const ACTION_BUTTON_VARIANT_VALUES = ["solid", "subtle", "text"] as const;
 
-export type ActionButtonAttention = (typeof ACTION_BUTTON_ATTENTION_VALUES)[number];
+export type ActionButtonVariant = (typeof ACTION_BUTTON_VARIANT_VALUES)[number];
 
 export type ActionButton = {
-    attention: ActionButtonAttention;
+    variant: ActionButtonVariant;
     intent?: ComponentIntent;
-    label: string;
+    label?: string;
     icon?: string;
+    id?: string;
     custom_classes?: string;
 };
 
@@ -55,28 +56,34 @@ export function hide_button_loading_indicator($button: JQuery): void {
 export function modify_action_button_style(
     $button: JQuery,
     opts: {
-        attention?: ActionButtonAttention;
+        variant?: ActionButtonVariant;
         intent?: ComponentIntent;
     },
 ): void {
-    if (opts.attention === undefined && opts.intent === undefined) {
-        // If neither attention nor intent is provided, do nothing.
+    if (opts.variant === undefined && opts.intent === undefined) {
+        // If neither variant nor intent is provided, do nothing.
         return;
     }
-    const action_button_attention_pattern = ACTION_BUTTON_ATTENTION_VALUES.join("|");
+    const action_button_variant_pattern = ACTION_BUTTON_VARIANT_VALUES.join("|");
     const component_intent_pattern = COMPONENT_INTENT_VALUES.join("|");
     const action_button_style_regex = new RegExp(
-        `action-button-(${action_button_attention_pattern})-(${component_intent_pattern})`,
+        `action-button-(${action_button_variant_pattern})-(${component_intent_pattern})`,
     );
     const action_button_style_regex_match = $button.attr("class")?.match(action_button_style_regex);
     if (!action_button_style_regex_match) {
         // If the button doesn't have the expected class, do nothing.
         return;
     }
-    const [action_button_style_class, old_attention, old_intent] = action_button_style_regex_match;
-    // Replace the old attention and intent values with the new ones, if provided.
+    const [action_button_style_class, old_variant, old_intent] = action_button_style_regex_match;
+    // Replace the old variant and intent values with the new ones, if provided.
     $button.removeClass(action_button_style_class);
-    $button.addClass(
-        `action-button-${opts.attention ?? old_attention}-${opts.intent ?? old_intent}`,
-    );
+    $button.addClass(`action-button-${opts.variant ?? old_variant}-${opts.intent ?? old_intent}`);
+}
+
+export function modify_button_icon($button: JQuery, new_icon: string): void {
+    $button
+        .find(".zulip-icon")
+        .attr("class", (_index, className) =>
+            className.replaceAll(/zulip-icon-[^\s]+/g, `zulip-icon-${new_icon}`),
+        );
 }

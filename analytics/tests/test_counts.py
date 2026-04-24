@@ -34,6 +34,7 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
+from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
@@ -50,12 +51,17 @@ from zerver.actions.user_activity import update_user_activity_interval
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
-from zerver.lib.push_notifications import get_message_payload_apns, get_message_payload_gcm
+from zerver.lib.push_notifications import (
+    get_message_payload,
+    get_message_payload_apns,
+    get_message_payload_gcm,
+)
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.types import Invitee
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -121,12 +127,7 @@ class AnalyticsTestCase(ZulipTestCase):
         }
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        kwargs["delivery_email"] = kwargs["email"]
         with time_machine.travel(kwargs["date_joined"], tick=False):
-            pass_kwargs: dict[str, Any] = {}
-            if kwargs["is_bot"]:
-                pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
-                pass_kwargs["bot_owner"] = None
             user = create_user(
                 kwargs["email"],
                 "password",
@@ -134,7 +135,7 @@ class AnalyticsTestCase(ZulipTestCase):
                 active=kwargs["is_active"],
                 full_name=kwargs["full_name"],
                 role=UserProfile.ROLE_REALM_ADMINISTRATOR,
-                **pass_kwargs,
+                bot_type=UserProfile.DEFAULT_BOT if kwargs["is_bot"] else None,
             )
             if not skip_auditlog:
                 RealmAuditLog.objects.create(
@@ -562,16 +563,18 @@ class TestCountStats(AnalyticsTestCase):
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
         human2 = self.create_user()
-        recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
 
+        recipient_bot_and_human1 = self.get_dm_group_recipient(bot, human1)
+        recipient_human1_and_2 = self.get_dm_group_recipient(human1, human2)
+        recipient_human1 = self.get_dm_group_recipient(human1)
         recipient_stream = self.create_stream_with_recipient()[1]
         recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
-        self.create_message(bot, recipient_human1)
+        self.create_message(bot, recipient_bot_and_human1)
         self.create_message(bot, recipient_stream)
         self.create_message(bot, recipient_direct_message_group)
         self.create_message(human1, recipient_human1)
-        self.create_message(human2, recipient_human1)
+        self.create_message(human2, recipient_human1_and_2)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
@@ -603,20 +606,23 @@ class TestCountStats(AnalyticsTestCase):
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
         human2 = self.create_user()
-        recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
 
+        recipient_bot_and_human1 = self.get_dm_group_recipient(bot, human1)
+        recipient_human1_and_2 = self.get_dm_group_recipient(human1, human2)
+        recipient_human1 = self.get_dm_group_recipient(human1)
+        recipient_hourly_user_and_human1 = self.get_dm_group_recipient(self.hourly_user, human1)
         recipient_stream = self.create_stream_with_recipient()[1]
         recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         # To be included
-        self.create_message(bot, recipient_human1)
+        self.create_message(bot, recipient_bot_and_human1)
         self.create_message(bot, recipient_stream)
         self.create_message(bot, recipient_direct_message_group)
         self.create_message(human1, recipient_human1)
-        self.create_message(human2, recipient_human1)
+        self.create_message(human2, recipient_human1_and_2)
 
         # To be excluded
-        self.create_message(self.hourly_user, recipient_human1)
+        self.create_message(self.hourly_user, recipient_hourly_user_and_human1)
         self.create_message(self.hourly_user, recipient_stream)
         self.create_message(self.hourly_user, recipient_direct_message_group)
 
@@ -669,11 +675,10 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(user2, recipient_direct_message_group2)
 
         # direct messages
-        recipient_user1 = Recipient.objects.get(type_id=user1.id, type=Recipient.PERSONAL)
-        recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
-        recipient_user3 = Recipient.objects.get(type_id=user3.id, type=Recipient.PERSONAL)
-        self.create_message(user1, recipient_user2)
-        self.create_message(user2, recipient_user1)
+        recipient_user1_and_2 = self.get_dm_group_recipient(user1, user2)
+        recipient_user3 = self.get_dm_group_recipient(user3)
+        self.create_message(user1, recipient_user1_and_2)
+        self.create_message(user2, recipient_user1_and_2)
         self.create_message(user3, recipient_user3)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
@@ -718,7 +723,7 @@ class TestCountStats(AnalyticsTestCase):
         )
         self.assertTableState(StreamCount, [], [])
 
-    def test_1_to_1_and_self_messages_sent_by_message_type_using_direct_group_message(self) -> None:
+    def test_1_to_1_and_self_messages_sent_by_message_type(self) -> None:
         stat = COUNT_STATS["messages_sent:message_type:day"]
         self.current_property = stat.property
 
@@ -776,7 +781,8 @@ class TestCountStats(AnalyticsTestCase):
         self.current_property = stat.property
 
         user = self.create_user()
-        user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
+        user_recipient = self.get_dm_group_recipient(user)
+        hourly_user_and_user_recipient = self.get_dm_group_recipient(self.hourly_user, user)
         private_stream_recipient = self.create_stream_with_recipient(invite_only=True)[1]
         stream_recipient = self.create_stream_with_recipient()[1]
         direct_message_group_recipient = self.create_direct_message_group_with_recipient()[1]
@@ -790,7 +796,7 @@ class TestCountStats(AnalyticsTestCase):
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
 
         # To be excluded
-        self.create_message(self.hourly_user, user_recipient)
+        self.create_message(self.hourly_user, hourly_user_and_user_recipient)
         self.create_message(self.hourly_user, private_stream_recipient)
         self.create_message(self.hourly_user, stream_recipient)
         self.create_message(self.hourly_user, direct_message_group_recipient)
@@ -824,7 +830,7 @@ class TestCountStats(AnalyticsTestCase):
         self.current_property = stat.property
 
         user = self.create_user(id=1000)
-        user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
+        user_recipient = self.get_dm_group_recipient(user)
         stream_recipient = self.create_stream_with_recipient(id=1000)[1]
         direct_message_group_recipient = self.create_direct_message_group_with_recipient(id=1000)[1]
 
@@ -852,14 +858,15 @@ class TestCountStats(AnalyticsTestCase):
 
         user1 = self.create_user(is_bot=True)
         user2 = self.create_user()
-        recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
 
+        recipient_user1_and_2 = self.get_dm_group_recipient(user1, user2)
+        recipient_user2 = self.get_dm_group_recipient(user2)
         recipient_stream = self.create_stream_with_recipient()[1]
         recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         client2 = Client.objects.create(name="client2")
 
-        self.create_message(user1, recipient_user2, sending_client=client2)
+        self.create_message(user1, recipient_user1_and_2, sending_client=client2)
         self.create_message(user1, recipient_stream)
         self.create_message(user1, recipient_direct_message_group)
         self.create_message(user2, recipient_user2, sending_client=client2)
@@ -899,19 +906,26 @@ class TestCountStats(AnalyticsTestCase):
 
         user1 = self.create_user(is_bot=True)
         user2 = self.create_user()
-        recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
+
+        recipient_user1_and_2 = self.get_dm_group_recipient(user1, user2)
+        recipient_user2 = self.get_dm_group_recipient(user2)
+        recipient_hourly_user_and_user2 = self.get_dm_group_recipient(self.hourly_user, user2)
 
         client2 = Client.objects.create(name="client2")
 
         # TO be included
-        self.create_message(user1, recipient_user2, sending_client=client2)
+        self.create_message(user1, recipient_user1_and_2, sending_client=client2)
         self.create_message(user2, recipient_user2, sending_client=client2)
         self.create_message(user2, recipient_user2)
 
         # To be excluded
-        self.create_message(self.hourly_user, recipient_user2, sending_client=client2)
-        self.create_message(self.hourly_user, recipient_user2, sending_client=client2)
-        self.create_message(self.hourly_user, recipient_user2)
+        self.create_message(
+            self.hourly_user, recipient_hourly_user_and_user2, sending_client=client2
+        )
+        self.create_message(
+            self.hourly_user, recipient_hourly_user_and_user2, sending_client=client2
+        )
+        self.create_message(self.hourly_user, recipient_hourly_user_and_user2)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
 
@@ -936,7 +950,8 @@ class TestCountStats(AnalyticsTestCase):
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
         human2 = self.create_user()
-        recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
+        recipient_human1_and_2 = self.get_dm_group_recipient(human1, human2)
+        recipient_bot_and_human1 = self.get_dm_group_recipient(bot, human1)
 
         stream1, recipient_stream1 = self.create_stream_with_recipient()
         stream2, recipient_stream2 = self.create_stream_with_recipient()
@@ -949,8 +964,8 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(bot, recipient_stream2)
 
         # To be excluded
-        self.create_message(human2, recipient_human1)
-        self.create_message(bot, recipient_human1)
+        self.create_message(human2, recipient_human1_and_2)
+        self.create_message(bot, recipient_bot_and_human1)
         recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
         self.create_message(human1, recipient_direct_message_group)
 
@@ -1435,18 +1450,20 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         message = Message(
             sender=hamlet,
-            recipient=self.example_user("othello").recipient,
+            recipient=self.get_dm_group_recipient(hamlet, self.example_user("othello")),
             realm_id=hamlet.realm_id,
             content="This is test content",
             rendered_content="This is test content",
             date_sent=timezone_now(),
             sending_client=get_client("test"),
+            is_channel_message=False,
         )
         message.set_topic_name("Test topic")
         message.save()
-        gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        message_payload = get_message_payload(hamlet, message)
+        gcm_payload, gcm_options = get_message_payload_gcm(message_payload, hamlet, message)
         apns_payload = get_message_payload_apns(
-            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
+            message_payload, hamlet, message, NotificationTriggers.DIRECT_MESSAGE
         )
 
         # First we'll make a request without providing realm_uuid. That means
@@ -1465,8 +1482,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteServerBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):
@@ -1528,8 +1545,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteServerBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):
@@ -1590,8 +1607,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):
@@ -1688,7 +1705,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             do_invite_users(
                 user,
-                ["user1@domain.tld", "user2@domain.tld"],
+                [Invitee(email="user1@domain.tld"), Invitee(email="user2@domain.tld")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1700,7 +1717,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             do_invite_users(
                 user,
-                ["user1@domain.tld", "user2@domain.tld"],
+                [Invitee(email="user1@domain.tld"), Invitee(email="user2@domain.tld")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1711,7 +1728,10 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context(failure=True):
             do_invite_users(
                 user,
-                ["user3@domain.tld", "malformed"],
+                [
+                    Invitee(email="user3@domain.tld"),
+                    Invitee(email="malformed"),
+                ],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1722,7 +1742,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             skipped = do_invite_users(
                 user,
-                ["first@domain.tld", "user4@domain.tld"],
+                [Invitee(email="first@domain.tld"), Invitee(email="user4@domain.tld")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,

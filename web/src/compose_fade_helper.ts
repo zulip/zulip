@@ -47,5 +47,5 @@ export function want_normal_display(): boolean {
         }
     }
 
-    return focused_recipient.type === "private" && focused_recipient.reply_to === "";
+    return focused_recipient.type === "private" && !focused_recipient.to_user_ids;
 }

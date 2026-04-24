@@ -1,6 +1,6 @@
 user zulip;
 
-worker_processes auto;
+worker_processes <%= @worker_processes %>;
 pid /var/run/nginx.pid;
 include /etc/nginx/modules-enabled/*.conf;
 
@@ -24,7 +24,7 @@ http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
 
-    log_format combined_with_host_and_time '$remote_addr - $remote_user [$time_local] '
+    log_format combined_with_host_and_time '$trusted_remote_addr - $remote_user [$time_local] '
                                            '"$request" $status $body_bytes_sent '
                                            '"$http_referer" "$http_user_agent" $host $request_time';
     access_log /var/log/nginx/access.log combined_with_host_and_time;

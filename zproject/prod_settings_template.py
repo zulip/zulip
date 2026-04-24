@@ -86,6 +86,13 @@ EXTERNAL_HOST = "zulip.example.com"
 # EMAIL_USE_TLS = True
 # EMAIL_PORT = 587
 
+## By default, Zulip will open a new SMTP connection for each outgoing email.
+## This has a small overhead, though not one which is relevant in most installs,
+## which send very low volumes of email. You can set to a positive number to
+## reuse SMTP connections for that many minutes; set to None to leave connections
+## open indefinitely.
+# EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES = 0
+
 ## The noreply address to be used as the sender for certain generated
 ## emails.  Messages sent to this address could contain sensitive user
 ## data and should not be delivered anywhere.  The default is
@@ -159,6 +166,7 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     # "zproject.backends.ZulipLDAPAuthBackend",  # LDAP, setup below
     # "zproject.backends.ZulipRemoteUserBackend",  # Local SSO, setup docs on readthedocs
     # "zproject.backends.GenericOpenIdConnectBackend",  # Generic OIDC integration, setup below
+    # "zproject.backends.DiscordAuthBackend",  # Discord auth, setup below
 )
 
 ## LDAP integration.
@@ -167,7 +175,23 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
 ## optionally using LDAP as an authentication mechanism.
 
 import ldap
-from django_auth_ldap.config import GroupOfNamesType, LDAPGroupQuery, LDAPSearch  # noqa: F401
+from django_auth_ldap.config import (  # noqa: F401
+    ActiveDirectoryGroupType,
+    GroupOfNamesType,
+    GroupOfUniqueNamesType,
+    LDAPGroupQuery,
+    LDAPGroupType,
+    LDAPSearch,
+    LDAPSearchUnion,
+    MemberDNGroupType,
+    NestedActiveDirectoryGroupType,
+    NestedGroupOfNamesType,
+    NestedGroupOfUniqueNamesType,
+    NestedMemberDNGroupType,
+    NestedOrganizationalRoleGroupType,
+    OrganizationalRoleGroupType,
+    PosixGroupType,
+)
 
 ## Connecting to the LDAP server.
 ##
@@ -375,6 +399,20 @@ AUTH_LDAP_USER_ATTR_MAP = {
 # SOCIAL_AUTH_SUBDOMAIN = "auth"
 
 ########
+## Discord OAuth.
+## To set up Discord authentication, you'll need to do the following:
+## (1) Register a new application at the Discord Developer Portal:
+##     https://discord.com/developers/applications
+## (2) Navigate to the OAuth menu. Set the callback URI with value like:
+##      https://zulip.example.com/complete/discord/
+##     based on your value for EXTERNAL_HOST
+## (3) Note the Client ID and Secret for your new Discord application.
+##     Use the Client ID as `SOCIAL_AUTH_DISCORD_KEY` here, and
+##     put the Secret in zulip-secrets.conf as `social_auth_discord_secret`.
+#
+# SOCIAL_AUTH_DISCORD_KEY = "<your client ID from Discord>"
+
+########
 ## Generic OpenID Connect (OIDC).  See also documentation here:
 ##
 ##     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
@@ -397,12 +435,28 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, Any] = {
         ## reads the secret with the specified name from zulip-secrets.conf.
         "client_id": "<your client id>",
         "secret": get_secret("social_auth_oidc_secret"),
+        ## If you want this IdP to only be enabled for authentication
+        ## to certain subdomains, uncomment and edit the setting below.
+        # "limit_to_subdomains": ["subdomain1", "subdomain2"],
+        ##
         ## Determines whether "Log in with OIDC" will automatically
         ## register a new account if one does not already exist. By
         ## default, Zulip asks the user whether they want to create an
         ## account or try to log in again using another method.
         # "auto_signup": False,
-    }
+    },
+    ## Example: Microsoft Entra ID (AzureAD) OIDC configuration.
+    ## This is the recommended approach for Entra ID SSO on self-hosted servers.
+    ## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#microsoft-entra-id
+    ##
+    # "entra": {
+    #    "oidc_url": "https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0",
+    #    "display_name": "Microsoft",
+    #    "display_icon": "/static/images/authentication_backends/microsoft-icon.png",
+    #    "client_id": "YOUR_APPLICATION_ID",
+    #    "secret": get_secret("social_auth_oidc_secret"),
+    #    "auto_signup": True,
+    # },
 }
 
 ## For documentation on this setting, see the relevant part of
@@ -443,6 +497,10 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
         "attr_user_permanent_id": "email",
         "attr_first_name": "first_name",
         "attr_last_name": "last_name",
+        ## If your IdP doesn't split the name into the first and last name, and instead sends
+        ## the full name in a single attribute, you can remove the above attr_*_name lines
+        ## and instead configure attr_full_name below.
+        # "attr_full_name": "fullname",
         "attr_username": "email",
         "attr_email": "email",
         ## List of additional attributes to fetch from the SAMLResponse.
@@ -458,10 +516,12 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
         ## the login button.
         "display_name": "SAML",
         ##
-        ## Path to a square image file containing a logo to appear at
+        ## URL of a square image file containing a logo to appear at
         ## the left end of the login/register buttons for this IDP.
-        ## The default of None results in a text-only button.
-        # "display_icon": "/path/to/icon.png",
+        ## This can be a relative path, on the same host, most likely
+        ## under /static/ (stored in ~zulip/prod-static/). The default
+        ## of None results in a text-only button.
+        # "display_icon": "https://example.com/path/to/icon.png",
         ##
         ## If you want this IdP to only be enabled for authentication
         ## to certain subdomains, uncomment and edit the setting below.
@@ -545,13 +605,20 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # SOCIAL_AUTH_APPLE_KEY = "<your Key ID>"
 
 ########
-## Microsoft Entra ID (AzureAD) OAuth.
+## Microsoft Entra ID (AzureAD) OAuth (common tenant only).
+##
+## NOTE: For self-hosted servers that need to restrict authentication to a
+## specific Entra ID tenant, we recommend using the OIDC integration instead.
+## See the OpenID Connect section above.
+##
+## The backend below uses the Microsoft "common" tenant endpoint, which allows
+## any Microsoft account to authenticate rather than restricting logins to a
+## specific organization.
 ##
 ## To set up Microsoft Entra ID authentication, you'll need to do the following:
 ##
-## (1) Open "App registrations" at
-## https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
-## and click "New registration".
+## (1) Sign in to the Microsoft Entra admin center at https://entra.microsoft.com,
+## browse to "Entra ID > App registrations", and click "New registration".
 ##
 ## (2) In the "Redirect URI (optional)" section, select Web as the platform
 ## and enter https://zulip.example.com/complete/azuread-oauth2/ as the redirect URI,
@@ -609,7 +676,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
 # REMOTE_POSTGRES_HOST = "dbserver.example.com"
 # REMOTE_POSTGRES_PORT = "5432"
-# REMOTE_POSTGRES_SSLMODE = "require"
+# REMOTE_POSTGRES_SSLMODE = "verify-full"
 
 ########
 ## RabbitMQ configuration.
@@ -670,21 +737,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## can also be disabled in a realm's organization settings.
 # INLINE_URL_EMBED_PREVIEW = True
 
-########
-## Twitter previews.
-##
-## Zulip supports showing inline Tweet previews when a tweet is linked
-## to in a message.  To support this, Zulip must have access to the
-## Twitter API via OAuth.  To obtain the various access tokens needed
-## below, you must register a new application under your Twitter
-## account by doing the following:
-##
-## 1. Log in to http://dev.twitter.com.
-## 2. In the menu under your username, click My Applications. From this page, create a new application.
-## 3. Click on the application you created and click "create my access token".
-## 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
-##    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
-
 
 ################
 ## Logging and error reporting.
@@ -711,9 +763,11 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # LOGGING_SHOW_PID = False
 
 #################
-## Animated GIF integration powered by GIPHY.  See:
-## https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
+## GIF picker / search engine integrations. To get an API key, see:
+## https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html
 # GIPHY_API_KEY = "<Your API key from GIPHY>"
+# TENOR_API_KEY = "<Your API key from Tenor>"
+# KLIPY_API_KEY = "<Your API key from KLIPY>"
 
 ################
 ## Video call integrations.
@@ -722,6 +776,15 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
 # VIDEO_ZOOM_CLIENT_ID = "<your Zoom client ID>"
 # VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = "<your Zoom account ID>"
+## Set these if using a Zoom host that is not https://zoom.us.
+# VIDEO_ZOOM_OAUTH_URL = "https://zoom.example.com"
+# VIDEO_ZOOM_API_URL = "https://api.zoom.example.com"
+
+## Controls the Webex video call integration.  See:
+## https://zulip.readthedocs.io/en/latest/production/video-calls.html
+## You must also set video_webex_client_secret in
+## /etc/zulip/zulip-secrets.conf to enable Webex as a call provider.
+# VIDEO_WEBEX_CLIENT_ID = "<your Webex client ID>"
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify
@@ -732,6 +795,16 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Controls the BigBlueButton video call integration.  You must also
 ## set big_blue_button_secret in zulip-secrets.conf.
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
+
+## Controls the Constructor Groups video call integration. You must also
+## set constructor_groups_access_key and constructor_groups_secret_key in
+## zulip-secrets.conf.
+# CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
+
+## Controls the Nextcloud Talk video call integration. You must also
+## set nextcloud_talk_username and nextcloud_talk_password in
+## zulip-secrets.conf.
+# NEXTCLOUD_SERVER = "https://nextcloud.example.com"
 
 ################
 ## AI Features
@@ -789,8 +862,8 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 ## Password strength requirements; learn about configuration at
-## https://zulip.readthedocs.io/en/latest/production/security-model.html.
-# PASSWORD_MIN_LENGTH = 6
+## https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html.
+# PASSWORD_MIN_LENGTH = 8
 # PASSWORD_MAX_LENGTH = 100
 # PASSWORD_MIN_GUESSES = 10000
 

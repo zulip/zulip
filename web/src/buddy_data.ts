@@ -180,6 +180,11 @@ export function user_last_seen_time_status(
         return $t({defaultMessage: "Idle"});
     }
 
+    const user = people.get_by_user_id(user_id);
+    if (user.is_imported_stub) {
+        return $t({defaultMessage: "Imported account not activated"});
+    }
+
     const last_active_date = presence.last_active_date(user_id);
     if (last_active_date === undefined) {
         // There are situations where the client has incomplete presence
@@ -221,7 +226,6 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
     const is_dm = direct_message_recipients.has(user_id);
 
     const user_circle_class = get_user_circle_class(user_id, is_deactivated && is_dm);
-    const person = people.get_by_user_id(user_id);
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
     const status_text = user_status.get_status_text(user_id);
@@ -233,11 +237,11 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
     };
 
     return {
-        href: hash_util.pm_with_url(person.user_id.toString()),
-        name: person.full_name,
+        href: hash_util.pm_with_url(user_id.toString()),
+        name: people.get_full_name(user_id),
         user_id,
         status_emoji_info,
-        profile_picture: people.small_avatar_url_for_person(person),
+        profile_picture: people.small_avatar_url_for_user_id(user_id),
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,
@@ -256,7 +260,11 @@ export type TitleData = {
     is_deactivated?: boolean;
 };
 
-export function get_title_data(user_ids_string: string, is_group: boolean): TitleData {
+export function get_title_data(
+    user_ids_string: string,
+    is_group: boolean,
+    should_show_status: boolean,
+): TitleData {
     if (is_group) {
         // For groups, just return a string with recipient names.
         return {
@@ -317,7 +325,7 @@ export function get_title_data(user_ids_string: string, is_group: boolean): Titl
     if (user_status.get_status_text(user_id)) {
         return {
             first_line: person.full_name,
-            second_line: user_status.get_status_text(user_id),
+            second_line: should_show_status ? user_status.get_status_text(user_id) : "",
             third_line: last_seen,
             show_you: is_my_user,
         };
@@ -396,6 +404,12 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             return false;
         }
 
+        if (person.is_deleted) {
+            // Deleted users are not real users and should not appear in
+            // the right sidebar.
+            return false;
+        }
+
         if (person.is_bot) {
             // Bots should never appear in the right sidebar.  This
             // case should never happen, since bots cannot have
@@ -459,8 +473,12 @@ function get_filtered_user_id_list(
         // enough subscribers in the channel.
         const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         if (stream_id) {
-            const subscribers = peer_data.get_subscriber_ids_assert_loaded(stream_id);
-            if (subscribers.length <= max_channel_size_to_show_all_subscribers) {
+            const subscriber_count = peer_data.get_subscriber_count(stream_id);
+            if (subscriber_count <= max_channel_size_to_show_all_subscribers) {
+                // We can know these are all loaded because we fetch all subscribers
+                // for small channels, and max_channel_size_to_show_all_subscribers
+                // is less than MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE.
+                const subscribers = peer_data.get_subscriber_ids_assert_loaded(stream_id);
                 const base_user_id_set = new Set([...base_user_id_list, ...subscribers]);
                 base_user_id_list = [...base_user_id_set];
             }

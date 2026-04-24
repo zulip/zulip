@@ -17,7 +17,7 @@ from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import NamedUserGroup, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
-from zerver.models.users import active_non_guest_user_ids
+from zerver.models.users import active_non_guest_user_ids, active_user_ids
 
 
 class AccessStreamTest(ZulipTestCase):
@@ -445,8 +445,21 @@ class AccessStreamTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         realm = aaron.realm
         public_stream = self.make_stream("public_stream", realm, invite_only=False)
+        web_public_stream = self.make_stream("web_public_stream", realm, is_web_public=True)
         nobody_system_group = NamedUserGroup.objects.get(
             name="role:nobody", realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Web public stream with no subscribers.
+        expected_web_public_user_ids = active_user_ids(realm.id)
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(web_public_stream), expected_web_public_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [web_public_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[web_public_stream.id], expected_web_public_user_ids
         )
 
         # Public stream with no subscribers.
@@ -495,7 +508,9 @@ class AccessStreamTest(ZulipTestCase):
         )
 
         # Bot with admin privileges should also be part of the result.
-        do_change_user_role(test_bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=desdemona)
+        do_change_user_role(
+            test_bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=desdemona, notify=False
+        )
         expected_private_user_ids.add(test_bot.id)
         self.assertCountEqual(
             can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids

@@ -27,6 +27,6 @@ multiple-organizations
 email-gateway
 video-calls
 ai-integrations
-giphy-gif-integration
+gif-picker-integrations
 scim
 ```

@@ -23,6 +23,7 @@ import {realm} from "./state_data.ts";
 import {get_recipient_bar_color} from "./stream_color.ts";
 import {get_color} from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
+import * as submessage from "./submessage.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
@@ -297,6 +298,23 @@ export function fetch_and_render_message_history(message: Message): void {
                 .each(function () {
                     rendered_markdown.update_elements($(this));
                 });
+
+            // When an image is deleted before thumbnailing is completed, we can
+            // end up with the loading spinner HTML syntax stuck in message edit
+            // history indefinitely. Mask this by replacing thumbnailing loading
+            // spinners in edit history with the deleted image placeholder.
+            $("#message-history-overlay")
+                .find("img.image-loading-placeholder")
+                .each(function () {
+                    const $img = $(this);
+                    $img.attr("src", "/static/images/errors/image-not-exist.png");
+                    $img.attr(
+                        "alt",
+                        $t({defaultMessage: "This file does not exist or has been deleted."}),
+                    );
+                    $img.removeClass("image-loading-placeholder");
+                });
+
             const first_element_id = content_edit_history[0]!.timestamp;
             messages_overlay_ui.set_initial_element(
                 String(first_element_id),
@@ -334,27 +352,35 @@ export function handle_keyboard_events(event_key: string): void {
 }
 
 export function initialize(): void {
-    $("body").on("mouseenter", ".message_edit_notice, .edit-notifications", (e) => {
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            $(e.currentTarget).addClass("message_edit_notice_hover");
-        }
-    });
+    $("body").on(
+        "mouseenter",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
+        (e) => {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                $(e.currentTarget).addClass("message_edit_notice_hover");
+            }
+        },
+    );
 
-    $("body").on("mouseleave", ".message_edit_notice, .edit-notifications", (e) => {
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            $(e.currentTarget).removeClass("message_edit_notice_hover");
-        }
-    });
+    $("body").on(
+        "mouseleave",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
+        (e) => {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                $(e.currentTarget).removeClass("message_edit_notice_hover");
+            }
+        },
+    );
 
     $("body").on(
         "click",
-        ".message_edit_notice, .edit-notifications",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
         function (this: HTMLElement, e) {
             e.stopPropagation();
             e.preventDefault();
@@ -368,6 +394,18 @@ export function initialize(): void {
 
             if (page_params.is_spectator) {
                 spectators.login_to_access();
+                return;
+            }
+
+            // Poll messages can show an EDITED marker for widget edits
+            // (question changes, new options) that have no server-side
+            // edit history. Skip the overlay when the message has no
+            // text edits or moves to display.
+            if (
+                submessage.is_poll_message(message) &&
+                message.last_edit_timestamp === undefined &&
+                message.last_moved_timestamp === undefined
+            ) {
                 return;
             }
 
@@ -391,4 +429,8 @@ export function initialize(): void {
             messages_overlay_ui.activate_element(this, keyboard_handling_context);
         },
     );
+
+    $("body").on("click", "#message-history-overlay .message_edit_history_content", (e) => {
+        messages_overlay_ui.handle_overlay_media_click(e, "message_edit_history");
+    });
 }

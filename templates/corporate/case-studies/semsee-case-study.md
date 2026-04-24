@@ -11,8 +11,8 @@ that we are remote, it’s good to have a communication tool that really backs
 that up.”
 
 
-> “Now that we are remote, it’s good to have a communication tool that really
-> backs that up.”
+> Now that we are remote, it’s good to have a communication tool that really
+> backs that up.
 >
 > — James van Lommel, Director of Engineering at [Semsee](https://semsee.com/)
 
@@ -30,8 +30,8 @@ better,” he recalls. “If you are not using Slack *all the time*, you can’t
 up with what’s happening.” James wanted a chat tool that would create breathing
 room for focused work, in-person conversations, and different work schedules.
 
-> “Seeing how Slack gets used, especially as a company grows larger, I knew I
-> wanted something better.”
+> Seeing how Slack gets used, especially as a company grows larger, I knew I
+> wanted something better.
 >
 > — James van Lommel, Director of Engineering at [Semsee](https://semsee.com/)
 
@@ -74,8 +74,8 @@ few users from an extensive Slack background have told me: ‘Zulip is just
 better.’"
 
 
-> “I don’t like going back to Slack now. It’s just not as efficient a way to
-> organize communication.”
+> I don’t like going back to Slack now. It’s just not as efficient a way to
+> organize communication.
 >
 > — James van Lommel, Director of Engineering at [Semsee](https://semsee.com/)
 

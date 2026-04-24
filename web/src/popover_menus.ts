@@ -3,9 +3,11 @@
    popovers system in popovers.js. */
 
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
@@ -24,6 +26,7 @@ type PopoverName =
     | "message_actions"
     | "stream_card_popover"
     | "stream_settings"
+    | "scroll_to_time"
     | "topics_menu"
     | "send_later"
     | "change_visibility_policy"
@@ -33,7 +36,9 @@ type PopoverName =
     | "buddy_list"
     | "stream_actions_popover"
     | "color_picker_popover"
-    | "show_channels_sidebar"
+    | "show_folders_sidebar"
+    | "show_folders_inbox"
+    | "folder_actions"
     | "send_later_options";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
@@ -47,6 +52,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     message_actions: null,
     stream_card_popover: null,
     stream_settings: null,
+    scroll_to_time: null,
     topics_menu: null,
     send_later: null,
     change_visibility_policy: null,
@@ -56,13 +62,16 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     buddy_list: null,
     stream_actions_popover: null,
     color_picker_popover: null,
-    show_channels_sidebar: null,
+    show_folders_sidebar: null,
+    show_folders_inbox: null,
+    folder_actions: null,
     send_later_options: null,
 };
 
 // Font size in em for popover derived from popover font size being
 // 15px at base font size of 14px.
 export const POPOVER_FONT_SIZE_IN_EM = 1.0714;
+export const NAVBAR_POPOVER_OFFSET: [number, number] = [0, 7];
 
 /* Keyboard UI functions */
 export function popover_items_handle_keyboard(key: string, $items?: JQuery): void {
@@ -81,17 +90,39 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
         return;
     }
 
+    // If the focused item doesn't have a visible focus ring (e.g., it was
+    // focused programmatically when the popover opened via mouse click rather
+    // than keyboard navigation), treat the navigation position as unset so
+    // that the first arrow key press shows the focus ring on item 1 rather
+    // than skipping to item 2. We blur first because calling .focus() on an
+    // already-focused element is a no-op and won't trigger :focus-visible.
+    const focused_item_has_focus_ring =
+        index !== -1 && document.activeElement?.matches(":focus-visible") === true;
+    if (
+        !focused_item_has_focus_ring &&
+        index !== -1 &&
+        document.activeElement instanceof HTMLElement
+    ) {
+        document.activeElement.blur();
+    }
+    const nav_index = focused_item_has_focus_ring ? index : -1;
+
     if (key === "down_arrow" || key === "vim_down") {
         [...$items]
-            .slice(index === -1 ? 0 : index + 1)
+            .slice(nav_index === -1 ? 0 : nav_index + 1)
             .find((item) => item.getClientRects().length)
             ?.focus();
     } else if (key === "up_arrow" || key === "vim_up") {
         [...$items]
-            .slice(0, index === -1 ? $items.length : index)
+            .slice(0, nav_index === -1 ? $items.length : nav_index)
             .findLast((item) => item.getClientRects().length)
             ?.focus();
     }
+}
+
+export function focus_popover(instance: tippy.Instance): void {
+    const $items = get_popover_items_for_instance(instance);
+    focus_first_popover_item($items);
 }
 
 export function focus_first_popover_item($items: JQuery | undefined, index = 0): void {
@@ -217,16 +248,14 @@ export const default_popover_props: Partial<tippy.Props> = {
                 fn({state}) {
                     // Since the reference element can be removed from DOM, we rely on popper
                     // here to access the tippy instance which is reliable.
-                    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                    const instance = (state.elements.popper as tippy.PopperElement)._tippy!;
-                    const $popover = $(state.elements.popper);
+                    assert(state.elements.popper instanceof HTMLDivElement);
+                    const popper: tippy.PopperElement = state.elements.popper;
+                    const instance = popper._tippy;
+                    assert(instance !== undefined);
+                    const $popover = $(popper);
                     const $tippy_box = $popover.find(".tippy-box");
-                    // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
-                    // but linter wants us to write it like this.
-                    const is_reference_outside_window = Object.hasOwn(
-                        util.the($tippy_box).dataset,
-                        "referenceHidden",
-                    );
+                    const is_reference_outside_window =
+                        $tippy_box.attr("data-reference-hidden") !== undefined;
 
                     if ($tippy_box.hasClass("show-when-reference-hidden")) {
                         // Show user card popover as an overlay if we are not sure about position of the
@@ -407,16 +436,22 @@ function get_props_for_popover_centering(
     };
 }
 
+// Returns the element to focus when a keyboard-opened popover closes,
+// given the popover's reference element. Return undefined to fall back
+// to focusing the reference itself.
+export type GetFocusReturnElement = (reference: HTMLElement) => HTMLElement | undefined;
+
 // Toggles a popover menu directly; intended for use in keyboard
 // shortcuts and similar alternative ways to open a popover menu.
 export function toggle_popover_menu(
     target: tippy.ReferenceElement,
     popover_props: Partial<tippy.Props>,
     options?: {
-        show_as_overlay_on_mobile: boolean;
-        show_as_overlay_always: boolean;
+        show_as_overlay_on_mobile?: boolean;
+        show_as_overlay_always?: boolean;
         // Only works for elements which are in message feed.
         message_feed_overlay_detection?: boolean;
+        get_focus_return_element?: GetFocusReturnElement;
     },
 ): tippy.Instance {
     const instance = target._tippy;
@@ -469,17 +504,58 @@ export function toggle_popover_menu(
         ];
     }
 
-    return tippy.default(target, {
+    const props = {
         ...default_popover_props,
         showOnCreate: true,
         ...popover_props,
         ...mobile_popover_props,
-    });
+    };
+
+    // If the popover was opened via keyboard, restore focus to
+    // the appropriate element when the popover closes (e.g., on Escape).
+    // We check the active element rather than the target, since for some
+    // popovers (e.g., buddy list) the reference element is a parent
+    // container rather than the focused icon itself.
+    const opened_via_keyboard = document.activeElement?.matches(":focus-visible") === true;
+    if (opened_via_keyboard) {
+        const on_hidden = props.onHidden;
+        props.onHidden = (instance: tippy.Instance) => {
+            if (on_hidden) {
+                on_hidden.call(props, instance);
+            }
+            // Only restore focus if nothing else has claimed it. When a menu
+            // item opens a modal or otherwise moves focus itself, we shouldn't
+            // stomp over that — and focusing a tooltipped reference here
+            // would cause its tooltip to pop open unexpectedly.
+            if (document.activeElement !== document.body) {
+                return;
+            }
+            if (instance.reference instanceof HTMLElement) {
+                const focus_target =
+                    options?.get_focus_return_element?.(instance.reference) ?? instance.reference;
+                focus_target.focus();
+            }
+        };
+    }
+
+    return tippy.default(target, props);
 }
+
+export type RegisterOptions = {
+    // Also open the popover when the target is focused and Enter is
+    // pressed. Use this for targets that are reachable via keyboard
+    // navigation.
+    also_trigger_on_enter?: boolean;
+    get_focus_return_element?: GetFocusReturnElement;
+};
 
 // Main function to define a popover menu, opened via clicking on the
 // target selector.
-export function register_popover_menu(target: string, popover_props: Partial<tippy.Props>): void {
+export function register_popover_menu(
+    target: string,
+    popover_props: Partial<tippy.Props>,
+    options: RegisterOptions = {},
+): void {
     // For some elements, such as the click target to open the message
     // actions menu, we want to avoid propagating the click event to
     // parent elements. Tippy's built-in `delegate` method does not
@@ -495,15 +571,32 @@ export function register_popover_menu(target: string, popover_props: Partial<tip
     $("body").on("click", target, function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
+        toggle_popover(this, popover_props, options);
+    });
 
-        // Hide popovers when user clicks on an element which navigates user to a link.
-        // We don't explicitly handle these clicks per element and let browser handle them but in doing so,
-        // we are not able to hide the popover which we would do otherwise.
-        const instance = toggle_popover_menu(this, popover_props);
-        const $popper = $(instance.popper);
-        $popper.on("click", "a[href]", () => {
-            hide_current_popover_if_visible(instance);
+    if (options.also_trigger_on_enter) {
+        $("body").on("keydown", target, function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggle_popover(this, popover_props, options);
+            }
         });
+    }
+}
+
+function toggle_popover(
+    element: HTMLElement,
+    popover_props: Partial<tippy.Props>,
+    options: RegisterOptions,
+): void {
+    const instance = toggle_popover_menu(element, popover_props, options);
+    // Hide popovers when user clicks on an element which navigates user to a link.
+    // We don't explicitly handle these clicks per element and let browser handle them but in doing so,
+    // we are not able to hide the popover which we would do otherwise.
+    const $popper = $(instance.popper);
+    $popper.on("click", "a[href]", () => {
+        hide_current_popover_if_visible(instance);
     });
 }
 

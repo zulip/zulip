@@ -3,7 +3,7 @@
 ## Community
 
 In addition to the topic [#translation > French translations][]
-in the main "#translation" stream, there is a dedicated stream
+in the main "#translation" channel, there is a dedicated channel
 [#translation/fr][] for discussing the French translations.
 Please join there too and say hello.
 
@@ -12,27 +12,17 @@ Please join there too and say hello.
 
 ## Rules
 
-- Use of _vous_ instead of _tu_,
-- A space before and after a colon and a semi-colon and a space after a dot and a comma,
-- Follow english capitalization,
+- Use of _vous_ instead of _tu_;
+- A non-breaking space before a colon and a semi-colon;
+- A space after a colon, a semi-colon, a dot and a comma;
+- Follow English capitalization;
 - Prefer the infinitive form of a verb: _Save_ into _Sauver_ (instead of _Sauvez_).
 
 Some translations can be tricky, so please don't hesitate to ask the community or contribute to this guide.
 
 ## Terms
 
-- stream - **canal**
-- topic - **sujet**
-- edit - **modifier**
-- email - **courriel**
-- upload - **envoyer**
-- bot - **robot**
-- alert word - **mot alerte**
-- emoji - **emoji**
-- subscription - **abonnement**
-- mute - **rendre muet**/**muet**
-- home - **accueil**
-- narrow - **restreindre**
-- pin - **épingler**
-- star - **favori**/**mettre en favori**
-- organization - **organisation**
+Please refer to the [Weblate
+glossary](https://hosted.weblate.org/projects/zulip/glossary/fr/) for
+recommended translations. If some important word is missing from the
+glossary, please ask in [#translation/fr][].

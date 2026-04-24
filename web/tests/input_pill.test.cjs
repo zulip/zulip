@@ -54,9 +54,9 @@ run_test("basics", ({mock_template}) => {
     let inserted_before;
     const expected_html = pill_html("JavaScript");
 
-    $pill_input.before = ($elem) => {
+    $pill_input[0].before = (element) => {
         inserted_before = true;
-        assert.equal($elem.html(), expected_html);
+        assert.equal(element.innerHTML, expected_html);
     };
 
     widget.appendValidatedData(item);
@@ -88,10 +88,7 @@ function set_up() {
     };
 
     const $pill_input = $.create("pill_input");
-
-    $pill_input[0] = {};
-    $pill_input.length = 1;
-    $pill_input.before = noop;
+    $pill_input[0].before = noop;
 
     const create_item_from_text = (text) => items[text];
 
@@ -116,8 +113,6 @@ function set_up() {
 run_test("copy from pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.ok(["BLUE", "RED"].includes(data.display_value));
-        $(html)[0] = `<pill-stub ${data.display_value}>`;
-        $(html).length = 1;
         return html;
     });
 
@@ -132,7 +127,7 @@ run_test("copy from pill", ({mock_template}) => {
 
     let copied_text;
 
-    const $pill_stub = "<pill-stub RED>";
+    const pill_stub = $(pill_html("RED"))[0];
 
     const originalEvent = new ClipboardEvent();
     originalEvent.clipboardData = {
@@ -146,7 +141,7 @@ run_test("copy from pill", ({mock_template}) => {
         preventDefault: noop,
     };
 
-    copy_handler.call($pill_stub, e);
+    copy_handler.call(pill_stub, e);
 
     assert.equal(copied_text, "RED");
 });
@@ -213,25 +208,11 @@ run_test("arrows on pills", ({mock_template}) => {
         });
     }
 
-    let prev_focused = false;
-    let next_focused = false;
-
-    const $pill_stub = {
-        prev: () => ({
-            trigger(type) {
-                if (type === "focus") {
-                    prev_focused = true;
-                }
-            },
-        }),
-        next: () => ({
-            trigger(type) {
-                if (type === "focus") {
-                    next_focused = true;
-                }
-            },
-        }),
-    };
+    const $prev_pill_stub = $.create("prev-pill-stub");
+    const $next_pill_stub = $.create("next-pill-stub");
+    const $pill_stub = $.create("pill-stub");
+    $pill_stub.set_prev($prev_pill_stub);
+    $pill_stub.set_next($next_pill_stub);
 
     $container.set_find_results(".pill:focus", $pill_stub);
 
@@ -239,10 +220,10 @@ run_test("arrows on pills", ({mock_template}) => {
     // actually cause any real state changes here.  We stub out
     // the only interaction, which is to move the focus.
     test_key("ArrowLeft");
-    assert.ok(prev_focused);
+    assert.ok($prev_pill_stub.is(":focus"));
 
     test_key("ArrowRight");
-    assert.ok(next_focused);
+    assert.ok($next_pill_stub.is(":focus"));
 });
 
 run_test("left arrow on input", ({mock_template}) => {
@@ -260,23 +241,14 @@ run_test("left arrow on input", ({mock_template}) => {
 
     const key_handler = $container.get_on_handler("keydown", ".input");
 
-    let last_pill_focused = false;
-
-    $container.set_find_results(".pill", {
-        last: () => ({
-            trigger(type) {
-                if (type === "focus") {
-                    last_pill_focused = true;
-                }
-            },
-        }),
-    });
+    const $pill_stub = $.create("pill-stub");
+    $container.set_find_results(".pill", $pill_stub);
 
     key_handler({
         key: "ArrowLeft",
     });
 
-    assert.ok(last_pill_focused);
+    assert.ok($pill_stub.is(":focus"));
 });
 
 run_test("comma", ({mock_template}) => {
@@ -353,8 +325,6 @@ run_test("insert_remove", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
-        $(html).length = 1;
-        $(html)[0] = `<pill-stub ${data.display_value}>`;
         return html;
     });
 
@@ -366,8 +336,8 @@ run_test("insert_remove", ({mock_template}) => {
     const $container = info.$container;
 
     const inserted_html = [];
-    $pill_input.before = ($elem) => {
-        inserted_html.push($elem.html());
+    $pill_input[0].before = (element) => {
+        inserted_html.push(element.innerHTML);
     };
 
     const widget = input_pill.create(config);
@@ -408,16 +378,15 @@ run_test("insert_remove", ({mock_template}) => {
 
     let color_focused;
     function handle_event(color) {
-        return (event) => {
-            assert.equal(event, "focus");
+        return () => {
             color_focused = color;
         };
     }
 
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
-        pill.$element.remove = set_colored_removed_func(pill.item.color_name);
-        pill.$element.trigger = handle_event(pill.item.color_name);
+        pill.$element[0].remove = set_colored_removed_func(pill.item.color_name);
+        pill.$element.on("focus", handle_event(pill.item.color_name));
     }
 
     let key_handler = $container.get_on_handler("keydown", ".input");
@@ -438,15 +407,9 @@ run_test("insert_remove", ({mock_template}) => {
     const yellow_pill = pills.find((pill) => pill.item.color_name === "YELLOW");
     $container.set_find_results(".pill:focus", yellow_pill.$element);
 
-    let prev_pill_focused = false;
     const $prev_pill_stub = $("<prev-stub>");
-    $prev_pill_stub.trigger = (type) => {
-        if (type === "focus") {
-            prev_pill_focused = true;
-        }
-    };
-    yellow_pill.$element.prev = () => $prev_pill_stub;
-    yellow_pill.$element.next = () => $("<next-stub>");
+    yellow_pill.$element.set_prev($prev_pill_stub);
+    yellow_pill.$element.set_next($("<next-stub>"));
 
     key_handler = $container.get_on_handler("keydown", ".pill");
     key_handler.call(
@@ -458,18 +421,15 @@ run_test("insert_remove", ({mock_template}) => {
     );
     assert.ok(removed);
     assert.equal(color_removed, "YELLOW");
-    assert.ok(prev_pill_focused);
+    assert.ok($prev_pill_stub.is(":focus"));
     color_removed = undefined;
 
-    prev_pill_focused = false;
+    $prev_pill_stub.trigger("blur");
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    const $focus_pill_stub = {
-        prev: () => $prev_pill_stub,
-        next: () => $("<next-stub>"),
-        [0]: "<pill-stub RED>",
-        length: 1,
-    };
+    const $focus_pill_stub = $(pill_html("RED"));
+    $focus_pill_stub.set_prev($prev_pill_stub);
+    $focus_pill_stub.set_next($("<next-stub>"));
 
     $container.set_find_results(".pill:focus", $focus_pill_stub);
 
@@ -484,12 +444,12 @@ run_test("insert_remove", ({mock_template}) => {
     });
 
     assert.equal(color_removed, undefined);
-    assert.ok(prev_pill_focused);
+    assert.ok($prev_pill_stub.is(":focus"));
 
     // We should be able to remove the pill after marking it as not
     // disabled.
     red_pill.disabled = false;
-    prev_pill_focused = false;
+    $prev_pill_stub.trigger("blur");
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     key_handler({
@@ -497,18 +457,15 @@ run_test("insert_remove", ({mock_template}) => {
         preventDefault: noop,
     });
     assert.equal(color_removed, "RED");
-    assert.ok(prev_pill_focused);
+    assert.ok($prev_pill_stub.is(":focus"));
 });
 
 run_test("exit button on pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
-        $(html)[0] = `<pill-stub ${data.display_value}>`;
-        $(html).length = 1;
         return html;
     });
-    $(".narrow_to_compose_recipients").toggleClass = noop;
 
     const info = set_up();
 
@@ -522,11 +479,11 @@ run_test("exit button on pill", ({mock_template}) => {
 
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
-        pill.$element.remove = noop;
+        pill.$element[0].remove = noop;
     }
 
     const $curr_pill_stub = {
-        [0]: "<pill-stub BLUE>",
+        [0]: $(pill_html("BLUE"))[0],
         length: 1,
     };
 
@@ -578,10 +535,7 @@ run_test("misc things", () => {
 
     const $stub = $.create("the-pill-container");
     $stub.set_find_results(".input", $pill_input);
-    $stub.is = (sel) => {
-        assert.equal(sel, ".pill-container");
-        return true;
-    };
+    $stub.set_matches(".pill-container", true);
 
     const this_ = {
         to_$: () => $stub,
@@ -608,9 +562,7 @@ run_test("appendValue/clear", ({mock_template}) => {
         get_display_value_from_item: (s) => s.color_name,
     };
 
-    $pill_input.before = noop;
-    $pill_input[0] = {};
-    $pill_input.length = 1;
+    $pill_input[0].before = noop;
 
     const widget = input_pill.create(config);
 
@@ -625,7 +577,7 @@ run_test("appendValue/clear", ({mock_template}) => {
 
     const removed_colors = [];
     for (const pill of pills) {
-        pill.$element.remove = () => {
+        pill.$element[0].remove = () => {
             removed_colors.push(pill.item.color_name);
         };
     }
@@ -697,4 +649,92 @@ run_test("onTextInputHook", () => {
     input_handler();
 
     assert.ok(hookCalled);
+});
+
+run_test("getPillByPredicate", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        return html;
+    });
+
+    const info = set_up();
+
+    const widget = input_pill.create(info.config);
+    widget.appendValue("blue,red,yellow");
+
+    // Test finding pill by color name
+    const found_blue_pill = widget.getPillByPredicate((item) => item.color_name === "BLUE");
+    assert.ok(found_blue_pill);
+    assert.equal(found_blue_pill.item.color_name, "BLUE");
+    assert.equal(found_blue_pill.item.description, "color of the sky");
+
+    const found_red_pill = widget.getPillByPredicate((item) => item.color_name === "RED");
+    assert.ok(found_red_pill);
+    assert.equal(found_red_pill.item.color_name, "RED");
+    assert.equal(found_red_pill.item.description, "color of stop signs");
+
+    // Test with non-existent item returns undefined
+    const nonexistent_pill = widget.getPillByPredicate((item) => item.color_name === "GREEN");
+    assert.equal(nonexistent_pill, undefined);
+
+    // Test finding pill by different property (description)
+    const found_by_description = widget.getPillByPredicate(
+        (item) => item.description === "color of the sky",
+    );
+    assert.ok(found_by_description);
+    assert.equal(found_by_description.item.color_name, "BLUE");
+});
+
+run_test("updatePill", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        return html;
+    });
+
+    const info = set_up();
+
+    const widget = input_pill.create(info.config);
+    widget.appendValue("blue,red");
+
+    const pills = widget._get_pills_for_testing();
+    assert.equal(pills.length, 2);
+
+    const blue_pill = pills[0];
+    assert.equal(blue_pill.item.color_name, "BLUE");
+    assert.equal(blue_pill.item.description, "color of the sky");
+
+    // Update the blue pill with new data
+    const updated_blue_data = {
+        color_name: "DARK BLUE",
+        description: "color of the deep ocean",
+        type: "color",
+    };
+
+    let element_replaced = false;
+    blue_pill.$element[0].replaceWith = (new_element) => {
+        element_replaced = true;
+        assert.equal(new_element.innerHTML, pill_html("DARK BLUE"));
+    };
+
+    widget.updatePill(blue_pill.$element[0], updated_blue_data);
+
+    // Verify the pill element was replaced with new HTML
+    assert.ok(element_replaced);
+    // Verify that pill.$element was updated by updatePill
+    assert.equal(blue_pill.$element.html(), pill_html("DARK BLUE"));
+    // Verify the pill's internal data was updated
+    assert.equal(blue_pill.item.color_name, "DARK BLUE");
+    assert.equal(blue_pill.item.description, "color of the deep ocean");
+
+    // Verify other pill is unchanged
+    const red_pill = pills[1];
+    assert.equal(red_pill.item.color_name, "RED");
+    assert.equal(red_pill.item.description, "color of stop signs");
+
+    // Test updating non-existent pill element - should be a no-op
+    const fake_element = {};
+    widget.updatePill(fake_element, updated_blue_data);
+    // Blue pill data should remain unchanged
+    assert.equal(blue_pill.item.color_name, "DARK BLUE");
+    assert.equal(blue_pill.item.description, "color of the deep ocean");
 });

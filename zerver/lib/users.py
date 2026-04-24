@@ -28,6 +28,7 @@ from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
+    DirectMessageGroup,
     Message,
     Realm,
     Recipient,
@@ -120,14 +121,26 @@ def check_short_name(short_name_raw: str) -> str:
     return short_name
 
 
+def validate_short_name_and_construct_bot_email(
+    short_name_raw: str, realm: Realm
+) -> tuple[str, str]:
+    short_name = check_short_name(short_name_raw)
+    short_name_for_email = short_name + "-bot"
+    try:
+        email = Address(username=short_name_for_email, domain=realm.get_bot_domain()).addr_spec
+    except ValueError:
+        raise JsonableError(_("Bad name or username"))
+    return short_name, email
+
+
 def check_valid_bot_config(
     bot_type: int, service_name: str, config_data: Mapping[str, str]
 ) -> None:
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
-        from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+        from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 
         config_options = None
-        for integration in WEBHOOK_INTEGRATIONS:
+        for integration in INCOMING_WEBHOOK_INTEGRATIONS:
             if integration.name == service_name:
                 # key: validator
                 config_options = {
@@ -243,11 +256,13 @@ def bulk_get_cross_realm_bots() -> dict[str, UserProfile]:
 
 
 def user_ids_to_users(
-    user_ids: Sequence[int], realm: Realm, *, allow_deactivated: bool
+    user_ids: Sequence[int], realm: Realm, *, allow_deactivated: bool, allow_bots: bool
 ) -> list[UserProfile]:
     user_query = UserProfile.objects.filter(id__in=user_ids, realm=realm)
     if not allow_deactivated:
         user_query = user_query.filter(is_active=True)
+    if not allow_bots:
+        user_query = user_query.exclude(is_bot=True)
 
     user_profiles = list(user_query.select_related("realm"))
 
@@ -310,7 +325,7 @@ def access_user_by_id(
     target_user_id: int,
     *,
     allow_deactivated: bool = False,
-    allow_bots: bool = False,
+    allow_bots: bool,
     for_admin: bool,
 ) -> UserProfile:
     """Master function for accessing another user by ID in API code;
@@ -331,7 +346,7 @@ def access_user_by_id_including_cross_realm(
     target_user_id: int,
     *,
     allow_deactivated: bool = False,
-    allow_bots: bool = False,
+    allow_bots: bool,
     for_admin: bool,
 ) -> UserProfile:
     """Variant of access_user_by_id allowing cross-realm bots to be accessed."""
@@ -512,7 +527,7 @@ def validate_user_custom_profile_field(
     if field_type in validators:
         validator = validators[field_type]
         return validator(var_name, value)
-    elif field_type == CustomProfileField.SELECT:
+    elif field_type == CustomProfileField.DROPDOWN:
         choice_field_validator = CustomProfileField.SELECT_FIELD_VALIDATORS[field_type]
         field_data = field.field_data
         # Put an assertion so that mypy doesn't complain.
@@ -583,6 +598,8 @@ class APIUserDict(TypedDict):
     profile_data: NotRequired[dict[str, Any] | None]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
+    is_imported_stub: bool
+    is_deleted: NotRequired[bool]
 
 
 def format_user_row(
@@ -627,7 +644,11 @@ def format_user_row(
         if acting_user is None
         else row["date_joined"].isoformat(timespec="minutes"),
         delivery_email=delivery_email,
+        is_imported_stub=row["is_imported_stub"],
     )
+
+    if row["is_deleted"]:
+        result["is_deleted"] = True
 
     if acting_user is None:
         # Remove data about other users which are not useful to spectators
@@ -684,11 +705,19 @@ def all_users_accessible_by_everyone_in_realm(realm: Realm) -> bool:
     return False
 
 
-def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
+def user_access_restricted_in_realm(
+    target_user: UserProfile,
+    # Pass `realm` to avoid a DB query when `target_user.realm` isn't already
+    # loaded but the caller has realm available from another source.
+    realm: Realm | None = None,
+) -> bool:
     if target_user.is_bot:
         return False
 
-    if all_users_accessible_by_everyone_in_realm(target_user.realm):
+    if realm is None:
+        realm = target_user.realm
+
+    if all_users_accessible_by_everyone_in_realm(realm):
         return False
 
     return True
@@ -715,9 +744,13 @@ def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
 
 
 def check_can_access_user(
-    target_user: UserProfile, user_profile: UserProfile | None = None
+    target_user: UserProfile,
+    user_profile: UserProfile | None = None,
+    # Pass `realm` to avoid a DB query when `target_user.realm` isn't already
+    # loaded but the caller has realm available from another source.
+    realm: Realm | None = None,
 ) -> bool:
-    if not user_access_restricted_in_realm(target_user):
+    if not user_access_restricted_in_realm(target_user, realm):
         return True
 
     if check_user_can_access_all_users(user_profile):
@@ -735,28 +768,12 @@ def check_can_access_user(
         recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values_list("recipient_id", flat=True)
 
-    if Subscription.objects.filter(
+    return Subscription.objects.filter(
         recipient_id__in=subscribed_recipient_ids,
         user_profile=target_user,
         active=True,
         is_user_active=True,
-    ).exists():
-        return True
-
-    assert user_profile.recipient_id is not None
-    assert target_user.recipient_id is not None
-
-    # Querying the "Message" table is expensive so we do this last.
-    direct_message_query = Message.objects.filter(
-        recipient__type=Recipient.PERSONAL, realm=target_user.realm
-    )
-    if direct_message_query.filter(
-        Q(sender_id=target_user.id, recipient_id=user_profile.recipient_id)
-        | Q(recipient_id=target_user.recipient_id, sender_id=user_profile.id)
-    ).exists():
-        return True
-
-    return False
+    ).exists()
 
 
 def get_inaccessible_user_ids(
@@ -793,30 +810,7 @@ def get_inaccessible_user_ids(
     )
 
     possible_inaccessible_user_ids = set(target_human_user_ids) - set(common_subscription_user_ids)
-    if not possible_inaccessible_user_ids:
-        return set()
-
-    target_user_recipient_ids = UserProfile.objects.filter(
-        id__in=possible_inaccessible_user_ids
-    ).values_list("recipient_id", flat=True)
-
-    direct_message_query = Message.objects.filter(
-        recipient__type=Recipient.PERSONAL, realm=acting_user.realm
-    )
-    direct_messages_users = direct_message_query.filter(
-        Q(sender_id__in=possible_inaccessible_user_ids, recipient_id=acting_user.recipient_id)
-        | Q(recipient_id__in=target_user_recipient_ids, sender_id=acting_user.id)
-    ).values_list("sender_id", "recipient__type_id")
-
-    user_ids_involved_in_dms = set()
-    for sender_id, recipient_user_id in direct_messages_users:
-        if sender_id == acting_user.id:
-            user_ids_involved_in_dms.add(recipient_user_id)
-        else:
-            user_ids_involved_in_dms.add(sender_id)
-
-    inaccessible_user_ids = possible_inaccessible_user_ids - user_ids_involved_in_dms
-    return inaccessible_user_ids
+    return possible_inaccessible_user_ids
 
 
 def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
@@ -906,55 +900,39 @@ def get_subscribers_of_target_user_subscriptions(
 def get_users_involved_in_dms_with_target_users(
     target_users: list[UserProfile], realm: Realm, include_deactivated_users: bool = False
 ) -> dict[int, set[int]]:
-    target_user_ids = [user.id for user in target_users]
+    # Find DM partners via 1:1 DM groups with message history.
+    # Push the message-existence check into the subscription query
+    # as a subquery, so we only fetch DMGs that actually have messages.
+    target_dmg_subs = Subscription.objects.filter(
+        user_profile_id__in=[user.id for user in target_users],
+        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        recipient__type_id__in=DirectMessageGroup.objects.filter(
+            group_size__lte=2,
+        ),
+        recipient_id__in=Message.objects.filter(realm=realm).values("recipient_id"),
+    ).values_list("user_profile_id", "recipient_id")
 
-    direct_messages_recipient_users = (
-        Message.objects.filter(
-            sender_id__in=target_user_ids, realm=realm, recipient__type=Recipient.PERSONAL
-        )
-        .order_by("sender_id")
-        .distinct("sender_id", "recipient__type_id")
-        .values("sender_id", "recipient__type_id")
+    dmg_to_targets: dict[int, set[int]] = defaultdict(set)
+    for target_id, recipient_id in target_dmg_subs:
+        dmg_to_targets[recipient_id].add(target_id)
+
+    if not dmg_to_targets:
+        return defaultdict(set)
+
+    # Now that we know the set of relevant recipients, and which of
+    # users we care about are in each, we pull the full subscription
+    # set to map user -> recipient -> full list of other users
+    partner_query = Subscription.objects.filter(
+        recipient_id__in=dmg_to_targets.keys(),
     )
-
-    direct_messages_recipient_users_set = {
-        obj["recipient__type_id"] for obj in direct_messages_recipient_users
-    }
-    active_direct_messages_recipient_user_ids = UserProfile.objects.filter(
-        id__in=list(direct_messages_recipient_users_set), is_active=True
-    ).values_list("id", flat=True)
+    if not include_deactivated_users:
+        partner_query = partner_query.filter(is_user_active=True)
 
     direct_message_participants_dict: dict[int, set[int]] = defaultdict(set)
-    for sender_id, message_rows in itertools.groupby(
-        direct_messages_recipient_users, itemgetter("sender_id")
-    ):
-        recipient_user_ids = {row["recipient__type_id"] for row in message_rows}
-        if not include_deactivated_users:
-            recipient_user_ids &= set(active_direct_messages_recipient_user_ids)
-
-        direct_message_participants_dict[sender_id] = recipient_user_ids
-
-    personal_recipient_ids_for_target_users = [user.recipient_id for user in target_users]
-    direct_message_senders_query = Message.objects.filter(
-        realm=realm,
-        recipient_id__in=personal_recipient_ids_for_target_users,
-        recipient__type=Recipient.PERSONAL,
-    )
-
-    if not include_deactivated_users:
-        direct_message_senders_query = direct_message_senders_query.filter(sender__is_active=True)
-
-    direct_messages_senders = (
-        direct_message_senders_query.order_by("recipient__type_id")
-        .distinct("sender_id", "recipient__type_id")
-        .values("sender_id", "recipient__type_id")
-    )
-
-    for recipient_user_id, message_rows in itertools.groupby(
-        direct_messages_senders, itemgetter("recipient__type_id")
-    ):
-        sender_ids = {row["sender_id"] for row in message_rows}
-        direct_message_participants_dict[recipient_user_id] |= sender_ids
+    for recipient_id, user_id in partner_query.values_list("recipient_id", "user_profile_id"):
+        for target_id in dmg_to_targets[recipient_id]:
+            if user_id != target_id:
+                direct_message_participants_dict[target_id].add(user_id)
 
     return direct_message_participants_dict
 
@@ -976,6 +954,8 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         bot_type=user_profile.bot_type,
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
+        is_imported_stub=user_profile.is_imported_stub,
+        is_deleted=user_profile.is_deleted,
     )
 
 
@@ -1029,6 +1009,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        is_imported_stub=False,
     )
     return user_dict
 
@@ -1108,7 +1089,7 @@ def get_users_for_api(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
-    user_list_incomplete: bool = False,
+    user_list_incomplete: bool = True,
     user_ids: list[int] | None = None,
 ) -> dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to

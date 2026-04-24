@@ -74,7 +74,10 @@ class Command(ZulipBaseCommand):
                 if changed:
                     image_attachment.thumbnail_metadata = found
                     image_attachment.save(update_fields=["thumbnail_metadata"])
-                    queue_event_on_commit("thumbnail", {"id": image_attachment.id})
+                    queue_event_on_commit(
+                        "thumbnail",
+                        {"id": image_attachment.id, "path_id": image_attachment.path_id},
+                    )
             return
 
         for message_class in (Message, ArchivedMessage):

@@ -1,8 +1,13 @@
+import base64
+import binascii
+import hashlib
 import logging
 from typing import TypedDict
 
 from django.conf import settings
+from django.utils.translation import gettext as _
 
+from zerver.lib.devices import b64decode_token_id_base64
 from zerver.lib.exceptions import (
     InvalidBouncerPublicKeyError,
     InvalidEncryptedPushRegistrationError,
@@ -10,14 +15,15 @@ from zerver.lib.exceptions import (
     MissingRemoteRealmError,
     RequestExpiredError,
 )
-from zerver.lib.push_notifications import PushNotificationsDisallowedByBouncerError
+from zerver.lib.push_notifications import remove_push_device_token
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
     PushNotificationBouncerServerError,
     send_to_push_bouncer,
 )
-from zerver.models import PushDevice
+from zerver.models.devices import Device
+from zerver.models.push_notifications import PushDeviceToken
 from zerver.models.users import UserProfile, get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -29,44 +35,100 @@ logger = logging.getLogger(__name__)
 
 class RegisterPushDeviceToBouncerQueueItem(TypedDict):
     user_profile_id: int
+    device_id: int
     bouncer_public_key: str
     encrypted_push_registration: str
-    push_account_id: int
+    token_id_base64: str
 
 
 def handle_registration_to_bouncer_failure(
-    user_profile: UserProfile, push_account_id: int, error_code: str
+    user_profile: UserProfile, device_id: int, error_code: str
 ) -> None:
     """Handles a failed registration request to the bouncer by
     notifying or preparing to notify clients.
 
-    * Sends a `push_device` event to notify online clients immediately.
+    * Sends a `device` event to notify online clients immediately.
 
-    * Stores the `error_code` in the `PushDevice` table. This is later
+    * Stores the `error_code` in the `Device` table. This is later
       used, along with other metadata, to notify offline clients the
-      next time they call `/register`. See the `push_devices` field in
+      next time they call `/register`. See the `devices` field in
       the `/register` response.
     """
-    PushDevice.objects.filter(user=user_profile, push_account_id=push_account_id).update(
-        error_code=error_code
-    )
+    Device.objects.filter(id=device_id).update(push_registration_error_code=error_code)
     event = dict(
-        type="push_device",
-        push_account_id=str(push_account_id),
-        status="failed",
-        error_code=error_code,
+        type="device",
+        op="update",
+        device_id=device_id,
+        push_registration_error_code=error_code,
     )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     # Report the `REQUEST_EXPIRED_ERROR` to the server admins as it indicates
     # a long-lasting outage somewhere between the server and the bouncer,
     # most likely in either the server or its local network configuration.
-    if error_code == PushDevice.ErrorCode.REQUEST_EXPIRED:
-        logging.error(
-            "Push device registration request for user_id=%s, push_account_id=%s expired.",
-            user_profile.id,
-            push_account_id,
-        )
+    if error_code == Device.PushRegistrationErrorCode.REQUEST_EXPIRED:
+        logging.error("Push registration request for device_id=%s expired.", device_id)
+
+
+def compute_token_id_int(token: str) -> int:
+    hash_bytes = hashlib.sha256(token.encode()).digest()
+    return b64decode_token_id_base64(base64.b64encode(hash_bytes[0:8]).decode())
+
+
+def cleanup_legacy_push_device_token(user_profile: UserProfile, token_id_int: int) -> None:
+    MAX_REQUEST_RETRIES = 3
+    legacy_tokens = PushDeviceToken.objects.filter(user=user_profile)
+
+    for legacy_token in legacy_tokens:
+        # APNs treats its tokens (hex strings) as case-insensitive, and
+        # different client versions have sent them in different cases; the
+        # rest of the legacy code path accordingly normalizes to lowercase
+        # (see `remove_push_device_token`).  Match on the stored casing
+        # as well as its lower- and upper-case forms so that E2EE
+        # registration reliably cleans up the matching legacy token
+        # regardless of which case the client used.
+        token = legacy_token.token
+        if legacy_token.kind == PushDeviceToken.APNS:
+            candidate_token_ids = {
+                compute_token_id_int(token),
+                compute_token_id_int(token.lower()),
+                compute_token_id_int(token.upper()),
+            }
+        else:
+            candidate_token_ids = {compute_token_id_int(token)}
+
+        if token_id_int not in candidate_token_ids:
+            continue
+
+        for attempt in range(MAX_REQUEST_RETRIES):
+            try:
+                remove_push_device_token(user_profile, legacy_token.token, legacy_token.kind)
+                return
+            except (
+                PushNotificationBouncerRetryLaterError,
+                PushNotificationBouncerServerError,
+            ) as e:
+                # Network error or 5xx error response from bouncer server.
+                # TODO: Retry with backoff. Implement it while working on #35853.
+                if attempt == MAX_REQUEST_RETRIES - 1:
+                    logger.warning(
+                        "Failed to remove legacy push token from bouncer "
+                        "for user %s after retries: %s",
+                        user_profile.id,
+                        e,
+                    )
+                    return
+            except PushNotificationBouncerError as e:
+                # Invalid credentials or unexpected status code
+                logger.error(
+                    "Bouncer error cleaning up legacy push token for user %s: %s",
+                    user_profile.id,
+                    e,
+                )
+                return
+            except JsonableError:
+                # Token doesn't exist i.e. already cleaned up.
+                return
 
 
 def handle_register_push_device_to_bouncer(
@@ -74,28 +136,27 @@ def handle_register_push_device_to_bouncer(
 ) -> None:
     user_profile_id = queue_item["user_profile_id"]
     user_profile = get_user_profile_by_id(user_profile_id)
+    device_id = queue_item["device_id"]
     bouncer_public_key = queue_item["bouncer_public_key"]
     encrypted_push_registration = queue_item["encrypted_push_registration"]
-    push_account_id = queue_item["push_account_id"]
+    token_id_base64 = queue_item["token_id_base64"]
 
     try:
         if settings.ZILENCER_ENABLED:
-            device_id = do_register_remote_push_device(
+            do_register_remote_push_device(
                 bouncer_public_key,
                 encrypted_push_registration,
-                push_account_id,
+                token_id_base64,
                 realm=user_profile.realm,
             )
         else:
             post_data: dict[str, str | int] = {
                 "realm_uuid": str(user_profile.realm.uuid),
-                "push_account_id": push_account_id,
+                "token_id": token_id_base64,
                 "encrypted_push_registration": encrypted_push_registration,
                 "bouncer_public_key": bouncer_public_key,
             }
-            result = send_to_push_bouncer("POST", "push/e2ee/register", post_data)
-            assert isinstance(result["device_id"], int)  # for mypy
-            device_id = result["device_id"]
+            send_to_push_bouncer("POST", "push/e2ee/register", post_data)
     except (
         PushNotificationBouncerRetryLaterError,
         PushNotificationBouncerServerError,
@@ -108,12 +169,10 @@ def handle_register_push_device_to_bouncer(
         MissingRemoteRealmError,
         # Invalid credentials or unexpected status code
         PushNotificationBouncerError,
-        # Plan doesn't allow sending push notifications
-        PushNotificationsDisallowedByBouncerError,
     ):
         # Server admins need to fix these set of errors, report them.
         # Server should keep retrying to register until `RequestExpiredError` is raised.
-        error_msg = f"Push device registration request for user_id={user_profile.id}, push_account_id={push_account_id} failed."
+        error_msg = f"Push device registration request for device_id={device_id} failed."
         logging.error(error_msg)
         raise PushNotificationBouncerRetryLaterError(error_msg)
     except (
@@ -124,17 +183,38 @@ def handle_register_push_device_to_bouncer(
         JsonableError,
     ) as e:
         handle_registration_to_bouncer_failure(
-            user_profile, push_account_id, error_code=e.__class__.code.name
+            user_profile, device_id, error_code=e.__class__.code.name
         )
         return
 
     # Registration successful.
-    PushDevice.objects.filter(user=user_profile, push_account_id=push_account_id).update(
-        bouncer_device_id=device_id
+    token_id_int = b64decode_token_id_base64(token_id_base64)
+    Device.objects.filter(id=device_id).update(
+        push_token_id=token_id_int, pending_push_token_id=None
     )
     event = dict(
-        type="push_device",
-        push_account_id=str(push_account_id),
-        status="active",
+        type="device",
+        op="update",
+        device_id=device_id,
+        push_token_id=token_id_base64,
+        pending_push_token_id=None,
     )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+    # When a client successfully registers a token for E2EE notifications,
+    # clear out any existing legacy registration on that account for the same token.
+    cleanup_legacy_push_device_token(user_profile, token_id_int)
+
+
+def check_push_key(push_key_str: str) -> bytes:
+    error_message = _("Invalid `push_key`")
+
+    try:
+        push_key_bytes = base64.b64decode(push_key_str, validate=True)
+    except binascii.Error:
+        raise JsonableError(error_message)
+
+    if len(push_key_bytes) != 33 or push_key_bytes[0] != 0x31:
+        raise JsonableError(error_message)
+
+    return push_key_bytes

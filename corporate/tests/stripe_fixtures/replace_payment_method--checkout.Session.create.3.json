@@ -1,5 +1,7 @@
 {
-  "adaptive_pricing": null,
+  "adaptive_pricing": {
+    "enabled": false
+  },
   "after_expiration": null,
   "allow_promotion_codes": null,
   "amount_subtotal": null,
@@ -11,10 +13,27 @@
     "status": null
   },
   "billing_address_collection": "required",
+  "branding_settings": {
+    "background_color": "#dbedff",
+    "border_style": "rounded",
+    "button_color": "#3e6bfe",
+    "display_name": "Violet Beam",
+    "font_family": "source_sans_pro",
+    "icon": {
+      "file": "file_1RxpnoDwzgQ85STgf3bBl5KY",
+      "type": "file"
+    },
+    "logo": {
+      "file": "file_1RxpnoDwzgQ85STgvEm4ntJu",
+      "type": "file"
+    }
+  },
   "cancel_url": "http://zulip.testserver/billing/",
   "client_reference_id": null,
   "client_secret": null,
   "collected_information": {
+    "business_name": null,
+    "individual_name": null,
     "shipping_details": null
   },
   "consent": null,
@@ -33,7 +52,9 @@
   "customer_creation": null,
   "customer_details": {
     "address": null,
+    "business_name": null,
     "email": "hamlet@zulip.com",
+    "individual_name": null,
     "name": null,
     "phone": null,
     "tax_exempt": null,
@@ -53,6 +74,7 @@
   },
   "mode": "setup",
   "object": "checkout.session",
+  "origin_context": null,
   "payment_intent": null,
   "payment_link": null,
   "payment_method_collection": "always",

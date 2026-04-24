@@ -6,20 +6,10 @@
 
 {% block content %}
 {% if realm_creation %}
-{% if is_demo_organization %}
-<p>
-    {% trans demo_organizations_help_link="https://zulip.com/help/demo-organizations" %}Congratulations, you have created a new Zulip demo organization. Note
-    that this organization will be automatically deleted in 30 days. Learn more
-    about demo organizations <a
-    href="{{ demo_organizations_help_link }}">here</a>!
-    {% endtrans %}
-</p>
-{% else %}
 <p>
     {% trans %}Congratulations, you have created a new Zulip
     organization: <b>{{ realm_name }}</b>.{% endtrans %}
 </p>
-{% endif %}
 {% else %}
 <p>{{ _('Welcome to Zulip!') }}</p>
 <p>

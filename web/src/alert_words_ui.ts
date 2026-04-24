@@ -15,7 +15,7 @@ import * as ui_report from "./ui_report.ts";
 
 export let loaded = false;
 
-export let rerender_alert_words_ui = (): void => {
+export function rerender_alert_words_ui(): void {
     if (!loaded) {
         return;
     }
@@ -36,10 +36,6 @@ export let rerender_alert_words_ui = (): void => {
             ...ListWidget.generic_sort_functions("alphabetic", ["word"]),
         },
     });
-};
-
-export function rewire_rerender_alert_words_ui(value: typeof rerender_alert_words_ui): void {
-    rerender_alert_words_ui = value;
 }
 
 const open_alert_word_status_banner = (alert_word: string, is_error: boolean): void => {
@@ -103,7 +99,7 @@ function remove_alert_word(alert_word: string): void {
 }
 
 export function show_add_alert_word_modal(): void {
-    const html_body = render_add_alert_word();
+    const modal_content_html = render_add_alert_word();
 
     function add_alert_word_post_render(): void {
         const $add_user_group_input_element = $<HTMLInputElement>("input#add-alert-word-name");
@@ -119,9 +115,9 @@ export function show_add_alert_word_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add a new alert word"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Add"}),
+        modal_title_html: $t_html({defaultMessage: "Add a new alert word"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Add"}),
         help_link: "/help/dm-mention-alert-notifications#alert-words",
         form_id: "add-alert-word-form",
         id: "add-alert-word",

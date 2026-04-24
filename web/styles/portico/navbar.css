@@ -1,3 +1,10 @@
+:root {
+    /* Actual navbar height is determined by label padding
+       (16px top/bottom) and line-height (28px): 16 + 28 + 16 = 60px.
+       Keep this variable in sync with those values. */
+    --navbar-height: 60px;
+}
+
 details summary::-webkit-details-marker {
     /* Hide the default arrow on Safari. */
     display: none;
@@ -89,6 +96,7 @@ details summary::-webkit-details-marker {
     &,
     &:visited {
         color: hsl(0deg 0% 100% / 80%);
+        text-decoration: none;
     }
 }
 
@@ -221,7 +229,7 @@ details summary::-webkit-details-marker {
     display: none;
     /* To account for scrollbar if any present. */
     right: 15px;
-    top: 60px;
+    top: var(--navbar-height);
     width: 44px;
     height: 44px;
     background-size: 32px;
@@ -247,7 +255,7 @@ details summary::-webkit-details-marker {
 
 .top-menu-submenu {
     position: absolute;
-    top: 60px;
+    top: var(--navbar-height);
     display: flex;
     gap: 16px;
     opacity: 0;
@@ -257,11 +265,40 @@ details summary::-webkit-details-marker {
 }
 
 #case-studies-submenu {
-    flex-wrap: wrap;
-    width: 1000px;
+    width: 100vw;
+    position: fixed;
+    left: 0;
+    justify-content: center;
 
-    @media (width <= 1100px) {
-        width: 600px;
+    @media (width <= 1300px) {
+        flex-wrap: wrap;
+        place-content: baseline flex-start;
+        height: calc(100vh - var(--navbar-height));
+        overflow-y: auto;
+        width: 100vw;
+        padding-left: 10px;
+    }
+
+    & > .top-menu-submenu-column:last-child {
+        /* Bottom padding provides space for the scroll fade
+           indicator so no content is obscured at end of scroll. */
+        padding-bottom: 50px;
+    }
+
+    /* Fade bottom edge to hint at scrollable content. */
+    mask-image: linear-gradient(
+        to bottom,
+        hsl(0deg 0% 0%) calc(100% - 50px),
+        transparent 100%
+    );
+}
+
+/* Prevent background scrolling when the case studies dropdown
+   covers the full viewport height on narrower desktop screens.
+   Lower bound excludes widths where the desktop navbar is hidden. */
+@media (width > 1100px) and (width <= 1300px) {
+    body:has(#top-menu-tab-case-studies:checked) {
+        overflow: hidden;
     }
 }
 
@@ -322,6 +359,7 @@ details summary::-webkit-details-marker {
 
     .top-menu-submenu-list {
         margin: 0;
+        padding-left: 0;
         list-style: none;
 
         .top-menu-submenu-list-item {
@@ -384,7 +422,7 @@ details summary::-webkit-details-marker {
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: var(--navbar-height);
 
     overflow: auto;
     font-style: normal;
@@ -444,6 +482,16 @@ details summary::-webkit-details-marker {
 .top-menu-mobile-items-group-1 summary:active,
 .top-menu-mobile-items-group-2 summary:active {
     background: hsl(0deg 0% 100% / 10%);
+}
+
+/* We display: block here instead of the default
+   display: list-item largely for the sake of Safari,
+   which as of early 2026 still ignores the ::marker
+   line below. Because we're overriding the default
+   markers on all browsers, this display mode doesn't
+   impact other browsers, either. */
+.top-menu-mobile-item-summary {
+    display: block;
 }
 
 .top-menu-mobile-item-summary::marker {
@@ -520,7 +568,7 @@ details summary::-webkit-details-marker {
     z-index: 1;
     transition: 0.3s;
     transition-property: background, backdrop-filter;
-    height: 60px;
+    height: var(--navbar-height);
     overflow: hidden;
     display: flex;
     justify-content: space-between;
@@ -632,7 +680,7 @@ details summary::-webkit-details-marker {
     }
 }
 
-@media (width <= 980px) {
+@media (width <= 1100px) {
     .top-menu {
         display: none;
     }

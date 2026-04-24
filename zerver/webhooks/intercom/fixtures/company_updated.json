@@ -1,0 +1,36 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "company",
+            "id": "6961d175205cf6a4438f0c21",
+            "name": "Acme Enterprises",
+            "app_id": "abc123def",
+            "plan": null,
+            "company_id": "6961d175205cf6a4438f0c22-qualification-company",
+            "remote_created_at": null,
+            "created_at": "2026-01-10T04:11:34.013+00:00",
+            "updated_at": "2026-01-10T04:11:34.206+00:00",
+            "last_request_at": null,
+            "size": null,
+            "website": null,
+            "industry": null,
+            "monthly_spend": 0,
+            "session_count": 0,
+            "user_count": 1,
+            "custom_attributes": {},
+            "tag_ids": []
+        }
+    },
+    "links": {},
+    "id": "notif_3a1862e2-6876-4c03-bd46-e065ab0f141c",
+    "topic": "company.updated",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768018294,
+    "created_at": 1768018294,
+    "self": null
+}

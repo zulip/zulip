@@ -5,13 +5,13 @@ from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, TypedDict, cast
+from typing import Any, Literal, TypedDict, cast
 
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.db.models import Exists, F, OuterRef, Q, QuerySet
+from django.db.models import Exists, F, OuterRef, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -41,7 +41,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import MentionBackend, MentionData
+from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
@@ -69,18 +69,22 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
+    channel_events_topic_name,
+    check_for_can_create_topic_group_violation,
     ensure_stream,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
     subscribed_to_stream,
 )
 from zerver.lib.string_validation import check_stream_name
-from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
+from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_stream_link_syntax
+from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
     check_any_user_has_permission_by_role,
     check_user_has_permission_by_role,
     is_any_user_in_group,
@@ -99,8 +103,8 @@ from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
+    Device,
     Message,
-    PushDevice,
     PushDeviceToken,
     Realm,
     Recipient,
@@ -116,8 +120,8 @@ from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
-    get_stream_by_id_for_sending_message,
-    get_stream_by_name_for_sending_message,
+    get_realm_stream,
+    get_stream_by_id_in_realm,
 )
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
@@ -257,13 +261,7 @@ def get_recipient_info(
     topic_participant_user_ids: set[int] = set()
     sender_muted_stream: bool | None = None
 
-    if recipient.type == Recipient.PERSONAL:
-        # The sender and recipient may be the same id, so
-        # de-duplicate using a set.
-        message_to_user_id_set = {recipient.type_id, sender_id}
-        assert len(message_to_user_id_set) in [1, 2]
-
-    elif recipient.type == Recipient.STREAM:
+    if recipient.type == Recipient.STREAM:
         # Anybody calling us w/r/t a stream message needs to supply
         # stream_topic.  We may eventually want to have different versions
         # of this function for different message types.
@@ -334,7 +332,18 @@ def get_recipient_info(
 
         user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
-        def notification_recipients(setting: str) -> set[int]:
+        def notification_recipients(
+            setting: Literal[
+                "email_notifications", "push_notifications", "wildcard_mentions_notify"
+            ],
+            user_setting: Literal[
+                "user_profile_email_notifications",
+                "user_profile_push_notifications",
+                "user_profile_wildcard_mentions_notify",
+            ],
+            *,
+            channel_specific_setting_overrides_mute: bool = False,
+        ) -> set[int]:
             return {
                 row["user_profile_id"]
                 for row in subscription_rows
@@ -344,14 +353,28 @@ def get_recipient_info(
                         row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
                     ),
                     row[setting],
-                    row["user_profile_" + setting],
+                    row[user_setting],
+                    channel_specific_setting_overrides_mute,
                 )
             }
 
-        stream_push_user_ids = notification_recipients("push_notifications")
-        stream_email_user_ids = notification_recipients("email_notifications")
+        stream_push_user_ids = notification_recipients(
+            "push_notifications", "user_profile_push_notifications"
+        )
+        stream_email_user_ids = notification_recipients(
+            "email_notifications", "user_profile_email_notifications"
+        )
 
-        def followed_topic_notification_recipients(setting: str) -> set[int]:
+        def followed_topic_notification_recipients(
+            setting: Literal[
+                "email_notifications", "push_notifications", "wildcard_mentions_notify"
+            ],
+            followed_topic_setting: Literal[
+                "followed_topic_email_notifications",
+                "followed_topic_push_notifications",
+                "followed_topic_wildcard_mentions_notify",
+            ],
+        ) -> set[int]:
             return {
                 row["user_profile_id"]
                 for row in subscription_rows
@@ -359,13 +382,15 @@ def get_recipient_info(
                     row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
                 )
                 == UserTopic.VisibilityPolicy.FOLLOWED
-                and row["followed_topic_" + setting]
+                and row[followed_topic_setting]
             }
 
         followed_topic_email_user_ids = followed_topic_notification_recipients(
-            "email_notifications"
+            "email_notifications", "followed_topic_email_notifications"
         )
-        followed_topic_push_user_ids = followed_topic_notification_recipients("push_notifications")
+        followed_topic_push_user_ids = followed_topic_notification_recipients(
+            "push_notifications", "followed_topic_push_notifications"
+        )
 
         if possible_stream_wildcard_mention or possible_topic_wildcard_mention:
             # We calculate `wildcard_mentions_notify_user_ids` and `followed_topic_wildcard_mentions_notify_user_ids`
@@ -373,9 +398,15 @@ def get_recipient_info(
             # This is important so as to avoid unnecessarily sending huge user ID lists with
             # thousands of elements to the event queue (which can happen because these settings
             # are `True` by default for new users.)
-            wildcard_mentions_notify_user_ids = notification_recipients("wildcard_mentions_notify")
+            wildcard_mentions_notify_user_ids = notification_recipients(
+                "wildcard_mentions_notify",
+                "user_profile_wildcard_mentions_notify",
+                channel_specific_setting_overrides_mute=True,
+            )
             followed_topic_wildcard_mentions_notify_user_ids = (
-                followed_topic_notification_recipients("wildcard_mentions_notify")
+                followed_topic_notification_recipients(
+                    "wildcard_mentions_notify", "followed_topic_wildcard_mentions_notify"
+                )
             )
 
         if possible_stream_wildcard_mention:
@@ -423,12 +454,10 @@ def get_recipient_info(
                 "QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict]",
                 UserProfile.objects.filter(is_active=True)
                 .annotate(
-                    # Uses index "zerver_pushdevice_user_bouncer_device_id_idx"
+                    # Uses index "zerver_device_user_push_token_id_idx"
                     # and "zerver_pushdevicetoken_user_id_015e5dc1".
                     has_push_device_registered=Exists(
-                        PushDevice.objects.filter(
-                            user_id=OuterRef("id"), bouncer_device_id__isnull=False
-                        )
+                        Device.objects.filter(user_id=OuterRef("id"), push_token_id__isnull=False)
                     )
                     | Exists(PushDeviceToken.objects.filter(user_id=OuterRef("id")))
                 )
@@ -787,7 +816,7 @@ def create_user_messages(
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
         base_flags |= UserMessage.flags.stream_wildcard_mentioned
-    if message.recipient.type in [Recipient.DIRECT_MESSAGE_GROUP, Recipient.PERSONAL]:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         base_flags |= UserMessage.flags.is_private
 
     # For long_term_idle (aka soft-deactivated) users, we are allowed
@@ -935,7 +964,7 @@ def do_send_messages(
             # does not support this yet: (https://code.djangoproject.com/ticket/10088)
             assert send_request.message.rendered_content is not None
             if send_request.rendering_result.thumbnail_spinners:
-                previews = get_user_upload_previews(
+                previews = manifest_and_get_user_upload_previews(
                     send_request.message.realm_id,
                     send_request.message.content,
                     lock=True,
@@ -1394,9 +1423,9 @@ def check_send_stream_message(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic_name)
-    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
+    message_request = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
     sent_message_result = do_send_messages(
-        [message], mark_as_read=[sender.id] if read_by_sender else []
+        [message_request], mark_as_read=[sender.id] if read_by_sender else []
     )[0]
     return sent_message_result.message_id
 
@@ -1411,8 +1440,8 @@ def check_send_stream_message_by_id(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic_name)
-    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
-    sent_message_result = do_send_messages([message])[0]
+    message_request = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -1424,8 +1453,8 @@ def check_send_private_message(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
-    message = check_message(sender, client, addressee, body, no_previews=no_previews)
-    sent_message_result = do_send_messages([message])[0]
+    message_request = check_message(sender, client, addressee, body, no_previews=no_previews)
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -1450,7 +1479,7 @@ def check_send_message(
     read_by_sender: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
-    message = check_message(
+    message_request = check_message(
         sender,
         client,
         addressee,
@@ -1464,7 +1493,10 @@ def check_send_message(
         widget_content,
         skip_stream_access_check=skip_stream_access_check,
     )
-    return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
+    return do_send_messages(
+        [message_request],
+        mark_as_read=[sender.id] if read_by_sender else [],
+    )[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
@@ -1568,7 +1600,7 @@ def validate_stream_name_with_pm_notification(
     check_stream_name(stream_name)
 
     try:
-        stream = get_stream_by_name_for_sending_message(stream_name, realm)
+        stream = get_realm_stream(stream_name, realm.id)
         send_pm_if_empty_stream(stream, realm, sender)
     except Stream.DoesNotExist:
         send_pm_if_empty_stream(None, realm, sender, stream_name=stream_name)
@@ -1581,7 +1613,7 @@ def validate_stream_id_with_pm_notification(
     stream_id: int, realm: Realm, sender: UserProfile
 ) -> Stream:
     try:
-        stream = get_stream_by_id_for_sending_message(stream_id, realm)
+        stream = get_stream_by_id_in_realm(stream_id, realm)
         send_pm_if_empty_stream(stream, realm, sender)
     except Stream.DoesNotExist:
         send_pm_if_empty_stream(None, realm, sender, stream_id=stream_id)
@@ -1628,25 +1660,11 @@ def check_can_send_direct_message(
     # on the Huddle object whether the conversation already exists, likely in the
     # form of a `first_message_id` field, and be able to save doing this check in the
     # common case that this is not the first message in a conversation.
-    if recipient.type == Recipient.PERSONAL:
-        recipient_user_profile = recipient_users[0]
-        previous_messages_exist = (
-            Message.objects.filter(
-                realm=realm,
-                recipient__type=Recipient.PERSONAL,
-            )
-            .filter(
-                Q(sender=sender, recipient=recipient)
-                | Q(sender=recipient_user_profile, recipient_id=sender.recipient_id)
-            )
-            .exists()
-        )
-    else:
-        assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
-        previous_messages_exist = Message.objects.filter(
-            realm=realm,
-            recipient=recipient,
-        ).exists()
+    assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+    previous_messages_exist = Message.objects.filter(
+        realm=realm,
+        recipient=recipient,
+    ).exists()
     if not previous_messages_exist:
         raise DirectMessageInitiationError
 
@@ -1781,12 +1799,16 @@ def check_message(
             type=Recipient.STREAM,
         )
 
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
         if not skip_stream_access_check:
             access_stream_for_send_message(
                 sender=sender,
                 stream=stream,
                 forwarder_user_profile=forwarder_user_profile,
                 archived_channel_notice=archived_channel_notice,
+                user_group_membership_details=user_group_membership_details,
+                system_groups_name_dict=system_groups_name_dict,
             )
         else:
             # Defensive assertion - the only currently supported use case
@@ -1794,6 +1816,14 @@ def check_message(
             # is security-sensitive code, it's beneficial to ensure nothing
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
+
+        check_for_can_create_topic_group_violation(
+            user_profile=sender,
+            stream=stream,
+            topic_name=topic_name,
+            user_group_membership_details=user_group_membership_details,
+            system_groups_name_dict=system_groups_name_dict,
+        )
 
         topics_policy = get_stream_topics_policy(realm, stream)
         empty_topic_display_name = get_topic_display_name("", sender.default_language)
@@ -2060,16 +2090,18 @@ def internal_send_private_message(
     content: str,
     *,
     disable_external_notifications: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> int | None:
-    message = internal_prep_private_message(
+    message_request = internal_prep_private_message(
         sender,
         recipient_user,
         content,
         disable_external_notifications=disable_external_notifications,
+        acting_user=acting_user,
     )
-    if message is None:
+    if message_request is None:
         return None
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -2086,7 +2118,7 @@ def internal_send_stream_message(
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
 ) -> int | None:
-    message = internal_prep_stream_message(
+    message_request = internal_prep_stream_message(
         sender,
         stream,
         topic_name,
@@ -2098,14 +2130,14 @@ def internal_send_stream_message(
         acting_user=acting_user,
     )
 
-    if message is None:
+    if message_request is None:
         return None
 
     mark_as_read = []
     if mark_as_read_for_acting_user and acting_user is not None:
         mark_as_read.append(acting_user.id)
 
-    sent_message_result = do_send_messages([message], mark_as_read=mark_as_read)[0]
+    sent_message_result = do_send_messages([message_request], mark_as_read=mark_as_read)[0]
     return sent_message_result.message_id
 
 
@@ -2116,7 +2148,7 @@ def internal_send_stream_message_by_name(
     topic_name: str,
     content: str,
 ) -> int | None:
-    message = internal_prep_stream_message_by_name(
+    message_request = internal_prep_stream_message_by_name(
         realm,
         sender,
         stream_name,
@@ -2124,9 +2156,9 @@ def internal_send_stream_message_by_name(
         content,
     )
 
-    if message is None:
+    if message_request is None:
         return None
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -2160,12 +2192,88 @@ def internal_send_group_direct_message(
     emails: list[str] | None = None,
     recipient_users: list[UserProfile] | None = None,
 ) -> int | None:
-    message = internal_prep_group_direct_message(
+    message_request = internal_prep_group_direct_message(
         realm, sender, content, emails=emails, recipient_users=recipient_users
     )
 
-    if message is None:
+    if message_request is None:
         return None
 
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
+
+
+def maybe_send_channel_events_notice(
+    sender: UserProfile,
+    stream: Stream,
+    content: str,
+    *,
+    email_gateway: bool = False,
+    message_type: int = Message.MessageType.NORMAL,
+    limit_unread_user_ids: set[int] | None = None,
+    mark_as_read_for_acting_user: bool = False,
+    archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
+) -> int | None:
+    if not stream.realm.send_channel_events_messages:
+        return None
+
+    return internal_send_stream_message(
+        sender,
+        stream,
+        channel_events_topic_name(stream),
+        content,
+        email_gateway=email_gateway,
+        message_type=message_type,
+        limit_unread_user_ids=limit_unread_user_ids,
+        mark_as_read_for_acting_user=mark_as_read_for_acting_user,
+        archived_channel_notice=archived_channel_notice,
+        acting_user=acting_user,
+    )
+
+
+def send_user_profile_update_notification(
+    user_profile: UserProfile,
+    acting_user: UserProfile | None,
+    changes: list[UserProfileChangeDict],
+) -> None:
+    if not user_profile.is_active:
+        return
+
+    if user_profile.is_bot:
+        return
+
+    if acting_user is not None and acting_user.id == user_profile.id:
+        return
+
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+
+    def format_empty_value(value: str) -> str:
+        """Return italicized 'None' for empty values, otherwise return the value."""
+        if value == "":
+            return "*None*"
+        return value
+
+    with override_language(user_profile.default_language):
+        # We can't name which user made the change, since it was done either on the command line or via an automated job like LDAP synchronization.
+        # It's still useful to tell the user about the update.
+        if acting_user is None:
+            message = _("The following changes have been made to your account.")
+        else:
+            user_mention = silent_mention_syntax_for_user(acting_user)
+            message = _("{user} has made the following changes to your account.").format(
+                user=user_mention
+            )
+
+        for i, change in enumerate(changes):
+            message += _(
+                "\n- **Old {field_name}:** {old_value}\n- **New {field_name}:** {new_value}\n"
+            ).format(
+                field_name=change["field_name"],
+                old_value=format_empty_value(change["old_value"]),
+                new_value=format_empty_value(change["new_value"]),
+            )
+            if i < len(changes) - 1:
+                message += "____\n\n"
+
+    internal_send_private_message(notification_bot, user_profile, message)

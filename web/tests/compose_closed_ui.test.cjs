@@ -4,6 +4,8 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -36,23 +38,27 @@ const {MessageList} = zrequire("message_list");
 const {MessageListData} = zrequire("message_list_data");
 const {set_current_user, set_realm} = zrequire("state_data");
 
-const current_user = {
+const current_user = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice",
-};
+});
 set_current_user(current_user);
 people.add_active_user(current_user);
-people.add_active_user({
-    email: "bob@zulip.com",
-    user_id: 2,
-    full_name: "Bob",
-});
-people.add_active_user({
-    email: "zoe@zulip.com",
-    user_id: 3,
-    full_name: "Zoe",
-});
+people.add_active_user(
+    make_user({
+        email: "bob@zulip.com",
+        user_id: 2,
+        full_name: "Bob",
+    }),
+);
+people.add_active_user(
+    make_user({
+        email: "zoe@zulip.com",
+        user_id: 3,
+        full_name: "Zoe",
+    }),
+);
 people.initialize_current_user(1);
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
@@ -60,13 +66,11 @@ set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_
 
 // Helper test function
 function test_reply_label(expected_label) {
-    const label = $("#left_bar_compose_reply_button_big").html();
-    const prepend_text_length = "Message ".length;
     assert.equal(
-        label.slice(prepend_text_length),
+        $("#left_bar_compose_reply_button_big")
+            .html()
+            .replace(/^(translated: )?Message /, ""),
         expected_label,
-        "'" + label.slice(prepend_text_length),
-        Number("' did not match '") + expected_label + "'",
     );
 }
 
@@ -80,17 +84,17 @@ run_test("reply_label", () => {
         }),
     });
     message_lists.current = list;
-    const stream_one = {
+    const stream_one = make_stream({
         subscribed: true,
         name: "first_stream",
         stream_id: 1,
-    };
+    });
     stream_data.add_sub_for_tests(stream_one);
-    const stream_two = {
+    const stream_two = make_stream({
         subscribed: true,
         name: "second_stream",
         stream_id: 2,
-    };
+    });
     stream_data.add_sub_for_tests(stream_two);
     list.add_messages(
         [
@@ -188,8 +192,8 @@ run_test("reply_label", () => {
     list.select_id(list.next());
     const label_html = $("#left_bar_compose_reply_button_big").html();
     assert.equal(
-        `Message #second_stream &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span>`,
         label_html,
+        `translated: Message #second_stream &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span>`,
     );
 });
 
@@ -203,11 +207,11 @@ run_test("empty_narrow", () => {
 run_test("test_non_message_list_input", () => {
     message_lists.current = undefined;
     recent_view_util.is_visible = () => true;
-    const stream = {
+    const stream = make_stream({
         subscribed: true,
         name: "stream test",
         stream_id: 10,
-    };
+    });
     stream_data.add_sub_for_tests(stream);
 
     // Channel and topic row.
@@ -222,7 +226,7 @@ run_test("test_non_message_list_input", () => {
         user_ids: [current_user.user_id],
     });
     let label = $("#left_bar_compose_reply_button_big").html();
-    assert.equal(label, "Write yourself a note");
+    assert.equal(label, "translated: Write yourself a note");
 
     // Invalid data for a the reply button text.
     compose_closed_ui.update_recipient_text_for_reply_button({

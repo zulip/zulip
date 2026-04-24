@@ -7,9 +7,9 @@ Zulip has been WindBorne's irreplaceable hub for coordinating work
 that ranges from balloon launches around the globe to developing
 state-of-the-art AI models.
 
-> “All our digital communication flows through Zulip… We have three deep
+> All our digital communication flows through Zulip… We have three deep
 > learning channels, each with twenty active topics a day. No other chat system
-> could support that.”
+> could support that.
 >
 > — John Dean, co-founder and CEO of WindBorne
 
@@ -47,7 +47,7 @@ an external vendor to manage their critical communication infrastructure.)
 “After a couple of days, I thought: `Oh my god, this is awesome. How on earth
 would you *not* use Zulip?'” John says. “It was so much easier to communicate.”
 
-> “How on earth would you not use Zulip?”
+> How on earth would you not use Zulip?
 >
 > — John Dean, co-founder and CEO of WindBorne
 
@@ -63,8 +63,8 @@ and they required threads for everything. It was a complete mess,” Nathan says
 “Zulip took some getting used to, but after two weeks, it was so much better
 than anything I'd used before.”
 
-> “I love the application, and couldn't dream of going back to anything else.
-> Slack and Discord just pale in comparison.”
+> I love the application, and couldn't dream of going back to anything else.
+> Slack and Discord just pale in comparison.
 >
 > — Nathan Kaplan, Head of Global Launch Operations
 
@@ -94,8 +94,8 @@ than anything I'd used before.”
   </figure>
 </div>
 
-> “Zulip organizes ideas in such a clean and simple way. You get easy
-> readability over months, not just hours like in other apps.”
+> Zulip organizes ideas in such a clean and simple way. You get easy
+> readability over months, not just hours like in other apps.
 >
 > — Nathan Kaplan, Head of Global Launch Operations
 
@@ -105,8 +105,8 @@ product. Last year, Nathan used Zulip to develop a workflow for uploading photos
 of balloon sensor bags. Only once requirements were clear did the team kick off
 a major engineering project to build uploads into the launch management app.
 
-> “Zulip offers us so much more than anything else really could — especially for
-> the contractor onboarding experience, and how we manage the entire team.”
+> Zulip offers us so much more than anything else really could — especially for
+> the contractor onboarding experience, and how we manage the entire team.
 >
 > — Nathan Kaplan, Head of Global Launch Operations
 
@@ -131,6 +131,6 @@ any employee to delete messages to clear out experiments that didn't work out.
 (Server administrators can review the activity log to make sure this permission
 is not abused.)
 
-> “Zulip allows me to build the culture I want.”
+> Zulip allows me to build the culture I want.
 >
 > — John Dean, co-founder and CEO of WindBorne

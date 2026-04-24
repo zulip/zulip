@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.hbs";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
@@ -95,11 +94,11 @@ function build_page(): void {
         const url =
             "/json/realm/playgrounds/" +
             encodeURIComponent($button.closest("tr").attr("data-playground-id")!);
-        const html_body = render_confirm_delete_playground();
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete code playground?"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Delete code playground?"}),
+            modal_content_html: $t_html({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             id: "confirm_delete_code_playgrounds_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});
@@ -147,12 +146,7 @@ function build_page(): void {
                 },
                 error(xhr) {
                     $add_playground_button.prop("disabled", false);
-                    ui_report.error(
-                        $t_html({defaultMessage: "Failed"}),
-                        xhr,
-                        $playground_status,
-                        3000,
-                    );
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $playground_status);
                 },
             });
         });
@@ -171,11 +165,12 @@ function build_page(): void {
             return [...language_labels.keys()];
         },
         helpOnEmptyStrings: true,
-        item_html: (item: string): string =>
-            render_typeahead_item({primary: language_labels.get(item)}),
-        matcher(item: string, query: string): boolean {
+        item_html(_query: string): (item: string) => string {
+            return (item: string) => render_typeahead_item({primary: language_labels.get(item)});
+        },
+        matcher(query: string): (item: string) => boolean {
             const q = query.trim().toLowerCase();
-            return item.toLowerCase().startsWith(q);
+            return (item: string) => item.toLowerCase().startsWith(q);
         },
         sorter(items: string[], query: string): string[] {
             return bootstrap_typeahead.defaultSorter(items, query);

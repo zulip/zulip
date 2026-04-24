@@ -2,6 +2,7 @@
     <a data-user-id="{{user_id}}" class="view_user_profile pill" tabindex="0">
         {{#if img_src}}
         <img class="pill-image" src="{{img_src}}" />
+        <span class="pill-image-border"></span>
         {{/if}}
         <span class="pill-label {{#if strikethrough}} strikethrough {{/if}}" >
             <span class="pill-value">{{display_value}}</span>
@@ -11,12 +12,12 @@
             {{~#if has_status~}}
             {{~> status_emoji status_emoji_info~}}
             {{~/if~}}
+            {{#if is_bot}}
+                <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+            {{/if}}
+            {{#unless is_active}}
+                <i class="fa fa-ban pill-deactivated deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Bot is deactivated' }}{{else}}{{t 'User is deactivated' }}{{/if}}"></i>
+            {{/unless}}
         </span>
     </a>
-    {{#unless is_active}}
-        <i class="fa fa-ban pill-deactivated deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Bot is deactivated' }}{{else}}{{t 'User is deactivated' }}{{/if}}"></i>
-    {{/unless}}
-    {{#if is_bot}}
-        <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
-    {{/if}}
 </span>

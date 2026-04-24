@@ -4,9 +4,12 @@ import * as tippy from "tippy.js";
 
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
+import render_message_row_date_tooltip from "../templates/message_row_date_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
+import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
+import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -58,6 +61,28 @@ function message_list_tooltip(target: string, props: Partial<tippy.Props> = {}):
                 // Since tooltips is called with a delay, it is possible that the
                 // message feed is not visible when the tooltip is shown.
                 return false;
+            }
+
+            // Flip tooltip when the reference is partially clipped
+            // by a scroll container (compose preview) or the sticky
+            // recipient header (message feed).
+            if (instance.props.placement === "top") {
+                const ref_rect = instance.reference.getBoundingClientRect();
+                let clipping_top: number | undefined;
+
+                const preview_area = instance.reference.closest(".preview_message_area");
+                if (preview_area) {
+                    clipping_top = preview_area.getBoundingClientRect().top;
+                } else {
+                    const sticky_header = document.querySelector(".sticky_header");
+                    if (sticky_header) {
+                        clipping_top = sticky_header.getBoundingClientRect().bottom;
+                    }
+                }
+
+                if (clipping_top !== undefined && ref_rect.top < clipping_top) {
+                    instance.setProps({placement: "bottom"});
+                }
             }
 
             if (onShow !== undefined && onShow(instance) === false) {
@@ -145,6 +170,19 @@ export function initialize(): void {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
         onCreate(instance) {
+            // We sniff the href, rather than looking up the user's settings
+            // so that the tooltip always matches the link.
+            if (
+                instance.reference.hasAttribute("href") &&
+                instance.reference.getAttribute("href")!.startsWith("#topics/")
+            ) {
+                instance.setContent(
+                    parse_html(
+                        render_narrow_tooltip_list_of_topics({content: instance.props.content}),
+                    ),
+                );
+                return;
+            }
             instance.setContent(
                 parse_html(render_narrow_tooltip({content: instance.props.content})),
             );
@@ -295,7 +333,19 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".recipient_row_date > span", {
+    message_list_tooltip(".date_row_text", {
+        onShow(instance) {
+            if (flatpickr.is_open()) {
+                return false;
+            }
+            const $elem = $(instance.reference);
+            const formal_time_str = $elem.attr("data-tippy-content");
+            if (formal_time_str === undefined) {
+                return false;
+            }
+            instance.setContent(parse_html(render_message_row_date_tooltip({formal_time_str})));
+            return undefined;
+        },
         onHidden(instance) {
             instance.destroy();
         },
@@ -334,14 +384,17 @@ export function initialize(): void {
     });
 
     message_list_tooltip(".rendered_markdown time", {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        content: timerender.get_markdown_time_tooltip as tippy.Content,
+        content: timerender.get_markdown_time_tooltip,
         onHidden(instance) {
             instance.destroy();
         },
     });
 
-    message_list_tooltip(".media-image-element", {
+    // Disable tooltip in compose box and message edit preview. Scrolling over a
+    // large image caused the tooltip to go out of its container and made it look
+    // like it was floating in the app. Since the tooltip was not that useful for
+    // this case, we chose to remove it instead.
+    message_list_tooltip(".media-image-element:not(.preview_content *)", {
         // Add a short delay so the user can mouseover several inline images without
         // tooltips showing and hiding rapidly
         delay: [300, 20],
@@ -412,10 +465,9 @@ export function initialize(): void {
             }
             let edited_time_string = "";
             let moved_time_string = "";
-            if (message_container.edited) {
-                // We know the message has been edited, so we either have a timestamp
-                // from the server or from a local edit.
-                assert(message_container.last_edit_timestamp !== undefined);
+            if (message_container.edited && message_container.last_edit_timestamp !== undefined) {
+                // Poll widget edits are not server-processed text edits, so
+                // there may be no timestamp when only widget edits are present.
                 edited_time_string = get_time_string(message_container.last_edit_timestamp);
             }
             if (message_container.moved) {
@@ -424,9 +476,13 @@ export function initialize(): void {
                 assert(message_container.last_moved_timestamp !== undefined);
                 moved_time_string = get_time_string(message_container.last_moved_timestamp);
             }
+            // We only show the edit history if there are server-tracked text edits or moves.
+            // Widget-only edits (which have no standard server edit history) will have
+            // `last_edit_timestamp` as undefined and `moved` as false.
             const edit_history_access =
+                (message_container.last_edit_timestamp !== undefined || message_container.moved) &&
                 realm.realm_message_edit_history_visibility_policy ===
-                message_edit_history_visibility_policy_values.always.code;
+                    message_edit_history_visibility_policy_values.always.code;
             const message_moved_and_move_history_access =
                 realm.realm_message_edit_history_visibility_policy ===
                     message_edit_history_visibility_policy_values.moves_only.code &&
@@ -436,6 +492,7 @@ export function initialize(): void {
                     render_message_edit_notice_tooltip({
                         moved: message_container.moved,
                         edited: message_container.edited,
+                        widget_edited: message_container.widget_edited,
                         edited_time_string,
                         moved_time_string,
                         edit_history_access,
@@ -452,6 +509,13 @@ export function initialize(): void {
 
     message_list_tooltip(".message_expander, .message_condenser", {
         delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const is_disabled = $(instance.reference).attr("data-enable-tooltip") === "false";
+            if (is_disabled) {
+                return false;
+            }
+            return undefined;
+        },
         onHidden(instance) {
             instance.destroy();
         },

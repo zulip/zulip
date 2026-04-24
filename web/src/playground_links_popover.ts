@@ -1,6 +1,6 @@
 import $ from "jquery";
 import type * as tippy from "tippy.js";
-import * as url_template_lib from "url-template";
+import Template from "uri-template-lite";
 
 import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
 
@@ -117,15 +117,13 @@ function register_click_handlers(): void {
             // a popover is shown.
             const extracted_code = $codehilite_div.find("code").text();
             if (playground_info.length === 1 && playground_info[0] !== undefined) {
-                const url_template = url_template_lib.parseTemplate(
-                    playground_info[0].url_template,
-                );
+                const url_template = new Template(playground_info[0].url_template);
                 const playground_url = url_template.expand({code: extracted_code});
                 window.open(playground_url, "_blank", "noopener,noreferrer");
             } else {
                 const playground_store = new Map<number, RealmPlaygroundWithURL>();
                 for (const playground of playground_info) {
-                    const url_template = url_template_lib.parseTemplate(playground.url_template);
+                    const url_template = new Template(playground.url_template);
                     const playground_url = url_template.expand({code: extracted_code});
                     playground_store.set(playground.id, {...playground, playground_url});
                 }

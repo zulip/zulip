@@ -44,6 +44,21 @@ topics, or even move a topic to a different channel.
 
 <br />
 
+> We switched to Zulip after trying pretty much every chat app out there. And
+> it’s been amazing. The threading-by-topic system is genius. It keeps every
+> conversation in its lane and makes catching up effortless. We’ve cut down on
+> meeting time and repetitive messaging, which easily saves us hours each week.
+> The async setup means no one feels pressured to respond instantly, but nothing
+> slips through the cracks either.
+> <br /> <br />
+> It’s fast, reliable, and honestly feels like
+> the way team chat should work. Once you’ve used Zulip, other tools just feel
+> outdated.
+>
+> — Deepak Shukla, Founder and CEO of [Pearl Lemon](https://pearllemon.com/)
+
+<br />
+
 ## Zulip makes it easy to follow relevant conversations.
 
 With well-organized chat that shows each message in context, it’s easy to stay
@@ -51,9 +66,9 @@ informed and connected. Everyone can follow and contribute to discussions that
 matter to them, without wasting time reading every message, or stressing about
 missing something important.
 
-> “Slack’s interface was too slow and clunky, and the more channels you’re in,
+> Slack’s interface was too slow and clunky, and the more channels you’re in,
 > the harder it is to use. Zulip’s UI makes it easy to access all the information you
-> need.”
+> need.
 >
 > — Jon Jensen, CTO of [End Point Dev](https://www.endpointdev.com/about/) software
 > consultancy ([case study](/case-studies/end-point/))
@@ -79,8 +94,8 @@ works just fine in Zulip! For timely messages, Zulip alerts you with [fully
 customizable](/help/channel-notifications) mobile, email and desktop
 notifications.
 
->  “With Zulip, I can manage hundreds of participants across two communities
->  extremely efficiently, and I don’t feel stressed.”
+>  With Zulip, I can manage hundreds of participants across two communities
+>  extremely efficiently, and I don’t feel stressed.
 >
 > — Dan Allen, [Asciidoctor](https://asciidoctor.org/) open-source project lead ([case
 > study](/case-studies/asciidoctor/))
@@ -94,9 +109,9 @@ communication, everyone can be included in decision-making without being online
 at the same time. Team members can focus when they need to, and contribute to
 discussions asynchronously without interrupting their flow.
 
-> “Zulip lets us move faster, connect with each other better, and have
+> Zulip lets us move faster, connect with each other better, and have
 > interactive technical discussions that are organized, recorded, and welcoming
-> to other people.”
+> to other people.
 >
 >  — Josh Triplett, [Rust Language
 >  team](https://www.rust-lang.org/governance/teams/lang) co-lead ([case
@@ -123,8 +138,8 @@ for a barrage of @-mentions to get leaders’ attention, and the full context fo
 the decision is right there in the conversation thread for everyone's quick
 reference.
 
-> “Using Zulip significantly increases the size of the team for which a manager
-> can meaningfully know what’s going on.”
+> Using Zulip significantly increases the size of the team for which a manager
+> can meaningfully know what’s going on.
 >
 > — Gaute Lund, co-founder of iDrift AS company ([case
 > study](/case-studies/idrift/))
@@ -168,8 +183,8 @@ Zulip
 conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)
 from emails, docs, issue trackers, code comments, or anywhere else.
 
-> “Switching to Zulip has turned out to be one of the best
-> decisions we’ve made.”
+> Switching to Zulip has turned out to be one of the best
+> decisions we’ve made.
 >
 > — Nick Bergson-Shilcock, [Recurse Center](https://www.recurse.com/) co-founder
 > and CEO ([case study](/case-studies/recurse-center/))

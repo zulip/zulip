@@ -18,6 +18,9 @@ post to another view which executes in our code to produce the desired form.
     <input type="hidden" value="{{ key }}" name="key"/>
     <input type="hidden" value="1" name="from_confirmation"/>
     <input type="hidden" value="{% if full_name %}{{ full_name }}{% endif %}" name="full_name"/>
+    {% if next %}
+    <input type="hidden" value="{{ next }}" name="next"/>
+    {% endif %}
 </form>
 
 {% endblock %}

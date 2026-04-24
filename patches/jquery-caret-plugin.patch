@@ -1,0 +1,22 @@
+diff --git a/.npmignore b/.npmignore
+deleted file mode 100644
+index 4da4dff4991ffc88e38185209e5ff8134d9f5044..0000000000000000000000000000000000000000
+diff --git a/dist/jquery.caret.js b/dist/jquery.caret.js
+index c29f02925df743d698e32266f20c47bf6a41e02a..9ca25d23b0276f80ebaf982766eb9a6ea393abbf 100644
+--- a/dist/jquery.caret.js
++++ b/dist/jquery.caret.js
+@@ -1,6 +1,8 @@
+ /*! jQuery Caret Plugin - v1.5.2 - 2014-03-25
+  * https://github.com/acdvorak/jquery.caret
+  * Copyright (c) 2012-2014 Andrew C. Dvorak; Licensed MIT */
++import jQuery from "jquery";
++
+ (function($, undefined) {
+ 
+     var _input = document.createElement('input');
+@@ -540,4 +542,4 @@
+         }
+     });
+ 
+-}(window.jQuery || window.Zepto || window.$));
++}(jQuery));

@@ -6,7 +6,7 @@ import {parseArgs} from "node:util";
 
 import SwaggerParser from "@apidevtools/swagger-parser";
 import * as Diff from "diff";
-import ExampleValidator from "openapi-examples-validator";
+import * as ExampleValidator from "openapi-examples-validator";
 import {format as prettierFormat} from "prettier";
 import {CST, Composer, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} from "yaml";
 

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import argparse
 import filecmp
+import grp
 import json
 import os
+import pwd
 import subprocess
 import sys
 
@@ -76,6 +78,14 @@ def write_updated_configs() -> None:
 
         data = {"shard_map": shard_map, "shard_regexes": shard_regexes}
         sharding_json_f.write(json.dumps(data) + "\n")
+
+        for fh in (nginx_sharding_conf_f, sharding_json_f):
+            os.fchown(
+                fh.fileno(),
+                pwd.getpwnam("zulip").pw_uid,
+                grp.getgrnam("zulip").gr_gid,
+            )
+            os.fchmod(fh.fileno(), 0o644)
 
 
 parser = argparse.ArgumentParser(

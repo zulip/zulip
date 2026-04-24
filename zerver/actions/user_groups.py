@@ -19,6 +19,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
@@ -27,6 +28,7 @@ from zerver.lib.user_groups import (
     get_role_based_system_groups_dict,
     set_defaults_for_group_settings,
 )
+from zerver.lib.workplace_users import check_any_group_used_for_workplace_users_group
 from zerver.models import (
     GroupGroupMembership,
     NamedUserGroup,
@@ -215,6 +217,27 @@ def do_send_create_user_group_event(
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
+def check_add_user_group_core(
+    realm: Realm,
+    name: str,
+    initial_members: list[UserProfile],
+    description: str = "",
+    group_settings_map: Mapping[str, UserGroup] = {},
+    *,
+    acting_user: UserProfile | None,
+) -> NamedUserGroup:
+    user_group = create_user_group_in_database(
+        name,
+        initial_members,
+        realm,
+        description=description,
+        group_settings_map=group_settings_map,
+        acting_user=acting_user,
+    )
+    do_send_create_user_group_event(user_group, [member.id for member in initial_members])
+    return user_group
+
+
 def check_add_user_group(
     realm: Realm,
     name: str,
@@ -225,16 +248,9 @@ def check_add_user_group(
     acting_user: UserProfile | None,
 ) -> NamedUserGroup:
     try:
-        user_group = create_user_group_in_database(
-            name,
-            initial_members,
-            realm,
-            description=description,
-            group_settings_map=group_settings_map,
-            acting_user=acting_user,
+        return check_add_user_group_core(
+            realm, name, initial_members, description, group_settings_map, acting_user=acting_user
         )
-        do_send_create_user_group_event(user_group, [member.id for member in initial_members])
-        return user_group
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
 
@@ -347,9 +363,25 @@ def bulk_add_members_to_user_groups(
         for user_group in user_groups
     )
 
+    if check_any_group_used_for_workplace_users_group(realm, user_groups):
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            event_time=now,
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "trigger": "user_membership_changed",
+            },
+        )
+
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+        maybe_enqueue_audit_log_upload(realm)
+
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
-    recent_traffic = get_streams_traffic({stream.id for stream in streams}, realm)
+    recent_traffic = get_streams_traffic(realm, {stream.id for stream in streams})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
 
     for user_group in user_groups:
@@ -419,6 +451,22 @@ def bulk_remove_members_from_user_groups(
         for user_id in user_profile_ids
         for user_group in user_groups
     )
+
+    if check_any_group_used_for_workplace_users_group(realm, user_groups):
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            event_time=now,
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "trigger": "user_membership_changed",
+            },
+        )
+
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+        maybe_enqueue_audit_log_upload(realm)
 
     for user_group in user_groups:
         do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
@@ -491,9 +539,25 @@ def add_subgroups_to_user_group(
     ]
     RealmAuditLog.objects.bulk_create(audit_log_entries)
 
+    if check_any_group_used_for_workplace_users_group(realm, [user_group]):
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            event_time=now,
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "trigger": "subgroups_changed",
+            },
+        )
+
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+        maybe_enqueue_audit_log_upload(realm)
+
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
-    recent_traffic = get_streams_traffic({stream.id for stream in streams}, realm)
+    recent_traffic = get_streams_traffic(realm, {stream.id for stream in streams})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
 
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
@@ -565,6 +629,22 @@ def remove_subgroups_from_user_group(
         ),
     ]
     RealmAuditLog.objects.bulk_create(audit_log_entries)
+
+    if check_any_group_used_for_workplace_users_group(realm, [user_group]):
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            event_time=now,
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "trigger": "subgroups_changed",
+            },
+        )
+
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+        maybe_enqueue_audit_log_upload(realm)
 
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
 

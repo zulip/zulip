@@ -1,0 +1,35 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import DependsOnPermissions from "../include/_DependsOnPermissions.mdx";
+import RightSidebarViewProfile from "../include/_RightSidebarViewProfile.mdx";
+
+import CloseIcon from "~icons/zulip-icon/close";
+
+<DependsOnPermissions />
+
+<Tabs>
+  <TabItem label="Via group settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **Members** tab on the right.
+      1. Under **Members**, find the user or group you would like to remove.
+      1. Click the **remove** (<CloseIcon />) icon in that row. Zulip will notify
+         everyone who is removed from the group.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <RightSidebarViewProfile />
+
+      1. Select the **User groups** tab.
+      1. Find the group you would like to remove the user from.
+      1. Click the **remove** (<CloseIcon />) icon in that row. Zulip will notify
+         the user about the groups they've been removed from.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

@@ -283,6 +283,26 @@ class UnreadTopicCounter {
         this.reverse_lookup.delete(message_id);
     }
 
+    update_topic_name_case(stream_id: number, old_topic: string, new_topic: string): void {
+        const per_stream_bucketer = this.bucketer.get(stream_id);
+        if (per_stream_bucketer === undefined) {
+            return;
+        }
+
+        const topic_bucket = per_stream_bucketer.get(old_topic);
+        if (topic_bucket === undefined) {
+            return;
+        }
+
+        // Resetting with new_topic updates the display casing for
+        // topic_bucket.
+        per_stream_bucketer.set(new_topic, topic_bucket);
+
+        for (const message_id of topic_bucket) {
+            this.reverse_lookup.set(message_id, {stream_id, topic: new_topic});
+        }
+    }
+
     get_counts_per_topic(): UnreadTopicCounts {
         let stream_unread_messages = 0;
         const topic_counts_by_stream_id = new Map<
@@ -330,8 +350,10 @@ class UnreadTopicCounter {
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
             // so that callers have a view of the **current** world.
+            // Similarly we ignore unreads for archived channels, since
+            // they don't show up in the left sidebar either.
             const sub = sub_store.get(stream_id);
-            if (!sub || !stream_data.is_subscribed(stream_id)) {
+            if (!sub || !stream_data.is_subscribed(stream_id) || sub.is_archived) {
                 continue;
             }
 
@@ -597,7 +619,7 @@ class UnreadTopicCounter {
             // topic in this stream containing a given unread message
             // ID. If it's not in this stream, we'll get undefined.
             const stream_topic = this.reverse_lookup.get(message_id);
-            if (stream_topic !== undefined && stream_topic.stream_id === stream_id) {
+            if (stream_topic?.stream_id === stream_id) {
                 // Important: We lower-case topics here before adding them
                 // to this set, to support case-insensitive checks.
                 result.add(stream_topic.topic.toLowerCase());
@@ -727,6 +749,14 @@ export function update_unread_topics(
     });
 }
 
+export function update_unread_topic_name_case(
+    stream_id: number,
+    old_topic: string,
+    new_topic: string,
+): void {
+    unread_topic_counter.update_topic_name_case(stream_id, old_topic, new_topic);
+}
+
 export function process_loaded_messages(
     messages: Message[],
     expect_no_new_unreads = false,
@@ -825,6 +855,20 @@ export function process_unread_message(message: UnreadMessageData): void {
     update_message_for_mention(message);
 }
 
+function is_message_in_unmuted_context(message: UnreadMessageData | Message): boolean {
+    // A message is in unmuted context if:
+    // - the message is a direct message or
+    // - the message is in a non muted topic in an unmuted stream or
+    // - the message is in a followed or an unmuted topic in a muted stream.
+    return (
+        message.type === "private" ||
+        (!stream_data.is_muted(message.stream_id) &&
+            !user_topics.is_topic_muted(message.stream_id, message.topic)) ||
+        (stream_data.is_muted(message.stream_id) &&
+            user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic))
+    );
+}
+
 export function update_message_for_mention(
     message: UnreadMessageData | Message,
     content_edited = false,
@@ -840,17 +884,7 @@ export function update_message_for_mention(
         return false;
     }
 
-    // A message is said to have an unmuted mention if message contains a mention and
-    // if the message is a direct message or
-    // if the message is in a non muted topic in an unmuted stream or
-    // if the message is in a followed or an unmuted topic in a muted stream.
-    const is_unmuted_mention =
-        message.mentioned &&
-        (message.type === "private" ||
-            (!stream_data.is_muted(message.stream_id) &&
-                !user_topics.is_topic_muted(message.stream_id, message.topic)) ||
-            (stream_data.is_muted(message.stream_id) &&
-                user_topics.is_topic_unmuted_or_followed(message.stream_id, message.topic)));
+    const is_unmuted_mention = message.mentioned && is_message_in_unmuted_context(message);
 
     if (is_unmuted_mention || message.mentioned_me_directly) {
         unread_mentions_counter.add(message.id);

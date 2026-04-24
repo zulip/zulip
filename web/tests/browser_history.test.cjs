@@ -3,7 +3,6 @@
 const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace.cjs");
-const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
@@ -54,21 +53,17 @@ test("error for bad hashes", () => {
     browser_history.update(hash);
 });
 
-test("update internal hash if required", ({override_rewire}) => {
+test("update internal hash if required", () => {
     const hash = "#test/hash";
-    const stub = make_stub();
-    override_rewire(browser_history, "update", stub.f);
     browser_history.update_hash_internally_if_required(hash);
-    assert.equal(stub.num_calls, 1);
+    assert.equal(window.location.hash, hash);
 
-    window.location.hash = "#test/hash";
-    // update with same hash
+    // Calling again with the same hash should be a no-op.
+    // If update() were called, it would log a blueslip.info
+    // for the redundant hash, so verify no new info appeared.
+    const info_count = blueslip.get_test_logs("info").length;
     browser_history.update_hash_internally_if_required(hash);
-    // but no update was made since the
-    // hash was already updated.
-    // Evident by no increase in number of
-    // calls to stub.
-    assert.equal(stub.num_calls, 1);
+    assert.equal(blueslip.get_test_logs("info").length, info_count);
 });
 
 test("web-public view hash restore", () => {

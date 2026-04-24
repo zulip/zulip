@@ -102,7 +102,12 @@ export function get_recipient_label(
             return get_stream_recipient_label(stream_id, topic);
         }
         if (user_ids_string !== undefined) {
+            // Check for validity of user ids to avoid any errors in case user
+            // narrowed to an incorrect URL.
             const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
+            if (!people.is_valid_user_ids(user_ids)) {
+                return undefined;
+            }
             return get_direct_message_recipient_label(user_ids);
         }
         // Show the standard button text for empty narrows without
@@ -127,12 +132,12 @@ export let update_reply_button_state = (disable = false): void => {
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
         if (maybe_get_selected_message_stream_id() !== undefined) {
-            $("#compose_buttons .compose-reply-button-wrapper").attr(
+            $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
                 "data-reply-button-type",
                 "stream_disabled",
             );
         } else {
-            $("#compose_buttons .compose-reply-button-wrapper").attr(
+            $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
                 "data-reply-button-type",
                 "direct_disabled",
             );
@@ -140,12 +145,12 @@ export let update_reply_button_state = (disable = false): void => {
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
+        $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
             "data-reply-button-type",
             "selected_message",
         );
     } else {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
+        $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
             "data-reply-button-type",
             "selected_conversation",
         );

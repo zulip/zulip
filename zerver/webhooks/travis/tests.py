@@ -1,20 +1,24 @@
 from urllib.parse import urlencode
 
+import orjson
 from typing_extensions import override
 
 from zerver.lib.test_classes import WebhookTestCase
 
 
 class TravisHookTests(WebhookTestCase):
-    CHANNEL_NAME = "travis"
-    URL_TEMPLATE = "/api/v1/external/travis?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "travis"
-    TOPIC_NAME = "builds"
-    EXPECTED_MESSAGE = """
-Author: josh_mandel
-Build status: Passed :thumbs_up:
-Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
-""".strip()
+    NON_PR_TOPIC = "travis-test / main"
+    PR_TOPIC = "travis-test / PR #2 feat: Add Name.txt."
+
+    EXPECTED_NON_PULL_REQUEST_MESSAGE = (
+        ":time_ticking: Build [#1](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204) "
+        "**is in progress** for commit [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33"
+    )
+
+    EXPECTED_PULL_REQUEST_MESSAGE = (
+        ":warning: Build [#42](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277927122) "
+        "**failed** for commit [feat: Created Name.txt.](https://github.com/sathwikshetty33/travis-test/pull/2) by Sathwik Shetty."
+    )
 
     def test_travis_message(self) -> None:
         """
@@ -25,9 +29,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         """
 
         self.check_webhook(
-            "build",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            "non_pull_request",
+            self.NON_PR_TOPIC,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE}.",
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -36,13 +40,13 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.PR_TOPIC,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
-            "build",
+            "non_pull_request",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
@@ -57,9 +61,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
         self.check_webhook(
-            "build",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            "non_pull_request",
+            self.NON_PR_TOPIC,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE}.",
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -67,9 +71,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.url = f'{self.build_webhook_url()}&only_events=["push"]'
 
         self.check_webhook(
-            "build",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            "non_pull_request",
+            self.NON_PR_TOPIC,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE}.",
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -83,15 +87,15 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.url = f'{self.build_webhook_url()}&exclude_events=["push"]'
 
         self.check_webhook(
-            "build",
+            "non_pull_request",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.PR_TOPIC,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -100,15 +104,15 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.PR_TOPIC,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
-            "build",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            "non_pull_request",
+            self.NON_PR_TOPIC,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE}.",
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -122,7 +126,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
         self.check_webhook(
-            "build",
+            "non_pull_request",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
@@ -136,12 +140,37 @@ one or more new messages.
 
         with self.assertRaises(Exception) as exc:
             self.check_webhook(
-                "build", content_type="application/x-www-form-urlencoded", expect_noop=True
+                "non_pull_request",
+                content_type="application/x-www-form-urlencoded",
+                expect_noop=True,
             )
         self.assertEqual(str(exc.exception), expected_error_message)
 
     @override
     def get_body(self, fixture_name: str) -> str:
+        if fixture_name in {"api", "cron"}:
+            payload = orjson.loads(
+                self.webhook_fixture_data("travis", "non_pull_request", file_type="json")
+            )
+            payload["type"] = fixture_name
+            return urlencode({"payload": orjson.dumps(payload).decode()})
+
         return urlencode(
             {"payload": self.webhook_fixture_data("travis", fixture_name, file_type="json")}
+        )
+
+    def test_travis_api_event(self) -> None:
+        self.check_webhook(
+            "api",
+            self.NON_PR_TOPIC,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE} (triggered by api).",
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_cron_event(self) -> None:
+        self.check_webhook(
+            "cron",
+            self.NON_PR_TOPIC,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE} (triggered by cron).",
+            content_type="application/x-www-form-urlencoded",
         )

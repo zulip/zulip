@@ -5,10 +5,13 @@ call](https://zulip.com/help/start-a-call) with the click of a button, using the
 call provider of your choice. The call providers
 supported by Zulip are:
 
-- [Jitsi Meet](https://zulip.com/integrations/doc/jitsi), a fully-encrypted,
+- [Jitsi Meet](https://zulip.com/integrations/jitsi), a fully-encrypted,
   100% open source video conferencing solution.
-- [Zoom](https://zulip.com/integrations/doc/zoom)
-- [BigBlueButton](https://zulip.com/integrations/doc/big-blue-button)
+- [Zoom](https://zulip.com/integrations/zoom)
+- [BigBlueButton](https://zulip.com/integrations/big-blue-button)
+- [Constructor Groups](https://zulip.com/integrations/constructor-groups)
+- [Nextcloud Talk](https://zulip.com/integrations/nextcloud-talk)
+- [Webex](https://zulip.com/integrations/category/video-calling)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
@@ -96,6 +99,19 @@ type of Zoom application for your Zulip server.
      to `https://zulip.example.com/calls/zoom/complete` (replacing
      `zulip.example.com` by your main Zulip hostname).
 
+<!--
+If we ever need to increase scopes in the future, we should also include the scopes
+required to retrieve a user's details via this
+endpoint: https://developers.zoom.us/docs/api/users/#tag/users/get/users/{userId}
+
+This will help us implement a deauthorization workflow for Zoom app integrations,
+where we delete the user's zoom_token from the database upon receiving a request
+from Zoom’s deauthorization webhook, based on the user's zoom_id, which is part
+of the deauthorization request payload.
+
+Details: https://chat.zulip.org/#narrow/channel/49-development-help/topic/What's.20the.20use.20of.20.60.2Fcalls.2Fzoom.2Fdeauthorize.60.20endpoint/with/2296326
+ -->
+
 1. In the **Scopes** tab, add the `meeting:write:meeting` scope.
 
 1. Switch to the **Production** tab and complete the information needed
@@ -119,9 +135,13 @@ type of Zoom application for your Zulip server.
    to be your app's "Client Secret".
 
 1. In `/etc/zulip/settings.py`, set `VIDEO_ZOOM_CLIENT_ID` to your
-   app's "Client ID". If your using a Zoom
-   [Server to Server OAuth app](#server-to-server-oauth-app),
-   set `VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID` to be your app's "Account ID".
+   app's "Client ID". Some Zoom enterprise customers that don't use
+   `zoom.us` will need to set `VIDEO_ZOOM_API_URL` for the Zoom API
+   server and `VIDEO_ZOOM_OAUTH_URL` for your instance's
+   authorization. If you're using a Zoom [Server to Server OAuth
+   app](#server-to-server-oauth-app), set
+   `VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID` to be your app's "Account
+   ID".
 
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
@@ -152,7 +172,7 @@ Server as follows:
    to be your BigBlueButton Server's shared secret.
 
 2. In `/etc/zulip/settings.py`, set `BIG_BLUE_BUTTON_URL` to your
-   to be your BigBlueButton Server's API URL.
+   BigBlueButton Server's API URL.
 
 3. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
@@ -161,3 +181,62 @@ This enables BigBlueButton support in your Zulip server. Finally, [configure
 BigBlueButton as the video call
 provider](https://zulip.com/help/configure-call-provider)
 in the Zulip organizations where you want to use it.
+
+## Constructor Groups
+
+To use the [Constructor Groups](https://constructor.tech/products/learning/groups)
+video call integration on a self-hosted Zulip installation, you'll need to
+have a Constructor Groups account. See documentation to configure the Constructor
+Groups video call integration [here](https://zulip.com/integrations/constructor-groups).
+
+## Nextcloud Talk
+
+To use the [Nextcloud Talk](https://nextcloud.com/talk/) video call
+integration on a self-hosted Zulip installation, you'll need to have access
+to a Nextcloud server (version 22+) with the Talk app enabled. See
+documentation to configure the Nextcloud Talk video call integration
+[here](https://zulip.com/integrations/nextcloud-talk).
+
+## Webex
+
+To use the [Webex](https://www.webex.com/) integration on a self-hosted
+Zulip installation, you'll need to register a custom Webex integration.
+
+For users in paid Webex organizations, which have the ability to create
+public rooms that are visible to every member within that organization,
+an ad-hoc meeting is created in Webex. Otherwise, for users of free
+Webex organizations, a personal room meeting is created in Webex.
+
+### Create a custom Webex integration
+
+1. Visit the [New Integration](https://developer.webex.com/my-apps/new/integration)
+   page on the Webex developer portal.
+
+1. Select "No" for "Will this integration use a mobile SDK?".
+
+1. Fill in the **Integration name**, **Icon** and **App Hub Description**
+   according to your preferences.
+
+1. For **Redirect URI(s)**, enter `https://zulip.example.com/calls/webex/complete`
+   replacing `zulip.example.com` with your Zulip organization's URL.
+
+1. For **Scopes**, select `spark:all`, `meeting:schedules_read` and
+   `meeting:schedules_write`, and select **Add Integration**.
+
+1. _optional_: You can submit the integration to the [Webex App Hub](https://apphub.webex.com/)
+   by following [this documentation](https://developer.webex.com/create/docs/app-hub-submission-process).
+
+### Configure your Zulip server
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `video_webex_client_secret`
+   to your Webex integration's "Client Secret".
+
+1. In `/etc/zulip/settings.py`, set `VIDEO_WEBEX_CLIENT_ID` to your
+   Webex integration's "Client ID".
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+This enables Webex support in your Zulip server. Finally, [configure Webex
+as the video call provider](https://zulip.com/help/configure-call-provider)
+in the Zulip organization where you want to use it.

@@ -9,4 +9,14 @@ exports.reset = () => {
             delete exports.page_params[field];
         }
     }
+    exports.page_params.request_language = "en";
+    exports.page_params.translation_data = new Proxy(
+        {},
+        {
+            get: (_target, key) => `translated: ${key}`,
+            getOwnPropertyDescriptor: (_target, _key) => ({configurable: true}),
+        },
+    );
 };
+
+exports.reset();

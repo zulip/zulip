@@ -10,13 +10,16 @@ import type {MessageListData} from "./message_list_data.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import {MessageListView} from "./message_list_view.ts";
 import type {Message} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config.ts";
 import * as stream_data from "./stream_data.ts";
 import * as unread from "./unread.ts";
+import * as unread_ui from "./unread_ui.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export type RenderInfo = {need_user_to_scroll: boolean};
 
@@ -97,10 +100,19 @@ export class MessageList {
     // such as "Mark as unread", that should disable marking
     // messages as read until prevent_reading is called again.
     //
+    // Also initially set to true for /near/ conversation views
+    // until maybe_resume_reading_for_near_view verifies it is
+    // safe to start reading.
+    //
     // Distinct from filter.can_mark_messages_read(), which is a
     // property of the type of narrow, regardless of actions by
     // the user. Possibly this can be unified in some nice way.
     reading_prevented: boolean;
+    // Whether the initial /near/ view reading gate check is still
+    // pending. Unlike reading_prevented, this is not affected by
+    // prevent_reading(), so user "mark as unread" actions cannot
+    // inadvertently re-trigger the gate check and override them.
+    near_view_reading_gate_pending: boolean;
 
     // TODO: Clean up these monkey-patched properties somehow.
     last_message_historical?: boolean;
@@ -110,6 +122,8 @@ export class MessageList {
         data: MessageListData;
         excludes_muted_topics?: boolean;
         is_node_test?: boolean;
+        reading_prevented?: boolean;
+        near_view_reading_gate_pending?: boolean;
     }) {
         MessageList.id_counter += 1;
         this.id = MessageList.id_counter;
@@ -123,7 +137,15 @@ export class MessageList {
 
         this.view = new MessageListView(this, collapse_messages, opts.is_node_test);
         this.is_combined_feed_view = this.data.filter.is_in_home();
-        this.reading_prevented = false;
+        // In /near/ conversation views, prevent reading initially to
+        // avoid marking messages as read that the user hasn't seen.
+        // Reading is resumed dynamically once we verify the oldest
+        // unread message is visible via maybe_resume_reading_for_near_view.
+        this.reading_prevented =
+            opts.reading_prevented ?? this.data.filter.is_conversation_view_with_near();
+        this.near_view_reading_gate_pending =
+            opts.near_view_reading_gate_pending ??
+            this.data.filter.is_conversation_view_with_near();
 
         return this;
     }
@@ -188,6 +210,61 @@ export class MessageList {
 
     resume_reading(): void {
         this.reading_prevented = false;
+    }
+
+    maybe_resume_reading_for_near_view(): void {
+        // When old_unreads_missing is true, the global unread data
+        // from the server may be incomplete, so get_first_unread_info
+        // could return incorrect results. However, if we've backfilled
+        // to the oldest message in this conversation
+        // (has_found_oldest), we have complete local data and can
+        // safely proceed with the gate check.
+        if (
+            !this.near_view_reading_gate_pending ||
+            (unread.old_unreads_missing && !this.data.fetch_status.has_found_oldest())
+        ) {
+            return;
+        }
+
+        const unread_info = narrow_state.get_first_unread_info(this.data.filter);
+        if (unread_info.flavor === "cannot_compute") {
+            // This can happen when /near/ is used with filters that
+            // can't be applied locally, such as search. We clear
+            // the gate to stop future checks but do not call
+            // resume_reading(), so messages won't be marked as read.
+            this.near_view_reading_gate_pending = false;
+            return;
+        }
+
+        if (unread_info.flavor === "not_found") {
+            // All messages are read; safe to resume marking as read
+            // so that newly arriving messages are handled normally.
+            this.near_view_reading_gate_pending = false;
+            this.resume_reading();
+            unread_ui.update_unread_banner();
+            return;
+        }
+
+        assert(unread_info.flavor === "found");
+        const first_unread_id = unread_info.msg_id;
+
+        const $row = this.get_row(first_unread_id);
+        if ($row.length === 0) {
+            // First unread message is not rendered yet.
+            return;
+        }
+
+        // Check if the top of the oldest unread message is at or
+        // below the top of the visible area. If so, the user has
+        // scrolled past all prior messages and it's safe to start
+        // marking messages as read.
+        const row_top = util.the($row).getBoundingClientRect().top;
+        const viewport_info = message_viewport.message_viewport_info();
+        if (row_top >= viewport_info.visible_top) {
+            this.near_view_reading_gate_pending = false;
+            this.resume_reading();
+            unread_ui.update_unread_banner();
+        }
     }
 
     add_messages(
@@ -452,6 +529,14 @@ export class MessageList {
         // If user narrows to a stream, don't update
         // trailing bookend if user is subscribed.
         const sub = stream_data.get_sub_by_id(stream_id);
+
+        if (sub && !stream_data.can_toggle_subscription(sub)) {
+            // If the user is not subscribed and cannot subscribe
+            // (e.g., they don't have content access to the channel),
+            // then we don't show a trailing bookend.
+            return;
+        }
+
         if (
             sub &&
             sub.subscribed &&
@@ -473,6 +558,8 @@ export class MessageList {
             just_unsubscribed = true;
         }
 
+        const can_subscribe = sub && stream_data.can_toggle_subscription(sub);
+
         this.view.render_trailing_bookend(
             stream_id,
             sub?.name,
@@ -482,6 +569,7 @@ export class MessageList {
             page_params.is_spectator,
             invite_only ?? false,
             is_web_public ?? false,
+            can_subscribe,
         );
     }
 
@@ -513,16 +601,18 @@ export class MessageList {
         }
     }
 
-    show_edit_message($row: JQuery, $form: JQuery): void {
+    show_edit_message($row: JQuery, $form: JQuery, do_autosize: boolean): void {
         if ($row.find(".message_edit_form form").length > 0) {
             return;
         }
         $row.find(".messagebox-content").append($form);
         $row.find(".message_content, .status-message, .message_controls").hide();
         $row.find(".messagebox-content").addClass("content_edit_mode");
-        // autosize will not change the height of the textarea if the `$row` is not
-        // rendered in DOM yet. So, we call `autosize.update` post render.
-        autosize($row.find(".message_edit_content"));
+        if (do_autosize) {
+            // autosize will not change the height of the textarea if the `$row` is not
+            // rendered in DOM yet. So, we call `autosize.update` post render.
+            autosize($row.find(".message_edit_content"));
+        }
         compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
     }
 
@@ -541,14 +631,14 @@ export class MessageList {
         $recipient_row.find(".topic_edit").append($form);
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
-        $recipient_row.find(".recipient-bar-control").hide();
+        $recipient_row.find(".recipient_bar_controls").addClass("topic-edit-mode");
     }
 
     hide_edit_topic_on_recipient_row($recipient_row: JQuery): void {
         $recipient_row.find(".stream_topic").show();
         $recipient_row.find(".topic_edit").empty();
         $recipient_row.find(".topic_edit").hide();
-        $recipient_row.find(".recipient-bar-control").show();
+        $recipient_row.find(".recipient_bar_controls").removeClass("topic-edit-mode");
     }
 
     reselect_selected_id(): void {
@@ -614,7 +704,7 @@ export class MessageList {
     }
 
     all_messages(): Message[] {
-        return this.data.all_messages();
+        return this.data.all_messages_after_mute_filtering();
     }
 
     first_unread_message_id(): number | undefined {

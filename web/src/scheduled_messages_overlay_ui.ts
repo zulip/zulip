@@ -6,6 +6,7 @@ import render_scheduled_messages_overlay from "../templates/scheduled_messages_o
 
 import * as browser_history from "./browser_history.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -75,10 +76,9 @@ export const keyboard_handling_context = {
 };
 
 function sort_scheduled_messages(scheduled_messages: ScheduledMessage[]): ScheduledMessage[] {
-    const sorted_scheduled_messages = scheduled_messages.sort(
+    return scheduled_messages.toSorted(
         (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
     );
-    return sorted_scheduled_messages;
 }
 
 export function handle_keyboard_events(event_key: string): void {
@@ -147,8 +147,14 @@ export function launch(): void {
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.append($(rendered_list));
 
-    const first_element_id = keyboard_handling_context.get_items_ids()[0];
-    messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    const restore_id = messages_overlay_ui.get_and_clear_pending_restore_element_id();
+    if (
+        restore_id === undefined ||
+        !messages_overlay_ui.try_set_initial_element(restore_id, keyboard_handling_context)
+    ) {
+        const first_element_id = keyboard_handling_context.get_items_ids()[0];
+        messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    }
 }
 
 export function rerender(): void {
@@ -173,7 +179,19 @@ export function remove_scheduled_message_id(scheduled_msg_id: number): void {
 
 export function initialize(): void {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
+        if (
+            messages_overlay_ui.handle_overlay_media_click(
+                e,
+                "scheduled",
+                keyboard_handling_context,
+                () => {
+                    browser_history.go_to_location("#scheduled");
+                },
+            )
+        ) {
             return;
         }
 

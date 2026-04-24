@@ -13,18 +13,20 @@ async function test_subscription_button(page: Page): Promise<void> {
 
     async function subscribed(): Promise<ElementHandle | null> {
         await page.waitForSelector(
-            `xpath///*[${common.has_class_x("stream_settings_header")}]//*[${common.has_class_x(
+            `xpath///*[${common.has_class_x("stream-info-title")}]//*[${common.has_class_x(
                 "sub_unsub_button",
             )} and normalize-space()="Unsubscribe"]`,
+            {visible: true},
         );
         return await page.waitForSelector(subscribed_selector, {visible: true});
     }
 
     async function unsubscribed(): Promise<ElementHandle | null> {
         await page.waitForSelector(
-            `xpath///*[${common.has_class_x("stream_settings_header")}]//*[${common.has_class_x(
+            `xpath///*[${common.has_class_x("stream-info-title")}]//*[${common.has_class_x(
                 "sub_unsub_button",
             )} and normalize-space()="Subscribe"]`,
+            {visible: true},
         );
         return await page.waitForSelector(unsubscribed_selector, {visible: true});
     }
@@ -52,4 +54,4 @@ async function subscriptions_tests(page: Page): Promise<void> {
     await test_subscription_button(page);
 }
 
-common.run_test(subscriptions_tests);
+await common.run_test(subscriptions_tests);

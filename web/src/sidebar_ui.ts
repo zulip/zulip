@@ -1,13 +1,16 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
+import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {ListCursor} from "./list_cursor.ts";
@@ -21,7 +24,7 @@ import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
-import * as search_util from "./search_util.ts";
+import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -30,6 +33,9 @@ import {current_user} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
+
+const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
 
@@ -290,8 +296,8 @@ export function initialize(): void {
     );
 }
 
-export function update_expanded_views_for_search(search_value: string): void {
-    if (!search_value) {
+export function update_expanded_views_for_search(search_term: string): void {
+    if (!search_term) {
         // Show all the views if there is no search term.
         $("#left-sidebar-navigation-area, #left-sidebar-navigation-list .top_left_row").removeClass(
             "hidden-by-filters",
@@ -303,11 +309,17 @@ export function update_expanded_views_for_search(search_value: string): void {
 
     let any_view_visible = false;
     const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const show_all_views = util.prefix_match({
+        value: LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
+        search_term,
+    });
     for (const view of expanded_views) {
-        let show_view = search_util.vanilla_match({
-            val: view.name,
-            search_terms: search_util.get_search_terms(search_value),
-        });
+        let show_view =
+            show_all_views ||
+            util.prefix_match({
+                value: view.name,
+                search_term,
+            });
         const $view = $(`.top_left_${view.css_class_suffix}`);
 
         if (show_view && $view.hasClass("top_left_scheduled_messages")) {
@@ -331,16 +343,11 @@ export function initialize_left_sidebar(): void {
 
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
-        development_environment: page_params.development_environment,
-        is_inbox_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,
-        is_all_messages_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
-        is_recent_view_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         is_spectator: page_params.is_spectator,
         primary_condensed_views,
         expanded_views,
+        LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
+        LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE: pm_list.LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
@@ -396,14 +403,39 @@ export function initialize_right_sidebar(): void {
         },
     );
 
+    $("#buddy-list-users-matching-view-container").on(
+        "keydown",
+        ".buddy-list-section-toggle",
+        (e) => {
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                buddy_list.toggle_users_matching_view_section();
+            }
+        },
+    );
+
     $("#buddy-list-participants-container").on("click", ".buddy-list-subsection-header", (e) => {
         e.stopPropagation();
         buddy_list.toggle_participants_section();
     });
 
+    $("#buddy-list-participants-container").on("keydown", ".buddy-list-section-toggle", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            e.stopPropagation();
+            buddy_list.toggle_participants_section();
+        }
+    });
+
     $("#buddy-list-other-users-container").on("click", ".buddy-list-subsection-header", (e) => {
         e.stopPropagation();
         buddy_list.toggle_other_users_section();
+    });
+
+    $("#buddy-list-other-users-container").on("keydown", ".buddy-list-section-toggle", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            e.stopPropagation();
+            buddy_list.toggle_other_users_section();
+        }
     });
 
     function close_buddy_list_popover(): void {
@@ -413,33 +445,37 @@ export function initialize_right_sidebar(): void {
         }
     }
 
-    popover_menus.register_popover_menu("#buddy-list-menu-icon", {
-        theme: "popover-menu",
-        placement: "right",
-        onCreate(instance) {
-            popover_menus.popover_instances.buddy_list = instance;
-            instance.setContent(
-                ui_util.parse_html(
-                    render_buddy_list_popover({
-                        display_style_options: settings_config.user_list_style_values,
-                        can_invite_users:
-                            settings_data.user_can_invite_users_by_email() ||
-                            settings_data.user_can_create_multiuse_invite(),
-                    }),
-                ),
-            );
+    popover_menus.register_popover_menu(
+        "#buddy-list-menu-icon",
+        {
+            theme: "popover-menu",
+            placement: "right",
+            onCreate(instance) {
+                popover_menus.popover_instances.buddy_list = instance;
+                instance.setContent(
+                    ui_util.parse_html(
+                        render_buddy_list_popover({
+                            display_style_options: settings_config.user_list_style_values,
+                            can_invite_users:
+                                settings_data.user_can_invite_users_by_email() ||
+                                settings_data.user_can_create_multiuse_invite(),
+                        }),
+                    ),
+                );
+            },
+            onMount() {
+                const current_user_list_style =
+                    settings_preferences.user_settings_panel.settings_object.user_list_style;
+                $("#buddy-list-actions-menu-popover")
+                    .find(`.user_list_style_choice[value=${current_user_list_style}]`)
+                    .prop("checked", true);
+            },
+            onHidden() {
+                close_buddy_list_popover();
+            },
         },
-        onMount() {
-            const current_user_list_style =
-                settings_preferences.user_settings_panel.settings_object.user_list_style;
-            $("#buddy-list-actions-menu-popover")
-                .find(`.user_list_style_choice[value=${current_user_list_style}]`)
-                .prop("checked", true);
-        },
-        onHidden() {
-            close_buddy_list_popover();
-        },
-    });
+        {also_trigger_on_enter: true},
+    );
 
     $("body").on(
         "click",
@@ -470,7 +506,7 @@ function get_header_rows_selectors(): string {
         // Views header.
         "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
         // DM Headers
-        "#direct-messages-section-header, " +
+        "#left-sidebar:not(.direct-messages-hidden-by-filters) #direct-messages-section-header, " +
         // All channel headers.
         ".stream-list-section-container:not(.no-display) .stream-list-subsection-header"
     );
@@ -592,7 +628,7 @@ function actually_update_left_sidebar_for_search(): void {
     }
 
     // Update left sidebar DM list.
-    pm_list.update_private_messages(is_left_sidebar_search_active);
+    pm_list.update_private_messages();
 
     // Update left sidebar channel list.
     stream_list.update_streams_sidebar();
@@ -605,7 +641,139 @@ function actually_update_left_sidebar_for_search(): void {
     );
 }
 
-const update_left_sidebar_for_search = _.throttle(actually_update_left_sidebar_for_search, 50);
+// Scroll position before user started searching.
+let pre_search_scroll_position = 0;
+let previous_search_term = "";
+
+const update_left_sidebar_for_search = _.throttle(() => {
+    const search_term = ui_util.get_left_sidebar_search_term();
+    const is_previous_search_term_empty = previous_search_term === "";
+    previous_search_term = search_term;
+
+    const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
+    if (search_term === "") {
+        requestAnimationFrame(() => {
+            actually_update_left_sidebar_for_search();
+            // Restore previous scroll position.
+            left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
+        });
+    } else {
+        if (is_previous_search_term_empty) {
+            // Store original scroll position to be restored later.
+            pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
+        }
+        requestAnimationFrame(() => {
+            actually_update_left_sidebar_for_search();
+            // Always scroll to top when there is a search term present.
+            left_sidebar_scroll_container.scrollTop(0);
+        });
+    }
+}, 50);
+
+function focus_left_sidebar_row($row: JQuery): void {
+    // For header rows, focus the section toggle icon.
+    if ($row.hasClass("left-sidebar-section-header")) {
+        util.the($row.find(".sidebar-heading-icon")).focus({preventScroll: true});
+        return;
+    }
+    // For focusable rows, either they have an <a> tag that gets
+    // focus, or a tabindex="0" label directly on them. Determine
+    // which case we're in and focus the appropriate element.
+    const $link = $row.find("a");
+    if ($link.length > 0) {
+        util.the($link).focus({preventScroll: true});
+    } else if (util.the($row).tabIndex === 0) {
+        util.the($row).focus({preventScroll: true});
+    } else {
+        blueslip.error("Left sidebar row has no focusable child", {
+            class: util.the($row).className,
+        });
+    }
+}
+
+// Given the currently-focused element and arrow-key direction, return the row
+// we should land on, or undefined to do nothing. The returned row is where we
+// sync the cursor; if focus was already in a navigable row, we sync to it and
+// then step one further in `direction`.
+function resolve_left_sidebar_arrow_target(
+    $active: JQuery,
+    direction: "up" | "down",
+): JQuery | undefined {
+    const $row = $active.closest(".top_left_row, .bottom_left_row, .left-sidebar-section-header");
+    if ($row.length > 0) {
+        // Focus is inside a navigable row (a VIEWS entry, a channel/topic/DM
+        // row, or a section header). Return that row; the caller syncs the
+        // cursor to it and then steps prev/next, since the cursor already
+        // knows which rows are visible.
+        return $row;
+    }
+    if ($active.closest("#subscribe-to-more-streams").length > 0 && direction === "up") {
+        // Focus is on the "Browse channels" / "Create a channel" link, which
+        // sits below all channel rows. ArrowDown has nowhere to go; ArrowUp
+        // lands on the last visible row.
+        return all_rows().last();
+    }
+    // Focus isn't on anything we navigate between (e.g. an inline action
+    // button inside a row that we don't special-case). Do nothing.
+    return undefined;
+}
+
+// Handle arrow key navigation when a left sidebar element has Tab focus,
+// so that Tab and arrow key navigation stay in sync. Three steps:
+//   (a) resolve which row we should land on,
+//   (b) sync the cursor to it,
+//   (c) move DOM focus to it.
+function handle_left_sidebar_arrow_navigation(e: JQuery.KeyDownEvent): void {
+    if (e.key === "Tab") {
+        // Tab is handled by the browser, but we clear the cursor highlight
+        // so it doesn't remain painted on the arrow-navigated row after
+        // focus moves elsewhere.
+        left_sidebar_cursor.clear();
+        return;
+    }
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+        return;
+    }
+    if (e.altKey || e.ctrlKey || e.shiftKey || !(document.activeElement instanceof HTMLElement)) {
+        return;
+    }
+
+    // Search inputs have their own arrow key handlers.
+    const $active = $(document.activeElement);
+    if (
+        $active.is(".left-sidebar-search-input, .direct-messages-list-filter, #topic_filter_query")
+    ) {
+        return;
+    }
+
+    const direction = e.key === "ArrowDown" ? "down" : "up";
+    const $landing_row = resolve_left_sidebar_arrow_target($active, direction);
+    if ($landing_row === undefined || $landing_row.length === 0) {
+        return;
+    }
+
+    left_sidebar_cursor.set_is_highlight_visible(true);
+    left_sidebar_cursor.go_to($landing_row);
+
+    // If focus was already inside a navigable row, we landed on *that* row;
+    // step the cursor one further in the arrow direction.
+    if (
+        $active.closest(".top_left_row, .bottom_left_row, .left-sidebar-section-header").length > 0
+    ) {
+        if (direction === "down") {
+            left_sidebar_cursor.next();
+        } else {
+            left_sidebar_cursor.prev();
+        }
+    }
+
+    const $new_row = left_sidebar_cursor.get_key();
+    assert($new_row !== undefined);
+    focus_left_sidebar_row($new_row);
+
+    e.preventDefault();
+    e.stopPropagation();
+}
 
 function focus_left_sidebar_filter(e: JQuery.ClickEvent): void {
     left_sidebar_cursor.reset();
@@ -657,7 +825,7 @@ export function set_event_handlers(): void {
         }
         // Don't trigger `input` which confuses the search input
         // for zoomed in topic search.
-        update_left_sidebar_for_search();
+        actually_update_left_sidebar_for_search();
         $search_input.trigger("blur");
     }
 
@@ -676,6 +844,16 @@ export function set_event_handlers(): void {
                 left_sidebar_cursor.next();
                 return true;
             },
+            Tab() {
+                // If the user navigated to a row with arrow keys, Tab should focus
+                // that row instead of the next element in DOM order.
+                const $row = left_sidebar_cursor.get_key();
+                if ($row !== undefined && left_sidebar_cursor.is_highlight_visible) {
+                    focus_left_sidebar_row($row);
+                }
+                left_sidebar_cursor.clear();
+                return false;
+            },
         },
     });
 
@@ -684,6 +862,10 @@ export function set_event_handlers(): void {
         left_sidebar_cursor.clear();
     });
     $search_input.on("input", update_left_sidebar_for_search);
+
+    // Handle arrow key navigation when a sidebar element has Tab
+    // focus, so that Tab and arrow key navigation stay in sync.
+    $("#left-sidebar").on("keydown", handle_left_sidebar_arrow_navigation);
 }
 
 export function initiate_search(): void {

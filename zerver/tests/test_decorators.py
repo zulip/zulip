@@ -499,7 +499,7 @@ class RateLimitTestCase(ZulipTestCase):
         expect_rate_limit: bool,
         check_web_view: bool = False,
     ) -> None:
-        META = {"REMOTE_ADDR": remote_addr, "PATH_INFO": "test"}
+        META = {"REMOTE_ADDR": remote_addr, "PATH_INFO": "test", "HTTP_USER_AGENT": client_name}
 
         request = HostRequestMock(host="zulip.testserver", client_name=client_name, meta_data=META)
         view_func = self.ratelimited_web_view if check_web_view else self.ratelimited_json_view
@@ -608,7 +608,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
@@ -625,7 +625,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(
@@ -638,7 +638,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(
@@ -677,7 +677,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         api_key = user_profile.api_key
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
-        data = self.webhook_fixture_data("jira", "created_v2")
+        data = self.webhook_fixture_data("jira", "issue_created")
         result = self.client_post(url, data, content_type="application/json")
         self.assert_json_error_contains(
             result, "This organization has been deactivated", status_code=401
@@ -764,7 +764,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
@@ -779,7 +779,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
@@ -790,7 +790,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
@@ -879,7 +879,7 @@ class InactiveUserTest(ZulipTestCase):
 
         api_key = user_profile.api_key
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
-        data = self.webhook_fixture_data("jira", "created_v2")
+        data = self.webhook_fixture_data("jira", "issue_created")
         result = self.client_post(url, data, content_type="application/json")
         self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
 

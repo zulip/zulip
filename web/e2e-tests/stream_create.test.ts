@@ -108,7 +108,7 @@ async function create_stream(page: Page): Promise<void> {
     );
     const stream_name = await common.get_text_from_selector(
         page,
-        ".stream-header .stream-name .sub-stream-name",
+        ".selected-stream-title .stream-name-title",
     );
     const stream_description = await common.get_text_from_selector(
         page,
@@ -188,4 +188,4 @@ async function subscriptions_tests(page: Page): Promise<void> {
     await test_streams_search_feature(page);
 }
 
-common.run_test(subscriptions_tests);
+await common.run_test(subscriptions_tests);

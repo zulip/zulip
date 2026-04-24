@@ -5,7 +5,6 @@ import render_navbar_personal_menu_popover from "../templates/popovers/navbar/na
 import * as channel from "./channel.ts";
 import * as information_density from "./information_density.ts";
 import * as message_view from "./message_view.ts";
-import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
@@ -18,7 +17,7 @@ export function initialize(): void {
     popover_menus.register_popover_menu("#personal-menu", {
         theme: "popover-menu",
         placement: "bottom",
-        offset: [-50, 0],
+        offset: popover_menus.NAVBAR_POPOVER_OFFSET,
         // The strategy: "fixed"; and eventlisteners modifier option
         // ensure that the personal menu does not modify its position
         // or disappear when user zooms the page.
@@ -71,12 +70,11 @@ export function initialize(): void {
 
             $popper.one("click", ".narrow-self-direct-message", (e) => {
                 const user_id = current_user.user_id;
-                const email = people.get_by_user_id(user_id).email;
                 message_view.show(
                     [
                         {
                             operator: "dm",
-                            operand: email,
+                            operand: [user_id],
                         },
                     ],
                     {trigger: "personal menu"},
@@ -87,12 +85,11 @@ export function initialize(): void {
 
             $popper.one("click", ".narrow-messages-sent", (e) => {
                 const user_id = current_user.user_id;
-                const email = people.get_by_user_id(user_id).email;
                 message_view.show(
                     [
                         {
                             operator: "sender",
-                            operand: email,
+                            operand: user_id,
                         },
                     ],
                     {trigger: "personal menu"},
@@ -116,8 +113,7 @@ export function initialize(): void {
                     $(this),
                     changed_property,
                 );
-                const data: Record<string, number> = {};
-                data[changed_property] = new_setting_value;
+                const data = {[changed_property]: new_setting_value};
                 information_density.enable_or_disable_control_buttons($popper);
 
                 if (changed_property === "web_font_size_px") {

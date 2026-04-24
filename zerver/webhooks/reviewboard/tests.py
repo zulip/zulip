@@ -2,10 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ReviewBoardHookTests(WebhookTestCase):
-    CHANNEL_NAME = "reviewboard"
-    URL_TEMPLATE = "/api/v1/external/reviewboard?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "reviewboard"
-
     def test_review_request_published(self) -> None:
         expected_topic_name = "Scheduler"
         expected_message = "**eeshangarg** opened [#2: Initial commit](https://rbcommons.com/s/zulip/r/2/):\n\n``` quote\n**Description**: Initial commit\n**Status**: pending\n**Target people**: **drsbgarg**\n**Branch**: master\n```"
@@ -16,6 +12,15 @@ class ReviewBoardHookTests(WebhookTestCase):
         expected_message = "**eeshangarg** opened [#2: Initial commit](https://rbcommons.com/s/zulip/r/2/):\n\n``` quote\n**Description**: Initial commit\n**Status**: pending\n**Target people**: **drsbgarg**, **johndoe**, and **janedoe**\n**Branch**: master\n```"
         self.check_webhook(
             "review_request_published__with_multiple_target_people",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_review_request_published_with_group(self) -> None:
+        expected_topic_name = "Scheduler"
+        expected_message = "**eeshangarg** opened [#2: Initial commit](https://rbcommons.com/s/zulip/r/2/):\n\n``` quote\n**Description**: Initial commit\n**Status**: pending\n**Target groups**: **people**\n**Branch**: master\n```"
+        self.check_webhook(
+            "review_request_published__with_group",
             expected_topic_name,
             expected_message,
         )

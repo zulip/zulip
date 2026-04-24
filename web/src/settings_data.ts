@@ -1,3 +1,4 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as group_permission_settings from "./group_permission_settings.ts";
@@ -59,15 +60,23 @@ export function user_has_permission_for_group_setting(
     setting_type: "realm" | "stream" | "group",
     user: CurrentUser | User = current_user,
 ): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
-
     const settings_config = group_permission_settings.get_group_permission_setting_config(
         setting_name,
         setting_type,
     );
     assert(settings_config !== undefined);
+
+    if (
+        settings_config.allow_internet_group &&
+        typeof setting_value === "number" &&
+        setting_value === user_groups.get_user_group_from_name("role:internet")!.id
+    ) {
+        return true;
+    }
+
+    if (page_params.is_spectator) {
+        return false;
+    }
 
     if (!settings_config.allow_everyone_group && user.is_guest) {
         return false;
@@ -312,8 +321,7 @@ export function using_dark_theme(): boolean {
 
     if (
         user_settings.color_scheme === settings_config.color_scheme_values.automatic.code &&
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
+        window.matchMedia?.("(prefers-color-scheme: dark)").matches
     ) {
         return true;
     }
@@ -370,35 +378,42 @@ export function get_request_data_for_stream_privacy(selected_val: string): {
     history_public_to_subscribers: boolean;
     is_web_public: boolean;
 } {
+    // When changing a channel from public to private with public history,
+    // "history_public_to_subscribers" value is same and does not change.
+    // So, it will not be included in the data returned by
+    // "populate_data_for_stream_settings_request" as it only includes
+    // the field whose new value has changed from its original value.
+    //
+    // So, we need to include "history_public_to_subscribers" here
+    // itself so that the correct value is passed to the API, otherwise
+    // private streams are set to have private history by default.
+    const history_public_to_subscribers: boolean = $("#id_history_public_to_subscribers").is(
+        ":checked",
+    );
     switch (selected_val) {
         case settings_config.stream_privacy_policy_values.public.code: {
             return {
                 is_private: false,
-                history_public_to_subscribers: true,
+                history_public_to_subscribers,
                 is_web_public: false,
             };
         }
         case settings_config.stream_privacy_policy_values.private.code: {
             return {
                 is_private: true,
-                history_public_to_subscribers: false,
+                history_public_to_subscribers,
                 is_web_public: false,
             };
         }
         case settings_config.stream_privacy_policy_values.web_public.code: {
             return {
                 is_private: false,
-                history_public_to_subscribers: true,
+                history_public_to_subscribers,
                 is_web_public: true,
             };
         }
-        default: {
-            return {
-                is_private: true,
-                history_public_to_subscribers: true,
-                is_web_public: false,
-            };
-        }
+        default:
+            throw new Error("Invalid value for channel privacy: " + selected_val);
     }
 }
 
@@ -407,4 +422,19 @@ export function guests_can_access_all_other_users(): boolean {
         realm.realm_can_access_all_users_group,
     );
     return everyone_group.name === "role:everyone";
+}
+
+export function can_user_manage_folder(): boolean {
+    return current_user.is_admin;
+}
+
+export function two_tier_billing_enabled(): boolean {
+    if (typeof realm.realm_workplace_users_group !== "number") {
+        return true;
+    }
+
+    const workplace_users_group = user_groups.get_user_group_from_id(
+        realm.realm_workplace_users_group,
+    );
+    return workplace_users_group.name !== "role:everyone";
 }

@@ -57,10 +57,7 @@ export function update_current_message_list(msg_list: MessageList | undefined): 
         current.view.$list.addClass("focused-message-list");
     }
 
-    if (
-        current?.data.filter.is_conversation_view() ||
-        current?.data.filter.is_conversation_view_with_near()
-    ) {
+    if (current?.data.filter.is_conversation_view()) {
         $(".focused-message-list").addClass("is-conversation-view");
     } else {
         $(".focused-message-list").removeClass("is-conversation-view");

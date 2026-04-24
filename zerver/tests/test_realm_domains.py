@@ -6,7 +6,6 @@ from typing_extensions import override
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_domains import do_change_realm_domain, do_remove_realm_domain
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.users import do_change_user_role
 from zerver.lib.domains import validate_domain
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.test_classes import ZulipTestCase
@@ -69,7 +68,7 @@ class RealmDomainTest(ZulipTestCase):
         mit_user_profile = self.mit_user("sipbtest")
         self.login_user(mit_user_profile)
 
-        do_change_user_role(mit_user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(mit_user_profile, UserProfile.ROLE_REALM_OWNER)
 
         result = self.client_post(
             "/json/realm/domains", info=data, HTTP_HOST=mit_user_profile.realm.host

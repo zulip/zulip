@@ -120,13 +120,13 @@ export function initialize(): void {
 
     $("#main_div").on(
         "mouseover",
-        '.message-list .message-media-preview-image img[data-animated="true"]',
+        '.message-list .media-image-element[data-animated="true"]',
         function (this: HTMLElement) {
             if (user_settings.web_animate_image_previews !== "on_hover") {
                 return;
             }
             const $img = $(this);
-            $img.closest(".message-media-preview-image").removeClass(
+            $img.closest(".message-media-preview-image, .message-media-inline-image").removeClass(
                 "message_inline_animated_image_still",
             );
             $img.attr(
@@ -138,13 +138,13 @@ export function initialize(): void {
 
     $("#main_div").on(
         "mouseout",
-        '.message-list .message-media-preview-image img[data-animated="true"]',
+        '.message-list .media-image-element[data-animated="true"]',
         function (this: HTMLElement) {
             if (user_settings.web_animate_image_previews !== "on_hover") {
                 return;
             }
             const $img = $(this);
-            $img.closest(".message-media-preview-image").addClass(
+            $img.closest(".message-media-preview-image, .message-media-inline-image").addClass(
                 "message_inline_animated_image_still",
             );
             $img.attr(

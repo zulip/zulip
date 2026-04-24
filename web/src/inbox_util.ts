@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import type {Filter} from "./filter";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
+import type {UpdatableStreamProperties} from "./stream_types.ts";
 
 export let filter: Filter | undefined;
 let is_inbox_visible = false;
@@ -27,8 +28,7 @@ export function current_filter(): Filter | undefined {
 
 export function get_channel_id(): number {
     assert(filter !== undefined);
-    const narrow_channel_stream_id_string = filter.operands("channel")[0];
-    assert(narrow_channel_stream_id_string !== undefined);
+    const narrow_channel_stream_id_string = filter.terms_with_operator("channel")[0]!.operand;
     return Number.parseInt(narrow_channel_stream_id_string, 10);
 }
 
@@ -38,6 +38,20 @@ export function set_visible(value: boolean): void {
 
 export function is_visible(): boolean {
     return is_inbox_visible;
+}
+
+const UPDATE_PROPERTIES_REQUIRING_COMPLETE_RERENDER = new Set<keyof UpdatableStreamProperties>([
+    "name",
+    "invite_only",
+    "is_archived",
+    "is_web_public",
+    "folder_id",
+]);
+
+export function should_complete_rerender_for_channel_property(
+    property: keyof UpdatableStreamProperties,
+): boolean {
+    return UPDATE_PROPERTIES_REQUIRING_COMPLETE_RERENDER.has(property);
 }
 
 export function update_stream_colors(): void {

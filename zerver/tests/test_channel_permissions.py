@@ -14,7 +14,6 @@ from zerver.actions.streams import (
     do_deactivate_stream,
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
-from zerver.actions.users import do_change_user_role
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.types import UserGroupMembersData
@@ -50,7 +49,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # User should be allowed to add subscribers when creating the
         # channel even if they don't have realm wide permission to
         # add other subscribers to a channel.
-        do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_MODERATOR)
         result = self.subscribe_via_post(
             self.test_user,
             ["stream1"],
@@ -88,7 +87,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # Admins have a special permission to administer every channel
         # they have access to. This also grants them access to add
         # subscribers.
-        do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.subscribe_via_post(
             self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
@@ -100,7 +99,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             realm, "can_add_subscribers_group", moderators_group, acting_user=None
         )
 
-        do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_MEMBER)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below moderator in the role hierarchy.
         self.assertFalse(self.test_user.is_provisional_member)
@@ -117,7 +116,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Insufficient permission")
 
-        do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_MODERATOR)
         self.subscribe_via_post(
             self.test_user, ["stream2"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
@@ -129,7 +128,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", members_group, acting_user=None
         )
-        do_change_user_role(self.test_user, UserProfile.ROLE_GUEST, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_GUEST)
         result = self.subscribe_via_post(
             self.test_user,
             ["stream2"],
@@ -138,7 +137,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Not allowed for guest users")
 
-        do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_MEMBER)
         self.subscribe_via_post(
             self.test_user,
             ["stream2"],
@@ -164,11 +163,11 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
 
         # Moderators, Admins and owners are always full members.
         self.assertTrue(user_profile.is_provisional_member)
-        do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_MODERATOR)
         self.assertFalse(self.test_user.is_provisional_member)
-        do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertFalse(self.test_user.is_provisional_member)
-        do_change_user_role(self.test_user, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_REALM_OWNER)
         self.assertFalse(self.test_user.is_provisional_member)
 
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
@@ -240,13 +239,13 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # Admins have a special permission to administer every channel
         # they have access to. This also grants them access to add
         # subscribers.
-        do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.subscribe_via_post(
             self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
         self.assert_json_success(result)
 
-        do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_MEMBER)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below moderator in the role hierarchy.
         self.assertFalse(self.test_user.is_provisional_member)
@@ -270,7 +269,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Insufficient permission")
 
-        do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_MODERATOR)
         self.subscribe_via_post(
             self.test_user, ["stream2"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
@@ -282,7 +281,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream2, "can_add_subscribers_group", members_group, acting_user=user_profile
         )
-        do_change_user_role(self.test_user, UserProfile.ROLE_GUEST, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_GUEST)
         result = self.subscribe_via_post(
             self.test_user,
             ["stream2"],
@@ -291,7 +290,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Not allowed for guest users")
 
-        do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(self.test_user, UserProfile.ROLE_MEMBER)
         self.subscribe_via_post(
             self.test_user,
             ["stream2"],
@@ -749,7 +748,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Must be an organization owner")
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
         result = self.client_patch(
             f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
         )
@@ -1267,7 +1266,7 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         do_change_stream_permission(
             stream,
             invite_only=True,
-            history_public_to_subscribers=False,
+            history_public_to_subscribers=True,
             is_web_public=False,
             acting_user=self.admin,
         )

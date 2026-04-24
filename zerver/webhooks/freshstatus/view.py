@@ -1,4 +1,5 @@
-import dateutil.parser
+from datetime import datetime
+
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -8,6 +9,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
@@ -76,6 +78,11 @@ ALL_EVENT_TYPES = [
 ]
 
 
+def get_global_time(dt_str: str) -> str:
+    dt = datetime.fromisoformat(dt_str)
+    return datetime_to_global_time(dt)
+
+
 @webhook_view("Freshstatus", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_freshstatus_webhook(
@@ -139,12 +146,8 @@ def get_body_for_maintenance_planned_event(payload: WildValue) -> str:
     data = {
         "title": payload["title"].tame(check_string),
         "description": payload["description"].tame(check_string),
-        "scheduled_start_time": dateutil.parser.parse(
-            payload["scheduled_start_time"].tame(check_string)
-        ).strftime("%Y-%m-%d %H:%M %Z"),
-        "scheduled_end_time": dateutil.parser.parse(
-            payload["scheduled_end_time"].tame(check_string)
-        ).strftime("%Y-%m-%d %H:%M %Z"),
+        "scheduled_start_time": get_global_time(payload["scheduled_start_time"].tame(check_string)),
+        "scheduled_end_time": get_global_time(payload["scheduled_end_time"].tame(check_string)),
         "affected_services": get_services_content(services_data),
     }
     return FRESHSTATUS_MESSAGE_TEMPLATE_SCHEDULED_MAINTENANCE_PLANNED.format(**data)
@@ -158,9 +161,7 @@ def get_body_for_incident_open_event(payload: WildValue) -> str:
     data = {
         "title": payload["title"].tame(check_string),
         "description": payload["description"].tame(check_string),
-        "start_time": dateutil.parser.parse(payload["start_time"].tame(check_string)).strftime(
-            "%Y-%m-%d %H:%M %Z"
-        ),
+        "start_time": get_global_time(payload["start_time"].tame(check_string)),
         "affected_services": get_services_content(services_data),
     }
     return FRESHSTATUS_MESSAGE_TEMPLATE_INCIDENT_OPEN.format(**data)

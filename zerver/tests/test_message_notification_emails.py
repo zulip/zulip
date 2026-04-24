@@ -1,7 +1,7 @@
+import base64
 import random
 import re
 from collections.abc import Sequence
-from datetime import timedelta
 from email.headerregistry import Address
 from unittest import mock
 from unittest.mock import patch
@@ -12,7 +12,6 @@ from django.conf import settings
 from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
 from django.test import override_settings
-from django.utils.timezone import now as timezone_now
 from django_stubs_ext import StrPromise
 
 from zerver.actions.create_user import do_create_user
@@ -26,6 +25,7 @@ from zerver.lib.email_notifications import (
     fix_spoilers_in_html,
     handle_missedmessage_emails,
     include_realm_name_in_missedmessage_emails_subject,
+    prepare_synthetic_root_message_id,
     relative_to_full_url,
 )
 from zerver.lib.emoji import get_emoji_file_name
@@ -34,7 +34,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.recipients import Recipient, get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 
@@ -94,19 +94,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
         m.assert_not_called()
 
     def test_demo_organization_owner_email_not_set(self) -> None:
-        realm = get_realm("zulip")
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
-        realm.save()
-
-        # Demo organization owner's don't have an email address set initially
-        desdemona = self.example_user("desdemona")
-        desdemona.delivery_email = ""
-        desdemona.save()
+        demo_organization_owner = self.create_demo_organization_owner()
+        realm = demo_organization_owner.realm
 
         notification_bot = self.notification_bot(realm)
         internal_send_private_message(
             sender=notification_bot,
-            recipient_user=desdemona,
+            recipient_user=demo_organization_owner,
             content="Notification bot message",
         )
         message = self.get_last_message()
@@ -117,7 +111,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
         ) as m:
             handle_missedmessage_emails(
-                desdemona.id,
+                demo_organization_owner.id,
                 {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
             )
         m.assert_not_called()
@@ -1128,10 +1122,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self._resolved_topic_missed_stream_messages_thread_friendly()
 
     @override_settings(EMAIL_GATEWAY_PATTERN="")
-    def test_reply_warning_in_missed_personal_messages(self) -> None:
+    def test_reply_warning_in_missed_personal_messages_with_direct_message_group(self) -> None:
         self._reply_warning_in_missed_personal_messages()
 
-    def test_extra_context_in_missed_personal_messages(self) -> None:
+    def test_extra_context_in_missed_personal_messages_with_direct_message_group(self) -> None:
         self._extra_context_in_missed_personal_messages()
 
     def test_extra_context_in_missed_group_direct_messages_two_others(self) -> None:
@@ -1161,16 +1155,12 @@ class TestMessageNotificationEmails(ZulipTestCase):
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
         # Emails have missed message content when message content is enabled by the user
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", True, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", True)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", False, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", False)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False, message_content_disabled_by_user=True
@@ -1182,17 +1172,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
         realm.message_content_allowed_in_email_notifications = False
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", True, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", True)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False, message_content_disabled_by_realm=True
         )
 
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", False, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", False)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False,
@@ -1297,23 +1283,24 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "Group DMs with iago and Iago"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
-    def test_pm_link_in_missed_message_header_using_direct_message_group(self) -> None:
+    def test_group_dm_link_in_missed_message(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
 
-        get_or_create_direct_message_group(id_list=[cordelia.id, hamlet.id])
-
-        msg_id = self.send_personal_message(
+        msg_id = self.send_group_direct_message(
             cordelia,
-            hamlet,
-            "Let's test a direct message link in email notifications",
+            [hamlet, aaron, cordelia],
+            "Group DM link in email notifications",
         )
 
-        encoded_name = "Cordelia,-Lear's-daughter"
+        other_users = sorted([aaron, cordelia], key=lambda user: user.id)
+        encoded_user_ids = ",".join([str(user.id) for user in other_users])
         verify_body_include = [
-            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/dm/{cordelia.id}-{encoded_name}"
+            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/dm/{encoded_user_ids}-group"
         ]
-        email_subject = "DMs with Cordelia, Lear's daughter"
+        group_display_name = " and ".join([user.full_name for user in other_users])
+        email_subject = "Group DMs with " + group_display_name
         self._test_cases(msg_id, verify_body_include, email_subject)
 
     def test_sender_name_in_missed_message(self) -> None:
@@ -1360,7 +1347,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             mail.outbox[2].alternatives[0][0],
         )
 
-    def test_sender_name_in_missed_pm_using_direct_message_group(self) -> None:
+    def test_sender_name_in_missed_pm(self) -> None:
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
 
@@ -1382,7 +1369,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             mail.outbox[0].alternatives[0][0],
         )
 
-    def test_your_name_in_missed_pm_to_self_using_direct_message_group(self) -> None:
+    def test_your_name_in_missed_pm_to_self(self) -> None:
         hamlet = self.example_user("hamlet")
 
         get_or_create_direct_message_group(id_list=[hamlet.id])
@@ -1982,3 +1969,91 @@ class TestMessageNotificationEmails(ZulipTestCase):
         expected_email_body_includes = f"You are receiving this because all topic participants were mentioned in #Denmark > {Message.EMPTY_TOPIC_FALLBACK_NAME}."
         self.assertEqual(mail.outbox[0].subject, expected_email_subject)
         self.assertIn(expected_email_body_includes, self.normalize_string(mail.outbox[0].body))
+
+    def test_prepare_synthetic_root_message_id(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        # Verify different `synthetic_root_message_id` for different 1:1 DM to hamlet.
+        message_id = self.send_personal_message(aaron, hamlet)
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.DIRECT_MESSAGE_GROUP, recipient_id
+        )
+        self.assertEqual(synthetic_root_message_id, f"<{recipient_id}@testserver>")
+
+        message_id = self.send_personal_message(cordelia, hamlet)
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.DIRECT_MESSAGE_GROUP, recipient_id
+        )
+        self.assertEqual(synthetic_root_message_id, f"<{recipient_id}@testserver>")
+
+        # Verify different `synthetic_root_message_id` for different group-DM to hamlet.
+        message_id = self.send_group_direct_message(aaron, [hamlet, cordelia], "Group DM!")
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.DIRECT_MESSAGE_GROUP, recipient_id
+        )
+        self.assertEqual(synthetic_root_message_id, f"<{recipient_id}@testserver>")
+
+        message_id = self.send_group_direct_message(aaron, [hamlet, cordelia, othello], "Group DM!")
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.DIRECT_MESSAGE_GROUP, recipient_id
+        )
+        expected_synthetic_root_message_id = f"<{recipient_id}@testserver>"
+        self.assertEqual(synthetic_root_message_id, expected_synthetic_root_message_id)
+
+        # Changing the sender in a group DM doesn't alter `synthetic_root_message_id`.
+        message_id = self.send_group_direct_message(othello, [hamlet, cordelia, aaron], "Group DM!")
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.DIRECT_MESSAGE_GROUP, recipient_id
+        )
+        self.assertEqual(synthetic_root_message_id, expected_synthetic_root_message_id)
+
+        # Verify different `synthetic_root_message_id` for different topics.
+        topic_name = "test"
+        message_id = self.send_stream_message(othello, "Denmark", topic_name=topic_name)
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.STREAM, recipient_id, topic_name=topic_name
+        )
+        topic_name_base64 = base64.b64encode(topic_name.encode("utf-8")).decode("utf-8")
+        self.assertEqual(
+            synthetic_root_message_id, f"<{recipient_id}.{topic_name_base64}@testserver>"
+        )
+
+        topic_name = "hello world"
+        message_id = self.send_stream_message(aaron, "Verona", topic_name=topic_name)
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.STREAM, recipient_id, topic_name=topic_name
+        )
+        topic_name_base64 = base64.b64encode(topic_name.encode("utf-8")).decode("utf-8")
+        expected_synthetic_root_message_id = f"<{recipient_id}.{topic_name_base64}@testserver>"
+        self.assertEqual(synthetic_root_message_id, expected_synthetic_root_message_id)
+
+        # Same `synthetic_root_message_id` for messages in the same conversation.
+        message_id = self.send_stream_message(cordelia, "Verona", topic_name=topic_name)
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.STREAM, recipient_id, topic_name=topic_name
+        )
+        self.assertEqual(synthetic_root_message_id, expected_synthetic_root_message_id)
+
+        # Verify only Printable US-ASCII, exactly one '@', no spaces.
+        topic_name = "中文 @ zulip 🐙"
+        message_id = self.send_stream_message(othello, "Denmark", topic_name=topic_name)
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.STREAM, recipient_id, topic_name=topic_name
+        )
+        self.assertTrue(
+            synthetic_root_message_id.isascii() and synthetic_root_message_id.isprintable()
+        )
+        self.assertEqual(synthetic_root_message_id.count("@"), 1)
+        self.assertNotIn(" ", synthetic_root_message_id)

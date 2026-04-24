@@ -1,0 +1,13 @@
+{{#each contributors}}
+    <div class="person">
+        <a href="{{profile_url}}" target="_blank" rel="noopener noreferrer" class="no-underline">
+            <div class="avatar">
+                <img class="avatar_img" src="{{avatar}}" alt="{{t 'Avatar'}}" />
+            </div>
+            <div class='info'>
+                <b>{{name}}</b><br />
+                {{commits}} {{#if (eq commits 1)}}commit{{else}}commits{{/if}}
+            </div>
+        </a>
+    </div>
+{{/each}}

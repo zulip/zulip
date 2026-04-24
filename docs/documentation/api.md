@@ -169,7 +169,7 @@ def render_message(client: Client) -> None:
 ```
 
 This is an actual Python function which will be run as part of the
-`tools/test-api` test suite. The `validate_against_opanapi_schema`
+`tools/test-api` test suite. The `validate_against_openapi_schema`
 function will verify that the result of that request is as defined in
 the examples in `zerver/openapi/zulip.yaml`.
 
@@ -258,7 +258,7 @@ above.
 
    Once you understand that, the best way to determine the supported
    arguments for an API endpoint is to find the corresponding URL
-   pattern in `zprojects/urls.py`, look up the backend function for
+   pattern in `zproject/urls.py`, look up the backend function for
    that endpoint in `zerver/views/`, and inspect its keyword-only
    arguments.
 
@@ -316,7 +316,7 @@ above.
 
 1. Finally, if the API docs page of the endpoint doesn't follow the
    common API docs template in
-   `api_docs/api-docs-template.md`, then add its custom
+   `api_docs/api-doc-template.md`, then add its custom
    Markdown file under `api_docs/`. However, it is a goal
    to minimize the number of files that diverse from the common
    template, so only do this if there's a good reason.

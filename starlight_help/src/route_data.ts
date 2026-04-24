@@ -25,12 +25,35 @@ function extractFirstParagraph(content: string): string | undefined {
 }
 
 export const onRequest = defineRouteMiddleware((context) => {
-    assert.ok(typeof context.locals.starlightRoute.entry.body === "string");
+    const entry: unknown = context.locals.starlightRoute.entry;
+    assert.ok(typeof entry === "object" && entry !== null);
+    assert.ok("body" in entry && typeof entry.body === "string");
     context.locals.starlightRoute.head.push({
         tag: "meta",
         attrs: {
             name: "description",
-            content: extractFirstParagraph(context.locals.starlightRoute.entry.body),
+            content: extractFirstParagraph(entry.body),
         },
     });
+
+    const canonicalUrl = `https://zulip.com/help/${context.locals.starlightRoute.id}`;
+    const existingCanonicalTag = context.locals.starlightRoute.head.find(
+        (item) => item.tag === "link" && item.attrs?.rel === "canonical",
+    );
+
+    if (existingCanonicalTag) {
+        existingCanonicalTag.attrs!.href = canonicalUrl;
+    } else {
+        // Starlight already has the canonical tag by default and this might
+        // never get executed in practice. But it feels like a nice-to-have
+        // if any upstream changes happen in starlight and that behaviour
+        // changes.
+        context.locals.starlightRoute.head.push({
+            tag: "link",
+            attrs: {
+                rel: "canonical",
+                href: canonicalUrl,
+            },
+        });
+    }
 });

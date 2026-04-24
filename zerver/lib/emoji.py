@@ -11,7 +11,6 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mime_types import guess_extension
 from zerver.lib.storage import static_path
-from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 from zerver.models.realm_emoji import (
     get_all_custom_emoji_for_realm,
@@ -104,7 +103,7 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_ty
         if realm_emoji["deactivated"]:
             raise JsonableError(_("This custom emoji has been deactivated."))
     elif emoji_type == "zulip_extra_emoji":
-        if emoji_code not in ["zulip"]:
+        if emoji_code != "zulip":
             raise JsonableError(_("Invalid emoji code."))
         if emoji_name != emoji_code:
             raise JsonableError(_("Invalid emoji name."))
@@ -126,9 +125,7 @@ def check_remove_custom_emoji(user_profile: UserProfile, emoji_name: str) -> Non
     emoji = RealmEmoji.objects.filter(
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).first()
-    current_user_is_author = (
-        emoji is not None and emoji.author is not None and emoji.author.id == user_profile.id
-    )
+    current_user_is_author = emoji is not None and emoji.author.id == user_profile.id
     if not current_user_is_author:
         raise JsonableError(_("Must be an organization administrator or emoji author"))
 
@@ -145,10 +142,6 @@ def check_valid_emoji_name(emoji_name: str) -> None:
             )
         )
     raise JsonableError(_("Emoji name is missing"))
-
-
-def get_emoji_url(emoji_file_name: str, realm_id: int, still: bool = False) -> str:
-    return upload_backend.get_emoji_url(emoji_file_name, realm_id, still)
 
 
 def get_emoji_file_name(content_type: str, emoji_id: int) -> str:

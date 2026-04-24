@@ -1,0 +1,15 @@
+<div class="gif-grid-in-popover">
+    <div class="arrow"></div>
+    <div class="popover-inner">
+        {{#> components/input_wrapper input_type="filter-input" custom_classes="gif-search-container" icon="search" input_button_icon="close"}}
+            <input type="text" class="input-element" id="gif-search-query" autocomplete="off" autofocus/>
+        {{/components/input_wrapper}}
+        <div class="gif-scrolling-container" data-simplebar data-simplebar-tab-index="-1">
+            {{!-- We need a container we can replace
+            without removing the simplebar wrappers.
+            We replace the `gif-picker-content` when
+            searching for GIFs. --}}
+            <div class="gif-picker-content"></div>
+        </div>
+    </div>
+</div>

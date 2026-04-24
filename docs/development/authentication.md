@@ -105,14 +105,27 @@ details worth understanding:
 - Put the private key file you got from apple at the path
   `zproject/dev_apple.key`.
 
+### Discord
+
+- Register an OAuth application with Discord at
+  <https://discord.com/developers/applications>.
+  Specify `http://auth.zulipdev.com:9991/complete/discord/` as the callback URL.
+
+- You should get a page containing the Client ID and Secret for
+  your new application. In `dev-secrets.conf`, enter the Client
+  ID as `social_auth_discord_key` and the Secret as
+  `social_auth_discord_secret`.
+
 ### SAML
 
 - Sign up for a [developer Okta account](https://developer.okta.com/).
 - Set up SAML authentication by following
   [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
   Specify:
-  - `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
-  - `http://localhost:9991` for the "Audience URI (SP Entity ID)".
+  - `http://localhost:9991/complete/saml/` for the "Single sign on URL"`. If you are using a dev droplet, this will
+be `http://auth.{your_droplet_name}.zulipdev.org:9991/complete/saml/`
+  - `http://localhost:9991` for the "Audience URI (SP Entity ID)". If you are using a dev droplet, this will be
+    `http://zulip.{your_droplet_name}.zulipdev.org:9991/`
   - Skip "Default RelayState".
   - Skip "Name ID format".
   - Set 'Email` for "Application username format".

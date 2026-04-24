@@ -17,6 +17,7 @@ from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context
 from zerver.lib.email_notifications import (
     build_message_list,
+    get_channel_privacy_icon,
     message_content_allowed_in_missedmessage_emails,
 )
 from zerver.lib.logging_util import log_to_file
@@ -266,8 +267,12 @@ def gather_new_streams(
 
     for stream in new_streams:
         narrow_url = stream_narrow_url(realm, stream)
-        channel_link = Markup("<a href='{narrow_url}'>{stream_name}</a>").format(
-            narrow_url=narrow_url, stream_name=stream.name
+        channel_link = Markup(
+            "<a href='{narrow_url}'>{channel_privacy_icon}{stream_name}</a>"
+        ).format(
+            narrow_url=narrow_url,
+            channel_privacy_icon=get_channel_privacy_icon(stream),
+            stream_name=stream.name,
         )
         channels_html.append(channel_link)
         channels_plain.append(stream.name)
@@ -342,10 +347,10 @@ def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int,
     return dct
 
 
-def get_slim_stream_id_map(realm: Realm) -> dict[int, Stream]:
+def get_slim_stream_id_map(stream_ids: set[int]) -> dict[int, Stream]:
     # "slim" because it only fetches the names of the stream objects,
     # suitable for passing into build_message_list.
-    streams = get_active_streams(realm).only("id", "name")
+    streams = Stream.objects.filter(id__in=stream_ids).only("id", "name")
     return {stream.id: stream for stream in streams}
 
 
@@ -363,11 +368,12 @@ def bulk_get_digest_context(
 
     maybe_clear_recent_topics_cache(realm.id, cutoff)
 
-    stream_id_map = get_slim_stream_id_map(realm)
     recently_created_streams = get_recently_created_streams(realm, cutoff_date)
 
     user_ids = [user.id for user in users]
     user_stream_map = get_user_stream_map(user_ids, cutoff_date)
+    stream_ids = set().union(*user_stream_map.values())
+    stream_id_map = get_slim_stream_id_map(stream_ids)
 
     for user in users:
         context = common_context(user)

@@ -10,6 +10,7 @@ from zerver.lib.markdown import markdown_convert
 from zerver.lib.message import messages_for_ids
 from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
+    AnchorInfo,
     NarrowParameter,
     clean_narrow_for_message_fetch,
     fetch_messages,
@@ -94,7 +95,7 @@ def do_summarize_narrow(
         user_profile=user_profile,
         realm=user_profile.realm,
         is_web_public_query=False,
-        anchor=LARGER_THAN_MAX_MESSAGE_ID,
+        anchor_info=AnchorInfo(type="message_id", value=LARGER_THAN_MAX_MESSAGE_ID),
         include_anchor=True,
         num_before=MAX_MESSAGES_SUMMARIZED,
         num_after=0,

@@ -1,0 +1,17 @@
+[
+    {
+        "text": "*foo* _bar_ ~baz~ [qux](https://chat.zulip.org)",
+        "user": "U061A1R2R",
+        "ts": "1547139200.000002",
+        "thread_ts": "1547139200.000002",
+        "channel_name": "random"
+    },
+    {
+        "text": "Delicious",
+        "user": "U061A5N1G",
+        "ts": "1637139200.000002",
+        "parent_user_id": "U061A1R2R",
+        "thread_ts": "1547139200.000002",
+        "channel_name": "random"
+    }
+]

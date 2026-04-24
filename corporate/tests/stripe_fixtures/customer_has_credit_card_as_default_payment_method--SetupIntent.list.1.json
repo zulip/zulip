@@ -8,6 +8,7 @@
       "created": 1000000000,
       "customer": "cus_NORMALIZED",
       "description": null,
+      "excluded_payment_method_types": null,
       "flow_directions": null,
       "id": "customer_has_credit_card_as_default_payment_method--SetupIntent.list.1.json",
       "last_setup_error": null,

@@ -19,20 +19,11 @@
     {{else if (eq this.type "prefix_for_operator")}}
         {{~#if is_empty_string_topic~}}
         {{this.prefix_for_operator}} <span class="empty-topic-display">{{this.operand}}</span>
-        {{~ else ~}}
+        {{~ else if this.operand ~}}
         {{this.prefix_for_operator}} {{this.operand}}{{#if (or (eq this.operand "link") (eq this.operand "image") (eq this.operand "attachment") (eq this.operand "reaction"))}}s{{/if}}
+        {{~ else ~}}
+        {{this.prefix_for_operator}}
         {{~/if~}}
-    {{else if (eq this.type "user_pill")}}
-        {{~!-- squash whitespace --~}}
-        {{this.operator}}
-        {{~#each this.users}}
-            {{#if this.valid_user}}
-                {{> user_pill .}}
-            {{else}}
-                {{this.operand}}
-            {{/if}}
-        {{~/each~}}
-        {{~!-- squash whitespace --~}}
     {{else if (eq this.type "is_operator")}}
         {{#if (eq this.operand "mentioned")}}
             {{~!-- squash whitespace --~}}

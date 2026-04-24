@@ -26,7 +26,6 @@ from zerver.lib.narrow import (
     is_spectator_compatible,
     is_web_public_narrow,
     parse_anchor_value,
-    update_narrow_terms_containing_empty_topic_fallback_name,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -111,6 +110,7 @@ def get_messages_backend(
     *,
     allow_empty_topic_name: Json[bool] = False,
     anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
+    anchor_date: str | None = None,
     apply_markdown: Json[bool] = True,
     client_gravatar: Json[bool] = True,
     client_requested_message_ids: Annotated[
@@ -141,9 +141,9 @@ def get_messages_backend(
     elif client_requested_message_ids is not None:
         include_anchor = False
 
-    anchor = None
+    anchor_info = None
     if client_requested_message_ids is None:
-        anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
+        anchor_info = parse_anchor_value(anchor_val, use_first_unread_anchor_val, anchor_date)
 
     realm = get_valid_realm_from_request(request)
     narrow = clean_narrow_for_message_fetch(narrow, realm, maybe_user_profile)
@@ -242,7 +242,7 @@ def get_messages_backend(
             user_profile=user_profile,
             realm=realm,
             is_web_public_query=is_web_public_query,
-            anchor=anchor,
+            anchor_info=anchor_info,
             include_anchor=include_anchor,
             num_before=num_before,
             num_after=num_after,
@@ -352,12 +352,12 @@ def messages_in_narrow_backend(
     )
     query = query.where(column("message_id", Integer).in_(msg_ids))
 
-    updated_narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
+    cleaned_narrow = clean_narrow_for_message_fetch(narrow, user_profile.realm, user_profile)
     query, is_search, _is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
-        narrow=updated_narrow,
+        narrow=cleaned_narrow,
         is_web_public_query=False,
         realm=user_profile.realm,
     )

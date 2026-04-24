@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve as staticfiles_serve
 from django.http.request import HttpRequest
-from django.http.response import FileResponse
+from django.http.response import FileResponse, HttpResponse
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 from django.views.static import serve
@@ -127,7 +127,7 @@ if use_prod_static:
     ]
 else:  # nocoverage
 
-    def serve_static(request: HttpRequest, path: str) -> FileResponse:
+    def serve_static(request: HttpRequest, path: str) -> HttpResponse | FileResponse:
         response = staticfiles_serve(request, path)
         response["Access-Control-Allow-Origin"] = "*"
         return response

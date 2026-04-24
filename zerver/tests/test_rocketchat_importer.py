@@ -1,10 +1,16 @@
 import os
 from datetime import datetime, timezone
 from typing import Any
+from unittest import mock
 
 import orjson
 
-from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT, build_recipients
+from zerver.data_import.import_util import (
+    SubscriberHandler,
+    UploadRecordData,
+    ZerverFieldsT,
+    build_recipients,
+)
 from zerver.data_import.rocketchat import (
     build_custom_emoji,
     build_reactions,
@@ -14,13 +20,11 @@ from zerver.data_import.rocketchat import (
     convert_stream_subscription_data,
     do_convert_data,
     map_receiver_id_to_recipient_id,
-    map_upload_id_to_upload_data,
     map_user_id_to_user,
     map_username_to_user_id,
     process_message_attachment,
     process_users,
     rocketchat_data_to_dict,
-    separate_channel_private_and_livechat_messages,
     truncate_name,
 )
 from zerver.data_import.sequencer import IdMapper
@@ -37,7 +41,7 @@ class RocketChatImporter(ZulipTestCase):
     def test_rocketchat_data_to_dict(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-        self.assert_length(rocketchat_data, 7)
+        self.assert_length(rocketchat_data, 5)
 
         self.assert_length(rocketchat_data["user"], 6)
         self.assertEqual(rocketchat_data["user"][2]["username"], "harry.potter")
@@ -47,16 +51,8 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(rocketchat_data["room"][0]["_id"], "GENERAL")
         self.assertEqual(rocketchat_data["room"][0]["name"], "general")
 
-        self.assert_length(rocketchat_data["message"], 87)
-        self.assertEqual(rocketchat_data["message"][1]["msg"], "Hey everyone, how's it going??")
-        self.assertEqual(rocketchat_data["message"][1]["rid"], "GENERAL")
-        self.assertEqual(rocketchat_data["message"][1]["u"]["username"], "priyansh3133")
-
         self.assert_length(rocketchat_data["custom_emoji"]["emoji"], 3)
         self.assertEqual(rocketchat_data["custom_emoji"]["emoji"][0]["name"], "tick")
-
-        self.assert_length(rocketchat_data["upload"]["upload"], 4)
-        self.assertEqual(rocketchat_data["upload"]["upload"][0]["name"], "harry-ron.jpg")
 
     def test_map_user_id_to_user(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -114,7 +110,7 @@ class RocketChatImporter(ZulipTestCase):
         user = user_handler.get_user(user_id)
 
         self.assertEqual(user["full_name"], rocketchat_data["user"][0]["name"])
-        self.assertEqual(user["avatar_source"], "G")
+        self.assertEqual(user["avatar_source"], "J")
         self.assertEqual(user["delivery_email"], "rocket.cat-bot@zulip.com")
         self.assertEqual(user["email"], "rocket.cat-bot@zulip.com")
         self.assertEqual(user["full_name"], "Rocket.Cat")
@@ -128,12 +124,13 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["realm"], realm_id)
         self.assertEqual(user["short_name"], "rocket.cat")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
         user_id = user_id_mapper.get(rocketchat_data["user"][2]["_id"])
         user = user_handler.get_user(user_id)
 
         self.assertEqual(user["full_name"], rocketchat_data["user"][2]["name"])
-        self.assertEqual(user["avatar_source"], "G")
+        self.assertEqual(user["avatar_source"], "J")
         self.assertEqual(user["delivery_email"], "harrypotter@email.com")
         self.assertEqual(user["email"], "harrypotter@email.com")
         self.assertEqual(user["full_name"], "Harry Potter")
@@ -147,6 +144,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["realm"], realm_id)
         self.assertEqual(user["short_name"], "harry.potter")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
         # Test `is_mirror_dummy` set for users of type `unknown`
         rocketchat_data["user"].append(
@@ -223,8 +221,8 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(room_id_to_room_map, 6)
         self.assert_length(team_id_to_team_map, 1)
         self.assert_length(dsc_id_to_dsc_map, 5)
-        self.assert_length(direct_id_to_direct_map, 2)
-        self.assert_length(direct_message_group_id_to_direct_message_group_map, 1)
+        self.assert_length(direct_id_to_direct_map, 0)
+        self.assert_length(direct_message_group_id_to_direct_message_group_map, 2)
         self.assert_length(livechat_id_to_livechat_map, 2)
 
         room_id = rocketchat_data["room"][0]["_id"]
@@ -240,8 +238,11 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(dsc_id_to_dsc_map[dsc_id], rocketchat_data["room"][7])
 
         direct_id = rocketchat_data["room"][4]["_id"]
-        self.assertIn(direct_id, direct_id_to_direct_map)
-        self.assertEqual(direct_id_to_direct_map[direct_id], rocketchat_data["room"][4])
+        self.assertIn(direct_id, direct_message_group_id_to_direct_message_group_map)
+        self.assertEqual(
+            direct_message_group_id_to_direct_message_group_map[direct_id],
+            rocketchat_data["room"][4],
+        )
 
         direct_message_group_id = rocketchat_data["room"][12]["_id"]
         self.assertIn(direct_message_group_id, direct_message_group_id_to_direct_message_group_map)
@@ -341,7 +342,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
 
@@ -440,7 +441,7 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         self.assert_length(subscriber_handler.get_users(stream_id=zerver_stream[6]["id"]), 0)
-        self.assertTrue(zerver_stream[6]["deactivated"])
+        self.assertFalse(zerver_stream[6]["deactivated"])
 
     def test_convert_direct_message_group_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -450,7 +451,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
 
@@ -464,22 +465,17 @@ class RocketChatImporter(ZulipTestCase):
             user_id_mapper=user_id_mapper,
         )
 
-        room_id_to_room_map: dict[str, dict[str, Any]] = {}
-        team_id_to_team_map: dict[str, dict[str, Any]] = {}
-        dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
-        direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
         direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
-        livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
         with self.assertLogs(level="INFO"):
             categorize_channels_and_map_with_id(
                 channel_data=rocketchat_data["room"],
-                room_id_to_room_map=room_id_to_room_map,
-                team_id_to_team_map=team_id_to_team_map,
-                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-                direct_id_to_direct_map=direct_id_to_direct_map,
+                room_id_to_room_map={},
+                team_id_to_team_map={},
+                dsc_id_to_dsc_map={},
+                direct_id_to_direct_map={},
                 direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
+                livechat_id_to_livechat_map={},
             )
 
         zerver_direct_message_group = convert_direct_message_group_data(
@@ -489,7 +485,15 @@ class RocketChatImporter(ZulipTestCase):
             subscriber_handler=subscriber_handler,
         )
 
-        self.assert_length(zerver_direct_message_group, 1)
+        self.assert_length(zerver_direct_message_group, 2)
+
+        rc_direct_message_group_id = rocketchat_data["room"][4]["_id"]
+        self.assertTrue(direct_message_group_id_mapper.has(rc_direct_message_group_id))
+
+        direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
+        self.assertEqual(
+            subscriber_handler.get_users(direct_message_group_id=direct_message_group_id), {3, 4}
+        )
 
         rc_direct_message_group_id = rocketchat_data["room"][12]["_id"]
         self.assertTrue(direct_message_group_id_mapper.has(rc_direct_message_group_id))
@@ -537,12 +541,38 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(records_json[1]["name"], "check")
         self.assertEqual(records_json[1]["file_name"], "tick.png")
         self.assertEqual(records_json[1]["realm_id"], 3)
-        self.assertTrue(os.path.isfile(records_json[0]["path"]))
+        self.assertTrue(os.path.isfile(os.path.join(output_dir, "emoji", records_json[0]["path"])))
 
         self.assertEqual(records_json[2]["name"], "zulip")
         self.assertEqual(records_json[2]["file_name"], "zulip.png")
         self.assertEqual(records_json[2]["realm_id"], 3)
-        self.assertTrue(os.path.isfile(records_json[2]["path"]))
+        self.assertTrue(os.path.isfile(os.path.join(output_dir, "emoji", records_json[2]["path"])))
+
+    def test_write_emoticon_data_emoji_name_gets_sanitized(self) -> None:
+        output_dir = self.make_import_output_dir("rocketchat")
+
+        custom_emoji_data: dict[str, list[dict[str, Any]]] = {
+            "emoji": [
+                {
+                    "name": "../../../etc/malicious",
+                    "extension": "png",
+                    "aliases": [],
+                },
+            ],
+            "file": [],
+            "chunk": [],
+        }
+
+        with self.assertLogs(level="INFO"):
+            zerver_realmemoji = build_custom_emoji(
+                realm_id=3,
+                custom_emoji_data=custom_emoji_data,
+                output_dir=output_dir,
+            )
+
+        self.assert_length(zerver_realmemoji, 1)
+        # Verify the filename was sanitized to remove path separators.
+        self.assertEqual(zerver_realmemoji[0]["file_name"], "......etcmalicious.png")
 
     def test_map_receiver_id_to_recipient_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -553,7 +583,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
@@ -620,147 +650,24 @@ class RocketChatImporter(ZulipTestCase):
             direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
         )
 
-        # 6 for streams and 6 for users.
-        self.assert_length(zerver_recipient, 13)
+        # 6 for streams and 2 for DM groups.
+        self.assert_length(zerver_recipient, 8)
         self.assert_length(stream_id_to_recipient_id, 6)
-        self.assert_length(user_id_to_recipient_id, 6)
-        self.assert_length(direct_message_group_id_to_recipient_id, 1)
+        self.assert_length(user_id_to_recipient_id, 0)
+        self.assert_length(direct_message_group_id_to_recipient_id, 2)
 
-        # First user recipients are built, followed by stream recipients in `build_recipients`.
+        # Stream recipients are built first by `build_recipients`.
         self.assertEqual(
-            user_id_to_recipient_id[zerver_recipient[0]["type_id"]], zerver_recipient[0]["id"]
+            stream_id_to_recipient_id[zerver_recipient[0]["type_id"]], zerver_recipient[0]["id"]
         )
         self.assertEqual(
-            user_id_to_recipient_id[zerver_recipient[1]["type_id"]], zerver_recipient[1]["id"]
-        )
-
-        self.assertEqual(
-            stream_id_to_recipient_id[zerver_recipient[6]["type_id"]], zerver_recipient[6]["id"]
-        )
-        self.assertEqual(
-            stream_id_to_recipient_id[zerver_recipient[7]["type_id"]], zerver_recipient[7]["id"]
+            stream_id_to_recipient_id[zerver_recipient[1]["type_id"]], zerver_recipient[1]["id"]
         )
 
         self.assertEqual(
-            direct_message_group_id_to_recipient_id[zerver_recipient[12]["type_id"]],
-            zerver_recipient[12]["id"],
+            direct_message_group_id_to_recipient_id[zerver_recipient[6]["type_id"]],
+            zerver_recipient[6]["id"],
         )
-
-    def test_separate_channel_private_and_livechat_messages(self) -> None:
-        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
-        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-
-        room_id_to_room_map: dict[str, dict[str, Any]] = {}
-        team_id_to_team_map: dict[str, dict[str, Any]] = {}
-        dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
-        direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
-        livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
-
-        with self.assertLogs(level="INFO"):
-            categorize_channels_and_map_with_id(
-                channel_data=rocketchat_data["room"],
-                room_id_to_room_map=room_id_to_room_map,
-                team_id_to_team_map=team_id_to_team_map,
-                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-                direct_id_to_direct_map=direct_id_to_direct_map,
-                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-            )
-
-        channel_messages: list[dict[str, Any]] = []
-        private_messages: list[dict[str, Any]] = []
-        livechat_messages: list[dict[str, Any]] = []
-
-        separate_channel_private_and_livechat_messages(
-            messages=rocketchat_data["message"],
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-            livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-            channel_messages=channel_messages,
-            private_messages=private_messages,
-            livechat_messages=livechat_messages,
-        )
-
-        self.assert_length(rocketchat_data["message"], 87)
-        self.assert_length(channel_messages, 68)
-        self.assert_length(private_messages, 11)
-        self.assert_length(livechat_messages, 8)
-
-        self.assertIn(rocketchat_data["message"][0], channel_messages)
-        self.assertIn(rocketchat_data["message"][1], channel_messages)
-        self.assertIn(rocketchat_data["message"][4], channel_messages)
-
-        self.assertIn(rocketchat_data["message"][11], private_messages)
-        self.assertIn(rocketchat_data["message"][12], private_messages)
-        self.assertIn(rocketchat_data["message"][50], private_messages)  # Group direct message
-
-        self.assertIn(rocketchat_data["message"][79], livechat_messages)
-        self.assertIn(rocketchat_data["message"][83], livechat_messages)
-        self.assertIn(rocketchat_data["message"][86], livechat_messages)
-
-        # Message in a Discussion originating from a direct channel
-        self.assertIn(rocketchat_data["message"][70], private_messages)
-        self.assertIn(rocketchat_data["message"][70]["rid"], direct_id_to_direct_map)
-
-        # Add a message with no `rid`
-        rocketchat_data["message"].append(
-            {
-                "_id": "p4v37myxc6yLZ8AHh",
-                "t": "livechat_navigation_history",
-                "ts": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
-                "msg": " - applewebdata://9124F033-BFEF-43C5-9215-DA369E4DA22D",
-                "u": {"_id": "rocket.cat", "username": "cat"},
-                "groupable": False,
-                "unread": True,
-                "navigation": {
-                    "page": {
-                        "change": "url",
-                        "title": "",
-                        "location": {"href": "applewebdata://9124F033-BFEF-43C5-9215-DA369E4DA22D"},
-                    },
-                    "token": "ebxuypgh0updo6klkobzhp",
-                },
-                "expireAt": 1575592722794.0,
-                "_hidden": True,
-                "_updatedAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
-            }
-        )
-
-        channel_messages = []
-        private_messages = []
-        livechat_messages = []
-
-        separate_channel_private_and_livechat_messages(
-            messages=rocketchat_data["message"],
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-            livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-            channel_messages=channel_messages,
-            private_messages=private_messages,
-            livechat_messages=livechat_messages,
-        )
-
-        # No new message added to channel, private or livechat messages
-        self.assert_length(channel_messages, 68)
-        self.assert_length(private_messages, 11)
-        self.assert_length(livechat_messages, 8)
-
-    def test_map_upload_id_to_upload_data(self) -> None:
-        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
-        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-
-        upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
-
-        self.assert_length(rocketchat_data["upload"]["upload"], 4)
-        self.assert_length(upload_id_to_upload_data_map, 4)
-
-        upload_id = rocketchat_data["upload"]["upload"][0]["_id"]
-        upload_name = rocketchat_data["upload"]["upload"][0]["name"]
-        self.assertEqual(upload_id_to_upload_data_map[upload_id]["name"], upload_name)
-        self.assert_length(upload_id_to_upload_data_map[upload_id]["chunk"], 1)
 
     def test_build_reactions(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -865,21 +772,42 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         zerver_attachments: list[ZerverFieldsT] = []
-        uploads_list: list[ZerverFieldsT] = []
+        uploads_list: list[UploadRecordData] = []
 
-        upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
-
-        message_with_attachment = rocketchat_data["message"][55]
-
+        attachment_mock = mock.MagicMock()
+        attachment_mock.return_value = (
+            {
+                "_id": "MmgXWQbD3hXYyGSai",
+                "name": "harry-ron.jpg",
+                "size": 149467,
+                "type": "image/jpeg",
+                "rid": "7scLEFgSgYXDqQwRM",
+                "userId": "LdBZ7kPxtKESyHPEe",
+                "store": "GridFS:Uploads",
+                "_updatedAt": datetime(2021, 7, 30, 22, 3, 11, 351000, tzinfo=timezone.utc),
+                "instanceId": "tYveC9XFjoWEn68mx",
+                "identify": {"format": "jpeg", "size": {"width": 1500, "height": 750}},
+                "complete": True,
+                "etag": "Hp6BwNq6mjqmSe4GH",
+                "path": "/ufs/GridFS:Uploads/MmgXWQbD3hXYyGSai/harry-ron.jpg",
+                "progress": 1,
+                "token": "08397aB979",
+                "uploadedAt": datetime(2021, 7, 30, 22, 3, 12, 675000, tzinfo=timezone.utc),
+                "uploading": False,
+                "url": "http://localhost:3000/ufs/GridFS:Uploads/MmgXWQbD3hXYyGSai/harry-ron.jpg",
+                "description": "Just a random pic!",
+                "typeGroup": "image",
+            },
+            iter([b"moose\n", b"thing\n"]),
+        )
         process_message_attachment(
-            upload=message_with_attachment["file"],
+            upload={"_id": "MmgXWQbD3hXYyGSai", "name": "harry-ron.jpg", "type": "image/jpeg"},
             realm_id=3,
             message_id=1,
             user_id=3,
-            user_handler=user_handler,
             zerver_attachment=zerver_attachments,
             uploads_list=uploads_list,
-            upload_id_to_upload_data_map=upload_id_to_upload_data_map,
+            attachment_lookup=attachment_mock,
             output_dir=output_dir,
         )
 
@@ -893,16 +821,149 @@ class RocketChatImporter(ZulipTestCase):
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
-        self.assertEqual(uploads_list[0]["user_profile_email"], "harrypotter@email.com")
+        self.assertEqual(uploads_list[0].user_profile_id, 3)
 
         attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0]["path_id"])
         self.assertTrue(os.path.exists(attachment_out_path))
         self.assertTrue(os.path.isfile(attachment_out_path))
 
+    def test_make_user_messages_mixed_batch(self) -> None:
+        """Test that make_user_messages correctly sets the is_private flag
+        per-message even when a batch contains both channel and DM messages."""
+        from zerver.data_import.import_util import make_user_messages
+
+        # Build a batch with a channel message followed by a DM message
+        zerver_message = [
+            {
+                "id": 1,
+                "recipient": 10,
+                "sender": 100,
+                "is_channel_message": True,
+            },
+            {
+                "id": 2,
+                "recipient": 20,
+                "sender": 200,
+                "is_channel_message": False,
+            },
+        ]
+        subscriber_map: dict[int, set[int]] = {10: {100, 101}, 20: {200, 201}}
+        mention_map: dict[int, set[int]] = {1: set(), 2: set()}
+
+        user_messages = make_user_messages(
+            zerver_message=zerver_message,
+            subscriber_map=subscriber_map,
+            mention_map=mention_map,
+        )
+
+        # Channel message (id=1) should not have is_private flag (2048)
+        channel_ums = [um for um in user_messages if um["message"] == 1]
+        for um in channel_ums:
+            self.assertFalse(um["flags_mask"] & 2048)
+
+        # DM message (id=2) should have is_private flag (2048)
+        dm_ums = [um for um in user_messages if um["message"] == 2]
+        for um in dm_ums:
+            self.assertTrue(um["flags_mask"] & 2048)
+
+    def test_attachment_index_and_lookup(self) -> None:
+        """Test the index-based attachment lookup: _build_chunk_index builds
+        a correct offset index, and attachment_lookup uses it to find uploads
+        and yield chunk data in correct n-order."""
+        from bsonstream import KeyValueBSONInput
+
+        from zerver.data_import.rocketchat import _build_chunk_index
+
+        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
+        uploads_path = os.path.join(fixture_dir_name, "rocketchat_uploads.bson")
+        chunks_path = os.path.join(fixture_dir_name, "rocketchat_uploads.chunks.bson")
+
+        with (
+            open(uploads_path, "rb") as uploads_fh,
+            open(chunks_path, "rb") as chunks_fh,
+        ):
+            upload_index: dict[str, dict[str, Any]] = {}
+            for doc in KeyValueBSONInput(fh=uploads_fh):
+                upload_index[doc["_id"]] = doc
+
+            chunk_index = _build_chunk_index(chunks_fh)
+
+            self.assert_length(upload_index, 4)
+            self.assert_length(chunk_index, 4)
+
+            # harry-ron.jpg: single chunk
+            self.assertIn("MmgXWQbD3hXYyGSai", chunk_index)
+            self.assert_length(chunk_index["MmgXWQbD3hXYyGSai"], 1)
+
+            # Hogwarts Curriculum.pdf: 3 chunks, stored as n=0,2,1 in file.
+            # Index must be sorted by n.
+            pdf_entries = chunk_index["4BoikTP2ZZkE5RsGh"]
+            self.assert_length(pdf_entries, 3)
+            self.assertEqual([n for n, _offset in pdf_entries], [0, 1, 2])
+
+            # Verify seeking to indexed offsets yields correct data
+            for n, offset in pdf_entries:
+                chunks_fh.seek(offset)
+                doc = KeyValueBSONInput(fh=chunks_fh).read()
+                assert doc is not None
+                self.assertEqual(doc["files_id"], "4BoikTP2ZZkE5RsGh")
+                self.assertEqual(doc["n"], n)
+
+            # Unknown upload
+            self.assertNotIn("nonexistent_id", upload_index)
+
+    def test_process_message_attachment_unknown(self) -> None:
+        """Test that process_message_attachment handles an unknown attachment
+        (attachment_lookup returns None) by returning empty content."""
+
+        output_dir = self.make_import_output_dir("mattermost")
+
+        zerver_attachments: list[ZerverFieldsT] = []
+        uploads_list: list[UploadRecordData] = []
+
+        attachment_mock = mock.MagicMock()
+        attachment_mock.return_value = None
+
+        with self.assertLogs(level="INFO") as info_log:
+            content, has_image = process_message_attachment(
+                upload={"_id": "unknown_id", "name": "missing.jpg", "type": "image/jpeg"},
+                realm_id=3,
+                message_id=42,
+                user_id=3,
+                zerver_attachment=zerver_attachments,
+                uploads_list=uploads_list,
+                attachment_lookup=attachment_mock,
+                output_dir=output_dir,
+            )
+
+        self.assertEqual(content, "")
+        self.assertFalse(has_image)
+        self.assert_length(zerver_attachments, 0)
+        self.assert_length(uploads_list, 0)
+        self.assertIn(
+            "INFO:root:Skipping unknown attachment of message_id: 42",
+            info_log.output,
+        )
+
     def read_file(self, team_output_dir: str, output_file: str) -> Any:
         full_path = os.path.join(team_output_dir, output_file)
         with open(full_path, "rb") as f:
             return orjson.loads(f.read())
+
+    def read_message_files(self, output_dir: str) -> dict[str, list[Any]]:
+        """Read all messages-NNNNNN.json files and combine them."""
+        all_messages: list[Any] = []
+        all_usermessages: list[Any] = []
+        dump_file_id = 1
+        while True:
+            message_file = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
+            if not os.path.exists(message_file):
+                break
+            data = self.read_file(output_dir, f"messages-{dump_file_id:06}.json")
+            all_messages.extend(data["zerver_message"])
+            all_usermessages.extend(data["zerver_usermessage"])
+            dump_file_id += 1
+        return {"zerver_message": all_messages, "zerver_usermessage": all_usermessages}
 
     def test_do_convert_data(self) -> None:
         rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
@@ -911,6 +972,7 @@ class RocketChatImporter(ZulipTestCase):
         with (
             self.assertLogs(level="INFO") as info_log,
             self.settings(EXTERNAL_HOST="zulip.example.com"),
+            mock.patch("zerver.data_import.rocketchat.MESSAGE_BATCH_SIZE", 5),
         ):
             # We need to mock EXTERNAL_HOST to be a valid domain because rocketchat's importer
             # uses it to generate email addresses for users without an email specified.
@@ -923,10 +985,10 @@ class RocketChatImporter(ZulipTestCase):
             [
                 "INFO:root:Starting to process custom emoji",
                 "INFO:root:Done processing emoji",
+                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2']",
+                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'NTzobKvioAAdsAJHv']",
                 "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
                 "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
-                "INFO:root:Processed messages up to 35 / 35",
-                "INFO:root:Processed messages up to 8 / 8",
                 "INFO:root:Exporting migration status",
             ],
         )
@@ -993,18 +1055,15 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(realm["zerver_defaultstream"], 0)
 
         exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        self.assert_length(exported_recipient_ids, 13)
+        # 6 streams + 2 DM groups (no personal recipients after import).
+        self.assert_length(exported_recipient_ids, 8)
         exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
-        self.assertEqual(exported_recipient_types, {1, 2, 3})
-
-        exported_subscription_userprofile = self.get_set(
-            realm["zerver_subscription"], "user_profile"
+        self.assertEqual(
+            exported_recipient_types,
+            {Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP},
         )
-        self.assert_length(exported_subscription_userprofile, 6)
-        exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
-        self.assert_length(exported_subscription_recipients, 13)
 
-        messages = self.read_file(output_dir, "messages-000001.json")
+        messages = self.read_message_files(output_dir)
 
         exported_messages_id = self.get_set(messages["zerver_message"], "id")
         self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
@@ -1038,14 +1097,16 @@ class RocketChatImporter(ZulipTestCase):
         self.assertFalse(get_user("hermionegranger@email.com", realm).is_mirror_dummy)
         self.assertFalse(get_user("hermionegranger@email.com", realm).is_bot)
 
-        messages = Message.objects.filter(realm_id=realm.id)
-        for message in messages:
+        imported_messages = Message.objects.filter(realm_id=realm.id)
+        for message in imported_messages:
             self.assertIsNotNone(message.rendered_content)
         # After removing user_joined, added_user, discussion_created, etc.
         # messages. (Total messages were 66.)
-        self.assert_length(messages, 58)
+        self.assert_length(imported_messages, 58)
 
-        stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
+        stream_messages = imported_messages.filter(recipient__type=Recipient.STREAM).order_by(
+            "date_sent"
+        )
         stream_recipients = stream_messages.values_list("recipient", flat=True)
         self.assert_length(stream_messages, 44)
         self.assert_length(set(stream_recipients), 5)
@@ -1061,37 +1122,13 @@ class RocketChatImporter(ZulipTestCase):
         self.assertTrue(stream_messages[23].has_image)
         self.assertTrue(stream_messages[23].has_link)
 
-        group_direct_messages = messages.filter(
+        group_direct_messages = imported_messages.filter(
             recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         ).order_by("date_sent")
         direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
-        self.assert_length(group_direct_messages, 5)
-        self.assert_length(set(direct_message_group_recipients), 2)
-        self.assertEqual(group_direct_messages[0].sender.email, "hermionegranger@email.com")
-        self.assertEqual(group_direct_messages[0].content, "Hey people!")
-
-        self.assertEqual(group_direct_messages[0].topic_name(), Message.DM_TOPIC)
-        self.assertEqual(group_direct_messages[2].sender.email, "harrypotter@email.com")
-        self.assertRegex(
-            group_direct_messages[2].content,
-            "This year's curriculum is out.\n\n\\[Hogwarts Curriculum.pdf\\]\\(.*\\)",
-        )
-        self.assertTrue(group_direct_messages[2].has_attachment)
-        self.assertFalse(group_direct_messages[2].has_image)
-        self.assertTrue(group_direct_messages[2].has_link)
-
-        personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
-            "date_sent"
-        )
-        personal_recipients = personal_messages.values_list("recipient", flat=True)
-        self.assert_length(personal_messages, 9)
-        self.assert_length(set(personal_recipients), 5)
-        self.assertEqual(personal_messages[0].sender.email, "harrypotter@email.com")
-        self.assertEqual(
-            personal_messages[0].content,
-            "Hey @**Hermione Granger** :grin:, how's everything going?",
-        )
-        self.assertEqual(personal_messages[0].topic_name(), Message.DM_TOPIC)
+        self.assert_length(group_direct_messages, 14)
+        self.assert_length(set(direct_message_group_recipients), 8)
+        self.assertEqual(group_direct_messages[0].sender.email, "harrypotter@email.com")
 
         self.verify_emoji_code_foreign_keys()
 

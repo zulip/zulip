@@ -190,7 +190,7 @@ export function process_topic_edit(opts: {
 export function update_topics_of_deleted_message_ids(message_ids: number[]): void {
     for (const message_id of message_ids) {
         const message = message_store.get(message_id);
-        if (!message || message.type !== "stream") {
+        if (message?.type !== "stream") {
             continue;
         }
 
@@ -241,7 +241,8 @@ export function get_topic_recent_senders(stream_id: number, topic: string): numb
         return list2.max_id() - list1.max_id();
     }
 
-    const sorted_senders = [...sender_dict.entries()].sort(by_max_message_id);
+    const sorted_senders = [...sender_dict.entries()];
+    sorted_senders.sort(by_max_message_id);
     const recent_senders = [];
     for (const item of sorted_senders) {
         recent_senders.push(item[0]);

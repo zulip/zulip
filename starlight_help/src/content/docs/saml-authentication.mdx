@@ -4,6 +4,7 @@ title: SAML authentication
 
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
+import FlattenedList from "../../components/FlattenedList.astro";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
@@ -27,10 +28,10 @@ This page describes how to configure SAML authentication with several common pro
 
 Other SAML providers are supported as well.
 
-If you are [self-hosting](/self-hosting/) Zulip, please follow the detailed setup instructions in
-the [SAML configuration for self-hosting][saml-readthedocs]. The documentation
-on this page may be a useful reference for how to set up specific SAML
-providers.
+If you are [self-hosting](https://zulip.com/self-hosting/) Zulip, please follow the
+detailed setup instructions in the [SAML configuration for self-hosting][saml-readthedocs].
+The documentation on this page may be a useful reference for how to set up specific
+SAML providers.
 
 <CloudPlusOnly />
 
@@ -54,12 +55,16 @@ providers.
       1. Assign the appropriate accounts in the **Assignments** tab. These are the users
          that will be able to log in to your Zulip organization.
       1. <SendUsInfo />
-         * Your organization's URL
-         * The **Identity Provider metadata** provided by Okta for the application.
-           To get the data, click the **View SAML setup instructions button** in
-           the right sidebar in the **Sign on** tab.
-           Copy the IdP metadata shown at the bottom of the page.
-         <SamlLoginButton />
+
+         <FlattenedList>
+           * Your organization's URL
+           * The **Identity Provider metadata** provided by Okta for the application.
+             To get the data, click the **View SAML setup instructions button** in
+             the right sidebar in the **Sign on** tab.
+             Copy the IdP metadata shown at the bottom of the page.
+
+           <SamlLoginButton />
+         </FlattenedList>
     </FlattenedSteps>
   </TabItem>
 
@@ -86,9 +91,13 @@ providers.
          | last\_name  | Last Name  |
          | username    | Email      |
       1. <SendUsInfo />
-         * Your organization's URL
-         * The **issuer URL** from the **SSO** section. It contains required **Identity Provider** metadata.
-         <SamlLoginButton />
+
+         <FlattenedList>
+           * Your organization's URL
+           * The **issuer URL** from the **SSO** section. It contains required **Identity Provider** metadata.
+
+           <SamlLoginButton />
+         </FlattenedList>
     </FlattenedSteps>
   </TabItem>
 
@@ -120,14 +129,18 @@ providers.
          * **name**: `user.principalname`
          * **Unique User Identifier**: `user.principalname`
       1. <SendUsInfo />
-         * Your organization's URL
-         * From the **SAML Signing Certificate** section:
-           * **App Federation Metadata Url**
-           * Certificate downloaded from **Certificate (Base64)**
-         * From the **Set up** section
-           * **Login URL**
-           * **Microsoft Entra Identifier**
-         <SamlLoginButton />
+
+         <FlattenedList>
+           * Your organization's URL
+           * From the **SAML Signing Certificate** section:
+             * **App Federation Metadata Url**
+             * Certificate downloaded from **Certificate (Base64)**
+           * From the **Set up** section
+             * **Login URL**
+             * **Microsoft Entra Identifier**
+
+           <SamlLoginButton />
+         </FlattenedList>
     </FlattenedSteps>
   </TabItem>
 
@@ -161,9 +174,13 @@ providers.
            * **SAML Attribute Name**: `email`
            * **SAML Attribute Name Format**: `Basic`
       1. <SendUsInfo />
-         * Your organization's URL
-         * The URL of your Keycloak realm.
-         <SamlLoginButton />
+
+         <FlattenedList>
+           * Your organization's URL
+           * The URL of your Keycloak realm.
+
+           <SamlLoginButton />
+         </FlattenedList>
     </FlattenedSteps>
 
     <ZulipTip>
@@ -193,9 +210,13 @@ providers.
          }
          ```
       1. <SendUsInfo />
-         * Your organization's URL
-         * The **SAML Metadata URL** value mentioned above. It contains required **Identity Provider** metadata.
-         <SamlLoginButton />
+
+         <FlattenedList>
+           * Your organization's URL
+           * The **SAML Metadata URL** value mentioned above. It contains required **Identity Provider** metadata.
+
+           <SamlLoginButton />
+         </FlattenedList>
     </FlattenedSteps>
   </TabItem>
 </Tabs>

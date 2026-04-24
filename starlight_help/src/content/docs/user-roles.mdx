@@ -39,15 +39,28 @@ You can also manage permissions with [custom user groups](/help/user-groups).
   Guests cannot see other channels, unless they have been specifically subscribed
   to the channel. See [guest users documentation](/help/guest-users) for additional
   details and configuration options.
-* **Billing administrator**: The user who upgrades the organization to
-  a paid plan is, in addition to their normal role, a billing
-  administrator.  Billing administrators can manage billing for the organization.
-  For example, someone from your billing department can be a **billing
-  administrator**, but not an **administrator** for the organization.
 
 ## View users by role
 
 <ViewUsersByRole />
+
+## Review and remove permissions assigned to a role
+
+You can review which permissions are assigned to a role, and remove permissions
+as needed.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/roles" />
+
+      1. Select a role.
+      1. Select the **Permissions** tab on the right.
+      1. Toggle the checkboxes next to any permissions you'd like to remove.
+      1. Click **Save changes**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
 
 ## Change a user's role
 
@@ -74,14 +87,26 @@ existing owner's role.
     <FlattenedSteps>
       <NavigationSteps target="settings/users" />
 
-      1. Find the user you would like to manage. Click the **manage bot**
-         (<UserCogIcon />) icon to the right
-         of their name.
+      1. Find the user you would like to manage. Click the **manage user**
+         (<UserCogIcon />) icon to the right of their name.
       1. Under **User role**, select a [role](#roles).
       1. Click **Save changes**. The new permissions will take effect immediately.
     </FlattenedSteps>
   </TabItem>
 </Tabs>
+
+## Change your role
+
+<AdminOnly />
+
+Organization owners and administrators can change their own roles, with the
+restriction that administrators cannot make themselves owners.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/account-and-privacy" />
+
+  1. Under **Account**, select a [role](#roles) from the **Roles** dropdown.
+</FlattenedSteps>
 
 ## Related articles
 

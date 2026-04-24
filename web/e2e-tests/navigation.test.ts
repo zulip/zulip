@@ -29,9 +29,7 @@ async function navigate_to_settings(page: Page): Promise<void> {
     const profile_section_tab_selector = "li[data-section='profile']";
     await page.waitForSelector(profile_section_tab_selector, {visible: true});
     await page.click(profile_section_tab_selector);
-    await page.waitForFunction(
-        () => document.activeElement?.getAttribute("data-section") === "profile",
-    );
+    await page.waitForSelector(`${profile_section_tab_selector}:focus`, {visible: true});
 
     await page.click("#settings_page .content-wrapper .exit");
     // Wait until the overlay is completely closed.
@@ -57,7 +55,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 async function navigate_to_private_messages(page: Page): Promise<void> {
     console.log("Navigate to direct messages");
 
-    const all_private_messages_icon = "#show-all-direct-messages";
+    const all_private_messages_icon = ".show-all-direct-messages";
     await page.waitForSelector(all_private_messages_icon, {visible: true});
     await page.click(all_private_messages_icon);
 
@@ -118,4 +116,4 @@ async function navigation_tests(page: Page): Promise<void> {
     );
 }
 
-common.run_test(navigation_tests);
+await common.run_test(navigation_tests);

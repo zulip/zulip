@@ -14,9 +14,7 @@ class Command(BaseCommand):
 
     @override
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument(
-            "listen", help="[Port, or address:port, to bind HTTP server to]", type=str
-        )
+        parser.add_argument("listen", help="[Port, or address:port, to bind HTTP server to]")
         local_port = 80
         config_file = get_config_file()
         if get_config(config_file, "application_server", "http_only", False):

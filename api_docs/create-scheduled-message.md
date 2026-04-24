@@ -10,10 +10,12 @@
 
 {tab|curl}
 
+{!curl-auth-credentials.md!}
+
 ``` curl
 # Create a scheduled channel message
 curl -X POST {{ api_url }}/v1/scheduled_messages \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -u EMAIL_ADDRESS:API_KEY \
     --data-urlencode type=stream \
     --data-urlencode to=9 \
     --data-urlencode topic=Hello \
@@ -22,7 +24,7 @@ curl -X POST {{ api_url }}/v1/scheduled_messages \
 
 # Create a scheduled direct message
 curl -X POST {{ api_url }}/v1/messages \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -u EMAIL_ADDRESS:API_KEY \
     --data-urlencode type=direct \
     --data-urlencode 'to=[9, 10]' \
     --data-urlencode 'content=Can we meet on Monday?' \

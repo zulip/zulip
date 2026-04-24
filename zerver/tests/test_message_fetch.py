@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from unittest import mock
 
@@ -17,8 +17,9 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import build_message_edit_request, do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
-from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.display_recipient import get_display_recipient
@@ -36,8 +37,10 @@ from zerver.lib.narrow import (
     BadNarrowOperatorError,
     NarrowBuilder,
     NarrowParameter,
+    add_narrow_conditions,
     exclude_muting_conditions,
     find_first_unread_anchor,
+    get_base_query_for_search,
     is_spectator_compatible,
     ok_to_include_history,
     post_process_limited_query,
@@ -47,7 +50,12 @@ from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
+from zerver.lib.test_helpers import (
+    HostRequestMock,
+    get_test_image_file,
+    get_user_messages,
+    queries_captured,
+)
 from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME, messages_for_topic
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.upload import create_attachment
@@ -220,6 +228,20 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
+    def test_add_term_using_channels_operator_and_archived_operand(self) -> None:
+        term = NarrowParameter(operator="channels", operand="archived")
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
+    def test_add_term_using_channels_operator_and_archived_operand_negated(self) -> None:
+        term = NarrowParameter(operator="channels", operand="archived", negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
+
     def test_add_term_using_is_operator_and_dm_operand(self) -> None:
         term = NarrowParameter(operator="is", operand="dm")
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
@@ -350,11 +372,29 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="sender", operand="non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_dm_operator_and_not_the_same_user_as_operand(self) -> None:
+    def test_add_term_using_dm_operator_and_not_the_same_user_as_operand_with_no_direct_message_group(
+        self,
+    ) -> None:
+        # Without a DM group, no messages are possible
         term = NarrowParameter(operator="dm", operand=self.othello_email)
         self._do_add_term_test(
             term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
+            "WHERE false",
+        )
+
+    def test_add_term_using_dm_operator_and_not_the_same_user_as_operand(self) -> None:
+        # Create a direct message group between users
+        get_or_create_direct_message_group(
+            [
+                self.example_user("hamlet").id,
+                self.example_user("othello").id,
+            ]
+        )
+        term = NarrowParameter(operator="dm", operand=self.othello_email)
+        # Query uses DM group recipient
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id = %(recipient_id_1)s",
         )
 
     def test_negated_is_dm_with_dm_operator(self) -> None:
@@ -400,39 +440,112 @@ class NarrowBuilderTest(ZulipTestCase):
         channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
         self._build_query(channel_term)
 
-    def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
+    def test_add_term_using_dm_operator_not_the_same_user_as_operand_no_direct_message_group_and_negated(
         self,
     ) -> None:  # NEGATED
+        # Without a DM group, negated false() becomes true
         term = NarrowParameter(operator="dm", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
+            "WHERE true",
         )
 
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
+    def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        # Create a direct message group between users
+        get_or_create_direct_message_group(
+            [
+                self.example_user("hamlet").id,
+                self.example_user("othello").id,
+            ]
+        )
+        term = NarrowParameter(operator="dm", operand=self.othello_email, negated=True)
+        # Query uses DM group recipient (negated)
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id != %(recipient_id_1)s",
+        )
+
+    def test_add_term_using_dm_operator_the_same_user_as_operand_no_direct_message_group(
+        self,
+    ) -> None:
+        # Without a DM group, no messages are possible
         term = NarrowParameter(operator="dm", operand=self.hamlet_email)
         self._do_add_term_test(
             term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
+            "WHERE false",
+        )
+
+    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
+        # Create a direct message group with the user
+        get_or_create_direct_message_group(
+            [
+                self.example_user("hamlet").id,
+            ]
+        )
+        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
+        # Query uses DM group recipient for self-DM
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id = %(recipient_id_1)s",
+        )
+
+    def test_add_term_using_dm_operator_the_same_user_as_operand_no_direct_message_group_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        # Without a DM group, negated false() becomes true
+        term = NarrowParameter(operator="dm", operand=self.hamlet_email, negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE true",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
+        # Create a direct message group with the user
+        get_or_create_direct_message_group(
+            [
+                self.example_user("hamlet").id,
+            ]
+        )
         term = NarrowParameter(operator="dm", operand=self.hamlet_email, negated=True)
+        # Query uses DM group recipient (negated)
         self._do_add_term_test(
             term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
+            "WHERE recipient_id != %(recipient_id_1)s",
         )
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
+    def test_add_term_using_dm_operator_and_self_and_user_as_operand_no_direct_message_group(
+        self,
+    ) -> None:
         myself_and_other = (
             f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
         term = NarrowParameter(operator="dm", operand=myself_and_other)
+        # Without a DM group, no messages are possible
         self._do_add_term_test(
             term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
+            "WHERE false",
+        )
+
+    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
+        # Make the direct message group first
+        get_or_create_direct_message_group(
+            [
+                self.example_user("hamlet").id,
+                self.example_user("othello").id,
+            ]
+        )
+        myself_and_other = (
+            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
+        )
+        term = NarrowParameter(operator="dm", operand=myself_and_other)
+        # Query uses DM group recipient
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group(
@@ -454,18 +567,43 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
+        # 3+ person group DM uses simple recipient_id match
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id = %(recipient_id_1)s",
+        )
 
-    def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
+    def test_add_term_using_dm_operator_self_and_user_as_operand_no_group_direct_message_and_negated(
         self,
     ) -> None:  # NEGATED
         myself_and_other = (
             f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
         term = NarrowParameter(operator="dm", operand=myself_and_other, negated=True)
+        # Without a DM group, negated false() becomes true
         self._do_add_term_test(
             term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
+            "WHERE true",
+        )
+
+    def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        # Make the direct message group first
+        get_or_create_direct_message_group(
+            [
+                self.example_user("hamlet").id,
+                self.example_user("othello").id,
+            ]
+        )
+        myself_and_other = (
+            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
+        )
+        term = NarrowParameter(operator="dm", operand=myself_and_other, negated=True)
+        # Query uses DM group recipient (negated)
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id != %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group_and_negated(
@@ -489,7 +627,11 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
+        # 3+ person group DM uses simple recipient_id match (negated)
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id != %(recipient_id_1)s",
+        )
 
     def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
         term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
@@ -512,7 +654,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
             term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
         )
 
         # Test with at least one such group direct messages existing
@@ -523,7 +665,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
             term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
         )
 
     def test_add_term_using_dm_including_operator_with_different_user_email_and_negated(
@@ -532,7 +674,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm-including", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
     def test_add_term_using_id_operator_integer(self) -> None:
@@ -679,19 +821,33 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
     # Test that "pm-with" (legacy alias for "dm") works.
-    def test_add_term_using_pm_with_operator(self) -> None:
+    def test_add_term_using_pm_with_operator_no_direct_message_group(self) -> None:
         term = NarrowParameter(operator="pm-with", operand=self.hamlet_email)
         self._do_add_term_test(
             term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
+            "WHERE false",
+        )
+
+    # Test that "pm-with" (legacy alias for "dm") works.
+    def test_add_term_using_pm_with_operator(self) -> None:
+        # Create a direct message group with the user
+        get_or_create_direct_message_group([self.user_profile.id])
+        term = NarrowParameter(operator="pm-with", operand=self.hamlet_email)
+        # Query uses DM group recipient for self-DM
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id = %(recipient_id_1)s",
         )
 
     # Test that the underscore version of "pm-with" works.
     def test_add_term_using_underscore_version_of_pm_with_operator(self) -> None:
+        # Create a direct message group with the user
+        get_or_create_direct_message_group([self.user_profile.id])
         term = NarrowParameter(operator="pm_with", operand=self.hamlet_email)
+        # Query uses DM group recipient for self-DM
         self._do_add_term_test(
             term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
+            "WHERE recipient_id = %(recipient_id_1)s",
         )
 
     # Test that deprecated "group-pm-with" (replaced by "dm-including" ) works.
@@ -717,6 +873,10 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
         term = NarrowParameter(operator="group-pm-with", operand="non-existing@zulip.com")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_mentions_operator_with_non_existing_user(self) -> None:
+        term = NarrowParameter(operator="mentions", operand="non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     # Test that the underscore version of "group-pm-with" works.
@@ -774,6 +934,33 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def _build_query(self, term: NarrowParameter) -> Select:
         return self.builder.add_term(self.raw_query, term)
+
+    def test_add_term_using_mentions_operator_with_logged_in_user_email(self) -> None:
+        term = NarrowParameter(operator="mentions", operand=self.user_profile.id)
+        self._do_add_term_test(
+            term,
+            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+        )
+
+    def test_add_term_using_mentions_operator_with_different_user_email(self) -> None:
+        othello = self.example_user("othello")
+        term = NarrowParameter(operator="mentions", operand=othello.id)
+
+        self._do_add_term_test(
+            term,
+            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+        )
+
+        self.send_stream_message(
+            self.user_profile,
+            "Denmark",
+            content=f"Hello @**{othello.full_name}**",
+        )
+
+        self._do_add_term_test(
+            term,
+            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+        )
 
 
 class NarrowLibraryTest(ZulipTestCase):
@@ -1100,11 +1287,19 @@ class NarrowLibraryTest(ZulipTestCase):
             )
         )
         self.assertFalse(
+            is_spectator_compatible(
+                [NarrowParameter(operator="mentions", operand="hamlet@zulip.com")]
+            )
+        )
+        self.assertFalse(
             is_spectator_compatible([NarrowParameter(operator="is", operand="starred")])
         )
         self.assertFalse(is_spectator_compatible([NarrowParameter(operator="is", operand="dm")]))
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="channels", operand="public")])
+        )
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="channels", operand="archived")])
         )
 
         # "is:private" is a legacy alias for "is:dm".
@@ -1161,6 +1356,29 @@ class IncludeHistoryTest(ZulipTestCase):
         # Negated -channels:public searches should not include history.
         narrow = [
             NarrowParameter(operator="channels", operand="public", negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # channels:web-public searches should include history for non-guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="web-public"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Negated -channels:web-public searches should not include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand="web-public", negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # channels:archived searches should not include history,
+        # whether negated or not.
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1237,6 +1455,13 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
+        # Search history for archived, public channel searches.
+        narrow = [
+            NarrowParameter(operator="channels", operand="public"),
+            NarrowParameter(operator="channels", operand="archived"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
         # simple True case
         narrow = [
             NarrowParameter(operator="channel", operand="public_channel"),
@@ -1258,6 +1483,14 @@ class IncludeHistoryTest(ZulipTestCase):
         # channels:public searches should not include history for guest members.
         narrow = [
             NarrowParameter(operator="channels", operand="public"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+
+        # And archived, public channel searches should still not include history
+        # for guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="public"),
+            NarrowParameter(operator="channels", operand="archived"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
 
@@ -1939,8 +2172,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         scotland_channel = get_stream("Scotland", hamlet_user.realm)
         assert scotland_channel.recipient_id is not None
-        assert hamlet_user.recipient_id is not None
-        assert othello_user.recipient_id is not None
         query_ids["realm_id"] = hamlet_user.realm_id
         query_ids["scotland_recipient"] = scotland_channel.recipient_id
         query_ids["hamlet_id"] = hamlet_user.id
@@ -1948,8 +2179,10 @@ class GetOldMessagesTest(ZulipTestCase):
             tuple(sorted(get_recursive_membership_groups(hamlet_user).values_list("id", flat=True)))
         )
         query_ids["othello_id"] = othello_user.id
-        query_ids["hamlet_recipient"] = hamlet_user.recipient_id
-        query_ids["othello_recipient"] = othello_user.recipient_id
+        query_ids["hamlet_recipient"] = self.get_dm_group_recipient(hamlet_user).id
+        query_ids["hamlet_and_othello_recipient"] = self.get_dm_group_recipient(
+            hamlet_user, othello_user
+        ).id
         recipients = (
             get_public_streams_queryset(hamlet_user.realm)
             .values_list("recipient_id", flat=True)
@@ -2364,6 +2597,9 @@ class GetOldMessagesTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
 
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
         do_change_user_setting(
             hamlet,
             "email_address_visibility",
@@ -2398,6 +2634,7 @@ class GetOldMessagesTest(ZulipTestCase):
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_get_messages_with_narrow_dm(self) -> None:
         """
         A request for old messages with a narrow by direct message only returns
@@ -4157,7 +4394,6 @@ class GetOldMessagesTest(ZulipTestCase):
             allow_empty_topic_name=True,
             can_access_sender=True,
             realm_host=get_realm("zulip").host,
-            is_incoming_1_to_1=False,
         )
         self.assertEqual(final_dict["content"], "<p>test content</p>")
 
@@ -4211,25 +4447,57 @@ class GetOldMessagesTest(ZulipTestCase):
 
         user_profile = hamlet
 
-        with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
-            anchor = find_first_unread_anchor(
-                sa_conn=sa_conn,
+        def test_find_first_unread_anchor(
+            narrow: list[NarrowParameter], need_user_message: bool
+        ) -> tuple[int, list[Any]]:
+            query, inner_msg_id_col = get_base_query_for_search(
+                realm_id=user_profile.realm_id,
                 user_profile=user_profile,
-                narrow=[],
+                need_user_message=need_user_message,
             )
+            query = query.add_columns(column("flags", Integer))
+            query, _is_search, is_dm_narrow = add_narrow_conditions(
+                user_profile=user_profile,
+                inner_msg_id_col=inner_msg_id_col,
+                query=query,
+                narrow=narrow,
+                realm=user_profile.realm,
+                is_web_public_query=False,
+            )
+
+            with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
+                anchor = find_first_unread_anchor(
+                    sa_conn=sa_conn,
+                    user_profile=user_profile,
+                    narrow=narrow,
+                    query=query,
+                    is_dm_narrow=is_dm_narrow,
+                    inner_msg_id_col=inner_msg_id_col,
+                    need_user_message=need_user_message,
+                )
+            return anchor, queries
+
+        anchor, queries = test_find_first_unread_anchor([], need_user_message=False)
         self.assert_length(queries, 4)
+        self.assertEqual(anchor, first_message_id)
+
+        # If need_user_message is set to True, we don't need to call
+        # get_base_query_for_search inside find_first_unread_anchor.
+        # This saves us an extra call that get_base_query_for_search
+        # makes to get_recursive_membership_groups in case of
+        # need_user_message being True.
+        anchor, queries = test_find_first_unread_anchor([], need_user_message=True)
+        self.assert_length(queries, 3)
         self.assertEqual(anchor, first_message_id)
 
         # Looking for the first-unread in DMs leaves off the muted
         # topics queries and limits
-        with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
-            anchor = find_first_unread_anchor(
-                sa_conn=sa_conn,
-                user_profile=user_profile,
-                narrow=[NarrowParameter(operator="is", operand="dm")],
-            )
-        self.assert_length(queries, 2)
-        self.assertTrue("muted" not in queries[1].sql)
+        anchor, queries = test_find_first_unread_anchor(
+            [NarrowParameter(operator="is", operand="dm")],
+            need_user_message=True,
+        )
+        self.assert_length(queries, 1)
+        self.assertTrue("muted" not in queries[0].sql)
         self.assertEqual(anchor, dm_message_id)
 
         # With the same data setup, we now want to test that a reasonable
@@ -4331,6 +4599,27 @@ class GetOldMessagesTest(ZulipTestCase):
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
 
+        # With anchor input as date, see if response anchor value matches
+        # first message on/after date
+        anchor_date = Message.objects.get(id=first_message_id).date_sent
+        query_params = dict(
+            anchor="date",
+            anchor_date=anchor_date.isoformat(),
+            num_before=10,
+            num_after=10,
+            narrow="[]",
+        )
+        request = HostRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(
+            request,
+            user_profile,
+            num_before=10,
+            num_after=10,
+        )
+        result = orjson.loads(payload.content)
+        self.assertEqual(result["anchor"], first_message_id)
+
         # With anchor input negative, see if
         # response anchor value is clamped to 0
         query_params = dict(
@@ -4368,6 +4657,153 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
+
+    def test_anchor_date_requires_value(self) -> None:
+        self.login("hamlet")
+        result = self.client_get(
+            "/json/messages",
+            dict(anchor="date"),
+        )
+        self.assert_json_error(result, "Missing 'anchor_date' argument.")
+
+    def test_anchor_date_rejects_invalid_iso_string(self) -> None:
+        self.login("hamlet")
+        result = self.client_get(
+            "/json/messages",
+            dict(
+                anchor="date",
+                anchor_date="not-a-date",
+                num_before=0,
+                num_after=1,
+                narrow="[]",
+            ),
+        )
+        self.assert_json_error(result, "anchor_date is not an ISO 8601 datetime string")
+
+    def test_anchor_date_accepts_iso8601_strings(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+
+        message_time = datetime(2005, 4, 18, 0, 1, 0, 123000, tzinfo=timezone.utc)
+        message_id = self.send_stream_message(hamlet, "Denmark")
+        Message.objects.filter(id=message_id).update(date_sent=message_time)
+
+        anchor_date_values = [
+            message_time.date().isoformat(),  # 2005-04-18
+            message_time.isoformat(),  # 2005-04-18T00:01:00.123000+00:00
+            message_time.replace(tzinfo=None).isoformat(),  # 2005-04-18T00:01:00.123000
+            message_time.isoformat().replace("+00:00", "Z"),  # 2005-04-18T00:01:00.123000Z
+            message_time.astimezone(
+                timezone(timedelta(hours=5, minutes=30))
+            ).isoformat(),  # 2005-04-18T05:31:00.123000+05:30
+            message_time.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),  # 2005-04-18T00:01Z
+        ]
+
+        for anchor_date_value in anchor_date_values:
+            with self.subTest(anchor_date=anchor_date_value):
+                result = self.get_and_check_messages(
+                    {
+                        "anchor": "date",
+                        "anchor_date": anchor_date_value,
+                        "num_before": 0,
+                        "num_after": 1,
+                        "narrow": orjson.dumps(
+                            [dict(operator="channel", operand="Denmark")]
+                        ).decode(),
+                    },
+                )
+                self.assertEqual(result["anchor"], message_id)
+                self.assert_length(result["messages"], 1)
+                self.assertEqual(result["messages"][0]["id"], message_id)
+                self.assertTrue(result["found_anchor"])
+
+    def test_anchor_date(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(hamlet, "Scotland")
+        sender = self.example_user("othello")
+
+        base_time = timezone_now()
+        anchor_message_id = self.send_stream_message(sender, "Denmark")
+        newer_message_id = self.send_stream_message(sender, "Denmark")
+        Message.objects.filter(id=anchor_message_id).update(date_sent=base_time)
+        Message.objects.filter(id=newer_message_id).update(
+            date_sent=base_time + timedelta(minutes=30)
+        )
+
+        get_and_check_messages_options: dict[str, str | int] = {
+            "anchor": "date",
+            "anchor_date": base_time.isoformat(),
+            "num_before": 0,
+            "num_after": 0,
+            "narrow": "[]",
+        }
+
+        with self.assert_database_query_count(12):
+            result = self.get_and_check_messages(get_and_check_messages_options)
+
+        self.assertEqual(result["anchor"], anchor_message_id)
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], anchor_message_id)
+        self.assertTrue(result["found_anchor"])
+
+        # In case of multiple messages at the same timestamp,
+        # we should choose the message sent first.
+        first_message_with_same_timestamp_id = anchor_message_id
+        Message.objects.filter(id=newer_message_id).update(date_sent=base_time)
+        with self.assert_database_query_count(12):
+            result = self.get_and_check_messages(get_and_check_messages_options)
+        self.assertEqual(result["anchor"], first_message_with_same_timestamp_id)
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], first_message_with_same_timestamp_id)
+        self.assertTrue(result["found_anchor"])
+
+        # In case of no message at or after the anchor date,
+        # we should fall back to the newest message.
+        with self.assert_database_query_count(13):
+            result = self.get_and_check_messages(
+                {
+                    **get_and_check_messages_options,
+                    "anchor_date": (base_time + timedelta(days=1)).isoformat(),
+                }
+            )
+        self.assertEqual(result["anchor"], newer_message_id)
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], newer_message_id)
+        self.assertTrue(result["found_anchor"])
+
+        # Narrow conditions should be respected when passing `anchor_date`.
+        scotland_channel_message_id = self.send_stream_message(sender, "Scotland")
+        Message.objects.filter(id=scotland_channel_message_id).update(date_sent=base_time)
+        with self.assert_database_query_count(16):
+            result = self.get_and_check_messages(
+                {
+                    **get_and_check_messages_options,
+                    "narrow": orjson.dumps([dict(operator="channel", operand="Scotland")]).decode(),
+                }
+            )
+        self.assertEqual(result["anchor"], scotland_channel_message_id)
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], scotland_channel_message_id)
+        self.assertTrue(result["found_anchor"])
+
+        # If the narrow has no matching messages, we should return an empty result.
+        empty_stream = "Empty stream"
+        self.subscribe(hamlet, empty_stream)
+        result = self.get_and_check_messages(
+            {
+                **get_and_check_messages_options,
+                "anchor_date": (base_time + timedelta(days=2)).isoformat(),
+                "narrow": orjson.dumps([dict(operator="channel", operand=empty_stream)]).decode(),
+            }
+        )
+        self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
+        self.assert_length(result["messages"], 0)
+        self.assertFalse(result["found_anchor"])
+        self.assertFalse(result["found_newest"])
+        self.assertFalse(result["found_oldest"])
 
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -4558,6 +4994,44 @@ class GetOldMessagesTest(ZulipTestCase):
         queries = [q for q in all_queries if "/* get_messages */" in q.sql]
         self.assert_length(queries, 1)
         self.assertIn(f"AND zerver_message.id = {LARGER_THAN_MAX_MESSAGE_ID}", queries[0].sql)
+
+    def test_get_visible_messages_with_mentions_narrow(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("design")
+        self.subscribe(iago, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        content = f"Hello @**{iago.full_name}**!"
+        mention_message_id = self.send_stream_message(
+            hamlet,
+            stream.name,
+            content=content,
+        )
+
+        silent_mention_content = f"Hello @_**{iago.full_name}**!"
+        self.send_stream_message(
+            hamlet,
+            stream.name,
+            content=silent_mention_content,
+        )
+
+        narrow = [dict(operator="mentions", operand=iago.email)]
+
+        # This should check just the messages that mentioned this user.
+        post_params = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            num_before=10,
+            num_after=0,
+            anchor=LARGER_THAN_MAX_MESSAGE_ID,
+        )
+        payload = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+
+        self.assertEqual([m["id"] for m in result["messages"]], [mention_message_id])
 
     def test_exclude_muting_conditions(self) -> None:
         realm = get_realm("zulip")
@@ -4780,6 +5254,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         )
 
     def test_get_messages_with_narrow_queries(self) -> None:
+        # The query includes DM group recipients
         query_ids = self.get_query_ids()
         hamlet_email = self.example_user("hamlet").email
         othello_email = self.example_user("othello").email
@@ -4792,7 +5267,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {hamlet_and_othello_recipient} AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
@@ -4813,7 +5288,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {hamlet_and_othello_recipient} AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
@@ -4834,7 +5309,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) ORDER BY message_id ASC \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {hamlet_and_othello_recipient} ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -4977,7 +5452,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -5143,10 +5618,99 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
             '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>',
         )
 
-    def test_dm_recipient_id(self) -> None:
+    def test_early_return_for_no_access_private_channel(self) -> None:
+        """Test that we do an early return when trying to access messages
+        in a private stream the user doesn't have access to.
+        """
+        hamlet = self.example_user("hamlet")
+        self.make_stream("private_stream", invite_only=True)
+        self.login_user(hamlet)
+
+        # Check that we do an early return.
+        with mock.patch(
+            "zerver.lib.narrow.get_base_query_for_search",
+        ) as mocked_get_base_query_for_search:
+            narrow = [["stream", "private_stream"]]
+            result = self.get_and_check_messages(
+                dict(
+                    narrow=orjson.dumps(narrow).decode(),
+                    anchor=LARGER_THAN_MAX_MESSAGE_ID,
+                ),
+                expected_status=200,
+            )
+            mocked_get_base_query_for_search.assert_not_called()
+            self.assert_length(result["messages"], 0)
+
+    def test_negated_channel_does_not_early_return(self) -> None:
+        """Test that negated channel terms don't trigger early return in access_narrow."""
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        # Negated channel terms should not trigger the early return optimization.
+        # The query should proceed normally and apply the negation filter.
+        narrow = [{"operator": "channel", "operand": "Verona", "negated": True}]
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            ),
+            expected_status=200,
+        )
+        self.assertGreater(len(result["messages"]), 0)
+
+    def test_multiple_channel_terms_early_return(self) -> None:
+        """Test that multiple channel terms trigger early return with no messages."""
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        # Multiple channel terms with AND logic will never match any messages,
+        # so we should get an early return with no messages.
+        with mock.patch(
+            "zerver.lib.narrow.get_base_query_for_search",
+        ) as mocked_get_base_query_for_search:
+            narrow = [
+                {"operator": "channel", "operand": "Verona"},
+                {"operator": "channel", "operand": "Scotland"},
+            ]
+            result = self.get_and_check_messages(
+                dict(
+                    narrow=orjson.dumps(narrow).decode(),
+                    anchor=LARGER_THAN_MAX_MESSAGE_ID,
+                ),
+                expected_status=200,
+            )
+            mocked_get_base_query_for_search.assert_not_called()
+            self.assert_length(result["messages"], 0)
+
+    def test_deactivated_channel_access_narrow(self) -> None:
+        """Test that access_narrow works with deactivated channels."""
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        self.send_stream_message(hamlet, "Verona", topic_name="test", content="test message")
+
+        realm = hamlet.realm
+        stream = get_stream("Verona", realm)
+        do_deactivate_stream(stream, acting_user=hamlet)
+
+        narrow = [{"operator": "channel", "operand": "Verona"}]
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            ),
+            expected_status=200,
+        )
+        self.assertGreater(len(result["messages"]), 0)
+
+    def test_group_dm_recipient_id(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
         self.login_user(hamlet)
+
+        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
+        assert direct_message_group.recipient is not None
+        self.assertIsNotNone(direct_message_group.recipient.label())
 
         outgoing_message_id = self.send_personal_message(hamlet, othello)
         incoming_message_id = self.send_personal_message(othello, hamlet)
@@ -5155,11 +5719,11 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         self.assert_length(result["messages"], 2)
         self.assertEqual(result["messages"][0]["id"], outgoing_message_id)
         self.assertEqual(result["messages"][0]["sender_id"], hamlet.id)
-        self.assertEqual(result["messages"][0]["recipient_id"], othello.recipient_id)
+        self.assertEqual(result["messages"][0]["recipient_id"], direct_message_group.recipient_id)
         self.assertEqual(result["messages"][1]["id"], incoming_message_id)
         self.assertEqual(result["messages"][1]["sender_id"], othello.id)
         # Incoming DMs show the recipient_id that outgoing DMs would.
-        self.assertEqual(result["messages"][1]["recipient_id"], othello.recipient_id)
+        self.assertEqual(result["messages"][1]["recipient_id"], direct_message_group.recipient_id)
 
 
 class MessageHasKeywordsTest(ZulipTestCase):
@@ -5180,6 +5744,14 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         # return path ids
         return [x[1] for x in dummy_files]
+
+    def setup_uploaded_image_file(self, user_profile: UserProfile) -> str:
+        self.login_user(user_profile)
+        image_file = get_test_image_file("img.png")
+        response = self.assert_json_success(
+            self.client_post("/json/user_uploads", {"file": image_file})
+        )
+        return response["url"]
 
     def test_claim_attachment(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -5281,18 +5853,21 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertFalse(msg.has_link)
 
     def test_has_image(self) -> None:
+        hamlet = self.example_user("hamlet")
+        uploaded_image_url = self.setup_uploaded_image_file(hamlet)
         msg_contents = [
             "Link: foo.org",
             "Image: https://www.google.com/images/srpr/logo4w.png",
             "Image: https://www.google.com/images/srpr/logo4w.pdf",
             "[Google link](https://www.google.com/images/srpr/logo4w.png)",
+            f"![image.png]({uploaded_image_url})",
         ]
         msg_ids = [
-            self.send_stream_message(self.example_user("hamlet"), "Denmark", content=msg_content)
+            self.send_stream_message(hamlet, "Denmark", content=msg_content)
             for msg_content in msg_contents
         ]
         msgs = [Message.objects.get(id=id) for id in msg_ids]
-        self.assertEqual([False, True, False, True], [msg.has_image for msg in msgs])
+        self.assertEqual([False, True, False, True, True], [msg.has_image for msg in msgs])
 
         self.update_message(msgs[0], "https://www.google.com/images/srpr/logo4w.png")
         self.assertTrue(msgs[0].has_image)
@@ -5334,6 +5909,13 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.update_message(msg, f"Both in code: `{dummy_urls[1]} {dummy_urls[0]}`.")
         self.assertFalse(msg.has_attachment)
         self.assertEqual(msg.attachment_set.count(), 0)
+
+        # Test inline media syntax with uploaded image.
+        uploaded_image_url = self.setup_uploaded_image_file(hamlet)
+        body = f"![image.png]({uploaded_image_url})"
+        msg_id = self.send_stream_message(hamlet, "Denmark", body, "test inline media image")
+        msg = Message.objects.get(id=msg_id)
+        self.assertTrue(msg.has_attachment)
 
     def test_potential_attachment_path_ids(self) -> None:
         hamlet = self.example_user("hamlet")

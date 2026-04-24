@@ -5,7 +5,7 @@ proxy_set_header Connection "";
 proxy_set_header Host $http_host;
 proxy_set_header X-Forwarded-Proto $trusted_x_forwarded_proto;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_set_header X-Real-Ip $remote_addr;
+proxy_set_header X-Real-Ip $trusted_remote_addr;
 proxy_set_header X-Proxy-Misconfiguration $x_proxy_misconfiguration;
 proxy_next_upstream off;
 proxy_redirect off;

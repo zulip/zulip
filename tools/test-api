@@ -110,7 +110,15 @@ with test_server_running(
         site=site,
     )
 
-    test_the_api(client, nonadmin_client, owner_client)
+    # Prepare the bot client using the pre-existing default bot in the dev realm.
+    bot_user = get_user("default-bot@zulip.com", get_realm("zulip"))
+    bot_client = Client(
+        email="default-bot@zulip.com",
+        api_key=bot_user.api_key,
+        site=site,
+    )
+
+    test_the_api(client, nonadmin_client, owner_client, bot_client)
     test_generated_curl_examples_for_success(client)
     test_js_bindings(client)
 

@@ -22,6 +22,7 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from analytics.models import RealmCount
+from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_regenerate_api_key
@@ -35,9 +36,11 @@ from zerver.lib.push_notifications import (
     get_apns_badge_count_future,
     get_apns_context,
     get_base_payload,
+    get_message_payload,
     get_message_payload_apns,
     get_message_payload_gcm,
     get_mobile_push_content,
+    handle_push_notification,
     parse_fcm_options,
     send_android_push_notification_to_user,
     send_apple_push_notification,
@@ -593,8 +596,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):
@@ -668,8 +671,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             ) as android_push,
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1) as apple_push,
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             time_machine.travel(time_sent, tick=False),
             self.assertLogs("zilencer.views", level="INFO") as logger,
@@ -733,6 +736,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_send_notification_endpoint_on_free_plans(self) -> None:
         hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        recipient = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id]).recipient
+
         remote_server = self.server
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
@@ -744,12 +750,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
         current_time = now()
         message = Message(
             sender=hamlet,
-            recipient=self.example_user("othello").recipient,
+            recipient=recipient,
             realm_id=hamlet.realm_id,
             content="This is test content",
             rendered_content="This is test content",
             date_sent=current_time,
             sending_client=get_client("test"),
+            is_channel_message=False,
         )
         message.save()
 
@@ -773,12 +780,12 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     "realm_id": hamlet.realm.id,
                     "realm_uri": hamlet.realm.url,
                     "realm_url": hamlet.realm.url,
-                    "user_id": self.example_user("othello").id,
+                    "user_id": othello.id,
                 }
             },
         }
         old_gcm_payload = {
-            "user_id": self.example_user("othello").id,
+            "user_id": othello.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,
@@ -812,9 +819,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
         remote_server.last_api_feature_level = 235
         remote_server.save()
 
-        gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        message_payload = get_message_payload(hamlet, message)
+        gcm_payload, gcm_options = get_message_payload_gcm(message_payload, hamlet, message)
         apns_payload = get_message_payload_apns(
-            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
+            message_payload, hamlet, message, NotificationTriggers.DIRECT_MESSAGE
         )
         payload = {
             "user_id": hamlet.id,
@@ -1447,6 +1455,31 @@ class TestAPNs(PushNotificationTestCase):
 
 
 class TestGetAPNsPayload(PushNotificationTestCase):
+    def _get_message_payload_apns(
+        self,
+        user_profile: UserProfile,
+        message: Message,
+        trigger: str,
+        mentioned_user_group_id: int | None = None,
+        mentioned_user_group_name: str | None = None,
+        can_access_sender: bool = True,
+    ) -> dict[str, Any]:
+        message_payload = get_message_payload(
+            user_profile,
+            message,
+            mentioned_user_group_id,
+            mentioned_user_group_name,
+            can_access_sender,
+        )
+        apns_payload = get_message_payload_apns(
+            message_payload,
+            user_profile,
+            message,
+            trigger,
+            can_access_sender,
+        )
+        return apns_payload
+
     def test_get_message_payload_apns_personal_message(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_personal_message(
@@ -1455,47 +1488,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
             "Content of personal message",
         )
         message = Message.objects.get(id=message_id)
-        payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
-        )
-        expected = {
-            "alert": {
-                "title": "King Hamlet",
-                "subtitle": "",
-                "body": message.content,
-            },
-            "badge": 0,
-            "sound": "default",
-            "custom": {
-                "zulip": {
-                    "message_ids": [message.id],
-                    "recipient_type": "private",
-                    "sender_email": self.sender.email,
-                    "sender_id": self.sender.id,
-                    "realm_name": self.sender.realm.name,
-                    "realm_uri": self.sender.realm.url,
-                    "realm_url": self.sender.realm.url,
-                    "user_id": user_profile.id,
-                },
-            },
-        }
-        self.assertDictEqual(payload, expected)
-
-    def test_get_message_payload_apns_personal_message_using_direct_message_group(self) -> None:
-        user_profile = self.example_user("othello")
-
-        direct_message_group = get_or_create_direct_message_group(
-            id_list=[self.sender.id, user_profile.id],
-        )
-
-        message_id = self.send_personal_message(
-            self.sender,
-            user_profile,
-            "Content of personal message",
-        )
-        message = Message.objects.get(id=message_id)
-        self.assertEqual(message.recipient, direct_message_group.recipient)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
@@ -1534,7 +1527,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
         message = Message.objects.get(id=message_id)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
@@ -1580,7 +1573,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
             message.save()
             topic_display_name = Message.EMPTY_TOPIC_FALLBACK_NAME
 
-        payload = get_message_payload_apns(self.sender, message, trigger)
+        payload = self._get_message_payload_apns(self.sender, message, trigger)
         expected = {
             "alert": {
                 "title": f"#Verona > {topic_display_name}",
@@ -1622,7 +1615,9 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(user_profile, message, NotificationTriggers.MENTION)
+        payload = self._get_message_payload_apns(
+            user_profile, message, NotificationTriggers.MENTION
+        )
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1656,7 +1651,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         )
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile, message, NotificationTriggers.MENTION, user_group.id, user_group.name
         )
         expected = {
@@ -1691,7 +1686,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile,
             message,
             trigger,
@@ -1761,7 +1756,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         self.sender = hamlet
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
 
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             polonius, message, NotificationTriggers.STREAM_PUSH, can_access_sender=False
         )
         expected = {
@@ -1792,6 +1787,26 @@ class TestGetAPNsPayload(PushNotificationTestCase):
 
 
 class TestGetGCMPayload(PushNotificationTestCase):
+    def _get_message_payload_gcm(
+        self,
+        user_profile: UserProfile,
+        message: Message,
+        mentioned_user_group_id: int | None = None,
+        mentioned_user_group_name: str | None = None,
+        can_access_sender: bool = True,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        message_payload = get_message_payload(
+            user_profile,
+            message,
+            mentioned_user_group_id,
+            mentioned_user_group_name,
+            can_access_sender,
+        )
+        gcm_payload, gcm_options = get_message_payload_gcm(
+            message_payload, user_profile, message, can_access_sender
+        )
+        return gcm_payload, gcm_options
+
     def _test_get_message_payload_gcm_stream_message(
         self,
         truncate_content: bool = False,
@@ -1816,7 +1831,7 @@ class TestGetGCMPayload(PushNotificationTestCase):
             topic_display_name = Message.EMPTY_TOPIC_FALLBACK_NAME
 
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(
+        payload, gcm_options = self._get_message_payload_gcm(
             hamlet, message, mentioned_user_group_id, mentioned_user_group_name
         )
         expected_payload = {
@@ -1872,13 +1887,14 @@ class TestGetGCMPayload(PushNotificationTestCase):
         self._test_get_message_payload_gcm_stream_message(empty_string_topic=True)
 
     def test_get_message_payload_gcm_direct_message(self) -> None:
-        message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
-        )
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        dm_group = get_or_create_direct_message_group([hamlet.id, self.dm_recipient_user.id])
+        message = self.get_message(
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=dm_group.id,
+            realm_id=self.dm_recipient_user.realm_id,
+        )
+        payload, gcm_options = self._get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,
             {
@@ -1906,6 +1922,29 @@ class TestGetGCMPayload(PushNotificationTestCase):
             },
         )
 
+    def test_get_message_payload_personal_message_to_self(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Create a message to self using PERSONAL recipient type
+        message_id = self.send_personal_message(hamlet, hamlet)
+        message = Message.objects.get(id=message_id)
+        payload = get_message_payload(hamlet, message, for_legacy_clients=False)
+
+        self.assertEqual(payload["recipient_type"], "direct")
+        self.assertEqual(payload["recipient_user_ids"], [hamlet.id])
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_get_message_payload_personal_message_to_self_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_personal_message(hamlet, hamlet)
+        message = Message.objects.get(id=message_id)
+
+        payload = get_message_payload(hamlet, message, for_legacy_clients=False)
+
+        self.assertEqual(payload["recipient_type"], "direct")
+        self.assertEqual(payload["recipient_user_ids"], [hamlet.id])
+
     def test_get_message_payload_gcm_stream_message_from_inaccessible_user(self) -> None:
         self.set_up_db_for_testing_user_access()
 
@@ -1925,7 +1964,9 @@ class TestGetGCMPayload(PushNotificationTestCase):
         self.sender = hamlet
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
 
-        payload, gcm_options = get_message_payload_gcm(polonius, message, can_access_sender=False)
+        payload, gcm_options = self._get_message_payload_gcm(
+            polonius, message, can_access_sender=False
+        )
         self.assertDictEqual(
             payload,
             {
@@ -2039,6 +2080,84 @@ class TestSendNotificationsToBouncer(PushNotificationTestCase):
         )
         user.realm.refresh_from_db()
         self.assertEqual(user.realm.push_notifications_enabled, False)
+
+    @activate_push_notification_service()
+    def test_payload_both_android_apple_registered(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        realm = get_realm("zulip")
+        user_group = check_add_user_group(realm, "test_user_group", [hamlet], acting_user=hamlet)
+
+        time_now = now()
+        channel = self.subscribe(aaron, "Denmark")
+        self.setup_apns_tokens()
+        self.setup_fcm_tokens()
+        with time_machine.travel(time_now, tick=False):
+            message_id = self.send_stream_message(
+                sender=aaron,
+                stream_name=channel.name,
+                content=f"@*{user_group.name}*",
+                skip_capture_on_commit_callbacks=True,
+            )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.MENTION,
+            "mentioned_user_group_id": user_group.id,
+        }
+
+        apns_expected_payload = {
+            "alert": {
+                "body": f"@{user_group.name}",
+                "subtitle": f"{aaron.full_name} mentioned @{user_group.name}:",
+                "title": f"#{channel.name} > test",
+            },
+            "badge": 0,
+            "custom": {
+                "zulip": {
+                    "mentioned_user_group_id": user_group.id,
+                    "mentioned_user_group_name": user_group.name,
+                    "message_ids": [message_id],
+                    "realm_name": realm.name,
+                    "realm_uri": realm.url,
+                    "realm_url": realm.url,
+                    "recipient_type": "stream",
+                    "sender_email": aaron.email,
+                    "sender_id": aaron.id,
+                    "stream": channel.name,
+                    "stream_id": channel.id,
+                    "topic": "test",
+                    "user_id": hamlet.id,
+                }
+            },
+            "sound": "default",
+        }
+        fcm_expected_payload = {
+            "content": f"@{user_group.name}",
+            "event": "message",
+            "mentioned_user_group_id": user_group.id,
+            "mentioned_user_group_name": user_group.name,
+            "realm_id": realm.id,
+            "realm_name": realm.name,
+            "realm_uri": realm.url,
+            "realm_url": realm.url,
+            "recipient_type": "stream",
+            "sender_avatar_url": absolute_avatar_url(aaron),
+            "sender_email": aaron.email,
+            "sender_full_name": aaron.full_name,
+            "sender_id": aaron.id,
+            "server": "testserver",
+            "stream": channel.name,
+            "stream_id": channel.id,
+            "time": datetime_to_timestamp(time_now),
+            "topic": "test",
+            "user_id": hamlet.id,
+            "zulip_message_id": message_id,
+        }
+        with mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy") as m:
+            handle_push_notification(hamlet.id, missed_message)
+
+            self.assertEqual(m.call_args.args[1], apns_expected_payload)
+            self.assertEqual(m.call_args.args[2], fcm_expected_payload)
 
 
 @activate_push_notification_service()
@@ -2371,6 +2490,7 @@ class TestClearOnRead(ZulipTestCase):
             user_profile_id=hamlet.id,
             message_id__in=message_ids,
         ).update(flags=F("flags").bitor(UserMessage.flags.active_mobile_push_notification))
+        self.register_push_device(hamlet.id)
 
         with mock_queue_publish("zerver.actions.message_flags.queue_event_on_commit") as m:
             assert stream.recipient_id is not None
@@ -2655,34 +2775,54 @@ class PushBouncerSignupTest(ZulipTestCase):
 
         request["contact_email"] = "server-admin"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Enter a valid email address.")
+        self.assert_json_error(
+            result, "Invalid server administrator email address: Enter a valid email address."
+        )
 
         request["contact_email"] = "admin@example.com"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Invalid email address.")
+        self.assert_json_error(
+            result,
+            "Invalid server administrator email address: example.com is not a valid email domain.",
+        )
 
         # An example disposable domain.
         request["contact_email"] = "admin@mailnator.com"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Please use your real email address.")
+        self.assert_json_error(
+            result,
+            "Invalid server administrator email address: Please use your real email address.",
+        )
 
         request["contact_email"] = "admin@zulip.com"
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
             resolver.return_value.resolve.side_effect = DNSNoAnswer
-            resolver.return_value.resolve_name.return_value = ["whee"]
+            resolver.return_value.resolve_name.return_value = ["A/AAAA response"]
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_error(
-                result, "zulip.com is invalid because it does not have any MX records"
+                result,
+                "Invalid server administrator email address: zulip.com is invalid because it does not have any MX records",
+            )
+
+        with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
+            resolver.return_value.resolve.side_effect = [DNSNoAnswer, "NS response"]
+            resolver.return_value.resolve_name.side_effect = DNSNoAnswer
+            result = self.client_post("/api/v1/remotes/server/register", request)
+            self.assert_json_error(
+                result,
+                "Invalid server administrator email address: zulip.com is invalid because it does not have any MX records",
             )
 
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
             resolver.return_value.resolve.side_effect = DNSNoAnswer
             resolver.return_value.resolve_name.side_effect = DNSNoAnswer
             result = self.client_post("/api/v1/remotes/server/register", request)
-            self.assert_json_error(result, "zulip.com does not exist")
+            self.assert_json_error(
+                result, "Invalid server administrator email address: zulip.com does not exist"
+            )
 
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
-            resolver.return_value.resolve.return_value = ["whee"]
+            resolver.return_value.resolve.return_value = ["MX response"]
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_success(result)
 
@@ -2897,7 +3037,7 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
             ],
         )
 
-        # HttpError:
+        # Status code
         responses.add(
             method=responses.GET,
             url=base_url,
@@ -2908,7 +3048,7 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
                 "/api/v1/remotes/server/register/verify_challenge",
                 {"hostname": self.hostname, "access_token": access_token},
             )
-        self.assert_json_error(result, "Error response received from the host: 403")
+        self.assert_json_error(result, "Unexpected status code received from the host: 403")
         self.assertIn(
             "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
         )
@@ -2979,12 +3119,72 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
             "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
         )
 
+        # JSONDecodeError
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            status=200,
+            body="",
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(
+            result, "An error occurred while parsing the response from the host."
+        )
+        self.assertIn(
+            "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
+        )
+
+        # KeyError
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            status=200,
+            body=orjson.dumps({"other": "response"}),
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(
+            result, "An error occurred while parsing the response from the host."
+        )
+        self.assertIn(
+            "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
+        )
+
     def test_initiate_flow_for_unregistered_domain(self) -> None:
         result = self.client_post(
             "/api/v1/remotes/server/register/transfer",
             {"hostname": "unregistered.example.com"},
         )
         self.assert_json_error(result, "unregistered.example.com not yet registered")
+
+    @override_settings(
+        RATE_LIMITING=True,
+        RATE_LIMITING_RULES=settings.RATE_LIMITING_RULES
+        | {"transfer_remote_server_registration_endpoint_by_ip": [(10, 2)]},
+    )
+    def test_transfer_endpoint_rate_limiting(self) -> None:
+        for hostname in ["zulip1.example.com", "zulip2.example.com"]:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/transfer",
+                {"hostname": hostname},
+            )
+            self.assert_json_error(result, f"{hostname} not yet registered")
+
+        result = self.client_post(
+            "/api/v1/remotes/server/register/transfer",
+            {"hostname": "zulip3.example.com"},
+        )
+        self.assertEqual(result.status_code, 429)
+        data = result.json()
+        self.assertEqual(data.get("result"), "error")
+        self.assertIn("API usage exceeded rate limit", data.get("msg"))
 
     def test_serve_verification_secret_endpoint(self) -> None:
         result = self.client_get(

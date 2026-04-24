@@ -20,7 +20,6 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from typing import Any
 
 import digitalocean
 import requests
@@ -56,7 +55,7 @@ def assert_github_user_exists(github_username: str) -> bool:
         sys.exit(1)
 
 
-def get_ssh_public_keys_from_github(github_username: str) -> list[dict[str, Any]]:
+def get_ssh_public_keys_from_github(github_username: str) -> list[str]:
     print("Checking to see that GitHub user has available public keys...")
     apiurl_keys = f"https://api.github.com/users/{github_username}/keys"
     try:
@@ -68,7 +67,7 @@ def get_ssh_public_keys_from_github(github_username: str) -> list[dict[str, Any]
             )
             sys.exit(1)
         print("...public keys found!")
-        return userkeys
+        return [k["key"] for k in userkeys]
     except urllib.error.HTTPError as err:
         print(err)
         print(f"Has user {github_username} added SSH keys to their GitHub account?")
@@ -108,14 +107,8 @@ def assert_droplet_does_not_exist(my_token: str, droplet_name: str, recreate: bo
     print("...No droplet found...proceeding.")
 
 
-def get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts: list[dict[str, Any]]) -> str:
-    return "\n".join(userkey_dict["key"] for userkey_dict in userkey_dicts)
-
-
-def generate_dev_droplet_user_data(
-    username: str, subdomain: str, userkey_dicts: list[dict[str, Any]]
-) -> str:
-    ssh_keys_string = get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts)
+def generate_dev_droplet_user_data(username: str, subdomain: str, public_keys: list[str]) -> str:
+    ssh_keys_string = "\n".join(public_keys)
     setup_root_ssh_keys = f"printf '{ssh_keys_string}' > /root/.ssh/authorized_keys"
     setup_zulipdev_ssh_keys = f"printf '{ssh_keys_string}' > /home/zulipdev/.ssh/authorized_keys"
 
@@ -159,8 +152,8 @@ su -c 'git config --global pull.rebase true' zulipdev
     return cloudconf
 
 
-def generate_prod_droplet_user_data(username: str, userkey_dicts: list[dict[str, Any]]) -> str:
-    ssh_keys_string = get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts)
+def generate_prod_droplet_user_data(public_keys: list[str]) -> str:
+    ssh_keys_string = "\n".join(public_keys)
     setup_root_ssh_keys = f"printf '{ssh_keys_string}' > /root/.ssh/authorized_keys"
 
     cloudconf = f"""\
@@ -337,12 +330,12 @@ if __name__ == "__main__":
 
     if args.production:
         template_id = get_zulip_oneclick_app_slug(api_token)
-        user_data = generate_prod_droplet_user_data(username=username, userkey_dicts=public_keys)
+        user_data = generate_prod_droplet_user_data(public_keys=public_keys)
 
     else:
         assert_user_forked_zulip_server_repo(username=username)
         user_data = generate_dev_droplet_user_data(
-            username=username, subdomain=subdomain, userkey_dicts=public_keys
+            username=username, subdomain=subdomain, public_keys=public_keys
         )
 
         # define id of image to create new droplets from; see:

@@ -2,8 +2,7 @@
 
 Learn how Zulip integrations work with this simple Hello World example!
 
-This webhook is Zulip's official [example
-integration](/api/incoming-webhooks-walkthrough).
+This webhook is Zulip's official [example integration][incoming-webhooks-walkthrough].
 
 {start_tabs}
 
@@ -41,3 +40,5 @@ integration](/api/incoming-webhooks-walkthrough).
 ### Related documentation
 
 {!webhooks-url-specification.md!}
+
+[incoming-webhooks-walkthrough]: https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-walkthrough.html

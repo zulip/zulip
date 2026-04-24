@@ -5,6 +5,7 @@
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
+        "noPropertyAccessFromIndexSignature": true,
         "noUncheckedIndexedAccess": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -18,7 +19,7 @@
             "*": ["./web/src/types/*"],
         },
         "resolveJsonModule": true,
-        "types": ["@types/jquery.validation"],
+        "types": ["@types/jquery.validation", "flatpickr/dist/types/globals"],
 
         /* Emit */
         "noEmit": true,

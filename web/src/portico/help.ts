@@ -14,7 +14,7 @@ function register_tabbed_section($tabbed_section: JQuery): void {
     const $blocks = $tabbed_section.find(".blocks div");
 
     $li.on("click", function () {
-        const tab_key = this.dataset.tabKey;
+        const tab_key = this.getAttribute("data-tab-key");
 
         $li.removeClass("active");
         $li.filter("[data-tab-key=" + tab_key + "]").addClass("active");
@@ -79,7 +79,9 @@ function render_tabbed_sections(): void {
     });
 }
 
-new SimpleBar(util.the($(".sidebar")), {tabIndex: -1});
+if ($(".sidebar").length > 0) {
+    new SimpleBar(util.the($(".sidebar")), {tabIndex: -1});
+}
 
 // Scroll to anchor link when clicked. Note that landing-page.js has a
 // similar function; this file and landing-page.js are never included

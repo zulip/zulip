@@ -71,12 +71,12 @@ const ListWidget = mock_esm("../src/list_widget", {
         // Just for coverage, the mechanisms
         // are tested in list_widget.test.cjs
         if (mapped_topic_values.length >= 2) {
-            opts.sort_fields.stream_sort(mapped_topic_values[0], mapped_topic_values[1]);
-            opts.sort_fields.stream_sort(mapped_topic_values[1], mapped_topic_values[0]);
-            opts.sort_fields.stream_sort(mapped_topic_values[0], mapped_topic_values[0]);
-            opts.sort_fields.topic_sort(mapped_topic_values[0], mapped_topic_values[1]);
-            opts.sort_fields.topic_sort(mapped_topic_values[1], mapped_topic_values[0]);
-            opts.sort_fields.topic_sort(mapped_topic_values[0], mapped_topic_values[0]);
+            opts.sort_fields.channel_sort(mapped_topic_values[0], mapped_topic_values[1]);
+            opts.sort_fields.channel_sort(mapped_topic_values[1], mapped_topic_values[0]);
+            opts.sort_fields.channel_sort(mapped_topic_values[0], mapped_topic_values[0]);
+            opts.sort_fields.conversation_sort(mapped_topic_values[0], mapped_topic_values[1]);
+            opts.sort_fields.conversation_sort(mapped_topic_values[1], mapped_topic_values[0]);
+            opts.sort_fields.conversation_sort(mapped_topic_values[0], mapped_topic_values[0]);
         }
         return ListWidget;
     },
@@ -101,20 +101,15 @@ mock_esm("../src/compose_closed_ui", {
 mock_esm("../src/hash_util", {
     channel_url_by_user_setting: test_url,
     by_stream_topic_url: test_url,
-    by_channel_topic_permalink: test_permalink,
     by_conversation_and_time_url: test_url,
+});
+mock_esm("../src/stream_topic_history", {
+    channel_topic_permalink_hash: test_permalink,
 });
 mock_esm("../src/message_list_data", {
     MessageListData: class {},
 });
-mock_esm("../src/message_store", {
-    get(msg_id) {
-        if (msg_id < 15) {
-            return messages[msg_id - 1];
-        }
-        return private_messages[msg_id - 15];
-    },
-});
+const message_store = zrequire("message_store");
 mock_esm("../src/message_view_header", {
     render_title_area: noop,
 });
@@ -197,6 +192,25 @@ mock_esm("../src/unread", {
 });
 mock_esm("../src/resize", {
     update_recent_view: noop,
+    set_recent_view_participants_rerender: noop,
+    set_recent_view_participants_column_class_update: noop,
+});
+mock_esm("../src/popup_banners", {
+    close_found_missing_unreads_banner: noop,
+});
+const mock_user_has_folders = false;
+mock_esm("../src/channel_folders", {
+    user_has_folders: () => mock_user_has_folders,
+    get_folders_with_accessible_channels: () => [],
+    is_valid_folder_id: () => false,
+    get_channel_folder_by_id: () => ({name: "Test folder"}),
+});
+mock_esm("../src/folder_dropdown_widget", {
+    FOLDER_FILTERS: {
+        UNCATEGORIZED_DROPDOWN_OPTION: -101,
+        ANY_FOLDER_DROPDOWN_OPTION: -102,
+    },
+    get_tooltip_text_for_folder_filter: () => "Filter by folder",
 });
 const dropdown_widget = mock_esm("../src/dropdown_widget");
 dropdown_widget.DropdownWidget = function DropdownWidget() {
@@ -204,7 +218,7 @@ dropdown_widget.DropdownWidget = function DropdownWidget() {
     this.render = noop;
 };
 
-const {all_messages_data} = zrequire("all_messages_data");
+const {recent_view_messages_data} = zrequire("recent_view_messages_data");
 const {buddy_list} = zrequire("buddy_list");
 const activity_ui = zrequire("activity_ui");
 const people = zrequire("people");
@@ -468,6 +482,9 @@ function test(label, f) {
         page_params.development_environment = true;
         page_params.is_node_test = true;
         messages = sample_messages.map((message) => ({...message}));
+        message_store.set_messages_for_tests(
+            [...messages, ...private_messages].map((message) => ({message})),
+        );
         f(helpers);
     });
 }
@@ -484,6 +501,8 @@ test("test_recent_view_show", ({override, mock_template}) => {
         filter_pm: false,
         search_val: "",
         is_spectator: false,
+        show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
 
     activity_ui.set_cursor_and_filter();
@@ -493,7 +512,7 @@ test("test_recent_view_show", ({override, mock_template}) => {
         return "<recent_view table stub>";
     });
 
-    mock_template("recent_view_row.hbs", false, noop);
+    mock_template("recent_view_row.hbs", false, () => "<recent-view-row-stub>");
 
     let buddy_list_populated = false;
     override(buddy_list, "populate", () => {
@@ -501,8 +520,6 @@ test("test_recent_view_show", ({override, mock_template}) => {
     });
 
     stub_out_filter_buttons();
-    // We don't test the css calls; we just skip over them.
-    $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     rt.clear_for_tests();
     rt.set_filters_for_tests();
@@ -525,12 +542,15 @@ test("test_filter_is_spectator", ({mock_template}) => {
         filter_pm: false,
         search_val: "",
         is_spectator: true,
+        show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
     let row_data;
     let i;
 
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
+        return "<recent-view-table-stub>";
     });
 
     mock_template("recent_view_row.hbs", false, (data) => {
@@ -559,12 +579,15 @@ test("test_no_filter", ({mock_template}) => {
         filter_pm: false,
         search_val: "",
         is_spectator: false,
+        show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
     let row_data;
     let i;
 
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
+        return "<recent-view-table-stub>";
     });
 
     mock_template("recent_view_row.hbs", false, (data) => {
@@ -667,7 +690,7 @@ test("test_no_filter", ({mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, all_visibility_policies.INHERIT]]);
     i = row_data.length;
     rt.set_default_focus();
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         false,
@@ -683,26 +706,28 @@ test("test_filter_pm", ({mock_template}) => {
         filter_pm: true,
         search_val: "",
         is_spectator: false,
+        show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
 
-    const expected_user_with_icon = [
-        {name: "translated: Muted user", status_emoji_info: undefined},
+    const expected_users_with_icons = [
         {name: "Spike Spiegel", status_emoji_info: undefined},
+        {name: "translated: Muted user", status_emoji_info: undefined},
     ];
-    let i = 0;
 
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
+        return "<recent-view-table-stub>";
     });
 
-    mock_template("user_with_status_icon.hbs", false, (data) => {
-        assert.deepEqual(data, expected_user_with_icon[i]);
-        i += 1;
-        return "<user_with_status_icon stub>";
+    mock_template("users_with_status_icons.hbs", false, (data) => {
+        assert.deepEqual(data, {users: expected_users_with_icons});
+        return "<users_with_status_icons stub>";
     });
 
     mock_template("recent_view_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
+        return "<recent-view-row-stub>";
     });
 
     rt.clear_for_tests();
@@ -734,12 +759,15 @@ test("test_filter_participated", ({mock_template}) => {
             filter_pm: false,
             search_val: "",
             is_spectator: false,
+            show_folder_filter: false,
+            folder_filter_tooltip: "Filter by folder",
         });
+        return "<recent-view-table-stub>";
     });
 
     mock_template("recent_view_filters.hbs", false, (data) => {
         assert.equal(data.filter_participated, expected_filter_participated);
-        return "<recent_view table stub>";
+        return "<recent-view-filters-stub>";
     });
 
     const row_data = generate_topic_data([
@@ -775,7 +803,7 @@ test("test_filter_participated", ({mock_template}) => {
     expected_filter_participated = false;
     rt.process_messages(messages);
 
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 4, participated: true, type: "stream"}),
         false,
@@ -862,9 +890,10 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     rt.clear_for_tests();
     rt.set_filters_for_tests();
 
-    mock_template("recent_view_table.hbs", false, noop);
+    mock_template("recent_view_table.hbs", false, () => "<recent-view-table-stub>");
     mock_template("recent_view_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
+        return "<recent-view-row-stub>";
     });
 
     stub_out_filter_buttons();
@@ -984,15 +1013,15 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     // update_topic_visibility_policy now relies on external libraries completely
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, all_visibility_policies.INHERIT]]);
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(rt.update_topic_visibility_policy(stream1, topic1), true);
     // a topic gets muted which we are not tracking
     assert.equal(rt.update_topic_visibility_policy(stream1, "topic-10"), false);
 });
 
 test("test_reify_local_echo_message", ({mock_template}) => {
-    mock_template("recent_view_table.hbs", false, noop);
-    mock_template("recent_view_row.hbs", false, noop);
+    mock_template("recent_view_table.hbs", false, () => "<recent-view-table-stub>");
+    mock_template("recent_view_row.hbs", false, () => "<recent-view-row-stub>");
 
     rt.clear_for_tests();
     rt.set_filters_for_tests();
@@ -1050,7 +1079,7 @@ test("test_delete_messages", ({override}) => {
 
     // messages[0] was removed.
     let reduced_msgs = messages.slice(1);
-    override(all_messages_data, "all_messages", () => reduced_msgs);
+    override(recent_view_messages_data, "all_messages_after_mute_filtering", () => reduced_msgs);
 
     let all_topics = rt_data.get_conversations();
     assert.equal(
@@ -1081,7 +1110,7 @@ test("test_delete_messages", ({override}) => {
 });
 
 test("test_topic_edit", ({override}) => {
-    override(all_messages_data, "all_messages", () => messages);
+    override(recent_view_messages_data, "all_messages_after_mute_filtering", () => messages);
     recent_view_util.set_visible(false);
 
     // NOTE: This test should always run in the end as it modified the messages data.
@@ -1178,4 +1207,78 @@ test("test_search", () => {
 
     // Test for empty string topic name.
     assert.equal(rt.topic_in_search_results("general chat", "Scotland", ""), true);
+});
+
+test("test_folder_filter", () => {
+    const folder_id_a = 100;
+
+    // Set up folder_id on stream subs for testing.
+    // stream1 is in folder A, stream4 has no folder.
+    // Message 1 (last_msg_id=1) is on stream1, message 11 (last_msg_id=11) is on stream4.
+    const sub1 = sub_store.get(stream1);
+    const sub4 = sub_store.get(stream4);
+    sub1.folder_id = folder_id_a;
+    sub4.folder_id = null;
+
+    rt.clear_for_tests();
+    rt.set_filters_for_tests();
+
+    // Default "Any folder" filter — all rows visible.
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
+        false,
+    );
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 11, participated: true, type: "stream"}),
+        false,
+    );
+
+    // Filter to folder A — stream1 visible, stream4 hidden.
+    rt.set_folder_filter_for_tests(folder_id_a);
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
+        false,
+    );
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 11, participated: true, type: "stream"}),
+        true,
+    );
+
+    // Folder filter hides DMs regardless.
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 15, participated: true, type: "private"}),
+        true,
+    );
+
+    // "Uncategorized" filter — stream4 (no folder) visible, stream1 (folder A) hidden.
+    rt.set_folder_filter_for_tests(-101);
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
+        true,
+    );
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 11, participated: true, type: "stream"}),
+        false,
+    );
+
+    // "Uncategorized" filter also hides DMs.
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 15, participated: true, type: "private"}),
+        true,
+    );
+
+    // Reset to "Any folder" — all visible again.
+    rt.set_folder_filter_for_tests(-102);
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
+        false,
+    );
+    assert.equal(
+        rt.filters_should_hide_row({last_msg_id: 11, participated: true, type: "stream"}),
+        false,
+    );
+
+    // Clean up folder_id modifications.
+    delete sub1.folder_id;
+    delete sub4.folder_id;
 });

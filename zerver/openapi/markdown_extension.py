@@ -27,6 +27,7 @@ from zerver.openapi.openapi import (
     Parameter,
     check_additional_imports,
     check_requires_administrator,
+    check_requires_owner,
     generate_openapi_fixture,
     get_curl_include_exclude,
     get_openapi_description,
@@ -99,8 +100,8 @@ const config = { zuliprc: "zuliprc-admin" };
 
 """
 
-DEFAULT_AUTH_EMAIL = "BOT_EMAIL_ADDRESS"
-DEFAULT_AUTH_API_KEY = "BOT_API_KEY"
+DEFAULT_AUTH_EMAIL = "EMAIL_ADDRESS"
+DEFAULT_AUTH_API_KEY = "API_KEY"
 DEFAULT_EXAMPLE = {
     "integer": 1,
     "string": "demo",
@@ -271,10 +272,21 @@ def generate_curl_example(
     exclude: list[str] | None = None,
     include: list[str] | None = None,
 ) -> list[str]:
-    lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
     operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     global_security = openapi_spec.openapi()["security"]
+
+    insecure_operations = [
+        "/dev_fetch_api_key:post",
+        "/fetch_api_key:post",
+        "/jwt/fetch_api_key:post",
+        "/dev_list_users:get",
+    ]
+    lines = []
+    if operation in insecure_operations:
+        lines.append("```curl")
+    else:
+        lines.append("{!curl-auth-credentials.md!}\n\n```curl")
 
     parameters = get_openapi_parameters(endpoint, method)
     operation_request_body = operation_entry.get("requestBody", None)
@@ -298,7 +310,6 @@ def generate_curl_example(
     curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method, api_url)]
     lines.append(shlex.join(curl_first_line_parts))
 
-    insecure_operations = ["/dev_fetch_api_key:post", "/fetch_api_key:post"]
     if operation_security is None:
         if global_security == [{"basicAuth": []}]:
             authentication_required = True
@@ -511,6 +522,7 @@ class APIHeaderPreprocessor(BasePreprocessor):
         return [
             *("# " + line for line in raw_title.splitlines()),
             *(["{!api-admin-only.md!}"] if check_requires_administrator(path, method) else []),
+            *(["{!api-owner-only.md!}"] if check_requires_owner(path, method) else []),
             "",
             f"`{method.upper()} {self.api_url}/v1{path}`",
             "",

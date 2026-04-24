@@ -6,6 +6,7 @@
   "created": 1000000000,
   "customer": "cus_NORMALIZED",
   "description": null,
+  "excluded_payment_method_types": null,
   "flow_directions": null,
   "id": "schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan--SetupIntent.create.1.json",
   "last_setup_error": null,

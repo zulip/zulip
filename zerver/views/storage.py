@@ -1,6 +1,7 @@
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
 
+from zerver.decorator import require_bot_user
 from zerver.lib.bot_storage import (
     StateError,
     get_bot_storage,
@@ -14,6 +15,7 @@ from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
 
 
+@require_bot_user
 @typed_endpoint
 def update_storage(
     request: HttpRequest,
@@ -28,6 +30,7 @@ def update_storage(
     return json_success(request)
 
 
+@require_bot_user
 @typed_endpoint
 def get_storage(
     request: HttpRequest,
@@ -44,6 +47,7 @@ def get_storage(
     return json_success(request, data={"storage": storage})
 
 
+@require_bot_user
 @typed_endpoint
 def remove_storage(
     request: HttpRequest,

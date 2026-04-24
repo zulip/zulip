@@ -1,0 +1,602 @@
+diff --git a/changelog.md b/changelog.md
+deleted file mode 100644
+index 847f8ab82f7cc0494bd8ef79d7562532b9e66c19..0000000000000000000000000000000000000000
+diff --git a/dist/autosize.esm.js b/dist/autosize.esm.js
+index 48aa632f375217b7a60758ab7e8f1f97c5f8d4b1..6176ad30234029bd4a130790aad19457eb488845 100644
+--- a/dist/autosize.esm.js
++++ b/dist/autosize.esm.js
+@@ -1 +1 @@
+-var e,t,n="function"==typeof Map?new Map:(e=[],t=[],{has:function(t){return e.indexOf(t)>-1},get:function(n){return t[e.indexOf(n)]},set:function(n,o){-1===e.indexOf(n)&&(e.push(n),t.push(o))},delete:function(n){var o=e.indexOf(n);o>-1&&(e.splice(o,1),t.splice(o,1))}}),o=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){o=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(e){var t=n.get(e);t&&t.destroy()}function i(e){var t=n.get(e);t&&t.update()}var l=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return function(e){if(e&&e.nodeName&&"TEXTAREA"===e.nodeName&&!n.has(e)){var t,r=null,i=null,l=null,a=function(){e.clientWidth!==i&&p()},d=function(t){window.removeEventListener("resize",a,!1),e.removeEventListener("input",p,!1),e.removeEventListener("keyup",p,!1),e.removeEventListener("autosize:destroy",d,!1),e.removeEventListener("autosize:update",p,!1),Object.keys(t).forEach(function(n){e.style[n]=t[n]}),n.delete(e)}.bind(e,{height:e.style.height,resize:e.style.resize,overflowY:e.style.overflowY,overflowX:e.style.overflowX,wordWrap:e.style.wordWrap});e.addEventListener("autosize:destroy",d,!1),"onpropertychange"in e&&"oninput"in e&&e.addEventListener("keyup",p,!1),window.addEventListener("resize",a,!1),e.addEventListener("input",p,!1),e.addEventListener("autosize:update",p,!1),e.style.overflowX="hidden",e.style.wordWrap="break-word",n.set(e,{destroy:d,update:p}),"vertical"===(t=window.getComputedStyle(e,null)).resize?e.style.resize="none":"both"===t.resize&&(e.style.resize="horizontal"),r="content-box"===t.boxSizing?-(parseFloat(t.paddingTop)+parseFloat(t.paddingBottom)):parseFloat(t.borderTopWidth)+parseFloat(t.borderBottomWidth),isNaN(r)&&(r=0),p()}function s(t){var n=e.style.width;e.style.width="0px",e.style.width=n,e.style.overflowY=t}function u(){if(0!==e.scrollHeight){var t=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&(e.parentNode.style.scrollBehavior="auto",t.push([e.parentNode,e.parentNode.scrollTop])),e=e.parentNode;return function(){return t.forEach(function(e){var t=e[0];t.scrollTop=e[1],t.style.scrollBehavior=null})}}(e);e.style.height="",e.style.height=e.scrollHeight+r+"px",i=e.clientWidth,t()}}function p(){u();var t=Math.round(parseFloat(e.style.height)),n=window.getComputedStyle(e,null),r="content-box"===n.boxSizing?Math.round(parseFloat(n.height)):e.offsetHeight;if(r<t?"hidden"===n.overflowY&&(s("scroll"),u(),r="content-box"===n.boxSizing?Math.round(parseFloat(window.getComputedStyle(e,null).height)):e.offsetHeight):"hidden"!==n.overflowY&&(s("hidden"),u(),r="content-box"===n.boxSizing?Math.round(parseFloat(window.getComputedStyle(e,null).height)):e.offsetHeight),l!==r){l=r;var i=o("autosize:resized");try{e.dispatchEvent(i)}catch(e){}}}}(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],r),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e});var a=l;export default a;
++const e="function"==typeof Map?new Map:function(){const e=[],t=[];return{has:t=>e.indexOf(t)>-1,get:o=>t[e.indexOf(o)],set(o,n){-1===e.indexOf(o)&&(e.push(o),t.push(n))},delete(o){const n=e.indexOf(o);n>-1&&(e.splice(n,1),t.splice(n,1))}}}();let t=e=>new Event(e,{bubbles:!0});try{new Event("test")}catch(e){t=e=>{const t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function o(t){const o=e.get(t);o&&o.destroy()}function n(t){const o=e.get(t);o&&o.update()}let r=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?(r=e=>e,r.destroy=e=>e,r.update=e=>e):(r=(o,n)=>(o&&Array.prototype.forEach.call(o.length?o:[o],o=>function(o){if(!o||!o.nodeName||"TEXTAREA"!==o.nodeName||e.has(o))return;let n=null,r=null,i=null;function l(e){{const e=o.style.width;o.style.width="0px",o.style.width=e}o.style.overflowY=e}function s(){if(0===o.scrollHeight)return;const e=function(e){const t=[];for(;e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&(e.parentNode.style.scrollBehavior="auto",t.push([e.parentNode,e.parentNode.scrollTop])),e=e.parentNode;return()=>t.forEach(([e,t])=>{e.scrollTop=t,e.style.scrollBehavior=null})}(o);o.style.height="",o.style.height=o.scrollHeight+n+"px",r=o.clientWidth,e()}function d(){s();const e=Math.round(parseFloat(o.style.height)),n=window.getComputedStyle(o,null);var r="content-box"===n.boxSizing?Math.round(parseFloat(n.height)):o.offsetHeight;if(r<e?"hidden"===n.overflowY&&(l("scroll"),s(),r="content-box"===n.boxSizing?Math.round(parseFloat(window.getComputedStyle(o,null).height)):o.offsetHeight):"hidden"!==n.overflowY&&(l("hidden"),s(),r="content-box"===n.boxSizing?Math.round(parseFloat(window.getComputedStyle(o,null).height)):o.offsetHeight),i!==r){i=r;const e=t("autosize:resized");try{o.dispatchEvent(e)}catch(e){}}}let a=0,p=null;const c=(e=50)=>{const t=Date.now(),o=t-a;o>=e?(a=t,d()):(p&&clearTimeout(p),p=setTimeout(()=>{a=Date.now(),d()},e-o))},u=()=>{o.clientWidth!==r&&d()},h=(t=>{window.removeEventListener("resize",u,!1),o.removeEventListener("input",c,!1),o.removeEventListener("keyup",d,!1),o.removeEventListener("autosize:destroy",h,!1),o.removeEventListener("autosize:update",d,!1),Object.keys(t).forEach(e=>{o.style[e]=t[e]}),e.delete(o)}).bind(o,{height:o.style.height,resize:o.style.resize,overflowY:o.style.overflowY,overflowX:o.style.overflowX,wordWrap:o.style.wordWrap});o.addEventListener("autosize:destroy",h,!1),"onpropertychange"in o&&"oninput"in o&&o.addEventListener("keyup",d,!1),window.addEventListener("resize",u,!1),o.addEventListener("input",c,!1),o.addEventListener("autosize:update",d,!1),o.style.overflowX="hidden",o.style.wordWrap="break-word",e.set(o,{destroy:h,update:d}),function(){const e=window.getComputedStyle(o,null);"vertical"===e.resize?o.style.resize="none":"both"===e.resize&&(o.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),d()}()}(o)),o),r.destroy=e=>(e&&Array.prototype.forEach.call(e.length?e:[e],o),e),r.update=e=>(e&&Array.prototype.forEach.call(e.length?e:[e],n),e));var i=r;export{i as default};
+diff --git a/dist/autosize.js b/dist/autosize.js
+index 84e622861e0e1037c3115fabbe07c2029d3598ef..ac92cad4ee5e1934bfa1b9746dc2120ff26a5b50 100644
+--- a/dist/autosize.js
++++ b/dist/autosize.js
+@@ -2,270 +2,280 @@
+ 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+ 	typeof define === 'function' && define.amd ? define(factory) :
+ 	(global = global || self, global.autosize = factory());
+-}(this, (function () {
+-	var map = typeof Map === "function" ? new Map() : function () {
+-	  var keys = [];
+-	  var values = [];
+-	  return {
+-	    has: function has(key) {
+-	      return keys.indexOf(key) > -1;
+-	    },
+-	    get: function get(key) {
+-	      return values[keys.indexOf(key)];
+-	    },
+-	    set: function set(key, value) {
+-	      if (keys.indexOf(key) === -1) {
+-	        keys.push(key);
+-	        values.push(value);
+-	      }
+-	    },
+-	    "delete": function _delete(key) {
+-	      var index = keys.indexOf(key);
+-
+-	      if (index > -1) {
+-	        keys.splice(index, 1);
+-	        values.splice(index, 1);
+-	      }
+-	    }
+-	  };
+-	}();
+-
+-	var createEvent = function createEvent(name) {
+-	  return new Event(name, {
+-	    bubbles: true
+-	  });
+-	};
+-
++})(this, (function () {
++	const map = (typeof Map === "function") ? new Map() : (function () {
++		const keys = [];
++		const values = [];
++
++		return {
++			has(key) {
++				return keys.indexOf(key) > -1;
++			},
++			get(key) {
++				return values[keys.indexOf(key)];
++			},
++			set(key, value) {
++				if (keys.indexOf(key) === -1) {
++					keys.push(key);
++					values.push(value);
++				}
++			},
++			delete(key) {
++				const index = keys.indexOf(key);
++				if (index > -1) {
++					keys.splice(index, 1);
++					values.splice(index, 1);
++				}
++			},
++		}
++	})();
++
++	let createEvent = (name)=> new Event(name, {bubbles: true});
+ 	try {
+-	  new Event('test');
+-	} catch (e) {
+-	  // IE does not support `new Event()`
+-	  createEvent = function createEvent(name) {
+-	    var evt = document.createEvent('Event');
+-	    evt.initEvent(name, true, false);
+-	    return evt;
+-	  };
++		new Event('test');
++	} catch(e) {
++		// IE does not support `new Event()`
++		createEvent = (name)=> {
++			const evt = document.createEvent('Event');
++			evt.initEvent(name, true, false);
++			return evt;
++		};
+ 	}
+ 
+ 	function assign(ta) {
+-	  if (!ta || !ta.nodeName || ta.nodeName !== 'TEXTAREA' || map.has(ta)) return;
+-	  var heightOffset = null;
+-	  var clientWidth = null;
+-	  var cachedHeight = null;
+-
+-	  function init() {
+-	    var style = window.getComputedStyle(ta, null);
+-
+-	    if (style.resize === 'vertical') {
+-	      ta.style.resize = 'none';
+-	    } else if (style.resize === 'both') {
+-	      ta.style.resize = 'horizontal';
+-	    }
+-
+-	    if (style.boxSizing === 'content-box') {
+-	      heightOffset = -(parseFloat(style.paddingTop) + parseFloat(style.paddingBottom));
+-	    } else {
+-	      heightOffset = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+-	    } // Fix when a textarea is not on document body and heightOffset is Not a Number
+-
+-
+-	    if (isNaN(heightOffset)) {
+-	      heightOffset = 0;
+-	    }
+-
+-	    update();
+-	  }
+-
+-	  function changeOverflow(value) {
+-	    {
+-	      // Chrome/Safari-specific fix:
+-	      // When the textarea y-overflow is hidden, Chrome/Safari do not reflow the text to account for the space
+-	      // made available by removing the scrollbar. The following forces the necessary text reflow.
+-	      var width = ta.style.width;
+-	      ta.style.width = '0px'; // Force reflow:
+-	      /* jshint ignore:end */
+-
+-	      ta.style.width = width;
+-	    }
+-	    ta.style.overflowY = value;
+-	  }
+-
+-	  function bookmarkOverflows(el) {
+-	    var arr = [];
+-
+-	    while (el && el.parentNode && el.parentNode instanceof Element) {
+-	      if (el.parentNode.scrollTop) {
+-	        el.parentNode.style.scrollBehavior = 'auto';
+-	        arr.push([el.parentNode, el.parentNode.scrollTop]);
+-	      }
+-
+-	      el = el.parentNode;
+-	    }
+-
+-	    return function () {
+-	      return arr.forEach(function (_ref) {
+-	        var node = _ref[0],
+-	            scrollTop = _ref[1];
+-	        node.scrollTop = scrollTop;
+-	        node.style.scrollBehavior = null;
+-	      });
+-	    };
+-	  }
+-
+-	  function resize() {
+-	    if (ta.scrollHeight === 0) {
+-	      // If the scrollHeight is 0, then the element probably has display:none or is detached from the DOM.
+-	      return;
+-	    } // remove smooth scroll & prevent scroll-position jumping by restoring original scroll position
+-
+-
+-	    var restoreOverflows = bookmarkOverflows(ta);
+-	    ta.style.height = '';
+-	    ta.style.height = ta.scrollHeight + heightOffset + 'px'; // used to check if an update is actually necessary on window.resize
+-
+-	    clientWidth = ta.clientWidth;
+-	    restoreOverflows();
+-	  }
+-
+-	  function update() {
+-	    resize();
+-	    var styleHeight = Math.round(parseFloat(ta.style.height));
+-	    var computed = window.getComputedStyle(ta, null); // Using offsetHeight as a replacement for computed.height in IE, because IE does not account use of border-box
+-
+-	    var actualHeight = computed.boxSizing === 'content-box' ? Math.round(parseFloat(computed.height)) : ta.offsetHeight; // The actual height not matching the style height (set via the resize method) indicates that
+-	    // the max-height has been exceeded, in which case the overflow should be allowed.
+-
+-	    if (actualHeight < styleHeight) {
+-	      if (computed.overflowY === 'hidden') {
+-	        changeOverflow('scroll');
+-	        resize();
+-	        actualHeight = computed.boxSizing === 'content-box' ? Math.round(parseFloat(window.getComputedStyle(ta, null).height)) : ta.offsetHeight;
+-	      }
+-	    } else {
+-	      // Normally keep overflow set to hidden, to avoid flash of scrollbar as the textarea expands.
+-	      if (computed.overflowY !== 'hidden') {
+-	        changeOverflow('hidden');
+-	        resize();
+-	        actualHeight = computed.boxSizing === 'content-box' ? Math.round(parseFloat(window.getComputedStyle(ta, null).height)) : ta.offsetHeight;
+-	      }
+-	    }
+-
+-	    if (cachedHeight !== actualHeight) {
+-	      cachedHeight = actualHeight;
+-	      var evt = createEvent('autosize:resized');
+-
+-	      try {
+-	        ta.dispatchEvent(evt);
+-	      } catch (err) {// Firefox will throw an error on dispatchEvent for a detached element
+-	        // https://bugzilla.mozilla.org/show_bug.cgi?id=889376
+-	      }
+-	    }
+-	  }
+-
+-	  var pageResize = function pageResize() {
+-	    if (ta.clientWidth !== clientWidth) {
+-	      update();
+-	    }
+-	  };
+-
+-	  var destroy = function (style) {
+-	    window.removeEventListener('resize', pageResize, false);
+-	    ta.removeEventListener('input', update, false);
+-	    ta.removeEventListener('keyup', update, false);
+-	    ta.removeEventListener('autosize:destroy', destroy, false);
+-	    ta.removeEventListener('autosize:update', update, false);
+-	    Object.keys(style).forEach(function (key) {
+-	      ta.style[key] = style[key];
+-	    });
+-	    map["delete"](ta);
+-	  }.bind(ta, {
+-	    height: ta.style.height,
+-	    resize: ta.style.resize,
+-	    overflowY: ta.style.overflowY,
+-	    overflowX: ta.style.overflowX,
+-	    wordWrap: ta.style.wordWrap
+-	  });
+-
+-	  ta.addEventListener('autosize:destroy', destroy, false); // IE9 does not fire onpropertychange or oninput for deletions,
+-	  // so binding to onkeyup to catch most of those events.
+-	  // There is no way that I know of to detect something like 'cut' in IE9.
+-
+-	  if ('onpropertychange' in ta && 'oninput' in ta) {
+-	    ta.addEventListener('keyup', update, false);
+-	  }
+-
+-	  window.addEventListener('resize', pageResize, false);
+-	  ta.addEventListener('input', update, false);
+-	  ta.addEventListener('autosize:update', update, false);
+-	  ta.style.overflowX = 'hidden';
+-	  ta.style.wordWrap = 'break-word';
+-	  map.set(ta, {
+-	    destroy: destroy,
+-	    update: update
+-	  });
+-	  init();
++		if (!ta || !ta.nodeName || ta.nodeName !== 'TEXTAREA' || map.has(ta)) return;
++
++		let heightOffset = null;
++		let clientWidth = null;
++		let cachedHeight = null;
++
++		function init() {
++			const style = window.getComputedStyle(ta, null);
++
++			if (style.resize === 'vertical') {
++				ta.style.resize = 'none';
++			} else if (style.resize === 'both') {
++				ta.style.resize = 'horizontal';
++			}
++
++			if (style.boxSizing === 'content-box') {
++				heightOffset = -(parseFloat(style.paddingTop)+parseFloat(style.paddingBottom));
++			} else {
++				heightOffset = parseFloat(style.borderTopWidth)+parseFloat(style.borderBottomWidth);
++			}
++			// Fix when a textarea is not on document body and heightOffset is Not a Number
++			if (isNaN(heightOffset)) {
++				heightOffset = 0;
++			}
++
++			update();
++		}
++
++		function changeOverflow(value) {
++			{
++				// Chrome/Safari-specific fix:
++				// When the textarea y-overflow is hidden, Chrome/Safari do not reflow the text to account for the space
++				// made available by removing the scrollbar. The following forces the necessary text reflow.
++				const width = ta.style.width;
++				ta.style.width = '0px';
++				/* jshint ignore:end */
++				ta.style.width = width;
++			}
++
++			ta.style.overflowY = value;
++		}
++
++		function bookmarkOverflows(el) {
++			const arr = [];
++
++			while (el && el.parentNode && el.parentNode instanceof Element) {
++				if (el.parentNode.scrollTop) {
++					el.parentNode.style.scrollBehavior = 'auto';
++					arr.push([el.parentNode, el.parentNode.scrollTop]);
++				}
++				el = el.parentNode;
++			}
++
++			return ()=> arr.forEach(([node, scrollTop]) => {
++				node.scrollTop = scrollTop;
++				node.style.scrollBehavior = null;
++			});
++		}
++
++		function resize() {
++			if (ta.scrollHeight === 0) {
++				// If the scrollHeight is 0, then the element probably has display:none or is detached from the DOM.
++				return;
++			}
++
++			// remove smooth scroll & prevent scroll-position jumping by restoring original scroll position
++			const restoreOverflows = bookmarkOverflows(ta);
++
++			ta.style.height = '';
++			ta.style.height = (ta.scrollHeight+heightOffset)+'px';
++
++			// used to check if an update is actually necessary on window.resize
++			clientWidth = ta.clientWidth;
++
++			restoreOverflows();
++		}
++
++		function update() {
++			resize();
++
++			const styleHeight = Math.round(parseFloat(ta.style.height));
++			const computed = window.getComputedStyle(ta, null);
++
++			// Using offsetHeight as a replacement for computed.height in IE, because IE does not account use of border-box
++			var actualHeight = computed.boxSizing === 'content-box' ? Math.round(parseFloat(computed.height)) : ta.offsetHeight;
++
++			// The actual height not matching the style height (set via the resize method) indicates that
++			// the max-height has been exceeded, in which case the overflow should be allowed.
++			if (actualHeight < styleHeight) {
++				if (computed.overflowY === 'hidden') {
++					changeOverflow('scroll');
++					resize();
++					actualHeight = computed.boxSizing === 'content-box' ? Math.round(parseFloat(window.getComputedStyle(ta, null).height)) : ta.offsetHeight;
++				}
++			} else {
++				// Normally keep overflow set to hidden, to avoid flash of scrollbar as the textarea expands.
++				if (computed.overflowY !== 'hidden') {
++					changeOverflow('hidden');
++					resize();
++					actualHeight = computed.boxSizing === 'content-box' ? Math.round(parseFloat(window.getComputedStyle(ta, null).height)) : ta.offsetHeight;
++				}
++			}
++
++			if (cachedHeight !== actualHeight) {
++				cachedHeight = actualHeight;
++				const evt = createEvent('autosize:resized');
++				try {
++					ta.dispatchEvent(evt);
++				} catch (err) {
++					// Firefox will throw an error on dispatchEvent for a detached element
++					// https://bugzilla.mozilla.org/show_bug.cgi?id=889376
++				}
++			}
++		}
++
++		let lastUpdateTime = 0;
++		let updateTimeoutId = null;
++
++		const throttledUpdate = (throttleInterval = 50 /* ms */) => {
++			// Adds a small throttle to prevent flooding of updates
++			// in case of a huge pasting of text.
++			const now = Date.now();
++			const timeSinceLastCall = now - lastUpdateTime;
++
++			if (timeSinceLastCall >= throttleInterval) {
++				lastUpdateTime = now;
++				update();
++			} else {
++				if (updateTimeoutId) {
++					clearTimeout(updateTimeoutId);
++				}
++				// We still want to ensure that the last change is picked up
++				// so we schedule an update for the near future.
++				updateTimeoutId = setTimeout(() => {
++					lastUpdateTime = Date.now();
++					update();
++				}, throttleInterval - timeSinceLastCall);
++			}
++		};
++
++		const pageResize = () => {
++			if (ta.clientWidth !== clientWidth) {
++				update();
++			}
++		};
++
++		const destroy = (style => {
++			window.removeEventListener('resize', pageResize, false);
++			ta.removeEventListener('input', throttledUpdate, false);
++			ta.removeEventListener('keyup', update, false);
++			ta.removeEventListener('autosize:destroy', destroy, false);
++			ta.removeEventListener('autosize:update', update, false);
++
++			Object.keys(style).forEach(key => {
++				ta.style[key] = style[key];
++			});
++
++			map.delete(ta);
++		}).bind(ta, {
++			height: ta.style.height,
++			resize: ta.style.resize,
++			overflowY: ta.style.overflowY,
++			overflowX: ta.style.overflowX,
++			wordWrap: ta.style.wordWrap,
++		});
++
++		ta.addEventListener('autosize:destroy', destroy, false);
++
++		// IE9 does not fire onpropertychange or oninput for deletions,
++		// so binding to onkeyup to catch most of those events.
++		// There is no way that I know of to detect something like 'cut' in IE9.
++		if ('onpropertychange' in ta && 'oninput' in ta) {
++			ta.addEventListener('keyup', update, false);
++		}
++
++		window.addEventListener('resize', pageResize, false);
++		ta.addEventListener('input', throttledUpdate, false);
++		ta.addEventListener('autosize:update', update, false);
++		ta.style.overflowX = 'hidden';
++		ta.style.wordWrap = 'break-word';
++
++		map.set(ta, {
++			destroy,
++			update,
++		});
++
++		init();
+ 	}
+ 
+ 	function destroy(ta) {
+-	  var methods = map.get(ta);
+-
+-	  if (methods) {
+-	    methods.destroy();
+-	  }
++		const methods = map.get(ta);
++		if (methods) {
++			methods.destroy();
++		}
+ 	}
+ 
+ 	function update(ta) {
+-	  var methods = map.get(ta);
+-
+-	  if (methods) {
+-	    methods.update();
+-	  }
++		const methods = map.get(ta);
++		if (methods) {
++			methods.update();
++		}
+ 	}
+ 
+-	var autosize = null; // Do nothing in Node.js environment and IE8 (or lower)
++	let autosize = null;
+ 
++	// Do nothing in Node.js environment and IE8 (or lower)
+ 	if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') {
+-	  autosize = function autosize(el) {
+-	    return el;
+-	  };
+-
+-	  autosize.destroy = function (el) {
+-	    return el;
+-	  };
+-
+-	  autosize.update = function (el) {
+-	    return el;
+-	  };
++		autosize = el => el;
++		autosize.destroy = el => el;
++		autosize.update = el => el;
+ 	} else {
+-	  autosize = function autosize(el, options) {
+-	    if (el) {
+-	      Array.prototype.forEach.call(el.length ? el : [el], function (x) {
+-	        return assign(x);
+-	      });
+-	    }
+-
+-	    return el;
+-	  };
+-
+-	  autosize.destroy = function (el) {
+-	    if (el) {
+-	      Array.prototype.forEach.call(el.length ? el : [el], destroy);
+-	    }
+-
+-	    return el;
+-	  };
+-
+-	  autosize.update = function (el) {
+-	    if (el) {
+-	      Array.prototype.forEach.call(el.length ? el : [el], update);
+-	    }
+-
+-	    return el;
+-	  };
++		autosize = (el, options) => {
++			if (el) {
++				Array.prototype.forEach.call(el.length ? el : [el], x => assign(x));
++			}
++			return el;
++		};
++		autosize.destroy = el => {
++			if (el) {
++				Array.prototype.forEach.call(el.length ? el : [el], destroy);
++			}
++			return el;
++		};
++		autosize.update = el => {
++			if (el) {
++				Array.prototype.forEach.call(el.length ? el : [el], update);
++			}
++			return el;
++		};
+ 	}
+ 
+ 	var autosize$1 = autosize;
+ 
+ 	return autosize$1;
+ 
+-})));
++}));
+diff --git a/dist/autosize.min.js b/dist/autosize.min.js
+index d9c6490a632def3c5233145ff4d469503a29fcc9..de14ff83e73718a531d42de1fce7b38454fc52f5 100644
+--- a/dist/autosize.min.js
++++ b/dist/autosize.min.js
+@@ -1 +1 @@
+-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e||self).autosize=t()}(this,function(){var e,t,n="function"==typeof Map?new Map:(e=[],t=[],{has:function(t){return e.indexOf(t)>-1},get:function(n){return t[e.indexOf(n)]},set:function(n,o){-1===e.indexOf(n)&&(e.push(n),t.push(o))},delete:function(n){var o=e.indexOf(n);o>-1&&(e.splice(o,1),t.splice(o,1))}}),o=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){o=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(e){var t=n.get(e);t&&t.destroy()}function i(e){var t=n.get(e);t&&t.update()}var l=null;return"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return function(e){if(e&&e.nodeName&&"TEXTAREA"===e.nodeName&&!n.has(e)){var t,r=null,i=null,l=null,a=function(){e.clientWidth!==i&&f()},d=function(t){window.removeEventListener("resize",a,!1),e.removeEventListener("input",f,!1),e.removeEventListener("keyup",f,!1),e.removeEventListener("autosize:destroy",d,!1),e.removeEventListener("autosize:update",f,!1),Object.keys(t).forEach(function(n){e.style[n]=t[n]}),n.delete(e)}.bind(e,{height:e.style.height,resize:e.style.resize,overflowY:e.style.overflowY,overflowX:e.style.overflowX,wordWrap:e.style.wordWrap});e.addEventListener("autosize:destroy",d,!1),"onpropertychange"in e&&"oninput"in e&&e.addEventListener("keyup",f,!1),window.addEventListener("resize",a,!1),e.addEventListener("input",f,!1),e.addEventListener("autosize:update",f,!1),e.style.overflowX="hidden",e.style.wordWrap="break-word",n.set(e,{destroy:d,update:f}),"vertical"===(t=window.getComputedStyle(e,null)).resize?e.style.resize="none":"both"===t.resize&&(e.style.resize="horizontal"),r="content-box"===t.boxSizing?-(parseFloat(t.paddingTop)+parseFloat(t.paddingBottom)):parseFloat(t.borderTopWidth)+parseFloat(t.borderBottomWidth),isNaN(r)&&(r=0),f()}function s(t){var n=e.style.width;e.style.width="0px",e.style.width=n,e.style.overflowY=t}function u(){if(0!==e.scrollHeight){var t=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&(e.parentNode.style.scrollBehavior="auto",t.push([e.parentNode,e.parentNode.scrollTop])),e=e.parentNode;return function(){return t.forEach(function(e){var t=e[0];t.scrollTop=e[1],t.style.scrollBehavior=null})}}(e);e.style.height="",e.style.height=e.scrollHeight+r+"px",i=e.clientWidth,t()}}function f(){u();var t=Math.round(parseFloat(e.style.height)),n=window.getComputedStyle(e,null),r="content-box"===n.boxSizing?Math.round(parseFloat(n.height)):e.offsetHeight;if(r<t?"hidden"===n.overflowY&&(s("scroll"),u(),r="content-box"===n.boxSizing?Math.round(parseFloat(window.getComputedStyle(e,null).height)):e.offsetHeight):"hidden"!==n.overflowY&&(s("hidden"),u(),r="content-box"===n.boxSizing?Math.round(parseFloat(window.getComputedStyle(e,null).height)):e.offsetHeight),l!==r){l=r;var i=o("autosize:resized");try{e.dispatchEvent(i)}catch(e){}}}}(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],r),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e}),l});
++!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e||self).autosize=t()}(this,function(){const e="function"==typeof Map?new Map:function(){const e=[],t=[];return{has:t=>e.indexOf(t)>-1,get:o=>t[e.indexOf(o)],set(o,n){-1===e.indexOf(o)&&(e.push(o),t.push(n))},delete(o){const n=e.indexOf(o);n>-1&&(e.splice(n,1),t.splice(n,1))}}}();let t=e=>new Event(e,{bubbles:!0});try{new Event("test")}catch(e){t=e=>{const t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function o(t){const o=e.get(t);o&&o.destroy()}function n(t){const o=e.get(t);o&&o.update()}let i=null;return"undefined"==typeof window||"function"!=typeof window.getComputedStyle?(i=e=>e,i.destroy=e=>e,i.update=e=>e):(i=(o,n)=>(o&&Array.prototype.forEach.call(o.length?o:[o],o=>function(o){if(!o||!o.nodeName||"TEXTAREA"!==o.nodeName||e.has(o))return;let n=null,i=null,r=null;function l(e){{const e=o.style.width;o.style.width="0px",o.style.width=e}o.style.overflowY=e}function s(){if(0===o.scrollHeight)return;const e=function(e){const t=[];for(;e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&(e.parentNode.style.scrollBehavior="auto",t.push([e.parentNode,e.parentNode.scrollTop])),e=e.parentNode;return()=>t.forEach(([e,t])=>{e.scrollTop=t,e.style.scrollBehavior=null})}(o);o.style.height="",o.style.height=o.scrollHeight+n+"px",i=o.clientWidth,e()}function d(){s();const e=Math.round(parseFloat(o.style.height)),n=window.getComputedStyle(o,null);var i="content-box"===n.boxSizing?Math.round(parseFloat(n.height)):o.offsetHeight;if(i<e?"hidden"===n.overflowY&&(l("scroll"),s(),i="content-box"===n.boxSizing?Math.round(parseFloat(window.getComputedStyle(o,null).height)):o.offsetHeight):"hidden"!==n.overflowY&&(l("hidden"),s(),i="content-box"===n.boxSizing?Math.round(parseFloat(window.getComputedStyle(o,null).height)):o.offsetHeight),r!==i){r=i;const e=t("autosize:resized");try{o.dispatchEvent(e)}catch(e){}}}let a=0,u=null;const p=(e=50)=>{const t=Date.now(),o=t-a;o>=e?(a=t,d()):(u&&clearTimeout(u),u=setTimeout(()=>{a=Date.now(),d()},e-o))},c=()=>{o.clientWidth!==i&&d()},h=(t=>{window.removeEventListener("resize",c,!1),o.removeEventListener("input",p,!1),o.removeEventListener("keyup",d,!1),o.removeEventListener("autosize:destroy",h,!1),o.removeEventListener("autosize:update",d,!1),Object.keys(t).forEach(e=>{o.style[e]=t[e]}),e.delete(o)}).bind(o,{height:o.style.height,resize:o.style.resize,overflowY:o.style.overflowY,overflowX:o.style.overflowX,wordWrap:o.style.wordWrap});o.addEventListener("autosize:destroy",h,!1),"onpropertychange"in o&&"oninput"in o&&o.addEventListener("keyup",d,!1),window.addEventListener("resize",c,!1),o.addEventListener("input",p,!1),o.addEventListener("autosize:update",d,!1),o.style.overflowX="hidden",o.style.wordWrap="break-word",e.set(o,{destroy:h,update:d}),function(){const e=window.getComputedStyle(o,null);"vertical"===e.resize?o.style.resize="none":"both"===e.resize&&(o.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),d()}()}(o)),o),i.destroy=e=>(e&&Array.prototype.forEach.call(e.length?e:[e],o),e),i.update=e=>(e&&Array.prototype.forEach.call(e.length?e:[e],n),e)),i});
+diff --git a/src/autosize.js b/src/autosize.js
+index b199f5aa7b438ef375137d109787d171e6142843..5c9f7742ea5905f4f954643857e6c74c9dfad10d 100644
+--- a/src/autosize.js
++++ b/src/autosize.js
+@@ -156,6 +156,31 @@ function assign(ta) {
+ 		}
+ 	}
+ 
++	let lastUpdateTime = 0;
++	let updateTimeoutId = null;
++
++	const throttledUpdate = (throttleInterval = 50 /* ms */) => {
++		// Adds a small throttle to prevent flooding of updates
++		// in case of a huge pasting of text.
++		const now = Date.now();
++		const timeSinceLastCall = now - lastUpdateTime;
++
++		if (timeSinceLastCall >= throttleInterval) {
++			lastUpdateTime = now;
++			update();
++		} else {
++			if (updateTimeoutId) {
++				clearTimeout(updateTimeoutId);
++			}
++			// We still want to ensure that the last change is picked up
++			// so we schedule an update for the near future.
++			updateTimeoutId = setTimeout(() => {
++				lastUpdateTime = Date.now();
++				update();
++			}, throttleInterval - timeSinceLastCall);
++		}
++	};
++
+ 	const pageResize = () => {
+ 		if (ta.clientWidth !== clientWidth) {
+ 			update();
+@@ -164,7 +189,7 @@ function assign(ta) {
+ 
+ 	const destroy = (style => {
+ 		window.removeEventListener('resize', pageResize, false);
+-		ta.removeEventListener('input', update, false);
++		ta.removeEventListener('input', throttledUpdate, false);
+ 		ta.removeEventListener('keyup', update, false);
+ 		ta.removeEventListener('autosize:destroy', destroy, false);
+ 		ta.removeEventListener('autosize:update', update, false);
+@@ -192,7 +217,7 @@ function assign(ta) {
+ 	}
+ 
+ 	window.addEventListener('resize', pageResize, false);
+-	ta.addEventListener('input', update, false);
++	ta.addEventListener('input', throttledUpdate, false);
+ 	ta.addEventListener('autosize:update', update, false);
+ 	ta.style.overflowX = 'hidden';
+ 	ta.style.wordWrap = 'break-word';

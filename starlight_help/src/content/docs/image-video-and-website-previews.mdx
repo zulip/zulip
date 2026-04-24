@@ -10,10 +10,19 @@ import ZulipNote from "../../components/ZulipNote.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 
-Zulip displays previews of images, videos and websites in your message feed. To
-avoid disrupting the flow of conversation, these previews are small. You can
-configure how animated images are previewed, and organization administrators can
-also disable previews altogether.
+Zulip displays previews of images, videos, audio files and websites in your
+message feed. You can [configure](#configure-how-animated-images-are-played) how
+animated images are previewed.
+
+Organization administrators can:
+
+* Configure the [size of image and video
+  previews](#configure-image-and-video-thumbnail-size).
+* Configure whether [website
+  previews](#configure-whether-website-previews-are-shown) are shown.
+* Configure whether [previews of linked images and
+  videos](#configure-whether-previews-of-linked-images-and-videos-are-shown) are
+  shown.
 
 ## Configure how animated images are played
 
@@ -43,15 +52,20 @@ viewer](/help/view-images-and-videos).
   </TabItem>
 </Tabs>
 
-## Configure whether image and video previews are shown
+## Configure image and video thumbnail size
 
 <AdminOnly />
+
+You can configure the size of image and video previews for users in your
+organization. Smaller previews avoid disrupting the flow of conversation, while
+larger ones reduce the need to open the [image
+viewer](/help/view-images-and-videos).
 
 <FlattenedSteps>
   <NavigationSteps target="settings/organization-settings" />
 
-  1. Under **Message feeed settings**, toggle **Show previews of uploaded and
-     linked images and videos**.
+  1. Under **Message feed settings**, select the desired option from the **Size
+     of images and videos in messages** dropdown.
 
   <SaveChanges />
 </FlattenedSteps>
@@ -68,6 +82,19 @@ viewer](/help/view-images-and-videos).
   <SaveChanges />
 </FlattenedSteps>
 
+## Configure whether previews of linked images and videos are shown
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Message feed settings**, toggle **Show previews of linked images
+     and videos**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
 ## Security
 
 To prevent images from being used to track Zulip users, Zulip proxies all
@@ -78,4 +105,4 @@ external images in messages through the server.
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [Share and upload files](/help/share-and-upload-files)
 * [View images and videos](/help/view-images-and-videos)
-* [Animated GIFs](/help/animated-gifs-from-giphy)
+* [Animated GIFs](/help/animated-gifs)

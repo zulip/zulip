@@ -6,6 +6,7 @@
   "created": 1000000000,
   "customer": "cus_NORMALIZED",
   "description": null,
+  "excluded_payment_method_types": null,
   "flow_directions": null,
   "id": "stripe_billing_portal_urls_for_remote_server--SetupIntent.create.1.json",
   "last_setup_error": null,

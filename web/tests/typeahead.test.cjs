@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-const typeahead = zrequire("../shared/src/typeahead");
+const typeahead = zrequire("typeahead");
 
 const unicode_emojis = [
     ["1f43c", "panda_face"],
@@ -36,7 +36,7 @@ function emoji_matches(query) {
 
 function assert_emoji_matches(query, expected) {
     const names = emoji_matches(query).map((emoji) => emoji.emoji_name);
-    assert.deepEqual(names.sort(), expected);
+    assert.deepEqual(names.toSorted(), expected);
 }
 
 run_test("get_emoji_matcher: nonmatches", () => {
@@ -73,6 +73,44 @@ run_test("get_emoji_matcher: spaces equivalent to underscores", () => {
     assert_equivalent("blue dia");
     assert_equivalent("traffic ");
     assert_equivalent("traffic l");
+});
+
+run_test("query_matches_string_in_order", () => {
+    function assert_matches(query, source, split_char) {
+        const should_remove_diacritics = !typeahead.contains_diacritics(query);
+        assert.equal(
+            typeahead.query_matches_string_in_order(
+                query,
+                source,
+                split_char,
+                should_remove_diacritics,
+            ),
+            true,
+        );
+    }
+    function assert_no_match(query, source, split_char) {
+        const should_remove_diacritics = !typeahead.contains_diacritics(query);
+        assert.equal(
+            typeahead.query_matches_string_in_order(
+                query,
+                source,
+                split_char,
+                should_remove_diacritics,
+            ),
+            false,
+        );
+    }
+
+    // Query without diacritics should match source with diacritics.
+    assert_matches("jose mar", "José María", " ");
+    assert_matches("maria gon", "María González", " ");
+    assert_matches("jose", "José María", " ");
+
+    // Query with diacritics does diacritic-sensitive matching
+    assert_matches("josé", "José María", " ");
+    assert_no_match("josé", "Jose Maria", " ");
+    assert_matches("josé mar", "José María", " ");
+    assert_no_match("josé mar", "Jose Maria", " ");
 });
 
 run_test("triage", () => {
@@ -181,6 +219,7 @@ run_test("sort_emojis: th", () => {
         {emoji_name: "thumbs_down", is_realm_emoji: true},
         {emoji_name: "thumbs_up", is_realm_emoji: false, emoji_code: "1f44d"},
     ];
+    typeahead.set_frequently_used_emojis(typeahead.get_popular_emojis());
     assert.deepEqual(sort_emojis(emoji_list, "th"), [
         "thumbs_up",
         "thermometer",

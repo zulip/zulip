@@ -6,6 +6,7 @@
   "created": 1000000000,
   "customer": "cus_NORMALIZED",
   "description": null,
+  "excluded_payment_method_types": null,
   "flow_directions": null,
   "id": "sponsorship_access_for_realms_on_paid_plan--SetupIntent.create.1.json",
   "last_setup_error": null,

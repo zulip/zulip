@@ -10,12 +10,14 @@ import ZulipTip from "../../components/ZulipTip.astro";
 import ComposeAndSendMessage from "../include/_ComposeAndSendMessage.mdx";
 import ConfigureChannelLinks from "../include/_ConfigureChannelLinks.mdx";
 import FilterChannels from "../include/_FilterChannels.mdx";
+import FilterFollowedLeftSidebar from "../include/_FilterFollowedLeftSidebar.mdx";
 import FilterResolvedLeftSidebar from "../include/_FilterResolvedLeftSidebar.mdx";
 import FindDmConversationLeftSidebar from "../include/_FindDmConversationLeftSidebar.mdx";
 import SearchNoteForDmConversations from "../include/_SearchNoteForDmConversations.mdx";
 import StartTopicViaLeftSidebar from "../include/_StartTopicViaLeftSidebar.mdx";
 import ViewDmsLeftSidebar from "../include/_ViewDmsLeftSidebar.mdx";
 
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
 import PanelLeftIcon from "~icons/zulip-icon/panel-left";
 import PanelLeftDashedIcon from "~icons/zulip-icon/panel-left-dashed";
 import SquarePlusIcon from "~icons/zulip-icon/square-plus";
@@ -64,23 +66,22 @@ where clicking on channel links in the left sidebar takes you.
 There are many ways you can adjust the left sidebar to help you focus on the
 information you need in the moment.
 
-### Expand or collapse the views section
+### Expand or collapse sections
 
 <Tabs>
-  <TabItem label="Desktop/Web">
+  <TabItem label="One section">
     <Steps>
-      1. Click the triangle to the left of the **views** heading in the left sidebar.
+      1. Click the section heading, such as **views**, **direct messages**,
+         **pinned channels**, etc., in the left sidebar.
     </Steps>
   </TabItem>
-</Tabs>
 
-### Expand or collapse the direct messages section
-
-<Tabs>
-  <TabItem label="Desktop/Web">
+  <TabItem label="All sections">
     <Steps>
-      1. Click the triangle to the left of the **direct messages** heading in the left
-         sidebar.
+      1. Click the **ellipsis** (<MoreVerticalIcon />)
+         to the right of the **Filter left sidebar** box in the upper left.
+      1. Click **Expand all sections** or **Collapse all sections**, as
+         desired.
     </Steps>
   </TabItem>
 </Tabs>
@@ -121,6 +122,14 @@ information you need in the moment.
 
 <FilterResolvedLeftSidebar />
 
+### Filter by whether topics are followed
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FilterFollowedLeftSidebar />
+  </TabItem>
+</Tabs>
+
 ### Show the left sidebar
 
 <Tabs>
@@ -155,7 +164,7 @@ you’re currently viewing.
 <Tabs>
   <TabItem label="Desktop/Web">
     <FlattenedSteps>
-      1. Click the **new direct message** (<SquarePlusIcon />)
+      1. Click the **start a new DM** (<SquarePlusIcon />)
          button next to the **direct messages** heading in the left sidebar.
       1. Start typing the name of the person or [group](/help/user-groups) you want to
          message, and select their name from the list of suggestions. You can continue

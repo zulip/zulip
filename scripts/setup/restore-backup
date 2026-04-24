@@ -101,7 +101,7 @@ def restore_backup(tarball_file: IO[bytes], keep_settings: bool, keep_zulipconf:
         if db["HOST"] not in ["", "localhost"]:
             postgresql_env["PGHOST"] = db["HOST"]
             if "PORT" in db:
-                postgresql_env["PGPORT"] = db["PORT"]
+                postgresql_env["PGPORT"] = str(db["PORT"])
             postgresql_env["PGUSER"] = db["USER"]
             if "PASSWORD" in db:
                 postgresql_env["PGPASSWORD"] = db["PASSWORD"]

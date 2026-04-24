@@ -15,6 +15,7 @@ from zerver.actions.message_send import (
     internal_send_private_message,
 )
 from zerver.actions.reactions import do_add_reaction
+from zerver.lib.demo_organizations import get_scheduled_deletion_global_time
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
@@ -47,7 +48,7 @@ def create_if_missing_realm_internal_bots() -> None:
     If that is the case, it creates the missing realm internal bots.
     """
     if missing_any_realm_internal_bots():
-        for realm in Realm.objects.all():
+        for realm in Realm.objects.all().iterator():
             setup_realm_internal_bots(realm)
 
 
@@ -74,6 +75,7 @@ def get_custom_welcome_message_string(realm: Realm, welcome_message_custom_text:
 def send_initial_direct_messages_to_user(
     user: UserProfile,
     *,
+    realm_creation: bool = False,
     welcome_message_custom_text: str = "",
 ) -> InitialDirectMessageIDs:
     # We adjust the initial Welcome Bot direct message for education organizations.
@@ -109,14 +111,19 @@ We also have a guide for [moving your organization to Zulip]({organization_setup
 """).format(organization_setup_url="/help/moving-to-zulip")
 
         demo_organization_warning_string = ""
-        # Add extra content about automatic deletion for demo organization owners.
-        if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
+        # Add extra content about automatic deletion for demo organization creators.
+        if (
+            realm_creation
+            and user.is_realm_owner
+            and user.realm.demo_organization_scheduled_deletion_date is not None
+        ):
             demo_organization_warning_string = _("""
-Note that this is a [demo organization]({demo_organization_help_url}) and
-will be **automatically deleted** in 30 days, unless it's [converted into
+This [demo organization]({demo_organization_help_url}) will be **automatically
+deleted** on {deletion_global_time}, unless it's [converted into
 a permanent organization]({convert_demo_organization_help_url}).
 """).format(
                 demo_organization_help_url="/help/demo-organizations",
+                deletion_global_time=get_scheduled_deletion_global_time(user.realm),
                 convert_demo_organization_help_url="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization",
             )
 
@@ -277,12 +284,8 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     to welcome-bot, trigger the welcome-bot reply."""
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
-    if send_request.message.recipient.type == Recipient.PERSONAL:
-        conversation_recipient_id = send_request.message.sender.recipient_id
-        assert conversation_recipient_id is not None
-    else:
-        assert send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
-        conversation_recipient_id = send_request.message.recipient.id
+    assert send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+    conversation_recipient_id = send_request.message.recipient.id
     content = select_welcome_bot_response(human_response_lower)
     realm_id = send_request.realm.id
     commands = bot_commands()
@@ -573,7 +576,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # We find the one of our just-sent greetings messages, and react to it.
     # This is a bit hacky, but works and is kinda a 1-off thing.
     greetings_message = (
-        Message.objects.select_for_update()
+        Message.objects.select_for_update(no_key=True)
         .filter(
             id__in=message_ids, content=remove_single_newlines(content1_of_greetings_topic_name)
         )

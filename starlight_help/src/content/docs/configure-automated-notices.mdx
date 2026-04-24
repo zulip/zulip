@@ -19,12 +19,6 @@ language](/help/change-your-language).
 
 ## Notices about channels
 
-Notices about channel settings changes, such as [name](/help/rename-a-channel),
-[description](/help/change-the-channel-description),
-[privacy](/help/change-the-privacy-of-a-channel) and
-[policy](/help/channel-posting-policy) updates are sent to the
-“channel events” topic in the channel that was modified.
-
 ### New channel announcements
 
 <AdminOnly />
@@ -43,6 +37,25 @@ announced.
 
   1. Under **Automated messages and emails**, configure **New channel
      announcements**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+### Channel events
+
+You can configure whether Zulip will send an automated message when a channel's
+settings are updated. If enabled, Notification Bot will send messages about
+updates to settings such as the channel [name](/help/rename-a-channel),
+[description](/help/change-the-channel-description),
+[privacy](/help/change-the-privacy-of-a-channel) and [posting
+policy](/help/channel-posting-policy). Messages will be sent to the “channel
+events” topic in the modified channel.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Automated messages and emails**, configure **Send automated
+     messages for channel events**.
 
   <SaveChanges />
 </FlattenedSteps>
@@ -82,6 +95,18 @@ entirely. The topic for these messages is “signups”.
   <SaveChanges />
 </FlattenedSteps>
 
+### Notices about changes to user profile
+
+When an administrator modifies your account settings, you will receive a private
+message from Notification Bot listing the changes that were made. This includes
+updates to your full name, [role](/help/roles-and-permissions), and [custom profiles
+fields](/help/custom-profile-fields).
+
+The notification will show both the old and new values for each field that was
+changed, making it easy to see exactly what was modified. Only administrators
+can change other users' profiles, and these notifications ensure that users are
+always informed when such changes occur.
+
 ## Zulip update announcements
 
 Zulip announces new features and other important product changes via automated
@@ -118,4 +143,4 @@ Unlike other notices, Zulip update announcements are not translated.
 
 * [Organization language for automated messages and invitation emails](/help/configure-organization-language)
 * [Moderating open organizations](/help/moderating-open-organizations)
-* [Zulip newsletter](https://zulip.com/help/email-notifications#low-traffic-newsletter)
+* [Zulip Cloud newsletter](/help/email-notifications#low-traffic-newsletter)

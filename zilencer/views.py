@@ -1,7 +1,11 @@
+import base64
+import hashlib
+import json
 import logging
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
+from email.utils import formatdate as email_formatdate
 from typing import Annotated, Any, TypedDict, TypeVar
 from urllib.parse import urljoin, urlsplit
 from uuid import UUID
@@ -29,6 +33,7 @@ from nacl.public import PrivateKey, SealedBox
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints, model_validator
 from pydantic import ValidationError as PydanticValidationError
 from pydantic.functional_validators import AfterValidator
+from typing_extensions import override
 
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
@@ -40,6 +45,7 @@ from analytics.lib.counts import (
 from corporate.models.customers import get_customer_by_remote_realm
 from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
+from zerver.lib.devices import b64decode_token_id_base64
 from zerver.lib.email_validation import validate_is_not_disposable
 from zerver.lib.exceptions import (
     ErrorCode,
@@ -67,7 +73,7 @@ from zerver.lib.push_notifications import (
     validate_token,
 )
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.rate_limiter import rate_limit_endpoint_absolute
+from zerver.lib.rate_limiter import rate_limit_endpoint_absolute, rate_limit_request_by_ip
 from zerver.lib.remote_server import (
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
@@ -76,9 +82,10 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress
+from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.typed_endpoint import (
+    ApiParamConfig,
     ApnsAppId,
     JsonBodyPayload,
     RequiredStringConstraint,
@@ -136,10 +143,10 @@ def deactivate_remote_server(
     request: HttpRequest,
     remote_server: RemoteZulipServer,
 ) -> HttpResponse:
-    from corporate.lib.stripe import RemoteServerBillingSession, do_deactivate_remote_server
+    from corporate.lib.stripe import RemoteServerBillingSession
 
     billing_session = RemoteServerBillingSession(remote_server)
-    do_deactivate_remote_server(remote_server, billing_session)
+    billing_session.do_deactivate_remote_server()
     return json_success(request)
 
 
@@ -176,6 +183,9 @@ def validate_hostname_or_raise_error(hostname: str) -> None:
 @require_post
 @typed_endpoint
 def transfer_remote_server_registration(request: HttpRequest, *, hostname: str) -> HttpResponse:
+    # We need to rate limit this endpoint to prevent hostname enumeration.
+    rate_limit_request_by_ip(request, domain="transfer_remote_server_registration_endpoint_by_ip")
+
     validate_hostname_or_raise_error(hostname)
 
     if not RemoteZulipServer.objects.filter(hostname=hostname, deactivated=False).exists():
@@ -188,6 +198,19 @@ def transfer_remote_server_registration(request: HttpRequest, *, hostname: str) 
             "verification_secret": verification_secret,
         },
     )
+
+
+class ServerAdminEmailError(JsonableError):
+    http_status_code = 400
+    data_fields = ["email_reason"]
+
+    def __init__(self, email_reason: str) -> None:
+        self.email_reason = email_reason
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid server administrator email address: {email_reason}")
 
 
 @csrf_exempt
@@ -221,17 +244,17 @@ def register_remote_server(
     try:
         validate_email(contact_email)
     except ValidationError as e:
-        raise JsonableError(e.message)
+        raise ServerAdminEmailError(str(e.message))
 
     # We don't want to allow disposable domains for contact_email either
     try:
         validate_is_not_disposable(contact_email)
     except DisposableEmailError:
-        raise JsonableError(_("Please use your real email address."))
+        raise ServerAdminEmailError(_("Please use your real email address."))
 
     contact_email_domain = Address(addr_spec=contact_email).domain.lower()
     if contact_email_domain == "example.com":
-        raise JsonableError(_("Invalid email address."))
+        raise ServerAdminEmailError(_("example.com is not a valid email domain."))
 
     # Check if the domain has an MX record
     resolver = dns_resolver.Resolver()
@@ -246,13 +269,23 @@ def register_remote_server(
         # Check if the A/AAAA exist, for better error reporting
         try:
             resolver.resolve_name(contact_email_domain)
-            raise JsonableError(
+            raise ServerAdminEmailError(
                 _("{domain} is invalid because it does not have any MX records").format(
                     domain=contact_email_domain
                 )
             )
         except DNSException:
-            raise JsonableError(_("{domain} does not exist").format(domain=contact_email_domain))
+            try:
+                resolver.resolve(contact_email_domain, rdtype="NS")
+                raise ServerAdminEmailError(
+                    _("{domain} is invalid because it does not have any MX records").format(
+                        domain=contact_email_domain
+                    )
+                )
+            except DNSException:
+                raise ServerAdminEmailError(
+                    _("{domain} does not exist").format(domain=contact_email_domain)
+                )
 
     try:
         validate_uuid(zulip_org_id)
@@ -367,19 +400,20 @@ def verify_registration_transfer_challenge_ack_endpoint(
     session = RegistrationTransferVerificationSession()
     url = urljoin(f"https://{hostname}", f"/api/v1/zulip-services/verify/{access_token}/")
 
-    exception_and_error_message: tuple[Exception, str] | None = None
+    exception_and_error_message: tuple[Exception | None, str] | None = None
     try:
-        response = session.get(url)
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        if check_transfer_challenge_response_secret_not_prepared(e.response):
+        response = session.get(url, allow_redirects=False)
+
+        if check_transfer_challenge_response_secret_not_prepared(response):
             logger.info("verify_registration_transfer:host:%s|secret_not_prepared", hostname)
             raise JsonableError(_("The host reported it has no verification secret."))
 
-        error_message = _("Error response received from the host: {status_code}").format(
-            status_code=response.status_code
-        )
-        exception_and_error_message = (e, error_message)
+        if response.status_code != 200:
+            error_message = _(
+                "Unexpected status code received from the host: {status_code}"
+            ).format(status_code=response.status_code)
+            exception_and_error_message = (None, error_message)
+
     except requests.exceptions.SSLError as e:
         error_message = "SSL error occurred while communicating with the host."
         exception_and_error_message = (e, error_message)
@@ -393,13 +427,18 @@ def verify_registration_transfer_challenge_ack_endpoint(
         error_message = "An error occurred while communicating with the host."
         exception_and_error_message = (e, error_message)
 
+    try:
+        if exception_and_error_message is None:
+            verification_secret = response.json()["verification_secret"]
+    except (json.JSONDecodeError, KeyError) as e:
+        error_message = "An error occurred while parsing the response from the host."
+        exception_and_error_message = (e, error_message)
+
     if exception_and_error_message is not None:
         exception, error_message = exception_and_error_message
         logger.info("verify_registration_transfer:host:%s|exception:%s", hostname, exception)
         raise JsonableError(error_message)
 
-    data = response.json()
-    verification_secret = data["verification_secret"]
     validate_registration_transfer_verification_secret(verification_secret, hostname)
 
     logger.info("verify_registration_transfer:host:%s|success", hostname)
@@ -555,14 +594,13 @@ class PushRegistration(BaseModel):
 def do_register_remote_push_device(
     bouncer_public_key: str,
     encrypted_push_registration: str,
-    push_account_id: int,
+    token_id_base64: str,
     *,
     realm: Realm | None = None,
     remote_realm: RemoteRealm | None = None,
-) -> int:
+) -> None:
     assert (realm is None) ^ (remote_realm is None)
 
-    assert settings.PUSH_REGISTRATION_ENCRYPTION_KEYS
     if bouncer_public_key not in settings.PUSH_REGISTRATION_ENCRYPTION_KEYS:
         raise InvalidBouncerPublicKeyError
 
@@ -583,30 +621,37 @@ def do_register_remote_push_device(
     except PydanticValidationError:
         raise InvalidEncryptedPushRegistrationError
 
+    hash_bytes = hashlib.sha256(push_registration.token.encode()).digest()
+    expected_token_id_base64 = base64.b64encode(hash_bytes[0:8]).decode()
+    if token_id_base64 != expected_token_id_base64:
+        raise InvalidEncryptedPushRegistrationError
+
     if (
         datetime_to_timestamp(timezone_now()) - push_registration.timestamp
         > PUSH_REGISTRATION_LIVENESS_TIMEOUT
     ):
         raise RequestExpiredError
 
-    # If already registered, return the device_id.
+    # If already registered, return.
     # The query uses the unique index created by the
-    # 'unique_remote_push_device_push_account_id_token' constraint.
-    remote_push_device = RemotePushDevice.objects.filter(
-        token=push_registration.token, push_account_id=push_account_id
-    ).first()
-    if remote_push_device:
-        return remote_push_device.device_id
+    # 'unique_remote_push_device_token_id_realm_remote_realm' constraint.
+    token_id_int = b64decode_token_id_base64(token_id_base64)
+    remote_push_device_exists = RemotePushDevice.objects.filter(
+        token_id=token_id_int,
+        realm=realm,
+        remote_realm=remote_realm,
+    ).exists()
+    if remote_push_device_exists:
+        return
 
-    remote_push_device = RemotePushDevice.objects.create(
+    RemotePushDevice.objects.create(
         realm=realm,
         remote_realm=remote_realm,
         token=push_registration.token,
         token_kind=push_registration.token_kind,
-        push_account_id=push_account_id,
+        token_id=token_id_int,
         ios_app_id=push_registration.ios_app_id,
     )
-    return remote_push_device.device_id
 
 
 @typed_endpoint
@@ -615,7 +660,7 @@ def register_remote_push_device_for_e2ee_push_notification(
     server: RemoteZulipServer,
     *,
     realm_uuid: str,
-    push_account_id: Json[int],
+    token_id_base64: Annotated[str, ApiParamConfig("token_id")],
     encrypted_push_registration: str,
     bouncer_public_key: str,
 ) -> HttpResponse:
@@ -626,14 +671,13 @@ def register_remote_push_device_for_e2ee_push_notification(
         remote_realm.last_request_datetime = timezone_now()
         remote_realm.save(update_fields=["last_request_datetime"])
 
-    device_id = do_register_remote_push_device(
+    do_register_remote_push_device(
         bouncer_public_key,
         encrypted_push_registration,
-        push_account_id,
+        token_id_base64,
         remote_realm=remote_realm,
     )
-
-    return json_success(request, {"device_id": device_id})
+    return json_success(request)
 
 
 @typed_endpoint
@@ -1356,7 +1400,7 @@ def update_remote_realm_data_for_server(
         "template_prefix": "zerver/emails/internal_billing_notice",
         "to_emails": [BILLING_SUPPORT_EMAIL],
         "from_address": FromAddress.tokenized_no_reply_address(),
-        "date": timezone_now().strftime(EMAIL_DATE_FORMAT),
+        "date": email_formatdate(),
     }
     for context in new_locally_deleted_remote_realms_on_paid_plan_contexts:
         email_dict["context"] = context
@@ -1545,7 +1589,7 @@ def remote_server_post_analytics(
 
     # Lock the server, preventing this from racing with other
     # duplicate submissions of the data
-    server = RemoteZulipServer.objects.select_for_update().get(id=server.id)
+    server = RemoteZulipServer.objects.select_for_update(no_key=True).get(id=server.id)
 
     remote_server_version_updated = False
     if version is not None:

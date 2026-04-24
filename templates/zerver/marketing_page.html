@@ -1,0 +1,25 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = entrypoint|default("marketing-page") %}
+
+{# A base template for marketing pages. #}
+
+{# TODO: Rewrite these classes to refer to marketing-page-*, not portico-*. #}
+
+{% block content %}
+<div class="portico-container" data-platform="{{ platform }}">
+    <div class="portico-wrap">
+        <div class="app portico-page {% block portico_class_name %}{% endblock %}">
+            <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
+                {% include 'zerver/marketing_nav.html' %}
+
+                {% block marketing_content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    <div class="blueslip-error-container"></div>
+    {% if not isolated_page and not skip_footer %}
+    {% include 'zerver/footer.html' %}
+    {% endif %}
+</div>
+{% endblock %}

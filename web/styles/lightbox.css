@@ -82,7 +82,7 @@
         flex-shrink: 0;
         gap: 10px;
 
-        .button {
+        .lightbox-media-action {
             font-size: 0.9rem;
             min-width: inherit;
             padding: 4px 10px;

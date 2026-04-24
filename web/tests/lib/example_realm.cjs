@@ -1,11 +1,13 @@
 "use strict";
 
+const {server_supported_permission_settings} = require("./example_settings.cjs");
+
 exports.make_realm = (opts = {}) => {
     const default_realm = {
         custom_profile_fields: [],
         custom_profile_field_types: [],
         giphy_api_key: "giphy-api-key",
-        giphy_rating_options: {disabled: {id: 0, name: ""}},
+        gif_rating_policy_options: {disabled: {id: 0, name: ""}},
         max_avatar_file_size_mib: 0,
         max_channel_folder_description_length: 0,
         max_channel_folder_name_length: 0,
@@ -83,10 +85,11 @@ exports.make_realm = (opts = {}) => {
         realm_enable_guest_user_indicator: false,
         realm_enable_read_receipts: false,
         realm_enable_spectator_access: false,
-        realm_giphy_rating: 0,
+        realm_gif_rating_policy: 0,
         realm_icon_source: "",
         realm_icon_url: "",
         realm_incoming_webhook_bots: [],
+        realm_media_preview_size: 100,
         realm_inline_image_preview: false,
         realm_inline_url_embed_preview: false,
         realm_invite_required: false,
@@ -137,11 +140,7 @@ exports.make_realm = (opts = {}) => {
         server_needs_upgrade: false,
         server_presence_offline_threshold_seconds: 0,
         server_presence_ping_interval_seconds: 0,
-        server_supported_permission_settings: {
-            realm: {},
-            stream: {},
-            group: {},
-        },
+        server_supported_permission_settings,
         server_thumbnail_formats: [],
         server_typing_started_expiry_period_milliseconds: 0,
         server_typing_started_wait_period_milliseconds: 0,

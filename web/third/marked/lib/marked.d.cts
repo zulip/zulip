@@ -4,7 +4,6 @@ we only use parts of the marked API and are using a fork
 of the upstream library.
 */
 
-import {PrimitiveValue} from "url-template";
 
 declare class Renderer {
     code: (code: string) => string;
@@ -18,8 +17,8 @@ declare namespace marked {
         | {
               exec(string: string): RegExpExecArray | null;
           };
-
-    type LinkifierMatch = PrimitiveValue | PrimitiveValue[] | Record<string, PrimitiveValue>;
+    // uri-template-lite has this type set as unknown.
+    type LinkifierMatch = unknown;
 
     type ParseOptions = {
         get_linkifier_regexes: () => RegExp[];

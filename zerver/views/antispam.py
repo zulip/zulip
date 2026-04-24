@@ -1,7 +1,7 @@
 import logging
 from datetime import timedelta
 
-from altcha import ChallengeOptions, create_challenge
+from altcha.v1 import ChallengeOptions, create_challenge
 from django.conf import settings
 from django.http import HttpRequest, HttpResponseBase
 from django.utils.timezone import now as timezone_now

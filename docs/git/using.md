@@ -443,8 +443,8 @@ complicated rebase.
 [gitbook-git-pull]: https://git-scm.com/docs/git-pull
 [gitbook-git-rebase]: https://git-scm.com/docs/git-rebase
 [gitbook-git-status]: https://git-scm.com/docs/git-status
-[gitbook-other-envs-bash]: https://git-scm.com/book/en/v2/Git-in-Other-Environments-Git-in-Bash
-[gitbook-other-envs-zsh]: https://git-scm.com/book/en/v2/Git-in-Other-Environments-Git-in-Zsh
+[gitbook-other-envs-bash]: https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Bash
+[gitbook-other-envs-zsh]: https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Zsh
 [gitbook-rm]: https://git-scm.com/docs/git-rm
 [github-help-closing-issues]: https://help.github.com/en/articles/closing-issues-via-commit-messages
 [github-help-push]: https://help.github.com/en/articles/pushing-to-a-remote

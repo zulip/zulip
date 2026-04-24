@@ -43,6 +43,7 @@
   },
   "created": 1000000000,
   "customer": null,
+  "customer_account": null,
   "id": "check_upgrade_parameters--Customer.retrieve.1.json",
   "livemode": false,
   "metadata": {},

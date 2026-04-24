@@ -32,7 +32,7 @@ def calculate_discounted_price(apps: StateApps, schema_editor: BaseDatabaseSchem
 
     Customer = apps.get_model("corporate", "Customer")
     customers_to_update = []
-    for customer in Customer.objects.all():
+    for customer in Customer.objects.all().iterator():
         if not customer.required_plan_tier or not customer.default_discount:
             continue
 

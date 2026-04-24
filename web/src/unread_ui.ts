@@ -117,7 +117,7 @@ export function initialize({
         // BUG: This logic only supports marking messages visible in
         // the present view as read; we need a server API to mark
         // every message matching the current search as read.
-        const unread_messages = message_lists.current.data
+        const unread_messages = message_lists.current
             .all_messages()
             .filter((message) => message.unread);
         notify_server_messages_read(unread_messages);

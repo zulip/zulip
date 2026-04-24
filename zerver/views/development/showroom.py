@@ -12,7 +12,7 @@ background_colors = [
 
 
 def get_svg_filenames() -> list[str]:
-    icons_dir = os.path.join(os.path.dirname(__file__), "../../../web/shared/icons")
+    icons_dir = os.path.join(os.path.dirname(__file__), "../../../web/icons")
 
     # Get all .svg file names from the directory
     svg_files = [f for f in os.listdir(icons_dir) if f.endswith(".svg")]

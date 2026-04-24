@@ -43,9 +43,6 @@ When your question is answered, follow through on the advice you receive, and (w
 appropriate) summarize the resolution of your problem so that others can learn
 from your experience.
 
-You can find additional helpful tips in our guide to [what makes a great Zulip
-contributor](contributing.md#what-makes-a-great-zulip-contributor).
-
 ## Follow the community guidelines
 
 As always, be sure to follow the [Zulip community

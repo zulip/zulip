@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import type * as dropdown_widget from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import type {GroupPermissionSetting, GroupSettingValue} from "./state_data.ts";
@@ -64,6 +65,7 @@ const realm_group_setting_names_supporting_anonymous_groups = [
     "create_multiuse_invite_group",
     "direct_message_initiator_group",
     "direct_message_permission_group",
+    "workplace_users_group",
 ] as const;
 
 export const realm_group_setting_name_schema = z.enum([
@@ -83,6 +85,7 @@ export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
 export const stream_group_setting_name_schema = z.enum([
     "can_add_subscribers_group",
     "can_administer_channel_group",
+    "can_create_topic_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",
     "can_move_messages_out_of_channel_group",
@@ -224,6 +227,17 @@ export function get_assigned_permission_object(
                         "This permission cannot be removed, as it would mean that nobody is allowed to take this action.",
                 });
             }
+
+            if (
+                setting_name === "workplace_users_group" &&
+                page_params.is_cloud_realm_with_discounted_plan
+            ) {
+                assigned_permission_object.can_edit = false;
+                assigned_permission_object.tooltip_message = $t(
+                    {defaultMessage: "Contact {sales_email} to change this setting."},
+                    {sales_email: "sales@zulip.com"},
+                );
+            }
             return assigned_permission_object;
         }
 
@@ -264,6 +278,17 @@ export function get_assigned_permission_object(
                 });
             }
         }
+
+        if (
+            setting_name === "workplace_users_group" &&
+            page_params.is_cloud_realm_with_discounted_plan
+        ) {
+            assigned_permission_object.can_edit = false;
+            assigned_permission_object.tooltip_message = $t(
+                {defaultMessage: "Contact {sales_email} to change this setting."},
+                {sales_email: "sales@zulip.com"},
+            );
+        }
         return assigned_permission_object;
     }
 
@@ -287,7 +312,7 @@ export function check_group_permission_settings_data(): void {
     const all_realm_group_settings = z
         .array(realm_group_setting_name_schema)
         .parse(Object.keys(realm.server_supported_permission_settings.realm));
-    const realm_group_settings_with_subsection_data = new Set<RealmGroupSettingName>([]);
+    const realm_group_settings_with_subsection_data = new Set<RealmGroupSettingName>();
     for (const subsection_obj of settings_config.realm_group_permission_settings) {
         for (const setting_name of subsection_obj.settings) {
             realm_group_settings_with_subsection_data.add(setting_name);

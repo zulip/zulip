@@ -6,6 +6,7 @@
   "created": 1000000000,
   "customer": "cus_NORMALIZED",
   "description": null,
+  "excluded_payment_method_types": null,
   "flow_directions": null,
   "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--SetupIntent.create.1.json",
   "last_setup_error": null,

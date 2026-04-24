@@ -1,0 +1,50 @@
+/* This file contains the required variables and styles for the modals
+   to work properly in the portico, billing, upgrade and dev email log pages. */
+
+:root {
+    /* This is a copy of the neutral icon button variables defined
+    in app_variables.css required for the modal close button styling. */
+    --color-text-neutral-icon-button: light-dark(
+        color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent),
+        color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent)
+    );
+    --color-text-neutral-icon-button-hover: light-dark(
+        hsl(229deg 9% 36%),
+        hsl(229deg 10% 70%)
+    );
+    --color-text-neutral-icon-button-active: light-dark(
+        color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent),
+        color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent)
+    );
+}
+
+.modal__container {
+    --base-font-size-px: 16px;
+    font-size: var(--base-font-size-px);
+    font-weight: 400;
+}
+
+.modal__close {
+    /* This is a subset of the styling defined for the icon button
+       component in web/styles/buttons.css. */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 1;
+    font-size: var(--base-font-size-px);
+    background-color: transparent; /* Override button default background color */
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+
+    color: var(--color-text-neutral-icon-button);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-neutral-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-neutral-icon-button-active);
+    }
+}

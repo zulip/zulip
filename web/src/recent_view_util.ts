@@ -1,4 +1,5 @@
 import type {Message} from "./message_store.ts";
+import type {UpdatableStreamProperties} from "./stream_types.ts";
 
 let is_view_visible = false;
 
@@ -8,6 +9,19 @@ export function set_visible(value: boolean): void {
 
 export function is_visible(): boolean {
     return is_view_visible;
+}
+
+const UPDATE_PROPERTIES_REQUIRING_COMPLETE_RERENDER = new Set<keyof UpdatableStreamProperties>([
+    "name",
+    "invite_only",
+    "is_archived",
+    "is_web_public",
+]);
+
+export function should_complete_rerender_for_channel_property(
+    property: keyof UpdatableStreamProperties,
+): boolean {
+    return UPDATE_PROPERTIES_REQUIRING_COMPLETE_RERENDER.has(property);
 }
 
 export function get_topic_key(stream_id: number, topic: string): string {

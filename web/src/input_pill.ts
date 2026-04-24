@@ -37,6 +37,7 @@ type InputPillCreateOptions<ItemType> = {
         remove_pill: (pill: HTMLElement) => void,
     ) => void;
     show_outline_on_invalid_input?: boolean;
+    split_text_to_form_pills?: (pills: string) => string[];
 };
 
 export type InputPill<ItemType> = {
@@ -63,6 +64,7 @@ type InputPillStore<ItemType> = {
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
+    split_text_to_form_pills: InputPillCreateOptions<ItemType>["split_text_to_form_pills"];
 };
 
 // These are the functions that are exposed to other modules.
@@ -70,6 +72,8 @@ export type InputPillContainer<ItemType> = {
     appendValue: (text: string) => void;
     appendValidatedData: (item: ItemType, disabled?: boolean, quiet?: boolean) => void;
     getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
+    getPillByPredicate: (predicate: (item: ItemType) => boolean) => InputPill<ItemType> | undefined;
+    updatePill: (element: HTMLElement, new_item: ItemType) => void;
     items: () => ItemType[];
     removePill: (
         element: HTMLElement,
@@ -109,6 +113,7 @@ export function create<ItemType extends {type: string}>(
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
         show_outline_on_invalid_input: opts.show_outline_on_invalid_input ?? false,
+        split_text_to_form_pills: opts.split_text_to_form_pills,
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -155,18 +160,21 @@ export function create<ItemType extends {type: string}>(
             return item;
         },
 
+        // Helper to generate pill HTML with the appropriate renderer
+        generatePillHtml(item: ItemType, disabled: boolean): string {
+            if (store.generate_pill_html !== undefined) {
+                return store.generate_pill_html(item, disabled);
+            }
+            return render_input_pill({
+                display_value: store.get_display_value_from_item(item),
+                disabled,
+            });
+        },
+
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
         appendValidatedData(item: ItemType, disabled = false, quiet = false) {
-            let pill_html;
-            if (store.generate_pill_html !== undefined) {
-                pill_html = store.generate_pill_html(item, disabled);
-            } else {
-                pill_html = render_input_pill({
-                    display_value: store.get_display_value_from_item(item),
-                    disabled,
-                });
-            }
+            const pill_html = funcs.generatePillHtml(item, disabled);
             const payload: InputPill<ItemType> = {
                 item,
                 $element: $(pill_html),
@@ -265,7 +273,11 @@ export function create<ItemType extends {type: string}>(
 
         insertManyPills(pills: string | string[]) {
             if (typeof pills === "string") {
-                pills = pills.split(/,/g).map((pill) => pill.trim());
+                if (!store.split_text_on_comma && store.split_text_to_form_pills) {
+                    pills = store.split_text_to_form_pills(pills);
+                } else {
+                    pills = pills.split(/,/g).map((pill) => pill.trim());
+                }
             }
 
             // this is an array to push all the errored values to, so it's drafts
@@ -291,6 +303,34 @@ export function create<ItemType extends {type: string}>(
 
         getByElement(element: HTMLElement) {
             return store.pills.find((pill) => pill.$element[0] === element);
+        },
+
+        // This searches for a pill using a predicate function and returns it,
+        // or undefined if no pill matches.
+        getPillByPredicate(
+            predicate: (item: ItemType) => boolean,
+        ): InputPill<ItemType> | undefined {
+            return store.pills.find((pill) => predicate(pill.item));
+        },
+
+        // Updates a pill's item data and refreshes its HTML representation in-place.
+        // This is useful for real-time updates like user deactivated status.
+        updatePill(element: HTMLElement, new_item: ItemType): void {
+            const pill = this.getByElement(element);
+            if (!pill) {
+                return;
+            }
+
+            // Update the item data
+            pill.item = new_item;
+
+            // Regenerate the pill HTML with updated data
+            const pill_html = funcs.generatePillHtml(new_item, pill.disabled);
+
+            // Replace the pill element in the DOM
+            const $new_element = $(pill_html);
+            pill.$element.replaceWith($new_element);
+            pill.$element = $new_element;
         },
 
         _get_pills_for_testing() {
@@ -325,6 +365,12 @@ export function create<ItemType extends {type: string}>(
                 // and append the pill, then clear the input.
                 const value = funcs.value(this).trim();
                 if (value.length > 0) {
+                    // If there are multiple values separated by commas, we should use insertManyPills
+                    // to handle them properly when pressing the Enter key.
+                    if (!store.split_text_on_comma && value.includes(",")) {
+                        funcs.insertManyPills(value);
+                        return;
+                    }
                     // append the pill and by proxy create the pill object.
                     const ret = funcs.appendPill(value);
 
@@ -370,7 +416,7 @@ export function create<ItemType extends {type: string}>(
 
             // Typing of the comma is prevented if the last field doesn't validate,
             // as well as when the new pill is created.
-            if (e.key === ",") {
+            if (e.key === "," && store.split_text_on_comma) {
                 // if the pill is successful, it will create the pill and clear
                 // the input.
                 if (funcs.appendPill(store.$input.text().trim())) {
@@ -500,6 +546,8 @@ export function create<ItemType extends {type: string}>(
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
         getByElement: funcs.getByElement.bind(funcs),
+        getPillByPredicate: funcs.getPillByPredicate.bind(funcs),
+        updatePill: funcs.updatePill.bind(funcs),
         getCurrentText: funcs.getCurrentText.bind(funcs),
         items: funcs.items.bind(funcs),
         removePill: funcs.removePill.bind(funcs),

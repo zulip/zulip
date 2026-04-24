@@ -10,12 +10,9 @@ import type {ActionButton} from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t} from "./i18n.ts";
-import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import * as settings_org from "./settings_org.ts";
 import type {RequestOpts} from "./settings_ui.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {HTMLSelectOneElement} from "./types.ts";
 
 export function get_demo_organization_deadline_days_remaining(): number {
     const now = Date.now();
@@ -36,7 +33,7 @@ export function insert_demo_organization_warning(): void {
     const days_remaining = get_demo_organization_deadline_days_remaining();
     let buttons: ActionButton[] = [
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "demo-organizations-help",
         },
@@ -45,7 +42,7 @@ export function insert_demo_organization_warning(): void {
         buttons = [
             ...buttons,
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Convert"}),
                 custom_classes: "convert-demo-organization",
             },
@@ -56,10 +53,10 @@ export function insert_demo_organization_warning(): void {
         label: $t(
             {
                 defaultMessage:
-                    "This demo organization will be automatically deleted in {days_remaining} days, unless it's converted into a permanent organization.",
+                    "This demo organization will be automatically deleted in {N, plural, one {# day} other {# days}}, unless it's converted into a permanent organization.",
             },
             {
-                days_remaining,
+                N: days_remaining,
             },
         ),
         buttons,
@@ -77,7 +74,7 @@ export function show_configure_email_banner(): void {
             label: $t({defaultMessage: "Add your email to access this feature."}),
             buttons: [
                 {
-                    attention: "primary",
+                    variant: "solid",
                     label: $t({defaultMessage: "Add"}),
                     custom_classes: "demo-organization-add-email",
                 },
@@ -102,10 +99,9 @@ export function show_convert_demo_organization_modal(): void {
     const parts = new URL(realm.realm_url).hostname.split(".");
     parts.shift();
     const domain = parts.join(".");
-    const html_body = render_convert_demo_organization_form({
+    const modal_content_html = render_convert_demo_organization_form({
         realm_domain: domain,
         user_has_email_set: email_set,
-        realm_org_type_values: settings_org.get_org_type_dropdown_options(),
     });
 
     function demo_organization_conversion_post_render(): void {
@@ -113,37 +109,25 @@ export function show_convert_demo_organization_modal(): void {
             "#demo-organization-conversion-modal .dialog_submit_button",
         );
         $convert_submit_button.prop("disabled", true);
-        $("#add_organization_type").val(realm.realm_org_type);
 
         if (!email_set) {
-            // Disable form fields if demo organization owner email not set.
-            $("#add_organization_type").prop("disabled", true);
+            // Disable form field if demo organization owner email not set.
             $("#new_subdomain").prop("disabled", true);
             // Show banner for adding email to account.
             show_configure_email_banner();
         } else {
-            // Disable submit button if either form field blank.
+            // Disable submit button if new subdomain field blank.
             $("#convert-demo-organization-form").on("input change", () => {
                 const string_id = $<HTMLInputElement>("input#new_subdomain").val()!.trim();
-                const org_type = $<HTMLSelectOneElement>(
-                    "select:not([multiple])#add_organization_type",
-                ).val()!;
-                $convert_submit_button.prop(
-                    "disabled",
-                    string_id === "" ||
-                        Number.parseInt(org_type, 10) ===
-                            settings_config.all_org_type_values.unspecified.code,
-                );
+                $convert_submit_button.prop("disabled", string_id === "");
             });
         }
     }
 
     function submit_subdomain(): void {
         const $string_id = $("#new_subdomain");
-        const $organization_type = $("#add_organization_type");
         const data = {
             string_id: $string_id.val(),
-            org_type: $organization_type.val(),
         };
         const opts: RequestOpts = {
             success_continuation(raw_data) {
@@ -155,11 +139,11 @@ export function show_convert_demo_organization_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t({defaultMessage: "Make organization permanent"}),
-        html_body,
+        modal_title_html: $t({defaultMessage: "Make organization permanent"}),
+        modal_content_html,
         on_click: submit_subdomain,
         post_render: demo_organization_conversion_post_render,
-        html_submit_button: $t({defaultMessage: "Convert"}),
+        modal_submit_button_text: $t({defaultMessage: "Convert"}),
         id: "demo-organization-conversion-modal",
         loading_spinner: true,
         help_link:

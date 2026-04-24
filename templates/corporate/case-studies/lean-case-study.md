@@ -29,8 +29,8 @@ project](https://xenaproject.wordpress.com/2021/06/05/half-a-year-of-the-liquid-
 proper verification was going on,” he commented.
 
 
-> “It was exactly the interactions via the Zulip chat that convinced me that a
-> proper verification was going on.”
+> It was exactly the interactions via the Zulip chat that convinced me that a
+> proper verification was going on.
 >
 > — [Peter Scholze](https://www.hcm.uni-bonn.de/people/faculty/profile/peter-scholze/),
 > professor at the [University of
@@ -69,8 +69,8 @@ to attracting and growing the mathlib community, which has been the foundation
 of mathlib’s success.
 
 
-> “A number of people have cited the accessibility of [the Zulip] chat room as a
-> reason for deciding to use Lean.”
+> A number of people have cited the accessibility of [the Zulip] chat room as a
+> reason for deciding to use Lean.
 >
 > — “The Lean Mathematical Library”, by the
 > [mathlib](https://github.com/leanprover-community/mathlib) community
@@ -91,7 +91,7 @@ Mathematics at Imperial College London. “Zulip was incredibly intuitive to use
 It just worked.”
 
 
-> “Zulip is incredibly intuitive.”
+> Zulip is incredibly intuitive.
 >
 > — [Kevin
 > Buzzard](https://www.imperial.ac.uk/people/k.buzzard), Professor of Pure
@@ -111,7 +111,7 @@ senior community members to collaborate on research and library development, and
 jump in to help newer community members as time allows.
 
 
-> “We could never do what we’re doing on Slack or Discord.”
+> We could never do what we’re doing on Slack or Discord.
 >
 > — [Kevin Buzzard](https://www.imperial.ac.uk/people/k.buzzard), Professor of
 > Pure Mathematics at Imperial College London
@@ -124,7 +124,7 @@ jump in to help newer community members as time allows.
  working at Lean’s scale.”
 
 
-> “I can’t imagine the Lean community without Zulip.”
+> I can’t imagine the Lean community without Zulip.
 >
 > — [Robert Y. Lewis](https://robertylewis.com/), Brown University lecturer and
 > [mathlib](https://github.com/leanprover-community/mathlib)

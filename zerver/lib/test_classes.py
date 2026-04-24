@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
@@ -46,9 +47,12 @@ from typing_extensions import override
 from corporate.models.customers import Customer
 from corporate.models.licenses import LicenseLedger
 from corporate.models.plans import CustomerPlan
+from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
+from zerver.actions.user_settings import do_change_full_name, do_change_user_setting
+from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
@@ -84,18 +88,19 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
+from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.webhooks.common import (
+    call_fixture_to_headers,
     check_send_webhook_message,
-    get_fixture_http_headers,
     standardize_headers,
 )
 from zerver.models import (
     Client,
+    Device,
     Message,
     NamedUserGroup,
-    PushDevice,
     PushDeviceToken,
     Reaction,
     Realm,
@@ -111,6 +116,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.openapi.openapi import validate_test_request, validate_test_response
@@ -661,6 +667,7 @@ Output:
         webhook_bot="webhook-bot@zulip.com",
         outgoing_webhook_bot="outgoing-webhook@zulip.com",
         default_bot="default-bot@zulip.com",
+        imported_user="imported-user@zulip.com",
     )
 
     mit_user_map = dict(
@@ -896,6 +903,7 @@ Output:
         enable_marketing_emails: bool | None = None,
         email_address_visibility: int | None = None,
         is_demo_organization: bool = False,
+        next: str = "",
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -922,7 +930,7 @@ Output:
             "source_realm_id": source_realm_id,
             "is_demo_organization": is_demo_organization,
             "how_realm_creator_found_zulip": "other",
-            "how_realm_creator_found_zulip_extra_context": "I found it on the internet.",
+            "how_realm_creator_found_zulip_other_text": "I found it on the internet.",
         }
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails
@@ -932,6 +940,8 @@ Output:
             payload["password"] = password
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
+        if next:
+            payload["next"] = next
         return self.client_post(
             "/accounts/register/",
             payload,
@@ -972,6 +982,57 @@ Output:
             "/new/",
             payload,
         )
+
+    def submit_demo_creation_form(
+        self,
+        *,
+        org_type: int = Realm.ORG_TYPES["business"]["id"],
+        language: str = "en",
+        captcha: str | None = None,
+    ) -> "TestHttpResponse":
+        payload = {
+            "realm_type": org_type,
+            "realm_default_language": language,
+            "how_realm_creator_found_zulip": "ai_chatbot",
+            "how_realm_creator_found_zulip_which_ai_chatbot": "I don't remember.",
+            "terms": True,
+        }
+        if captcha is not None:
+            payload["captcha"] = captcha
+        return self.client_post(
+            "/new/demo/",
+            payload,
+        )
+
+    def create_demo_organization_owner(self) -> UserProfile:
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+
+        # Create a demo organization
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].startswith(
+                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
+            )
+        )
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+        result = self.client_get(result["Location"], subdomain=realm.string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
+
+        # Get demo organization owner account
+        user_profile = realm.get_first_human_user()
+        assert user_profile is not None
+        self.assert_logged_in_user_id(user_profile.id)
+        self.assertEqual(user_profile.delivery_email, "")
+
+        return user_profile
 
     def get_confirmation_url_from_outbox(
         self,
@@ -1108,6 +1169,22 @@ Output:
             headers=None,
             query_params=None,
             intentionally_undocumented=intentionally_undocumented,
+            **extra,
+        )
+
+    def api_put(
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
+    ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
+        extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
+        return self.client_put(
+            url,
+            info,
+            skip_user_agent=False,
+            follow=False,
+            secure=False,
+            headers=None,
+            query_params=None,
             **extra,
         )
 
@@ -1251,14 +1328,18 @@ Output:
         anchor: int | str = 1,
         num_before: int = 100,
         num_after: int = 100,
-        use_first_unread_anchor: bool = False,
+        use_first_unread_anchor: bool | None = None,
         include_anchor: bool = True,
     ) -> dict[str, list[dict[str, Any]]]:
         post_params = {
             "anchor": anchor,
             "num_before": num_before,
             "num_after": num_after,
-            "use_first_unread_anchor": orjson.dumps(use_first_unread_anchor).decode(),
+            **(
+                {}
+                if use_first_unread_anchor is None
+                else {"use_first_unread_anchor": orjson.dumps(use_first_unread_anchor).decode()}
+            ),
             "include_anchor": orjson.dumps(include_anchor).decode(),
         }
         result = self.client_get("/json/messages", dict(post_params))
@@ -1270,7 +1351,7 @@ Output:
         anchor: str | int = 1,
         num_before: int = 100,
         num_after: int = 100,
-        use_first_unread_anchor: bool = False,
+        use_first_unread_anchor: bool | None = None,
     ) -> list[dict[str, Any]]:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data["messages"]
@@ -1521,7 +1602,7 @@ Output:
             realm = get_realm("zulip")
 
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-            realm, invite_only, history_public_to_subscribers
+            invite_only, history_public_to_subscribers
         )
 
         try:
@@ -1922,12 +2003,12 @@ Output:
         )
 
     def register_push_device(self, user_profile_id: int) -> None:
-        PushDevice.objects.create(
+        Device.objects.create(
             user_id=user_profile_id,
-            push_account_id=10,
-            bouncer_device_id=1,
-            token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key_id=10,
+            push_token_id=1,
+            push_token_kind=Device.PushTokenKind.FCM,
+            push_key=base64.b64decode("MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"),
         )
 
     def register_push_device_token(self, user_profile_id: int) -> None:
@@ -2013,7 +2094,7 @@ Output:
         """
         dct = {}
 
-        for realm_emoji in RealmEmoji.objects.all():
+        for realm_emoji in RealmEmoji.objects.all().iterator():
             dct[realm_emoji.id] = realm_emoji
 
         if not dct:
@@ -2344,6 +2425,40 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
             streams=Stream.objects.exclude(id__in=stream_ids)
         )
 
+    def set_user_role(self, user: UserProfile, role: int) -> None:
+        """
+        Test helper for switching a user to a given role. Hardcodes
+        acting_user=None, which means the change is treated as
+        though it was done by a management command, not another
+        user.
+
+        Tests using this should consider using users who have the
+        appropriate initial role; this is usually more readable and
+        a bit faster.
+        """
+        do_change_user_role(user, role, acting_user=None, notify=False)
+
+    def get_dm_group_recipient(self, sender: UserProfile, *other_users: UserProfile) -> Recipient:
+        direct_group_message = get_or_create_direct_message_group(
+            id_list=[sender.id] + [user.id for user in other_users],
+        )
+        assert direct_group_message.recipient is not None
+        return direct_group_message.recipient
+
+    def set_user_setting(self, user: UserProfile, setting_name: str, value: bool) -> None:
+        with self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(user, setting_name, value, acting_user=None)
+
+    def set_user_custom_profile_data(
+        self, user_profile: UserProfile, data: list[ProfileDataElementUpdateDict]
+    ) -> None:
+        do_update_user_custom_profile_data_if_changed(
+            user_profile, data, acting_user=None, notify=False
+        )
+
+    def set_full_name(self, user_profile: UserProfile, full_name: str) -> None:
+        do_change_full_name(user_profile, full_name, acting_user=None, notify=False)
+
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
@@ -2418,78 +2533,71 @@ class WebhookTestCase(ZulipTestCase):
     * Tests can override get_body for cases where there is no
       available fixture file.
 
-    * Tests should specify WEBHOOK_DIR_NAME to enforce that all event
-      types are declared in the @webhook_view decorator. This is
-      important for ensuring we document all fully supported event types.
+    * We enforce that all event types are declared in the @webhook_view
+      decorator. This is important for ensuring we document all fully
+      supported event types.
     """
 
-    CHANNEL_NAME: str | None = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
-    URL_TEMPLATE: str
+    URL_TEMPLATE: str = ""
     WEBHOOK_DIR_NAME: str | None = None
-    # This last parameter is a workaround to handle webhooks that do not
-    # name the main function api_{WEBHOOK_DIR_NAME}_webhook.
-    VIEW_FUNCTION_NAME: str | None = None
+    DEFAULT_URL_TEMPLATE: str = (
+        "/api/v1/external/{webhook_dir_name}?stream={stream}&api_key={api_key}"
+    )
 
-    @property
-    def test_user(self) -> UserProfile:
-        return self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
+    def get_webhook_dir_name(self) -> str:
+        module_parts = self.__module__.split(".")
+        if len(module_parts) >= 3 and module_parts[0] == "zerver" and module_parts[1] == "webhooks":
+            return module_parts[2]
+        raise AssertionError(f"Cannot determine webhook directory from module: {self.__module__}")
 
     @override
     def setUp(self) -> None:
         super().setUp()
+        self.test_user = self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
+        self.webhook_dir_name = self.WEBHOOK_DIR_NAME or self.get_webhook_dir_name()
+        self.channel_name = self.webhook_dir_name
+        self.url_template = self.URL_TEMPLATE or self.DEFAULT_URL_TEMPLATE
         self.url = self.build_webhook_url()
 
-        if self.WEBHOOK_DIR_NAME is not None:
-            # If VIEW_FUNCTION_NAME is explicitly specified and
-            # WEBHOOK_DIR_NAME is not None, an exception will be
-            # raised when a test triggers events that are not
-            # explicitly specified via the event_types parameter to
-            # the @webhook_view decorator.
-            if self.VIEW_FUNCTION_NAME is None:
-                function = import_string(
-                    f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.api_{self.WEBHOOK_DIR_NAME}_webhook"
-                )
-            else:
-                function = import_string(
-                    f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.{self.VIEW_FUNCTION_NAME}"
-                )
-            all_event_types = None
+        function = import_string(
+            f"zerver.webhooks.{self.webhook_dir_name}.view.api_{self.webhook_dir_name}_webhook"
+        )
 
-            if hasattr(function, "_all_event_types"):
-                all_event_types = function._all_event_types
+        all_event_types = None
+        if hasattr(function, "_all_event_types"):
+            all_event_types = function._all_event_types
+        if all_event_types is None:
+            return  # nocoverage
 
-            if all_event_types is None:
-                return  # nocoverage
-
-            def side_effect(*args: Any, **kwargs: Any) -> None:
-                complete_event_type = (
-                    kwargs.get("complete_event_type")
-                    if len(args) < 5
-                    else args[4]  # complete_event_type is the argument at index 4
-                )
-                if (
-                    complete_event_type is not None
-                    and all_event_types is not None
-                    and complete_event_type not in all_event_types
-                ):  # nocoverage
-                    raise Exception(
-                        f"""
+        def side_effect(*args: Any, **kwargs: Any) -> int | None:
+            complete_event_type = (
+                kwargs.get("complete_event_type")
+                if len(args) < 5
+                else args[4]  # complete_event_type is the argument at index 4
+            )
+            if (
+                complete_event_type is not None
+                and all_event_types is not None
+                and complete_event_type not in all_event_types
+            ):  # nocoverage
+                raise Exception(
+                    f"""
 Error: This test triggered a message using the event "{complete_event_type}", which was not properly
 registered via the @webhook_view(..., event_types=[...]). These registrations are important for Zulip
 self-documenting the supported event types for this integration.
 
 You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this webhook.
 """.strip()
-                    )
-                check_send_webhook_message(*args, **kwargs)
+                )
+            return check_send_webhook_message(*args, **kwargs)
 
-            self.patch = mock.patch(
-                f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.check_send_webhook_message",
-                side_effect=side_effect,
-            )
-            self.patch.start()
-            self.addCleanup(self.patch.stop)
+        self.patch = mock.patch(
+            f"zerver.webhooks.{self.webhook_dir_name}.view.check_send_webhook_message",
+            side_effect=side_effect,
+        )
+        self.patch.start()
+        self.addCleanup(self.patch.stop)
 
     def api_channel_message(
         self,
@@ -2528,7 +2636,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         We use `fixture_name` to find the payload data in of our test
         fixtures.  Then we verify that a message gets sent to a stream:
 
-            self.CHANNEL_NAME: stream name
+            self.channel_name: stream name
             expected_topic_name: topic name
             expected_message: content
 
@@ -2540,16 +2648,14 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
 
         When no message is expected to be sent, set `expect_noop` to True.
         """
-        assert self.CHANNEL_NAME is not None
-        self.subscribe(self.test_user, self.CHANNEL_NAME)
+        self.subscribe(self.test_user, self.channel_name)
 
         payload = self.get_payload(fixture_name)
         if content_type is not None:
             extra["content_type"] = content_type
-        if self.WEBHOOK_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
-            headers = standardize_headers(headers)
-            extra.update(headers)
+        headers = call_fixture_to_headers(self.webhook_dir_name, fixture_name)
+        headers = standardize_headers(headers)
+        extra.update(headers)
         try:
             msg = self.send_webhook_payload(
                 self.test_user,
@@ -2577,7 +2683,7 @@ one or more new messages.
 
         self.assert_channel_message(
             message=msg,
-            channel_name=self.CHANNEL_NAME,
+            channel_name=self.channel_name,
             topic_name=expected_topic_name,
             content=expected_message,
         )
@@ -2612,10 +2718,9 @@ one or more new messages.
         payload = self.get_payload(fixture_name)
         extra["content_type"] = content_type
 
-        if self.WEBHOOK_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
-            headers = standardize_headers(headers)
-            extra.update(headers)
+        headers = call_fixture_to_headers(self.webhook_dir_name, fixture_name)
+        headers = standardize_headers(headers)
+        extra.update(headers)
 
         if sender is None:
             sender = self.test_user
@@ -2630,13 +2735,15 @@ one or more new messages.
 
         return msg
 
-    def build_webhook_url(self, *args: str, **kwargs: str) -> str:
-        url = self.URL_TEMPLATE
-        if url.find("api_key") >= 0:
-            api_key = self.test_user.api_key
-            url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.CHANNEL_NAME)
-        else:
-            url = self.URL_TEMPLATE.format(stream=self.CHANNEL_NAME)
+    def build_webhook_url(self, *args: str, legacy_name: str | None = None, **kwargs: str) -> str:
+        url = self.url_template
+        assert url.find("api_key") >= 0
+        api_key = self.test_user.api_key
+        url = self.url_template.format(
+            webhook_dir_name=self.webhook_dir_name if legacy_name is None else legacy_name,
+            api_key=api_key,
+            stream=self.channel_name,
+        )
 
         has_arguments = kwargs or args
         if has_arguments and url.find("?") == -1:
@@ -2658,8 +2765,7 @@ one or more new messages.
         return self.get_body(fixture_name)
 
     def get_body(self, fixture_name: str) -> str:
-        assert self.WEBHOOK_DIR_NAME is not None
-        body = self.webhook_fixture_data(self.WEBHOOK_DIR_NAME, fixture_name)
+        body = self.webhook_fixture_data(self.webhook_dir_name, fixture_name)
         # fail fast if we don't have valid json
         orjson.loads(body)
         return body
@@ -2780,7 +2886,10 @@ class PushNotificationTestCase(BouncerTestCase):
         self.user_profile = self.example_user("hamlet")
         self.sending_client = get_client("test")
         self.sender = self.example_user("hamlet")
-        self.personal_recipient_user = self.example_user("othello")
+        self.dm_recipient_user = self.example_user("othello")
+        self.dm_group = get_or_create_direct_message_group(
+            [self.sender.id, self.dm_recipient_user.id]
+        )
 
     def get_message(self, type: int, type_id: int, realm_id: int) -> Message:
         recipient, _ = Recipient.objects.get_or_create(
@@ -2907,19 +3016,19 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
         realm = hamlet.realm
 
         # Hamlet registers both an Android and an Apple device for push notification.
-        PushDevice.objects.create(
+        Device.objects.create(
             user=hamlet,
-            push_account_id=10,
-            bouncer_device_id=1,
-            token_kind=PushDevice.TokenKind.APNS,
-            push_public_key="9VvW7k59AET0v3+VFCkKTrNm5DJQ7JTKdvUjZInZZ0Y=",
+            push_key_id=10,
+            push_token_id=1,
+            push_token_kind=Device.PushTokenKind.APNS,
+            push_key=base64.b64decode("MXPC4WK2YfyfCBdK6ElnzSpKJtcpFSZrYiJto4YCETzx"),
         )
-        PushDevice.objects.create(
+        Device.objects.create(
             user=hamlet,
-            push_account_id=20,
-            bouncer_device_id=2,
-            token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key_id=20,
+            push_token_id=2,
+            push_token_kind=Device.PushTokenKind.FCM,
+            push_key=base64.b64decode("Mc3u6xraEI79aGk6Nd+boqi/ODfT+JcsEIATzG7C/m+V"),
         )
 
         realm_and_remote_realm_fields: dict[str, Realm | RemoteRealm | None] = {
@@ -2931,16 +3040,14 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
             realm_and_remote_realm_fields = {"realm": None, "remote_realm": remote_realm}
 
         registered_device_apple = RemotePushDevice.objects.create(
-            push_account_id=10,
-            device_id=1,
+            token_id=1,
             token_kind=RemotePushDevice.TokenKind.APNS,
             token="push-device-token-1",
             ios_app_id="abc",
             **realm_and_remote_realm_fields,
         )
         registered_device_android = RemotePushDevice.objects.create(
-            push_account_id=20,
-            device_id=2,
+            token_id=2,
             token_kind=RemotePushDevice.TokenKind.FCM,
             token="push-device-token-3",
             **realm_and_remote_realm_fields,

@@ -3,6 +3,9 @@ from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import F
 
+RECIPIENT_PERSONAL = 1
+RECIPIENT_HUDDLE = 3
+
 
 def set_initial_value_of_is_private_flag(
     apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
@@ -20,9 +23,12 @@ def set_initial_value_of_is_private_flag(
     print("\nStart setting initial value for is_private flag...", flush=True)
     while True:
         range_end = i + 10000
-        # Can't use [Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP] in migration files
         message_ids = list(
-            Message.objects.filter(recipient__type__in=[1, 3], id__gt=i, id__lte=range_end)
+            Message.objects.filter(
+                recipient__type__in=[RECIPIENT_PERSONAL, RECIPIENT_HUDDLE],
+                id__gt=i,
+                id__lte=range_end,
+            )
             .values_list("id", flat=True)
             .order_by("id")
         )

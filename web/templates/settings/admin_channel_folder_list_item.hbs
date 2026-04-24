@@ -14,10 +14,10 @@
     {{#if is_admin}}
     <td class="actions">
         {{> ../components/icon_button
-          icon="edit"
+          icon="folder-cog"
           intent="neutral"
           custom_classes="tippy-zulip-delayed-tooltip edit-channel-folder-button"
-          data-tippy-content=(t "Edit")
+          data-tippy-content=(t "Manage folder")
           }}
         {{> ../components/icon_button
           icon="trash"
@@ -25,6 +25,15 @@
           custom_classes="tippy-zulip-delayed-tooltip archive-channel-folder-button"
           data-tippy-content=(t "Delete")
           aria-label=(t "Delete")
+          }}
+    </td>
+    {{else}}
+    <td class="actions">
+        {{> ../components/icon_button
+          icon="preview"
+          intent="neutral"
+          custom_classes="tippy-zulip-delayed-tooltip edit-channel-folder-button"
+          data-tippy-content=(t "View details")
           }}
     </td>
     {{/if}}

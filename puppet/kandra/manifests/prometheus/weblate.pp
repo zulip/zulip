@@ -17,7 +17,6 @@ class kandra::prometheus::weblate {
     source => 'puppet:///modules/kandra/weblate_exporter',
   }
 
-  kandra::firewall_allow { 'weblate_exporter': port => '9189' }
   file { "${zulip::common::supervisor_conf_dir}/weblate_exporter.conf":
     ensure  => file,
     require => [
@@ -30,5 +29,12 @@ class kandra::prometheus::weblate {
     mode    => '0644',
     content => template('kandra/supervisor/conf.d/weblate_exporter.conf.template.erb'),
     notify  => Service[supervisor],
+  }
+
+  include kandra::prometheus::pushgateway
+  zulip::cron { 'weblate-to-pushgateway':
+    minute    => '*/15',
+    command   => 'curl http://localhost:9189/metrics | curl --data-binary @- http://localhost:9091/metrics/job/weblate',
+    use_proxy => false,
   }
 }

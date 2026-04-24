@@ -5,6 +5,7 @@ from django.core.validators import URLValidator
 from pydantic import AfterValidator, BaseModel
 
 from zerver.lib.types import UserGroupMembersDict
+from zerver.models.realms import RealmExportSlug
 
 
 def check_url(val: str) -> str:
@@ -27,18 +28,13 @@ class EventAlertWords(BaseEvent):
     alert_words: list[str]
 
 
-class AttachmentMessage(BaseModel):
-    id: int
-    date_sent: int
-
-
 class Attachment(BaseModel):
     id: int
     name: str
     size: int
     path_id: str
     create_time: int
-    messages: list[AttachmentMessage]
+    message_ids: list[int]
 
 
 class EventAttachmentAdd(BaseEvent):
@@ -228,6 +224,11 @@ class EventHasZoomToken(BaseEvent):
     value: bool
 
 
+class EventHasWebexToken(BaseEvent):
+    type: Literal["has_webex_token"]
+    value: bool
+
+
 class EventHeartbeat(BaseEvent):
     type: Literal["heartbeat"]
 
@@ -289,11 +290,27 @@ class EventOnboardingSteps(BaseEvent):
     onboarding_steps: list[OnboardingSteps]
 
 
-class EventPushDevice(BaseEvent):
-    type: Literal["push_device"]
-    push_account_id: str
-    status: Literal["active", "failed", "pending"]
-    error_code: str | None = None
+class EventDeviceAdd(BaseEvent):
+    type: Literal["device"]
+    op: Literal["add"]
+    device_id: int
+
+
+class EventDeviceRemove(BaseEvent):
+    type: Literal["device"]
+    op: Literal["remove"]
+    device_id: int
+
+
+class EventDeviceUpdate(BaseEvent):
+    type: Literal["device"]
+    op: Literal["update"]
+    device_id: int
+    push_key_id: int | None = None
+    push_token_id: str | None = None
+    pending_push_token_id: str | None = None
+    push_token_last_updated_timestamp: int | None = None
+    push_registration_error_code: str | None = None
 
 
 class NavigationViewFields(BaseModel):
@@ -355,15 +372,6 @@ class EventModernPresence(BaseEvent):
     presences: dict[str, ModernPresence]
 
 
-# Type for the legacy user field; the `user_id` field is intended to
-# replace this and we expect to remove this once clients have migrated
-# to support the modern API.
-class ReactionLegacyUserType(BaseModel):
-    email: str
-    full_name: str
-    user_id: int
-
-
 class EventReactionAdd(BaseEvent):
     type: Literal["reaction"]
     op: Literal["add"]
@@ -372,7 +380,6 @@ class EventReactionAdd(BaseEvent):
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
     user_id: int
-    user: ReactionLegacyUserType
 
 
 class EventReactionRemove(BaseEvent):
@@ -383,7 +390,6 @@ class EventReactionRemove(BaseEvent):
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
     user_id: int
-    user: ReactionLegacyUserType
 
 
 class BotServicesOutgoing(BaseModel):
@@ -399,16 +405,9 @@ class BotServicesEmbedded(BaseModel):
 
 class Bot(BaseModel):
     user_id: int
-    api_key: str
-    avatar_url: str
-    bot_type: int
     default_all_public_streams: bool
     default_events_register_stream: str | None
     default_sending_stream: str | None
-    email: str
-    full_name: str
-    is_active: bool
-    owner_id: int
     services: list[BotServicesOutgoing | BotServicesEmbedded]
 
 
@@ -434,14 +433,9 @@ class BotTypeForUpdateCore(BaseModel):
 
 class BotTypeForUpdate(BotTypeForUpdateCore):
     # TODO: fix types to avoid optional fields
-    api_key: str | None = None
-    avatar_url: str | None = None
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None
     default_sending_stream: str | None = None
-    full_name: str | None = None
-    is_active: bool | None = None
-    owner_id: int | None = None
     services: list[BotServicesOutgoing | BotServicesEmbedded] | None = None
 
 
@@ -489,6 +483,23 @@ class RealmEmoji(BaseModel):
     still_url: str | None
 
 
+class EventRealmEmojiAdd(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["add"]
+    emoji: RealmEmoji
+
+
+class RealmEmojiUpdateData(BaseModel):
+    deactivated: bool | None = None
+
+
+class EventRealmEmojiUpdateOne(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["update_one"]
+    emoji_id: str
+    data: RealmEmojiUpdateData
+
+
 class EventRealmEmojiUpdate(BaseEvent):
     type: Literal["realm_emoji"]
     op: Literal["update"]
@@ -509,7 +520,7 @@ class Export(BaseModel):
     deleted_timestamp: float | int | None
     failed_timestamp: float | int | None
     pending: bool
-    export_type: int
+    export_type: RealmExportSlug
 
 
 class EventRealmExport(BaseEvent):
@@ -521,6 +532,9 @@ class RealmLinkifier(BaseModel):
     pattern: str
     url_template: str
     id: int
+    example_input: str | None = None
+    reverse_template: str | None = None
+    alternative_url_templates: list[str] = []
 
 
 class EventRealmLinkifiers(BaseEvent):
@@ -585,6 +599,11 @@ class RealmTopicsPolicyData(BaseModel):
     mandatory_topics: bool
 
 
+class RealmDescriptionData(BaseModel):
+    description: str
+    rendered_description: str
+
+
 class NightLogoData(BaseModel):
     night_logo_url: str
     night_logo_source: str
@@ -620,6 +639,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
     direct_message_permission_group: int | UserGroupMembersDict | None = None
+    workplace_users_group: int | UserGroupMembersDict | None = None
 
 
 class PlanTypeData(BaseModel):
@@ -649,6 +669,7 @@ class EventRealmUpdate(BaseEvent):
     op: Literal["update"]
     property: str
     value: bool | int | str | None
+    rendered_description: str | None = None
 
 
 class RealmUser(BaseModel):
@@ -752,6 +773,16 @@ class PersonIsActive(BaseModel):
     is_active: bool
 
 
+class PersonIsImportedStub(BaseModel):
+    user_id: int
+    is_imported_stub: bool
+
+
+class PersonDateJoined(BaseModel):
+    user_id: int
+    date_joined: str
+
+
 class EventRealmUserUpdate(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["update"]
@@ -759,12 +790,14 @@ class EventRealmUserUpdate(BaseEvent):
         PersonAvatarFields
         | PersonBotOwnerId
         | PersonCustomProfileField
+        | PersonDateJoined
         | PersonDeliveryEmail
         | PersonEmail
         | PersonFullName
         | PersonRole
         | PersonTimezone
         | PersonIsActive
+        | PersonIsImportedStub
     )
 
 
@@ -860,6 +893,7 @@ class EventRemindersRemove(BaseEvent):
 class BasicStreamFields(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -927,6 +961,7 @@ class EventSubmessage(BaseEvent):
 class SingleSubscription(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -1058,25 +1093,6 @@ class EventTypingEditMessageStop(BaseEvent):
     sender_id: int
     message_id: int
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
-
-
-class EventUpdateDisplaySettingsCore(BaseEvent):
-    type: Literal["update_display_settings"]
-    setting_name: str
-    setting: bool | int | str
-    user: str
-
-
-class EventUpdateDisplaySettings(EventUpdateDisplaySettingsCore):
-    # TODO: fix types to avoid optional fields
-    language_name: str | None = None
-
-
-class EventUpdateGlobalNotifications(BaseEvent):
-    type: Literal["update_global_notifications"]
-    notification_name: str
-    setting: bool | int | str
-    user: str
 
 
 class EventUpdateMessageCore(BaseEvent):

@@ -104,13 +104,21 @@ SSL/TLS termination.
 Set to the port number if you [prefer to listen on a port other than
 443](deployment.md#using-an-alternate-port).
 
+#### `nginx_worker_processes`
+
+Adjusts the [`worker_processes`][nginx_worker_processes] setting in
+the nginx server. This defaults to `auto`, which nginx treats as the
+number of available CPU cores.
+
+[nginx_worker_processes]: https://nginx.org/en/docs/ngx_core_module.html#worker_processes
+
 #### `nginx_worker_connections`
 
 Adjust the [`worker_connections`][nginx_worker_connections] setting in
 the nginx server. This defaults to 10000; increasing it allows more
-concurrent connections per CPU core, at the cost of more memory
-consumed by NGINX. This number, times the number of CPU cores, should
-be more than twice the concurrent number of users.
+concurrent connections per worker process, at the cost of more memory
+consumed by nginx. This number, times the number of worker processes
+(above), should be more than twice the concurrent number of users.
 
 [nginx_worker_connections]: http://nginx.org/en/docs/ngx_core_module.html#worker_connections
 
@@ -124,10 +132,12 @@ memory (currently 3.5GiB) to run a single-server Zulip installation in
 the multiprocess mode.
 
 Set explicitly to true or false to override the automatic
-calculation. This override is useful both Docker systems (where the
-above algorithm might see the host's memory, not the container's)
-and/or when using remote servers for postgres, memcached, redis, and
-RabbitMQ.
+calculation. This override is useful for Docker systems, where the
+above algorithm will see the host's memory size, not the container's,
+unless a [memory limit is set][docker-memory-limit], as well as when
+using remote servers for PostgreSQL, memcached, Redis, and RabbitMQ.
+
+[docker-memory-limit]: https://docs.docker.com/reference/compose-file/deploy/#memory
 
 #### `rolling_restart`
 
@@ -220,6 +230,20 @@ the message to fail to send.
 #### `katex_server_port`
 
 Set to the port number for the KaTeX server; defaults to port 9700.
+
+#### `custom_ca_path`
+
+If you use a custom certificate authority for your authentication
+provider, you will need to provide the certificate of the signing CA
+so Zulip can successfully make requests to it.
+
+Set this to the fully-qualified path to the `.crt` file containing the
+PEM-encoded CA certificate to trust; we suggest storing this in
+`/etc/zulip/`.
+
+Setting this path also means that Zulip will use the operating
+system's CA certificate store, and not its built-in one. There may be
+minor differences in trusted root CA sets.
 
 ### `[postgresql]`
 

@@ -2,7 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 import type {ReferenceElement} from "tippy.js";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_compose_mention_group_warning from "../templates/compose_banner/compose_mention_group_warning.hbs";
 import render_guest_in_dm_recipient_warning from "../templates/compose_banner/guest_in_dm_recipient_warning.hbs";
@@ -28,9 +27,11 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_senders from "./recent_senders.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
@@ -47,7 +48,6 @@ let message_too_long = false;
 //  we need to track when we are validating compose box.
 let is_validating_compose_box = false;
 let disabled_send_tooltip_message_html = "";
-let posting_policy_error_message = "";
 
 export const NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE = $t({
     defaultMessage: "You do not have permission to post in this channel.",
@@ -91,6 +91,10 @@ export const UPLOAD_IN_PROGRESS_ERROR_TOOLTIP_MESSAGE = $t({
 export const WILDCARD_MENTION_ERROR_TOOLTIP_MESSAGE = $t({
     defaultMessage: "You do not have permission to use wildcard mentions in large streams.",
 });
+export const CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE = $t({
+    defaultMessage:
+        "You are not allowed to start new topics in this channel. Choose an existing topic from the typeahead.",
+});
 
 type StreamWildcardOptions = {
     stream_id: number;
@@ -124,17 +128,6 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
 
     $container.find(".message_edit_save").prop("disabled", save_is_disabled);
     $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
-}
-
-export function get_posting_policy_error_message(): string {
-    // Contains errors which are shown as compose banner before user
-    // clicks on the send button.
-    // Ensure you are calling `validate` for the current compose state,
-    // before calling this function.
-    // We directly add the error banner instead of setting
-    // `posting_policy_error_message`, when the banner contains special
-    // context for the current compose state.
-    return posting_policy_error_message;
 }
 
 export function get_disabled_send_tooltip_html(): string {
@@ -362,6 +355,53 @@ export async function warn_if_mentioning_unsubscribed_user(
             const new_row_html = render_not_subscribed_warning(context);
             const $container = compose_banner.get_compose_banner_container($textarea);
             compose_banner.append_compose_banner_to_banner_list($(new_row_html), $container);
+        }
+    }
+}
+
+// Called on every compose input event to remove any "recipient not
+// subscribed" banners whose mention is no longer in the compose text.
+// We check for the three mention syntaxes the markdown parser accepts
+// (@**Name**, @**Name|id**, @**|id**) rather than re-parsing markdown
+// on every input event.
+export function maybe_clear_stale_recipient_not_subscribed_warnings(
+    $textarea: JQuery<HTMLTextAreaElement>,
+): void {
+    const $banner_container = compose_banner.get_compose_banner_container($textarea);
+    const $existing_banners = $banner_container.find(
+        `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
+    );
+    if ($existing_banners.length === 0) {
+        return;
+    }
+
+    const compose_text = $textarea.val() ?? "";
+    for (const banner of $existing_banners) {
+        const user_id = Number($(banner).attr("data-user-id"));
+        if (!user_id) {
+            $(banner).remove();
+            continue;
+        }
+
+        const user = people.maybe_get_user_by_id(user_id, true);
+        if (user === undefined) {
+            $(banner).remove();
+            continue;
+        }
+
+        // get_mention_syntax produces the canonical @**Name** form (or
+        // @**Name|id** for duplicate names), matching what the typeahead
+        // inserts.
+        const mention_syntax = people.get_mention_syntax(user.full_name, user_id, false);
+        const name_and_id_syntax = `@**${user.full_name}|${user_id}**`;
+        const id_only_syntax = `@**|${user_id}**`;
+
+        if (
+            !compose_text.includes(mention_syntax) &&
+            !compose_text.includes(name_and_id_syntax) &&
+            !compose_text.includes(id_only_syntax)
+        ) {
+            $(banner).remove();
         }
     }
 }
@@ -836,7 +876,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     return true;
 }
 
-export function validate_stream_message_address_info(sub: StreamSubscription): boolean {
+function validate_permission_to_post_messages_in_stream(sub: StreamSubscription): boolean {
     if (sub.is_archived) {
         compose_banner.show_stream_does_not_exist_error(sub.name);
         if (is_validating_compose_box) {
@@ -844,14 +884,29 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
         }
         return false;
     }
-    if (sub.subscribed) {
-        return true;
+
+    if (!sub.subscribed) {
+        compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
+        }
+        return false;
     }
-    compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
-    if (is_validating_compose_box) {
-        disabled_send_tooltip_message_html = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
+
+    if (!stream_data.can_post_messages_in_stream(sub)) {
+        compose_banner.show_error_message(
+            NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE,
+            compose_banner.CLASSNAMES.no_post_permissions,
+            $("#compose_banners"),
+        );
+
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
+        }
+        return false;
     }
-    return false;
+
+    return true;
 }
 
 function validate_stream_message(scheduling_message: boolean, show_banner = true): boolean {
@@ -897,18 +952,24 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         return false;
     }
 
-    if (!stream_data.can_post_messages_in_stream(sub)) {
-        compose_banner.show_error_message(
-            NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE,
-            compose_banner.CLASSNAMES.no_post_permissions,
-            $banner_container,
-        );
-
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message_html = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
-            posting_policy_error_message = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
-        }
+    if (!validate_permission_to_post_messages_in_stream(sub)) {
         return false;
+    }
+
+    if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+        const topic = compose_state.topic();
+        const existing_topics_in_stream = stream_topic_history
+            .get_recent_topic_names(stream_id)
+            .map((topic) => topic.toLowerCase());
+        if (
+            !existing_topics_in_stream.includes(topic.trim().toLowerCase()) &&
+            stream_topic_history.has_history_for(stream_id)
+        ) {
+            if (is_validating_compose_box) {
+                disabled_send_tooltip_message_html = CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE;
+            }
+            return false;
+        }
     }
 
     const stream_wildcard_mention = util.find_stream_wildcard_mentions(
@@ -916,7 +977,6 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
     );
 
     if (
-        !validate_stream_message_address_info(sub) ||
         !validate_stream_message_mentions({
             stream_id: sub.stream_id,
             $banner_container,
@@ -930,8 +990,15 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
     return true;
 }
 
-// The function checks whether the recipients are users of the realm or cross realm users (bots
-// for now)
+function set_compose_textarea_disabled(disabled: boolean): void {
+    $("textarea#compose-textarea").prop("disabled", disabled);
+    // Also toggle keyboard navigation on compose control buttons.
+    $("#compose .disable-on-invalid-recipient .compose_control_button").prop(
+        "tabindex",
+        disabled ? -1 : 0,
+    );
+}
+
 export function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
@@ -955,36 +1022,34 @@ export function validate_private_message(show_banner = true): boolean {
     const direct_message_error_string = check_dm_permissions_and_get_error_string(user_ids_string);
     if (direct_message_error_string) {
         compose_banner.cannot_send_direct_message_error(direct_message_error_string);
+        set_compose_textarea_disabled(true);
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = direct_message_error_string;
-            posting_policy_error_message = direct_message_error_string;
         }
         return false;
     }
 
-    let context = {};
+    const non_active_user_ids = user_ids.filter((id) => !people.is_person_active(id));
+    if (non_active_user_ids.length > 0) {
+        const error_message = non_active_user_ids.some((id) => people.get_by_user_id(id).is_deleted)
+            ? $t({defaultMessage: "You cannot send messages to deleted users."})
+            : $t({defaultMessage: "You cannot send messages to deactivated users."});
+        compose_banner.show_error_message(
+            error_message,
+            compose_banner.CLASSNAMES.deactivated_user,
+            $banner_container,
+        );
+        set_compose_textarea_disabled(true);
 
-    for (const user_id of user_ids) {
-        if (!people.is_person_active(user_id)) {
-            context = {full_name: people.get_by_user_id(user_id).full_name};
-            const error_message = $t(
-                {defaultMessage: "You cannot send messages to deactivated users."},
-                context,
-            );
-            compose_banner.show_error_message(
-                error_message,
-                compose_banner.CLASSNAMES.deactivated_user,
-                $banner_container,
-                $("#private_message_recipient"),
-            );
-
-            if (is_validating_compose_box) {
-                disabled_send_tooltip_message_html = error_message;
-            }
-            return false;
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html = error_message;
         }
+        return false;
     }
 
+    // Re-enable the compose textarea in case it was disabled by a
+    // previous call for an invalid recipient that has since been fixed.
+    set_compose_textarea_disabled(false);
     return true;
 }
 
@@ -1120,8 +1185,13 @@ function report_validation_error(
 
 export let validate = (scheduling_message: boolean, show_banner = true): boolean => {
     is_validating_compose_box = true;
-    posting_policy_error_message = "";
     disabled_send_tooltip_message_html = "";
+    // Clear previous banners from the previous compose state; the
+    // validation checks below will re-add any that are still relevant.
+    compose_banner.clear_errors();
+    // Reset compose textarea state; validate_private_message may
+    // disable it if the recipient is invalid.
+    set_compose_textarea_disabled(false);
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
@@ -1198,8 +1268,8 @@ export function convert_mentions_to_silent_in_direct_messages(
         return mention_text;
     }
 
-    const recipient_user_id = compose_pm_pill.get_user_ids();
-    if (recipient_user_id.toString() !== user_id.toString()) {
+    const recipient_user_ids = compose_pm_pill.get_user_ids();
+    if (recipient_user_ids.length !== 1 || recipient_user_ids[0] !== user_id) {
         return mention_text;
     }
 

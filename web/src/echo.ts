@@ -162,7 +162,7 @@ function resend_message(
         send_message: typeof transmit.send_message;
     },
 ): void {
-    message.content = message.raw_content!;
+    message_store.update_message_content(message, message.raw_content!);
     if (show_retry_spinner($row)) {
         // retry already in in progress
         return;
@@ -394,14 +394,14 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
     }
 
     if (message_content_edited) {
-        message.raw_content = raw_content;
+        message_store.maybe_update_raw_content(message.id, raw_content);
         if (request.content !== undefined) {
             // This happens in the code path where message editing
             // failed and we're trying to undo the local echo.  We use
             // the saved content and flags rather than rendering; this
             // is important in case
             // markdown.contains_backend_only_syntax(message) is true.
-            message.content = request.content;
+            message_store.update_message_content(message, request.content);
             message.mentioned = request.mentioned ?? false;
             message.mentioned_me_directly = request.mentioned_me_directly ?? false;
             message.alerted = request.alerted ?? false;
@@ -410,8 +410,8 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
             // all flags, so we need to restore those flags that are
             // properties of how the user has interacted with the
             // message, and not its rendering.
-            const {content, flags, is_me_message} = markdown.render(message.raw_content);
-            message.content = content;
+            const {content, flags, is_me_message} = markdown.render(raw_content);
+            message_store.update_message_content(message, content);
             message.flags = flags;
             message.is_me_message = is_me_message;
             if (request.starred !== undefined) {
@@ -548,7 +548,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
         }
 
         if (client_message.content !== message.content) {
-            client_message.content = message.content;
+            message_store.update_message_content(client_message, message.content);
             sent_messages.mark_disparity(local_id);
         }
         sent_messages.report_event_received(local_id);

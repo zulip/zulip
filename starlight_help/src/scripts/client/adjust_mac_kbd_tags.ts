@@ -11,7 +11,6 @@ const keys_map = new Map<string, string>([
 function has_mac_keyboard(): boolean {
     "use strict";
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return /mac/i.test(navigator.platform);
 }
 
@@ -38,7 +37,7 @@ function adjust_mac_kbd_tags(): void {
         // - The "Ctrl" + "[" shortcuts (which match the Vim keybinding behavior
         //   of mapping to "Esc") need to display "Ctrl" for all users, so we
         //   use this attribute to override "⌘" with "Ctrl".
-        const replace_key: string | undefined = element.dataset.macKey ?? keys_map.get(key_text);
+        const replace_key = element.getAttribute("data-mac-key") ?? keys_map.get(key_text);
         if (replace_key !== undefined) {
             key_text = replace_key;
         }
@@ -49,8 +48,8 @@ function adjust_mac_kbd_tags(): void {
         // we use data-mac-following-key attribute to append the extra key to the
         // previous key. Currently, this is used to append Opt to Cmd for the Paste
         // as plain text shortcut.
-        const following_key: string | undefined = element.dataset.macFollowingKey;
-        if (following_key !== undefined) {
+        const following_key = element.getAttribute("data-mac-following-key");
+        if (following_key !== null) {
             const kbd_elem: HTMLElement = document.createElement("kbd");
             kbd_elem.textContent = following_key;
             element.after(kbd_elem);

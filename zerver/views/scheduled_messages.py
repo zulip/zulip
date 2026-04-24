@@ -180,7 +180,6 @@ def create_scheduled_message_backend(
         message_content,
         deliver_at,
         realm=user_profile.realm,
-        forwarder_user_profile=user_profile,
         read_by_sender=read_by_sender,
     )
     return json_success(request, data={"scheduled_message_id": scheduled_message_id})

@@ -9,7 +9,7 @@ def set_initial_value_for_invited_as(
     apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
-    for user in PreregistrationUser.objects.all():
+    for user in PreregistrationUser.objects.all().iterator():
         if user.invited_as_admin:
             user.invited_as = 2  # PreregistrationUser.INVITE_AS['REALM_ADMIN']
         else:
@@ -19,7 +19,7 @@ def set_initial_value_for_invited_as(
 
 def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
-    for user in PreregistrationUser.objects.all():
+    for user in PreregistrationUser.objects.all().iterator():
         if user.invited_as == 2:  # PreregistrationUser.INVITE_AS['REALM_ADMIN']
             user.invited_as_admin = True
         else:  # PreregistrationUser.INVITE_AS['MEMBER']

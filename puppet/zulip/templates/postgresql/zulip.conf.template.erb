@@ -42,6 +42,9 @@ max_wal_size = <%= @max_wal_size %>
 <% unless @random_page_cost.nil? -%>
 random_page_cost = <%= @random_page_cost %>
 <% end -%>
+<% if @version.to_i >= 18 && @io_uring_available -%>
+io_method = io_uring
+<% end -%>
 <% unless @effective_io_concurrency.nil? -%>
 effective_io_concurrency = <%= @effective_io_concurrency %>
 <% end -%>

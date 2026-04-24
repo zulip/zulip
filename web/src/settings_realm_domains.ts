@@ -5,7 +5,7 @@ import render_realm_domains_modal from "../templates/settings/realm_domains_moda
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import {realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
@@ -148,9 +148,9 @@ export function show_realm_domains_modal(): void {
     const realm_domains_table_body = render_realm_domains_modal();
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Allowed domains"}),
-        html_body: realm_domains_table_body,
-        html_submit_button: $t_html({defaultMessage: "Close"}),
+        modal_title_html: $t_html({defaultMessage: "Allowed domains"}),
+        modal_content_html: realm_domains_table_body,
+        modal_submit_button_text: $t({defaultMessage: "Close"}),
         id: "realm_domains_modal",
         on_click() {
             // This modal has no submit button.

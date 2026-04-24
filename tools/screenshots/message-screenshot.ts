@@ -1,4 +1,4 @@
-/* global $, CSS */
+/* global CSS */
 
 import * as assert from "node:assert/strict";
 import * as fs from "node:fs";
@@ -6,7 +6,7 @@ import path from "node:path";
 import {parseArgs} from "node:util";
 
 import "css.escape";
-import puppeteer from "puppeteer";
+import * as puppeteer from "puppeteer";
 import * as z from "zod/mini";
 
 const usage = "Usage: message-screenshot.ts <message_id> <image_path> <realm_url>";
@@ -73,10 +73,14 @@ async function run(): Promise<void> {
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
         const marker = `#message-row-${message_list_id}-${CSS.escape(messageId)} .unread_marker`;
-        await page.evaluate((sel) => $(sel).remove(), marker);
+        await page.$eval(marker, (element) => {
+            element.remove();
+        });
         const messageBox = await page.$(messageSelector);
         assert.ok(messageBox !== null);
-        await page.evaluate((msg) => $(msg).removeClass("selected_message"), messageSelector);
+        await page.$eval(messageSelector, (element) => {
+            element.classList.remove("selected_message");
+        });
         const messageGroup = await messageBox.$("xpath/..");
         assert.ok(messageGroup !== null);
         // Compute screenshot area, with some padding around the message group

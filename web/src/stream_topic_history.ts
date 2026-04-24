@@ -1,10 +1,10 @@
 import assert from "minimalistic-assert";
 
-import * as resolved_topics from "../shared/src/resolved_topic.ts";
-
 import * as echo_state from "./echo_state.ts";
 import {FoldDict} from "./fold_dict.ts";
+import * as internal_url from "./internal_url.ts";
 import * as message_util from "./message_util.ts";
+import * as resolved_topics from "./resolved_topic.ts";
 import * as sub_store from "./sub_store.ts";
 import * as unread from "./unread.ts";
 
@@ -31,6 +31,20 @@ export function stream_has_topics(stream_id: number): boolean {
     assert(history !== undefined);
 
     return history.has_topics();
+}
+
+export function channel_has_locally_available_topic(
+    channel_id: number,
+    topic_name: string,
+): boolean {
+    if (!stream_dict.has(channel_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(channel_id);
+    assert(history !== undefined);
+
+    return history.topics.has(topic_name);
 }
 
 export function stream_has_locally_available_named_topics(stream_id: number): boolean {
@@ -299,6 +313,23 @@ export function remove_messages(opts: {
     }
 }
 
+export function update_topic_name_case(
+    stream_id: number,
+    old_topic_name: string,
+    new_topic_name: string,
+): void {
+    const history = stream_dict.get(stream_id);
+    if (!history) {
+        return;
+    }
+
+    const existing_topic = history.topics.get(old_topic_name);
+    if (!existing_topic) {
+        return;
+    }
+    existing_topic.pretty_name = new_topic_name;
+}
+
 export function find_or_create(stream_id: number): PerStreamHistory {
     let history = stream_dict.get(stream_id);
 
@@ -338,14 +369,10 @@ export function mark_history_fetched_for(stream_id: number): void {
     fetched_stream_ids.add(stream_id);
 }
 
-export let get_recent_topic_names = (stream_id: number): string[] => {
+export function get_recent_topic_names(stream_id: number): string[] {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
-};
-
-export function rewire_get_recent_topic_names(value: typeof get_recent_topic_names): void {
-    get_recent_topic_names = value;
 }
 
 export function get_max_message_id(stream_id: number): number {
@@ -360,6 +387,26 @@ export function get_latest_known_message_id_in_topic(
 ): number | undefined {
     const history = stream_dict.get(stream_id);
     return history?.topics.get(topic_name)?.message_id;
+}
+
+// We use the topic permalinks if we have access to the last message
+// id of the topic in the cache, by encoding it at the end of the
+// traditional channel-topic url using a `with` operator. If client
+// cache doesn't have a message, we use the traditional link format.
+export function channel_topic_permalink_hash(stream_id: number, topic: string): string {
+    // From an API perspective, any message ID in the topic is a valid
+    // choice. In the client code, we choose the latest message ID in
+    // the topic, since display in recent conversations, the left
+    // sidebar, and most other elements are placed in a way reflecting
+    // the recency of the latest message in the topic.
+    const target_message_id = get_latest_known_message_id_in_topic(stream_id, topic);
+
+    return internal_url.by_stream_topic_url(
+        stream_id,
+        topic,
+        sub_store.maybe_get_stream_name,
+        target_message_id,
+    );
 }
 
 export function reset(): void {

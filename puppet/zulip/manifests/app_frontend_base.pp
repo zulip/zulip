@@ -62,14 +62,6 @@ class zulip::app_frontend_base {
 
   $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
   if $loadbalancers != [] {
-    file { '/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf':
-      require => File['/etc/nginx/zulip-include/app.d'],
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0644',
-      content => template('zulip/accept-loadbalancer.conf.template.erb'),
-      notify  => Service['nginx'],
-    }
     file { '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf':
       require => File['/etc/nginx/zulip-include/app.d'],
       owner   => 'root',
@@ -79,11 +71,17 @@ class zulip::app_frontend_base {
       notify  => Service['nginx'],
     }
   } else {
-    file { ['/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf',
-            '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf']:
+    file { '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf':
       ensure => absent,
       notify => Service['nginx'],
     }
+  }
+  file { '/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf':
+    # This moved to /etc/nginx/zulip-include/trusted-ip, via
+    # nginx.pp. This block can be removed once direct Zulip upgrades
+    # from Zulip 11 are no longer supported.
+    ensure => absent,
+    notify => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/app.d/healthcheck.conf':
     require => File['/etc/nginx/zulip-include/app.d'],
@@ -207,6 +205,26 @@ class zulip::app_frontend_base {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {
     $proxy = ''
+  }
+  $custom_ca_path = zulipconf('application_server','custom_ca_path', '')
+  if $custom_ca_path != '' {
+    file { '/usr/local/share/ca-certificates/custom-zulip-ca.crt':
+      ensure => file,
+      source => $custom_ca_path,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0644',
+      notify => Exec['update-ca-certificates'],
+    }
+    exec { 'update-ca-certificates':
+      command     => '/usr/sbin/update-ca-certificates',
+      require     => Package['ca-certificates'],
+      before      => File["${zulip::common::supervisor_conf_dir}/zulip.conf"],
+      refreshonly => true,
+    }
+    $ca_bundle=',REQUESTS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"'
+  } else {
+    $ca_bundle=''
   }
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,

@@ -57,7 +57,7 @@ def build_narrow_predicate(
                 # "is:private" is a legacy alias for "is:dm"
                 if message["type"] != "private":
                     return False
-            elif operator == "is" and operand in ["starred"]:
+            elif operator == "is" and operand == "starred":
                 if operand not in flags:
                     return False
             elif operator == "is" and operand == "unread":

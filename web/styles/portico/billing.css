@@ -1,7 +1,3 @@
-:root {
-    --color-background-modal: hsl(0deg 0% 98%);
-}
-
 .billing-upgrade-page {
     font-family: "Source Sans 3 VF", sans-serif;
     background-color: hsl(0deg 0% 98%);
@@ -156,15 +152,6 @@
 
     .invoice-button {
         font-size: 19px;
-
-        &:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-
-            &:hover {
-                pointer-events: all;
-            }
-        }
     }
 
     .upgrade-button-container {
@@ -311,7 +298,7 @@ input[name="licenses"] {
 #confirm-licenses-modal .dialog_submit_button:active {
     /* This is needed to avoid button background changing
     when clicking on it due to "button:active" CSS in
-    landing_page.css. */
+    legacy_landing_page.css. */
     background-color: hsl(240deg 96% 68%);
 }
 
@@ -490,6 +477,18 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#update-card-button {
+    position: relative;
+
+    .billing-button-loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+    }
+}
+
 #billing-page-details .plan-toggle-action .plan-toggle-action-button {
     margin: 20px auto 0;
     background-color: hsl(0deg 70% 40%);
@@ -507,15 +506,6 @@ input[name="licenses"] {
 #org-upgrade-button {
     margin: 0;
     width: 100%;
-
-    &:disabled,
-    .permanent-disabled {
-        color: hsl(0deg 0% 80%);
-
-        &:hover {
-            cursor: not-allowed;
-        }
-    }
 }
 
 #upgrade-page-details #payment-schedule-select {
@@ -649,7 +639,7 @@ input[name="licenses"] {
     padding-top: 2px;
 }
 
-#upgrade-page-details #upgrade-payment-menthod-wrapper {
+#upgrade-page-details #upgrade-payment-method-wrapper {
     margin-left: 0;
     grid-area: payment-info;
     width: 100%;
@@ -684,8 +674,9 @@ input[name="licenses"] {
     margin: 20px;
 }
 
-#sponsorship-form #sponsorship-button {
-    width: 100%;
+#sponsorship-form .upgrade-button-container {
+    display: block;
+    text-align: center;
 }
 
 .billing-page-discount {

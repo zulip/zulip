@@ -43,4 +43,4 @@ async function delete_message_test(page: Page): Promise<void> {
     assert.equal((await page.$$(".message-list .message_row")).length, messages_quantity - 1);
 }
 
-common.run_test(delete_message_test);
+await common.run_test(delete_message_test);

@@ -228,11 +228,21 @@ class MissedMessageWorker(QueueProcessingWorker):
         with transaction.atomic(durable=True):
             events_to_process = ScheduledMessageNotificationEmail.objects.filter(
                 scheduled_timestamp__lte=current_time
-            ).select_for_update()
+            ).select_for_update(
+                # We intend to delete these rows later, so we need a
+                # FOR UPDATE lock.
+                no_key=False,
+                # If another worker (or message deletion) has locked
+                # one of the rows, we can look at it later (if it
+                # still exists).  This avoids deadlocks.
+                skip_locked=True,
+            )
 
             # Batch the entries by user
             events_by_recipient: dict[int, dict[int, MissedMessageData]] = defaultdict(dict)
+            seen_events = []
             for event in events_to_process:
+                seen_events.append(event.id)
                 events_by_recipient[event.user_profile_id][event.message_id] = MissedMessageData(
                     trigger=event.trigger, mentioned_user_group_id=event.mentioned_user_group_id
                 )
@@ -261,7 +271,8 @@ class MissedMessageWorker(QueueProcessingWorker):
                             stack_info=True,
                         )
 
-            events_to_process.delete()
+            # These were already locked, above.
+            ScheduledMessageNotificationEmail.objects.filter(id__in=seen_events).delete()
 
     @override
     def stop(self) -> None:

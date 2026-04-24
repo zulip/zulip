@@ -1292,9 +1292,11 @@ CUSTOM_EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "262a": {"canonical_name": "star_and_crescent", "aliases": ["islam"]},
     "1f549": {"canonical_name": "om", "aliases": ["hinduism"]},
     "2638": {"canonical_name": "wheel_of_dharma", "aliases": ["buddhism"]},
-    "2721": {"canonical_name": "star_of_david", "aliases": ["judaism"]},
-    # can't find any explanation of this at all. Is an alternate star of david?
-    # '1f52f': {'canonical_name': 'X', 'aliases': ['six_pointed_star']},
+    "2721": {"canonical_name": "star_of_david", "aliases": ["judaism", "jewish"]},
+    "1f52f": {
+        "canonical_name": "dotted_six_pointed_star",
+        "aliases": ["six_pointed"],
+    },  # Hindu Shatkona, not a Star of David
     "1f54e": {"canonical_name": "menorah", "aliases": []},
     "262f": {"canonical_name": "yin_yang", "aliases": []},
     "2626": {"canonical_name": "orthodox_cross", "aliases": []},

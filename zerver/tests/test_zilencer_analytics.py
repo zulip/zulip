@@ -16,7 +16,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount, UserCount
-from corporate.lib.stripe import RemoteRealmBillingSession
+from corporate.lib.stripe import BillingUserCounts, RemoteRealmBillingSession
 from corporate.models.plans import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import do_create_realm
@@ -218,7 +218,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # Send any existing data over, so that we can start the test with a "clean" slate
         remote_server = self.server
         assert remote_server is not None
-        assert remote_server.last_version is None
+        self.assertIsNone(remote_server.last_version)
 
         send_server_data_to_push_bouncer()
         self.assertTrue(responses.assert_call_count(ANALYTICS_STATUS_URL, 1))
@@ -228,7 +228,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         audit_log_max_id = audit_log.id
 
         remote_server.refresh_from_db()
-        assert remote_server.last_version == ZULIP_VERSION
+        self.assertEqual(remote_server.last_version, ZULIP_VERSION)
 
         remote_audit_log_count = RemoteRealmAuditLog.objects.count()
 
@@ -393,6 +393,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             "SAML": True,
             "GitLab": False,
             "OpenID Connect": False,
+            "Discord": False,
         }
         do_set_realm_authentication_methods(zephyr_realm, new_auth_method_dict, acting_user=user)
 
@@ -1054,8 +1055,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 "corporate.lib.stripe.RemoteRealmBillingSession.get_customer", return_value=None
             ) as m,
             mock.patch(
-                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteServerBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
         ):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -1070,8 +1071,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 "corporate.lib.stripe.RemoteRealmBillingSession.get_customer", return_value=None
             ) as m,
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=11,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(11, 0),
             ),
         ):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -1104,8 +1105,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ),
             mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None) as m,
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=11,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(11, 0),
             ),
         ):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -1126,7 +1127,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ),
             mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses"
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users"
             ) as m,
         ):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -1154,11 +1155,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 return_value=dummy_customer_plan,
             ),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=11,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(11, 0),
             ),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
+                "corporate.lib.stripe.get_next_billing_cycle_for_plan",
                 return_value=dummy_date,
             ) as m,
             self.assertLogs("zulip.analytics", level="INFO") as info_log,
@@ -1187,11 +1188,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 return_value=dummy_customer_plan,
             ),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
                 side_effect=MissingDataError,
             ),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
+                "corporate.lib.stripe.get_next_billing_cycle_for_plan",
                 return_value=dummy_date,
             ) as m,
             self.assertLogs("zulip.analytics", level="INFO") as info_log,
@@ -1220,8 +1221,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 return_value=dummy_customer_plan,
             ),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
         ):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)

@@ -1,3 +1,5 @@
+# See the Zulip URL spec at https://zulip.com/api/zulip-urls
+#
 # Keep this synchronized with web/src/topic_link_util.ts
 
 import re
@@ -11,6 +13,8 @@ invalid_stream_topic_regex = re.compile(r"[`>*&\[\]]|(\$\$)")
 def will_produce_broken_stream_topic_link(word: str) -> bool:
     return bool(invalid_stream_topic_regex.search(word))
 
+
+TOPIC_LINK_SYNTAX_FOR_DISPLAY = "#{channel_name} > {topic_name}"
 
 escape_mapping = {
     "`": "&#96;",

@@ -20,7 +20,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
 from zerver.models import AbstractUserMessage, Message, Recipient, Stream, UserProfile
-from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 
@@ -214,13 +214,10 @@ This is most often used for legal compliance.
                 usermessage_joined = True
             elif len(user_profiles) == 2:
                 user_a, user_b = user_profiles
-                direct_message_group = get_direct_message_group(id_list=[user_a.id, user_b.id])
-                if direct_message_group:
-                    limits &= Q(recipient=direct_message_group.recipient)
-                else:
-                    limits &= Q(recipient=user_a.recipient, sender=user_b) | Q(
-                        recipient=user_b.recipient, sender=user_a
-                    )
+                direct_message_group = get_or_create_direct_message_group(
+                    id_list=[user_a.id, user_b.id]
+                )
+                limits &= Q(recipient=direct_message_group.recipient)
             else:
                 direct_message_group = get_or_create_direct_message_group(
                     [user.id for user in user_profiles]
@@ -286,9 +283,9 @@ This is most often used for legal compliance.
         def transform_message(message: Message) -> dict[str, str]:
             row = {
                 "id": str(message.id),
-                "timestamp (UTC)": message.date_sent.astimezone(timezone.utc).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                ),
+                "timestamp (UTC)": message.date_sent.astimezone(timezone.utc)
+                .replace(tzinfo=None)
+                .isoformat(" ", "seconds"),
                 "sender": format_sender(message.sender.full_name, message.sender.delivery_email),
                 "recipient": format_full_recipient(message.recipient_id, message.subject),
                 "content": message.content,

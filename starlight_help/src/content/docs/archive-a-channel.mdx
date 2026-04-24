@@ -7,6 +7,7 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SelectChannelViewGeneral from "../include/_SelectChannelViewGeneral.mdx";
 
 import ArchiveIcon from "~icons/zulip-icon/archive";
@@ -39,11 +40,7 @@ content](#hide-content-in-an-archived-channel).
       1. Click **Confirm**.
     </FlattenedSteps>
 
-    <ZulipTip>
-      You can also hover over a channel in the left sidebar, click on the
-      **ellipsis** (<MoreVerticalIcon />), and
-      select **Channel settings** to access settings for the channel.
-    </ZulipTip>
+    <ChannelSettingsNavbarTip />
   </TabItem>
 </Tabs>
 

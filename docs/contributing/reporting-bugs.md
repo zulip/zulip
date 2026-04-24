@@ -22,9 +22,9 @@ what to include in a bug report.
 
 1. **Describe** what you were expecting to see, what you saw instead, and steps
    that may help others reproduce the surprising behavior you experienced.
-   Include screenshots and/or screen captures (see [recommended
-   tools](../tutorials/screenshot-and-gif-software.md)) if they help
-   communicate what you are describing, but avoid posting long videos.
+   Include screenshots and/or screen captures (see
+   [recommended tools](../contributing/presenting-visual-changes.md#screenshot-and-gif-software))
+   if they help communicate what you are describing, but avoid posting long videos.
 1. **Indicate the [version](https://zulip.com/help/view-zulip-version)** of the
    Zulip app where you encountered the bug. It may also be helpful to note your
    operating system, whether you are using the web app or the desktop app, and

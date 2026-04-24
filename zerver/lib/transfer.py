@@ -1,18 +1,15 @@
 import logging
 import os
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from glob import glob
 
-import bmemcached
 import magic
 from django.conf import settings
-from django.core.cache import cache
-from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
+from zerver.lib.parallel import run_parallel
 from zerver.lib.thumbnail import BadImageError
-from zerver.lib.upload import upload_emoji_image, write_avatar_images
+from zerver.lib.upload import upload_emoji_image, write_avatar_images, write_jdenticon_avatars
 from zerver.lib.upload.s3 import S3UploadBackend, upload_content_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
@@ -33,39 +30,45 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
     assert settings.LOCAL_AVATARS_DIR is not None
     file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path)
     try:
-        with open(file_path + ".original", "rb") as f:
-            # We call write_avatar_images directly to walk around the
-            # content-type checking in upload_avatar_image.  We don't
-            # know the original file format, and we don't need to know
-            # it because we never serve them directly.
-            write_avatar_images(
-                user_avatar_path(user, future=False),
-                user,
-                f.read(),
-                content_type="application/octet-stream",
-                backend=s3backend,
-                future=False,
-            )
-            logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
+        if user.avatar_source == UserProfile.AVATAR_FROM_USER:
+            with open(file_path + ".original", "rb") as f:
+                # We call write_avatar_images directly to walk around the
+                # content-type checking in upload_avatar_image.  We don't
+                # know the original file format, and we don't need to know
+                # it because we never serve them directly.
+                write_avatar_images(
+                    user_avatar_path(user, future=False),
+                    user,
+                    f.read(),
+                    content_type="application/octet-stream",
+                    backend=s3backend,
+                    future=False,
+                )
+        else:
+            assert user.avatar_source == UserProfile.AVATAR_FROM_JDENTICON
+            with (
+                open(file_path + ".png", "rb") as f,
+                open(file_path + "-medium.png", "rb") as f_medium,
+            ):
+                write_jdenticon_avatars(
+                    user_avatar_path(user, future=False),
+                    user,
+                    image_data=f.read(),
+                    image_data_medium=f_medium.read(),
+                    backend=s3backend,
+                    future=False,
+                )
+        logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
     except FileNotFoundError:
         pass
 
 
 def transfer_avatars_to_s3(processes: int) -> None:
-    users = list(UserProfile.objects.all())
-    if processes == 1:
-        for user in users:
-            _transfer_avatar_to_s3(user)
-    else:  # nocoverage
-        connection.close()
-        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
-        assert isinstance(_cache, bmemcached.Client)
-        _cache.disconnect_all()
-        with ProcessPoolExecutor(max_workers=processes) as executor:
-            for future in as_completed(
-                executor.submit(_transfer_avatar_to_s3, user) for user in users
-            ):
-                future.result()
+    run_parallel(
+        _transfer_avatar_to_s3,
+        UserProfile.objects.exclude(avatar_source=UserProfile.AVATAR_FROM_GRAVATAR),
+        processes,
+    )
 
 
 def _transfer_message_files_to_s3(attachment: Attachment) -> None:
@@ -118,25 +121,11 @@ def _transfer_message_files_to_s3(attachment: Attachment) -> None:
 
 
 def transfer_message_files_to_s3(processes: int) -> None:
-    attachments = list(Attachment.objects.all())
-    if processes == 1:
-        for attachment in attachments:
-            _transfer_message_files_to_s3(attachment)
-    else:  # nocoverage
-        connection.close()
-        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
-        assert isinstance(_cache, bmemcached.Client)
-        _cache.disconnect_all()
-        with ProcessPoolExecutor(max_workers=processes) as executor:
-            for future in as_completed(
-                executor.submit(_transfer_message_files_to_s3, attachment)
-                for attachment in attachments
-            ):
-                future.result()
+    run_parallel(_transfer_message_files_to_s3, Attachment.objects.all(), processes)
 
 
 def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
-    if not realm_emoji.file_name or not realm_emoji.author:
+    if not realm_emoji.file_name:
         return  # nocoverage
     emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
         realm_id=realm_emoji.realm.id,
@@ -164,17 +153,4 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
 
 
 def transfer_emoji_to_s3(processes: int) -> None:
-    realm_emojis = list(RealmEmoji.objects.filter())
-    if processes == 1:
-        for realm_emoji in realm_emojis:
-            _transfer_emoji_to_s3(realm_emoji)
-    else:  # nocoverage
-        connection.close()
-        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
-        assert isinstance(_cache, bmemcached.Client)
-        _cache.disconnect_all()
-        with ProcessPoolExecutor(max_workers=processes) as executor:
-            for future in as_completed(
-                executor.submit(_transfer_emoji_to_s3, realm_emoji) for realm_emoji in realm_emojis
-            ):
-                future.result()
+    run_parallel(_transfer_emoji_to_s3, RealmEmoji.objects.filter(), processes)

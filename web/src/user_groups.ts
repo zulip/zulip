@@ -147,7 +147,8 @@ export function realm_has_deactivated_user_groups(): boolean {
 }
 
 export function get_realm_user_groups(include_deactivated = false): UserGroup[] {
-    const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
+    const user_groups = [...user_group_by_id_dict.values()];
+    user_groups.sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => {
         if (group.is_system_group) {
             return false;
@@ -164,8 +165,10 @@ export function get_realm_user_groups(include_deactivated = false): UserGroup[] 
 export function get_all_realm_user_groups(
     include_deactivated = false,
     include_internet_group = false,
+    force_include_full_members_group = false,
 ): UserGroup[] {
-    const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
+    const user_groups = [...user_group_by_id_dict.values()];
+    user_groups.sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => {
         if (!include_deactivated && group.deactivated) {
             return false;
@@ -175,8 +178,38 @@ export function get_all_realm_user_groups(
             return false;
         }
 
+        if (
+            !force_include_full_members_group &&
+            group.name === "role:fullmembers" &&
+            realm.realm_waiting_period_threshold === 0
+        ) {
+            // We hide the full members group in the UI like typeahead menus when there
+            // is no separation between member and full member users due to organization
+            // not having set a waiting period for member users to become full members.
+            // If the caller wants full_members_group in the list even when no waiting
+            // period is set, then force_include_full_members_group can be set to true.
+            return false;
+        }
+
         return true;
     });
+}
+
+export function get_system_groups_list(): UserGroup[] {
+    const system_groups = settings_config.system_user_groups_list
+        .filter(
+            (system_group) =>
+                system_group.name !== "role:internet" &&
+                system_group.name !== "role:nobody" &&
+                !(
+                    system_group.name === "role:fullmembers" &&
+                    realm.realm_waiting_period_threshold === 0
+                ),
+        )
+        .toReversed()
+        .map((system_group) => get_user_group_from_name(system_group.name)!);
+
+    return convert_name_to_display_name_for_groups(system_groups);
 }
 
 export function get_user_groups_allowed_to_mention(): UserGroup[] {
@@ -578,6 +611,30 @@ export function is_user_in_setting_group(
         }
     }
     return false;
+}
+
+export function get_user_ids_in_setting_group(setting_value: GroupSettingValue): Set<number> {
+    const user_ids = new Set<number>();
+    const group_ids: number[] =
+        typeof setting_value === "number" ? [setting_value] : [...setting_value.direct_subgroups];
+
+    if (typeof setting_value !== "number") {
+        for (const user_id of setting_value.direct_members) {
+            user_ids.add(user_id);
+        }
+    }
+
+    for (const group_id of group_ids) {
+        const group = user_group_by_id_dict.get(group_id);
+        if (group === undefined) {
+            blueslip.error("Could not find user group", {group_id});
+            continue;
+        }
+        for (const member_id of get_recursive_group_members(group)) {
+            user_ids.add(member_id);
+        }
+    }
+    return user_ids;
 }
 
 export function check_system_user_group_allowed_for_setting(

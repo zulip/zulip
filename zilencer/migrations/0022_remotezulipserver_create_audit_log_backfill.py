@@ -11,7 +11,7 @@ def backfill_remote_zulip_server_creation_log_events(
     RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED = 10215
 
     objects_to_create = []
-    for remote_server in RemoteZulipServer.objects.all():
+    for remote_server in RemoteZulipServer.objects.all().iterator():
         entry = RemoteZulipServerAuditLog(
             server=remote_server,
             event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,

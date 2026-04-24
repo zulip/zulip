@@ -7,6 +7,7 @@ import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as stream_pill from "./stream_pill.ts";
 import type {StreamPillData, StreamPillWidget} from "./stream_pill.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import type {CombinedPillContainer, GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as user_group_pill from "./user_group_pill.ts";
@@ -15,15 +16,23 @@ import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 import type {UserPillData, UserPillWidget} from "./user_pill.ts";
 
-function person_matcher(query: string, item: UserPillData): boolean {
+function person_matcher(
+    query: string,
+    item: UserPillData,
+    should_remove_diacritics: boolean,
+): boolean {
     return (
         people.is_known_user_id(item.user.user_id) &&
-        typeahead_helper.query_matches_person(query, item)
+        typeahead_helper.query_matches_person(query, item, should_remove_diacritics)
     );
 }
 
-function group_matcher(query: string, item: UserGroupPillData): boolean {
-    return typeahead_helper.query_matches_group_name(query, item);
+function group_matcher(
+    query: string,
+    item: UserGroupPillData,
+    should_remove_diacritics: boolean,
+): boolean {
+    return typeahead_helper.query_matches_group_name(query, item, should_remove_diacritics);
 }
 
 type TypeaheadItem = UserGroupPillData | StreamPillData | UserPillData;
@@ -47,13 +56,13 @@ export function set_up_user(
         source(_query: string): UserPillData[] {
             return user_pill.typeahead_source(pills, exclude_bots);
         },
-        item_html(item: UserPillData, _query: string): string {
-            return typeahead_helper.render_person(item);
+        item_html(_query: string): (item: UserPillData) => string {
+            return (item: UserPillData) => typeahead_helper.render_person(item);
         },
-        matcher(item: UserPillData, query: string): boolean {
-            query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
-            return person_matcher(query, item);
+        matcher(query: string): (item: UserPillData) => boolean {
+            query = typeahead.clean_query_lowercase(query, false);
+            const should_remove_diacritics = !typeahead.contains_diacritics(query);
+            return (item: UserPillData) => person_matcher(query, item, should_remove_diacritics);
         },
         sorter(matches: UserPillData[], query: string): UserPillData[] {
             const users = matches.filter((match) => people.is_known_user_id(match.user.user_id));
@@ -96,17 +105,17 @@ export function set_up_stream(
         source(_query: string): StreamPillData[] {
             return stream_pill.typeahead_source(pills, opts.invite_streams);
         },
-        item_html(item: StreamPillData, _query: string): string {
-            return typeahead_helper.render_stream(item);
+        item_html(_query: string): (item: StreamPillData) => string {
+            return (item: StreamPillData) => typeahead_helper.render_stream(item);
         },
-        matcher(item: StreamPillData, query: string): boolean {
+        matcher(query: string): (item: StreamPillData) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
             query = query.trim();
             if (query.startsWith("#")) {
                 query = query.slice(1);
             }
-            return item.name.toLowerCase().includes(query);
+            return (item: StreamPillData) => item.name.toLowerCase().includes(query);
         },
         sorter(matches: StreamPillData[], query: string): StreamPillData[] {
             const stream_matches: StreamPillData[] = [];
@@ -147,13 +156,15 @@ export function set_up_user_group(
                 .user_group_source()
                 .map((user_group) => ({type: "user_group", ...user_group}));
         },
-        item_html(item: UserGroupPillData, _query: string): string {
-            return typeahead_helper.render_user_group(item);
+        item_html(_query: string): (item: UserGroupPillData) => string {
+            return (item: UserGroupPillData) => typeahead_helper.render_user_group(item);
         },
-        matcher(item: UserGroupPillData, query: string): boolean {
-            query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
-            return group_matcher(query, item);
+        matcher(query: string): (item: UserGroupPillData) => boolean {
+            query = typeahead.clean_query_lowercase(query, false);
+            const should_remove_diacritics = !typeahead.contains_diacritics(query);
+
+            return (item: UserGroupPillData) =>
+                group_matcher(query, item, should_remove_diacritics);
         },
         sorter(matches: UserGroupPillData[], query: string): UserGroupPillData[] {
             return typeahead_helper.sort_user_groups(matches, query);
@@ -189,32 +200,36 @@ export function set_up_group_setting_typeahead(
             source = user_group_pill.typeahead_source(pills, opts.setting_name, opts.setting_type);
             source = [
                 ...source,
-                ...user_pill.typeahead_source(pills, true, opts.setting_name, opts.setting_type),
+                ...user_pill.typeahead_source(pills, false, opts.setting_name, opts.setting_type),
             ];
 
             return source;
         },
-        item_html(item: GroupSettingTypeaheadItem, _query: string): string {
-            if (item.type === "user_group") {
-                return typeahead_helper.render_user_group(item);
-            }
+        item_html(_query: string): (item: GroupSettingTypeaheadItem) => string {
+            return (item: GroupSettingTypeaheadItem): string => {
+                if (item.type === "user_group") {
+                    return typeahead_helper.render_user_group(item);
+                }
 
-            assert(item.type === "user");
-            return typeahead_helper.render_person(item);
+                assert(item.type === "user");
+                return typeahead_helper.render_person(item);
+            };
         },
-        matcher(item: GroupSettingTypeaheadItem, query: string): boolean {
-            query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
+        matcher(query: string): (item: GroupSettingTypeaheadItem) => boolean {
+            query = typeahead.clean_query_lowercase(query, false);
+            const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
-            let matches = false;
-            if (item.type === "user_group") {
-                matches = matches || group_matcher(query, item);
-            }
+            return (item: GroupSettingTypeaheadItem): boolean => {
+                let matches = false;
+                if (item.type === "user_group") {
+                    matches = matches || group_matcher(query, item, should_remove_diacritics);
+                }
 
-            if (item.type === "user") {
-                matches = matches || person_matcher(query, item);
-            }
-            return matches;
+                if (item.type === "user") {
+                    matches = matches || person_matcher(query, item, should_remove_diacritics);
+                }
+                return matches;
+            };
         },
         sorter(matches: GroupSettingTypeaheadItem[], query: string): GroupSettingTypeaheadItem[] {
             const users: UserPillData[] = [];
@@ -295,6 +310,16 @@ export function set_up_combined(
             }
 
             if (include_user_groups) {
+                if (query.startsWith("@")) {
+                    // If query starts with @ we expect only user group
+                    // suggestions so we simply return user group source.
+                    if (opts.user_group_source !== undefined) {
+                        return opts
+                            .user_group_source()
+                            .map((user_group) => ({type: "user_group", ...user_group}));
+                    }
+                    return user_group_pill.typeahead_source(pills);
+                }
                 if (opts.user_group_source !== undefined) {
                     const groups: UserGroupPillData[] = opts
                         .user_group_source()
@@ -320,40 +345,52 @@ export function set_up_combined(
             }
             return source;
         },
-        item_html(item: TypeaheadItem, query: string): string {
-            if (include_streams(query) && item.type === "stream") {
-                return typeahead_helper.render_stream(item);
-            }
+        item_html(query: string): (item: TypeaheadItem) => string {
+            return (item: TypeaheadItem): string => {
+                if (include_streams(query) && item.type === "stream") {
+                    return typeahead_helper.render_stream(item);
+                }
 
-            if (include_user_groups && item.type === "user_group") {
-                return typeahead_helper.render_user_group(item);
-            }
+                if (include_user_groups && item.type === "user_group") {
+                    return typeahead_helper.render_user_group(item);
+                }
 
-            // After reaching this point, it is sure
-            // that given item is a person. So this
-            // handles `include_users` cases along with
-            // default cases.
-            assert(item.type === "user");
-            return typeahead_helper.render_person(item);
+                // After reaching this point, it is sure
+                // that given item is a person. So this
+                // handles `include_users` cases along with
+                // default cases.
+                assert(item.type === "user");
+                return typeahead_helper.render_person(item);
+            };
         },
-        matcher(item: TypeaheadItem, query: string): boolean {
-            query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
+        matcher(query: string): (item: TypeaheadItem) => boolean {
+            query = typeahead.clean_query_lowercase(query, false);
+            const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
-            if (include_streams(query) && item.type === "stream") {
-                query = query.trim().slice(1);
-                return item.name.toLowerCase().includes(query);
-            }
+            return (item: TypeaheadItem): boolean => {
+                if (include_streams(query) && item.type === "stream") {
+                    const stream_query = query.trim().slice(1);
+                    return item.name.toLowerCase().includes(stream_query);
+                }
 
-            let matches = false;
-            if (include_user_groups && item.type === "user_group") {
-                matches = matches || group_matcher(query, item);
-            }
+                if (include_user_groups && query.startsWith("@")) {
+                    if (item.type === "user_group") {
+                        const normalized_query = query.slice(1);
+                        return group_matcher(normalized_query, item, should_remove_diacritics);
+                    }
+                    return false;
+                }
 
-            if (include_users && item.type === "user") {
-                matches = matches || person_matcher(query, item);
-            }
-            return matches;
+                let matches = false;
+                if (include_user_groups && item.type === "user_group") {
+                    matches = group_matcher(query, item, should_remove_diacritics);
+                }
+
+                if (include_users && item.type === "user") {
+                    matches = matches || person_matcher(query, item, should_remove_diacritics);
+                }
+                return matches;
+            };
         },
         sorter(matches: TypeaheadItem[], query: string): TypeaheadItem[] {
             if (include_streams(query)) {
@@ -383,9 +420,10 @@ export function set_up_combined(
                 }
             }
 
+            const normalized_query = query.startsWith("@") ? query.slice(1) : query;
             return typeahead_helper.sort_stream_or_group_members_options({
                 users,
-                query,
+                query: normalized_query,
                 groups,
                 for_stream_subscribers: opts.for_stream_subscribers,
             });

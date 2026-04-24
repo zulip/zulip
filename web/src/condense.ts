@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_message_length_toggle from "../templates/message_length_toggle.hbs";
 
+import {$t} from "./i18n.ts";
 import * as message_flags from "./message_flags.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
@@ -32,15 +33,31 @@ const state: {
     has_unread_cutoff_by_message_id: new Set<number>(),
 };
 
-export function show_message_expander($row: JQuery): void {
+export function show_message_expander(
+    $row: JQuery,
+    tooltip_template_id: string | null = "message-expander-tooltip-template",
+    toggle_button_label: string = $t({defaultMessage: "Show more"}),
+): void {
     $row.find(".message_length_controller").html(
-        render_message_length_toggle({toggle_type: "expander"}),
+        render_message_length_toggle({
+            toggle_type: "expander",
+            label_text: toggle_button_label,
+            tooltip_template_id,
+        }),
     );
 }
 
-export function show_message_condenser($row: JQuery): void {
+export function show_message_condenser(
+    $row: JQuery,
+    tooltip_template_id: string | null = "message-condenser-tooltip-template",
+    toggle_button_label: string = $t({defaultMessage: "Show less"}),
+): void {
     $row.find(".message_length_controller").html(
-        render_message_length_toggle({toggle_type: "condenser"}),
+        render_message_length_toggle({
+            toggle_type: "condenser",
+            label_text: toggle_button_label,
+            tooltip_template_id,
+        }),
     );
 }
 

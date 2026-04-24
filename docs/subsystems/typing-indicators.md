@@ -52,7 +52,7 @@ repeated updates to the server so that downstream clients know the
 user is still typing. Zulip messages tend to be longer than
 messages in other chat/text clients, so this detail is important.
 
-We have a small state machine in `web/shared/src/typing_status.ts`
+We have a small state machine in `web/src/typing_status.ts`
 that makes sure subsequent "start" requests get sent out. The
 frequency of these requests is determined by
 `server_typing_started_wait_period_milliseconds` in the

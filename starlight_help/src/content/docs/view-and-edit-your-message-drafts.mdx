@@ -7,12 +7,11 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
+import ComposeBoxMenu from "../include/_ComposeBoxMenu.mdx";
 import GoToDraftMessages from "../include/_GoToDraftMessages.mdx";
 import StartComposing from "../include/_StartComposing.mdx";
 
 import CloseIcon from "~icons/zulip-icon/close";
-import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
-import SendIcon from "~icons/zulip-icon/send";
 import TrashIcon from "~icons/zulip-icon/trash";
 
 Zulip automatically saves the content of your message as a draft when you close
@@ -55,9 +54,8 @@ to automatically appears in the compose box.
     <FlattenedSteps>
       <StartComposing />
 
-      1. Click on the **ellipsis** (<MoreVerticalIcon />)
-         in the bottom right corner of the compose box, next to the **Send**
-         (<SendIcon />) button.
+      <ComposeBoxMenu />
+
       1. Select **Save draft and start a new message**.
     </FlattenedSteps>
   </TabItem>

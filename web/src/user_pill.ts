@@ -107,6 +107,7 @@ export function append_person(
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
         is_bot: person.is_bot,
+        deactivated: !people.is_person_active(person.user_id) && !person.is_inaccessible_user,
     };
 
     pill_widget.appendValidatedData(pill_data, false, !execute_oncreate_callback);

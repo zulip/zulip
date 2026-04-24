@@ -45,6 +45,13 @@ class Command(ZulipBaseCommand):
             help="Mask the content for privacy during QA.",
         )
 
+        parser.add_argument(
+            "--combine-teams-into-one-org",
+            dest="combine_into_one_realm",
+            action="store_true",
+            help="Combine all exported teams into one Zulip organization.",
+        )
+
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     @override
@@ -72,4 +79,5 @@ class Command(ZulipBaseCommand):
             mattermost_data_dir=data_dir,
             output_dir=output_dir,
             masking_content=options.get("masking_content", False),
+            combine_into_one_realm=options.get("combine_into_one_realm", False),
         )

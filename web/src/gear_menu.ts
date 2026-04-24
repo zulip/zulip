@@ -98,7 +98,7 @@ export function initialize(): void {
     popover_menus.register_popover_menu("#gear-menu", {
         theme: "popover-menu",
         placement: "bottom",
-        offset: [-50, 0],
+        offset: popover_menus.NAVBAR_POPOVER_OFFSET,
         popperOptions: {
             strategy: "fixed",
             modifiers: [
@@ -125,7 +125,7 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
-                settings_preferences.launch_default_language_setting_modal();
+                settings_preferences.launch_default_language_setting_modal_for_spectator();
             });
 
             $popper.on("change", "input[name='theme-select']", (e) => {

@@ -6,7 +6,7 @@ from django.db.utils import IntegrityError
 
 def set_string_id_using_domain(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         if not realm.string_id:
             prefix = realm.domain.split(".")[0]
             try:

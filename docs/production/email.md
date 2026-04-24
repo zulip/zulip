@@ -13,8 +13,14 @@ email addresses and send notifications.
    email (SMTP) settings". This includes the hostname and typically
    the port to reach your SMTP provider, and the username to log in to
    it. If your SMTP server does not require authentication, leave
-   `EMAIL_HOST_USER` empty. You'll also want to fill out the noreply
-   email section.
+   `EMAIL_HOST_USER` empty.
+
+   You'll also want to fill out the noreply email section, taking into
+   account the inline documentation for the proper values for those
+   settings, e.g., `NOREPLY_EMAIL_ADDRESS` and `TOKENIZED_NOREPLY_EMAIL_ADDRESS`.
+   Note that you can also configure `INSTALLATION_NAME` to customize the
+   email sender display name for notification emails from your Zulip
+   server.
 
 1. Put the password for the SMTP user account in
    `/etc/zulip/zulip-secrets.conf` by setting `email_password`. For
@@ -49,10 +55,10 @@ email addresses and send notifications.
 
 For sending outgoing email from your Zulip server, we highly recommend
 using a "transactional email" service like
-[Mailgun](https://documentation.mailgun.com/en/latest/quickstart-sending.html#send-via-smtp),
-[SendGrid](https://sendgrid.com/docs/API_Reference/SMTP_API/integrating_with_the_smtp_api.html),
+[Mailgun](https://documentation.mailgun.com/docs/mailgun/user-manual/sending-messages/send-smtp),
+[SendGrid](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/integrating-with-the-smtp-api),
 or, for AWS users,
-[Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html).
+[Amazon SES](https://docs.aws.amazon.com/ses/latest/dg/send-email-smtp.html).
 These services are designed to send email from servers, and are by far
 the easiest way to get outgoing email working reliably (Mailgun has
 the best documentation).

@@ -1,9 +1,9 @@
-require "shellwords"
+require "open3"
 
 Puppet::Functions.create_function(:zulipsecret) do
   def zulipsecret(section, key, default)
-    output = `/usr/bin/crudini --get -- /etc/zulip/zulip-secrets.conf #{[section, key].shelljoin} 2>&1`; result = $?.success?
-    if result
+    output, _stderr, status = Open3::capture3("/usr/bin/crudini", "--get", "--", "/etc/zulip/zulip-secrets.conf", section, key)
+    if status.success?
       output.strip()
     else
       default

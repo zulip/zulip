@@ -170,7 +170,7 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: BaseDatabaseSchema
     # change a bot into a human user if they really wanted to.  And
     # there's essentially no harm in rewriting state for a deactivated
     # account.
-    for user_profile in UserProfile.objects.all():
+    for user_profile in UserProfile.objects.all().iterator():
         event_time = timezone_now()
         if check_password("", user_profile.password):
             # This user currently has the empty string as their password.

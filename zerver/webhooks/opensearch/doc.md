@@ -54,7 +54,7 @@ Get OpenSearch alerts in Zulip!
     ```
     {% raw %}
     topic: {{ctx.monitor.name}}
-    Alert of severity **{{ctx.trigger.severity}}** triggered by **{{ctx.trigger.name}}** at {{ctx.periodStart}} UTC.
+    Alert of severity **{{ctx.trigger.severity}}** triggered by **{{ctx.trigger.name}}**.
     {% endraw %}
     ```
 
