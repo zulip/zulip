@@ -30,10 +30,6 @@ const compose_recipient = zrequire("/compose_recipient");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
-mock_esm("../src/ui_util", {
-    place_caret_at_end: noop,
-});
-
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config: () => ({
         allow_everyone_group: true,
