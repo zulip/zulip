@@ -27,6 +27,7 @@ import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
+import * as task_message_store from "./task_message_store.ts";
 import * as util from "./util.ts";
 
 type ActionPopoverContext = {
@@ -45,6 +46,7 @@ type ActionPopoverContext = {
     should_display_read_receipts_option: boolean;
     should_display_add_reaction_option: boolean;
     should_display_message_report_option: boolean;
+    message_has_task: boolean;
 };
 
 type TopicPopoverContext = {
@@ -254,6 +256,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_read_receipts_option,
         should_display_quote_message,
         should_display_message_report_option: should_display_message_report_option(),
+        message_has_task: task_message_store.message_has_task(message.id),
     };
 }
 

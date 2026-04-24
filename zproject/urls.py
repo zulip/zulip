@@ -277,7 +277,7 @@ from zerver.views.video_calls import (
 from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
 from zproject import dev_urls
 
-from zerver.views.tasks import create_task, list_my_tasks, update_task, delete_task, start_time_tracking, stop_time_tracking, get_task_time_logs, get_my_time_stats
+from zerver.views.tasks import create_task, create_standalone_task, list_my_tasks, update_task, delete_task, start_time_tracking, stop_time_tracking, get_task_time_logs, get_my_time_stats
 
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
@@ -451,7 +451,8 @@ v1_api_and_json_patterns = [
     rest_path("messages/<int:message_id>/reactions", POST=add_reaction, DELETE=remove_reaction),
 
     #NEW ENDPOINT FOR HANDLING REACTIONS - YANG LU
-    rest_path( "messages/<int:message_id>/tasks", POST=create_task,),
+    rest_path("messages/<int:message_id>/tasks", POST=create_task),
+    rest_path("tasks", POST=create_standalone_task),
     rest_path("users/me/tasks", GET=list_my_tasks),
     rest_path("tasks/<int:task_id>", POST=update_task),
     rest_path("tasks/<int:task_id>/delete", POST=delete_task),

@@ -2,6 +2,7 @@ import $ from "jquery";
 import * as channel from "./channel.ts";
 import * as blueslip from "./blueslip.ts";
 import { $t } from "./i18n.ts";
+import * as task_message_store from "./task_message_store.ts";
 
 // Parse a date-only string from an ISO datetime without timezone conversion.
 // Using new Date(iso_string).toLocaleDateString() shifts the date back one day
@@ -22,7 +23,8 @@ type Task = {
     completed_at: string | null;
     creator_email: string;
     creator_full_name: string;
-    message_id: number;
+    // Nullable: standalone tasks created via the assignment form have no message
+    message_id: number | null;
     stream_id: number | null;
     topic: string | null;
     // Time tracking fields
@@ -163,6 +165,22 @@ export class TasksView {
                 task.completed = new_completed;
                 task.completed_at = new_completed ? new Date().toISOString() : null;
                 this.render_modal();
+
+                // Sync to the todo widget in the channel by posting a strike
+                // submessage, which toggles the checkbox for all viewers.
+                if (task.message_id !== null) {
+                    const key = task_message_store.get_todo_item_key(task.message_id, task.title);
+                    if (key !== undefined) {
+                        channel.post({
+                            url: "/json/submessage",
+                            data: {
+                                message_id: task.message_id,
+                                msg_type: "widget",
+                                content: JSON.stringify({type: "strike", key}),
+                            },
+                        });
+                    }
+                }
             },
             error: (xhr: JQuery.jqXHR) => {
                 blueslip.error("Failed to update task", {status: xhr.status, responseText: xhr.responseText});
@@ -210,10 +228,35 @@ export class TasksView {
         // This method now just performs the deletion without confirmation
         // Confirmation is handled by show_delete_confirmation
 
+        const task_to_delete = this.tasks.find(t => t.task_id === task_id);
+
         channel.post({
             url: `/json/tasks/${task_id}/delete`,
             success: () => {
                 this.tasks = this.tasks.filter(t => t.task_id !== task_id);
+
+                if (task_to_delete) {
+                    const {message_id, title} = task_to_delete;
+
+                    // Update the client-side store
+                    if (message_id !== null) {
+                        task_message_store.remove_todo_item_task(message_id, title);
+                        // remove_message_task is handled inside remove_todo_item_task
+                        // but also clean up the message-level entry if nothing remains
+                        const still_has_task = this.tasks.some(t => t.message_id === message_id);
+                        if (!still_has_task) {
+                            task_message_store.remove_message_task(message_id);
+                        }
+                    }
+
+                    // Revert any visible todo-widget convert buttons for this task
+                    $(`.convert-to-task-btn[data-task="${CSS.escape(title)}"]`)
+                        .removeClass("task-added")
+                        .prop("disabled", false)
+                        .text("Add to My Tasks")
+                        .removeAttr("style");
+                }
+
                 this.render_modal();
             },
             error: (xhr: JQuery.jqXHR) => {
@@ -384,13 +427,13 @@ export class TasksView {
         const due_date_str = task.due_date ? format_date_string(task.due_date) : null;
         const created_date_str = new Date(task.created_at).toLocaleDateString();
 
-        // Generate proper message link
-        let messageLink = "#";
-        if (task.stream_id && task.topic) {
-            messageLink = `#narrow/channel/${task.stream_id}/${encodeURIComponent(task.topic)}/near/${task.message_id}`;
-        } else if (task.message_id) {
-            // Fallback for DM messages or if stream info is missing
-            messageLink = `#narrow/dm/near/${task.message_id}`;
+        // Build a navigation link/button to the originating message (only for channel tasks)
+        let message_link_html = "";
+        let view_message_btn_html = "";
+        if (task.stream_id !== null && task.message_id !== null && task.topic !== null) {
+            const href = `#narrow/channel/${task.stream_id}/topic/${encodeURIComponent(task.topic)}/near/${task.message_id}`;
+            message_link_html = `<a href="${href}" class="task-message-link" style="color: #007bff; text-decoration: none; font-weight: 500;">View Message ↗</a>`;
+            view_message_btn_html = `<a href="${href}" class="task-view-message-btn" style="background: #0d6efd; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; text-decoration: none; display: inline-block; text-align: center;">View</a>`;
         }
 
         return `
@@ -404,7 +447,7 @@ export class TasksView {
                         <span class="task-creator" style="color: #333;">${task.creator_email || 'Unknown'}</span>
                         <span class="task-created" style="color: #999;">Created: ${created_date_str}</span>
                         ${due_date_str ? `<span class="task-due-date" style="color: #007bff; font-weight: 500;">Due: ${due_date_str}</span>` : '<span class="task-due-date" style="color: #999; font-style: italic;">No due date</span>'}
-                        <a href="${messageLink}" class="task-message-link" style="color: #007bff; text-decoration: none; font-weight: 500;">View Message</a>
+                        ${message_link_html}
                     </div>
                     ${task.description ? `<div class="task-description" style="color: #333; font-size: 14px; line-height: 1.4; margin-top: 8px;">${task.description}</div>` : ""}
                     <div class="task-details" style="margin-top: 8px; font-size: 12px; color: #999;">
@@ -419,6 +462,7 @@ export class TasksView {
                         `<button class="start-timer-btn" title="Start timer" style="background: #28a745; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">Start</button>`
                     }
                     <button class="time-logs-btn" title="View time logs" style="background: #007bff; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">Logs</button>
+                    ${view_message_btn_html}
                     <button class="delete-task-btn" title="Delete task" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">×</button>
                 </div>
             </div>
@@ -589,6 +633,11 @@ export class TasksView {
             this.show_delete_confirmation(task_id);
         });
 
+        // Close modal when navigating to the source message
+        $("#tasks-modal .task-item").on("click", ".task-view-message-btn", () => {
+            $("#tasks-modal").remove();
+        });
+
         // Time tracking handlers for modal
         $("#tasks-modal .task-item").on("click", ".start-timer-btn", (e) => {
             e.stopPropagation();
@@ -636,13 +685,16 @@ export class TasksView {
     }
 }
 
-// Initialize when DOM is ready
-$(() => {
-    // Use event delegation - works even if button is created later
+const tasks_view = new TasksView();
+export { tasks_view };
+
+export function initialize(): void {
+    // Pre-load which messages already have tasks so button states are
+    // correct before the user opens the My Tasks panel.
+    task_message_store.initialize();
+
+    // Use event delegation so the button can be rendered after load.
     $(document).on("click", "#tasks-toggle-button", () => {
         tasks_view.show();
     });
-});
-
-const tasks_view = new TasksView();
-export { tasks_view };
+}
