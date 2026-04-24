@@ -180,14 +180,8 @@ export function enable_or_disable_group_permission_settings(): void {
 
         // Admins are not allowed to update organization joining and group
         // related settings.
-        const owner_editable_settings = [
-            "realm_create_multiuse_invite_group",
-            "realm_can_create_groups",
-            "realm_can_manage_all_groups",
-            "realm_can_manage_billing_group",
-        ];
-        for (const setting_name of owner_editable_settings) {
-            const $permission_pill_container = $(`#id_${CSS.escape(setting_name)}`);
+        for (const setting_name of settings_config.owner_editable_realm_group_permission_settings) {
+            const $permission_pill_container = $(`#id_realm_${CSS.escape(setting_name)}`);
             settings_components.disable_group_permission_setting(
                 $permission_pill_container,
                 NOBODY_DISABLED_PLACEHOLDER,
