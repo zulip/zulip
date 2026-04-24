@@ -1,0 +1,42 @@
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A9738fef44f39480baff12e585aa9685e%40thread.v2')/members",
+    "@odata.count": 3,
+    "value": [
+        {
+            "@odata.type": "#microsoft.graph.aadUserConversationMember",
+            "id": "MCMjMCMjYWY0YWNhYjYtNjQ3Ni00YzJmLWJlZjItZmY2NDc5ZGQzOTQwIyMxOTo5NzM4ZmVmNDRmMzk0ODBiYWZmMTJlNTg1YWE5Njg1ZUB0aHJlYWQudjIjIzNjNmVlMzk1LTUyOWQtNDY4MS1iNWY3LTU4MmM3MDc1NzBmNg==",
+            "roles": [
+                "owner"
+            ],
+            "displayName": "Alya Abbott",
+            "visibleHistoryStartDateTime": "0001-01-01T00:00:00Z",
+            "userId": "3c6ee395-529d-4681-b5f7-582c707570f6",
+            "email": "alya@ZulipChat.onmicrosoft.com",
+            "tenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+        },
+        {
+            "@odata.type": "#microsoft.graph.aadUserConversationMember",
+            "id": "MCMjMCMjYWY0YWNhYjYtNjQ3Ni00YzJmLWJlZjItZmY2NDc5ZGQzOTQwIyMxOTo5NzM4ZmVmNDRmMzk0ODBiYWZmMTJlNTg1YWE5Njg1ZUB0aHJlYWQudjIjIzVkYmU0NjhhLTFlOTYtNGFhYS04NTZkLWNkZjgyNTA4MWUxMQ==",
+            "roles": [
+                "owner"
+            ],
+            "displayName": "zoe",
+            "visibleHistoryStartDateTime": "0001-01-01T00:00:00Z",
+            "userId": "5dbe468a-1e96-4aaa-856d-cdf825081e11",
+            "email": "zoe@ZulipChat.onmicrosoft.com",
+            "tenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+        },
+        {
+            "@odata.type": "#microsoft.graph.aadUserConversationMember",
+            "id": "MCMjMCMjYWY0YWNhYjYtNjQ3Ni00YzJmLWJlZjItZmY2NDc5ZGQzOTQwIyMxOTo5NzM4ZmVmNDRmMzk0ODBiYWZmMTJlNTg1YWE5Njg1ZUB0aHJlYWQudjIjIzg4Y2JmM2MyLTA4MTAtNGQzMi1hYTE5LTg2M2MxMmJmN2JlOQ==",
+            "roles": [
+                "owner"
+            ],
+            "displayName": "Pieter K",
+            "visibleHistoryStartDateTime": "0001-01-01T00:00:00Z",
+            "userId": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+            "email": "pieterk@ZulipChat.onmicrosoft.com",
+            "tenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+        }
+    ]
+}
