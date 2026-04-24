@@ -678,6 +678,32 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # REMOTE_POSTGRES_PORT = "5432"
 # REMOTE_POSTGRES_SSLMODE = "verify-full"
 
+## Optional read replica for load-shedding read-only queries on the
+## GET /messages endpoint. When unset, the "replica" database alias
+## points at the primary and the feature is a no-op.
+##
+## Set REMOTE_POSTGRES_REPLICA_HOST to your replica's hostname (or a
+## comma-separated list) and flip USE_REPLICA_DB_FOR_MESSAGE_FETCH on
+## once you've confirmed the replica is reachable and caught up.
+## Only historical-scroll requests (num_after=0, numeric anchor whose
+## id has already been replicated) are routed to the replica; the
+## primary still serves anchor=newest, first_unread, and any request
+## that would otherwise risk stale results.
+##
+## libpq tries a comma-separated host list in order, so by default a
+## multi-host list is failover only. For even load balancing across
+## replicas, ensure libpq 16+ is installed on the application server
+## and set REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS accordingly.
+# REMOTE_POSTGRES_REPLICA_HOST = "replica.example.com"
+# USE_REPLICA_DB_FOR_MESSAGE_FETCH = True
+# REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS = {"load_balance_hosts": "random"}
+
+## Route presence read endpoints (GET /users/<user>/presence,
+## GET /realm/presence) to the replica. Presence tolerates staleness
+## by design, so no watermark check is needed — enabling this is
+## independent of USE_REPLICA_DB_FOR_MESSAGE_FETCH.
+# USE_REPLICA_DB_FOR_PRESENCE = True
+
 ########
 ## RabbitMQ configuration.
 ##

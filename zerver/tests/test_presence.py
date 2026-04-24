@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from typing import Any
 from unittest import mock
@@ -5,11 +7,13 @@ from unittest import mock
 import time_machine
 from django.conf import settings
 from django.db import connection
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
+from zerver.lib.db_replica import use_replica
 from zerver.lib.presence import format_legacy_presence_dict, get_presence_dict_by_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client, reset_email_visibility_to_everyone_in_zulip_realm
@@ -1122,3 +1126,119 @@ class FormatLegacyPresenceDictTest(ZulipTestCase):
                 pushable=False,
             ),
         )
+
+
+class PresenceReplicaRoutingTest(ZulipTestCase):
+    """Integration tests: presence read endpoints routing decisions.
+
+    Unlike the message-fetch replica tests, the presence path never
+    opens an explicit transaction.atomic on the replica alias — the
+    reads go through the router at the ORM layer — so TestCase's
+    rollback-on-teardown works fine and we don't need the heavier
+    ZulipTransactionTestCase.
+    """
+
+    databases = {"default", "replica"}
+
+    def _call_with_spy(self, url: str) -> tuple[int, Any]:
+        call_count = 0
+        real_use_replica = use_replica
+
+        @contextmanager
+        def counting_use_replica() -> Iterator[None]:
+            nonlocal call_count
+            call_count += 1
+            with real_use_replica():
+                yield
+
+        with mock.patch("zerver.views.presence.use_replica", counting_use_replica):
+            result = self.client_get(url)
+        return call_count, result
+
+    @override_settings(USE_REPLICA_DB_FOR_PRESENCE=True)
+    def test_realm_presence_routes_to_replica(self) -> None:
+        self.login("hamlet")
+        call_count, result = self._call_with_spy("/json/realm/presence")
+        self.assert_json_success(result)
+        self.assertEqual(call_count, 1)
+
+    @override_settings(USE_REPLICA_DB_FOR_PRESENCE=True)
+    def test_single_user_presence_routes_to_replica(self) -> None:
+        self.login("hamlet")
+        othello = self.example_user("othello")
+        call_count, result = self._call_with_spy(f"/json/users/{othello.id}/presence")
+        # Othello may not have presence data in the test fixture;
+        # either a success response or the "no presence data" error
+        # is acceptable — the test is only checking the routing
+        # decision, not the query result.
+        self.assertIn(result.status_code, (200, 400))
+        self.assertEqual(call_count, 1)
+
+    def test_realm_presence_flag_off_stays_on_primary(self) -> None:
+        self.login("hamlet")
+        call_count, result = self._call_with_spy("/json/realm/presence")
+        self.assert_json_success(result)
+        self.assertEqual(call_count, 0)
+
+    def test_single_user_presence_flag_off_stays_on_primary(self) -> None:
+        self.login("hamlet")
+        othello = self.example_user("othello")
+        call_count, result = self._call_with_spy(f"/json/users/{othello.id}/presence")
+        self.assertIn(result.status_code, (200, 400))
+        self.assertEqual(call_count, 0)
+
+    @override_settings(USE_REPLICA_DB_FOR_PRESENCE=True)
+    def test_post_presence_read_back_routes_to_replica(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        # Start from a clean slate so the post-POST existence check
+        # below can only succeed if this request's write landed.
+        UserPresence.objects.filter(user_profile=hamlet).delete()
+
+        call_count = 0
+        real_use_replica = use_replica
+
+        @contextmanager
+        def counting_use_replica() -> Iterator[None]:
+            nonlocal call_count
+            call_count += 1
+            with real_use_replica():
+                yield
+
+        with mock.patch("zerver.views.presence.use_replica", counting_use_replica):
+            result = self.client_post(
+                "/json/users/me/presence",
+                {"status": "active"},
+            )
+        self.assert_json_success(result)
+        # The write is always on the primary; only the read-back
+        # enters use_replica(). ping_only=False by default, so one
+        # invocation is expected.
+        self.assertEqual(call_count, 1)
+        # Confirms the write ran independently of use_replica(). If a
+        # future refactor accidentally wrapped the write too, the
+        # replica's read-only connection would reject the INSERT and
+        # this row would be missing.
+        self.assertTrue(UserPresence.objects.filter(user_profile=hamlet).exists())
+
+    @override_settings(USE_REPLICA_DB_FOR_PRESENCE=True)
+    def test_post_presence_ping_only_does_not_enter_replica(self) -> None:
+        """ping_only requests skip the read-back entirely, so no routing."""
+        self.login("hamlet")
+        with mock.patch("zerver.views.presence.use_replica") as spy:
+            result = self.client_post(
+                "/json/users/me/presence",
+                {"status": "active", "ping_only": "true"},
+            )
+        self.assert_json_success(result)
+        spy.assert_not_called()
+
+    def test_post_presence_flag_off_stays_on_primary(self) -> None:
+        self.login("hamlet")
+        with mock.patch("zerver.views.presence.use_replica") as spy:
+            result = self.client_post(
+                "/json/users/me/presence",
+                {"status": "active"},
+            )
+        self.assert_json_success(result)
+        spy.assert_not_called()

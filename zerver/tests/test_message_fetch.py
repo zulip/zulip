@@ -1,4 +1,5 @@
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
@@ -22,6 +23,7 @@ from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
+from zerver.lib.db_replica import use_replica
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
@@ -34,6 +36,7 @@ from zerver.lib.message import (
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
+    AnchorInfo,
     BadNarrowOperatorError,
     NarrowBuilder,
     NarrowParameter,
@@ -49,7 +52,7 @@ from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase, ZulipTransactionTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
     get_test_image_file,
@@ -6180,3 +6183,146 @@ class PersonalMessagesTest(ZulipTestCase):
             conversation_link=True,
         )
         self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80/with/555")
+
+
+class ReplicaEligibleAnchorTest(ZulipTestCase):
+    """Unit tests for the pure eligibility predicate."""
+
+    WATERMARK = 10**9
+
+    def _eligible(
+        self, anchor_info: AnchorInfo | None, num_after: int, msg_ids: list[int] | None
+    ) -> int | None:
+        from zerver.views.message_fetch import replica_eligible_anchor
+
+        with mock.patch(
+            "zerver.views.message_fetch.get_replica_message_id_watermark",
+            return_value=self.WATERMARK,
+        ):
+            return replica_eligible_anchor(anchor_info, num_after, msg_ids)
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_numeric_anchor_under_watermark_is_eligible(self) -> None:
+        self.assertEqual(
+            self._eligible(AnchorInfo(type="message_id", value=123), 0, None),
+            123,
+        )
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=False)
+    def test_flag_off_is_ineligible(self) -> None:
+        self.assertIsNone(self._eligible(AnchorInfo(type="message_id", value=123), 0, None))
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_num_after_gt_zero_is_ineligible(self) -> None:
+        self.assertIsNone(self._eligible(AnchorInfo(type="message_id", value=123), 1, None))
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_newest_anchor_is_ineligible(self) -> None:
+        self.assertIsNone(
+            self._eligible(AnchorInfo(type="message_id", value=LARGER_THAN_MAX_MESSAGE_ID), 0, None)
+        )
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_first_unread_is_ineligible(self) -> None:
+        self.assertIsNone(self._eligible(AnchorInfo(type="first_unread", value=None), 0, None))
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_date_anchor_is_ineligible(self) -> None:
+        self.assertIsNone(self._eligible(AnchorInfo(type="date", value=timezone_now()), 0, None))
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_message_ids_list_is_ineligible(self) -> None:
+        self.assertIsNone(self._eligible(AnchorInfo(type="message_id", value=123), 0, [1, 2, 3]))
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_anchor_above_watermark_is_ineligible(self) -> None:
+        self.assertIsNone(
+            self._eligible(AnchorInfo(type="message_id", value=self.WATERMARK + 1), 0, None)
+        )
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_none_watermark_is_ineligible(self) -> None:
+        from zerver.views.message_fetch import replica_eligible_anchor
+
+        with mock.patch(
+            "zerver.views.message_fetch.get_replica_message_id_watermark",
+            return_value=None,
+        ):
+            self.assertIsNone(
+                replica_eligible_anchor(AnchorInfo(type="message_id", value=123), 0, None)
+            )
+
+
+class GetMessagesReplicaRoutingTest(ZulipTransactionTestCase):
+    """Integration tests: GET /messages routing decisions.
+
+    Uses ZulipTransactionTestCase because the view opens a durable
+    atomic block on the replica alias, which can't nest inside a
+    TestCase's outer atomic (the TestCase on the mirrored replica
+    alias confuses Django's savepoint bookkeeping). No test here
+    writes to the database, so there are no side effects to clean up.
+    """
+
+    databases = {"default", "replica"}
+
+    # A synthetic anchor value; nothing in this test requires the id
+    # to reference a real message, since we only observe the routing
+    # decision, not the query result.
+    ANCHOR = 100
+
+    def _request_with_routing_spy(self, params: dict[str, str], watermark: int | None) -> int:
+        """Issue a GET /messages and return how many times use_replica fired."""
+        self.login("hamlet")
+        call_count = 0
+        real_use_replica = use_replica
+
+        @contextmanager
+        def counting_use_replica() -> Iterator[None]:
+            nonlocal call_count
+            call_count += 1
+            with real_use_replica():
+                yield
+
+        with (
+            mock.patch(
+                "zerver.views.message_fetch.get_replica_message_id_watermark",
+                return_value=watermark,
+            ),
+            mock.patch("zerver.views.message_fetch.use_replica", counting_use_replica),
+        ):
+            result = self.client_get("/json/messages", params)
+        self.assert_json_success(result)
+        return call_count
+
+    def _params(self, anchor: str, num_after: str = "0") -> dict[str, str]:
+        return {
+            "anchor": anchor,
+            "num_before": "3",
+            "num_after": num_after,
+            "narrow": orjson.dumps([]).decode(),
+        }
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_eligible_request_uses_replica(self) -> None:
+        self.assertEqual(self._request_with_routing_spy(self._params(str(self.ANCHOR)), 10**9), 1)
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_anchor_newest_stays_on_primary(self) -> None:
+        self.assertEqual(self._request_with_routing_spy(self._params("newest"), 10**9), 0)
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_anchor_above_watermark_stays_on_primary(self) -> None:
+        self.assertEqual(
+            self._request_with_routing_spy(self._params(str(self.ANCHOR)), self.ANCHOR - 1),
+            0,
+        )
+
+    @override_settings(USE_REPLICA_DB_FOR_MESSAGE_FETCH=True)
+    def test_num_after_gt_zero_stays_on_primary(self) -> None:
+        self.assertEqual(
+            self._request_with_routing_spy(self._params(str(self.ANCHOR), num_after="3"), 10**9),
+            0,
+        )
+
+    def test_flag_off_stays_on_primary(self) -> None:
+        self.assertEqual(self._request_with_routing_spy(self._params(str(self.ANCHOR)), 10**9), 0)

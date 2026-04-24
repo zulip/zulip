@@ -233,6 +233,39 @@ REMOTE_POSTGRES_HOST = ""
 REMOTE_POSTGRES_PORT = 5432
 REMOTE_POSTGRES_SSLMODE = "verify-full"
 
+# Optional replica host(s) for load-shedding read-only queries. If
+# unset, the "replica" DB alias points to the same server as
+# "default". A comma-separated list is passed through to libpq as-is;
+# see REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS below for how the list is
+# used.
+REMOTE_POSTGRES_REPLICA_HOST = ""
+# Extra libpq connection options merged into the replica alias's
+# OPTIONS dict. Useful for settings we don't expose individually.
+# Notable: a comma-separated REMOTE_POSTGRES_REPLICA_HOST is tried by
+# libpq in order (first host wins; subsequent hosts are failover only).
+# For even load across replicas, use libpq 16+ and set
+# {"load_balance_hosts": "random"} here.
+REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS: dict[str, str] = {}
+# Gates whether the GET /messages endpoint will route eligible
+# historical-scroll queries to the "replica" DB alias. Off by default;
+# operators flip this on once they've confirmed a replica is reachable.
+USE_REPLICA_DB_FOR_MESSAGE_FETCH = False
+# Gates whether presence read endpoints route to the "replica" DB
+# alias. Unlike the message-fetch flag, there is no watermark check:
+# presence tolerates staleness by design, and the existing server-
+# side "echo the client's cursor when no new rows" behavior
+# (zerver/lib/presence.py) keeps client cursors monotonic even when
+# the replica is behind.
+USE_REPLICA_DB_FOR_PRESENCE = False
+# Seconds to cache the replica's watermark (max replayed message id,
+# read via SELECT MAX(id) FROM zerver_message) before refreshing.
+# The tradeoff is replica query-rate vs forfeited shed-rate when the
+# cache under-reports replica state: backward-scroll anchors are
+# usually minutes-to-days old, so a generous TTL barely moves shed
+# rate but meaningfully cuts lock contention on the per-process cache
+# under load.
+REPLICA_WATERMARK_CACHE_SECONDS = 30
+
 TORNADO_PORTS: list[int] = []
 USING_TORNADO = True
 
