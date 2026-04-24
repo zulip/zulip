@@ -362,22 +362,100 @@ function initialize_user_sections(
     }
 }
 
+// Until every user's data has arrived, the lists of users and of
+// deactivated users are incomplete, so they have no rows and show
+// their loading indicators. A placeholder user counts as active
+// until their data arrives.
+export function are_users_loading(): boolean {
+    return people
+        .get_realm_active_human_user_ids_for_users_panel()
+        .some((user_id) => people.is_placeholder_user(user_id));
+}
+
+function get_active_user_ids_for_list(is_loading: boolean): number[] {
+    if (is_loading) {
+        return [];
+    }
+    return people.get_realm_active_human_user_ids_for_users_panel();
+}
+
+function get_deactivated_user_ids_for_list(is_loading: boolean): number[] {
+    if (is_loading) {
+        return [];
+    }
+    return people.get_non_active_human_ids();
+}
+
+function update_users_table_loading_indicator(
+    $loading_indicator: JQuery,
+    $table: JQuery,
+    role_dropdown: dropdown_widget.DropdownWidget | undefined,
+    is_loading: boolean,
+): void {
+    if (role_dropdown !== undefined) {
+        // The role filter has no rows to filter while the indicator
+        // is shown. Its label counts the users in the rows, so we
+        // render it again once they show.
+        $(role_dropdown.widget_selector).prop("disabled", is_loading);
+        if (!is_loading) {
+            role_dropdown.render();
+        }
+    }
+    if (is_loading) {
+        if ($loading_indicator.find(".loading_indicator_text").length > 0) {
+            // start_data_load makes this indicator with text. While
+            // users are placeholders, it shows only the spinner.
+            loading.make_indicator($loading_indicator);
+        } else {
+            loading.make_indicator_if_missing($loading_indicator);
+        }
+        $table.hide();
+    } else {
+        loading.destroy_indicator($loading_indicator);
+        $table.show();
+    }
+}
+
+function update_active_users_loading_indicator(is_loading: boolean): void {
+    update_users_table_loading_indicator(
+        $("#admin_page_users_loading_indicator"),
+        $("#admin_users_table"),
+        active_users_role_dropdown,
+        is_loading,
+    );
+}
+
+function update_deactivated_users_loading_indicator(is_loading: boolean): void {
+    update_users_table_loading_indicator(
+        $("#admin_page_deactivated_users_loading_indicator"),
+        $("#admin_deactivated_users_table"),
+        deactivated_users_role_dropdown,
+        is_loading,
+    );
+}
+
 function populate_users(): void {
-    const active_user_ids = people.get_realm_active_human_user_ids_for_users_panel();
-    const deactivated_user_ids = people.get_non_active_human_ids();
+    const is_loading = are_users_loading();
+    const active_user_ids = get_active_user_ids_for_list(is_loading);
+    const deactivated_user_ids = get_deactivated_user_ids_for_list(is_loading);
     const imported_user_ids = people.get_realm_active_imported_stub_user_ids();
 
     if (!presence_data_fetched) {
         fetch_presence_user_setting({
             render_table() {
-                const active_user_ids = people.get_realm_active_human_user_ids_for_users_panel();
-                const deactivated_user_ids = people.get_non_active_human_ids();
+                const is_loading = are_users_loading();
+                const active_user_ids = get_active_user_ids_for_list(is_loading);
+                const deactivated_user_ids = get_deactivated_user_ids_for_list(is_loading);
                 presence_data_fetched = true;
                 initialize_user_sections(active_user_ids, deactivated_user_ids);
+                update_active_users_loading_indicator(is_loading);
+                update_deactivated_users_loading_indicator(is_loading);
             },
         });
     }
     initialize_user_sections(active_user_ids, deactivated_user_ids, imported_user_ids);
+    update_active_users_loading_indicator(is_loading);
+    update_deactivated_users_loading_indicator(is_loading);
 }
 
 function reset_scrollbar($sel: JQuery): () => void {
@@ -472,9 +550,7 @@ function active_create_table(active_users: number[]): void {
         },
         $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
     });
-    loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     set_text_search_value($users_table, active_section.filters.text_search);
-    $("#admin_users_table").show();
 }
 
 export function handle_clear_button_for_table_search_input($tbody: JQuery): void {
@@ -526,9 +602,7 @@ function deactivated_create_table(deactivated_users: number[]): void {
             $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
         },
     );
-    loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
     set_text_search_value($deactivated_users_table, deactivated_section.filters.text_search);
-    $("#admin_deactivated_users_table").show();
 }
 
 function imported_create_table(imported_users: number[]): void {
@@ -594,8 +668,10 @@ export function redraw_deactivated_users_list(): void {
     if (!should_redraw_deactivated_users_list || !deactivated_section.list_widget) {
         return;
     }
-    const deactivated_user_ids = people.get_non_active_human_ids();
+    const is_loading = are_users_loading();
+    const deactivated_user_ids = get_deactivated_user_ids_for_list(is_loading);
     deactivated_section.list_widget.replace_list_data(deactivated_user_ids);
+    update_deactivated_users_loading_indicator(is_loading);
     should_redraw_deactivated_users_list = false;
 }
 
@@ -603,8 +679,10 @@ export function redraw_active_users_list(): void {
     if (!should_redraw_active_users_list || !active_section.list_widget) {
         return;
     }
-    const active_user_ids = people.get_realm_active_human_user_ids_for_users_panel();
+    const is_loading = are_users_loading();
+    const active_user_ids = get_active_user_ids_for_list(is_loading);
     active_section.list_widget.replace_list_data(active_user_ids);
+    update_active_users_loading_indicator(is_loading);
     should_redraw_active_users_list = false;
 }
 
@@ -619,6 +697,12 @@ export function redraw_imported_users_list(force_update = false): void {
     // This is needed to make sure that the imported user is shown
     // in "Users" tab.
     should_redraw_active_users_list = true;
+}
+
+export function mark_users_lists_for_redraw(): void {
+    should_redraw_active_users_list = true;
+    should_redraw_deactivated_users_list = true;
+    should_redraw_imported_users_list = true;
 }
 
 function start_data_load(): void {

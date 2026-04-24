@@ -33,6 +33,7 @@ const settings_bots = mock_esm("../src/settings_bots", {
 mock_esm("../src/settings_panel_menu", {
     hide_default_streams_list_for_guest() {},
     update_imported_users_tab() {},
+    handle_users_fetched() {},
 });
 mock_esm("../src/settings_users", {
     update_user_data() {},

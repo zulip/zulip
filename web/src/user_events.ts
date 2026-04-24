@@ -346,6 +346,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
         recent_view_ui.rerender_conversations_with_user(user_id);
     }
     scheduled_messages_overlay_ui.handle_users_fetched();
+    settings_panel_menu.handle_users_fetched();
     read_receipts.handle_users_fetched(user_ids);
     drafts_overlay_ui.handle_users_fetched();
     search.handle_users_fetched();
