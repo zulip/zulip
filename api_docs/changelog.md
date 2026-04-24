@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 497**
+
+* [`GET /users/{user_id_or_email}/presence`](/api/get-user-presence): The
+  endpoint now additionally returns presence data in the legacy format,
+  with `website` and `aggregated` keys, alongside the modern
+  `active_timestamp` and `idle_timestamp` fields. Clients are recommended
+  to migrate to the modern fields; the legacy fields are retained for
+  backwards compatibility with integrations written against previous
+  versions of the API.
+* [`GET /users/{user_id_or_email}/presence`](/api/get-user-presence): The
+  response now includes a top-level `server_timestamp` field, matching
+  the behavior of other presence endpoints.
+
 **Feature level 496**
 
 * [`GET /user_groups`](/api/get-user-groups),

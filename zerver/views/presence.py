@@ -1,3 +1,4 @@
+import time
 from typing import Annotated, Any
 
 from django.conf import settings
@@ -10,9 +11,10 @@ from zerver.actions.presence import update_user_presence
 from zerver.actions.user_status import do_update_user_status
 from zerver.decorator import human_users_only
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.presence import get_presence_for_user, get_presence_response
+from zerver.lib.presence import get_presence_dicts_for_rows, get_presence_response
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
     PathOnly,
@@ -31,9 +33,6 @@ def get_presence_backend(
     user_profile: UserProfile,
     user_id_or_email: PathOnly[str],
 ) -> HttpResponse:
-    # This isn't used by the web app; it's available for API use by
-    # bots and other clients.
-
     try:
         try:
             user_id = int(user_id_or_email)
@@ -56,14 +55,40 @@ def get_presence_backend(
     ):
         raise JsonableError(_("Insufficient permission"))
 
-    presence_dict = get_presence_for_user(target.id, slim_presence=True)
-    if len(presence_dict) == 0:
+    server_timestamp = time.time()
+    # Other callers of get_presence_dicts_for_rows also fetch
+    # user_profile__enable_offline_push_notifications, but it is no
+    # longer read by the helper (the legacy `pushable` field is
+    # hardcoded to False), so we omit it here.
+    presence_rows = list(
+        UserPresence.objects.filter(user_profile_id=target.id).values(
+            "last_active_time",
+            "last_connected_time",
+            "user_profile__email",
+            "user_profile_id",
+            "user_profile__date_joined",
+        )
+    )
+    if not presence_rows:
         raise JsonableError(
             _("No presence data for {user_id_or_email}").format(user_id_or_email=user_id_or_email)
         )
+    modern_presence = get_presence_dicts_for_rows(presence_rows, slim_presence=True)[str(target.id)]
+    legacy_presence = get_presence_dicts_for_rows(presence_rows, slim_presence=False)[target.email]
 
-    result = dict(presence=presence_dict[str(target.id)])
-    return json_success(request, data=result)
+    # The legacy API reports "offline" in the aggregated dict when the
+    # user's latest presence update is older than OFFLINE_THRESHOLD_SECS.
+    # The modern format leaves that computation to the client.
+    aggregated_info = legacy_presence["aggregated"]
+    aggr_status_duration = datetime_to_timestamp(timezone_now()) - aggregated_info["timestamp"]
+    if aggr_status_duration > settings.OFFLINE_THRESHOLD_SECS:
+        aggregated_info["status"] = "offline"
+    for val in legacy_presence.values():
+        val.pop("client", None)
+        val.pop("pushable", None)
+
+    presence = {**modern_presence, **legacy_presence}
+    return json_success(request, data={"presence": presence, "server_timestamp": server_timestamp})
 
 
 def get_status_backend(
