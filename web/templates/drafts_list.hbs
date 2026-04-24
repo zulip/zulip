@@ -7,6 +7,8 @@
         {{#with narrow_drafts_header}}
             {{#if is_dm_with_self}}
                 <h2>{{t "Drafts from conversation with yourself"}}</h2>
+            {{else if is_dm_with_placeholder_user}}
+                <h2>{{t "Drafts from conversation"}}</h2>
             {{else if dm_recipient_string}}
                 <h2>{{#tr}}Drafts from conversation with {dm_recipient_string}{{/tr}}</h2>
             {{else}}

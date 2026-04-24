@@ -233,6 +233,7 @@ function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[
 
 type NarrowDraftsHeaderContext = {
     is_dm_with_self?: boolean;
+    is_dm_with_placeholder_user?: boolean;
     dm_recipient_string?: string;
     stream?: StreamSubscription | undefined;
     channel_name_fallback?: string | undefined;
@@ -247,6 +248,12 @@ function get_header_context_for_narrow_drafts(): NarrowDraftsHeaderContext {
             if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
                 return {is_dm_with_self: true};
             }
+        }
+        const has_placeholder_user = private_recipient_ids.some((id) =>
+            people.is_placeholder_user(id),
+        );
+        if (has_placeholder_user) {
+            return {is_dm_with_placeholder_user: true};
         }
         return {
             dm_recipient_string: people.user_ids_to_full_names_string(private_recipient_ids),
