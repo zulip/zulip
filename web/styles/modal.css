@@ -587,6 +587,10 @@
     margin-bottom: 10px;
 }
 
+.modal__header #dialog_error {
+    margin-top: 10px;
+}
+
 #read_receipts_modal {
     .modal__container {
         width: 25.7142em; /* 360px at 14px em */

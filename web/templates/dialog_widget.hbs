@@ -13,6 +13,9 @@
                         {{> help_link_widget . }}
                         {{/if}}
                     </h1>
+                    {{#if is_compact}}
+                        <div class="alert" id="dialog_error"></div>
+                    {{/if}}
                     {{#if modal_subtitle_html}}
                     <div class="modal__subtitle">
                         {{{ modal_subtitle_html }}}
