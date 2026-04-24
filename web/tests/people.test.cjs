@@ -539,6 +539,21 @@ run_test("get_recipients", () => {
 
     muted_users.add_muted_user(304);
     assert.deepEqual(people.get_recipients("304,32"), ["Isaac Newton", "translated: Muted user"]);
+
+    // Placeholder users share one name.
+    for (const user_id of [42, 43]) {
+        people.add_active_user(
+            make_user({
+                email: `placeholder${user_id}@example.com`,
+                user_id,
+                full_name: "Loading…",
+                is_placeholder_user: true,
+            }),
+        );
+    }
+    assert.deepEqual(people.get_recipients("42,43"), ["Loading…"]);
+    assert.deepEqual(people.get_recipients("32,42,43"), ["Isaac Newton", "Loading…"]);
+    assert.equal(people.format_recipients("32,42,43", "long"), "Isaac Newton and Loading…");
 });
 
 run_test("get_full_name", () => {
@@ -1012,6 +1027,14 @@ run_test("dm_matches_search_string", () => {
     assert.ok(result);
     result = people.dm_matches_search_string([plain_noah], "ëm");
     assert.ok(!result);
+
+    // A placeholder user can't match a search, but the loaded users
+    // of the same conversation can.
+    const placeholder = people.add_placeholder_user(9101);
+    assert.ok(people.dm_matches_search_string([placeholder], ""));
+    assert.ok(!people.dm_matches_search_string([placeholder], "loa"));
+    assert.ok(!people.dm_matches_search_string([placeholder], "9101"));
+    assert.ok(people.dm_matches_search_string([placeholder, ashton], "ash"));
 });
 
 run_test("filter_other_guest_ids", ({override}) => {

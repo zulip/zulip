@@ -466,7 +466,7 @@ export function get_recipients(user_ids_string: string): string[] {
         return [my_full_name()];
     }
 
-    const sorted_names = get_display_full_names(other_ids);
+    const sorted_names = get_display_full_names(merge_loading_user_ids(other_ids));
     sorted_names.sort(util.make_strcmp());
 
     return sorted_names;
@@ -1227,6 +1227,11 @@ export function filter_people_by_search_terms(users: User[], search_string: stri
 export function dm_matches_search_string(users: User[], search_string: string): boolean {
     const matcher = build_person_matcher(search_string);
 
+    if (search_string !== "") {
+        // The name and email of a placeholder user are not known yet,
+        // so they can't match.
+        users = users.filter((user) => !user.is_placeholder_user);
+    }
     return users.some((user) => matcher(user));
 }
 

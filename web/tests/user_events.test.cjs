@@ -512,8 +512,12 @@ run_test("update_person rerenders the user's recent view rows", ({override}) => 
 run_test("initialize registers users_fetched callback", ({override}) => {
     initialize();
 
+    let pm_list_updated = false;
     let updated_users;
 
+    override(pm_list, "update_private_messages", () => {
+        pm_list_updated = true;
+    });
     override(message_live_update, "update_full_names_and_avatars", (users) => {
         updated_users = users;
     });
@@ -555,6 +559,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     user_events.initialize();
     people.notify_users_fetched([isaac.user_id]);
 
+    assert.ok(pm_list_updated);
     assert.ok(widgets_rerendered);
     assert.ok(reply_button_updated);
     assert.equal(narrow_title_filter, message_lists.current.data.filter);

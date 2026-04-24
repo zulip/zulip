@@ -7,6 +7,7 @@ import * as pm_conversations from "./pm_conversations.ts";
 import * as unread from "./unread.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
+import * as util from "./util.ts";
 
 // Maximum number of conversation threads to show in default view.
 const max_conversations_to_show = 8;
@@ -53,6 +54,12 @@ export type DisplayObject = {
     is_bot: boolean;
     has_unread_mention: boolean;
     includes_deactivated_user: boolean;
+    has_loading_full_name: boolean;
+    recipient_users: {
+        name: string;
+        is_full_name_loading: boolean;
+        loading_shimmer_width_class?: string;
+    }[];
 };
 
 export function get_conversations(search_string = ""): DisplayObject[] {
@@ -96,6 +103,21 @@ export function get_conversations(search_string = ""): DisplayObject[] {
         const includes_deactivated_user = user_ids.some(
             (id) => !people.is_active_user_or_system_bot(id),
         );
+        const has_loading_full_name = user_ids.some((id) =>
+            people.is_display_full_name_loading(id),
+        );
+        const recipient_users = user_ids
+            .map((id) => {
+                const is_full_name_loading = people.is_display_full_name_loading(id);
+                return {
+                    name: people.get_display_full_name(id),
+                    is_full_name_loading,
+                    ...(is_full_name_loading && {
+                        loading_shimmer_width_class: people.get_loading_shimmer_width_class(id),
+                    }),
+                };
+            })
+            .toSorted((a, b) => util.strcmp(a.name, b.name));
 
         let user_circle_class: string | undefined;
         let status_emoji_info: UserStatusEmojiInfo | undefined;
@@ -131,6 +153,8 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             is_bot,
             has_unread_mention,
             includes_deactivated_user,
+            has_loading_full_name,
+            recipient_users,
             is_current_user,
         };
         display_objects.push(display_object);
