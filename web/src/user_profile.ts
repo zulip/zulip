@@ -723,6 +723,7 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         user_type: people.get_user_type(user.user_id),
         is_imported_stub: user.is_imported_stub,
         is_deleted: user.is_deleted,
+        is_placeholder_user: user.is_placeholder_user ?? false,
     };
 
     if (user.is_bot) {
