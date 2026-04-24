@@ -254,6 +254,10 @@ export function initialize_kitchen_sink_stuff() {
     //      the code here can probably be moved to more
     //      specific-purpose modules like message_viewport.ts.
 
+    if (SHIMMER_DURATION !== null) {
+        document.documentElement.style.setProperty("--shimmer-duration", SHIMMER_DURATION + "s");
+    }
+
     const throttled_mousewheelhandler = _.throttle((_e, delta) => {
         if (!narrow_state.is_message_feed_visible()) {
             // Since this function is called with a delay, it's

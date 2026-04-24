@@ -879,6 +879,19 @@ def get_members_backend(
 
         user_profile = None
 
+    import os  # nocoverage
+    import time  # nocoverage
+
+    fetch_delay = os.environ.get("FETCH_USERS_DELAY_SECONDS")  # nocoverage
+    if fetch_delay is not None and (user_ids is None or len(user_ids) > 1):  # nocoverage
+        delay = int(fetch_delay)  # nocoverage
+        if delay == 0:  # nocoverage
+            # Block forever so placeholder users stay visible.
+            while True:  # nocoverage
+                time.sleep(3600)  # nocoverage
+        else:
+            time.sleep(delay)  # nocoverage
+
     data = get_user_data(
         user_profile,
         include_custom_profile_fields,

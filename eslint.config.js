@@ -295,6 +295,7 @@ export default defineConfig(
             globals: {
                 ...globals.browser,
                 DEVELOPMENT: "readonly",
+                SHIMMER_DURATION: "readonly",
                 StripeCheckout: "readonly",
                 ZULIP_VERSION: "readonly",
             },
