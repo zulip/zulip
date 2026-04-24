@@ -879,6 +879,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             .map((user: DisplayRecipientUser) => ({
                 name: people.get_display_full_name(user.id),
                 status_emoji_info: user_status.get_status_emoji(user.id),
+                is_placeholder_user: people.is_display_full_name_loading(user.id),
             }))
             .toSorted((a, b) => util.strcmp(a.name, b.name));
 
