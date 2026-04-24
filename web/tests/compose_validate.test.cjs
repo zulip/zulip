@@ -901,6 +901,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
         can_administer_channel_group: nobody.id,
         can_move_messages_out_of_channel_group: nobody.id,
         can_move_messages_within_channel_group: nobody.id,
+        can_resolve_topics_group: nobody.id,
     };
     stream_data.add_sub_for_tests(sub);
 

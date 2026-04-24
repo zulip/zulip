@@ -510,7 +510,7 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
             return;
         }
 
-        const button_text = settings_data.user_can_resolve_topic()
+        const button_text = stream_data.can_resolve_topics(sub)
             ? $t({defaultMessage: "Unresolve topic"})
             : null;
 
