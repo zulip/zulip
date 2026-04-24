@@ -47,11 +47,13 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_mirror_server import ZulipMessageHandler, send_to_postmaster
 from zerver.lib.markdown.from_html import convert_html_to_markdown
+from zerver.lib.message import truncate_topic
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
 from zerver.models import Attachment, Recipient, Stream, UserProfile
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
@@ -417,6 +419,35 @@ class TestStreamEmailMessages(ZulipTestCase):
         self.assertEqual(message.topic_name(), "")
         self.assertEqual(
             message.content, "**Subject:** Test subject\n\nTestStreamEmailMessages body"
+        )
+
+    def test_receive_stream_email_messages_long_subject(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        long_subject = "A" * (MAX_TOPIC_NAME_LENGTH + 10)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+
+        incoming_valid_message["Subject"] = long_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.topic_name(), truncate_topic(long_subject))
+        self.assertEqual(
+            message.content,
+            f"**Subject:** {long_subject}\n\nTestStreamEmailMessages body",
         )
 
     def test_receive_private_stream_email_messages_success(self) -> None:
