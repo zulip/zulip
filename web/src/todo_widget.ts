@@ -21,7 +21,7 @@ import type {AnyWidgetData} from "./widget_schema.ts";
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
 
-function create_task_from_todo(message_id: number, title: string, description: string): void {
+function create_task_from_todo(message_id: number, title: string, description: string, dueDate: Date | null = null): void {
     const url = `/json/messages/${message_id}/tasks`;
     
     // Check if task already exists by checking for buttons with checkmark
@@ -34,12 +34,19 @@ function create_task_from_todo(message_id: number, title: string, description: s
     // Disable button and show loading
     $btn.prop('disabled', true).text('Adding...');
     
+    const data: any = {
+        title,
+        description,
+    };
+    
+    // Add due date if provided
+    if (dueDate) {
+        data.due_date = dueDate.toISOString();
+    }
+    
     channel.post({
         url,
-        data: {
-            title,
-            description,
-        },
+        data,
         success: (response: any) => {
             blueslip.info("Task created successfully", response);
             
@@ -590,14 +597,22 @@ export function activate({
             const $btn = $(e.target);
             const taskTitle = $btn.attr("data-task");
             const taskDesc = $btn.attr("data-desc") || "";
+            const taskKey = $btn.attr("data-key") || "";
             
             if (!taskTitle) {
                 blueslip.warn("No task title found");
                 return;
             }
             
+            // Look up the date from task_data using the key
+            let taskDueDate: Date | null = null;
+            const taskEntry = task_data.task_map.get(taskKey);
+            if (taskEntry?.date) {
+                taskDueDate = taskEntry.date instanceof Date ? taskEntry.date : new Date(taskEntry.date);
+            }
+            
             // Call the backend API to create a task
-            create_task_from_todo(message.id, taskTitle, taskDesc);
+            create_task_from_todo(message.id, taskTitle, taskDesc, taskDueDate);
         });
 
         update_add_task_button();

@@ -24,6 +24,7 @@ def create_task(
     title = request.POST.get("title")
     description = request.POST.get("description", "")
     assignee_email = request.POST.get("assignee", "")
+    due_date_str = request.POST.get("due_date", "")
 
     if not title:
         return JsonResponse({"error": "Missing title"}, status=400)
@@ -43,6 +44,15 @@ def create_task(
         except UserProfile.DoesNotExist:
             return JsonResponse({"error": f"User {assignee_email} not found"}, status=404)
 
+    # Parse due date if provided
+    due_date = None
+    if due_date_str:
+        try:
+            from datetime import datetime
+            due_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00'))
+        except ValueError:
+            return JsonResponse({"error": "Invalid due date format"}, status=400)
+
     #create a task and insert into postgresql
     task = Task.objects.create(
         message=message,
@@ -50,6 +60,7 @@ def create_task(
         creator=user,
         title=title,
         description=description,
+        due_date=due_date,
     )
 
     return JsonResponse({
@@ -57,6 +68,7 @@ def create_task(
         "title": task.title,
         "description": task.description,
         "completed": task.completed,
+        "due_date": task.due_date.isoformat() if task.due_date else None,
     })
 
 @require_GET
