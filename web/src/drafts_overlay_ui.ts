@@ -28,6 +28,7 @@ import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
 let draft_undo_delete_list: LocalStorageDraft[] = [];
+let last_focused_draft_id: string | undefined;
 
 function clear_undo_list(): void {
     draft_undo_delete_list = [];
@@ -180,7 +181,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     },
     on_enter() {
         // This handles when pressing Enter while looking at drafts.
-        // It restores draft that is focused.
+        // It restores draft that is focused or had focus last.
         const draft_id_arrow = this.get_items_ids();
 
         if (draft_id_arrow.length === 0) {
@@ -191,6 +192,8 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         const focused_draft_id = messages_overlay_ui.get_focused_element_id(this);
         if (focused_draft_id !== undefined) {
             restore_draft(focused_draft_id);
+        } else if (last_focused_draft_id !== undefined) {
+            restore_draft(last_focused_draft_id);
         } else {
             const first_draft = draft_id_arrow.at(0);
             assert(first_draft !== undefined);
@@ -509,6 +512,7 @@ export function open_overlay(): void {
             browser_history.exit_overlay();
             drafts.sync_count();
             draft_undo_delete_list = [];
+            last_focused_draft_id = undefined;
         },
     });
 }
@@ -529,6 +533,26 @@ export function toggle_checkbox_icon_state($checkbox: JQuery, checked: boolean):
 export function initialize(): void {
     $("body").on("focus", "#drafts_table .overlay-message-info-box", function (this: HTMLElement) {
         messages_overlay_ui.activate_element(this, keyboard_handling_context);
+        const draft_id = $(this).closest(".overlay-message-row").attr("data-draft-id");
+        if (draft_id) {
+            last_focused_draft_id = draft_id;
+        }
+    });
+    $("body").on("focusin", "#drafts_table", (e) => {
+        if ($(e.target).closest(".overlay-message-info-box").length > 0) {
+            return;
+        }
+        $("#drafts_table .overlay-message-info-box").removeClass("active");
+    });
+    $("body").on("mousedown", "#draft_overlay", (e) => {
+        if (
+            $(e.target).closest(
+                "input, button, select, textarea, a, .overlay-message-info-box, .exit",
+            ).length > 0
+        ) {
+            return;
+        }
+        e.preventDefault();
     });
     $("body").on(
         "click",
