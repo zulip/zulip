@@ -91,7 +91,10 @@ const imported_section: UserSettingsSection = {
 function get_last_active_date(user: User): Date | undefined {
     const last_active_date = presence.last_active_date(user.user_id);
     if (!last_active_date && presence_data_fetched) {
-        return new Date(user.date_joined);
+        if (user.date_joined) {
+            return new Date(user.date_joined);
+        }
+        return undefined;
     }
     return last_active_date;
 }
@@ -407,6 +410,7 @@ function human_info(person: User): {
     is_active: boolean;
     user_id: number;
     full_name: string;
+    is_placeholder_user: boolean;
     bot_owner_id: number | null;
     can_modify: boolean;
     is_current_user: boolean;
@@ -415,24 +419,26 @@ function human_info(person: User): {
     img_src: string;
     last_active_date: string;
 } {
+    const is_placeholder_user = person.is_placeholder_user ?? false;
     return {
         is_bot: false,
         user_role_text: people.get_user_type(person.user_id),
         is_active: people.is_person_active(person.user_id),
         user_id: person.user_id,
         full_name: person.full_name,
+        is_placeholder_user,
         bot_owner_id: person.is_bot ? person.bot_owner_id : null,
         can_modify: current_user.is_admin,
         is_current_user: people.is_my_user_id(person.user_id),
         cannot_deactivate:
             person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner()),
-        display_email: person.delivery_email,
+        display_email: is_placeholder_user ? null : person.delivery_email,
         img_src: people.small_avatar_url_for_person(person),
         // TODO: This is not shown in deactivated users table and it is
         // controlled by `display_last_active_column` We might just want
         // to show this for deactivated users, too, even though it might
         // usually just be undefined.
-        last_active_date: get_last_active(person),
+        last_active_date: is_placeholder_user ? "" : get_last_active(person),
     };
 }
 
