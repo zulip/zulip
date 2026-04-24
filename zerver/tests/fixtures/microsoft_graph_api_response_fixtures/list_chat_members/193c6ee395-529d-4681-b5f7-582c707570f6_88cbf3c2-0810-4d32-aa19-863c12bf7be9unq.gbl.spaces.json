@@ -1,0 +1,30 @@
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A3c6ee395-529d-4681-b5f7-582c707570f6_88cbf3c2-0810-4d32-aa19-863c12bf7be9%40unq.gbl.spaces')/members",
+    "@odata.count": 2,
+    "value": [
+        {
+            "@odata.type": "#microsoft.graph.aadUserConversationMember",
+            "id": "MCMjMCMjYWY0YWNhYjYtNjQ3Ni00YzJmLWJlZjItZmY2NDc5ZGQzOTQwIyMxOTozYzZlZTM5NS01MjlkLTQ2ODEtYjVmNy01ODJjNzA3NTcwZjZfODhjYmYzYzItMDgxMC00ZDMyLWFhMTktODYzYzEyYmY3YmU5QHVucS5nYmwuc3BhY2VzIyMzYzZlZTM5NS01MjlkLTQ2ODEtYjVmNy01ODJjNzA3NTcwZjY=",
+            "roles": [
+                "owner"
+            ],
+            "displayName": "Alya Abbott",
+            "visibleHistoryStartDateTime": "0001-01-01T00:00:00Z",
+            "userId": "3c6ee395-529d-4681-b5f7-582c707570f6",
+            "email": "alya@ZulipChat.onmicrosoft.com",
+            "tenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+        },
+        {
+            "@odata.type": "#microsoft.graph.aadUserConversationMember",
+            "id": "MCMjMCMjYWY0YWNhYjYtNjQ3Ni00YzJmLWJlZjItZmY2NDc5ZGQzOTQwIyMxOTozYzZlZTM5NS01MjlkLTQ2ODEtYjVmNy01ODJjNzA3NTcwZjZfODhjYmYzYzItMDgxMC00ZDMyLWFhMTktODYzYzEyYmY3YmU5QHVucS5nYmwuc3BhY2VzIyM4OGNiZjNjMi0wODEwLTRkMzItYWExOS04NjNjMTJiZjdiZTk=",
+            "roles": [
+                "owner"
+            ],
+            "displayName": "Pieter K",
+            "visibleHistoryStartDateTime": "0001-01-01T00:00:00Z",
+            "userId": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+            "email": "pieterk@ZulipChat.onmicrosoft.com",
+            "tenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+        }
+    ]
+}
