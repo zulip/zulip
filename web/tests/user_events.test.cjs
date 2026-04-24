@@ -101,6 +101,9 @@ mock_esm("../src/reactions", {
     update_user_full_name() {},
     update_user_full_names() {},
 });
+mock_esm("../src/read_receipts", {
+    handle_users_fetched() {},
+});
 const submessage = mock_esm("../src/submessage", {
     rerender_widgets_in_current_list() {},
 });

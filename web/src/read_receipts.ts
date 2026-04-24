@@ -23,6 +23,7 @@ const read_receipts_api_response_schema = z.object({
 
 let interval_id: number | null = null;
 let has_initial_data = false;
+let placeholder_reader_ids: number[] = [];
 
 export function fetch_read_receipts(message_id: number): void {
     const message = message_store.get(message_id);
@@ -67,6 +68,14 @@ export function fetch_read_receipts(message_id: number): void {
             has_initial_data = true;
             $("#read_receipts_modal .read_receipts_error").removeClass("show");
             const data = read_receipts_api_response_schema.parse(raw_data);
+            // The list names every reader, so the loading indicator
+            // stays until all of them have their data.
+            placeholder_reader_ids = data.user_ids.filter((user_id) =>
+                people.is_placeholder_user(user_id),
+            );
+            if (placeholder_reader_ids.length > 0) {
+                return;
+            }
             const users = data.user_ids.map((id) => people.get_user_by_id_assert_valid(id));
             users.sort(people.compare_by_name);
 
@@ -124,6 +133,7 @@ export function show_user_list(message_id: number): void {
         autoremove: true,
         on_shown() {
             has_initial_data = false;
+            placeholder_reader_ids = [];
             fetch_read_receipts(message_id);
             interval_id = window.setInterval(() => {
                 fetch_read_receipts(message_id);
@@ -140,4 +150,15 @@ export function show_user_list(message_id: number): void {
 
 export function hide_user_list(): void {
     modals.close_if_open("read_receipts_modal");
+}
+
+// The modal polls for read receipts only once a minute, so we
+// refetch now to show the loaded names right away.
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!modals.is_active("read_receipts_modal")) {
+        return;
+    }
+    if (user_ids.some((user_id) => placeholder_reader_ids.includes(user_id))) {
+        fetch_read_receipts(Number($("#read_receipts_modal").attr("data-message-id")));
+    }
 }
