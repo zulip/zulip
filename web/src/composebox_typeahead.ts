@@ -279,17 +279,21 @@ function handle_bulleting_or_numbering(
     let to_append = "";
     // if previous line was bulleted, automatically add a bullet to the new line
     if (bulleted_numbered_list_util.is_bulleted(previous_line)) {
+        const bullet_prefix = bulleted_numbered_list_util.get_bullet_prefix(previous_line);
         // if previous line had only bullet, remove it and stay on the same line
         if (bulleted_numbered_list_util.strip_bullet(previous_line) === "") {
-            // below we select and replace the last 2 characters in the textarea before
-            // the cursor - the bullet syntax - with an empty string
-            util.the($textarea).setSelectionRange($textarea.caret() - 2, $textarea.caret());
+            // below we select and replace the bullet syntax in the textarea before
+            // the cursor with an empty string
+            util.the($textarea).setSelectionRange(
+                $textarea.caret() - bullet_prefix.length,
+                $textarea.caret(),
+            );
             compose_ui.insert_and_scroll_into_view("", $textarea);
             e.preventDefault();
             return;
         }
         // use same bullet syntax as the previous line
-        to_append = previous_line.slice(0, 2);
+        to_append = bullet_prefix;
     } else if (bulleted_numbered_list_util.is_numbered(previous_line)) {
         // if previous line was numbered, continue numbering with the new line
         const previous_number_string = previous_line.slice(0, previous_line.indexOf("."));
