@@ -24,6 +24,7 @@ import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as search from "./search.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -331,6 +332,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     submessage.rerender_widgets_in_current_list();
     compose_recipient.update_compose_area_placeholder_text();
     activity_ui.handle_users_fetched(user_ids);
+    search.handle_users_fetched();
     composebox_typeahead.handle_users_fetched();
     if (narrow_state.is_message_feed_visible()) {
         compose_closed_ui.update_reply_button();
