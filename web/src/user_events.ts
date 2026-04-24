@@ -315,7 +315,10 @@ export const update_person = function update(event: UserUpdate): void {
     }
 };
 
-function refresh_ui_after_users_fetched(_user_ids: number[]): void {
+function refresh_ui_after_users_fetched(user_ids: number[]): void {
+    message_live_update.update_full_names_and_avatars(
+        user_ids.map((user_id) => people.get_by_user_id(user_id)),
+    );
     if (narrow_state.is_message_feed_visible()) {
         narrow_title.update_narrow_title(narrow_state.filter());
     }

@@ -495,6 +495,11 @@ run_test("update_person rerenders the user's recent view rows", ({override}) => 
 run_test("initialize registers users_fetched callback", ({override}) => {
     initialize();
 
+    let updated_users;
+
+    override(message_live_update, "update_full_names_and_avatars", (users) => {
+        updated_users = users;
+    });
     let narrow_title_filter;
     override(narrow_title, "update_narrow_title", (filter) => {
         narrow_title_filter = filter;
@@ -517,6 +522,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     people.notify_users_fetched([isaac.user_id]);
 
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
+    assert.deepEqual(updated_users, [people.get_by_user_id(isaac.user_id)]);
 
     // The loading shimmers stop moving while requests for users fail.
     people.notify_users_fetch_failing(true);

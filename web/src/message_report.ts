@@ -79,6 +79,7 @@ function get_message_container_for_preview(message: Message): MessageContainer {
         should_add_guest_indicator_for_sender: people.should_add_guest_user_indicator(
             message.sender_id,
         ),
+        sender_is_placeholder_user: people.is_placeholder_user(message.sender_id),
         small_avatar_url: people.small_avatar_url(message),
         status_emoji_info: user_status.get_status_emoji(message.sender_id),
         status_message: "",

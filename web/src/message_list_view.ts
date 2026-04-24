@@ -76,6 +76,7 @@ export type MessageContainer = {
     sender_is_guest: boolean;
     sender_is_deactivated: boolean;
     should_add_guest_indicator_for_sender: boolean;
+    sender_is_placeholder_user: boolean;
     small_avatar_url: string;
     status_emoji_info: UserStatusEmojiInfo | undefined;
     status_message: string | false;
@@ -295,6 +296,7 @@ function get_topic_edit_properties(message: Message): {
 type RecipientRowUser = {
     full_name: string;
     should_add_guest_user_indicator: boolean;
+    is_full_name_loading: boolean;
 };
 function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
     const user_ids = people.pm_with_user_ids(message);
@@ -311,6 +313,7 @@ function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
             full_name,
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             is_bot,
+            is_full_name_loading: people.is_display_full_name_loading(user_id),
         };
     });
 
@@ -475,7 +478,9 @@ export function populate_group_from_message(
         pm_with_url: message.pm_with_url,
         recipient_users: get_users_for_recipient_row(message),
         is_dm_with_self: people.is_direct_message_conversation_with_self(user_ids),
-        display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
+        display_reply_to_for_tooltip: message_store.get_pm_full_names(
+            people.merge_loading_user_ids(user_ids),
+        ),
         always_display_date,
     };
 }
@@ -601,6 +606,7 @@ export class MessageListView {
         sender_is_deactivated: boolean;
         should_add_guest_indicator_for_sender: boolean;
         status_emoji_info: UserStatusEmojiInfo | undefined;
+        sender_is_placeholder_user: boolean;
         is_hidden: boolean;
         mention_classname: string | undefined;
         include_sender: boolean;
@@ -686,6 +692,7 @@ export class MessageListView {
             message.sender_id,
         );
         const status_emoji_info = user_status.get_status_emoji(message.sender_id);
+        const sender_is_placeholder_user = people.is_placeholder_user(message.sender_id);
 
         const small_avatar_url = is_hidden
             ? people.get_muted_user_avatar_url()
@@ -705,6 +712,7 @@ export class MessageListView {
             sender_is_deactivated,
             should_add_guest_indicator_for_sender,
             status_emoji_info,
+            sender_is_placeholder_user,
             is_hidden,
             mention_classname,
             include_sender,

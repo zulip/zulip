@@ -244,6 +244,27 @@ test("message_booleans_parity", () => {
     });
 });
 
+test("get_pm_full_names with placeholder users", () => {
+    for (const user_id of [201, 202]) {
+        people.add_active_user(
+            make_user({
+                email: `placeholder${user_id}@example.com`,
+                user_id,
+                full_name: "Loading…",
+                is_placeholder_user: true,
+            }),
+        );
+    }
+
+    // Each placeholder user keeps their own entry. A caller that wants
+    // one "Loading…" for all of them merges their IDs first.
+    assert.equal(message_store.get_pm_full_names([me.user_id, 201, 202]), "Loading…, Loading…");
+    assert.equal(
+        message_store.get_pm_full_names([me.user_id, 201, bob.user_id, 202]),
+        "Bob, Loading…, Loading…",
+    );
+});
+
 test("errors", ({disallow_rewire}) => {
     // Test a user that doesn't exist
     let message = {

@@ -28,6 +28,7 @@ mock_esm("../src/people", {
     small_avatar_url: () => "fake/small/avatar/url",
     get_muted_user_avatar_url: () => "fake/muted_user/avatar/url",
     maybe_get_user_by_id: noop,
+    is_placeholder_user: () => false,
 });
 
 const {Filter} = zrequire("../src/filter");
