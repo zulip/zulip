@@ -34,7 +34,7 @@ type ScheduledMessageRenderContext = ScheduledMessage &
               is_stream: false;
               is_dm_with_self: boolean;
               formatted_send_at_time: string;
-              recipients: string;
+              recipient_users: {name: string; is_full_name_loading: boolean}[];
           }
     );
 
@@ -116,13 +116,18 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
                 is_empty_string_topic: scheduled_msg.topic === "",
             };
         } else {
-            const user_ids_string = scheduled_msg.to.join(",");
-            const recipients = people.format_recipients(user_ids_string, "long");
+            const recipient_users = people
+                .sorted_other_user_ids(scheduled_msg.to)
+                .map((user_id) => ({
+                    name: people.get_display_full_name(user_id),
+                    is_full_name_loading: people.is_display_full_name_loading(user_id),
+                }))
+                .toSorted((a, b) => util.strcmp(a.name, b.name));
             scheduled_msg_render_context = {
                 ...scheduled_msg,
                 is_stream: false as const,
                 is_dm_with_self: people.is_direct_message_conversation_with_self(scheduled_msg.to),
-                recipients,
+                recipient_users,
                 formatted_send_at_time,
             };
         }
@@ -167,6 +172,36 @@ export function rerender(): void {
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.find(".scheduled-message-row").remove();
     $messages_list.append($(rendered_list));
+}
+
+export function handle_users_fetched(): void {
+    if (!overlays.scheduled_messages_open()) {
+        return;
+    }
+    const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
+    const $loading_names = $messages_list
+        .find(".loading-shimmer")
+        .closest(".private_message_header_name");
+    if ($loading_names.length === 0) {
+        return;
+    }
+    // We replace only the recipient names, so that the focused message
+    // and the scroll position are kept.
+    const $rendered_list = $(
+        render_scheduled_message({
+            scheduled_messages_data: format(scheduled_messages.get_all_scheduled_messages()),
+        }),
+    );
+    $loading_names.each(function () {
+        const scheduled_message_id = $(this)
+            .closest(".scheduled-message-row")
+            .attr("data-scheduled-message-id");
+        $(this).replaceWith(
+            $rendered_list
+                .filter(`[data-scheduled-message-id="${scheduled_message_id}"]`)
+                .find(".private_message_header_name"),
+        );
+    });
 }
 
 export function remove_scheduled_message_id(scheduled_msg_id: number): void {

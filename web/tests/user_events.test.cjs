@@ -94,6 +94,9 @@ mock_esm("../src/settings_streams", {
 mock_esm("../src/inbox_ui", {
     update() {},
 });
+mock_esm("../src/scheduled_messages_overlay_ui", {
+    handle_users_fetched() {},
+});
 mock_esm("../src/reactions", {
     update_user_full_name() {},
     update_user_full_names() {},

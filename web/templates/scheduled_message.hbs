@@ -28,7 +28,15 @@
                         {{#if is_dm_with_self}}
                         <span class="private_message_header_name">{{t "You" }}</span>
                         {{else}}
-                        <span class="private_message_header_name">{{t "You and {recipients}" }}</span>
+                        <span class="private_message_header_name">
+                            {{~#tr}}You and <z-user-names></z-user-names>
+                            {{#*inline "z-user-names"~}}
+                                {{~#list_each recipient_users~}}
+                                    {{~#if is_full_name_loading}}<span class="loading-shimmer"></span>{{else}}{{name}}{{/if~}}
+                                {{~/list_each~}}
+                            {{~/inline}}
+                            {{/tr~}}
+                        </span>
                         {{/if}}
                     </div>
                     {{> scheduled_message_stream_pm_common .}}

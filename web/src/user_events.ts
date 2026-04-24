@@ -26,6 +26,7 @@ import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
@@ -338,6 +339,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     for (const user_id of user_ids) {
         recent_view_ui.rerender_conversations_with_user(user_id);
     }
+    scheduled_messages_overlay_ui.handle_users_fetched();
     drafts_overlay_ui.handle_users_fetched();
     search.handle_users_fetched();
     composebox_typeahead.handle_users_fetched();
