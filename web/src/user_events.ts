@@ -325,6 +325,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     );
     reactions.update_user_full_names(new Set(user_ids));
     submessage.rerender_widgets_in_current_list();
+    activity_ui.handle_users_fetched(user_ids);
     if (narrow_state.is_message_feed_visible()) {
         compose_closed_ui.update_reply_button();
         narrow_title.update_narrow_title(narrow_state.filter());

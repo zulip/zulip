@@ -397,6 +397,7 @@ test("insert_one_user_into_empty_list", ({override}) => {
             name: "Alice Smith",
             user_id: 1,
             is_current_user: false,
+            is_placeholder_user: false,
             num_unread: 0,
             profile_picture: "/avatar/1",
             user_circle_class: "user-circle-active",
@@ -579,6 +580,24 @@ test("redraw_user_not_matching_filter", ({override}) => {
     assert.ok(fred_removed);
     assert.equal(other_users_appended, undefined);
     assert.ok(!buddy_list.all_user_ids.includes(fred.user_id));
+});
+
+test("handle_users_fetched", ({override}) => {
+    let inserted_user_ids;
+    override(buddy_list, "insert_or_move", (user_ids) => {
+        inserted_user_ids = user_ids;
+    });
+    override(buddy_list, "all_user_ids", [alice.user_id]);
+
+    // Fetched users who are not in the buddy list are not added to it.
+    activity_ui.handle_users_fetched([alice.user_id, fred.user_id]);
+    assert.deepEqual(inserted_user_ids, [alice.user_id]);
+
+    // A filtered buddy list has no placeholder users, so every fetched
+    // user is checked against the filter.
+    $("input.user-list-filter").val("fre");
+    activity_ui.handle_users_fetched([alice.user_id, fred.user_id]);
+    assert.deepEqual(inserted_user_ids, [alice.user_id, fred.user_id]);
 });
 
 test("realm_presence_disabled", ({override}) => {
