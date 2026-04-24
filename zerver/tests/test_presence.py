@@ -613,7 +613,11 @@ class UserPresenceTests(ZulipTestCase):
         result = self.client_get(f"/json/users/{othello.id}/presence")
         result_dict = self.assert_json_success(result)
 
-        # Ensure date_joined was used as the fallback.
+        # Ensure date_joined was used as the fallback in both formats.
+        self.assertEqual(
+            result_dict["presence"]["website"]["timestamp"],
+            datetime_to_timestamp(othello.date_joined),
+        )
         self.assertEqual(
             result_dict["presence"]["active_timestamp"],
             datetime_to_timestamp(othello.date_joined),
@@ -737,29 +741,28 @@ class SingleUserPresenceTests(ZulipTestCase):
 
         result = self.client_get(f"/json/users/{othello.id}/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(
-            set(result_dict["presence"].keys()), {"active_timestamp", "idle_timestamp"}
-        )
-        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
-        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        # Both legacy and modern format fields should be present.
+        self.assertIn("website", result_dict["presence"])
+        self.assertIn("aggregated", result_dict["presence"])
+        self.assertIn("active_timestamp", result_dict["presence"])
+        self.assertIn("idle_timestamp", result_dict["presence"])
+        self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
         # Then, we check everything works
         self.login("hamlet")
         result = self.client_get("/json/users/othello@zulip.com/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(
-            set(result_dict["presence"].keys()), {"active_timestamp", "idle_timestamp"}
-        )
-        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
-        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        self.assertIn("website", result_dict["presence"])
+        self.assertIn("aggregated", result_dict["presence"])
+        self.assertIn("active_timestamp", result_dict["presence"])
+        self.assertIn("idle_timestamp", result_dict["presence"])
 
         result = self.client_get(f"/json/users/{othello.id}/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(
-            set(result_dict["presence"].keys()), {"active_timestamp", "idle_timestamp"}
-        )
-        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
-        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        self.assertIn("website", result_dict["presence"])
+        self.assertIn("aggregated", result_dict["presence"])
+        self.assertIn("active_timestamp", result_dict["presence"])
+        self.assertIn("idle_timestamp", result_dict["presence"])
 
     def test_ping_only(self) -> None:
         self.login("othello")
@@ -845,6 +848,29 @@ class UserPresenceAggregationTests(ZulipTestCase):
                 "status": "idle",
                 "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
                 "client": "website",
+            },
+        )
+
+    def test_aggregated_presence_offline(self) -> None:
+        user = self.example_user("othello")
+        self.login_user(user)
+        validate_time = timezone_now()
+        self._send_presence_for_aggregated_tests(user, "idle", validate_time)
+
+        with time_machine.travel(
+            (validate_time + timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1)),
+            tick=False,
+        ):
+            # After settings.OFFLINE_THRESHOLD_SECS + 1 this generated, recent presence data
+            # will count as offline.
+            result = self.client_get(f"/json/users/{user.email}/presence")
+        result_dict = self.assert_json_success(result)
+
+        self.assertDictEqual(
+            result_dict["presence"]["aggregated"],
+            {
+                "status": "offline",
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
             },
         )
 

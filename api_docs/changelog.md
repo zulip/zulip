@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 496**
+
+* [`GET /users/{user_id_or_email}/presence`](/api/get-user-presence):
+  Re-added the legacy `website` and `aggregated` fields to the response
+  alongside the modern `active_timestamp` and `idle_timestamp` fields
+  introduced in feature level 487. This restores backwards compatibility
+  for existing API clients while preserving the new format for clients
+  that have already migrated.
+
 **Feature level 495**
 
 * [Message formatting](/api/message-formatting): Uploaded videos with
@@ -72,6 +81,7 @@ format used by the Zulip server that they are interacting with.
   Clients that do not set the `individual_emoji_changes` client
   capability will continue to receive the legacy `realm_emoji/update`
   event containing all emoji.
+
 
 **Feature level 490**
 

@@ -11696,16 +11696,89 @@ paths:
                       msg: {}
                       ignored_parameters_unsupported: {}
                       presence:
-                        allOf:
-                          - $ref: "#/components/schemas/ModernPresenceFormat"
                         description: |
-                          An object containing the presence details for the user.
+                          An object containing the presence details for the user,
+                          in both the legacy and modern formats.
 
-                          **Changes**: In Zulip 12.0 (feature level 487), the
-                          `active_timestamp` and `idle_timestamp` fields were added to
-                          this object, deprecating and removing the `website` and
-                          `aggregated` dictionaries, which contained a timestamp and
-                          a status string.
+                          The `website` and `aggregated` fields provide the legacy
+                          format. Each has `status` (`active`, `idle`, or `offline`)
+                          and `timestamp` (Unix timestamp of the last presence update).
+
+                          The `active_timestamp` and `idle_timestamp` fields provide
+                          the modern format. See `ModernPresenceFormat` for
+                          their semantics.
+
+                          **Changes**: In Zulip 12.0 (feature level 496), the legacy
+                          `website` and `aggregated` fields were re-added alongside
+                          the modern `active_timestamp` and `idle_timestamp` fields
+                          to restore backwards compatibility after they were removed
+                          in feature level 487.
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          active_timestamp:
+                            type: integer
+                            description: |
+                              The UNIX timestamp of the last time a client connected
+                              to Zulip reported that the user was actually present
+                              (e.g. via focusing a browser window or interacting
+                              with a computer running the desktop app).
+                          idle_timestamp:
+                            type: integer
+                            description: |
+                              The UNIX timestamp of the last time the user had a
+                              client connected to Zulip, including idle clients
+                              where the user hasn't interacted with the system
+                              recently.
+                          website:
+                            type: object
+                            description: |
+                              Legacy presence data for the `website` client.
+                            additionalProperties: false
+                            properties:
+                              status:
+                                type: string
+                                description: |
+                                  The status of the user on this client. Will be either `"idle"`
+                                  or `"active"`.
+                                enum:
+                                  - active
+                                  - idle
+                                  - offline
+                              timestamp:
+                                type: integer
+                                description: |
+                                  The UNIX timestamp of when this client sent the user's presence
+                                  to the server with the precision of a second.
+                            required:
+                              - status
+                              - timestamp
+                          aggregated:
+                            type: object
+                            description: |
+                              Aggregated presence data across all of the user's clients.
+                            additionalProperties: false
+                            properties:
+                              status:
+                                type: string
+                                description: |
+                                  The aggregated status of the user. Will be either `"idle"`
+                                  or `"active"`.
+                                enum:
+                                  - active
+                                  - idle
+                                  - offline
+                              timestamp:
+                                type: integer
+                                description: |
+                                  The UNIX timestamp of when the user's presence was most recently
+                                  updated across all clients with the precision of a second.
+                            required:
+                              - status
+                              - timestamp
+                        required:
+                          - website
+                          - aggregated
                 example:
                   {
                     "msg": "",
@@ -11713,6 +11786,10 @@ paths:
                       {
                         "active_timestamp": 1656958520,
                         "idle_timestamp": 1656958530,
+                        "website":
+                          {"status": "active", "timestamp": 1656958520},
+                        "aggregated":
+                          {"status": "active", "timestamp": 1656958520},
                       },
                     "result": "success",
                   }
