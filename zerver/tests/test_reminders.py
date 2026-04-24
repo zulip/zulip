@@ -2,12 +2,19 @@ import datetime
 import time
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from unittest import mock
 
 import time_machine
 
-from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
+from zerver.actions.realm_settings import do_deactivate_realm
+from zerver.actions.scheduled_messages import (
+    SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES,
+    try_deliver_one_scheduled_message,
+)
+from zerver.actions.users import change_user_is_active
 from zerver.lib.message import get_user_mentions_for_display
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Message, ScheduledMessage
 from zerver.models.recipients import Recipient, get_or_create_direct_message_group
@@ -316,6 +323,144 @@ class RemindersTest(ZulipTestCase):
                 ),
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+
+    def test_reminder_still_fires_past_late_cutoff(self) -> None:
+        # Reminders deliberately bypass the late-cutoff guard: a
+        # reminder delivered late is strictly more useful to the
+        # sender than one silently dropped.
+        content = "Test content"
+        reminder = self.create_reminder(content)
+
+        too_late_datetime = reminder.scheduled_timestamp + datetime.timedelta(
+            minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES + 1
+        )
+        with (
+            time_machine.travel(too_late_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            self.assertTrue(try_deliver_one_scheduled_message())
+
+        reminder.refresh_from_db()
+        self.assertTrue(reminder.delivered)
+        self.assertFalse(reminder.failed)
+        assert isinstance(reminder.delivered_message_id, int)
+        self.assertEqual(
+            logs.output,
+            [
+                f"INFO:root:Sending scheduled message {reminder.id} with date {reminder.scheduled_timestamp} (sender: {reminder.sender_id})"
+            ],
+        )
+        delivered_message = Message.objects.get(id=reminder.delivered_message_id)
+        assert isinstance(reminder.reminder_target_message_id, int)
+        self.assertEqual(
+            delivered_message.content,
+            self.get_dm_reminder_content(
+                content, reminder.reminder_target_message_id, [self.example_user("othello")]
+            ),
+        )
+        self.assertEqual(delivered_message.date_sent, too_late_datetime)
+
+    def test_reminder_refused_for_deactivated_sender(self) -> None:
+        expected_failure_message = "Account is deactivated"
+        reminder = self.create_reminder("Test content")
+        message_before = most_recent_message(reminder.sender)
+
+        more_than_scheduled_delivery_datetime = reminder.scheduled_timestamp + datetime.timedelta(
+            minutes=1
+        )
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            change_user_is_active(reminder.sender, False)
+            self.assertTrue(try_deliver_one_scheduled_message())
+
+        reminder.refresh_from_db()
+        self.assertTrue(reminder.failed)
+        self.assertFalse(reminder.delivered)
+        self.assertIsNone(reminder.delivered_message_id)
+        self.assertEqual(reminder.failure_message, expected_failure_message)
+        self.assertEqual(
+            logs.output,
+            [
+                f"INFO:root:Sending scheduled message {reminder.id} with date {reminder.scheduled_timestamp} (sender: {reminder.sender_id})",
+                f"INFO:root:Failed with message: {expected_failure_message}",
+            ],
+        )
+        # No failure DM should be sent to a deactivated user.
+        self.assertEqual(most_recent_message(reminder.sender).id, message_before.id)
+
+    def test_reminder_refused_when_send_returns_none(self) -> None:
+        # internal_send_private_message swallows JsonableError from
+        # check_message and returns None; the worker must still mark
+        # the row failed rather than delivered with a NULL message id.
+        expected_failure_message = "Reminder could not be sent."
+        reminder = self.create_reminder("Test content")
+        message_before = most_recent_message(reminder.sender)
+
+        more_than_scheduled_delivery_datetime = reminder.scheduled_timestamp + datetime.timedelta(
+            minutes=1
+        )
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            mock.patch(
+                "zerver.actions.scheduled_messages.internal_send_private_message",
+                return_value=None,
+            ),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            self.assertTrue(try_deliver_one_scheduled_message())
+
+        reminder.refresh_from_db()
+        self.assertTrue(reminder.failed)
+        self.assertFalse(reminder.delivered)
+        self.assertIsNone(reminder.delivered_message_id)
+        self.assertEqual(reminder.failure_message, expected_failure_message)
+        self.assertEqual(
+            logs.output,
+            [
+                f"INFO:root:Sending scheduled message {reminder.id} with date {reminder.scheduled_timestamp} (sender: {reminder.sender_id})",
+                f"INFO:root:Failed with message: {expected_failure_message}",
+            ],
+        )
+        # Reminders have their own notification system, so no failure
+        # DM should be sent to the user.
+        self.assertEqual(most_recent_message(reminder.sender).id, message_before.id)
+
+    def test_reminder_refused_for_deactivated_realm(self) -> None:
+        expected_failure_message = "This organization has been deactivated"
+        reminder = self.create_reminder("Test content")
+        message_before = most_recent_message(reminder.sender)
+
+        more_than_scheduled_delivery_datetime = reminder.scheduled_timestamp + datetime.timedelta(
+            minutes=1
+        )
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            do_deactivate_realm(
+                reminder.realm,
+                acting_user=None,
+                deactivation_reason="owner_request",
+                email_owners=False,
+            )
+            self.assertTrue(try_deliver_one_scheduled_message())
+
+        reminder.refresh_from_db()
+        self.assertTrue(reminder.failed)
+        self.assertFalse(reminder.delivered)
+        self.assertIsNone(reminder.delivered_message_id)
+        self.assertEqual(reminder.failure_message, expected_failure_message)
+        self.assertEqual(
+            logs.output,
+            [
+                f"INFO:root:Sending scheduled message {reminder.id} with date {reminder.scheduled_timestamp} (sender: {reminder.sender_id})",
+                f"INFO:root:Failed with message: {expected_failure_message}",
+            ],
+        )
+        # No failure DM should be sent when the realm is deactivated.
+        self.assertEqual(most_recent_message(reminder.sender).id, message_before.id)
 
     def test_delete_reminder(self) -> None:
         hamlet = self.example_user("hamlet")
