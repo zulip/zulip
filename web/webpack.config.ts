@@ -178,6 +178,7 @@ const config = (
                             "tooltip_hotkey_hints",
                             "popover_hotkey_hints",
                             "list_each",
+                            "concat",
                         ],
                         precompileOptions: {
                             knownHelpersOnly: true,

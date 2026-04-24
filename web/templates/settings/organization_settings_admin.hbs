@@ -199,7 +199,10 @@
                         {{t 'Call provider' }}
                         {{> ../help_link_widget link="/help/configure-call-provider" }}
                     </label>
-                    <select name="realm_video_chat_provider" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
+                    <select name="realm_video_chat_provider"
+                      class="setting-widget prop-element settings_select bootstrap-focus-style"
+                      id="id_realm_video_chat_provider"
+                      data-setting-widget-type="number">
                         {{#each (object_values realm_available_video_chat_providers)}}
                             <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
@@ -229,6 +232,42 @@
                             </label>
                             <input type="text" id="id_realm_jitsi_server_url_custom_input" autocomplete="off"
                               name="realm_jitsi_server_url_custom_input" class="realm_jitsi_server_url_custom_input settings_url_input" maxlength="200" />
+                        </div>
+                    </div>
+
+                    <div class="dependent-settings-block" id="realm_big_blue_button_settings">
+                        <div class="inline-block organization-settings-parent">
+                            {{#each (object_entries realm_big_blue_button_options)}}
+                                {{#if (eq this.[1].data_type "str")}}
+                                    <div class="input-group">
+                                        <label for="id_realm_big_blue_button_options_{{ this.[1].option }}"
+                                          class="settings-field-label">
+                                            {{t (lookup ../admin_settings_label this.[1].translation) }}
+                                        </label>
+                                        <input type="text" id="id_realm_big_blue_button_options_{{ this.[1].option }}"
+                                          autocomplete="off"
+                                          name="realm_big_blue_button_options_{{ this.[1].option }}"
+                                          class="setting-widget prop-element settings_select bootstrap-focus-style"
+                                          maxlength="255" />
+                                    </div>
+                                {{/if}}
+
+                                {{#if (eq this.[1].data_type "bool")}}
+                                    {{> settings_checkbox
+                                      setting_name=(concat "realm_big_blue_button_options_" this.[1].option)
+                                      prefix="id_"
+                                      is_checked=this.[1].value
+                                      label=(lookup ../admin_settings_label this.[1].translation)}}
+                                {{/if}}
+
+                                {{#if (eq this.[1].data_type "list")}}
+                                    {{> settings_big_blue_button_select
+                                      label=(lookup ../admin_settings_label this.[1].translation)
+                                      option=this.[1].option
+                                      list=this.[1].list
+                                      selectedValue=this.[1].value}}
+                                {{/if}}
+                            {{/each}}
                         </div>
                     </div>
                 </div>
