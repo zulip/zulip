@@ -1,4 +1,4 @@
-<div class='pill {{#if deactivated}} deactivated-pill {{/if~}}'
+<div class='pill {{#if deactivated}} deactivated-pill {{/if~}}{{#if is_placeholder_user}} pill-loading-shimmer{{/if~}}'
   {{~#unless (eq user_id undefined)}}data-user-id="{{user_id}}"{{/unless~}}
   {{~#unless (eq group_id undefined)}}data-user-group-id="{{group_id}}"{{/unless~}}
   {{~#unless (eq stream_id undefined)}}data-stream-id="{{stream_id}}"{{/unless~}}
@@ -31,10 +31,12 @@
                 {{/if}}
             {{/if}}
         </span>
+        {{~#unless is_placeholder_user~}}
         {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
         {{~#if has_status~}}
             {{~> status_emoji status_emoji_info~}}
         {{~/if~}}
+        {{~/unless~}}
         {{~#if is_bot~}}
             <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
         {{~/if~}}
