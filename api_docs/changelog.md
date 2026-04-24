@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 495**
+
+* [Message formatting](/api/message-formatting): Uploaded videos with
+  the `video/quicktime` MIME type (i.e., `.mov` files) are now rendered
+  inline using the existing `message_inline_video` format. Clients that
+  cannot play the format should detect a playback error and hide the
+  preview; the download link remains in the surrounding `a` tag.
+
 **Feature level 494**
 
 * [`PUT /bot_storage`](/api/update-bot-storage),

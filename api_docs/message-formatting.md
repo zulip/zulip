@@ -418,7 +418,12 @@ available.
 ## Video embeddings and previews
 
 When a Zulip message is sent linking to an uploaded video, Zulip may
-generate a video preview element with the following format.
+generate a video preview element with the following format. Supported
+MIME types are `video/mp4`, `video/quicktime` (i.e., `.mov` files), and
+`video/webm`. Because `video/quicktime` is not supported in every
+browser, the preview element is hidden at render time when the browser
+reports that it cannot play the video; the download link in the
+surrounding `a` tag remains available.
 
 
 ``` html

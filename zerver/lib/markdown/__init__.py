@@ -1043,10 +1043,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return False
 
         url_type = guess_type(url)[0]
-        # Support only video formats (containers) that are supported cross-browser and cross-device. As per
+        # Video container formats broadly supported across browsers; see
         # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
-        # MP4 and WebM are the only formats that are widely supported.
-        supported_mimetypes = ["video/mp4", "video/webm"]
+        # Whether a specific file actually plays depends on the codecs
+        # inside the container; the frontend hides the preview on a
+        # playback error and falls back to the download link.
+        supported_mimetypes = ["video/mp4", "video/quicktime", "video/webm"]
         return url_type in supported_mimetypes
 
     def add_video(
