@@ -157,10 +157,10 @@ run_test("append_user_group", () => {
 run_test("generate_pill_html", () => {
     assert.deepEqual(
         user_group_pill.generate_pill_html(testers_pill),
-        "<div class='pill 'data-user-group-id=\"102\" tabindex=0>\n" +
+        "<div class='pill'data-user-group-id=\"102\" tabindex=0>\n" +
             '    <span class="pill-label">\n' +
             '        <span class="pill-value">\n' +
-            "Testers\n" +
+            "                Testers\n" +
             '        </span>&nbsp;<span class="group-members-count">(4)</span></span>\n' +
             '    <div class="exit">\n' +
             '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n' +

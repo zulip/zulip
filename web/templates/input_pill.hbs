@@ -1,4 +1,4 @@
-<div class='pill {{#if deactivated}} deactivated-pill {{/if~}}'
+<div class='pill{{#if deactivated}} deactivated-pill{{/if}}{{#if is_placeholder_user}} pill-loading-shimmer{{/if}}'
   {{~#unless (eq user_id undefined)}}data-user-id="{{user_id}}"{{/unless~}}
   {{~#unless (eq group_id undefined)}}data-user-group-id="{{group_id}}"{{/unless~}}
   {{~#unless (eq stream_id undefined)}}data-stream-id="{{stream_id}}"{{/unless~}}
@@ -26,7 +26,7 @@
                 {{#if is_empty_string_topic}}
                 {{sign}}topic:{{#if topic_display_name}}<span class="empty-topic-display"> {{topic_display_name}}</span>{{/if}}
                 {{else}}
-                {{~ display_value }}
+                {{display_value}}
                 {{/if}}
                 {{/if}}
             {{/if}}
