@@ -3,6 +3,15 @@ import * as channel from "./channel.ts";
 import * as blueslip from "./blueslip.ts";
 import { $t } from "./i18n.ts";
 
+// Parse a date-only string from an ISO datetime without timezone conversion.
+// Using new Date(iso_string).toLocaleDateString() shifts the date back one day
+// for users behind UTC, since midnight UTC becomes the previous day locally.
+function format_date_string(iso_string: string): string {
+    const date_part = iso_string.slice(0, 10); // e.g. "2025-04-25"
+    const [year, month, day] = date_part.split("-").map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString();
+}
+
 type Task = {
     task_id: number;
     title: string;
@@ -372,7 +381,7 @@ export class TasksView {
     render_task_item(task: Task): string {
         const completed_class = task.completed ? "completed" : "";
         const checked_attr = task.completed ? "checked" : "";
-        const due_date_str = task.due_date ? new Date(task.due_date).toLocaleDateString() : null;
+        const due_date_str = task.due_date ? format_date_string(task.due_date) : null;
         const created_date_str = new Date(task.created_at).toLocaleDateString();
 
         // Generate proper message link
