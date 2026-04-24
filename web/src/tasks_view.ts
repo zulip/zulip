@@ -38,6 +38,7 @@ export class TasksView {
     tasks: Task[] = [];
     loading = false;
     current_filter: "all" | "completed" | "pending" = "all";
+    search_query = "";
 
     constructor() {
         this.setup_handlers();
@@ -117,13 +118,26 @@ export class TasksView {
     }
 
     get_filtered_tasks(): Task[] {
+        let filtered = this.tasks;
+
+        // Apply search filter
+        if (this.search_query) {
+            const query = this.search_query.toLowerCase();
+            filtered = filtered.filter(task =>
+                task.title.toLowerCase().includes(query) ||
+                (task.description && task.description.toLowerCase().includes(query)) ||
+                (task.creator_email && task.creator_email.toLowerCase().includes(query))
+            );
+        }
+
+        // Apply status filter
         switch (this.current_filter) {
             case "completed":
-                return this.tasks.filter(task => task.completed);
+                return filtered.filter(task => task.completed);
             case "pending":
-                return this.tasks.filter(task => !task.completed);
+                return filtered.filter(task => !task.completed);
             default:
-                return this.tasks;
+                return filtered;
         }
     }
 
@@ -511,6 +525,9 @@ export class TasksView {
                             <button onclick="this.closest('[style*=fixed]').remove()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #000; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
                         </div>
                     </div>
+                    <div style="margin-bottom: 16px;">
+                        <input type="text" class="task-search-input" placeholder="${$t({ defaultMessage: "Search tasks..." })}" value="${this.search_query}" style="width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; background: #f8f9fa; color: #000; outline: none;" />
+                    </div>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <button data-filter="all" class="filter-btn ${this.current_filter === 'all' ? 'active' : ''}" style="padding: 10px 18px; border: 2px solid #007bff; background: ${this.current_filter === 'all' ? '#007bff' : 'white'}; color: ${this.current_filter === 'all' ? 'white' : '#007bff'}; cursor: pointer; border-radius: 6px; font-weight: 500; font-size: 14px;">${$t({ defaultMessage: "All" })} (${this.tasks.length})</button>
                         <button data-filter="pending" class="filter-btn ${this.current_filter === 'pending' ? 'active' : ''}" style="padding: 10px 18px; border: 2px solid #28a745; background: ${this.current_filter === 'pending' ? '#28a745' : 'white'}; color: ${this.current_filter === 'pending' ? 'white' : '#28a745'}; cursor: pointer; border-radius: 6px; font-weight: 500; font-size: 14px;">${$t({ defaultMessage: "Pending" })} (${pending_count})</button>
@@ -520,7 +537,7 @@ export class TasksView {
                         ${this.loading ?
                 '<div style="text-align: center; padding: 40px; color: #000; font-size: 16px;">Loading...</div>' :
                 filtered_tasks.length === 0 ?
-                    '<div style="text-align: center; padding: 40px; color: #666; font-size: 16px;">No tasks found</div>' :
+                    `<div style="text-align: center; padding: 40px; color: #666; font-size: 16px;">${this.search_query ? $t({ defaultMessage: "No tasks match your search" }) : $t({ defaultMessage: "No tasks found" })}</div>` :
                     filtered_tasks.map(task => this.render_task_item(task)).join("")
             }
                     </div>
@@ -589,6 +606,19 @@ export class TasksView {
         $("#tasks-modal .time-stats-btn").on("click", (e) => {
             e.stopPropagation();
             this.show_time_stats();
+        });
+
+        // Search input handler
+        $("#tasks-modal .task-search-input").on("input", (e) => {
+            this.search_query = $(e.target).val() as string;
+            this.render_modal();
+            // Re-focus the search input and restore cursor position
+            const inputEl = $("#tasks-modal .task-search-input")[0] as HTMLInputElement | undefined;
+            if (inputEl) {
+                const len = this.search_query.length;
+                inputEl.setSelectionRange(len, len);
+                inputEl.focus();
+            }
         });
     }
 
