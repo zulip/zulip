@@ -22773,6 +22773,11 @@ paths:
                           feature on the login page for an organization.
 
                           **Changes**: New in Zulip 5.0 (feature level 116).
+                      realm_deactivated_redirect:
+                        type: string
+                        description: |
+                          If the organization has migrated to a new server, this contains the URL of the new workspace.
+                          Clients should automatically redirect or prompt the user to update their configuration.
                     example:
                       {
                         "authentication_methods":
@@ -22800,6 +22805,7 @@ paths:
                         "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
                         "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
                         "realm_web_public_access_enabled": false,
+                        "realm_deactivated_redirect": "https://chat.zulip.org",
                         "result": "success",
                         "external_authentication_methods":
                           [

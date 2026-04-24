@@ -6575,6 +6575,25 @@ class FetchAuthBackends(ZulipTestCase):
             result = self.client_get("/api/v1/server_settings", subdomain="")
             self.assert_json_error_contains(result, "Subdomain required", 400)
 
+            # Verify realm_deactivated_redirect is correctly serialized
+            realm = get_realm("zulip")
+            realm.deactivated_redirect = "https://chat.zulip.org"
+            realm.save(update_fields=["deactivated_redirect"])
+
+            with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
+                result = self.client_get("/api/v1/server_settings", subdomain="zulip", HTTP_USER_AGENT="")
+
+            check_result(
+                result,
+                [
+                    ("realm_name", check_string),
+                    ("realm_description", check_string),
+                    ("realm_icon", check_string),
+                    ("realm_deactivated_redirect", check_string),
+                ],
+            )
+            response_dict = self.assert_json_success(result)
+            self.assertEqual(response_dict["realm_deactivated_redirect"], "https://chat.zulip.org")
 
 class TestTwoFactor(ZulipTestCase):
     def test_direct_dev_login_with_2fa(self) -> None:
