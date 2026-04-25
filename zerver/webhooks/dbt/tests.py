@@ -1,7 +1,7 @@
 from zerver.lib.test_classes import WebhookTestCase
 
 
-class DBTHookTests(WebhookTestCase):
+class DbtHookTests(WebhookTestCase):
     def test_dbt_webhook_when_job_started(self) -> None:
         expected_message = """:yellow_circle: Daily Job (dbt build) deployment started in **Production**.\n
 Job #123 was kicked off from the UI by bwilliams@example.com at <time:2023-01-31T19:28:07Z>."""
@@ -23,7 +23,7 @@ Job #123 was kicked off from the UI by bwilliams@example.com at <time:2023-01-31
         self.check_webhook("job_run_errored", "Example Project", expected_message)
 
 
-class DBTHookWithAccessUrlTests(WebhookTestCase):
+class DbtHookWithAccessUrlTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/dbt?&api_key={api_key}&stream={stream}&access_url=https%3A%2F%2Fexample.us1.dbt.com"
 
     def test_dbt_webhook_with_valid_access_url(self) -> None:
