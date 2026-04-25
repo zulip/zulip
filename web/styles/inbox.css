@@ -862,7 +862,7 @@
                edges instead of insetting 4px. */
             outline: var(--focus-ring-outline);
             outline-offset: var(--focus-ring-outline-offset-in-views);
-            border-radius: 0.625em; /* 10px at 16px/1em */
+            border-radius: 0.3125em; /* 5px at 16px/1em */
         }
     }
 
@@ -889,10 +889,7 @@
         &:focus-visible {
             outline: var(--focus-ring-outline);
             outline-offset: -0.125em; /* -2px at 16px/1em */
-            /* Match the row outline's radius so the button ring
-               visibly rounds rather than reading as square — 5px on
-               a 26×26 ring is too subtle to notice at 1× DPR. */
-            border-radius: 0.625em; /* 10px at 16px/1em */
+            border-radius: 0.3125em; /* 5px at 16px/1em */
 
             > i,
             > .zulip-icon,

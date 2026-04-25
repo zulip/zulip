@@ -127,7 +127,12 @@
         }
 
         &.recent-view-topic-visibility {
-            border-radius: 0.3125em; /* 5px at 16px/1em */
+            /* 3px (vs. 5px on `.recent-view-body-row`) keeps a
+               consistent perceived corner-rounding ratio: 5px on
+               a wide row reads as a subtle round, but on a small
+               22×22 ring (icon-natural wrapper + 3px outset) it
+               reads as nearly circular. */
+            border-radius: 0.1875em; /* 3px at 16px/1em */
             /* 3px rather than 5px: the wrapper sits hard against
                the recent-view table's right edge (the table has
                overflow:hidden), so a 5px outset left the outline's
@@ -1007,7 +1012,15 @@
 
 .recent-view-body-row {
     outline-offset: -0.25em; /* -4px at 16px/1em */
-    border-radius: 0.625em; /* 10px at 16px/1em */
+    /* 0.4688em (vs. inbox's 0.3125em / 5px) — the larger
+       negative offset on this view shrinks the ring's effective
+       corner radius (`border-radius` minus `|outline-offset|`),
+       so we bump the base radius so the ring's painted corners
+       read with the same curvature as `.inbox-row`'s 3.5px
+       effective radius. Em-based so both offset and radius
+       scale together with the user's font size, keeping the
+       perceived corner-rounding ratio stable. */
+    border-radius: 0.4688em; /* 7.5px at 16px/1em */
 }
 
 .recent-view-table-unread-count {
