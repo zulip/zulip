@@ -1972,15 +1972,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
     def test_empty_string_topic_threading_header_is_locale_invariant(self) -> None:
         # The In-Reply-To/References header on an empty-topic stream
-        # missedmessage email is currently derived from the per-user
-        # locale-translated fallback name (e.g. "general chat" /
-        # "allgemeiner Chat"), so recipients with different
-        # default_language settings get divergent Message-Ids for the
-        # same conversation, which breaks cross-user threading in email
-        # clients.
-        #
-        # This test documents the buggy behavior; the next commit fixes
-        # it and flips the assertions to assertEqual.
+        # missedmessage email must be derived from the canonical empty
+        # string, not the per-user locale-translated fallback name, so
+        # that recipients with different default_language settings
+        # share a stable Message-Id for the same conversation.
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
@@ -2016,14 +2011,12 @@ class TestMessageNotificationEmails(ZulipTestCase):
             )
 
         self.assert_length(mail.outbox, 2)
-        self.assertNotEqual(
-            mail.outbox[0].extra_headers["In-Reply-To"],
-            mail.outbox[1].extra_headers["In-Reply-To"],
-        )
-        self.assertNotEqual(
-            mail.outbox[0].extra_headers["References"],
-            mail.outbox[1].extra_headers["References"],
-        )
+        recipient_id = Message.objects.get(id=message_id).recipient_id
+        expected_message_id = f"<{recipient_id}.@testserver>"
+        self.assertEqual(mail.outbox[0].extra_headers["In-Reply-To"], expected_message_id)
+        self.assertEqual(mail.outbox[0].extra_headers["References"], expected_message_id)
+        self.assertEqual(mail.outbox[1].extra_headers["In-Reply-To"], expected_message_id)
+        self.assertEqual(mail.outbox[1].extra_headers["References"], expected_message_id)
 
     def test_prepare_synthetic_root_message_id(self) -> None:
         hamlet = self.example_user("hamlet")

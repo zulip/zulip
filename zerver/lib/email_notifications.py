@@ -591,8 +591,11 @@ def do_send_missedmessage_events_reply_in_zulip(
             topic_name=display_topic_name,
             topic_resolved=topic_resolved,
         )
+        # Use the canonical (untranslated) topic name in the threading
+        # header so that recipients with different default_language
+        # settings receive a stable Message-Id for the same conversation.
         synthetic_root_message_id = prepare_synthetic_root_message_id(
-            Recipient.STREAM, message.recipient_id, topic_name=display_topic_name
+            Recipient.STREAM, message.recipient_id, topic_name=bare_topic_name
         )
     else:
         raise AssertionError("Invalid messages!")
