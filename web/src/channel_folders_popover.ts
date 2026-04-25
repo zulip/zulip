@@ -144,6 +144,7 @@ export function initialize(): void {
             onShow(instance) {
                 const show_channel_folders = user_settings.web_left_sidebar_show_channel_folders;
                 const show_collapse_expand_all_options = true;
+                const show_channel_display_options = true;
                 // Assuming that the instance can be shown, track and
                 // prep the instance for showing
                 popover_menus.popover_instances.show_folders_sidebar = instance;
@@ -153,6 +154,7 @@ export function initialize(): void {
                             show_channel_folders,
                             channel_folders_id: "left_sidebar_channel_folders",
                             show_collapse_expand_all_options,
+                            show_channel_display_options,
                             web_stream_unreads_count_display_policy_values:
                                 settings_config.web_stream_unreads_count_display_policy_values,
                             web_stream_unreads_count_display_policy:
@@ -192,6 +194,7 @@ export function initialize(): void {
         onShow(instance) {
             const show_channel_folders = user_settings.web_inbox_show_channel_folders;
             const show_collapse_expand_all_options = false;
+            const show_channel_display_options = false;
             // Assuming that the instance can be shown, track and
             // prep the instance for showing
             popover_menus.popover_instances.show_folders_inbox = instance;
@@ -201,6 +204,7 @@ export function initialize(): void {
                         show_channel_folders,
                         channel_folders_id: "inbox_channel_folders",
                         show_collapse_expand_all_options,
+                        show_channel_display_options,
                     }),
                 ),
             );
