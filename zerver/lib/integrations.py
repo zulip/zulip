@@ -599,9 +599,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "dbt",
         ["deployment"],
         [WebhookScreenshotConfig("job_run_completed_errored.json")],
-        display_name="DBT",
+        display_name="dbt",
         url_options=[
-            WebhookUrlOption(name="access_url", label="DBT Access URL", input_type="text")
+            WebhookUrlOption(name="access_url", label="dbt Access URL", input_type="text")
         ],
     ),
     IncomingWebhookIntegration(

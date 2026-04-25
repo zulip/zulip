@@ -9,13 +9,13 @@ from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-DBT_NOTIFICATION_TEMPLATE = """
+NOTIFICATION_TEMPLATE = """
 {emoji} {job_name} {run_text} {status} in **{environment}**.
 
 {job_text} was {run_reason} at <time:{start_time}>.
 """
 
-DBT_EVENT_TYPE_MAPPER = {
+EVENT_TYPE_MAPPER = {
     "job.run.started": {
         "running": (":yellow_circle:", "started"),
     },
@@ -28,7 +28,7 @@ DBT_EVENT_TYPE_MAPPER = {
     },
 }
 
-ALL_EVENT_TYPES = list(DBT_EVENT_TYPE_MAPPER.keys())
+ALL_EVENT_TYPES = list(EVENT_TYPE_MAPPER.keys())
 
 
 def extract_data_from_payload(payload: JsonBodyPayload[WildValue]) -> dict[str, str]:
@@ -52,7 +52,7 @@ def extract_data_from_payload(payload: JsonBodyPayload[WildValue]) -> dict[str, 
 
 
 def get_job_run_body(data: dict[str, str], access_url: str | None) -> str:
-    emoji, status = DBT_EVENT_TYPE_MAPPER[data["event_type"]][data["run_status"]]
+    emoji, status = EVENT_TYPE_MAPPER[data["event_type"]][data["run_status"]]
 
     project_url = (
         urljoin(
@@ -69,7 +69,7 @@ def get_job_run_body(data: dict[str, str], access_url: str | None) -> str:
     )
     run_text = f"[deployment]({project_url}/runs/{data['run_id']})" if project_url else "deployment"
 
-    body = DBT_NOTIFICATION_TEMPLATE.format(
+    body = NOTIFICATION_TEMPLATE.format(
         emoji=emoji,
         status=status,
         run_text=run_text,
