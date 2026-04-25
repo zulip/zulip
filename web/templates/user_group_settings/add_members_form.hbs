@@ -1,8 +1,10 @@
 <div class="add_members_container add-button-container">
-    <div class="pill-container person_picker">
-        <div class="input" contenteditable="true"
-          data-placeholder="{{t 'Add users or groups. Use #channelname to add all subscribers.' }}">
-            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+    <div class="members-input-scrollable-container" data-simplebar>
+        <div class="pill-container person_picker">
+            <div class="input" contenteditable="true"
+              data-placeholder="{{t 'Add users or groups. Use #channelname to add all subscribers.' }}">
+                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+            </div>
         </div>
     </div>
     {{#if (not hide_add_button)}}
