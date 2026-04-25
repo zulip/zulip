@@ -1030,6 +1030,35 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "#recent-view-content-tbody .on_hover_topic_read",
+        popperOptions: {
+            modifiers: [
+                {
+                    // We pick the placement explicitly per row in
+                    // onShow below, so disable Popper's automatic
+                    // flipping by providing no fallback placements.
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: [],
+                    },
+                },
+            ],
+        },
+        onShow(instance) {
+            // The first row's tooltip would overflow the top of the
+            // recent view, so we place it to the left instead. All
+            // other rows' tooltips are placed on top.
+            const is_first_row =
+                $(instance.reference).closest("#recent-view-content-tbody tr:first-child").length >
+                0;
+            instance.setProps({placement: is_first_row ? "left" : "top"});
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".recent-view-conversation-link",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
