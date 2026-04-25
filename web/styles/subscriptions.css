@@ -321,10 +321,6 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.member_list_add {
-    width: 100%;
-}
-
 .user_group_subscription_request_result,
 .stream_subscription_request_result {
     & a {
@@ -361,6 +357,10 @@ h4.user_group_setting_subsection_title {
        container. */
     .input {
         flex-grow: 1;
+    }
+
+    & button[disabled] {
+        pointer-events: none;
     }
 }
 
@@ -1119,18 +1119,11 @@ h4.user_group_setting_subsection_title {
 }
 
 .add_subscribers_container.add_subscribers_disabled,
-.member_list_add .add_members_disabled {
+.add_members_container.add_members_disabled {
     cursor: not-allowed;
 
     .pill-container {
         cursor: not-allowed;
-        pointer-events: none;
-    }
-}
-
-.add_subscribers_container,
-.member_list_add {
-    & button[disabled] {
         pointer-events: none;
     }
 }
