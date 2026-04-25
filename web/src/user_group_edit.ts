@@ -1241,6 +1241,7 @@ export function setup_group_settings(group: UserGroup): void {
             select_tab = key;
             const hash = hash_util.group_edit_url(group, select_tab);
             browser_history.update(hash);
+            $("#user_group_settings").toggleClass("members-tab-active", key === "members");
         },
     });
 
