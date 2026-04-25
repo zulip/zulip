@@ -106,11 +106,30 @@ export function delete_message(msg_id: number): void {
                 );
 
                 dialog_widget.hide_dialog_spinner();
-                ui_report.error(
-                    $t_html({defaultMessage: "Error deleting message"}),
-                    xhr,
-                    $("#dialog_error"),
-                );
+
+                // Check if this is the specific error about tasks
+                const responseText = xhr.responseText || "";
+                if (responseText.includes("My Tasks")) {
+                    // Show a popup explaining why deletion is blocked
+                    dialog_widget.close();
+                    confirm_dialog.launch({
+                        modal_title_html: $t_html({defaultMessage: "Cannot delete message"}),
+                        modal_content_html: $t_html({
+                            defaultMessage: "This message cannot be deleted because it contains tasks that are in your My Tasks view. Please remove the tasks from My Tasks first.",
+                        }),
+                        is_compact: true,
+                        on_click: () => {
+                            dialog_widget.close();
+                        },
+                        loading_spinner: false,
+                    });
+                } else {
+                    ui_report.error(
+                        $t_html({defaultMessage: "Error deleting message"}),
+                        xhr,
+                        $("#dialog_error"),
+                    );
+                }
             },
         });
     }
