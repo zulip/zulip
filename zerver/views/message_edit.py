@@ -29,6 +29,7 @@ from zerver.lib.topic import maybe_rename_empty_topic_to_general_chat
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.models import Message, UserProfile
+from zerver.models.messages import Task
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.streams import Stream, get_stream_by_id_in_realm
 
@@ -229,6 +230,13 @@ def delete_message_backend(
     # row.
     message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
     validate_can_delete_message(user_profile, message)
+
+    # Check if the message has tasks linked to it
+    if Task.objects.filter(message=message, assignee=user_profile).exists():
+        raise JsonableError(
+            _("This message cannot be deleted because it contains tasks that are in your My Tasks view. Please remove the tasks from My Tasks first.")
+        )
+
     try:
         do_delete_messages(user_profile.realm, [message], acting_user=user_profile)
     except (Message.DoesNotExist, IntegrityError):
