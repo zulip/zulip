@@ -11702,8 +11702,7 @@ paths:
                           included in the response. Matches the similar field
                           in other presence responses.
 
-                          **Changes**: New in Zulip 12.0 (feature level
-                          ZF-25f246).
+                          **Changes**: New in Zulip 12.0 (feature level 497).
                       presence:
                         type: object
                         additionalProperties: false
