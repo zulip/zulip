@@ -84,8 +84,8 @@ elif vendor == "ubuntu" and os_version == "24.04":  # noble
     POSTGRESQL_VERSION = "16"
 elif vendor == "ubuntu" and os_version == "26.04":  # resolute
     POSTGRESQL_VERSION = "18"
-elif vendor == "fedora" and os_version == "38":
-    POSTGRESQL_VERSION = "15"
+elif vendor == "fedora" and os_version == "43":
+    POSTGRESQL_VERSION = "17"
 elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
@@ -151,7 +151,6 @@ COMMON_YUM_DEPENDENCIES = [
     # Puppeteer dependencies end here.
 ]
 
-BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
 if (vendor == "debian" and os_version == "13") or (vendor == "ubuntu" and os_version == "26.04"):
     # For platforms without a PGroonga release, we need to build it
@@ -197,10 +196,22 @@ elif "fedora" in os_families():
         f"postgresql{POSTGRESQL_VERSION}",
         f"postgresql{POSTGRESQL_VERSION}-devel",
         # Needed to build PGroonga from source
+        "groonga-devel",
         "msgpack-devel",
+        # PGroonga compiles against <xxhash.h>; on systems where
+        # `xxhash-libs` is already pulled in transitively (e.g. by
+        # blosc2 / pyarrow) but `xxhash-devel` is not, meson detects
+        # libxxhash via pkg-config and skips its vendored fallback,
+        # so we have to provide the header ourselves.
+        "xxhash-devel",
+        "meson",
+        # Provides /usr/lib/rpm/redhat/redhat-hardened-cc1 and
+        # redhat-annobin-cc1 spec files referenced by the CFLAGS that
+        # PostgreSQL's pg_config exports; without it the PGroonga
+        # compile fails with "cannot read spec file".
+        "redhat-rpm-config",
         *VENV_DEPENDENCIES,
     ]
-    BUILD_GROONGA_FROM_SOURCE = True
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
@@ -230,8 +241,6 @@ def install_system_deps() -> None:
 
     # For some platforms, there aren't published PGroonga
     # packages available, so we build them from source.
-    if BUILD_GROONGA_FROM_SOURCE:
-        run_as_root(["./scripts/lib/build-groonga"])
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
 
@@ -359,11 +368,6 @@ def main(options: argparse.Namespace) -> NoReturn:
     else:
         # hash the content of setup-yum-repo*
         with open("scripts/lib/setup-yum-repo", "rb") as fb:
-            sha_sum.update(fb.read())
-
-    # hash the content of build-pgroonga if Groonga is built from source
-    if BUILD_GROONGA_FROM_SOURCE:
-        with open("scripts/lib/build-groonga", "rb") as fb:
             sha_sum.update(fb.read())
 
     # hash the content of build-pgroonga if PGroonga is built from source
