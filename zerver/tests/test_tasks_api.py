@@ -47,6 +47,47 @@ class TasksApiUnitTest(ZulipTestCase):
         self.assert_length(data["tasks"], 1)
         self.assertEqual(data["tasks"][0]["title"], "Hamlet only")
 
+    def test_list_my_tasks_assignee_query_param_delivery_email(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        message_id = self.send_stream_message(
+            iago, "Verona", topic_name="api", content="list by delivery email"
+        )
+        Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Hamlet by delivery email",
+            description="",
+        )
+
+        hamlet.email = "hamlet+api-visible@example.com"
+        hamlet.save(update_fields=["email"])
+
+        result = self.api_get(iago, "/api/v1/users/me/tasks", {"assignee": hamlet.delivery_email})
+        data = self.assert_json_success(result)
+        self.assert_length(data["tasks"], 1)
+        self.assertEqual(data["tasks"][0]["title"], "Hamlet by delivery email")
+
+    def test_list_my_tasks_assignee_query_param_case_insensitive(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        message_id = self.send_stream_message(
+            iago, "Verona", topic_name="api", content="list case insensitive"
+        )
+        Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Hamlet case insensitive",
+            description="",
+        )
+
+        result = self.api_get(iago, "/api/v1/users/me/tasks", {"assignee": hamlet.email.upper()})
+        data = self.assert_json_success(result)
+        self.assert_length(data["tasks"], 1)
+        self.assertEqual(data["tasks"][0]["title"], "Hamlet case insensitive")
+
     def test_list_my_tasks_assignee_unknown_user(self) -> None:
         hamlet = self.example_user("hamlet")
         result = self.api_get(
