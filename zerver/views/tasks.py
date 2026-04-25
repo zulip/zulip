@@ -61,10 +61,9 @@ def list_my_tasks(
     task_data = []
     for task in tasks:
         message = task.message
-        # Get stream and topic info for navigation
         stream_id = None
         topic = None
-        if message.type == "stream":
+        if message.is_channel_message:
             stream_id = message.recipient.type_id
             topic = message.subject
         

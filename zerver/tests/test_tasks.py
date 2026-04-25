@@ -1,6 +1,6 @@
 from django.utils.timezone import now
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Task
+from zerver.models.messages import Task
 
 
 class TasksViewTest(ZulipTestCase):
@@ -62,7 +62,7 @@ class TasksViewTest(ZulipTestCase):
         data = self.assert_json_success(result)
 
         tasks = data["tasks"]
-        self.assertLength(tasks, 2)
+        self.assert_length(tasks, 2)
         self.assertCountEqual([task["title"] for task in tasks], ["Fix bug", "Follow up"])
 
     def test_list_my_tasks_stream_message_includes_navigation_fields(self) -> None:
@@ -84,7 +84,7 @@ class TasksViewTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
 
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task = data["tasks"][0]
 
         self.assertEqual(task["task_id"], created_task.id)
@@ -93,7 +93,7 @@ class TasksViewTest(ZulipTestCase):
         self.assertEqual(task["due_date"], due_date.isoformat())
         self.assertEqual(task["message_id"], message_id)
         self.assertEqual(task["topic"], "deploy")
-        self.assertEqual(task["creator_email"], cordelia.delivery_email)
+        self.assertEqual(task["creator_email"], cordelia.email)
         self.assertIsNotNone(task["stream_id"])
         self.assertIsNotNone(task["created_at"])
 
@@ -112,7 +112,7 @@ class TasksViewTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
 
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task = data["tasks"][0]
 
         self.assertIsNone(task["stream_id"])
@@ -120,7 +120,7 @@ class TasksViewTest(ZulipTestCase):
         self.assertEqual(task["message_id"], message_id)
         self.assertEqual(task["title"], "Follow up")
         self.assertFalse(task["completed"])
-        self.assertEqual(task["creator_email"], othello.delivery_email)
+        self.assertEqual(task["creator_email"], othello.email)
         self.assertIsNotNone(task["created_at"])
 
     def test_list_my_tasks_visibility_by_assignee_across_members(self) -> None:
@@ -159,7 +159,7 @@ class TasksViewTest(ZulipTestCase):
 
         othello_result = self.api_get(othello, "/api/v1/users/me/tasks")
         othello_data = self.assert_json_success(othello_result)
-        self.assertLength(othello_data["tasks"], 1)
+        self.assert_length(othello_data["tasks"], 1)
         self.assertEqual(othello_data["tasks"][0]["title"], "Othello task")
 
     def test_list_my_tasks_includes_creator_when_assigned_by_other_member(self) -> None:
@@ -178,11 +178,11 @@ class TasksViewTest(ZulipTestCase):
 
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
 
         task = data["tasks"][0]
         self._assert_my_tasks_payload_shape(task)
-        self.assertEqual(task["creator_email"], cordelia.delivery_email)
+        self.assertEqual(task["creator_email"], cordelia.email)
         self.assertEqual(task["topic"], "triage")
         self.assertIsNotNone(task["stream_id"])
 
@@ -207,7 +207,7 @@ class TasksViewTest(ZulipTestCase):
 
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task = data["tasks"][0]
 
         self.assertEqual(task["task_id"], hamlet_task.id)
@@ -246,7 +246,7 @@ class TasksViewTest(ZulipTestCase):
 
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task = data["tasks"][0]
 
         self._assert_my_tasks_payload_shape(task)
@@ -279,7 +279,7 @@ class TasksViewTest(ZulipTestCase):
 
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
-        self.assertLength(data["tasks"], 2)
+        self.assert_length(data["tasks"], 2)
 
         task_by_id = {task["task_id"]: task for task in data["tasks"]}
         self.assertEqual(task_by_id[completed_task.id]["completed"], True)
