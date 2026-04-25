@@ -284,8 +284,22 @@ h4.user_group_setting_subsection_title {
     padding-right: 8px;
 }
 
+.add_members_container,
 .add_subscribers_container {
+    display: inline-flex;
     width: 100%;
+    align-items: center;
+
+    /* We need on click events to fire on this input for our typeahead.
+       This ensures that the input occupies space in the parent
+       container. */
+    .input {
+        flex-grow: 1;
+    }
+
+    & button[disabled] {
+        pointer-events: none;
+    }
 
     /* Set minimum height so that at least one row of pills is visible. */
     min-height: calc(
@@ -293,6 +307,7 @@ h4.user_group_setting_subsection_title {
             var(--outer-spacing-input-pill-container) + 2px
     );
 
+    .members-input-scrollable-container,
     .subscriber-input-scrollable-container {
         max-height: 30vh;
         height: 100%;
@@ -343,24 +358,6 @@ h4.user_group_setting_subsection_title {
         justify-content: flex-start;
         align-items: center;
         margin: 0 0 5px;
-    }
-}
-
-.add_subscribers_container,
-.add_members_container {
-    display: inline-flex;
-    width: 100%;
-    align-items: center;
-
-    /* We need on click events to fire on this input for our typeahead.
-       This ensures that the input occupies space in the parent
-       container. */
-    .input {
-        flex-grow: 1;
-    }
-
-    & button[disabled] {
-        pointer-events: none;
     }
 }
 
@@ -1360,24 +1357,29 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    #stream_settings.subscribers-tab-active {
-        /* When the subscribers tab is active, disable simplebar on
-           #stream_settings so the panel itself is not scrollable —
-           only the subscriber list table scrolls via its own simplebar.
-           Simplebar reads the host element's computed overflow-y and
-           disables its scrollbar when it sees 'hidden'. */
+    #stream_settings.subscribers-tab-active,
+    #user_group_settings.members-tab-active {
+        /* When the subscribers/members tab is active, disable simplebar
+           on #stream_settings/#user_group_settings so the panel itself
+           is not scrollable — only the subscriber/member list table
+           scrolls via its own simplebar. Simplebar reads the host
+           element's computed overflow-y and disables its scrollbar
+           when it sees 'hidden'. */
         overflow-y: hidden;
 
         /* Propagate the container height through simplebar's wrapper
            DOM to the actual content. :has() targets only the outer
-           simplebar-content (the one containing .subscription_settings),
-           not the nested one inside .subscriber_list_container. */
-        .simplebar-content:has(> .subscription_settings) {
+           simplebar-content (the one containing .subscription_settings/
+           user_group_settings_wrapper), not the nested one inside
+           .subscriber_list_container/.member_list_container. */
+        .simplebar-content:has(> .subscription_settings),
+        .simplebar-content:has(> .user_group_settings_wrapper) {
             height: 100%;
             display: flex;
             flex-direction: column;
 
             .subscription_settings,
+            .user_group_settings_wrapper,
             .inner-box {
                 flex: 1;
                 overflow: hidden;
@@ -1385,40 +1387,50 @@ h4.user_group_setting_subsection_title {
                 flex-direction: column;
             }
 
-            .stream_section[data-stream-section="subscribers"] {
+            .stream_section[data-stream-section="subscribers"],
+            .group_setting_section[data-group-section="members"] {
                 flex: 1;
                 overflow: hidden;
 
                 .edit_subscribers_for_stream,
-                .subscriber_list_settings_container {
+                .edit_members_for_user_group,
+                .subscriber_list_settings_container,
+                .member_list_settings_container {
                     height: 100%;
                 }
             }
         }
     }
 
-    .two-pane-settings-creation-simplebar-container.subscribers-visible {
-        /* When the subscribers step is visible in the stream creation form,
-        disable simplebar on the outer container and use flex layout so
-        only the subscriber list table scrolls via its own simplebar. */
+    .two-pane-settings-creation-simplebar-container.subscribers-visible,
+    .two-pane-settings-creation-simplebar-container.members-visible {
+        /* When the subscribers/members step is visible in the stream/group
+        creation form, disable simplebar on the outer container and use
+        flex layout so only the subscriber/member list table scrolls
+        via its own simplebar. */
         overflow-y: hidden;
 
-        .simplebar-content:has(> .stream-creation-body) {
+        .simplebar-content:has(> .stream-creation-body),
+        .simplebar-content:has(> .user-group-creation-body) {
             height: 100%;
             display: flex;
             flex-direction: column;
 
-            .stream-creation-body {
+            .stream-creation-body,
+            .user-group-creation-body {
                 flex: 1;
                 overflow: hidden;
 
-                .subscribers_container {
+                .subscribers_container,
+                .user_group_members_container {
                     height: 100%;
                     display: flex;
                     flex-direction: column;
 
                     .stream_create_add_subscriber_container,
-                    #people_to_add {
+                    #choose_member_section,
+                    #people_to_add,
+                    #people_to_add_in_group {
                         flex: 1;
                         overflow: hidden;
                         display: flex;
@@ -1430,23 +1442,27 @@ h4.user_group_setting_subsection_title {
     }
 
     #stream_settings.subscribers-tab-active .subscriber-list-box,
+    #user_group_settings.members-tab-active .member-list-box,
     .two-pane-settings-creation-simplebar-container.subscribers-visible
-        .subscriber-list-box {
+        .subscriber-list-box,
+    .two-pane-settings-creation-simplebar-container.members-visible
+        .member-list-box {
         /* flex: 1 takes remaining space after the auto-sized siblings. */
         flex: 1;
         overflow: hidden;
         /* Hide borders here since they would extend to the
            full flex item height; they are redeclared on
-           .subscriber_list_container instead. */
+           .subscriber_list_container/.member_list_container instead. */
         border-left: none;
         border-right: none;
         /* This is slightly larger than the height required to show at least one
-           subscriber row is shown along with the table header. It is not easy
+           subscriber/member row is shown along with the table header. It is not easy
            to calculate exact height since it depends whether the user has
-           permission to remove subscribers or not. */
+           permission to remove subscribers/members or not. */
         min-height: 4.7em;
 
-        .subscriber_list_container {
+        .subscriber_list_container,
+        .member_list_container {
             box-sizing: border-box;
             max-height: 100%;
             /* overflow: clip prevents the native scrollbar that would otherwise
