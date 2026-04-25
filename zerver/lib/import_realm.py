@@ -45,7 +45,7 @@ from zerver.lib.onboarding import (
     send_initial_direct_messages_to_user,
     send_initial_realm_messages,
 )
-from zerver.lib.parallel import run_parallel
+from zerver.lib.parallel import run_parallel, run_parallel_queue
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
@@ -1109,6 +1109,9 @@ class UploadPlan:
 
 
 class UploadDestination:
+    # None means "honor the caller's `processes`"; an int caps it.
+    max_workers: int | None = None
+
     def execute(self, plan: UploadPlan) -> None:
         raise NotImplementedError
 
@@ -1126,6 +1129,11 @@ class S3Destination(UploadDestination):
 
 
 class LocalDestination(UploadDestination):
+    # shutil.copy on one filesystem gains nothing from extra workers,
+    # and running this under the test suite requires processes == 1
+    # since tests run in daemon processes that cannot spawn children.
+    max_workers = 1
+
     def __init__(self, base_dir: str) -> None:
         self.base_dir = base_dir
 
@@ -1134,6 +1142,19 @@ class LocalDestination(UploadDestination):
         dest = os.path.join(self.base_dir, plan.relative_path)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         shutil.copy(plan.source_path, dest)
+
+
+UploadDestinationCls: TypeAlias = type[S3Destination] | type[LocalDestination]
+
+_upload_destination: ContextVar[UploadDestination] = ContextVar("import_upload_destination")
+
+
+def _init_upload_worker(destination_cls: UploadDestinationCls, destination_arg: str) -> None:
+    _upload_destination.set(destination_cls(destination_arg))
+
+
+def _execute_upload(plan: UploadPlan) -> None:
+    _upload_destination.get().execute(plan)
 
 
 def import_uploads(
@@ -1202,15 +1223,17 @@ def import_uploads(
     s3_uploads = settings.LOCAL_UPLOADS_DIR is None
     avatar_ish = processing_avatars or processing_emojis or processing_realm_icons
 
-    destination: UploadDestination
+    destination_cls: UploadDestinationCls
     if s3_uploads:
-        bucket_name = settings.S3_AVATAR_BUCKET if avatar_ish else settings.S3_AUTH_UPLOADS_BUCKET
-        destination = S3Destination(bucket_name)
+        destination_cls = S3Destination
+        destination_arg = (
+            settings.S3_AVATAR_BUCKET if avatar_ish else settings.S3_AUTH_UPLOADS_BUCKET
+        )
     else:
         assert settings.LOCAL_AVATARS_DIR is not None
         assert settings.LOCAL_FILES_DIR is not None
-        base_dir = settings.LOCAL_AVATARS_DIR if avatar_ish else settings.LOCAL_FILES_DIR
-        destination = LocalDestination(base_dir)
+        destination_cls = LocalDestination
+        destination_arg = settings.LOCAL_AVATARS_DIR if avatar_ish else settings.LOCAL_FILES_DIR
 
     def build_plan(sanitized_record: SanitizedRecord) -> UploadPlan:
         if processing_avatars:
@@ -1297,10 +1320,18 @@ def import_uploads(
             metadata=metadata,
         )
 
-    for count, sanitized_record in enumerate(sanitized_records, 1):
-        destination.execute(build_plan(sanitized_record))
-        if count % 1000 == 0:
-            logging.info("Processed %s/%s uploads", count, len(sanitized_records))
+    workers = destination_cls.max_workers if destination_cls.max_workers is not None else processes
+
+    with run_parallel_queue(
+        _execute_upload,
+        workers,
+        initializer=_init_upload_worker,
+        initargs=(destination_cls, destination_arg),
+        report_every=1000,
+        report=lambda count: logging.info("Processed %s/%s uploads", count, len(sanitized_records)),
+    ) as submit:
+        for sanitized_record in sanitized_records:
+            submit(build_plan(sanitized_record))
 
     if processing_avatars or processing_emojis:
         if processing_avatars:
