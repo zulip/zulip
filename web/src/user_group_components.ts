@@ -80,6 +80,10 @@ export const show_user_group_settings_pane = {
         $("#groups_overlay .user-group-settings-header-actions").hide();
         resize.resize_settings_overlay($("#groups_overlay_container"));
         resize.resize_settings_creation_overlay($("#groups_overlay_container"));
+        $("#user_group_creation_form .two-pane-settings-creation-simplebar-container").toggleClass(
+            "members-visible",
+            container_name === "user_group_members_container",
+        );
     },
 };
 
