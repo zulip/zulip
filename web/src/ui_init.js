@@ -1259,8 +1259,8 @@ function displayUsers(users) {
 
     // Add click handlers for Assign Task buttons
     $(".assign-task-btn").on("click", (e) => {
-        const userEmail = $(e.target).attr("data-user-email");
-        const userName = $(e.target).attr("data-user-name");
+        const userEmail = $(e.currentTarget).attr("data-user-email");
+        const userName = $(e.currentTarget).attr("data-user-name");
         if (!userEmail) {
             alert(`Cannot assign task: missing email for ${userName}.`);
             return;
@@ -1271,8 +1271,8 @@ function displayUsers(users) {
 
     // Add click handlers for View Tasks buttons
     $(".view-tasks-btn").on("click", (e) => {
-        const userEmail = $(e.target).attr("data-user-email");
-        const userName = $(e.target).attr("data-user-name");
+        const userEmail = $(e.currentTarget).attr("data-user-email");
+        const userName = $(e.currentTarget).attr("data-user-name");
         if (!userEmail) {
             alert(`Cannot load tasks: missing email for ${userName}.`);
             return;
@@ -1320,8 +1320,8 @@ function showSimpleTaskForm(userName, userEmail) {
                         ">&times;</button>
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <div style="color: #666; font-size: 14px; margin-bottom: 15px;">
-                            Assign to: <strong>${userName} (${userEmail})</strong>
+                        <div id="simple-task-form-assignee" style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                            Assign to: <strong></strong>
                         </div>
                         <input type="text" id="simple-task-title" placeholder="Task title..." style="
                             width: 100%;
@@ -1422,6 +1422,7 @@ function showSimpleTaskForm(userName, userEmail) {
         userName: userName,
         userEmail: userEmail
     });
+    $("#simple-task-form-assignee strong").text(`${userName} (${userEmail})`);
 
     // Close users overlay first
     overlays.close_overlay("users");
