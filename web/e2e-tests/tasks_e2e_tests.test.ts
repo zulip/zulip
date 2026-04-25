@@ -125,6 +125,47 @@ async function tasks_e2e_tests(page: Page): Promise<void> {
     });
     content_text = await common.get_text_from_selector(page, "#tasks-content");
     assert.ok(content_text.includes("Found 1 of 3 tasks"));
+
+    await close_tasks_overlay(page);
+
+    await open_tasks_overlay(page);
+    assert.equal(await common.get_text_from_selector(page, "#tasks-overlay h2"), "My Tasks");
+    await close_tasks_overlay(page);
+    await open_tasks_overlay(page);
+    assert.equal(await common.get_text_from_selector(page, "#tasks-overlay h2"), "My Tasks");
+    await close_tasks_overlay(page);
+
+    await common.send_message(page, "stream", {
+        stream_name: "Verona",
+        topic: "smoke-ext",
+        content: "smoke ext body",
+    });
+    message_list_id = await common.get_current_msg_list_id(page, false);
+    await post_task_for_last_message(page, "pending smoke", "");
+
+    await open_tasks_overlay(page);
+    const pending_btn = await page.$('#tasks-overlay .filter-tabs button[data-filter="pending"]');
+    assert.ok(pending_btn !== null);
+    await pending_btn!.click();
+    await page.waitForFunction(() => {
+        const el = document.querySelector("#tasks-content");
+        return el !== null && (el.textContent ?? "").includes("pending smoke");
+    });
+    const completed_btn = await page.$('#tasks-overlay .filter-tabs button[data-filter="completed"]');
+    assert.ok(completed_btn !== null);
+    await completed_btn!.click();
+    await page.waitForFunction(() => {
+        const el = document.querySelector("#tasks-content");
+        return el !== null && !(el.textContent ?? "").includes("pending smoke");
+    });
+    const all_btn = await page.$('#tasks-overlay .filter-tabs button[data-filter="all"]');
+    assert.ok(all_btn !== null);
+    await all_btn!.click();
+    await page.waitForFunction(() => {
+        const el = document.querySelector("#tasks-content");
+        return el !== null && (el.textContent ?? "").includes("pending smoke");
+    });
+    await close_tasks_overlay(page);
 }
 
 await common.run_test(tasks_e2e_tests);
