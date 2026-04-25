@@ -638,6 +638,10 @@ export class TasksView {
             $("#tasks-modal").remove();
         });
 
+        $("#tasks-modal .task-item").on("click", ".task-message-link", () => {
+            $("#tasks-modal").remove();
+        });
+
         // Time tracking handlers for modal
         $("#tasks-modal .task-item").on("click", ".start-timer-btn", (e) => {
             e.stopPropagation();
