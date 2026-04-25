@@ -4,7 +4,7 @@ type UserLike = {
 };
 
 function normalize_email(value: string | null | undefined): string {
-    return typeof value === "string" ? value.trim() : "";
+    return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
 export function resolve_assignee_email(user: UserLike): string {
