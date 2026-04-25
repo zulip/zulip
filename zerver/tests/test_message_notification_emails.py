@@ -1970,6 +1970,61 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self.assertEqual(mail.outbox[0].subject, expected_email_subject)
         self.assertIn(expected_email_body_includes, self.normalize_string(mail.outbox[0].body))
 
+    def test_empty_string_topic_threading_header_is_locale_invariant(self) -> None:
+        # The In-Reply-To/References header on an empty-topic stream
+        # missedmessage email is currently derived from the per-user
+        # locale-translated fallback name (e.g. "general chat" /
+        # "allgemeiner Chat"), so recipients with different
+        # default_language settings get divergent Message-Ids for the
+        # same conversation, which breaks cross-user threading in email
+        # clients.
+        #
+        # This test documents the buggy behavior; the next commit fixes
+        # it and flips the assertions to assertEqual.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        self.subscribe(cordelia, "Denmark")
+        do_change_user_setting(hamlet, "default_language", "en", acting_user=None)
+        do_change_user_setting(cordelia, "default_language", "de", acting_user=None)
+
+        message_id = self.send_stream_message(
+            othello,
+            "Denmark",
+            content="Hello channel",
+            topic_name="",
+        )
+
+        # Stub get_topic_display_name to simulate deployed translations
+        # (the test runner's Django catalogs do not include a standalone
+        # "general chat" translation, so without this stub the header
+        # divergence the bug causes in production cannot be observed).
+        def fake_display(topic_name: str, language: str) -> str:
+            assert topic_name == ""
+            return {"en": "general chat", "de": "allgemeiner Chat"}[language]
+
+        with patch(
+            "zerver.lib.email_notifications.get_topic_display_name", side_effect=fake_display
+        ):
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {message_id: MissedMessageData(trigger=NotificationTriggers.FOLLOWED_TOPIC_EMAIL)},
+            )
+            self.handle_missedmessage_emails(
+                cordelia.id,
+                {message_id: MissedMessageData(trigger=NotificationTriggers.FOLLOWED_TOPIC_EMAIL)},
+            )
+
+        self.assert_length(mail.outbox, 2)
+        self.assertNotEqual(
+            mail.outbox[0].extra_headers["In-Reply-To"],
+            mail.outbox[1].extra_headers["In-Reply-To"],
+        )
+        self.assertNotEqual(
+            mail.outbox[0].extra_headers["References"],
+            mail.outbox[1].extra_headers["References"],
+        )
+
     def test_prepare_synthetic_root_message_id(self) -> None:
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
