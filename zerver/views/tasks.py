@@ -16,12 +16,17 @@ from zerver.models.users import UserProfile
 
 def _resolve_assignee(assignee_email: str, current_user: UserProfile) -> UserProfile:
     """Return the assignee UserProfile, defaulting to current_user if email is empty."""
-    if not assignee_email:
+    assignee_identifier = assignee_email.strip()
+    if not assignee_identifier:
         return current_user
+
     try:
-        return UserProfile.objects.get(email=assignee_email)
+        return UserProfile.objects.get(delivery_email=assignee_identifier)
     except UserProfile.DoesNotExist:
-        raise JsonableError(f"User {assignee_email} not found")
+        try:
+            return UserProfile.objects.get(email=assignee_identifier)
+        except UserProfile.DoesNotExist:
+            raise JsonableError(f"User {assignee_identifier} not found")
 
 
 #TASKS.PY BY YANG LU

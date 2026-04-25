@@ -168,6 +168,7 @@ import * as user_group_edit from "./user_group_edit.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import * as user_groups from "./user_groups.ts";
+import {resolve_assignee_email} from "./user_tasks_assignment.ts";
 import * as user_profile from "./user_profile.ts";
 import { initialize_user_settings, user_settings } from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -1184,7 +1185,10 @@ function displayUsers(users) {
         return;
     }
 
-    const usersHtml = users.map(user => `
+    const usersHtml = users.map(user => {
+        const userEmail = resolve_assignee_email(user);
+
+        return `
         <div style="
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -1213,13 +1217,13 @@ function displayUsers(users) {
                         ${user.full_name}
                     </div>
                     <div style="color: #666; font-size: 14px;">
-                        ${user.email}
+                        ${userEmail || "Email unavailable"}
                     </div>
                     ${user.is_bot ? '<div style="color: #9c27b0; font-size: 12px; margin-top: 5px;">Bot</div>' : ''}
                 </div>
                 ${!user.is_bot ? `
                 <div style="display: flex; gap: 5px; margin-left: 10px;">
-                    <button class="assign-task-btn" data-user-email="${user.email}" data-user-name="${user.full_name}" style="
+                    <button class="assign-task-btn" data-user-email="${userEmail}" data-user-name="${user.full_name}" style="
                         background: #28a745;
                         color: white;
                         border: none;
@@ -1228,7 +1232,7 @@ function displayUsers(users) {
                         cursor: pointer;
                         font-size: 12px;
                     ">Assign Task</button>
-                    <button class="view-tasks-btn" data-user-email="${user.email}" data-user-name="${user.full_name}" style="
+                    <button class="view-tasks-btn" data-user-email="${userEmail}" data-user-name="${user.full_name}" style="
                         background: #17a2b8;
                         color: white;
                         border: none;
@@ -1241,7 +1245,8 @@ function displayUsers(users) {
                 ` : ''}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     $("#users-content").html(`
         <div style="color: #666; font-size: 14px; margin-bottom: 15px;">
@@ -1256,6 +1261,10 @@ function displayUsers(users) {
     $(".assign-task-btn").on("click", (e) => {
         const userEmail = $(e.target).attr("data-user-email");
         const userName = $(e.target).attr("data-user-name");
+        if (!userEmail) {
+            alert(`Cannot assign task: missing email for ${userName}.`);
+            return;
+        }
         console.log(`Assign Task clicked for: ${userName} (${userEmail})`);
         showSimpleTaskForm(userName, userEmail);
     });
@@ -1264,6 +1273,10 @@ function displayUsers(users) {
     $(".view-tasks-btn").on("click", (e) => {
         const userEmail = $(e.target).attr("data-user-email");
         const userName = $(e.target).attr("data-user-name");
+        if (!userEmail) {
+            alert(`Cannot load tasks: missing email for ${userName}.`);
+            return;
+        }
         console.log(`View Tasks clicked for: ${userName} (${userEmail})`);
         showUserTasksOverlay(userName, userEmail);
     });
@@ -1428,6 +1441,12 @@ function showSimpleTaskForm(userName, userEmail) {
 
 // Create task for user function
 function createTaskForUser(userEmail, title, description, userName) {
+    if (!userEmail) {
+        alert(`Cannot assign task: missing email for ${userName}.`);
+        $("#simple-assign-btn").prop('disabled', false).text('Assign');
+        return;
+    }
+
     const data = {
         title: title,
         description: description,

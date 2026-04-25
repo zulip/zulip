@@ -3,6 +3,32 @@ from zerver.models.messages import Task
 
 
 class TasksApiUnitTest(ZulipTestCase):
+    def test_create_standalone_task_for_other_assignee(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        result = self.api_post(
+            hamlet,
+            "/api/v1/tasks",
+            {
+                "title": "Follow up with othello",
+                "description": "handoff",
+                "assignee": othello.email,
+            },
+        )
+        data = self.assert_json_success(result)
+
+        created_task = Task.objects.get(id=data["task_id"])
+        self.assertEqual(created_task.assignee_id, othello.id)
+        self.assertEqual(created_task.creator_id, hamlet.id)
+
+        othello_tasks = self.assert_json_success(self.api_get(othello, "/api/v1/users/me/tasks"))
+        self.assert_length(othello_tasks["tasks"], 1)
+        self.assertEqual(othello_tasks["tasks"][0]["task_id"], created_task.id)
+
+        hamlet_tasks = self.assert_json_success(self.api_get(hamlet, "/api/v1/users/me/tasks"))
+        self.assertEqual(hamlet_tasks["tasks"], [])
+
     def test_list_my_tasks_assignee_query_param(self) -> None:
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
