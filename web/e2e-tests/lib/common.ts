@@ -28,9 +28,7 @@ type Message = Record<string, string | boolean> & {
 
 let browser: Browser | null = null;
 let screenshot_id = 0;
-export const is_firefox =
-    process.env["PUPPETEER_BROWSER"] === "firefox" ||
-    process.env["PUPPETEER_PRODUCT"] === "firefox";
+export const is_firefox = process.env["PUPPETEER_PRODUCT"] === "firefox";
 let realm_url = "http://zulip.zulipdev.com:9981/";
 const gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
 
@@ -75,10 +73,12 @@ export const window_size = {
 };
 
 export async function ensure_browser(): Promise<Browser> {
-    const chrome_only_args = is_firefox ? [] : ["--no-sandbox", "--disable-setuid-sandbox"];
     browser ??= await puppeteer.launch({
-        browser: is_firefox ? "firefox" : "chrome",
-        args: [`--window-size=${window_size.width},${window_size.height}`, ...chrome_only_args],
+        args: [
+            `--window-size=${window_size.width},${window_size.height}`,
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+        ],
         // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
         // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
         defaultViewport: null,
