@@ -336,6 +336,7 @@ function render_add_channel_folder_widget(): void {
         item_click_callback: channel_dropdown_item_click_callback,
         $events_container: $("#edit_channel_folder"),
         unique_id_type: "number",
+        no_items_text: $t({defaultMessage: "No channels to add"}),
     };
     add_channel_folder_widget = new dropdown_widget.DropdownWidget(opts);
     add_channel_folder_widget.setup();
