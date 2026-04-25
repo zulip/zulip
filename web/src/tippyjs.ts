@@ -755,6 +755,20 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "#tasks-toggle-button",
+        delay: LONG_HOVER_DELAY,
+        placement: "bottom",
+        appendTo: () => document.body,
+        onShow(instance) {
+            $(instance.reference).attr("data-tooltip-template-id", "show-tasks-tooltip-template");
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#realm-navbar-wide-logo",
         placement: "right",
         appendTo: () => document.body,

@@ -7,7 +7,7 @@ from bitfield.types import Bit, BitHandler
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
-from django.db.models import CASCADE, F, Q, QuerySet
+from django.db.models import CASCADE, SET_NULL, F, Q, QuerySet
 from django.db.models.functions import Upper
 from django.db.models.signals import post_delete, post_save
 from django.utils.timezone import now as timezone_now
@@ -842,8 +842,8 @@ class OnboardingUserMessage(models.Model):
 
 #Model for our Tasks
 class Task(models.Model):
-    #each task belongs to one Zulip message
-    message = models.ForeignKey(Message, on_delete=CASCADE)
+    # Nullable: standalone tasks (created via the assignment form) have no source message
+    message = models.ForeignKey(Message, null=True, blank=True, on_delete=SET_NULL)
     #each task is assigned to one user, we can use "user.assigned_tasks.all()" later to implement MyTasks
     assignee = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name='assigned_tasks')
     creator = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name='created_tasks')
@@ -857,3 +857,21 @@ class Task(models.Model):
     #We might use this below in the future in order to prevent duplicates
     # class Meta:
     #     unique_together = ("message", "assignee", "title")
+
+
+#Model for tracking time spent on tasks
+class TaskTimeLog(models.Model):
+    task = models.ForeignKey(Task, on_delete=CASCADE, related_name='time_logs')
+    user = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name='task_time_logs')
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.PositiveIntegerField(default=0)  # Store duration in seconds
+    description = models.TextField(blank=True)  # Optional notes about the work session
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Time log for {self.task.title} by {self.user.email}"
