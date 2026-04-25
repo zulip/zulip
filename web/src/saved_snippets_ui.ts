@@ -223,6 +223,7 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         sticky_bottom_option: $t({
             defaultMessage: "Create a new saved snippet",
         }),
+        no_items_text: $t({defaultMessage: "No saved snippets"}),
         on_show_callback(dropdown: tippy.Instance) {
             saved_snippets_dropdown = dropdown;
         },
