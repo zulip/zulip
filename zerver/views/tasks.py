@@ -21,10 +21,16 @@ def _resolve_assignee(assignee_email: str, current_user: UserProfile) -> UserPro
         return current_user
 
     try:
-        return UserProfile.objects.get(delivery_email=assignee_identifier)
+        return UserProfile.objects.get(
+            delivery_email__iexact=assignee_identifier,
+            realm=current_user.realm,
+        )
     except UserProfile.DoesNotExist:
         try:
-            return UserProfile.objects.get(email=assignee_identifier)
+            return UserProfile.objects.get(
+                email__iexact=assignee_identifier,
+                realm=current_user.realm,
+            )
         except UserProfile.DoesNotExist:
             raise JsonableError(f"User {assignee_identifier} not found")
 
@@ -152,14 +158,8 @@ def list_my_tasks(
     assignee: str = "",
 ) -> HttpResponse:
     """Get tasks assigned to current user or specified assignee."""
-    if assignee:
-        try:
-            target_user = UserProfile.objects.get(email=assignee)
-        except UserProfile.DoesNotExist:
-            raise JsonableError(f"User {assignee} not found")
-        tasks = Task.objects.filter(assignee=target_user).select_related("message__recipient", "creator")
-    else:
-        tasks = Task.objects.filter(assignee=user_profile).select_related("message__recipient", "creator")
+    target_user = _resolve_assignee(assignee, user_profile)
+    tasks = Task.objects.filter(assignee=target_user).select_related("message__recipient", "creator")
 
     task_data = []
     for task in tasks:

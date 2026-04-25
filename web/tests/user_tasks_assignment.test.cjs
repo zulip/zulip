@@ -16,6 +16,15 @@ run_test("resolve_assignee_email prefers delivery_email", () => {
     assert.equal(email, "zoe@example.com");
 });
 
+run_test("resolve_assignee_email trims preferred delivery_email", () => {
+    const email = user_tasks_assignment.resolve_assignee_email({
+        delivery_email: "  zoe@example.com  ",
+        email: "zoe+legacy@example.com",
+    });
+
+    assert.equal(email, "zoe@example.com");
+});
+
 run_test("resolve_assignee_email falls back to email", () => {
     const email = user_tasks_assignment.resolve_assignee_email({
         email: "zoe@example.com",
@@ -39,4 +48,21 @@ run_test("resolve_assignee_email ignores whitespace-only fields", () => {
     });
 
     assert.equal(email, "");
+});
+
+run_test("resolve_assignee_email trims fallback email", () => {
+    const email = user_tasks_assignment.resolve_assignee_email({
+        delivery_email: "   ",
+        email: "  zoe@example.com  ",
+    });
+
+    assert.equal(email, "zoe@example.com");
+});
+
+run_test("resolve_assignee_email preserves email casing", () => {
+    const email = user_tasks_assignment.resolve_assignee_email({
+        email: "AARON@zulip.com",
+    });
+
+    assert.equal(email, "AARON@zulip.com");
 });
