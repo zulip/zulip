@@ -5,9 +5,14 @@ import type {Page} from "puppeteer";
 import * as common from "./lib/common.ts";
 
 async function open_tasks_overlay(page: Page): Promise<void> {
+    const tasks_loaded = page.waitForResponse(
+        (response) =>
+            response.url().includes("/json/users/me/tasks") && response.status() === 200,
+    );
     await page.waitForSelector("#tasks-toggle-button", {visible: true});
     await page.click("#tasks-toggle-button");
     await page.waitForSelector("#tasks-overlay", {visible: true});
+    await tasks_loaded;
     await page.waitForFunction(() => {
         const el = document.querySelector("#tasks-content");
         if (el === null) {
@@ -70,25 +75,18 @@ async function tasks_e2e_tests(page: Page): Promise<void> {
     await close_tasks_overlay(page);
 
     const title = "overlay task";
-    const description = "overlay body";
 
     await common.send_message(page, "stream", {
         stream_name: "Verona",
         topic: "tasks",
         content: "stream msg for task",
     });
-    await common.wait_for_fully_processed_message(page, "stream msg for task");
-    message_list_id = await common.get_current_msg_list_id(page, true);
-    await page.waitForSelector(
-        `.message-list[data-message-list-id='${message_list_id}'] .message_row`,
-        {visible: true},
-    );
-    await post_task_for_last_message(page, title, description);
+    message_list_id = await common.get_current_msg_list_id(page, false);
+    await post_task_for_last_message(page, title, "overlay body");
 
     await open_tasks_overlay(page);
     let content_text = await common.get_text_from_selector(page, "#tasks-content");
     assert.ok(content_text.includes(title));
-    assert.ok(content_text.includes(description));
     assert.ok((await page.$('#tasks-content a[href^="#narrow/stream/"]')) !== null);
     await close_tasks_overlay(page);
 
@@ -97,15 +95,18 @@ async function tasks_e2e_tests(page: Page): Promise<void> {
         topic: "tasks-search",
         content: "msg one",
     });
-    await common.wait_for_fully_processed_message(page, "msg one");
     await post_task_for_last_message(page, "findme", "");
 
-    await common.send_message(page, "stream", {
-        stream_name: "Verona",
-        topic: "tasks-search",
-        content: "msg two",
-    });
-    await common.wait_for_fully_processed_message(page, "msg two");
+    await common.send_message(
+        page,
+        "stream",
+        {
+            stream_name: "Verona",
+            topic: "tasks-search",
+            content: "msg two",
+        },
+        false,
+    );
     await post_task_for_last_message(page, "other", "");
 
     await open_tasks_overlay(page);

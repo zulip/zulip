@@ -169,7 +169,6 @@ def list_my_tasks(
                 stream_id = message.recipient.type_id
                 topic = message.subject
 
-        # Get time tracking information for this task (safe fallback if table doesn't exist)
         total_time_seconds = 0
         active_timer = False
         try:

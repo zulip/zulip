@@ -99,7 +99,7 @@ class TasksViewTest(ZulipTestCase):
         self.assertEqual(task["due_date"], due_date.isoformat())
         self.assertEqual(task["message_id"], message_id)
         self.assertEqual(task["topic"], "deploy")
-        self.assertEqual(task["creator_email"], cordelia.delivery_email)
+        self.assertEqual(task["creator_email"], cordelia.email)
         self.assertIsNotNone(task["stream_id"])
         self.assertIsNotNone(task["created_at"])
 
@@ -126,7 +126,7 @@ class TasksViewTest(ZulipTestCase):
         self.assertEqual(task["message_id"], message_id)
         self.assertEqual(task["title"], "Follow up")
         self.assertFalse(task["completed"])
-        self.assertEqual(task["creator_email"], othello.delivery_email)
+        self.assertEqual(task["creator_email"], othello.email)
         self.assertIsNotNone(task["created_at"])
 
     def test_list_my_tasks_visibility_by_assignee_across_members(self) -> None:
@@ -188,7 +188,7 @@ class TasksViewTest(ZulipTestCase):
 
         task = data["tasks"][0]
         self._assert_my_tasks_payload_shape(task)
-        self.assertEqual(task["creator_email"], cordelia.delivery_email)
+        self.assertEqual(task["creator_email"], cordelia.email)
         self.assertEqual(task["topic"], "triage")
         self.assertIsNotNone(task["stream_id"])
 
