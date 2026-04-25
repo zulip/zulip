@@ -202,6 +202,11 @@ export function initialize(): void {
 
         const target_name = $target.attr("data-overlay")!;
 
+        // Only close if this is the currently active overlay
+        if (target_name !== open_overlay_name) {
+            return;
+        }
+
         close_overlay(target_name);
 
         e.preventDefault();
