@@ -10,6 +10,7 @@ import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import {page_params} from "./page_params.ts";
@@ -96,6 +97,8 @@ export type DropdownWidgetOptions = {
     // When this is set, pressing tab will move focus to the target element.
     tab_moves_focus_to_target?: (event: JQuery.KeyDownEvent) => string | undefined;
     search_placeholder_text?: string;
+    // Text to show when there are no options at all, not due to search filtering.
+    no_items_text?: string;
     sort_list_by_filter_value?: (items: Option[], filter_value: string) => Option[];
 };
 
@@ -147,6 +150,7 @@ export class DropdownWidget {
     // here, so should be generalized or reworked.
     item_clicked = false;
     search_placeholder_text: string;
+    no_items_text: string;
     sort_list_by_filter_value: ((items: Option[], filter_value: string) => Option[]) | undefined;
 
     constructor(options: DropdownWidgetOptions) {
@@ -192,6 +196,7 @@ export class DropdownWidget {
         this.tab_moves_focus_to_target = options.tab_moves_focus_to_target;
         this.current_hover_index = 0;
         this.search_placeholder_text = options.search_placeholder_text ?? "";
+        this.no_items_text = options.no_items_text ?? $t({defaultMessage: "Nothing to show"});
         this.sort_list_by_filter_value = options.sort_list_by_filter_value;
     }
 
@@ -285,6 +290,16 @@ export class DropdownWidget {
         const list_items = this.list_widget.get_current_list();
         const $no_search_results = $popper.find(".no-dropdown-items");
         if (list_items.length === 0) {
+            const $search_input = $popper.find<HTMLInputElement>(
+                "input.dropdown-list-search-input",
+            );
+            const value = $search_input.val()!;
+            const has_search_value = $search_input.length > 0 && value.trim().length > 0;
+            if (!has_search_value) {
+                $no_search_results.text(this.no_items_text);
+            } else {
+                $no_search_results.text($t({defaultMessage: "No matching results"}));
+            }
             $no_search_results.show();
         } else {
             $no_search_results.hide();
