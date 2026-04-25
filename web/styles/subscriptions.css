@@ -1119,7 +1119,7 @@ h4.user_group_setting_subsection_title {
 }
 
 .add_subscribers_container.add_subscribers_disabled,
-.member_list_settings .add_members_disabled {
+.member_list_add .add_members_disabled {
     cursor: not-allowed;
 
     .pill-container {
@@ -1129,7 +1129,7 @@ h4.user_group_setting_subsection_title {
 }
 
 .add_subscribers_container,
-.member_list_settings {
+.member_list_add {
     & button[disabled] {
         pointer-events: none;
     }
