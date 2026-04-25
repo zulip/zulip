@@ -105,6 +105,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_user_default_setting,
     do_set_realm_zulip_update_announcements_stream,
 )
+from zerver.actions.reminders import do_delete_reminder, schedule_reminder_for_message
 from zerver.actions.saved_snippets import (
     do_create_saved_snippet,
     do_delete_saved_snippet,
@@ -219,6 +220,8 @@ from zerver.lib.event_schema import (
     check_realm_user_add,
     check_realm_user_remove,
     check_realm_user_update,
+    check_reminder_add,
+    check_reminder_remove,
     check_saved_snippets_add,
     check_saved_snippets_remove,
     check_saved_snippets_update,
@@ -297,6 +300,7 @@ from zerver.models import (
     RealmPlayground,
     RealmUserDefault,
     SavedSnippet,
+    ScheduledMessage,
     Service,
     Stream,
     UserMessage,
@@ -5699,6 +5703,31 @@ class ScheduledMessagesEventsTest(BaseAction):
         with self.verify_action() as events:
             delete_scheduled_message(self.user_profile, scheduled_message_id)
         check_scheduled_message_remove("events[0]", events[0])
+
+
+class RemindersEventsTest(BaseAction):
+    def schedule_reminder(self, message_id: int) -> int:
+        return schedule_reminder_for_message(
+            self.user_profile,
+            get_client("website"),
+            message_id,
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            note="",
+        )
+
+    def test_reminder_add_event(self) -> None:
+        message_id = self.send_stream_message(self.user_profile, "Verona", "Test message")
+        with self.verify_action() as events:
+            self.schedule_reminder(message_id)
+        check_reminder_add("events[0]", events[0])
+
+    def test_reminder_remove_event(self) -> None:
+        message_id = self.send_stream_message(self.user_profile, "Verona", "Test message")
+        reminder_id = self.schedule_reminder(message_id)
+        reminder = ScheduledMessage.objects.get(id=reminder_id)
+        with self.verify_action() as events:
+            do_delete_reminder(self.user_profile, reminder)
+        check_reminder_remove("events[0]", events[0])
 
 
 class ChannelFolderActionTest(BaseAction):
