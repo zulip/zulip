@@ -749,6 +749,11 @@
 
         .recent-view-unread-mention-and-count-wrapper {
             grid-area: unread-mention-and-count;
+            /* Reserve space so a focused unread badge's `-5px`
+               outset focus ring (`.recent-view-table-unread-count`'s
+               `::before`) does not paint over the topic-name's
+               ellipsis when the topic is long enough to truncate. */
+            padding-left: 0.4375em; /* 7px at 16px/1em */
         }
 
         .zulip-icon-chevron-right {
