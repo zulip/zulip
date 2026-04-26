@@ -30,6 +30,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import (
     AccessDeniedError,
     AnomalousWebhookPayloadError,
+    BotRequiredError,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
     InvalidJSONError,
@@ -161,6 +162,24 @@ def require_realm_admin(
     ) -> HttpResponse:
         if not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequiredError
+        return func(request, user_profile, *args, **kwargs)
+
+    return wrapper
+
+
+def require_bot_user(
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
+    @wraps(func)
+    def wrapper(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
+    ) -> HttpResponse:
+        if not user_profile.is_bot:
+            raise BotRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -691,7 +710,7 @@ def require_human_non_guest_user(
 def require_user_group_create_permission(
     view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
-    @require_human_non_guest_user
+    @require_non_guest_user
     @wraps(view_func)
     def _wrapped_view_func(
         request: HttpRequest,

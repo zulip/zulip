@@ -345,8 +345,15 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
     // the same physical key combination that a QWERTY user would
     // use (e.g. 'ф' on Cyrillic maps to 'a' on QWERTY). In such cases,
     // we derive the QWERTY equivalent using `e.code` and the `CODE_TO_QWERTY_CHAR` map.
+    //
+    // The same `e.code` path is needed on macOS when Cmd+Shift are
+    // both held, as browsers report the unshifted key in that case
+    // (e.g. Cmd+Shift+2 gives e.key="2" rather than "@").  Without
+    // this, `Cmd+<shifted_symbol>` hotkeys would never match.
+    const mac_cmd_shift = common.has_mac_keyboard() && e.metaKey && e.shiftKey;
     const use_event_key =
-        common.is_printable_ascii(e.key) || KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key);
+        KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key) ||
+        (common.is_printable_ascii(e.key) && !mac_cmd_shift);
     let key = e.key;
     if (!use_event_key) {
         const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;
@@ -555,13 +562,23 @@ function handle_popover_events(event_name: string): boolean {
     }
 
     if (popover_menu_visible_instance) {
+        const $focused_element = $(":focus");
+        const focus_in_textarea = $focused_element.is("textarea");
+        const focused_element = $focused_element[0];
+        const focus_in_textarea_at_end =
+            focus_in_textarea &&
+            event_name === "down_arrow" &&
+            focused_element instanceof HTMLTextAreaElement &&
+            focused_element.selectionStart === focused_element.value.length &&
+            focused_element.selectionEnd === focused_element.value.length;
         if (
             // Allow all hotkeys except for `down_arrow` and `up_arrow`
             // to be handled by the browser.
-            // Added to handle `schedule-reminder-note` textarea.
+            // The `down_arrow` key is specifically intercepted when the cursor
+            // is at the end of a textarea to enable popover navigation.
             processing_text() &&
-            event_name !== "down_arrow" &&
-            event_name !== "up_arrow"
+            ((focus_in_textarea && !focus_in_textarea_at_end) ||
+                (event_name !== "down_arrow" && event_name !== "up_arrow"))
         ) {
             return false;
         }
@@ -1071,6 +1088,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                     break;
                 case "star_message":
                     // Do nothing; this allows one to use Ctrl+S inside compose.
+                    break;
+                case "open_mentions_view":
+                    // Do nothing; this allows one to use Ctrl+@ inside compose.
                     break;
                 default:
                     // Let the browser handle the key normally.

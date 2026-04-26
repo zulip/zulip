@@ -897,6 +897,10 @@ export function is_valid_bulk_user_ids_for_compose(
     });
 }
 
+export function is_active_user(user_id: number): boolean {
+    return active_user_dict.has(user_id);
+}
+
 export function is_active_user_or_system_bot(user_id: number): boolean {
     // For popover menus, we include cross-realm bots as active
     // users.
@@ -1146,10 +1150,21 @@ export function get_message_people(): User[] {
 
 export function get_active_message_people(): User[] {
     const message_people = get_message_people();
-    const active_message_people = message_people.filter((item) =>
-        active_user_dict.has(item.user_id),
-    );
+    const active_message_people = message_people.filter((item) => is_active_user(item.user_id));
     return active_message_people;
+}
+
+export function get_people_for_dm(opts: {
+    exclude_non_welcome_bots: boolean;
+    exclude_non_message_people: boolean;
+    active_users_only: boolean;
+}): User[] {
+    if (opts.exclude_non_message_people) {
+        return opts.active_users_only ? get_active_message_people() : get_message_people();
+    } else if (opts.exclude_non_welcome_bots) {
+        return get_realm_users_and_welcome_bot();
+    }
+    return get_realm_users_and_system_bots();
 }
 
 export function get_people_for_search_bar(query: string): User[] {
@@ -1168,21 +1183,12 @@ export function get_people_for_search_bar(query: string): User[] {
     return filter_all_persons(pred);
 }
 
-export function should_remove_diacritics_for_query(query_lower_case: string): boolean {
-    // We only do diacritic-sensitive matching for queries that do not
-    // contain diacritics themselves.
-    //
-    // TODO: This check is too strict; ideally we'd check for presence
-    // of diacritics; punctuation should not be relevant.
-    return /^[a-z]+$/.test(query_lower_case);
-}
-
 export function maybe_remove_diacritics_from_name(
     user: User,
     should_remove_diacritics: boolean,
 ): string {
     // Callers should compute should_remove_diacritics using
-    // should_remove_diacritics_for_query. It's fastest if the caller
+    // contains_diacritics. It's fastest if the caller
     // computes that once outside the loop over all users.
     if (should_remove_diacritics) {
         // Reuse removed diacritics version of the `full_name` if
@@ -1196,7 +1202,7 @@ export function maybe_remove_diacritics_from_name(
 export function build_termlet_matcher(termlet: string): (user: User) => boolean {
     // Note: termlets are required to be lower case.
     termlet = termlet.trim();
-    const should_remove_diacritics = should_remove_diacritics_for_query(termlet);
+    const should_remove_diacritics = !typeahead.contains_diacritics(termlet);
 
     return function (user: User): boolean {
         const full_name = maybe_remove_diacritics_from_name(user, should_remove_diacritics);

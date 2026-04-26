@@ -243,7 +243,18 @@ run_test("mappings", () => {
     assert.equal(map_down("c", false, true, false), undefined);
     assert.equal(map_down("k", false, false, true).name, "search_with_k");
     assert.equal(map_down("k", false, true, false), undefined);
-    assert.equal(map_down("@", true, false, true).name, "open_mentions_view");
+    // On macOS, browsers report the unshifted key when Cmd+Shift
+    // are both held (e.g. Cmd+Shift+2 gives e.key="2", not "@"),
+    // so we fall back to `e.code` to recover the intended symbol.
+    assert.equal(
+        hotkey.get_keydown_hotkey({
+            key: "2",
+            code: "Digit2",
+            shiftKey: true,
+            metaKey: true,
+        }).name,
+        "open_mentions_view",
+    );
     assert.equal(map_down("@", true, true, false), undefined);
     assert.equal(map_down("s", false, false, true).name, "star_message");
     assert.equal(map_down("s", false, true, false), undefined);
@@ -402,6 +413,19 @@ run_test("allow normal typing when editing text", ({override, override_rewire}) 
             }
         }
     }
+});
+
+run_test("Ctrl+@ opens mentions view even while editing text", ({override_rewire}) => {
+    // Ctrl+@ / Cmd+@ should open the mentions view regardless of
+    // whether the focus is in a text input, matching the behavior
+    // of Ctrl+K (search) and Ctrl+S (star message).
+    override_rewire(hotkey, "processing_text", () => true);
+
+    stubbing(browser_history, "go_to_location", (stub) => {
+        assert.ok(hotkey.process_keydown({key: "@", shiftKey: true, ctrlKey: true}));
+        assert.equal(stub.num_calls, 1);
+        assert.equal(stub.last_call_args[0], "#narrow/is/mentioned");
+    });
 });
 
 test_while_not_editing_text("streams", ({override}) => {

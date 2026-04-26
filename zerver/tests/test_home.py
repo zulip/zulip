@@ -28,6 +28,7 @@ from zerver.lib.test_helpers import (
     queries_captured,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.users import max_message_id_for_user
 from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -306,7 +307,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(58),
+            self.assert_database_query_count(56),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -636,6 +637,21 @@ class HomeTest(ZulipTestCase):
             result = self._get_home_page()
             # Should be successful after calling 2fa login function.
             self.check_rendered_logged_in_app(result)
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_home_reload(self) -> None:
+        # When the client triggers a reload via ?state_data=deferred,
+        # the server should skip the expensive do_events_register()
+        # call and return state_data=None so the client fetches it
+        # via /json/register instead. See #36094.
+        self.login("hamlet")
+        result = self.client_get("/", {"state_data": "deferred"})
+        self.check_rendered_logged_in_app(result)
+
+        page_params = self._get_page_params(result)
+        self.assertIsNone(page_params["state_data"])
+        self.assertTrue(page_params["no_event_queue"])
+        self.assertFalse(page_params["is_spectator"])
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_num_queries_for_realm_admin(self) -> None:
@@ -1088,7 +1104,12 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["narrow_stream"], stream_name)
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
-        self.assertEqual(page_params["state_data"]["max_message_id"], -1)
+        # max_message_id is the user's global latest message id, not
+        # the narrow's; see local_message.ts for how it's consumed.
+        self.assertEqual(
+            page_params["state_data"]["max_message_id"],
+            max_message_id_for_user(user_profile),
+        )
 
     @activate_push_notification_service()
     def test_has_pending_sponsorship_request(self) -> None:

@@ -20,11 +20,15 @@ from email.headerregistry import Address
 from functools import wraps
 from typing import Any, TypeVar
 
+from django.core.files.base import File
 from typing_extensions import ParamSpec
 from zulip import Client
 
+from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.lib.storage import static_path
+from zerver.models.realm_emoji import RealmEmoji
 from zerver.models.realms import get_realm
-from zerver.models.users import get_user
+from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -59,6 +63,18 @@ def openapi_test_function(
         return _record_calls_wrapper
 
     return wrapper
+
+
+def reset_realm_uploaded_emoji(user: UserProfile) -> None:
+    # Due to the way that the test runner varies settings.LOCAL_UPLOADS_DIR
+    # we need to reset the uploaded green_tick emoji in order to generate
+    # successful realm exports for the API python and curl example tests.
+    RealmEmoji.objects.all().delete()
+    IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
+    with open(IMAGE_FILE_PATH, "rb") as fp:
+        check_add_realm_emoji(
+            user.realm, "green_tick", user, File(fp, name="checkbox.png"), "image/png"
+        )
 
 
 def ensure_users(ids_list: list[int], user_names: list[str]) -> None:
@@ -835,6 +851,39 @@ def regenerate_bot_api_key(client: Client) -> None:
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/bots/{bot_id}/api_key/regenerate", "post", "200")
+
+
+@openapi_test_function("/bot_storage:put")
+def update_bot_storage(client: Client) -> None:
+    # {code_example|start}
+    # Store value of "bar" for the key "foo" for a bot user.
+    result = client.update_storage({"storage": {"foo": "bar"}})
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bot_storage", "put", "200")
+
+
+@openapi_test_function("/bot_storage:get")
+def get_bot_storage(client: Client) -> None:
+    # {code_example|start}
+    # Retrieve all data stored for a bot user.
+    result = client.get_storage()
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bot_storage", "get", "200")
+
+
+@openapi_test_function("/bot_storage:delete")
+def remove_bot_storage(client: Client) -> None:
+    # {code_example|start}
+    # Remove all data stored for a bot user.
+    result = client.call_endpoint(
+        url="/bot_storage",
+        method="DELETE",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bot_storage", "delete", "200")
 
 
 @openapi_test_function("/get_stream_id:get")
@@ -2265,8 +2314,19 @@ def test_api_key_endpoints(client: Client) -> None:
     regenerate_api_key(client)
 
 
-def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
+def test_bot_storage(bot_client: Client) -> None:
+    update_bot_storage(bot_client)
+    get_bot_storage(bot_client)
+    remove_bot_storage(bot_client)
+
+
+def test_the_api(
+    client: Client, nonadmin_client: Client, owner_client: Client, bot_client: Client
+) -> None:
     get_user_agent(client)
+    # test_bot_storage authenticates as default-bot, whose API key is
+    # regenerated in test_api_key_endpoints.
+    test_bot_storage(bot_client)
     # Run `test_api_key_endpoints` before `test_users` so Device records created by
     # `register_push_device` & `register_device` are not bulk-deleted by
     # `regenerate_api_key`, since they are needed for curl tests.

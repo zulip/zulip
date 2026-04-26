@@ -220,9 +220,9 @@ export type TypeaheadInputElement =
 export class Typeahead<ItemType extends string | object> {
     input_element: TypeaheadInputElement;
     items: number;
-    matcher: (item: ItemType, query: string) => boolean;
+    matcher: (query: string) => (item: ItemType) => boolean;
     sorter: (items: ItemType[], query: string) => ItemType[];
-    item_html: (item: ItemType, query: string) => string | undefined;
+    item_html: (query: string) => (item: ItemType) => string | undefined;
     updater: (
         item: ItemType,
         query: string,
@@ -282,7 +282,7 @@ export class Typeahead<ItemType extends string | object> {
             assert(!this.input_element.$element.is("[contenteditable]"));
         }
         this.items = options.items ?? MAX_ITEMS;
-        this.matcher = options.matcher ?? ((item, query) => this.defaultMatcher(item, query));
+        this.matcher = options.matcher ?? ((query) => (item) => this.defaultMatcher(item, query));
         this.sorter = options.sorter;
         this.item_html = options.item_html;
         this.updater = options.updater ?? ((items) => this.defaultUpdater(items));
@@ -564,7 +564,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     process(items: ItemType[]): this {
-        const matching_items = $.grep(items, (item) => this.matcher(item, this.query));
+        const matching_items = $.grep(items, this.matcher(this.query));
 
         const final_items = this.sorter(matching_items, this.query);
 
@@ -590,10 +590,11 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     render(final_items: ItemType[], matching_items: ItemType[]): this {
+        const render_item = this.item_html(this.query);
         const $items: JQuery[] = final_items.map((item) => {
             const $i = $(ITEM_HTML);
             this.values.set(the($i), item);
-            const item_html = this.item_html(item, this.query) ?? "";
+            const item_html = render_item(item) ?? "";
             const $item_html = $i.find("a").html(item_html);
 
             const option_label_html = this.option_label(matching_items, item);
@@ -952,7 +953,7 @@ export class Typeahead<ItemType extends string | object> {
  * =========================== */
 
 type TypeaheadOptions<ItemType> = {
-    item_html: (item: ItemType, query: string) => string | undefined;
+    item_html: (query: string) => (item: ItemType) => string | undefined;
     items?: number;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     // optional options
@@ -963,7 +964,7 @@ type TypeaheadOptions<ItemType> = {
     footer_html?: (matching_items: ItemType[]) => string | false;
     helpOnEmptyStrings?: boolean;
     hideOnEmptyAfterBackspace?: boolean;
-    matcher?: (item: ItemType, query: string) => boolean;
+    matcher?: (query: string) => (item: ItemType) => boolean;
     on_escape?: () => void;
     clear_typeahead_tooltip?: () => void;
     openInputFieldOnKeyUp?: () => void;

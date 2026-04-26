@@ -7,6 +7,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
@@ -37,6 +38,7 @@ type PopoverName =
     | "color_picker_popover"
     | "show_folders_sidebar"
     | "show_folders_inbox"
+    | "folder_actions"
     | "send_later_options";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
@@ -62,6 +64,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     color_picker_popover: null,
     show_folders_sidebar: null,
     show_folders_inbox: null,
+    folder_actions: null,
     send_later_options: null,
 };
 
@@ -433,16 +436,22 @@ function get_props_for_popover_centering(
     };
 }
 
+// Returns the element to focus when a keyboard-opened popover closes,
+// given the popover's reference element. Return undefined to fall back
+// to focusing the reference itself.
+export type GetFocusReturnElement = (reference: HTMLElement) => HTMLElement | undefined;
+
 // Toggles a popover menu directly; intended for use in keyboard
 // shortcuts and similar alternative ways to open a popover menu.
 export function toggle_popover_menu(
     target: tippy.ReferenceElement,
     popover_props: Partial<tippy.Props>,
     options?: {
-        show_as_overlay_on_mobile: boolean;
-        show_as_overlay_always: boolean;
+        show_as_overlay_on_mobile?: boolean;
+        show_as_overlay_always?: boolean;
         // Only works for elements which are in message feed.
         message_feed_overlay_detection?: boolean;
+        get_focus_return_element?: GetFocusReturnElement;
     },
 ): tippy.Instance {
     const instance = target._tippy;
@@ -495,17 +504,58 @@ export function toggle_popover_menu(
         ];
     }
 
-    return tippy.default(target, {
+    const props = {
         ...default_popover_props,
         showOnCreate: true,
         ...popover_props,
         ...mobile_popover_props,
-    });
+    };
+
+    // If the popover was opened via keyboard, restore focus to
+    // the appropriate element when the popover closes (e.g., on Escape).
+    // We check the active element rather than the target, since for some
+    // popovers (e.g., buddy list) the reference element is a parent
+    // container rather than the focused icon itself.
+    const opened_via_keyboard = document.activeElement?.matches(":focus-visible") === true;
+    if (opened_via_keyboard) {
+        const on_hidden = props.onHidden;
+        props.onHidden = (instance: tippy.Instance) => {
+            if (on_hidden) {
+                on_hidden.call(props, instance);
+            }
+            // Only restore focus if nothing else has claimed it. When a menu
+            // item opens a modal or otherwise moves focus itself, we shouldn't
+            // stomp over that — and focusing a tooltipped reference here
+            // would cause its tooltip to pop open unexpectedly.
+            if (document.activeElement !== document.body) {
+                return;
+            }
+            if (instance.reference instanceof HTMLElement) {
+                const focus_target =
+                    options?.get_focus_return_element?.(instance.reference) ?? instance.reference;
+                focus_target.focus();
+            }
+        };
+    }
+
+    return tippy.default(target, props);
 }
+
+export type RegisterOptions = {
+    // Also open the popover when the target is focused and Enter is
+    // pressed. Use this for targets that are reachable via keyboard
+    // navigation.
+    also_trigger_on_enter?: boolean;
+    get_focus_return_element?: GetFocusReturnElement;
+};
 
 // Main function to define a popover menu, opened via clicking on the
 // target selector.
-export function register_popover_menu(target: string, popover_props: Partial<tippy.Props>): void {
+export function register_popover_menu(
+    target: string,
+    popover_props: Partial<tippy.Props>,
+    options: RegisterOptions = {},
+): void {
     // For some elements, such as the click target to open the message
     // actions menu, we want to avoid propagating the click event to
     // parent elements. Tippy's built-in `delegate` method does not
@@ -521,15 +571,32 @@ export function register_popover_menu(target: string, popover_props: Partial<tip
     $("body").on("click", target, function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
+        toggle_popover(this, popover_props, options);
+    });
 
-        // Hide popovers when user clicks on an element which navigates user to a link.
-        // We don't explicitly handle these clicks per element and let browser handle them but in doing so,
-        // we are not able to hide the popover which we would do otherwise.
-        const instance = toggle_popover_menu(this, popover_props);
-        const $popper = $(instance.popper);
-        $popper.on("click", "a[href]", () => {
-            hide_current_popover_if_visible(instance);
+    if (options.also_trigger_on_enter) {
+        $("body").on("keydown", target, function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggle_popover(this, popover_props, options);
+            }
         });
+    }
+}
+
+function toggle_popover(
+    element: HTMLElement,
+    popover_props: Partial<tippy.Props>,
+    options: RegisterOptions,
+): void {
+    const instance = toggle_popover_menu(element, popover_props, options);
+    // Hide popovers when user clicks on an element which navigates user to a link.
+    // We don't explicitly handle these clicks per element and let browser handle them but in doing so,
+    // we are not able to hide the popover which we would do otherwise.
+    const $popper = $(instance.popper);
+    $popper.on("click", "a[href]", () => {
+        hide_current_popover_if_visible(instance);
     });
 }
 

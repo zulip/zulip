@@ -424,7 +424,11 @@ to make sure we handle backwards-compatibility properly.
   documentation](../documentation/api.md), being careful to bump
   `API_FEATURE_LEVEL` and include a `**Changes**` entry in the updated
   `GET /events` API documentation. It's also a good idea to and open
-  issues with the mobile and terminal projects to notify them.
+  issues with the mobile and terminal projects to notify them. If the
+  web app should receive the new event type's initial state on browser
+  reload, add it to `FETCH_EVENT_TYPES` in
+  `web/src/server_event_types.ts`, which the web app passes as
+  `fetch_event_types` to `/register`.
 - If we're making changes that could confuse existing client app logic
   that parses events (e.g., changing the type/meaning of an existing
   field, or removing a field), we need to be very careful, since Zulip

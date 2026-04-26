@@ -23,6 +23,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {is_overlay_hash} from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {user_can_send_direct_message} from "./message_util.ts";
 import * as message_view from "./message_view.ts";
@@ -266,12 +267,17 @@ export let fetch_presence_for_popover = (user_id: number): void => {
 
             const response = parsed_data.data;
 
-            if (response.result === "success" && response.presence) {
-                const {aggregated} = response.presence;
-                presence.presence_info.set(user_id, {
-                    status: aggregated.status,
-                    last_active: aggregated.timestamp,
-                });
+            if (
+                response.result === "success" &&
+                response.presence &&
+                response.server_timestamp !== undefined
+            ) {
+                const raw = {
+                    ...response.presence,
+                    server_timestamp: response.server_timestamp,
+                };
+                const user = people.get_by_user_id(user_id);
+                presence.presence_info.set(user_id, presence.status_from_raw(raw, user));
 
                 // Update the user's last seen time in the user card
                 // popover once we have their presence information, if
@@ -479,11 +485,15 @@ function show_user_card_popover(
                 load_medium_avatar(user, $popover.find(".popover-menu-user-avatar"));
                 init_email_clipboard();
                 init_email_tooltip(user);
+                // Focus the first menu action, skipping avatar/status links above it.
+                $popover.find(".link-item .popover-menu-link").first().trigger("focus");
             },
         },
         {
             show_as_overlay_on_mobile: true,
             show_as_overlay_always: show_as_overlay,
+            get_focus_return_element: (reference) =>
+                the($(reference).closest(".user_sidebar_entry").find(".user-presence-link")),
         },
     );
 }
@@ -933,6 +943,15 @@ function register_click_handlers(): void {
         const $target = $(e.currentTarget).closest("li");
 
         toggle_sidebar_user_card_popover($target);
+    });
+
+    $(".buddy-list-section").on("keydown", ".user-list-sidebar-menu-icon", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            e.stopPropagation();
+            const $target = $(e.currentTarget).closest(".user_sidebar_entry");
+
+            toggle_sidebar_user_card_popover($target);
+        }
     });
 
     $(".buddy-list-section").on("click", ".user-profile-picture", (e) => {

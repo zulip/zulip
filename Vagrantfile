@@ -1,5 +1,7 @@
 # -*- mode: ruby -*-
 
+require "open3"
+
 Vagrant.require_version ">= 2.2.6"
 
 Vagrant.configure("2") do |config|
@@ -18,7 +20,12 @@ Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-22.04"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder ".", "/srv/zulip", docker_consistency: "z"
+  config.vm.synced_folder ".", __dir__, docker_consistency: "z"
+
+  git_dir, status = Open3.capture2("git", "rev-parse", "--path-format=absolute", "--git-common-dir")
+  raise unless status.success?
+  git_dir = git_dir.strip
+  config.vm.synced_folder git_dir, git_dir, docker_consistency: "z"
 
   vagrant_config_file = ENV["HOME"] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)
@@ -105,5 +112,5 @@ Vagrant.configure("2") do |config|
     # We want provision to be run with the permissions of the vagrant user.
     privileged: false,
     path: "tools/setup/vagrant-provision",
-    env: { "UBUNTU_MIRROR" => ubuntu_mirror }
+    env: { "UBUNTU_MIRROR" => ubuntu_mirror, "ZULIP_PATH" => __dir__ }
 end

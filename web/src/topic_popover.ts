@@ -270,5 +270,19 @@ export function initialize(): void {
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element(reference) {
+                // Left sidebar triggers sit inside a `.topic-box` or
+                // `.selectable_sidebar_block`; return focus to that
+                // enclosing row so the user re-lands on a natural
+                // target. From inbox and recent-view triggers there
+                // is no such ancestor, so fall back to the nearest
+                // focusable ancestor (or the reference itself)
+                // rather than crashing in `util.the`.
+                const $block = $(reference).closest(".topic-box, .selectable_sidebar_block");
+                return $block[0] ?? $(reference).closest("[tabindex='0']")[0] ?? reference;
+            },
+        },
     );
 }

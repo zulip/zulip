@@ -51,6 +51,9 @@ function composing_to_current_topic_narrow(): boolean {
 }
 
 function composing_to_current_private_message_narrow(): boolean {
+    if (compose_state.get_message_type() !== "private") {
+        return false;
+    }
     const compose_state_recipient = new Set(compose_state.private_message_recipient_ids());
     const narrow_state_recipient = narrow_state.pm_ids_set();
     if (narrow_state_recipient.size === 0) {
@@ -83,7 +86,9 @@ export let update_recipient_row_attention_level = (): void => {
     const has_unpilled_input = $("#private_message_recipient").text().length > 0;
     // We also want to watch out for cases where the DM isn't valid,
     // as when trying to message deactivated users.
-    const is_valid_dm = compose_validate.validate_private_message(false);
+    const message_type = compose_state.get_message_type();
+    const is_valid_dm =
+        message_type === "private" && compose_validate.validate_private_message(false);
     // It is possible that focus can remain in the recipient row while
     // narrowing, e.g., with the `Ctrl + .` shortcut. We should account
     // for that in the logic below, so that we don't erroneously add
@@ -261,6 +266,7 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
             `<i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i>
             <span class="decorated-dm-label">${direct_message_label}</span>`,
         );
+        compose_state.set_private_message_recipient_ids(opts.private_message_recipient_ids);
     }
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
@@ -400,7 +406,23 @@ export function initialize(): void {
         tippy_props: {
             offset: [-10, 5],
         },
-        tab_moves_focus_to_target() {
+        tab_moves_focus_to_target(e: JQuery.KeyDownEvent): string | undefined {
+            if (e.shiftKey) {
+                const $last_banner = $("#compose_banners .main-view-banner").last();
+                if ($last_banner.length === 0) {
+                    return undefined;
+                }
+                // The close button is the last element in compose banner, so we return
+                // this if it exists or else check for action buttons.
+                if ($last_banner.find(".main-view-banner-close-button").length > 0) {
+                    return "#compose_banners .main-view-banner-close-button:last";
+                }
+                if ($last_banner.find(".main-view-banner-action-button").length > 0) {
+                    return "#compose_banners .main-view-banner-action-button:last";
+                }
+                return undefined;
+            }
+
             if (compose_state.get_message_type() === "stream") {
                 return "#stream_message_recipient_topic";
             }

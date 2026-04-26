@@ -30,10 +30,6 @@ const compose_recipient = zrequire("/compose_recipient");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
-mock_esm("../src/ui_util", {
-    place_caret_at_end: noop,
-});
-
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config: () => ({
         allow_everyone_group: true,
@@ -200,6 +196,8 @@ test_ui("validate", ({mock_template, override}) => {
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
     assert.ok(pm_recipient_error_rendered);
+    // Textarea should not be disabled for missing recipient.
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     pm_recipient_error_rendered = false;
 
@@ -207,14 +205,17 @@ test_ui("validate", ({mock_template, override}) => {
     compose_state.set_private_message_recipient_ids([bob.user_id]);
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     override(realm, "realm_direct_message_initiator_group", admin.id);
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     override(realm, "realm_direct_message_permission_group", admin.id);
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     override(realm, "realm_direct_message_initiator_group", everyone.id);
     override(realm, "realm_direct_message_permission_group", everyone.id);
@@ -231,6 +232,8 @@ test_ui("validate", ({mock_template, override}) => {
     });
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
+    // Textarea should be disabled for deactivated user.
+    assert.ok($("textarea#compose-textarea").prop("disabled"));
 
     bob.is_deleted = true;
     let deleted_user_error_rendered = false;
@@ -252,6 +255,7 @@ test_ui("validate", ({mock_template, override}) => {
     compose_state.set_private_message_recipient_ids([welcome_bot.user_id]);
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(compose_validate.validate());
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     // For this first block, we should fail due to empty compose.
     initialize_pm_pill(mock_template);
@@ -260,6 +264,7 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
     assert.ok($("textarea#compose-textarea").hasClass("invalid"));
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     // Now add content to compose.
     add_content_to_compose_box();
@@ -267,6 +272,7 @@ test_ui("validate", ({mock_template, override}) => {
     $("textarea#compose-textarea").addClass("invalid");
     assert.ok(compose_validate.validate());
     assert.ok(!$("textarea#compose-textarea").hasClass("invalid"));
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
@@ -305,7 +311,31 @@ test_ui("validate", ({mock_template, override}) => {
         missing_topic_error_rendered = false;
         assert.ok(!compose_validate.validate());
         assert.ok(missing_topic_error_rendered);
+        assert.ok(!$("textarea#compose-textarea").prop("disabled"));
     }
+
+    // Test textarea disabled when DMs are disabled in the org.
+    compose_state.set_message_type("private");
+    compose_state.set_private_message_recipient_ids([bob.user_id]);
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+
+    let dm_disabled_error_rendered = false;
+    mock_template("compose_banner/cannot_send_direct_message_error.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.cannot_send_direct_message);
+        dm_disabled_error_rendered = true;
+        return "<banner-stub>";
+    });
+    $.reset_selector(`#compose_banners .cannot_send_direct_message`);
+    $.set_results(`#compose_banners .cannot_send_direct_message`, []);
+
+    assert.ok(!compose_validate.validate());
+    assert.ok(dm_disabled_error_rendered);
+    assert.ok($("textarea#compose-textarea").prop("disabled"));
+
+    // Switching to stream message should re-enable textarea.
+    compose_state.set_message_type("stream");
+    assert.ok(!compose_validate.validate());
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 });
 
 test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
@@ -871,6 +901,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
         can_administer_channel_group: nobody.id,
         can_move_messages_out_of_channel_group: nobody.id,
         can_move_messages_within_channel_group: nobody.id,
+        can_resolve_topics_group: nobody.id,
     };
     stream_data.add_sub_for_tests(sub);
 

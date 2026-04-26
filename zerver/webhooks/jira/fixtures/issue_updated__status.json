@@ -5,8 +5,9 @@
   "user": {
     "self": "https://zulipp.atlassian.net/rest/api/2/user?username=admin",
     "name": "admin",
+    "accountId": "99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
     "key": "admin",
-    "emailAddress": "kolaszek@tlen.pl",
+    "emailAddress": "othello@zulip.com",
     "avatarUrls": {
       "48x48": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=48",
       "24x24": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=24",
@@ -109,6 +110,7 @@
       "creator": {
         "self": "https://zulipp.atlassian.net/rest/api/2/user?username=admin",
         "name": "admin",
+        "accountId": "99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
         "key": "admin",
         "emailAddress": "kolaszek@tlen.pl",
         "avatarUrls": {
@@ -125,6 +127,7 @@
       "reporter": {
         "self": "https://zulipp.atlassian.net/rest/api/2/user?username=admin",
         "name": "admin",
+        "accountId": "99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
         "key": "admin",
         "emailAddress": "kolaszek@tlen.pl",
         "avatarUrls": {

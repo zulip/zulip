@@ -15,8 +15,8 @@ export type TopicFilterPill = {
 export type TopicFilterPillWidget = InputPillContainer<TopicFilterPill>;
 
 type TopicFilterTypeaheadOptions = {
-    item_html: (item: TopicFilterPill, query: string) => string | undefined;
-    matcher: (item: TopicFilterPill, query: string) => boolean;
+    item_html: (query: string) => (item: TopicFilterPill) => string | undefined;
+    matcher: (query: string) => (item: TopicFilterPill) => boolean;
     sorter: (items: TopicFilterPill[], query: string) => TopicFilterPill[];
     stopAdvance: boolean;
     dropup: boolean;
@@ -48,17 +48,16 @@ export const filter_options: TopicFilterPill[] = [
 
 export function get_typeahead_base_options(): TopicFilterTypeaheadOptions {
     return {
-        item_html(item: TopicFilterPill, _query: string) {
-            return typeahead_helper.render_topic_state(item.label);
+        item_html(_query: string) {
+            return (item: TopicFilterPill) => typeahead_helper.render_topic_state(item.label);
         },
-        matcher(item: TopicFilterPill, query: string) {
+        matcher(query: string) {
             // This basically only matches if `is:` is in the query.
-            return (
+            return (item: TopicFilterPill) =>
                 query.includes(":") &&
                 (item.syntax.toLowerCase().startsWith(query.toLowerCase()) ||
                     (item.syntax.startsWith("-") &&
-                        item.syntax.slice(1).toLowerCase().startsWith(query.toLowerCase())))
-            );
+                        item.syntax.slice(1).toLowerCase().startsWith(query.toLowerCase())));
         },
         sorter(items: TopicFilterPill[], _query: string) {
             // This sort order places "Unresolved topics" first

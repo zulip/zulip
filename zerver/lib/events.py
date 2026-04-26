@@ -1156,6 +1156,21 @@ def apply_event(
                 if scheduled_message["scheduled_message_id"] == event["scheduled_message_id"]:
                     del state["scheduled_messages"][idx]
 
+    elif event["type"] == "reminders":
+        if event["op"] == "add":
+            # Bulk addition of reminders is not used in normal flow.
+            assert len(event["reminders"]) == 1
+
+            state["reminders"].append(event["reminders"][0])
+            # Sort in ascending order of scheduled_delivery_timestamp.
+            state["reminders"].sort(key=lambda reminder: reminder["scheduled_delivery_timestamp"])
+
+        if event["op"] == "remove":
+            for idx, reminder in enumerate(state["reminders"]):
+                if reminder["reminder_id"] == event["reminder_id"]:
+                    del state["reminders"][idx]
+                    break
+
     elif event["type"] == "onboarding_steps":
         state["onboarding_steps"] = event["onboarding_steps"]
     elif event["type"] == "custom_profile_fields":

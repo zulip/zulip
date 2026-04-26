@@ -1,7 +1,14 @@
-<div class="subscriber_list_settings">
-    <div class="subscriber_list_add">
-        {{> add_subscribers_form hide_add_button=true}}
-    </div>
+{{> add_subscribers_form hide_add_button=true}}
+
+<div class="add-subscribers-subtitle">
+    {{#tr}}
+        Enter a <z-user-roles-link>user role</z-user-roles-link>,
+        <z-user-groups-link>user group</z-user-groups-link>,
+        or <z-channel-link>#channel</z-channel-link> to add multiple users at once.
+        {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-channel-link"}}<a href="/help/introduction-to-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
 </div>
 
 <div class="create_stream_subscriber_list_header">

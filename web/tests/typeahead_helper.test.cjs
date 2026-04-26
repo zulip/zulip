@@ -1122,10 +1122,37 @@ test("compare_language", () => {
     assert.equal(th.compare_language("custom_a", "custom_b"), util.strcmp("custom_a", "custom_b"));
 });
 
-// TODO: This is incomplete for testing this function, and
-// should be filled out more. This case was added for codecov.
 test("compare_by_pms", () => {
+    // Same user should return 0
     assert.equal(th.compare_by_pms(a_user, a_user), 0);
+
+    // Alphabetical fallback when PM counts and partner status are equal
+    assert.equal(
+        th.compare_by_pms(a_user, b_user_1),
+        util.strcmp(a_user.full_name, b_user_1.full_name),
+    );
+
+    // Reverse order should match strcmp behavior
+    assert.equal(
+        th.compare_by_pms(b_user_1, a_user),
+        util.strcmp(b_user_1.full_name, a_user.full_name),
+    );
+
+    pm_conversations.set_partner(b_user_1.user_id);
+
+    // PM count takes priority over partner status
+    people.set_recipient_count_for_testing(a_user.user_id, 10);
+    people.set_recipient_count_for_testing(b_user_1.user_id, 5);
+
+    assert.equal(th.compare_by_pms(a_user, b_user_1), -1);
+    assert.equal(th.compare_by_pms(b_user_1, a_user), 1);
+
+    // Partner priority when counts are equal
+    people.set_recipient_count_for_testing(a_user.user_id, 0);
+    people.set_recipient_count_for_testing(b_user_1.user_id, 0);
+
+    assert.equal(th.compare_by_pms(a_user, b_user_1), 1);
+    assert.equal(th.compare_by_pms(b_user_1, a_user), -1);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {
@@ -1693,7 +1720,10 @@ test("render_person shows value of custom profile fields in secondary", ({
         return "typeahead-item-stub";
     });
 
-    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.equal(
+        th.render_person(a_user_item, {query: "Alpha", should_remove_diacritics: true}),
+        "typeahead-item-stub",
+    );
     assert.ok(rendered);
 });
 
@@ -1727,7 +1757,10 @@ test("render_person shows both email and custom profile fields as secondary if b
         return "typeahead-item-stub";
     });
 
-    assert.equal(th.render_person(a_user_item, "a_user"), "typeahead-item-stub");
+    assert.equal(
+        th.render_person(a_user_item, {query: "a_user", should_remove_diacritics: true}),
+        "typeahead-item-stub",
+    );
     assert.ok(rendered);
 });
 
@@ -1762,7 +1795,10 @@ test("render_person skips custom profile fields not used for user matching", ({
         return "typeahead-item-stub";
     });
 
-    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.equal(
+        th.render_person(a_user_item, {query: "Alpha", should_remove_diacritics: true}),
+        "typeahead-item-stub",
+    );
     assert.ok(rendered);
 });
 

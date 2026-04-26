@@ -101,7 +101,10 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
         if "content" in response_json:
             content = str(response_json["content"])
-            widget_content = response_json.get("widget_content")
+            widget_content_raw = response_json.get("widget_content")
+            widget_content = (
+                json.dumps(widget_content_raw) if widget_content_raw is not None else None
+            )
             return OutgoingWebhookResult(content=content, widget_content=widget_content)
 
         return None

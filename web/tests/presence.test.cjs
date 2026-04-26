@@ -370,3 +370,39 @@ test("update_info_from_event", () => {
         last_active: 1000,
     });
 });
+
+test("user_last_seen_response_schema", () => {
+    // Modern format with both timestamps.
+    const with_both_timestamps = {
+        result: "success",
+        msg: "",
+        server_timestamp: 1656958540,
+        presence: {
+            active_timestamp: 1656958520,
+            idle_timestamp: 1656958530,
+        },
+    };
+    const parsed_both = presence.user_last_seen_response_schema.safeParse(with_both_timestamps);
+    assert.ok(parsed_both.success);
+    assert.equal(parsed_both.data.server_timestamp, 1656958540);
+    assert.equal(parsed_both.data.presence?.active_timestamp, 1656958520);
+    assert.equal(parsed_both.data.presence?.idle_timestamp, 1656958530);
+
+    // Only active_timestamp present; idle_timestamp may be omitted
+    // if the user has only ever been active.
+    const with_active_only = {
+        result: "success",
+        msg: "",
+        presence: {active_timestamp: 1656958520},
+    };
+    const parsed_active = presence.user_last_seen_response_schema.safeParse(with_active_only);
+    assert.ok(parsed_active.success);
+    assert.equal(parsed_active.data.presence?.active_timestamp, 1656958520);
+    assert.equal(parsed_active.data.presence?.idle_timestamp, undefined);
+
+    // No presence data.
+    const without_presence = {result: "success", msg: ""};
+    const parsed_none = presence.user_last_seen_response_schema.safeParse(without_presence);
+    assert.ok(parsed_none.success);
+    assert.equal(parsed_none.data.presence, undefined);
+});

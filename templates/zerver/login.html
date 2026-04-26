@@ -35,21 +35,6 @@ page can be easily identified in it's respective JavaScript file. -->
             {% endif %}
 
             <div class="right-side">
-                {% if realm_web_public_access_enabled %}
-                    <div class="login-social">
-                        <form class="anonymous_access_form form-inline" action="/" method="post">
-                            {{ csrf_input }}
-                            <input type="hidden" name="next" value="{{ next }}" />
-                            <button class="full-width">
-                                {{ _('View without an account') }}
-                            </button>
-                        </form>
-                    </div>
-                    {% if no_auth_enabled %}
-                    {% else %}
-                    <div class="or"><span>{{ _('OR') }}</span></div>
-                    {% endif %}
-                {% endif %}
                 {% if no_auth_enabled %}
                     <div class="alert">
                         <p>
@@ -108,7 +93,7 @@ page can be easily identified in it's respective JavaScript file. -->
                                   {% if email %} autofocus {% endif %}
                                   required />
                                 <label for="id_password">{{ _('Password') }}</label>
-                                <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
+                                <i class="zulip-icon zulip-icon-hide password_visibility_toggle" role="button" tabindex="0"></i>
                             </div>
 
                             <div class="actions forgot-password-container">
@@ -152,10 +137,32 @@ page can be easily identified in it's respective JavaScript file. -->
                     </div>
                     {% endfor %}
 
+                {% endif %}
+
+                {% set show_signup_button = not register_link_disabled and not no_auth_enabled %}
+                {% if realm_web_public_access_enabled or show_signup_button %}
+                    {% if not no_auth_enabled %}
+                    <div class="or"><span>{{ _('OR') }}</span></div>
+                    {% endif %}
                     <div class="actions signup-link-wrapper">
-                        {{ _("Don't have an account?")}}
-                        {% if not register_link_disabled %}
-                        <a class="register-link float-right" href="/register/{% if next %}?next={{ next|urlencode }}{% endif %}">{{ _('Sign up') }}</a>
+                        {% if realm_web_public_access_enabled %}
+                        <form class="anonymous_access_form form-inline" action="/" method="post">
+                            {{ csrf_input }}
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <button class="full-width anonymous-access-button">
+                                <i class="zulip-icon zulip-icon-preview" aria-hidden="true"></i>
+                                {{ _('View without an account') }}
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if show_signup_button %}
+                        <form class="signup-form form-inline" action="/register/" method="get">
+                            {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+                            <button class="full-width anonymous-access-button">
+                                <i class="zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
+                                {{ _('Sign up') }}
+                            </button>
+                        </form>
                         {% endif %}
                     </div>
                 {% endif %}

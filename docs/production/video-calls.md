@@ -172,7 +172,7 @@ Server as follows:
    to be your BigBlueButton Server's shared secret.
 
 2. In `/etc/zulip/settings.py`, set `BIG_BLUE_BUTTON_URL` to your
-   to be your BigBlueButton Server's API URL.
+   BigBlueButton Server's API URL.
 
 3. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.

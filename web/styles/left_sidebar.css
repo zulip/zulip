@@ -57,8 +57,7 @@
 .add-stream-icon-container {
     grid-area: add-channel;
     display: grid;
-    /* 2px right margin here to match the new topic margin-right */
-    margin: 2px 1px 2px 0;
+    margin: 2px;
     border-radius: 3px;
     color: var(--color-sidebar-action);
 
@@ -66,6 +65,11 @@
         color: var(--color-sidebar-action-hover);
         background-color: var(--color-background-sidebar-action-hover);
         cursor: pointer;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
     }
 
     .add_stream_icon {
@@ -342,9 +346,13 @@
             max-content
         );
 
+    &:hover,
+    &.highlighted_row {
+        border-radius: 4px;
+    }
+
     &:hover {
         background-color: var(--color-background-hover-narrow-filter);
-        border-radius: 4px;
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
 
         .left-sidebar-title,
@@ -426,6 +434,11 @@
             color: var(--color-vdots-hover);
             background-color: var(--color-background-sidebar-action-hover);
         }
+
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
     }
 }
 
@@ -483,17 +496,23 @@
         visibility: hidden;
     }
 
-    .add-stream-icon-container:focus-visible .add_stream_icon {
+    .add-stream-icon-container:focus-visible .add_stream_icon,
+    &:focus-within .add_stream_icon {
         visibility: visible;
+    }
+
+    /* We only set the border radius on the hover/popover/highlighted states,
+       so as to prevent the background on highlighted channels
+       from bleeding through. */
+    &:hover,
+    &:has(.left_sidebar_menu_icon_visible),
+    &.highlighted_row {
+        border-radius: 4px;
     }
 
     &:hover {
         background-color: var(--color-background-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-        /* We only set the border radius on the hover/popover states,
-           so as to prevent the background on highlighted channels
-           from bleeding through. */
-        border-radius: 4px;
 
         .left-sidebar-title,
         .stream-list-section-toggle {
@@ -508,7 +527,6 @@
     &:has(.left_sidebar_menu_icon_visible) {
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
         background-color: var(--color-background-hover-narrow-filter);
-        border-radius: 4px;
 
         .left-sidebar-title,
         .stream-list-section-toggle {
@@ -747,6 +765,28 @@
     }
 }
 
+.stream-list-section-toggle {
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
+/* Arrow-key sidebar navigation focuses the toggle icon inside a
+   section header row while also applying .highlighted_row to the row
+   itself. Suppress the inner outline in that case to avoid showing
+   two nested focus rings on the same row. The IDs are needed to win
+   over the ID-scoped :focus-visible rules on the Views and DM
+   toggle icons above. */
+.highlighted_row #toggle-direct-messages-section-icon:focus-visible,
+.highlighted_row #toggle-top-left-navigation-area-icon:focus-visible,
+.highlighted_row .stream-list-section-toggle:focus-visible {
+    outline: 0;
+}
+
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 
@@ -813,7 +853,8 @@
     }
 }
 
-.stream-list-toggle-inactive-or-muted-channels.highlighted_row {
+.stream-list-toggle-inactive-or-muted-channels.highlighted_row,
+.stream-list-toggle-inactive-or-muted-channels:focus-visible {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-sidebar-action-heading-hover);
@@ -2128,18 +2169,31 @@ li.active-sub-filter {
     }
 }
 
+.bottom_left_row .sidebar-menu-icon,
+.bottom_left_row .channel-new-topic-button,
+.top_left_row .sidebar-menu-icon,
+.stream-list-section-container .sidebar-menu-icon {
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 /*
-    When you hover over list items, we hover
-    the vdots in light gray.
+    When you hover over or keyboard-highlight a list
+    item's menu icon, we give it a purple background.
 
     The stream icon should always display when
-    any topic is hovered, which is why it gets
-    a more specific selector here.
+    any topic is hovered/highlighted, which is why
+    it gets a more specific selector here.
 */
-#stream_filters li:hover .stream-sidebar-menu-icon,
-.top_left_row:hover .sidebar-menu-icon,
-.bottom_left_row:hover .sidebar-menu-icon,
-#stream_filters .stream-list-subsection-header:hover .sidebar-menu-icon,
+#stream_filters
+    li:is(:hover, :focus-within, :has(.highlighted_row))
+    .stream-sidebar-menu-icon,
+.top_left_row:is(:hover, :focus-within, .highlighted_row) .sidebar-menu-icon,
+.bottom_left_row:is(:hover, :focus-within, .highlighted_row) .sidebar-menu-icon,
+#stream_filters
+    .stream-list-subsection-header:is(:hover, :focus-within, .highlighted_row)
+    .sidebar-menu-icon,
 .app-main .column-left .left-sidebar .left_sidebar_menu_icon_visible {
     /* We push against `display: none` with
        `display: flex` because the sidebar vdots

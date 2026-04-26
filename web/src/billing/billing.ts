@@ -84,7 +84,7 @@ export function initialize(): void {
     remove_unused_get_parameters();
 
     $("#update-card-button").on("click", (e) => {
-        $("#update-card-button .billing-button-text").text("");
+        $("#update-card-button .billing-button-text").css("visibility", "hidden");
         $("#update-card-button .loader").show();
         helpers.create_ajax_request(
             `/json${billing_base_url}/billing/session/start_card_update_session`,
@@ -97,7 +97,7 @@ export function initialize(): void {
             },
             () => {
                 $("#update-card-button .loader").hide();
-                $("#update-card-button .billing-button-text").text("Update card");
+                $("#update-card-button .billing-button-text").css("visibility", "");
             },
         );
         e.preventDefault();

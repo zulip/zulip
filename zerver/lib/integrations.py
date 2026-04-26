@@ -599,9 +599,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "dbt",
         ["deployment"],
         [WebhookScreenshotConfig("job_run_completed_errored.json")],
-        display_name="DBT",
+        display_name="dbt",
         url_options=[
-            WebhookUrlOption(name="access_url", label="DBT Access URL", input_type="text")
+            WebhookUrlOption(name="access_url", label="dbt Access URL", input_type="text")
         ],
     ),
     IncomingWebhookIntegration(
@@ -672,6 +672,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 name="include_repository_name",
                 label="Include repository name in the notifications",
                 input_type="checkbox",
+            ),
+            WebhookUrlOption(
+                name="include_emoji_indicators",
+                label="Include emoji indicators in the notifications",
+                input_type="checkbox_enabled",
             ),
         ],
     ),
@@ -936,7 +941,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "travis",
         ["continuous-integration"],
-        [WebhookScreenshotConfig("build.json", payload_as_query_param=True)],
+        [WebhookScreenshotConfig("pull_request.json", payload_as_query_param=True)],
         display_name="Travis CI",
     ),
     IncomingWebhookIntegration(
@@ -992,7 +997,10 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     ),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
     Integration(
-        "nextcloud-talk", ["video-calling", "communication"], display_name="Nextcloud Talk"
+        "nextcloud-talk",
+        ["video-calling", "communication"],
+        display_name="Nextcloud Talk",
+        logo="images/integrations/logos/nextcloud.svg",
     ),
     Integration("webex", ["video-calling", "communication"]),
     Integration("zoom", ["video-calling", "communication"]),

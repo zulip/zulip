@@ -56,7 +56,7 @@ def check_django() -> bool:
         return True
     except ImportError:
         print(
-            """
+            f"""
             ERROR!
             We cannot import Django, which is usually a
             symptom of not having your Python venv
@@ -64,7 +64,7 @@ def check_django() -> bool:
 
             Make sure your shell does this at init time:
 
-            source /srv/zulip/.venv/bin/activate
+            source {ROOT_DIR}/.venv/bin/activate
 
             Or maybe you forget to run inside your VM?
             """

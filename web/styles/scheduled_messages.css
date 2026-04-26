@@ -21,13 +21,18 @@
 }
 
 .schedule-reminder-note {
-    /* Horizontal resizing in the popover doesn't look good at all. */
-    resize: vertical;
+    resize: none;
     width: 100%;
     min-width: 10em;
-    padding: 3px;
-    /* We set the minimum height of textarea to be enough for two lines of text. */
+    padding: var(--schedule-reminder-note-padding);
+    /* Set the minimum height such that we start out with 2 lines of text. */
     min-height: calc(2em * var(--base-line-height-unitless));
+    /* Set the maximum height of textarea to be enough for 10 lines of text. */
+    max-height: calc(
+        (10em * var(--base-line-height-unitless)) +
+            (2 * var(--schedule-reminder-note-padding))
+    );
+    overflow-y: auto;
 
     background-color: var(--background-color-textarea);
 

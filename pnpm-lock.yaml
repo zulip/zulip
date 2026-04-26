@@ -75,6 +75,9 @@ importers:
       '@sinonjs/fake-timers':
         specifier: ^15.1.1
         version: 15.3.2
+      '@types/postcss-import':
+        specifier: ^14.0.3
+        version: 14.0.3
       '@uppy/core':
         specifier: ^5.0.1
         version: 5.2.0
@@ -3005,6 +3008,9 @@ packages:
 
   '@types/plotly.js@3.0.10':
     resolution: {integrity: sha512-q+MgO4aajC2HrO7FllTYWzrpdfbTjboSMfjkz/aXKjg1v7HNo1zMEFfAW7quKfk6SL+bH74A5ThBEps/7hZxOA==}
+
+  '@types/postcss-import@14.0.3':
+    resolution: {integrity: sha512-raZhRVTf6Vw5+QbmQ7LOHSDML71A5rj4+EqDzAbrZPfxfoGzFxMHRCq16VlddGIZpHELw0BG4G0YE2ANkdZiIQ==}
 
   '@types/qs@6.15.0':
     resolution: {integrity: sha512-JawvT8iBVWpzTrz3EGw9BTQFg3BQNmwERdKE22vlTxawwtbyUSlMppvZYKLZzB5zgACXdXxbD3m1bXaMqP/9ow==}
@@ -12691,6 +12697,10 @@ snapshots:
   '@types/picomatch@4.0.3': {}
 
   '@types/plotly.js@3.0.10': {}
+
+  '@types/postcss-import@14.0.3':
+    dependencies:
+      postcss: 8.5.10
 
   '@types/qs@6.15.0': {}
 

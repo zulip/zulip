@@ -3448,6 +3448,63 @@ class SAMLAuthBackendTest(SocialAuthBase):
         ).value
         self.assertEqual(phone_field_value, expected_value)
 
+    def test_social_auth_full_name_sync(self) -> None:
+        sync_attrs_dict = {"zulip": {"saml": {"full_name": True}}}
+        new_name = "Updated Name"
+
+        with self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_dict):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=new_name)
+            with self.assertLogs(self.logger_string, level="INFO"):
+                result = self.social_auth_test(
+                    account_data_dict,
+                    subdomain="zulip",
+                )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.full_name, new_name)
+
+        # Without full_name sync configured, the name should not be updated.
+        with self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT={}):
+            account_data_dict = self.get_account_data_dict(email=self.email, name="Another Name")
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.full_name, new_name)
+
+        # Name with invalid characters should be rejected with a warning.
+        with (
+            self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_dict),
+            self.assertLogs(self.logger_string, level="WARNING") as m,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name="Invalid* Name")
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        # Logging in succeeds.
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        # The name doesn't get synced however, and we log a warning.
+        self.assertEqual(self.user_profile.full_name, new_name)
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    f"Failed to sync full_name for user {self.user_profile.id}: Invalid characters in name!",
+                    type="warning",
+                )
+            ],
+        )
+
     def test_social_auth_group_sync(self) -> None:
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")
@@ -4182,6 +4239,53 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(hamlet.delivery_email, self.email)
         self.assertTrue(
             any("Can't sync email" in output for output in m.output),
+        )
+
+    def test_external_auth_id_saml_cross_realm_bot_email(self) -> None:
+        """Test that email is NOT synced when the target email is reserved
+        for a cross-realm system bot."""
+        hamlet = self.example_user("hamlet")
+
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_config_dict["test_idp"]["attr_user_permanent_id"] = "uid"
+        uid_value = "testuid"
+
+        # Create ExternalAuthID for hamlet.
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        with (
+            self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes={"uid": [uid_value]},
+            )
+        self.assertEqual(result.status_code, 302)
+
+        # Try to login with a cross-realm bot email - should find hamlet by
+        # ExternalAuthID but refuse to sync the email onto a reserved address.
+        bot_email = "notification-bot@zulip.com"
+        assert bot_email in settings.CROSS_REALM_BOT_EMAILS
+        bot_data = self.get_account_data_dict(email=bot_email, name=self.name)
+        with (
+            self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO") as m,
+        ):
+            result = self.social_auth_test(
+                bot_data,
+                subdomain="zulip",
+                extra_attributes={"uid": [uid_value]},
+            )
+        self.assertEqual(result.status_code, 302)
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], hamlet.delivery_email)
+
+        hamlet.refresh_from_db()
+        # Email should NOT have changed.
+        self.assertEqual(hamlet.delivery_email, self.email)
+        self.assertTrue(
+            any("reserved for system bots" in output for output in m.output),
         )
 
     def test_external_auth_id_saml_deactivated_user(self) -> None:

@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-23 02:26+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"POT-Creation-Date: 2026-04-21 16:35+0000\n"
+"PO-Revision-Date: 2026-03-31 18:54+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
 "zulip/django/en_GB/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:663 zerver/decorator.py:681
 msgid "Not allowed for guest users"
@@ -1540,9 +1540,8 @@ msgstr "Welcome to Zulip"
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/create_user/accounts_home.html:63
-#: templates/zerver/create_user/register.html:88
-#: templates/zerver/login.html:101 templates/zerver/reset.html:24
-#: templates/zerver/reset_confirm.html:20
+#: templates/zerver/create_user/register.html:88 templates/zerver/login.html:86
+#: templates/zerver/reset.html:24 templates/zerver/reset_confirm.html:20
 msgid "Email"
 msgstr "Email"
 
@@ -1832,14 +1831,14 @@ msgstr "Use %(external_host)s"
 
 #: templates/zerver/create_realm/realm_creation_subdomain_form_field.html:17
 #: templates/zerver/create_user/accounts_home.html:76
-#: templates/zerver/login.html:50 templates/zerver/login.html:139
+#: templates/zerver/login.html:124 templates/zerver/login.html:145
 msgid "OR"
 msgstr "OR"
 
 #: templates/zerver/create_user/accounts_home.html:5
 #: templates/zerver/create_user/accounts_home.html:72
 #: templates/zerver/create_user/register.html:224
-#: templates/zerver/login.html:158 templates/zerver/portico-header.html:48
+#: templates/zerver/login.html:163 templates/zerver/portico-header.html:48
 msgid "Sign up"
 msgstr "Sign up"
 
@@ -1865,7 +1864,7 @@ msgstr "Already have an account?"
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:6
 #: templates/zerver/footer.html:18
 #: templates/zerver/log_into_subdomain_token_invalid.html:13
-#: templates/zerver/login.html:5 templates/zerver/login.html:134
+#: templates/zerver/login.html:5 templates/zerver/login.html:119
 #: templates/zerver/portico-header.html:37
 #: templates/zerver/portico-header.html:44
 msgid "Log in"
@@ -1986,7 +1985,7 @@ msgstr "This is how your account is displayed in Zulip."
 
 #: templates/zerver/create_user/register.html:143
 #: templates/zerver/create_user/register.html:156
-#: templates/zerver/login.html:110 templates/zerver/reset_confirm.html:27
+#: templates/zerver/login.html:95 templates/zerver/reset_confirm.html:27
 msgid "Password"
 msgstr "Password"
 
@@ -4214,39 +4213,33 @@ msgstr "Invalid or expired login session."
 msgid "Log in to Zulip"
 msgstr "Log in to Zulip"
 
-#: templates/zerver/login.html:44
-msgid "View without an account"
-msgstr "View without an account"
-
-#: templates/zerver/login.html:69
+#: templates/zerver/login.html:54
 msgid "You've already registered with this email address. Please log in below."
 msgstr ""
 "You've already registered with this email address. Please log in below."
 
-#: templates/zerver/login.html:97
+#: templates/zerver/login.html:82
 msgid "Email or username"
 msgstr "Email or username"
 
-#: templates/zerver/login.html:99
+#: templates/zerver/login.html:84
 msgid "Username"
 msgstr "Username"
 
-#: templates/zerver/login.html:116
+#: templates/zerver/login.html:101
 msgid "Forgot your password?"
 msgstr "Forgot your password?"
 
-#: templates/zerver/login.html:149
+#: templates/zerver/login.html:134
 #, python-format
 msgid "Log in with %(identity_provider)s"
 msgstr "Log in with %(identity_provider)s"
 
-#: templates/zerver/login.html:156
-#, fuzzy
-#| msgid "Already have an account?"
-msgid "Don't have an account?"
-msgstr "Already have an account?"
+#: templates/zerver/login.html:154
+msgid "View without an account"
+msgstr "View without an account"
 
-#: templates/zerver/login.html:167
+#: templates/zerver/login.html:174
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
 msgstr ""
@@ -9012,6 +9005,11 @@ msgstr "Invalid OTP"
 #: zproject/backends.py:4124
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Can't use both mobile_flow_otp and desktop_flow_otp together."
+
+#, fuzzy
+#~| msgid "Already have an account?"
+#~ msgid "Don't have an account?"
+#~ msgstr "Already have an account?"
 
 #~ msgid "Must be an organization member"
 #~ msgstr "Must be an organisation member"

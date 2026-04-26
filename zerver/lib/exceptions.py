@@ -67,6 +67,7 @@ class ErrorCode(Enum):
     FAILED_TO_CONNECT_BOUNCER = auto()
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
+    PERMISSION_DENIED = auto()
 
 
 class JsonableError(Exception):
@@ -334,6 +335,18 @@ class OrganizationOwnerRequiredError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Must be an organization owner")
+
+
+class BotRequiredError(JsonableError):
+    code: ErrorCode = ErrorCode.PERMISSION_DENIED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Must be a bot user")
 
 
 class AuthenticationFailedError(JsonableError):

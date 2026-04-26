@@ -310,14 +310,23 @@ export function postprocess_content(html: string): string {
 
             // Despite setting `width` and `height` values above, the
             // flexbox gallery collapses until images have loaded. We
-            // therefore have to avoid the layout shift that would
-            // otherwise cause by setting the only the width attribute
-            // here. And by setting this value in ems, we ensure that
+            // therefore have to prevent a layout shift that would
+            // otherwise happen by setting the width attribute here.
+            // And by setting this value in ems, we ensure that
             // images scale as users adjust the information-density
             // settings.
             message_media_image.style.setProperty(
                 "width",
-                `${(image_box_em * font_size_in_use * original_width) / original_height / font_size_in_use}em`,
+                `${(image_box_em * original_width) / original_height}em`,
+            );
+
+            // To avoid a layout shift especially on portrait images, we
+            // set the `aspect-ratio`, which flexbox respects and will
+            // therefore preserve exactly the correct amount of space
+            // prior to the image loading.
+            message_media_image.style.setProperty(
+                "aspect-ratio",
+                `${original_width} / ${original_height}`,
             );
 
             if (is_dinky_image) {

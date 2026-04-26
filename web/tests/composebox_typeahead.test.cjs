@@ -38,6 +38,83 @@ const compose_validate = mock_esm("../src/compose_validate", {
     initialize: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
+const message_util = mock_esm("../src/message_util", {
+    get_direct_message_permission_hints: () => ({
+        is_known_empty_conversation: false,
+        is_local_echo_safe: true,
+    }),
+    user_can_send_direct_message(user_ids_string) {
+        return (
+            (!message_util.get_direct_message_permission_hints(user_ids_string)
+                .is_known_empty_conversation ||
+                people.user_can_initiate_direct_message_thread(user_ids_string)) &&
+            people.user_can_direct_message(user_ids_string)
+        );
+    },
+    // currently is synced with the actual function.
+    make_check_message_permission_for_dm_candidate(recipient_ids) {
+        const current_user_id = people.my_current_user_id();
+        const is_current_user_in_initiator_group = user_groups.is_user_in_setting_group(
+            realm.realm_direct_message_initiator_group,
+            current_user_id,
+        );
+        const is_current_user_in_permission_group = user_groups.is_user_in_setting_group(
+            realm.realm_direct_message_permission_group,
+            current_user_id,
+        );
+
+        if (is_current_user_in_initiator_group && is_current_user_in_permission_group) {
+            return null;
+        }
+
+        const recipient_is_in_permission_group = recipient_ids.some(
+            (user_id) =>
+                !people.is_valid_bot_user(user_id) &&
+                user_id !== current_user_id &&
+                user_groups.is_user_in_setting_group(
+                    realm.realm_direct_message_permission_group,
+                    user_id,
+                ),
+        );
+
+        if (is_current_user_in_initiator_group && recipient_is_in_permission_group) {
+            return null;
+        }
+
+        const all_recipients_are_bots = recipient_ids.every(
+            (user_id) => people.is_valid_bot_user(user_id) || user_id === current_user_id,
+        );
+
+        const permission_group_user_ids = user_groups.get_user_ids_in_setting_group(
+            realm.realm_direct_message_permission_group,
+        );
+
+        return (candidate_user_id) => {
+            if (all_recipients_are_bots && people.is_valid_bot_user(candidate_user_id)) {
+                return true;
+            }
+
+            const is_candidate_in_permission_group =
+                permission_group_user_ids.has(candidate_user_id);
+
+            if (is_current_user_in_initiator_group && is_candidate_in_permission_group) {
+                return true;
+            }
+
+            if (
+                !is_current_user_in_permission_group &&
+                !recipient_is_in_permission_group &&
+                !is_candidate_in_permission_group
+            ) {
+                return false;
+            }
+
+            const conversation_user_ids_string = [...recipient_ids, candidate_user_id].join(",");
+            return !message_util.get_direct_message_permission_hints(conversation_user_ids_string)
+                .is_known_empty_conversation;
+        };
+    },
+});
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
@@ -569,6 +646,26 @@ const full_members = user_group_item(
     }),
 );
 
+const nobody = user_group_item(
+    make_user_group({
+        name: "role:nobody",
+        id: 8,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Nobody",
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
+
 const sweden_stream = stream_item(
     make_stream({
         name: "Sweden",
@@ -681,6 +778,8 @@ function test(label, f) {
             server_supported_permission_settings,
         );
         helpers.override(realm, "realm_can_access_all_users_group", members.id);
+        helpers.override(realm, "realm_direct_message_permission_group", members.id);
+        helpers.override(realm, "realm_direct_message_initiator_group", members.id);
 
         people.add_active_user(ali);
         people.add_active_user(alice);
@@ -706,6 +805,7 @@ function test(label, f) {
         user_groups.add(admins);
         user_groups.add(members);
         user_groups.add(full_members);
+        user_groups.add(nobody);
 
         muted_users.set_muted_users([]);
 
@@ -1299,7 +1399,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 // options.item_html()
                 options.query = "Kro";
-                actual_value = options.item_html("kronor");
+                actual_value = options.item_html()("kronor");
                 expected_value =
                     '<div class="typeahead-content">\n' +
                     '    <div class="typeahead-text-container">\n' +
@@ -1309,7 +1409,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 // Highlighted content should be escaped.
                 options.query = "<";
-                actual_value = options.item_html("<&>");
+                actual_value = options.item_html()("<&>");
                 expected_value =
                     '<div class="typeahead-content">\n' +
                     '    <div class="typeahead-text-container">\n' +
@@ -1318,7 +1418,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.equal(actual_value, expected_value);
 
                 options.query = "even m";
-                actual_value = options.item_html("even more ice");
+                actual_value = options.item_html()("even more ice");
                 expected_value =
                     '<div class="typeahead-content">\n' +
                     '    <div class="typeahead-text-container">\n' +
@@ -1406,8 +1506,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.deepEqual(actual_value, expected_value);
 
                 function matcher(query, person) {
-                    query = typeahead.clean_query_lowercase(query);
-                    return typeahead_helper.query_matches_person(query, person);
+                    query = typeahead.clean_query_lowercase(query, false);
+                    const should_remove_diacritics = !typeahead.contains_diacritics(query);
+                    return typeahead_helper.query_matches_person(
+                        query,
+                        person,
+                        should_remove_diacritics,
+                    );
                 }
 
                 let query;
@@ -1426,6 +1531,12 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.equal(matcher(query, gael_item), true);
 
                 query = "gaël";
+                assert.equal(matcher(query, gael_item), true);
+
+                query = "gaël twi";
+                assert.equal(matcher(query, gael_item), true);
+
+                query = "gael twi";
                 assert.equal(matcher(query, gael_item), true);
 
                 // Don't make suggestions if the last name only has whitespaces
@@ -1562,7 +1673,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // content_item_html.
                 ct.get_or_set_completing_for_tests("mention");
                 ct.get_or_set_token_for_testing("othello");
-                actual_value = options.item_html(othello_item);
+                actual_value = options.item_html("othello")(othello_item);
                 expected_value =
                     '<div class="typeahead-content">\n' +
                     '        <div class="typeahead-image">\n' +
@@ -1579,7 +1690,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 ct.get_or_set_completing_for_tests("mention");
                 ct.get_or_set_token_for_testing("hamletcharacters");
-                actual_value = options.item_html(hamletcharacters);
+                actual_value = options.item_html("hamletcharacters")(hamletcharacters);
                 expected_value =
                     '<div class="typeahead-content">\n' +
                     '        <i class="typeahead-image zulip-icon zulip-icon-user-group" aria-hidden="true"></i>\n' +
@@ -1849,6 +1960,178 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(topic_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
     assert.ok(compose_textarea_typeahead_called);
+});
+
+test("get_person_suggestion_for_topic_typeahead excludes deactivated users", ({override}) => {
+    override(pm_conversations, "get_partners", () => []);
+
+    // Deactivated user from participants should be excluded.
+    message_lists.current = {
+        data: {
+            participants: {
+                visible: () => new Set([deactivated_user.user_id]),
+            },
+        },
+    };
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("deactivated"), []);
+
+    // Deactivated user from DM partners should be excluded.
+    message_lists.current = undefined;
+    override(pm_conversations, "get_partners", () => [deactivated_user.user_id]);
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("deactivated"), []);
+
+    // Active user from DM partners should be included.
+    override(pm_conversations, "get_partners", () => [lear.user_id]);
+    const results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.ok(results[0].user.user_id === lear.user_id);
+});
+
+test("get_person_suggestion_for_topic_typeahead respects DM permissions", ({override}) => {
+    function set_visible_participants(user_ids) {
+        message_lists.current = {
+            data: {
+                participants: {
+                    visible: () => new Set(user_ids),
+                },
+            },
+        };
+    }
+    // Set message history to empty
+    override(pm_conversations, "get_partners", () => []);
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: true,
+        is_local_echo_safe: true,
+    }));
+
+    // Bot suggestion doesn't show up if there is no past conversation.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    let results = ct.get_person_suggestion_for_topic_typeahead("notification");
+    assert.deepEqual(results, []);
+
+    // Don't show suggestion when sender/recipient is in direct_message_permission_group
+    // but the sender isn't in initiator group.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id, hamlet.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    set_visible_participants([lear.user_id]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // When no conversation history exists between the sender and recipient,
+    // we show the suggestion if the recipient is visible in the current narrow’s
+    // participants and either the sender or recipient is in the
+    // direct_message_permission_group, and the sender is also in the initiator group.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    set_visible_participants([]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // Set current narrow participant
+    set_visible_participants([lear.user_id]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // We don't show suggestion when sender doesn't have initiator
+    // permission when past conversation doesn't exist.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // We dont show suggestion if the sender doesn't have initiator permission
+    // even if recipient is in permission group
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // Don't show suggestion if direct message is disabled.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id, lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // Set message history
+    override(pm_conversations, "get_partners", () => [notification_bot.user_id, lear.user_id]);
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: false,
+        is_local_echo_safe: true,
+    }));
+
+    // Suggestion for bot always show up even if direct message is disabled,
+    // considering past conversation exists.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_person_suggestion_for_topic_typeahead("notification");
+    assert.equal(results[0].user.user_id, notification_bot.user_id);
+
+    // Show suggestion when both sender and recipient has permission, and
+    // past conversation exists
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [hamlet.user_id, lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // Sender in initiator group, recipient in permission group, show suggestion
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // Show suggestion when sender has permission and past conversation exists
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // Show suggestion when recipient has permission and past conversation exists
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // No suggestion when direct message is disabled
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id, lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
 });
 
 test("begins_typeahead", ({override, override_rewire}) => {
@@ -2382,22 +2665,23 @@ test("content_item_html", ({override_rewire}) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
     });
-    ct.content_item_html(emoji);
+    ct.content_item_html("")(emoji);
 
     ct.get_or_set_completing_for_tests("mention");
     let th_render_person_called = false;
-    override_rewire(typeahead_helper, "render_person", (person) => {
+    override_rewire(typeahead_helper, "render_person", (person, opts) => {
         assert.deepEqual(person, othello_item);
+        assert.ok(opts === undefined || typeof opts === "object");
         th_render_person_called = true;
     });
-    ct.content_item_html(othello_item);
+    ct.content_item_html("")(othello_item);
 
     let th_render_user_group_called = false;
     override_rewire(typeahead_helper, "render_user_group", (user_group) => {
         assert.deepEqual(user_group, backend);
         th_render_user_group_called = true;
     });
-    ct.content_item_html(backend);
+    ct.content_item_html("")(backend);
 
     // We don't have any fancy rendering for slash commands yet.
     ct.get_or_set_completing_for_tests("slash");
@@ -2414,7 +2698,7 @@ test("content_item_html", ({override_rewire}) => {
         });
         th_render_slash_command_called = true;
     });
-    ct.content_item_html(me_slash);
+    ct.content_item_html("")(me_slash);
 
     ct.get_or_set_completing_for_tests("stream");
     let th_render_stream_called = false;
@@ -2422,7 +2706,7 @@ test("content_item_html", ({override_rewire}) => {
         assert.deepEqual(stream, denmark_stream);
         th_render_stream_called = true;
     });
-    ct.content_item_html(denmark_stream);
+    ct.content_item_html("")(denmark_stream);
 
     ct.get_or_set_completing_for_tests("syntax");
     th_render_typeahead_item_called = false;
@@ -2433,7 +2717,7 @@ test("content_item_html", ({override_rewire}) => {
         });
         th_render_typeahead_item_called = true;
     });
-    ct.content_item_html({type: "syntax", language: "py"});
+    ct.content_item_html("")({type: "syntax", language: "py"});
 
     // Verify that all stub functions have been called.
     assert.ok(th_render_typeahead_item_called);
@@ -2794,4 +3078,122 @@ test("direct message recipients sorted according to stream / topic being viewed"
     // 1st despite having an exact name match with the query.
     results = ct.get_pm_people("ali");
     assert.deepEqual(results, [alice_item, ali_item]);
+});
+
+test("get_pm_people respects DM permissions", ({override}) => {
+    $("#private_message_recipient").set_parent($.create("pm-recipient-container"));
+
+    let pill_items = [];
+
+    override(input_pill, "create", () => ({
+        clear() {
+            pill_items = [];
+        },
+        clear_text() {},
+        items: () => pill_items,
+        onPillCreate() {},
+        onPillRemove() {},
+        appendValidatedData(item) {
+            pill_items.push(item);
+        },
+    }));
+
+    compose_pm_pill.initialize({on_pill_create_or_remove: noop});
+
+    mock_banners();
+    compose_state.set_stream_id("");
+
+    compose_state.set_private_message_recipient_ids([]);
+
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: true,
+        is_local_echo_safe: true,
+    }));
+
+    // When DMs are disabled realm-wide, lear should not appear in suggestions.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    let results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, []);
+
+    // Bot suggestions always appear regardless of DM permissions.
+    results = ct.get_pm_people("welcome");
+    assert.deepEqual(results, [welcome_bot_item]);
+
+    // When DMs are allowed, lear should appear in suggestions.
+    override(realm, "realm_direct_message_permission_group", members.id);
+    override(realm, "realm_direct_message_initiator_group", members.id);
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, [lear_item]);
+
+    // Sender is not in initiator group and no past conversation history;
+    // lear should not appear even though lear is in the permission group.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, []);
+
+    // Sender is in initiator group; lear should appear.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, [lear_item]);
+
+    // Othello is not in the permission group, so othello should not appear.
+    results = ct.get_pm_people("othello");
+    assert.deepEqual(results, []);
+
+    // With lear already in the recipient box, othello can be added to a group
+    // DM because lear is in the permission group, satisfying the check.
+    compose_state.set_private_message_recipient_ids([lear.user_id]);
+    results = ct.get_pm_people("othello");
+    assert.deepEqual(results, [othello_item]);
+
+    // Sender is not in initiator group but past conversation history exists;
+    // lear should appear because the conversation is not known to be empty.
+    compose_state.set_private_message_recipient_ids([]);
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: false,
+        is_local_echo_safe: true,
+    }));
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, [lear_item]);
+
+    // With a bot already in the recipient box and sender in the initiator
+    // group, another bot should always appear in suggestions.
+    compose_state.set_private_message_recipient_ids([notification_bot.user_id]);
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_pm_people("welcome");
+    assert.deepEqual(results, [welcome_bot_item]);
+
+    // With a bot already in the recipient box, a user in the permission
+    // group should appear because the sender can initiate.
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, [lear_item]);
+
+    // With a bot already in the recipient box, a user not in the
+    // permission group should not appear.
+    results = ct.get_pm_people("othello");
+    assert.deepEqual(results, []);
 });

@@ -728,6 +728,15 @@ export function setup_topic_search_typeahead(): void {
     });
 
     $input.on("keydown", (e: JQuery.KeyDownEvent) => {
+        // While the filter typeahead is open, Enter / ArrowUp /
+        // ArrowDown belong to it; don't also drive the sidebar
+        // topic-row cursor.
+        if (
+            topic_state_typeahead?.shown &&
+            (e.key === "Enter" || e.key === "ArrowDown" || e.key === "ArrowUp")
+        ) {
+            return;
+        }
         switch (e.key) {
             case "Enter": {
                 const $current_row = topic_list_cursor.get_key();

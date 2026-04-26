@@ -196,14 +196,14 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         const person_query = "me";
 
         (function test_item_html() {
-            assert.equal(config.item_html(me_item, person_query), "<rendered-person-stub>");
+            assert.equal(config.item_html(person_query)(me_item), "<rendered-person-stub>");
         })();
 
         (function test_matcher() {
             let result;
-            result = config.matcher(me_item, person_query);
+            result = config.matcher(person_query)(me_item);
             assert.ok(result);
-            result = config.matcher(jill_item, person_query);
+            result = config.matcher(person_query)(jill_item);
             assert.ok(!result);
         })();
 
@@ -288,14 +288,14 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         const stream_query = "#denmark";
 
         (function test_item_html() {
-            assert.equal(config.item_html(denmark_item, stream_query), "<rendered-stream-stub>");
+            assert.equal(config.item_html(stream_query)(denmark_item), "<rendered-stream-stub>");
         })();
 
         (function test_matcher() {
             let result;
-            result = config.matcher(denmark_item, stream_query);
+            result = config.matcher(stream_query)(denmark_item);
             assert.ok(result);
-            result = config.matcher(sweden_item, stream_query);
+            result = config.matcher(stream_query)(sweden_item);
             assert.ok(!result);
         })();
 
@@ -380,14 +380,14 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
         const group_query = "testers";
 
         (function test_item_html() {
-            assert.equal(config.item_html(testers_item, group_query), "<rendered-group-stub>");
+            assert.equal(config.item_html(group_query)(testers_item), "<rendered-group-stub>");
         })();
 
         (function test_matcher() {
             let result;
-            result = config.matcher(testers_item, group_query);
+            result = config.matcher(group_query)(testers_item);
             assert.ok(result);
-            result = config.matcher(admins_item, group_query);
+            result = config.matcher(group_query)(admins_item);
             assert.ok(!result);
         })();
 
@@ -486,30 +486,30 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             if (opts.stream) {
                 // Test stream item_html for widgets that allow stream pills.
                 assert.equal(
-                    config.item_html(denmark_item, stream_query),
+                    config.item_html(stream_query)(denmark_item),
                     "<rendered-stream-stub>",
                 );
             }
             if (opts.user_group && opts.user) {
                 // If user is also allowed along with user_group
                 // then we should check that each of them rendered correctly.
-                assert.equal(config.item_html(testers_item, group_query), "<rendered-group-stub>");
-                assert.equal(config.item_html(me_item, person_query), "<rendered-person-stub>");
+                assert.equal(config.item_html(group_query)(testers_item), "<rendered-group-stub>");
+                assert.equal(config.item_html(person_query)(me_item), "<rendered-person-stub>");
             }
             if (opts.user && !opts.user_group) {
-                assert.equal(config.item_html(me_item, person_query), "<rendered-person-stub>");
+                assert.equal(config.item_html(person_query)(me_item), "<rendered-person-stub>");
             }
             if (!opts.user && opts.user_group) {
-                assert.equal(config.item_html(testers_item, group_query), "<rendered-group-stub>");
+                assert.equal(config.item_html(group_query)(testers_item), "<rendered-group-stub>");
             }
         })();
 
         (function test_matcher() {
             let result;
             if (opts.stream) {
-                result = config.matcher(denmark_item, stream_query);
+                result = config.matcher(stream_query)(denmark_item);
                 assert.ok(result);
-                result = config.matcher(sweden_item, stream_query);
+                result = config.matcher(stream_query)(sweden_item);
                 assert.ok(!result);
             }
             if (opts.user_group && opts.user) {
@@ -518,36 +518,36 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 or group is returned. */
 
                 // group query, with correct item.
-                result = config.matcher(testers_item, group_query);
+                result = config.matcher(group_query)(testers_item);
                 assert.ok(result);
                 // group query, with wrong item.
-                result = config.matcher(admins_item, group_query);
+                result = config.matcher(group_query)(admins_item);
                 assert.ok(!result);
                 // person query with correct item.
-                result = config.matcher(me_item, person_query);
+                result = config.matcher(person_query)(me_item);
                 assert.ok(result);
                 // person query with wrong item.
-                result = config.matcher(jill_item, person_query);
+                result = config.matcher(person_query)(jill_item);
                 assert.ok(!result);
                 // @-prefixed query matches groups only.
-                result = config.matcher(testers_item, "@" + group_query);
+                result = config.matcher("@" + group_query)(testers_item);
                 assert.ok(result);
-                result = config.matcher(admins_item, "@admins");
+                result = config.matcher("@admins")(admins_item);
                 assert.ok(result);
                 // @-prefixed query must NOT match users.
-                result = config.matcher(me_item, "@" + person_query);
+                result = config.matcher("@" + person_query)(me_item);
                 assert.ok(!result);
             }
             if (opts.user_group && !opts.user) {
-                result = config.matcher(testers_item, group_query);
+                result = config.matcher(group_query)(testers_item);
                 assert.ok(result);
-                result = config.matcher(admins_item, group_query);
+                result = config.matcher(group_query)(admins_item);
                 assert.ok(!result);
             }
             if (opts.user && !opts.user_group) {
-                result = config.matcher(me_item, person_query);
+                result = config.matcher(person_query)(me_item);
                 assert.ok(result);
-                result = config.matcher(jill_item, person_query);
+                result = config.matcher(person_query)(jill_item);
                 assert.ok(!result);
             }
         })();
@@ -794,23 +794,23 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         (function test_item_html() {
             // If user is also allowed along with user_group
             // then we should check that each of them rendered correctly.
-            assert.equal(config.item_html(testers_item, group_query), "<rendered-group-stub>");
-            assert.equal(config.item_html(me_item, person_query), "<rendered-person-stub>");
+            assert.equal(config.item_html(group_query)(testers_item), "<rendered-group-stub>");
+            assert.equal(config.item_html(person_query)(me_item), "<rendered-person-stub>");
         })();
 
         (function test_matcher() {
             let result;
             // group query, with correct item.
-            result = config.matcher(testers_item, group_query);
+            result = config.matcher(group_query)(testers_item);
             assert.ok(result);
             // group query, with wrong item.
-            result = config.matcher(admins_item, group_query);
+            result = config.matcher(group_query)(admins_item);
             assert.ok(!result);
             // person query with correct item.
-            result = config.matcher(me_item, person_query);
+            result = config.matcher(person_query)(me_item);
             assert.ok(result);
             // person query with wrong item.
-            result = config.matcher(jill_item, person_query);
+            result = config.matcher(person_query)(jill_item);
             assert.ok(!result);
         })();
 

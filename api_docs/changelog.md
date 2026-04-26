@@ -20,6 +20,49 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 497**
+
+* [`GET /users/{user_id_or_email}/presence`](/api/get-user-presence): The
+  endpoint now additionally returns presence data in the legacy format,
+  with `website` and `aggregated` keys, alongside the modern
+  `active_timestamp` and `idle_timestamp` fields. Clients are recommended
+  to migrate to the modern fields; the legacy fields are retained for
+  backwards compatibility with integrations written against previous
+  versions of the API.
+* [`GET /users/{user_id_or_email}/presence`](/api/get-user-presence): The
+  response now includes a top-level `server_timestamp` field, matching
+  the behavior of other presence endpoints.
+
+**Feature level 496**
+
+* [`GET /user_groups`](/api/get-user-groups),
+  [`POST /user_groups/create`](/api/create-user-group),
+  [`PATCH /user_groups/{user_group_id}`](/api/update-user-group),
+  [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members),
+  [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members),
+  [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member),
+  [`POST /user_groups/{user_group_id}/subgroups`](/api/update-user-group-subgroups),
+  [`GET /user_groups/{user_group_id}/subgroups`](/api/get-user-group-subgroups):
+  Bot users are now permitted to call these endpoints. Previously, they
+  were restricted to human users; guest users remain blocked.
+
+**Feature level 495**
+
+* [Message formatting](/api/message-formatting): Uploaded videos with
+  the `video/quicktime` MIME type (i.e., `.mov` files) are now rendered
+  inline using the existing `message_inline_video` format. Clients that
+  cannot play the format should detect a playback error and hide the
+  preview; the download link remains in the surrounding `a` tag.
+
+**Feature level 494**
+
+* [`PUT /bot_storage`](/api/update-bot-storage),
+  [`GET /bot_storage`](/api/get-bot-storage),
+  [`DELETE /bot_storage`](/api/remove-bot-storage): These
+  endpoints now require the caller to be a bot user account.
+  Previously, any authenticated user account could call these
+  endpoints.
+
 **Feature level 493**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

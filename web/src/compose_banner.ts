@@ -208,8 +208,11 @@ export function show_error_message(
 }
 
 export function cannot_send_direct_message_error(error_message: string): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.cannot_send_direct_message)}`).remove();
+    // If a banner with this classname already exists, avoid removing
+    // and re-creating it.
+    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.cannot_send_direct_message)}`).length > 0) {
+        return;
+    }
 
     const new_row_html = render_cannot_send_direct_message_error({
         banner_type: ERROR,
@@ -218,14 +221,9 @@ export function cannot_send_direct_message_error(error_message: string): void {
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     hide_compose_spinner();
-
-    $("#private_message_recipient").trigger("focus").trigger("select");
 }
 
 export function topic_missing_error(empty_string_topic_display_name: string): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.topic_missing)}`).remove();
-
     const new_row_html = render_topics_required_error_banner({
         banner_type: ERROR,
         empty_string_topic_display_name,
@@ -236,9 +234,6 @@ export function topic_missing_error(empty_string_topic_display_name: string): vo
 }
 
 export function show_stream_does_not_exist_error(stream_name: string): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.stream_does_not_exist)}`).remove();
-
     const new_row_html = render_stream_does_not_exist_error({
         banner_type: ERROR,
         channel_name: stream_name,
@@ -255,9 +250,6 @@ export function show_stream_not_subscribed_error(
     sub: StreamSubscription,
     banner_text: string,
 ): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).remove();
-
     const new_row_html = render_compose_banner({
         banner_type: ERROR,
         banner_text,

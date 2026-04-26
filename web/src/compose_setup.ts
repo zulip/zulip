@@ -393,6 +393,34 @@ export function initialize(): void {
         });
     }
 
+    // Trap Tab/Shift+Tab focus within #compose-container so keyboard navigation
+    // doesn't leave the compose box when it is open.
+    $("#compose-container").on("keydown", (e) => {
+        if (e.key !== "Tab" || !compose_state.composing()) {
+            return;
+        }
+
+        const $compose_container = $("#compose-container");
+        const visible_focusable_elements = [
+            ...$compose_container.find("input, textarea, button, .input, a[href], a[tabindex='0']"),
+        ].filter(
+            (element) =>
+                element.getClientRects().length > 0 &&
+                $(element).css("visibility") !== "hidden" &&
+                !$(element).is(":disabled"),
+        );
+
+        if (e.shiftKey) {
+            if (document.activeElement === visible_focusable_elements[0]) {
+                e.preventDefault();
+            }
+        } else {
+            if (document.activeElement === visible_focusable_elements.at(-1)) {
+                e.preventDefault();
+            }
+        }
+    });
+
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field
 
@@ -727,6 +755,10 @@ export function initialize(): void {
         // to the recipient row
         compose_recipient.set_high_attention_recipient_row();
         $compose_recipient.addClass("recently-focused");
+        // Validate recipient to show error banners for deactivated
+        // users or insufficient DM permissions, and disable the
+        // compose textarea if the recipient is invalid.
+        compose_validate.validate_private_message(false);
     });
 
     $("input#stream_message_recipient_topic, #private_message_recipient").on("blur", () => {

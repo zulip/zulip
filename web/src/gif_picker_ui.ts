@@ -7,14 +7,19 @@ import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
 import render_no_gif_results from "../templates/no_gif_results.hbs";
 
 import type {GifInfoUrl, GifNetwork} from "./abstract_gif_network.ts";
+import {make_resizable} from "./box_resize.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
 import * as gif_state from "./gif_state.ts";
 import * as giphy_network from "./giphy_network.ts";
 import * as klipy_network from "./klipy_network.ts";
+import * as modals from "./modals.ts";
+import * as overlay_util from "./overlay_util.ts";
+import * as overlays from "./overlays.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as tenor_network from "./tenor_network.ts";
+import * as util from "./util.ts";
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let compose_icon_session: ComposeIconSession | undefined;
@@ -23,6 +28,8 @@ let current_search_term: undefined | string;
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
 let network: GifNetwork;
+let resizable_grid_cleanup: (() => void) | undefined;
+let fill_observer: ResizeObserver | undefined;
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
@@ -62,6 +69,25 @@ function focus_gif_at_index(index: number): void {
     $target_gif.trigger("focus");
 }
 
+function get_gifs_per_row(): number {
+    assert(popover_instance !== undefined);
+    const gif_elements = popover_instance.popper.querySelectorAll<HTMLElement>(".gif-picker-gif");
+    if (gif_elements.length === 0) {
+        return 0;
+    }
+    // The column count varies with resize and responsive CSS, so count
+    // elements sharing the first element's top offset.
+    const first_row_top = gif_elements[0]!.getBoundingClientRect().top;
+    let count = 0;
+    for (const gif_element of gif_elements) {
+        if (gif_element.getBoundingClientRect().top !== first_row_top) {
+            break;
+        }
+        count += 1;
+    }
+    return count;
+}
+
 function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     e.stopPropagation();
     assert(e.currentTarget instanceof HTMLElement);
@@ -83,6 +109,7 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     }
 
     const curr_gif_index = Number.parseInt(e.currentTarget.dataset["gifIndex"]!, 10);
+    const gifs_per_row = get_gifs_per_row();
     switch (key) {
         case "ArrowRight": {
             focus_gif_at_index(curr_gif_index + 1);
@@ -93,11 +120,11 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
             break;
         }
         case "ArrowUp": {
-            focus_gif_at_index(curr_gif_index - 2);
+            focus_gif_at_index(curr_gif_index - gifs_per_row);
             break;
         }
         case "ArrowDown": {
-            focus_gif_at_index(curr_gif_index + 2);
+            focus_gif_at_index(curr_gif_index + gifs_per_row);
             break;
         }
     }
@@ -111,6 +138,8 @@ export function hide_picker_popover(): boolean {
         popover_instance = undefined;
         current_search_term = undefined;
         network.abandon();
+        fill_observer?.disconnect();
+        fill_observer = undefined;
         return true;
     }
     return false;
@@ -126,6 +155,7 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
         if (urls.length === 0) {
             const no_gif_results_html = render_no_gif_results();
             $popper.find(".gif-picker-content").html(no_gif_results_html);
+            recenter_overlay();
             return;
         }
     }
@@ -143,7 +173,24 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
     } else {
         $popper.find(".gif-scrolling-container .simplebar-content-wrapper").scrollTop(0);
         $popper.find(".gif-picker-content").html(gif_grid_html);
+        // On the initial render, Tippy positioned the popover before
+        // the grid's `height: 70dvh` had settled, so the `translate3d`
+        // is computed against a smaller box and the final-sized box
+        // overflows at the bottom. Re-run popper with the final size.
+        recenter_overlay();
     }
+}
+
+function load_next_page(): void {
+    if (current_search_term === undefined || current_search_term.length === 0) {
+        render_featured_gifs(true);
+    } else {
+        update_grid_with_search_term(current_search_term, true);
+    }
+}
+
+function recenter_overlay(): void {
+    void popover_instance?.popperInstance?.update();
 }
 
 function render_featured_gifs(next_page: boolean): void {
@@ -185,21 +232,6 @@ function toggle_picker_popover(target: HTMLElement): void {
         target,
         {
             theme: "popover-menu",
-            placement: "top",
-            popperOptions: {
-                modifiers: [
-                    {
-                        // The placement is set to top by default, and we use
-                        // bottom and left configurations as fallback, which is
-                        // useful for scenarios when opening the picker while editing
-                        // messages near the top of the viewport.
-                        name: "flip",
-                        options: {
-                            fallbackPlacements: ["bottom", "left"],
-                        },
-                    },
-                ],
-            },
             onCreate(instance) {
                 const provider = network.get_provider();
                 instance.setContent(gif_picker_popover_content.get_gif_popover_content(provider));
@@ -209,6 +241,12 @@ function toggle_picker_popover(target: HTMLElement): void {
             },
             onShow(instance) {
                 popover_instance = instance;
+                // Clicking the compose GIF icon outside an overlay or
+                // modal would close the overlay/modal first, so we
+                // should never show the picker with one open.
+                assert(!overlays.any_active());
+                assert(!modals.any_active());
+                overlay_util.disable_scrolling();
                 const $popper = $(instance.popper).trigger("focus");
                 const debounced_search = _.debounce((search_term: string) => {
                     update_grid_with_search_term(search_term);
@@ -233,6 +271,34 @@ function toggle_picker_popover(target: HTMLElement): void {
                 $popper.on("keydown", ".gif-picker-gif", handle_keyboard_navigation_on_gif);
             },
             onMount(instance) {
+                const grid = instance.popper.querySelector<HTMLElement>(".gif-grid-in-popover")!;
+                // On mobile devices, the picker fills the viewport and
+                // resize is disabled — 10px touch targets are too small
+                // for fingers, and there's no real estate to gain. We
+                // gate on device class (userAgent) rather than viewport
+                // width so a desktop user with a narrow window still
+                // gets the resizable picker.
+                if (util.is_mobile()) {
+                    grid.classList.add("is-mobile-device");
+                } else {
+                    resizable_grid_cleanup = make_resizable(
+                        grid,
+                        [
+                            "top",
+                            "right",
+                            "bottom",
+                            "left",
+                            "top_left",
+                            "top_right",
+                            "bottom_left",
+                            "bottom_right",
+                        ],
+                        // Re-center the overlay against the new size.
+                        () => {
+                            void instance.popperInstance?.update();
+                        },
+                    );
+                }
                 render_featured_gifs(false);
                 const $popper = $(instance.popper);
                 $popper.find("#gif-search-query").trigger("focus");
@@ -247,24 +313,65 @@ function toggle_picker_popover(target: HTMLElement): void {
                         scroll_element.scrollTop + scroll_element.clientHeight >
                         scroll_element.scrollHeight - scroll_element.clientHeight
                     ) {
-                        if (network.is_loading_more_gifs()) {
-                            return;
-                        }
-                        if (current_search_term === undefined) {
-                            render_featured_gifs(true);
-                            return;
-                        }
-                        update_grid_with_search_term(current_search_term, true);
+                        load_next_page();
                     }
                 });
+
+                // Keep fetching while the grid doesn't fill the
+                // visible area. Both inputs to that check — the grid
+                // content's size (which grows as images load and new
+                // pages are appended) and the scroll container's
+                // viewport (which changes on resize) — are observed
+                // here so we react to all three drivers without
+                // hand-rolled image-load plumbing.
+                //
+                // Debounce: `grid-auto-rows: auto` against images
+                // sized with `height: 100%` creates circular sizing
+                // that collapses each row to zero until the image's
+                // intrinsic size resolves, so `scrollHeight`
+                // underreports the filled area while a batch is
+                // loading and the observer fires on every progressive
+                // image load. Waiting briefly lets the layout settle
+                // before we decide whether to fetch; otherwise a
+                // single underfilled page stampedes several more
+                // pagination requests before the first batch paints.
+                //
+                // Termination: once `scrollHeight > clientHeight` the
+                // check short-circuits; once the source is exhausted
+                // no new content arrives so ResizeObserver stops
+                // firing; further pagination is guarded by
+                // `is_loading_more_gifs` in the callees. Before the
+                // initial fetch has rendered, `last_gif_index < 0`
+                // and we hold off — firing `load_next_page` in that
+                // window would race the initial request (which is
+                // not yet covered by the pagination guard) and
+                // dispatch a duplicate offset=0 fetch.
+                const grid_content = $popper.find(".gif-picker-content")[0]!;
+                const check_fill = _.debounce(() => {
+                    if (
+                        popover_instance !== undefined &&
+                        last_gif_index >= 0 &&
+                        scroll_element.scrollHeight <= scroll_element.clientHeight
+                    ) {
+                        load_next_page();
+                    }
+                }, 200);
+                fill_observer = new ResizeObserver(check_fill);
+                fill_observer.observe(scroll_element);
+                fill_observer.observe(grid_content);
             },
             onHidden() {
                 hide_picker_popover();
+                resizable_grid_cleanup?.();
+                resizable_grid_cleanup = undefined;
+                overlay_util.enable_scrolling();
             },
         },
         {
             show_as_overlay_on_mobile: true,
-            show_as_overlay_always: false,
+            // A centered overlay sidesteps popper-anchor edge cases near
+            // the viewport top, and lets resize work symmetrically.
+            show_as_overlay_always: true,
         },
     );
 }

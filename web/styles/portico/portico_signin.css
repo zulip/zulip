@@ -40,11 +40,11 @@ html {
     font-size: 0.9em;
 
     & a {
-        color: hsl(164deg 100% 23%);
+        color: var(--color-link-portico-auth);
 
         &:hover {
             text-decoration: none;
-            color: hsl(156deg 62% 61%);
+            color: var(--color-link-portico-auth-hover);
         }
     }
 }
@@ -72,11 +72,11 @@ html {
     font-size: 1.2em;
 
     & a {
-        color: hsl(164deg 100% 23%);
+        color: var(--color-link-portico-auth);
 
         &:hover {
             text-decoration: none;
-            color: hsl(156deg 62% 61%);
+            color: var(--color-link-portico-auth-hover);
         }
     }
 }
@@ -324,13 +324,6 @@ html {
     & button {
         margin-top: 22px;
     }
-
-    .new-organization-button {
-        &[disabled] {
-            cursor: default;
-            opacity: 0.6;
-        }
-    }
 }
 
 .account-accept-terms-page {
@@ -430,31 +423,70 @@ html {
         box-sizing: border-box;
         outline: none;
         color: hsl(0deg 0% 100%);
-        background-color: hsl(213deg 23% 25%);
+        background-color: var(--color-action-button);
 
         margin: 25px 0 5px;
-        height: 50px;
+        height: 48px;
 
         border: none;
         border-radius: 4px;
 
-        transition: 0.3s ease;
-        transition-property: background-color, outline;
+        clip-path: inset(-1px);
+        transition: 0.05s ease-in;
+        transition-property: background-color, clip-path;
 
         &:hover {
-            background-color: hsl(213deg 33% 31%);
+            background-color: var(--color-action-button-hover);
+            transition: 0.1s ease-out;
+            transition-property: background-color, clip-path;
         }
 
         &:active {
-            background-color: hsl(214deg 28% 16%);
+            background-color: var(--color-action-button-active);
+            clip-path: inset(1px round 4px);
         }
 
-        &:focus {
+        &:focus-visible {
             outline: 3px solid hsl(213deg 81% 79%);
+            /* Override the base clip-path so the focus outline isn't
+               trimmed to a 1px square around the rounded button. */
+            clip-path: none;
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         &.full-width {
             width: 100%;
+        }
+
+        &.anonymous-access-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: hsl(0deg 0% 100%);
+            color: var(--color-action-button);
+            box-shadow: 0 0 0 1px var(--color-action-button) inset;
+
+            &:hover {
+                background-color: var(--color-action-button-subtle-hover);
+            }
+
+            &:active {
+                background-color: var(--color-action-button-subtle-active);
+                /* Preserve the inset border — the default active
+                   clip-path would crop the bottom edge. */
+                clip-path: inset(0 round 4px);
+            }
+
+            .zulip-icon {
+                font-size: 1.3em;
+                /* Nudge icon down to visually align with text x-height. */
+                transform: translateY(1px);
+            }
         }
     }
 
@@ -515,7 +547,9 @@ html {
         input[type="url"],
         textarea,
         select {
-            padding: 10px 32px 10px 12px;
+            /* 10.5px vertical padding + 2px border + content
+               height gives 48px, matching the button height. */
+            padding: 10.5px 32px 10.5px 12px;
             margin: 25px 0 5px;
 
             font-family: "Source Sans 3 VF", sans-serif;
@@ -609,6 +643,9 @@ html {
         /* The width of the "Organization name" text box
            right above this one is also 326px. */
         & select {
+            /* Browsers default select to border-box, so
+               an explicit height includes padding and border. */
+            height: 48px;
             width: 326px;
             cursor: pointer;
         }
@@ -638,6 +675,13 @@ html {
             font-weight: 600;
             padding-left: 0;
         }
+    }
+
+    .input-box.horizontal > .inline-block + button {
+        /* Add standard 8px gap between inline input and
+           button. The ~3px of inline-block whitespace is
+           already present, so 5px margin completes it. */
+        margin-left: 5px;
     }
 
     .lead {
@@ -729,7 +773,7 @@ html {
             color: hsl(0deg 0% 40%);
 
             .registration-lead-subtitle-link {
-                color: hsl(200deg 100% 40%);
+                color: var(--color-link-portico-auth);
                 text-decoration: none;
             }
         }
@@ -876,7 +920,7 @@ html {
 
 button.login-social-button {
     width: 328px;
-    height: auto;
+    height: 48px;
     /* Using 16% gives us space between text and icon so that they don't overlap. */
     padding-left: 16%;
     line-height: 1;
@@ -885,22 +929,22 @@ button.login-social-button {
     background-repeat: no-repeat;
     background-position: 13px 50%;
     background-color: hsl(0deg 0% 100%);
-    box-shadow:
-        0 1px 3px hsl(0deg 0% 0% / 30%),
-        0 0 5px hsl(0deg 0% 0% / 10%);
-    margin-left: 0;
-    margin-top: 0;
+    border: 1px solid hsl(0deg 0% 0% / 20%);
+    /* Tighten stacking so the sharp border doesn't visually push
+       buttons apart the way the old drop shadow did. */
+    margin: 0;
 
     color: hsl(0deg 0% 34%);
 
     &:hover {
-        background-color: hsl(0deg 0% 98%);
-        box-shadow: 1px 2px 5px hsl(0deg 0% 0% / 20%);
+        background-color: hsl(0deg 0% 97%);
+        transition: 0.1s ease-out;
+        transition-property: background-color, clip-path;
     }
 
     &:active {
         background-color: hsl(0deg 0% 93%);
-        box-shadow: 0 1px 1px hsl(0deg 0% 0% / 30%);
+        clip-path: inset(1px round 4px);
     }
 }
 
@@ -921,12 +965,18 @@ button#register_auth_button_gitlab {
     }
 
     &.signup-link-wrapper {
-        font-weight: normal;
-        float: right;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 0;
 
-        .register-link {
-            font-size: 1rem;
-            margin-left: 5px;
+        .anonymous_access_form,
+        .signup-form {
+            width: 100%;
+
+            & button {
+                margin: 0;
+            }
         }
     }
 }
@@ -957,7 +1007,7 @@ button#register_auth_button_gitlab {
 
 .split-view .actions a,
 .back-to-login {
-    color: hsl(164deg 100% 23%);
+    color: var(--color-link-portico-auth);
     text-decoration: none;
     font-weight: 600;
     font-size: 0.8em;
@@ -968,7 +1018,7 @@ button#register_auth_button_gitlab {
 
     &:hover {
         text-decoration: none;
-        color: hsl(156deg 62% 61%);
+        color: var(--color-link-portico-auth-hover);
     }
 }
 
@@ -1467,7 +1517,7 @@ button#register_auth_button_gitlab {
                 margin: 20px 0;
 
                 & a {
-                    color: hsl(200deg 100% 36%);
+                    color: var(--color-link-portico-auth);
                 }
             }
         }
@@ -1650,13 +1700,13 @@ button#register_auth_button_gitlab {
 }
 
 #cancel-slack-import {
-    color: hsl(200deg 100% 40%);
+    color: var(--color-link-portico-auth);
     text-decoration: none;
 
     &:hover,
     &:focus {
         cursor: pointer;
-        color: hsl(200.16deg 100% 25.1%);
+        color: var(--color-link-portico-auth-hover);
         text-decoration: underline;
     }
 }

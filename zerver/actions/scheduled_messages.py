@@ -29,7 +29,7 @@ from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.models import Client, Realm, ScheduledMessage, Subscription, UserProfile
-from zerver.models.users import get_system_bot
+from zerver.models.users import get_system_bot, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
 
 SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES = 10
@@ -317,6 +317,12 @@ def send_reminder(scheduled_message: ScheduledMessage) -> None:
         content,
         acting_user=current_user,
     )
+    if message_id is None:
+        # internal_send_private_message swallows JsonableError from
+        # check_message and returns None; surface that as a failure so
+        # the worker marks the row failed rather than delivered with a
+        # NULL delivered_message_id.
+        raise JsonableError(_("Reminder could not be sent."))
     scheduled_message.delivered_message_id = message_id
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
@@ -327,17 +333,21 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     assert not scheduled_message.delivered
     assert not scheduled_message.failed
 
-    if scheduled_message.delivery_type == ScheduledMessage.REMIND:
-        send_reminder(scheduled_message)
-        return
-
     # Repeat the checks from validate_account_and_subdomain, in case
-    # the state changed since the message as scheduled.
+    # the state changed since the message was scheduled.
     if scheduled_message.realm.deactivated:
         raise RealmDeactivatedError
 
     if not scheduled_message.sender.is_active:
         raise UserDeactivatedError
+
+    # Reminders go to the sender's own DMs from Notification Bot, so
+    # the late-cutoff concern (stale messages surprising other
+    # recipients) doesn't apply. Dispatch before the cutoff check so
+    # reminders still fire if the worker is backed up.
+    if scheduled_message.delivery_type == ScheduledMessage.REMIND:
+        send_reminder(scheduled_message)
+        return
 
     # Limit how late we're willing to send a scheduled message.
     latest_send_time = scheduled_message.scheduled_timestamp + timedelta(
@@ -472,6 +482,12 @@ def try_deliver_one_scheduled_message() -> bool:
                 # the sending user account has been deactivated.
                 and not isinstance(e, RealmDeactivatedError)
                 and not isinstance(e, UserDeactivatedError)
+                # Cross-realm system bots (welcome-bot, notification-bot,
+                # emailgateway) have no human behind them to read the
+                # notification, and notifying them leaves a stray
+                # notification-bot <-> system-bot DirectMessageGroup
+                # attached to no realm.
+                and not is_cross_realm_bot_email(scheduled_message.sender.delivery_email)
             ):
                 notify_update_scheduled_message(scheduled_message.sender, scheduled_message)
                 send_failed_scheduled_message_notification(

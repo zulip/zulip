@@ -191,19 +191,19 @@ run_test("show password", () => {
     const key_handler = $(password_selector).get_on_handler("keydown");
 
     click_handler(click_ev);
-    check_assertion("text", "fa-eye", "fa-eye-slash");
+    check_assertion("text", "zulip-icon-show", "zulip-icon-hide");
 
     click_handler(click_ev);
-    check_assertion("password", "fa-eye-slash", "fa-eye");
+    check_assertion("password", "zulip-icon-hide", "zulip-icon-show");
 
     key_handler(key_ev);
-    check_assertion("text", "fa-eye", "fa-eye-slash");
+    check_assertion("text", "zulip-icon-show", "zulip-icon-hide");
 
     key_handler(key_ev);
-    check_assertion("password", "fa-eye-slash", "fa-eye");
+    check_assertion("password", "zulip-icon-hide", "zulip-icon-show");
 
     click_handler(click_ev);
 
     common.reset_password_toggle_icons("#id_password", password_selector);
-    check_assertion("password", "fa-eye-slash", "fa-eye");
+    check_assertion("password", "zulip-icon-hide", "zulip-icon-show");
 });

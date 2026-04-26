@@ -215,8 +215,8 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         helpOnEmptyStrings: true,
         stopAdvance: true,
         requireHighlight: false,
-        item_html(item: string, query: string): string {
-            return search_pill.generate_pills_html(item, query);
+        item_html(query: string): (item: string) => string {
+            return (item: string) => search_pill.generate_pills_html(item, query);
         },
         // When the user starts typing new search operands,
         // we want to highlight the first typeahead row by default
@@ -233,8 +233,8 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             const text_terms = Filter.parse(search_bar_text);
             return text_terms.at(-1)?.operator === "search";
         },
-        matcher(): boolean {
-            return true;
+        matcher(_query: string) {
+            return () => true;
         },
         updater(search_string: string): string {
             if (search_string) {

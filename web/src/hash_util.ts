@@ -44,6 +44,7 @@ export function encode_operand(term: NarrowCanonicalTerm): string {
             slug = people.user_ids_to_slug(term.operand);
             break;
         case "sender":
+        case "mentions":
             slug = people.user_ids_to_slug([term.operand]);
             break;
         case "channel":
@@ -81,13 +82,13 @@ export function decode_operand(
         }
     }
 
-    if (operator === "sender") {
+    if (operator === "sender" || operator === "mentions") {
         const user_ids = people.slug_to_user_ids(operand);
         if (user_ids?.length !== 1) {
             // User mistyped the URL since we don't support
-            // group operand for `sender` narrow. Returning
-            // -1 will lead to us showing a proper user
-            // doesn't exist message in the UI.
+            // group operand for `sender` or `mentions` narrow.
+            // Returning -1 will lead to us showing a proper
+            // user doesn't exist message in the UI.
             // Other options is to throw an error which will
             // lead to us showing a "Invalid URL" banner which
             // is not very nice looking.
@@ -234,10 +235,17 @@ export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined 
             return undefined;
         }
 
-        const canonical_operator = filter_util.canonicalize_operator(
+        let canonical_operator = filter_util.canonicalize_operator(
             narrow_operator_schema.parse(operator),
         );
-        const operand = decode_operand(canonical_operator, raw_operand);
+        let operand = decode_operand(canonical_operator, raw_operand);
+
+        // mentions:me is equivalent to is:mentioned.
+        if (canonical_operator === "mentions" && raw_operand === "me") {
+            canonical_operator = "is";
+            operand = "mentioned";
+        }
+
         terms.push({
             negated,
             operator: canonical_operator,

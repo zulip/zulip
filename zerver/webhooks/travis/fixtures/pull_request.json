@@ -1,97 +1,83 @@
 {
-  "id": 92495257,
+  "id": 277927122,
+  "number": "42",
+  "config": {
+    "language": "ruby",
+    "os": [
+      "linux"
+    ],
+    "dist": "focal",
+    "notifications": {
+      "webhooks": [
+        {
+          "urls": [
+            "https://41da-49-37-250-179.ngrok-free.app/api/v1/external/travis?api_key=pDmnOb1fCfy181J2aTz8k2FI3dlxcXEV&stream=7"
+          ],
+          "on_success": "always",
+          "on_failure": "always",
+          "on_start": "always"
+        }
+      ]
+    }
+  },
+  "type": "pull_request",
+  "state": "failed",
+  "status": 1,
+  "result": 1,
+  "status_message": "Failed",
+  "result_message": "Failed",
+  "started_at": "2026-04-15T16:39:52Z",
+  "finished_at": "2026-04-15T16:40:15Z",
+  "duration": 23,
+  "build_url": "https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277927122",
+  "commit_id": 1291891363,
+  "commit": "853c38dfecb99b75e9d4987fba0c4f58eab0bae3",
+  "base_commit": "6864d112b255e2c26cfc48882594397c4e561bab",
+  "head_commit": "b2b0af11c1d6e03fe390050a97506c0a2f437d5a",
+  "branch": "main",
+  "message": "feat: Created Name.txt.",
+  "compare_url": "https://github.com/sathwikshetty33/travis-test/pull/2",
+  "committed_at": "2026-04-15T16:38:07Z",
+  "author_name": "Sathwik Shetty",
+  "author_email": "sathwikshetty2k5@gmail.com",
+  "committer_name": "GitHub",
+  "committer_email": "noreply@github.com",
+  "pull_request": true,
+  "pull_request_number": 2,
+  "pull_request_title": "feat: Add Name.txt.",
+  "tag": null,
   "repository": {
-    "id": 2176580,
-    "name": "fhir-svn",
-    "owner_name": "hl7-fhir",
+    "id": 29853331,
+    "name": "travis-test",
+    "owner_name": "sathwikshetty33",
     "url": null
   },
-  "number": "4601",
-  "config": {
-    "language": "java",
-    "jdk": [
-      "oraclejdk8"
-    ],
-    "script": "./build.sh",
-    "sudo": false,
-    "notifications": {
-      "email": [ ],
-      "webhooks": [
-        "https://zulip.example.com/api/v1/external/travis?stream=travis&/topic=builds&api_key=abcdefg"
-      ]
-    },
-    "after_success": [ ],
-    "env": [
-      "[One+of+the+secure+variables+in+your+.travis.yml+has+an+invalid+format.]"
-    ],
-    ".result": "configured"
-  },
-  "status": 0,
-  "result": 0,
-  "status_message": "Passed",
-  "result_message": "Passed",
-  "started_at": "2015-11-21T23:28:22Z",
-  "finished_at": "2015-11-21T23:45:25Z",
-  "duration": 1023,
-  "build_url": "https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257",
-  "commit_id": 26300989,
-  "commit": "6c457d366a31696c989c011ab75b734d8485a9ba",
-  "base_commit": null,
-  "head_commit": null,
-  "branch": "master",
-  "message": "Debug+build+hooks\n\ngit-svn-id:+http://gforge.hl7.org/svn/fhir/trunk/build@7323+2f0db536-2c49-4257-a3fa-e771ed206c19",
-  "compare_url": "https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31",
-  "committed_at": "2015-11-21T23:27:13Z",
-  "author_name": "josh_mandel",
-  "author_email": "josh_mandel@2f0db536-2c49-4257-a3fa-e771ed206c19",
-  "committer_name": "josh_mandel",
-  "committer_email": "josh_mandel@2f0db536-2c49-4257-a3fa-e771ed206c19",
   "matrix": [
     {
-      "id": 92495258,
-      "repository_id": 2176580,
-      "parent_id": 92495257,
-      "number": "4601.1",
-      "state": "finished",
+      "id": 638911273,
+      "repository_id": 29853331,
+      "parent_id": 277927122,
+      "number": "42.1",
+      "state": "failed",
       "config": {
-        "language": "java",
-        "jdk": "oraclejdk8",
-        "script": "./build.sh",
-        "sudo": false,
-        "notifications": {
-          "email": [ ],
-          "webhooks": [
-            "https://zulip.example.com/api/v1/external/travis?stream=travis&topic=builds&api_key=abcdefg"
-          ]
-        },
-        "after_success": [ ],
-        ".result": "configured",
-        "global_env": [  ],
+        "os": "linux",
         "language": "ruby",
-        "group": "stable",
-        "dist": "precise",
-        "os": "linux"
+        "dist": "focal"
       },
-      "status": 0,
-      "result": 0,
-      "commit": "6c457d366a31696c989c011ab75b734d8485a9ba",
-      "branch": "master",
-      "message": "Debug+build+hooks\n\ngit-svn-id:+http://gforge.hl7.org/svn/fhir/trunk/build@7323+2f0db536-2c49-4257-a3fa-e771ed206c19",
-      "compare_url": "https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31",
-      "started_at": "2015-11-21T23:28:22Z",
-      "finished_at": "2015-11-21T23:45:25Z",
-      "committed_at": "2015-11-21T23:27:13Z",
-      "author_name": "josh_mandel",
-      "author_email": "josh_mandel@2f0db536-2c49-4257-a3fa-e771ed206c19",
-      "committer_name": "josh_mandel",
-      "committer_email": "josh_mandel@2f0db536-2c49-4257-a3fa-e771ed206c19",
-      "allow_failure": false
+      "status": 1,
+      "result": 1,
+      "commit": "853c38dfecb99b75e9d4987fba0c4f58eab0bae3",
+      "branch": "main",
+      "message": "feat: Created Name.txt.",
+      "compare_url": "https://github.com/sathwikshetty33/travis-test/pull/2",
+      "started_at": "2026-04-15T16:39:52Z",
+      "finished_at": "2026-04-15T16:40:15Z",
+      "committed_at": "2026-04-15T16:38:07Z",
+      "author_name": "Sathwik Shetty",
+      "author_email": "sathwikshetty2k5@gmail.com",
+      "committer_name": "GitHub",
+      "committer_email": "noreply@github.com",
+      "allow_failure": null
     }
-  ],
-  "type": "pull_request",
-  "state": "passed",
-  "pull_request": false,
-  "pull_request_number": null,
-  "pull_request_title": null,
-  "tag": null
+  ]
 }

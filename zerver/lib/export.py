@@ -1166,6 +1166,8 @@ def custom_process_subscription_in_realm_config(
         assert exportable_user_ids_from_context is None
         consented_user_ids = set()
 
+    exported_inactive_user_ids = context["exported_inactive_user_ids"]
+
     for subscription in subscriptions:
         if subscription["user_profile"] in consented_user_ids:
             yield subscription
@@ -1173,12 +1175,21 @@ def custom_process_subscription_in_realm_config(
         # We create a replacement Subscription, setting only the essential fields,
         # while allowing all the other ones to fall back to the defaults
         # defined in the model.
+        #
+        # is_user_active must match the is_active we're emitting on the
+        # user's UserProfile row; otherwise the Subscription's
+        # denormalized copy of UserProfile.is_active would contradict
+        # the exported UserProfile (e.g., when a non-consenting user is
+        # mirror-dummied to is_active=False).
         scrubbed_subscription = Subscription(
             id=subscription["id"],
             user_profile_id=subscription["user_profile"],
             recipient_id=subscription["recipient"],
             active=subscription["active"],
-            is_user_active=subscription["is_user_active"],
+            is_user_active=(
+                subscription["is_user_active"]
+                and subscription["user_profile"] not in exported_inactive_user_ids
+            ),
             # Letting the color be the default color for every stream would create a visually
             # jarring experience. Instead, we can pick colors randomly for a normal-feeling
             # experience, without leaking any information about the user's preferences.
@@ -1350,7 +1361,7 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
         email__in=settings.CROSS_REALM_BOT_EMAILS,
     )
     exclude = EXCLUDED_USER_PROFILE_FIELDS
-    rows = make_raw(list(query), exclude=exclude)
+    rows = make_raw(query.iterator(), exclude=exclude)
 
     normal_rows: list[Record] = []
     dummy_rows: list[Record] = []
@@ -1398,6 +1409,17 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
 
     response["zerver_userprofile"] = normal_rows
     response["zerver_userprofile_mirrordummy"] = dummy_rows
+
+    # Subscription.is_user_active is a denormalized copy of
+    # UserProfile.is_active.  The export can force is_active=False on a
+    # UserProfile row (mirror-dummying a non-consenting user, or
+    # replacing the delivery_email of a NOBODY-visibility user in a
+    # public export); custom_process_subscription_in_realm_config
+    # consults this set so that scrubbed Subscription rows stay in
+    # sync with the UserProfile rows we're emitting.
+    context["exported_inactive_user_ids"] = {
+        row["id"] for row in normal_rows + dummy_rows if not row["is_active"]
+    }
 
 
 def custom_fetch_user_profile_cross_realm(response: TableData, context: Context) -> None:
@@ -1615,7 +1637,7 @@ def custom_fetch_scheduled_messages(response: TableData, context: Context) -> No
     exportable_scheduled_message_ids = context["exportable_scheduled_message_ids"]
 
     query = ScheduledMessage.objects.filter(realm=realm, id__in=exportable_scheduled_message_ids)
-    rows = make_raw(query)
+    rows = make_raw(query.iterator())
 
     response["zerver_scheduledmessage"] = rows
 
@@ -1652,41 +1674,57 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
         assert exportable_user_ids_from_context is None
         consenting_user_ids = set()
 
-    query = RealmAuditLog.objects.filter(realm=realm).select_related("acting_user")
-    realmauditlog_objects = list(query)
-    for realmauditlog in realmauditlog_objects:
-        if realmauditlog.acting_user is not None and realmauditlog.acting_user.realm_id != realm.id:
-            realmauditlog.acting_user = None
+    query = RealmAuditLog.objects.filter(realm=realm).order_by("id")
+    if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
+        # Keep entries whose modified_user is a consenting user, is
+        # None, or whose event_type is one we preserve for every
+        # user (subscription lifecycle events, which are needed to
+        # reconstruct channel membership on import regardless of
+        # consent).
+        query = query.filter(
+            Q(event_type__in=PRESERVED_AUDIT_LOG_EVENT_TYPES)
+            | Q(modified_user_id__isnull=True)
+            | Q(modified_user_id__in=consenting_user_ids)
+        )
 
-    # We want to drop all RealmAuditLog objects where modified_user is not a consenting
-    # user, except those of event_type in PRESERVED_AUDIT_LOG_EVENT_TYPES.
-    realmauditlog_objects_for_export = []
-    for realmauditlog in realmauditlog_objects:
-        if (
-            export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
-            or (realmauditlog.event_type in PRESERVED_AUDIT_LOG_EVENT_TYPES)
-            or (realmauditlog.modified_user_id is None)
-            or (realmauditlog.modified_user_id in consenting_user_ids)
-        ):
-            realmauditlog_objects_for_export.append(realmauditlog)
-            continue
+    # Some RealmAuditLog entries have an acting_user in a different
+    # realm (typically a server administrator taking an action on
+    # this realm's objects).  Their UserProfile won't appear in the
+    # export, so we null out acting_user on the exported row.  We
+    # precompute the set of cross-realm acting users rather than
+    # JOIN via select_related so that the audit rows themselves can
+    # stream through .iterator() instead of being fully materialized
+    # along with their joined UserProfile.
+    cross_realm_acting_user_ids = set(
+        UserProfile.objects.filter(
+            id__in=RealmAuditLog.objects.filter(realm=realm)
+            .exclude(acting_user_id__isnull=True)
+            .values("acting_user_id")
+        )
+        .exclude(realm_id=realm.id)
+        .values_list("id", flat=True)
+    )
 
-    rows = make_raw(realmauditlog_objects_for_export)
+    def rows() -> Iterator[Record]:
+        for record in make_raw(query.iterator()):
+            if record["acting_user"] in cross_realm_acting_user_ids:
+                record["acting_user"] = None
+            yield record
 
-    response["zerver_realmauditlog"] = rows
+    response["zerver_realmauditlog"] = rows()
 
 
 def custom_fetch_onboarding_usermessage(response: TableData, context: Context) -> None:
     realm = context["realm"]
-    onboarding = []
 
-    onboarding_usermessage_query = OnboardingUserMessage.objects.filter(realm=realm)
-    for onboarding_usermessage in onboarding_usermessage_query:
-        onboarding_usermessage_obj = model_to_dict(onboarding_usermessage)
-        onboarding_usermessage_obj["flags_mask"] = onboarding_usermessage.flags.mask
-        del onboarding_usermessage_obj["flags"]
-        onboarding.append(onboarding_usermessage_obj)
-    response["zerver_onboardingusermessage"] = onboarding
+    def rows() -> Iterator[Record]:
+        for onboarding_usermessage in OnboardingUserMessage.objects.filter(realm=realm).iterator():
+            onboarding_usermessage_obj = model_to_dict(onboarding_usermessage)
+            onboarding_usermessage_obj["flags_mask"] = onboarding_usermessage.flags.mask
+            del onboarding_usermessage_obj["flags"]
+            yield onboarding_usermessage_obj
+
+    response["zerver_onboardingusermessage"] = rows()
 
 
 def fetch_usermessages(
@@ -1696,25 +1734,53 @@ def fetch_usermessages(
     message_filename: Path,
     export_full_with_consent: bool,
     consented_user_ids: set[int] | None = None,
-) -> list[Record]:
+) -> Iterator[Record]:
     # UserMessage export security rule: You can export UserMessages
     # for the messages you exported for the users in your realm.
-    user_message_query = UserMessage.objects.filter(
-        user_profile__realm=realm, message_id__in=message_ids
-    )
+    # user_profile_ids comes from response["zerver_userprofile"] and
+    # is therefore already scoped to this realm's exported users, so
+    # filtering on user_profile_id directly is sufficient -- no JOIN
+    # to UserProfile is needed to reconfirm the realm.
     if export_full_with_consent:
         assert consented_user_ids is not None
         user_profile_ids = consented_user_ids & user_profile_ids
-    user_message_chunk = []
-    for user_message in user_message_query:
-        if user_message.user_profile_id not in user_profile_ids:
-            continue
-        user_message_obj = model_to_dict(user_message)
-        user_message_obj["flags_mask"] = user_message.flags.mask
-        del user_message_obj["flags"]
-        user_message_chunk.append(user_message_obj)
-    logging.info("Fetched UserMessages for %s", message_filename)
-    return user_message_chunk
+
+    # The hand-rolled SELECT below names UserMessage's columns
+    # explicitly; this assert is to catch any future model column drift.
+    assert {f.name for f in UserMessage._meta.concrete_fields} == {
+        "id",
+        "user_profile",
+        "flags",
+        "message",
+    }, "UserMessage gained a field; update this SELECT and the yielded dict"
+
+    # psycopg2 mogrifies an empty tuple to `IN ()`, which is a
+    # PostgreSQL syntax error; Django's __in lookup short-circuits
+    # an empty set via EmptyResultSet, and this matches that
+    # behavior.  EXPORT_FULL_WITH_CONSENT hits this whenever the
+    # consent intersection is empty.
+    if not user_profile_ids or not message_ids:
+        return
+
+    logging.info("Fetching UserMessages for %s", message_filename)
+    with connection.chunked_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT id, user_profile_id, flags, message_id
+            FROM zerver_usermessage
+            WHERE user_profile_id IN %s
+              AND message_id IN %s
+            ORDER BY id
+            """,
+            [tuple(user_profile_ids), tuple(message_ids)],
+        )
+        for um_id, user_profile_id, flags, message_id in cursor:
+            yield {
+                "id": um_id,
+                "user_profile": user_profile_id,
+                "flags_mask": flags,
+                "message": message_id,
+            }
 
 
 def export_usermessages_batch(
@@ -2142,7 +2208,6 @@ def _get_exported_s3_record(
 @dataclass
 class S3DownloadsProcessState:
     output_dir: str
-    processing_uploads: bool
     bucket: "Bucket"
 
 
@@ -2156,23 +2221,15 @@ class S3DownloadsProcessState:
 s3_downloads_context: ContextVar[S3DownloadsProcessState] = ContextVar("s3_downloads_context")
 
 
-def s3_downloads_process_initializer(
-    output_dir: str, processing_uploads: bool, bucket_name: str
-) -> None:
+def s3_downloads_process_initializer(output_dir: str, bucket_name: str) -> None:
     bucket = get_bucket(bucket_name)
-    s3_downloads_context.set(S3DownloadsProcessState(output_dir, processing_uploads, bucket))
+    s3_downloads_context.set(S3DownloadsProcessState(output_dir, bucket))
 
 
 def _save_s3_key_to_file(key_name: str) -> None:
-    context = s3_downloads_context.get()
     # Helper function for export_files_from_s3
-    if not context.processing_uploads:
-        filename = os.path.join(context.output_dir, key_name)
-    else:
-        fields = key_name.split("/")
-        if len(fields) != 3:
-            raise AssertionError(f"Suspicious key with invalid format {key_name}")
-        filename = os.path.join(context.output_dir, key_name)
+    context = s3_downloads_context.get()
+    filename = os.path.join(context.output_dir, key_name)
 
     if "../" in filename:
         raise AssertionError(f"Suspicious file with invalid format {filename}")
@@ -2197,7 +2254,6 @@ def export_files_from_s3(
     valid_hashes: set[str] | None,
     processes: int = 1,
 ) -> None:
-    processing_uploads = flavor == "upload"
     processing_emoji = flavor == "emoji"
 
     bucket = get_bucket(bucket_name)
@@ -2260,7 +2316,6 @@ def export_files_from_s3(
         initializer=s3_downloads_process_initializer,
         initargs=(
             output_dir,
-            processing_uploads,
             bucket_name,
         ),
         report_every=100,
@@ -2287,7 +2342,7 @@ def export_uploads_from_local(
             stat = os.stat(local_path)
             record = dict(
                 realm_id=attachment.realm_id,
-                user_profile_id=attachment.owner.id,
+                user_profile_id=attachment.owner_id,
                 s3_path=path_id,
                 path=path_id,
                 size=stat.st_size,
@@ -2841,11 +2896,12 @@ def export_messages_single_user(
         sender=user_profile,
     )
 
-    my_subscriptions = Subscription.objects.filter(
-        user_profile=user_profile,
-        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+    my_recipient_ids = list(
+        Subscription.objects.filter(
+            user_profile=user_profile,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        ).values_list("recipient_id", flat=True)
     )
-    my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
     messages_to_me = Message.objects.filter(
         # Uses index: zerver_message_realm_recipient_id (prefix)
         realm_id=user_profile.realm_id,

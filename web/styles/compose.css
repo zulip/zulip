@@ -201,6 +201,15 @@
         /* Align to compose controls; that's 112px width,
            plus 4px of grid gap for 116px here. */
         margin-right: calc(var(--compose-send-controls-width) + 4px);
+
+        .main-view-banner {
+            padding-right: 4px;
+
+            .main-view-banner-close-button {
+                outline-offset: 0;
+                border-radius: 4px;
+            }
+        }
     }
 }
 
@@ -1498,12 +1507,6 @@ textarea.new_message_textarea {
             align-self: center;
             font-size: inherit;
 
-            &:focus {
-                outline: 1px dotted hsl(0deg 0% 20%);
-                outline: 5px auto -webkit-focus-ring-color;
-                outline-offset: -2px;
-            }
-
             &:checked
                 + .enter_sends_choice_text_container
                 .popover-menu-hotkey-hint {
@@ -2118,5 +2121,15 @@ textarea.new_message_textarea {
            compose textarea. */
         height: 0 !important;
         overflow: hidden !important;
+    }
+}
+
+#compose:has(textarea#compose-textarea:disabled) {
+    .disable-on-invalid-recipient {
+        opacity: 0.3;
+
+        .compose_control_button {
+            pointer-events: none;
+        }
     }
 }

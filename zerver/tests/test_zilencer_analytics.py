@@ -1159,7 +1159,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 return_value=BillingUserCounts(11, 0),
             ),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
+                "corporate.lib.stripe.get_next_billing_cycle_for_plan",
                 return_value=dummy_date,
             ) as m,
             self.assertLogs("zulip.analytics", level="INFO") as info_log,
@@ -1192,7 +1192,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 side_effect=MissingDataError,
             ),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
+                "corporate.lib.stripe.get_next_billing_cycle_for_plan",
                 return_value=dummy_date,
             ) as m,
             self.assertLogs("zulip.analytics", level="INFO") as info_log,

@@ -933,6 +933,7 @@ export const owner_editable_realm_group_permission_settings = new Set([
     "can_create_groups",
     "can_invite_users_group",
     "can_manage_all_groups",
+    "can_manage_billing_group",
     "create_multiuse_invite_group",
 ]);
 

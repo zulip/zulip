@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from email.message import Message
 from typing import Any
 
-import backoff
+import tenacity
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
@@ -21,14 +21,19 @@ MAX_CONNECTION_TRIES = 3
 # errors (ConnectionError, TimeoutError) and SMTPServerDisconnected
 # (dropped connection), but not on SMTP protocol errors like
 # SMTPAuthenticationError, SMTPRecipientsRefused, or SMTPDataError.
-smtp_connection_backoff = backoff.on_exception(
-    backoff.expo,
-    OSError,
-    max_tries=MAX_CONNECTION_TRIES,
-    logger=None,
-    giveup=lambda e: (
-        isinstance(e, smtplib.SMTPException) and not isinstance(e, smtplib.SMTPServerDisconnected)
+smtp_connection_backoff = tenacity.retry(
+    wait=tenacity.wait_exponential_jitter(),
+    retry=tenacity.retry_if_exception(
+        lambda exc: (
+            isinstance(exc, OSError)
+            and (
+                not isinstance(exc, smtplib.SMTPException)
+                or isinstance(exc, smtplib.SMTPServerDisconnected)
+            )
+        )
     ),
+    stop=tenacity.stop_after_attempt(MAX_CONNECTION_TRIES),
+    reraise=True,
 )
 
 

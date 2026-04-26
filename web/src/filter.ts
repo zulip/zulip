@@ -227,6 +227,8 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
         // can_apply_locally() when a search term is present.
         // istanbul ignore next
         case "search":
+        // istanbul ignore next -- falls through
+        case "mentions":
             throw new Error("build_term_predicate called for search term");
     }
 
@@ -238,11 +240,27 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
 const USER_OPERATORS = new Set([
     "dm-including",
     "dm",
+    "mentions",
     "sender",
     "from",
     "pm-with",
     "group-pm-with",
 ]);
+
+function convert_single_user_id_suggestion_to_term(
+    suggestion: NarrowTermSuggestion,
+    canonical_operator: "sender" | "mentions",
+): NarrowCanonicalTerm | undefined {
+    const operand = Number(suggestion.operand);
+    if (Number.isNaN(operand)) {
+        return undefined;
+    }
+    return {
+        operator: canonical_operator,
+        operand,
+        negated: suggestion.negated,
+    };
+}
 
 export class Filter {
     _terms: NarrowCanonicalTerm[];
@@ -295,6 +313,7 @@ export class Filter {
             case "topic":
                 break;
             case "sender":
+            case "mentions":
             case "dm":
             case "dm-including":
                 break;
@@ -453,8 +472,14 @@ export class Filter {
                     }
                 }
 
-                if (for_pills && operator === "sender" && operand.toLowerCase() === "me") {
-                    operand = String(people.my_current_user_id());
+                if (for_pills && operand.toLowerCase() === "me") {
+                    if (operator === "sender") {
+                        operand = String(people.my_current_user_id());
+                    } else if (operator === "mentions") {
+                        // mentions:me is equivalent to is:mentioned.
+                        operator = "is";
+                        operand = "mentioned";
+                    }
                 }
 
                 // Check if the operator is known, if not then we treat
@@ -524,22 +549,42 @@ export class Filter {
                     break;
                 }
                 case "sender": {
-                    let operand: number;
                     if (suggestion.operand.toLowerCase() === "me") {
-                        operand = people.my_current_user_id();
-                    } else {
-                        operand = Number(suggestion.operand);
+                        potential_narrow_term = {
+                            operator: canonical_operator,
+                            operand: people.my_current_user_id(),
+                            negated: suggestion.negated,
+                        };
+                        break;
                     }
-
-                    if (Number.isNaN(operand)) {
+                    const result = convert_single_user_id_suggestion_to_term(
+                        suggestion,
+                        canonical_operator,
+                    );
+                    if (result === undefined) {
                         return undefined;
                     }
-
-                    potential_narrow_term = {
-                        operator: canonical_operator,
-                        operand,
-                        negated: suggestion.negated,
-                    };
+                    potential_narrow_term = result;
+                    break;
+                }
+                case "mentions": {
+                    // mentions:me is equivalent to is:mentioned.
+                    if (suggestion.operand.toLowerCase() === "me") {
+                        potential_narrow_term = {
+                            operator: "is",
+                            operand: "mentioned",
+                            negated: suggestion.negated,
+                        };
+                        break;
+                    }
+                    const result = convert_single_user_id_suggestion_to_term(
+                        suggestion,
+                        canonical_operator,
+                    );
+                    if (result === undefined) {
+                        return undefined;
+                    }
+                    potential_narrow_term = result;
                     break;
                 }
                 default:
@@ -591,6 +636,7 @@ export class Filter {
             case "topic":
                 return true;
             case "sender":
+            case "mentions":
                 return people.is_valid_user_id(term.operand);
             case "dm":
             case "dm-including":
@@ -669,6 +715,7 @@ export class Filter {
             "dm-including",
             "with",
             "sender",
+            "mentions",
             "near",
             "id",
             "is-alerted",
@@ -740,6 +787,9 @@ export class Filter {
 
             case "dm-including":
                 return verb + "direct messages including";
+
+            case "mentions":
+                return verb + "messages mentioning";
 
             case "in":
                 return verb + "messages in";
@@ -1679,6 +1729,10 @@ export class Filter {
             // rendered by the backend; links, attachments, and images
             // are not handled properly by the local echo Markdown
             // processor.
+            return false;
+        }
+
+        if (this.has_operator("mentions")) {
             return false;
         }
 

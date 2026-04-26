@@ -21,6 +21,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -144,97 +145,112 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         show_go_to_list_of_topics,
     });
 
-    popover_menus.toggle_popover_menu(elt, {
-        // Add a delay to separate `hideOnClick` and `onShow` so that
-        // `onShow` is called after `hideOnClick`.
-        // See https://github.com/atomiks/tippyjs/issues/230 for more details.
-        delay: [100, 0],
-        ...left_sidebar_tippy_options,
-        onCreate(instance) {
-            const $popover = $(instance.popper);
-            $popover.addClass("stream-popover-root");
-            instance.setContent(ui_util.parse_html(content));
-        },
-        onMount(instance) {
-            popover_menus.focus_popover(instance);
-            const $popper = $(instance.popper);
-            popover_menus.popover_instances.stream_actions_popover = instance;
-            ui_util.show_left_sidebar_menu_icon(elt);
+    popover_menus.toggle_popover_menu(
+        elt,
+        {
+            // Add a delay to separate `hideOnClick` and `onShow` so that
+            // `onShow` is called after `hideOnClick`.
+            // See https://github.com/atomiks/tippyjs/issues/230 for more details.
+            delay: [100, 0],
+            ...left_sidebar_tippy_options,
+            onCreate(instance) {
+                const $popover = $(instance.popper);
+                $popover.addClass("stream-popover-root");
+                instance.setContent(ui_util.parse_html(content));
+            },
+            onMount(instance) {
+                popover_menus.focus_popover(instance);
+                const $popper = $(instance.popper);
+                popover_menus.popover_instances.stream_actions_popover = instance;
+                ui_util.show_left_sidebar_menu_icon(elt);
 
-            // Go to channel feed instead of first topic.
-            $popper.on("click", ".stream-popover-go-to-channel-feed", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const sub = stream_popover_sub(e);
-                hide_stream_popover(instance);
-                message_view.show(
-                    [
-                        {
-                            operator: "channel",
-                            operand: sub.stream_id.toString(),
-                        },
-                    ],
-                    {trigger: "stream-popover"},
-                );
-            });
-
-            $popper.on("click", ".stream-popover-go-to-list-of-topics", (e) => {
-                e.stopPropagation();
-                hide_stream_popover(instance);
-            });
-
-            // Pin/unpin
-            $popper.on("click", ".pin_to_top", (e) => {
-                const sub = stream_popover_sub(e);
-                hide_stream_popover(instance);
-                stream_settings_ui.toggle_pin_to_top_stream(sub);
-                e.stopPropagation();
-            });
-
-            // Mark all messages in stream as read
-            $popper.on("click", ".mark_stream_as_read", (e) => {
-                const sub = stream_popover_sub(e);
-                hide_stream_popover(instance);
-                unread_ops.mark_stream_as_read(sub.stream_id);
-                e.stopPropagation();
-            });
-
-            // Mark all messages in stream as unread
-            $popper.on("click", ".mark_stream_as_unread", (e) => {
-                const sub = stream_popover_sub(e);
-                hide_stream_popover(instance);
-                unread_ops.mark_stream_as_unread(sub.stream_id);
-                e.stopPropagation();
-            });
-
-            // Mute/unmute
-            $popper.on("click", ".toggle_stream_muted", (e) => {
-                const sub = stream_popover_sub(e);
-                hide_stream_popover(instance);
-                stream_settings_api.set_stream_property(sub, {
-                    property: "is_muted",
-                    value: !sub.is_muted,
+                // Go to channel feed instead of first topic.
+                $popper.on("click", ".stream-popover-go-to-channel-feed", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const sub = stream_popover_sub(e);
+                    hide_stream_popover(instance);
+                    message_view.show(
+                        [
+                            {
+                                operator: "channel",
+                                operand: sub.stream_id.toString(),
+                            },
+                        ],
+                        {trigger: "stream-popover"},
+                    );
                 });
-                e.stopPropagation();
-            });
 
-            // Unsubscribe
-            $popper.on("click", ".popover_sub_unsub_button", (e) => {
-                const sub = stream_popover_sub(e);
+                $popper.on("click", ".stream-popover-go-to-list-of-topics", (e) => {
+                    e.stopPropagation();
+                    hide_stream_popover(instance);
+                });
+
+                // Pin/unpin
+                $popper.on("click", ".pin_to_top", (e) => {
+                    const sub = stream_popover_sub(e);
+                    hide_stream_popover(instance);
+                    stream_settings_ui.toggle_pin_to_top_stream(sub);
+                    e.stopPropagation();
+                });
+
+                // Mark all messages in stream as read
+                $popper.on("click", ".mark_stream_as_read", (e) => {
+                    const sub = stream_popover_sub(e);
+                    hide_stream_popover(instance);
+                    unread_ops.mark_stream_as_read(sub.stream_id);
+                    e.stopPropagation();
+                });
+
+                // Mark all messages in stream as unread
+                $popper.on("click", ".mark_stream_as_unread", (e) => {
+                    const sub = stream_popover_sub(e);
+                    hide_stream_popover(instance);
+                    unread_ops.mark_stream_as_unread(sub.stream_id);
+                    e.stopPropagation();
+                });
+
+                // Mute/unmute
+                $popper.on("click", ".toggle_stream_muted", (e) => {
+                    const sub = stream_popover_sub(e);
+                    hide_stream_popover(instance);
+                    stream_settings_api.set_stream_property(sub, {
+                        property: "is_muted",
+                        value: !sub.is_muted,
+                    });
+                    e.stopPropagation();
+                });
+
+                // Unsubscribe
+                $popper.on("click", ".popover_sub_unsub_button", (e) => {
+                    const sub = stream_popover_sub(e);
+                    hide_stream_popover(instance);
+                    stream_settings_components.sub_or_unsub(sub);
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+
+                $popper.on("click", ".copy_stream_link", function (this: HTMLElement) {
+                    void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
+                });
+            },
+            onHidden(instance) {
                 hide_stream_popover(instance);
-                stream_settings_components.sub_or_unsub(sub);
-                e.preventDefault();
-                e.stopPropagation();
-            });
-
-            $popper.on("click", ".copy_stream_link", function (this: HTMLElement) {
-                void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
-            });
+            },
         },
-        onHidden(instance) {
-            hide_stream_popover(instance);
+        {
+            get_focus_return_element(reference) {
+                // When the popover is triggered from the left sidebar,
+                // return focus to the whole row. From inbox channel
+                // headers there is no `.selectable_sidebar_block`
+                // ancestor, so fall back to the nearest focusable
+                // ancestor (or the reference itself) rather than
+                // crashing in `util.the`.
+                const $block = $(reference).closest(".selectable_sidebar_block");
+                return $block[0] ?? $(reference).closest("[tabindex='0']")[0] ?? reference;
+            },
         },
-    });
+    );
 }
 
 async function get_message_placement_from_server(
@@ -1223,7 +1239,10 @@ export async function build_move_topic_to_stream_popover(
 }
 
 export function initialize(): void {
-    function on_sidebar_menu_icon_click(element: HTMLElement, e: JQuery.ClickEvent): void {
+    function on_sidebar_menu_icon_press(
+        element: HTMLElement,
+        e: JQuery.ClickEvent | JQuery.KeyDownEvent,
+    ): void {
         e.preventDefault();
         const $stream_li = $(element).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
@@ -1236,14 +1255,34 @@ export function initialize(): void {
         e.stopPropagation();
     }
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", function (this: HTMLElement, e) {
-        on_sidebar_menu_icon_click(this, e);
+        on_sidebar_menu_icon_press(this, e);
     });
+
+    $("#stream_filters").on(
+        "keydown",
+        ".stream-sidebar-menu-icon",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                on_sidebar_menu_icon_press(this, e);
+            }
+        },
+    );
 
     $("#left-sidebar-modal").on(
         "click",
         "#more-topics-modal .stream-sidebar-menu-icon",
         function (this: HTMLElement, e) {
-            on_sidebar_menu_icon_click(this, e);
+            on_sidebar_menu_icon_press(this, e);
+        },
+    );
+
+    $("#left-sidebar-modal").on(
+        "keydown",
+        "#more-topics-modal .stream-sidebar-menu-icon",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                on_sidebar_menu_icon_press(this, e);
+            }
         },
     );
 

@@ -22,7 +22,7 @@ from zerver.lib.workplace_users import (
     realm_eligible_for_non_workplace_pricing,
     realm_on_discounted_cloud_plan,
 )
-from zerver.models import Message, Realm, Stream, UserProfile
+from zerver.models import Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
 
 
@@ -108,7 +108,16 @@ def build_page_params_for_home_page_load(
         individual_emoji_changes=True,
     )
 
-    if user_profile is not None:
+    # When the client triggers a reload (e.g., after an expired event
+    # queue), it navigates to /?state_data=deferred. In that case, we
+    # skip the expensive do_events_register() call and let the client
+    # fetch state via the /json/register API instead. This makes the
+    # HTML response much smaller and avoids partial-transfer failures
+    # on flaky networks (common in Firefox background tabs resuming
+    # from laptop suspend). See #36094.
+    is_client_reload = request.GET.get("state_data") == "deferred" and user_profile is not None
+
+    if user_profile is not None and not is_client_reload:
         client = RequestNotes.get_notes(request).client
         assert client is not None
         state_data = do_events_register(
@@ -127,6 +136,12 @@ def build_page_params_for_home_page_load(
         )
         queue_id = state_data["queue_id"]
         default_language = state_data["user_settings"]["default_language"]
+    elif user_profile is not None:
+        # Client-triggered reload: the client will fetch state_data
+        # via /json/register after the page loads.
+        state_data = None
+        queue_id = None
+        default_language = user_profile.default_language
     else:
         # The spectator client will be fetching the /register response
         # for spectators via the API.
@@ -176,9 +191,9 @@ def build_page_params_for_home_page_load(
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
         is_spectator=user_profile is None,
         presence_history_limit_days_for_web_app=settings.PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP,
-        # There is no event queue for spectators since
-        # events support for spectators is not implemented yet.
-        no_event_queue=user_profile is None,
+        # The client will fetch state_data (and create an event
+        # queue) via /json/register for spectators and reloads.
+        no_event_queue=user_profile is None or is_client_reload,
         show_try_zulip_modal=show_try_zulip_modal,
         non_workplace_pricing_eligible=realm_eligible_for_non_workplace_pricing(realm),
         is_cloud_realm_with_discounted_plan=realm_on_discounted_cloud_plan(realm),
@@ -187,18 +202,6 @@ def build_page_params_for_home_page_load(
     page_params["state_data"] = state_data
 
     if narrow_stream is not None and state_data is not None:
-        # In narrow_stream context, initial pointer is just latest message
-        recipient = narrow_stream.recipient
-        state_data["max_message_id"] = -1
-        max_message = (
-            # Uses index: zerver_message_realm_recipient_id
-            Message.objects.filter(realm_id=realm.id, recipient=recipient)
-            .order_by("-id")
-            .only("id")
-            .first()
-        )
-        if max_message:
-            state_data["max_message_id"] = max_message.id
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic_name is not None:
             page_params["narrow_topic"] = narrow_topic_name

@@ -579,7 +579,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # SOCIAL_AUTH_SYNC_ATTRS_DICT = {
 #     "example_org": {
 #         "saml": {
-#             # role is currently the only supported major attribute.
+#             # No extra_attrs are required to enable syncing names, which will use
+#             # the standard SAML name attributes.
+#             "full_name": True,
+#             # role is the other supported major attribute.
 #             "role": "zulip_role",
 #             # Specify custom profile fields with a custom__ prefix for the
 #             # Zulip field name.

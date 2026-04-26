@@ -4097,6 +4097,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         self.assertFalse(result_dict["is_user_group_member"])
 
+        # Bot users can read group membership.
+        bot = self.example_user("default_bot")
+        result_dict = orjson.loads(
+            self.api_get(bot, f"/api/v1/user_groups/{admins_group.id}/members/{iago.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+        result_dict = orjson.loads(
+            self.api_get(bot, f"/api/v1/user_groups/{admins_group.id}/members/{othello.id}").content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
         # Check membership of deactivated user.
         do_deactivate_user(iago, acting_user=None)
         result = self.client_get(f"/json/user_groups/{admins_group.id}/members/{iago.id}")
@@ -4147,6 +4158,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
             self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
         )
         self.assertCountEqual(result_dict["members"], [shiva.id])
+
+        # Bot users can read group members.
+        bot = self.example_user("default_bot")
+        result_dict = orjson.loads(
+            self.api_get(bot, f"/api/v1/user_groups/{moderators_group.id}/members").content
+        )
+        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id, shiva.id])
 
         # Check deactivated users are not returned in members list.
         do_deactivate_user(shiva, acting_user=None)
@@ -4213,6 +4231,122 @@ class UserGroupAPITestCase(UserGroupTestCase):
             ).content
         )
         self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
+
+        # Bot users can read group subgroups.
+        bot = self.example_user("default_bot")
+        result_dict = orjson.loads(
+            self.api_get(bot, f"/api/v1/user_groups/{moderators_group.id}/subgroups").content
+        )
+        self.assertEqual(set(result_dict["subgroups"]), {admins_group.id, owners_group.id})
+
+    def test_bot_can_use_user_group_write_endpoints(self) -> None:
+        realm = get_realm("zulip")
+        bot = self.example_user("default_bot")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # Bot creates a group; it becomes the owner via the default
+        # can_manage_group setting.
+        result = self.api_post(
+            bot,
+            "/api/v1/user_groups/create",
+            info={
+                "name": "bot-created",
+                "members": orjson.dumps([hamlet.id]).decode(),
+                "description": "Group created by a bot",
+            },
+        )
+        self.assert_json_success(result)
+        bot_group = NamedUserGroup.objects.get(name="bot-created", realm_for_sharding=realm)
+
+        # Bot edits the group's name and description.
+        result = self.api_patch(
+            bot,
+            f"/api/v1/user_groups/{bot_group.id}",
+            info={"name": "bot-renamed", "description": "Renamed by bot"},
+        )
+        self.assert_json_success(result)
+        bot_group.refresh_from_db()
+        self.assertEqual(bot_group.name, "bot-renamed")
+        self.assertEqual(bot_group.description, "Renamed by bot")
+
+        # Bot adds and removes a member.
+        result = self.api_post(
+            bot,
+            f"/api/v1/user_groups/{bot_group.id}/members",
+            info={"add": orjson.dumps([othello.id]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=bot_group.usergroup_ptr, user_profile=othello
+            ).exists()
+        )
+
+        result = self.api_post(
+            bot,
+            f"/api/v1/user_groups/{bot_group.id}/members",
+            info={"delete": orjson.dumps([othello.id]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertFalse(
+            UserGroupMembership.objects.filter(
+                user_group=bot_group.usergroup_ptr, user_profile=othello
+            ).exists()
+        )
+
+        # Bot adds and removes a subgroup.
+        child_group = check_add_user_group(realm, "bot-child", [hamlet], acting_user=bot)
+        result = self.api_post(
+            bot,
+            f"/api/v1/user_groups/{bot_group.id}/subgroups",
+            info={"add": orjson.dumps([child_group.id]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertTrue(
+            GroupGroupMembership.objects.filter(supergroup=bot_group, subgroup=child_group).exists()
+        )
+
+        result = self.api_post(
+            bot,
+            f"/api/v1/user_groups/{bot_group.id}/subgroups",
+            info={"delete": orjson.dumps([child_group.id]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertFalse(
+            GroupGroupMembership.objects.filter(supergroup=bot_group, subgroup=child_group).exists()
+        )
+
+    def test_guest_users_cannot_access_user_group_endpoints(self) -> None:
+        realm = get_realm("zulip")
+        polonius = self.example_user("polonius")
+        self.assertTrue(polonius.is_guest)
+        iago = self.example_user("iago")
+        test_group = check_add_user_group(realm, "guest_test", [iago], acting_user=iago)
+
+        # Read endpoint.
+        result = self.api_get(polonius, "/api/v1/user_groups")
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        # Write endpoint: create.
+        result = self.api_post(
+            polonius,
+            "/api/v1/user_groups/create",
+            info={
+                "name": "guest-attempt",
+                "members": orjson.dumps([polonius.id]).decode(),
+                "description": "Guest should not be able to create this",
+            },
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        # Write endpoint: edit existing.
+        result = self.api_patch(
+            polonius,
+            f"/api/v1/user_groups/{test_group.id}",
+            info={"description": "Guest edit attempt"},
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
 
     def test_add_subgroup_from_wrong_realm(self) -> None:
         iago = self.example_user("iago")

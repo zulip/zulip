@@ -59,6 +59,37 @@ DISCUSSION_TEMPLATES = {
     "edited_body": "{sender} edited [discussion #{discussion_number}{configured_title}]({url}):\n\n{body_fence} quote\n{body}\n{body_fence}",
 }
 
+CHECK_RUN_CONCLUSION_EMOJI = {
+    "success": ":check:",
+    "failure": ":warning:",
+    "cancelled": ":not_allowed:",
+    "skipped": ":fast_forward:",
+    "timed_out": ":times_up:",
+    "action_required": ":wrench:",
+    "neutral": ":minus:",
+    "stale": ":sleeping:",
+}
+
+PR_REVIEW_STATE_EMOJI = {
+    "approved": ":thumbs_up:",
+    "changes_requested": ":repeat:",
+    "commented": ":memo:",
+}
+
+PR_REVIEW_COMMENT_EMOJI = ":speech_balloon:"
+
+PR_CLOSE_ACTION_EMOJI = {
+    "merged": ":check:",
+    "closed without merge": ":cross_mark:",
+}
+
+DEPLOYMENT_AND_COMMIT_STATUS_EMOJI = {
+    "success": ":check:",
+    "failure": ":warning:",
+    "error": ":rotating_light:",
+    "pending": ":time_ticking:",
+}
+
 
 class Helper:
     def __init__(
@@ -67,12 +98,14 @@ class Helper:
         payload: WildValue,
         include_title: bool,
         include_repository_name: bool,
+        include_emoji_indicators: bool,
         user_profile: UserProfile,
     ) -> None:
         self.request = request
         self.payload = payload
         self.include_title = include_title
         self.include_repository_name = include_repository_name
+        self.include_emoji_indicators = include_emoji_indicators
         self.realm = user_profile.realm
 
     def log_unsupported(self, event: str) -> None:
@@ -140,6 +173,7 @@ def get_closed_pull_request_body(helper: Helper) -> str:
         url=pull_request["html_url"].tame(check_string),
         number=pull_request["number"].tame(check_int),
         title=pull_request["title"].tame(check_string) if include_title else None,
+        emoji=PR_CLOSE_ACTION_EMOJI.get(action) if helper.include_emoji_indicators else None,
     )
 
 
@@ -259,9 +293,11 @@ def get_deployment_body(helper: Helper) -> str:
 
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
+    state = payload["deployment_status"]["state"].tame(check_string)
+    emoji = (
+        DEPLOYMENT_AND_COMMIT_STATUS_EMOJI.get(state, "") if helper.include_emoji_indicators else ""
     )
+    return f"{emoji} Deployment changed status to {state}.".strip()
 
 
 def get_create_or_delete_body(action: str, helper: Helper) -> str:
@@ -590,18 +626,22 @@ def get_page_build_body(helper: Helper) -> str:
 
 def get_status_body(helper: Helper) -> str:
     payload = helper.payload
+    state = payload["state"].tame(check_string)
     if payload["target_url"]:
-        status = "[{}]({})".format(
-            payload["state"].tame(check_string),
-            payload["target_url"].tame(check_string),
+        status = "[{state}]({target_url})".format(
+            state=state,
+            target_url=payload["target_url"].tame(check_string),
         )
     else:
-        status = payload["state"].tame(check_string)
-    return "[{}]({}) changed its status to {}.".format(
-        get_short_sha(payload["sha"].tame(check_string)),
-        payload["commit"]["html_url"].tame(check_string),
-        status,
-    )
+        status = state
+    return "{emoji} [{commit}]({url}) changed its status to {status}.".format(
+        emoji=DEPLOYMENT_AND_COMMIT_STATUS_EMOJI.get(state, "")
+        if helper.include_emoji_indicators
+        else "",
+        commit=get_short_sha(payload["sha"].tame(check_string)),
+        url=payload["commit"]["html_url"].tame(check_string),
+        status=status,
+    ).strip()
 
 
 def get_locked_or_unlocked_pull_request_body(helper: Helper) -> str:
@@ -664,6 +704,9 @@ def get_pull_request_review_body(helper: Helper) -> str:
         type="PR review",
         title=title if include_title else None,
         message=payload["review"]["body"].tame(check_none_or(check_string)),
+        emoji=PR_REVIEW_STATE_EMOJI.get(payload["review"]["state"].tame(check_string))
+        if helper.include_emoji_indicators
+        else None,
     )
 
 
@@ -757,6 +800,7 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
         message=message,
         type="PR review comment",
         title=title if include_title else None,
+        emoji=PR_REVIEW_COMMENT_EMOJI if helper.include_emoji_indicators else None,
     )
 
 
@@ -798,8 +842,8 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
 def get_check_run_body(helper: Helper) -> str:
     payload = helper.payload
     template = """
-Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
-""".strip()
+{emoji} Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
+"""
 
     kwargs = {
         "name": payload["check_run"]["name"].tame(check_string),
@@ -811,9 +855,14 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
             payload["check_run"]["head_sha"].tame(check_string),
         ),
         "conclusion": payload["check_run"]["conclusion"].tame(check_string),
+        "emoji": CHECK_RUN_CONCLUSION_EMOJI.get(
+            payload["check_run"]["conclusion"].tame(check_string), ""
+        )
+        if helper.include_emoji_indicators
+        else "",
     }
 
-    return template.format(**kwargs)
+    return template.format(**kwargs).strip()
 
 
 def get_star_body(helper: Helper) -> str:
@@ -1150,6 +1199,7 @@ def api_github_webhook(
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
     ignore_private_repositories: Json[bool] = False,
     include_repository_name: Json[bool] = False,
+    include_emoji_indicators: Json[bool] = True,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -1194,6 +1244,7 @@ def api_github_webhook(
         payload=payload,
         include_title=user_specified_topic is not None,
         include_repository_name=include_repository_name,
+        include_emoji_indicators=include_emoji_indicators,
         user_profile=user_profile,
     )
     body = body_function(helper)

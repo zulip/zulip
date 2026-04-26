@@ -189,10 +189,33 @@ run_test("message_inline_video", () => {
     };
 
     $content.set_find_results(".message_inline_video video", $elem);
+
+    assert.equal(window.GestureEvent, undefined);
     window.GestureEvent = true;
     rm.update_elements($content);
     assert.equal(load_called, true);
-    window.GestureEvent = false;
+    // Delete so "GestureEvent" in window — and thus is_client_safari() —
+    // returns false for other tests.
+    delete window.GestureEvent;
+});
+
+run_test("message_inline_video_unsupported_format", () => {
+    const $content = get_content_element();
+    const $video = $.create("video_element");
+    const $video_container = $.create("message_inline_video_container");
+
+    $video.set_closest_results(".message_inline_video", $video_container);
+    $content.set_find_results(".message_inline_video video", $video);
+
+    rm.update_elements($content);
+
+    // Without a playback error, the preview container is not hidden.
+    assert.ok(!$video_container.hasClass("video-format-unsupported"));
+
+    // Simulate video error (browser cannot play the format).
+    $video.trigger("error");
+
+    assert.ok($video_container.hasClass("video-format-unsupported"));
 });
 
 run_test("user-mention", ({override}) => {
