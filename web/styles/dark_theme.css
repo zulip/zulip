@@ -104,12 +104,6 @@
         }
     }
 
-    #recent_view
-        .change_visibility_policy
-        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
-        filter: invert(1);
-    }
-
     #recent-view-content-table {
         border-bottom-width: 1px;
     }

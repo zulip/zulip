@@ -13,6 +13,7 @@ import * as message_edit from "./message_edit.ts";
 import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_popover from "./stream_popover.ts";
@@ -119,6 +120,9 @@ export function initialize(): void {
                 );
                 if ($popover_trigger.length === 1) {
                     $popover_trigger.addClass("topic-popover-visible");
+                    if ($popover_trigger.hasClass("recent-view-topic-visibility")) {
+                        recent_view_ui.update_visibility_icon_swap_state($popover_trigger);
+                    }
                 }
 
                 if (!stream_id) {
@@ -268,6 +272,9 @@ export function initialize(): void {
                 );
                 if ($popover_trigger.length === 1) {
                     $popover_trigger.removeClass("topic-popover-visible");
+                    if ($popover_trigger.hasClass("recent-view-topic-visibility")) {
+                        recent_view_ui.update_visibility_icon_swap_state($popover_trigger);
+                    }
                 }
                 instance.destroy();
                 popover_menus.popover_instances.topics_menu = null;
