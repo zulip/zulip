@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("zerver", "0791_merge_20260318_2222"),
+        ("zerver", "0790_followeduser"),
     ]
 
     operations = [
