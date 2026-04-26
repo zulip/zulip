@@ -50,7 +50,11 @@ import "../../styles/user_circles.css";
 import "../../styles/left_sidebar.css";
 import "../../styles/right_sidebar.css";
 import "../../styles/lightbox.css";
+<<<<<<< HEAD
 import "../../styles/box_resize.css";
+=======
+import "../../styles/code_block_lightbox.css";
+>>>>>>> d6224008b8 (compose: Add code block lightbox scaffold and initialization.)
 import "../../styles/popovers.css";
 import "../../styles/recent_view.css";
 import "../../styles/typing_notifications.css";
