@@ -925,7 +925,8 @@
 
     /* The properties of the code_external_link button are copied from the
        copy-button class in app_components.css. */
-    .code_external_link {
+    .code_external_link,
+    .code-action-button {
         display: flex;
         border-radius: 4px;
         color: var(--color-copy-button);
@@ -945,6 +946,8 @@
     }
 
     .copy_codeblock,
+    .expand_codeblock,
+    .view_code_block_lightbox,
     .code_external_link {
         font-size: 1.1363em;
         border: 1px solid var(--color-copy-button-square-bg-active);
@@ -977,7 +980,23 @@
     display: none;
 }
 
+.preview_content .view_code_block_lightbox {
+    display: none;
+}
+
+.preview_content .expand_codeblock {
+    display: none;
+}
+
 .informational-overlays .copy_codeblock {
+    display: none;
+}
+
+.informational-overlays .view_code_block_lightbox {
+    display: none;
+}
+
+.informational-overlays .expand_codeblock {
     display: none;
 }
 
@@ -986,6 +1005,14 @@
         because of issues faced in copying code blocks in edit history
         modal. This may be changed later as we decide upon a proper ux
         for displaying edit-history. */
+    display: none;
+}
+
+.message_edit_history_content .view_code_block_lightbox {
+    display: none;
+}
+
+.message_edit_history_content .expand_codeblock {
     display: none;
 }
 
