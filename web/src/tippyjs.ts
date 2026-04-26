@@ -1031,6 +1031,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: "#recent-view-content-tbody .on_hover_topic_read",
+        delay: LONG_HOVER_DELAY,
         popperOptions: {
             modifiers: [
                 {
