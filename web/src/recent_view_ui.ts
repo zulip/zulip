@@ -135,6 +135,73 @@ export function set_hide_other_views(callback: () => void): void {
     hide_other_views_callback = callback;
 }
 
+// Track the row's interaction state so we can swap the
+// `.visibility-status-icon` to a vdots glyph when the row is hovered,
+// keyboard-focused, or has the topic-actions popover open. We swap the
+// underlying icon-font class (rather than overlaying via mask-image)
+// so the rendered glyph matches every other vdots in the app exactly.
+const ORIGINAL_ICON_CLASS_DATA_ATTR = "data-vdots-original-icon-class";
+
+function swap_visibility_icon_to_vdots($icon: JQuery): void {
+    if ($icon.hasClass("recent-view-row-topic-menu")) {
+        return;
+    }
+    if ($icon.attr(ORIGINAL_ICON_CLASS_DATA_ATTR) !== undefined) {
+        return;
+    }
+    const icon_element = $icon.get(0);
+    if (icon_element === undefined) {
+        return;
+    }
+    const original_class = [...icon_element.classList].find(
+        (cls) => cls.startsWith("zulip-icon-") && cls !== "zulip-icon-more-vertical",
+    );
+    if (original_class === undefined) {
+        return;
+    }
+    $icon.attr(ORIGINAL_ICON_CLASS_DATA_ATTR, original_class);
+    $icon.removeClass(original_class).addClass("zulip-icon-more-vertical");
+}
+
+function restore_visibility_icon($icon: JQuery): void {
+    const original_class = $icon.attr(ORIGINAL_ICON_CLASS_DATA_ATTR);
+    if (original_class === undefined) {
+        return;
+    }
+    $icon.removeClass("zulip-icon-more-vertical").addClass(original_class);
+    $icon.removeAttr(ORIGINAL_ICON_CLASS_DATA_ATTR);
+}
+
+export function update_visibility_icon_swap_state($wrapper: JQuery): void {
+    const $icon = $wrapper.find(".visibility-status-icon");
+    if ($icon.length === 0) {
+        return;
+    }
+    const wrapper_element = $wrapper.get(0);
+    if (wrapper_element === undefined) {
+        return;
+    }
+    // Gate the focus-driven swap on the recent-view's own keyboard-
+    // visibility tracking rather than browser `:focus-visible`. The
+    // `no-visible-focus-outlines` class on `#recent_view` stays on
+    // until the first keyboard navigation key (see focus_outline_util),
+    // which means programmatic focus from view entry, sidebar clicks,
+    // or scroll-driven row re-focus shouldn't reveal the vdots glyph
+    // — the row has focus, but the user hasn't acted on the keyboard
+    // yet, so it would be a surprising reveal. Hover and popover-open
+    // remain unconditional.
+    const keyboard_focus_visible = !$("#recent_view").hasClass("no-visible-focus-outlines");
+    const should_swap =
+        $wrapper.hasClass("topic-popover-visible") ||
+        wrapper_element.matches(":hover") ||
+        (keyboard_focus_visible && wrapper_element.matches(":focus"));
+    if (should_swap) {
+        swap_visibility_icon_to_vdots($icon);
+    } else {
+        restore_visibility_icon($icon);
+    }
+}
+
 export function set_initial_message_fetch_status(value: boolean): void {
     is_initial_message_fetch_pending = value;
 }
@@ -1971,6 +2038,19 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
         input_key,
     );
 
+    if (is_first_navigation) {
+        // The focus-driven vdots swap is gated on the same
+        // `no-visible-focus-outlines` flag we just cleared, so
+        // re-evaluate the currently-focused row's swap state now
+        // that keyboard focus has become "visible".
+        const $focused_wrapper = $(
+            "#recent-view-content-table .recent-view-topic-visibility:focus",
+        );
+        if ($focused_wrapper.length > 0) {
+            update_visibility_icon_swap_state($focused_wrapper);
+        }
+    }
+
     if (is_first_navigation && is_table_focused()) {
         // First navigation keypress after page load / view switch:
         // just reveal the focus ring on the current row without
@@ -2397,6 +2477,14 @@ export function initialize({
         const topic_row_index = $(e.target).closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
     });
+
+    $("body").on(
+        "mouseenter mouseleave focusin focusout",
+        "#recent-view-content-table .recent-view-topic-visibility",
+        function (this: HTMLElement) {
+            update_visibility_icon_swap_state($(this));
+        },
+    );
 
     // Search for all table rows (this combines stream & topic names)
     $("body").on(
