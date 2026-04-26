@@ -160,18 +160,7 @@ export function generate_botserverrc_content(
     api_key: string,
     token: string,
 ): string {
-    return (
-        "[]" +
-        "\nemail=" +
-        email +
-        "\nkey=" +
-        api_key +
-        "\nsite=" +
-        realm.realm_url +
-        "\ntoken=" +
-        token +
-        "\n"
-    );
+    return bot_helper.generate_bot_config_file_content("[]", email, api_key, token);
 }
 
 export function can_create_new_bots(): boolean {
@@ -750,11 +739,7 @@ function set_up_bot_handlers($container: JQuery): void {
             $(e.currentTarget).prop("disabled", true);
             for (const bot of bot_data.get_all_bots_for_current_user()) {
                 if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
-                    const services = bot_data.get_services(bot.user_id);
-                    assert(services !== undefined);
-                    const service = services[0];
-                    assert(service && "token" in service);
-                    const bot_token = service.token;
+                    const bot_token = bot_helper.get_outgoing_webhook_token(bot.user_id);
                     const api_key = await bot_helper.fetch_bot_api_key(
                         bot.user_id,
                         $("#admin-your-bots-list .bot-list-error"),

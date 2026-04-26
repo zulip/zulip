@@ -32,34 +32,45 @@ export function encode_zuliprc_as_url(zuliprc: string): string {
     return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 }
 
+export function get_outgoing_webhook_token(bot_user_id: number): string {
+    const services = bot_data.get_services(bot_user_id);
+    assert(services !== undefined);
+    const service = services[0];
+    assert(service && "token" in service);
+    return service.token;
+}
+
+export function generate_bot_config_file_content(
+    heading: string,
+    email: string,
+    api_key: string,
+    token?: string,
+): string {
+    const body = `
+${heading}
+email=${email}
+key=${api_key}
+site=${realm.realm_url}
+${token !== undefined ? `token=${token}` : ""}
+`.trim();
+
+    // Some tools would not work in files without a trailing new line.
+    return `${body}\n`;
+}
+
 export function generate_zuliprc_content(bot: {
     bot_type?: number;
     user_id: number;
     email: string;
     api_key: string;
 }): string {
-    let token;
+    let token: string | undefined;
     // For outgoing webhooks, include the token in the zuliprc.
     // It's needed for authenticating to the Botserver.
     if (bot.bot_type === 3) {
-        const services = bot_data.get_services(bot.user_id);
-        assert(services !== undefined);
-        const service = services[0];
-        assert(service && "token" in service);
-        token = service.token;
+        token = get_outgoing_webhook_token(bot.user_id);
     }
-    return (
-        "[api]" +
-        "\nemail=" +
-        bot.email +
-        "\nkey=" +
-        bot.api_key +
-        "\nsite=" +
-        realm.realm_url +
-        (token === undefined ? "" : "\ntoken=" + token) +
-        // Some tools would not work in files without a trailing new line.
-        "\n"
-    );
+    return generate_bot_config_file_content("[api]", bot.email, bot.api_key, token);
 }
 
 export async function fetch_bot_api_key(
