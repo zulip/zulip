@@ -12,6 +12,7 @@
 #     # shows raw names/emails, filtered by mapped name:
 #   $ git log --format='%an %ae' --author=$NAME | uniq -c
 
+Aadyot Nandan <aadyotnandan@gmail.com>
 acrefoot <acrefoot@zulip.com> <acrefoot@alum.mit.edu>
 acrefoot <acrefoot@zulip.com> <acrefoot@dropbox.com>
 acrefoot <acrefoot@zulip.com> <acrefoot@humbughq.com>
@@ -21,6 +22,7 @@ Adarsh Tiwari <xoldyckk@gmail.com>
 Aditya Chaudhary <aditya.chaudhary1558@gmail.com>
 Aditya Kumar Kasaudhan <akasaudhan02@gmail.com>
 Aditya Kumar Kasaudhan <akasaudhan02@gmail.com> <74228301+Aditya8840@users.noreply.github.com>
+Aditya Singh Rajput <adityasinghrajput755@gmail.com>
 Adnan Shabbir Husain <generaladnan139@gmail.com>
 Adnan Shabbir Husain <generaladnan139@gmail.com> <78212328+adnan-td@users.noreply.github.com>
 Agnish Bauri <sakshiseksy@gmail.com>
@@ -38,8 +40,10 @@ Aman Vishwakarma <vishwakarmarambhawan572@gmail.com> <185982038+whilstsomebody@u
 Aman Vishwakarma <vishwakarmarambhawan572@gmail.com> <whilstsomebody@gmail.com>
 Anders Kaseorg <anders@zulip.com> <anders@zulipchat.com>
 Anders Kaseorg <anders@zulip.com> <andersk@mit.edu>
+Anurag Mishra <anuragmishra0521@gmail.com>
 aparna-bhatt <aparnabhatt2001@gmail.com> <86338542+aparna-bhatt@users.noreply.github.com>
 Apoorva Pendse <apoorvavpendse@gmail.com>
+Arielle Lauper <ariellelauper@yahoo.com>
 Arun Kushwaha <arunsk1310@gmail.com>
 Arun Kushwaha <arunsk1310@gmail.com> <121769639+Arun-kushwaha007@users.noreply.github.com>
 Aryan Bhokare <aryan1bhokare@gmail.com>
@@ -48,6 +52,8 @@ Aryan Shridhar <aryanshridhar7@gmail.com>
 Aryan Shridhar <aryanshridhar7@gmail.com> <53977614+aryanshridhar@users.noreply.github.com>
 Ashwat Kumar Singh <ashwat.kumarsingh.met20@itbhu.ac.in>
 Austin Riba <austin@zulip.com> <austin@m51.io>
+Balamurugan Sekar <Balamurugan.sekar@icloud.com>
+Basit Ali Tariq <basitalitariq9@gmail.com>
 Bedo Khaled <bedokhaled66@gmail.com>
 Bedo Khaled <bedokhaled66@gmail.com> <64221784+abdelrahman725@users.noreply.github.com>
 BIKI DAS <bikid475@gmail.com>
@@ -80,9 +86,13 @@ Hardik Dharmani <Ddharmani99@gmail.com> <ddharmani99@gmail.com>
 Harsh Bansal <harsh@harshbansal.in>
 Harsh Meena <reharshmeena@gmail.com>
 Harsh Meena <reharshmeena@gmail.com> <116981900+reharsh@users.noreply.github.com>
+Harsh Santwani <harshsantwani.cse21@aii.ac.in>
 Hemant Umre <hemantumre12@gmail.com> <87542880+HemantUmre12@users.noreply.github.com>
+Himanshu Rathi <himanshurathiwork@gmail.com>
+Irtisam Sajin <irtisam.coding@gmail.com>
 Jai soni <jai_s@me.iitr.ac.in>
 Jai soni <jai_s@me.iitr.ac.in> <76561593+jai2201@users.noreply.github.com>
+Janvi Chaturvedi <janvi@DESKTOP-D5GNJET.localdomain>
 Jeff Arnold <jbarnold@gmail.com> <jbarnold@humbughq.com>
 Jeff Arnold <jbarnold@gmail.com> <jbarnold@zulip.com>
 Jessica McKellar <jesstess@mit.edu> <jesstess@humbughq.com>
@@ -102,6 +112,7 @@ Kevin Scott <kevin.scott.98@gmail.com>
 Kislay Verma <kislayuv27@gmail.com>
 Klara Brrettby <klara.bratteby@gmail.com>
 Klara Brrettby <klara.bratteby@gmail.com> <93648999+klarabratteby@users.noreply.github.com>
+Krishna Yadav <krishnayadav46846@gmail.com>
 Kumar Aniket <sachinaniket2004@gmail.com>
 Kumar Aniket <sachinaniket2004@gmail.com> <142340063+opmkumar@users.noreply.github.com>
 Kunal Sharma <v.shm.kunal@gmail.com>
@@ -129,6 +140,7 @@ Palash Baderia <palash.baderia@outlook.com>
 Palash Baderia <palash.baderia@outlook.com> <66828942+palashb01@users.noreply.github.com>
 Palash Raghuwanshi <singhpalash0@gmail.com>
 Parth <mittalparth22@gmail.com>
+Paul Bettner <paulbettner@playfulstudios.com>
 Prakhar Pratyush <prakhar@zulip.com> <prakhar841301@gmail.com>
 Pratik Chanda <pratikchanda2000@gmail.com>
 Pratik Solanki <pratiksolanki2021@gmail.com>
@@ -137,6 +149,7 @@ Pritesh Shetty <priteshshetty89@gmail.com> <your-email@example.com>
 Priyam Seth <sethpriyam1@gmail.com> <b19188@students.iitmandi.ac.in>
 Raj Vishwakarma <rajvishidk@gmail.com>
 Raj Vishwakarma <rajvishidk@gmail.com> <rajvishidk@gmai.com>
+Rajat Yadav <yadavrajat1210@gmail.com>
 Rakshit Chauhan <rakshitatwork@gmail.com>
 Rakshit Chauhan <rakshitatwork@gmail.com> <rxkshit04@users.noreply.github.com>
 Ray Kraesig <rkraesig@zulip.com> <rkraesig@zulipchat.com>
@@ -151,13 +164,17 @@ Rixant Rokaha <rixantrokaha@gmail.com>
 Rixant Rokaha <rixantrokaha@gmail.com> <rishantrokaha@gmail.com>
 Rixant Rokaha <rixantrokaha@gmail.com> <rrokaha@caldwell.edu>
 Rohan Gudimetla <rohan.gudimetla07@gmail.com>
+Rohith Gurram <rohithgurram57@gmail.com>
 Sachin Kumar <sachink76339@gmail.com>
+Sagar Halladakeri <halladakerisagar@gmail.com>
 Sahil Batra <sahil@zulip.com> <35494118+sahil839@users.noreply.github.com>
 Sahil Batra <sahil@zulip.com> <sahilbatra839@gmail.com>
+Saiyam Kumar <saiyamkumar2007+git@gmail.com>
 Sanchit Sharma <ssharmas10662@gmail.com>
-santhoshkumarCodes <santhoshkumartechsavvy@gmail.com>
+Santhosh Kumar <santhoshkumartechsavvy@gmail.com>
 Sarthak Kumbhar <sarthakkumbhar43@gmail.com>
 Sarthak Kumbhar <sarthakkumbhar43@gmail.com> <148669585+kumbhar-sarthak@users.noreply.github.com>
+Sathwik Shetty <sathwikshetty2k5@gmail.com>
 Satyam Bansal <sbansal1999@gmail.com>
 Sayam Samal <samal.sayam@gmail.com>
 Scott Feeney <scott@oceanbase.org> <scott@humbughq.com>
@@ -168,6 +185,7 @@ Shu Chen <shu@zulip.com>
 Shubham Padia <shubham@zulip.com>
 Shubham Padia <shubham@zulip.com> <shubham-padia@users.noreply.github.com>
 Shubham Padia <shubham@zulip.com> <shubham@glints.com>
+Simhadri Kuruva <simhadri.kuruva7@gmail.com>
 Somesh Ranjan <somesh.ranjan.met20@itbhu.ac.in> <77766761+somesh202@users.noreply.github.com>
 Steve Howell <showell@zulip.com> <showell30@yahoo.com>
 Steve Howell <showell@zulip.com> <showell@yahoo.com>
@@ -188,10 +206,13 @@ Tim Abbott <tabbott@zulip.com> <tabbott@humbughq.com>
 Tim Abbott <tabbott@zulip.com> <tabbott@mit.edu>
 Tim Abbott <tabbott@zulip.com> <tabbott@zulipchat.com>
 Tomasz Kolek <tomasz-kolek@o2.pl> <tomasz-kolek@go2.pl>
+Ubaid Rehman <rehmanubaid2003@gmail.com>
 Ujjawal Modi <umodi2003@gmail.com> <99073049+Ujjawal3@users.noreply.github.com>
 umkay <ukhan@zulipchat.com> <umaimah.k@gmail.com>
 umkay <ukhan@zulipchat.com> <umkay@users.noreply.github.com>
+Vansh Chaturvedi <vanshchaturvedi@VANSHs-MacBook-Pro-2.local>
 Viktor Illmer <1476338+v-ji@users.noreply.github.com>
+Vinay Chauhan <vinaychauhan1352002@gmail.com>
 Vishesh Singh <vishesh.bhu1971@gmail.com>
 Vishesh Singh <vishesh.bhu1971@gmail.com> <142628839+NotVishesh@users.noreply.github.com>
 Vishnu KS <vishnu@zulip.com> <hackerkid@vishnuks.com>
@@ -201,6 +222,7 @@ Waseem Daher <wdaher@zulip.com> <wdaher@dropbox.com>
 Waseem Daher <wdaher@zulip.com> <wdaher@humbughq.com>
 Yash RE <33805964+YashRE42@users.noreply.github.com>
 Yash RE <33805964+YashRE42@users.noreply.github.com> <YashRE42@github.com>
+Yaswanth Badana <yaswanthbadana1723@gmail.com>
 Yogesh Shivaji <yogesh.shivaji365@gmail.com>
 Yogesh Sirsat <yogeshsirsat56@gmail.com>
 Yogesh Sirsat <yogeshsirsat56@gmail.com> <41695888+yogesh-sirsat@users.noreply.github.com>
