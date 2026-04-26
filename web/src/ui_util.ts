@@ -350,7 +350,7 @@ export function rewire_get_left_sidebar_search_term(
     get_left_sidebar_search_term = value;
 }
 
-const TOPIC_SEARCH_PREFIX = "topic:";
+export const TOPIC_SEARCH_PREFIX = "topic:";
 
 export function get_left_sidebar_topic_search_term(): string | undefined {
     const search_term = get_left_sidebar_search_term();
