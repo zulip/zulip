@@ -545,12 +545,19 @@ function all_rows(): JQuery {
         "#streams_list.is_searching .stream-list-toggle-inactive-or-muted-channels.bottom_left_row",
     );
 
+    // Exclude the topic-search hint row when it's hidden; when shown,
+    // it should be a navigable row.
+    const $hidden_topic_search_hint_row = $(
+        "#left-sidebar-topic-search-hint.hidden .left-sidebar-topic-search-hint-link",
+    );
+
     const $filtered_rows = $all_rows
         .not($inactive_or_muted_rows)
         .not($collapsed_views)
         .not($collapsed_channels)
         .not($hidden_topic_rows)
-        .not($toggle_inactive_or_muted_channels_row);
+        .not($toggle_inactive_or_muted_channels_row)
+        .not($hidden_topic_search_hint_row);
 
     // With a "topic:" prefix search, keyboard navigation only lands on
     // topic rows, not channel header rows.
@@ -559,6 +566,25 @@ function all_rows(): JQuery {
     }
 
     return $filtered_rows;
+}
+
+const TOPIC_SEARCH_HINT_MIN_LENGTH = 2;
+
+function should_show_topic_search_hint(search_term: string): boolean {
+    // Once the user is already searching with the "topic:" prefix,
+    // topic-search results are visible and the hint is no longer
+    // useful. Otherwise, surface the hint as soon as the user has
+    // typed enough that they might want to expand the search.
+    return search_term.length >= TOPIC_SEARCH_HINT_MIN_LENGTH && !ui_util.is_topic_search();
+}
+
+function initiate_topic_search(): void {
+    const $search_input = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
+    const current_value = ($search_input.val() ?? "").trim();
+    const new_value = ui_util.TOPIC_SEARCH_PREFIX + " " + current_value;
+    $search_input.val(new_value);
+    util.the($search_input).setSelectionRange(new_value.length, new_value.length);
+    $search_input.trigger("focus").trigger("input");
 }
 
 class LeftSidebarListCursor extends ListCursor<JQuery> {
@@ -584,6 +610,14 @@ export function initialize_left_sidebar_cursor(): void {
                     return undefined;
                 }
                 const $non_header_rows = $all_rows.not($(get_header_rows_selectors()));
+                // Prefer landing on a real result row first; fall
+                // back to the topic-search hint only when there are
+                // no other matches, so the hint never steals initial
+                // highlight from matching channels or topics.
+                const $non_hint_rows = $non_header_rows.not(".left-sidebar-topic-search-hint-link");
+                if ($non_hint_rows.length > 0) {
+                    return $non_hint_rows.first();
+                }
                 return $non_header_rows.first();
             },
             next_key($key) {
@@ -642,6 +676,13 @@ function actually_update_left_sidebar_for_search(): void {
     stream_list.update_streams_sidebar();
 
     resize.resize_page_components();
+    const show_topic_search_hint = should_show_topic_search_hint(search_value);
+    if (show_topic_search_hint) {
+        $(".left-sidebar-topic-search-hint-label").text(
+            $t({defaultMessage: "Search all topics for ‘{query}’"}, {query: search_value}),
+        );
+    }
+    $("#left-sidebar-topic-search-hint").toggleClass("hidden", !show_topic_search_hint);
     left_sidebar_cursor.reset();
     $("#left-sidebar-empty-list-message").toggleClass(
         "hidden",
@@ -806,6 +847,11 @@ export function set_event_handlers(): void {
             return;
         }
 
+        if ($row.hasClass("left-sidebar-topic-search-hint-link")) {
+            initiate_topic_search();
+            return;
+        }
+
         if ($row[0]!.id === "views-label-container") {
             $row.find("#toggle-top-left-navigation-area-icon").trigger("click");
             return;
@@ -874,6 +920,12 @@ export function set_event_handlers(): void {
     // Handle arrow key navigation when a sidebar element has Tab
     // focus, so that Tab and arrow key navigation stay in sync.
     $("#left-sidebar").on("keydown", handle_left_sidebar_arrow_navigation);
+
+    $("body").on("click", ".left-sidebar-topic-search-hint-link", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        initiate_topic_search();
+    });
 }
 
 export function initiate_search(): void {

@@ -940,6 +940,60 @@
     }
 }
 
+#left-sidebar-topic-search-hint {
+    /* Match the outer spacing used by #subscribe-to-more-streams so
+       icon and label align with that row's icon and label. */
+    margin-right: var(--left-sidebar-right-margin);
+}
+
+.left-sidebar-topic-search-hint-link {
+    /* Padding on the link (which fills the row) keeps the focus ring
+       spanning the full row width. */
+    padding-left: var(--left-sidebar-toggle-width-offset);
+    display: grid;
+    grid-template:
+        "icon . text" minmax(var(--line-height-sidebar-row-prominent), auto)
+        / var(--left-sidebar-icon-column-width)
+        var(--left-sidebar-icon-content-gap)
+        minmax(0, 1fr);
+    align-items: center;
+    border-radius: 4px;
+    cursor: pointer;
+
+    /* Override the global a:hover / a:focus rule in zulip.css that
+       adds underline and changes the color to the generic link color. */
+    &,
+    &:hover,
+    &:focus {
+        color: var(--color-text-sidebar-row);
+        text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    /* Match the inset outline used by .highlighted_row so Tab and
+       arrow key focus look identical and don't clip outside the row. */
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
+    .zulip-icon {
+        grid-area: icon;
+        justify-self: center;
+        opacity: 0.7;
+    }
+
+    .left-sidebar-topic-search-hint-label {
+        grid-area: text;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
 #stream_filters .narrow-filter,
 #direct-messages-list .bottom_left_row {
     a.stream-name:focus,

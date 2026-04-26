@@ -15,6 +15,12 @@
           empty_list_message=(t "No matches.")
           }}
     </ul>
+    <div id="left-sidebar-topic-search-hint" class="hidden">
+        <a tabindex="0" role="button" class="bottom_left_row left-sidebar-topic-search-hint-link">
+            <i class="zulip-icon zulip-icon-search" aria-hidden="true"></i>
+            <span class="left-sidebar-topic-search-hint-label"></span>
+        </a>
+    </div>
     <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area">
         <div id="views-label-container" class="left-sidebar-section-header showing-expanded-navigation{{#if is_spectator}} remove-pointer-for-spectator{{/if}}">
             <i id="toggle-top-left-navigation-area-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down views-tooltip-target hidden-for-spectators" aria-hidden="true" tabindex="0" role="button"></i>
