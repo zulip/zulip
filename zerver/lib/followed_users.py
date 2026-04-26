@@ -48,3 +48,27 @@ def get_following_user_ids(user_profile_id: int) -> list[int]:
             "followed_user_id", flat=True
         )
     )
+
+
+def get_followers_who_can_see_stream_message(
+    followed_user_id: int, stream_id: int, realm_id: int
+) -> set[int]:
+    """Return the IDs of users following followed_user_id who have
+    push notifications enabled and are subscribed to stream_id.
+    """
+    followers = FollowedUser.objects.filter(followed_user_id=followed_user_id).values_list(
+        "user_profile_id", flat=True
+    )
+
+    return set(
+        Subscription.objects.filter(
+            user_profile_id__in=followers,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=stream_id,
+            user_profile__realm_id=realm_id,
+            user_profile__enable_followed_user_push_notifications=True,
+            user_profile__is_active=True,
+            active=True,
+            is_user_active=True,
+        ).values_list("user_profile_id", flat=True)
+    )
