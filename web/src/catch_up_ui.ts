@@ -40,7 +40,45 @@ function stop_and_report_catch_up_usage_timer(): void {
         return;
     }
 
-    catch_up_data.report_catch_up_usage(duration_ms);
+    const data = catch_up_data.get_current_data();
+    const items: catch_up_data.CatchUpUsageItem[] = [];
+    for (const topic of data?.topics ?? []) {
+        if (topic.is_dm === true) {
+            const dm_user_ids = topic.dm_user_ids ?? [];
+            if (dm_user_ids.length === 1) {
+                const dm_sender_id = topic.dm_sender_id ?? dm_user_ids[0];
+                items.push({
+                    item_type: "dm_personal",
+                    dm_sender_id,
+                    first_message_id: topic.first_message_id,
+                    last_message_id: topic.latest_message_id,
+                    message_count: topic.message_count,
+                });
+            } else if (topic.dm_recipient_id !== undefined) {
+                items.push({
+                    item_type: "dm_group",
+                    dm_recipient_id: topic.dm_recipient_id,
+                    first_message_id: topic.first_message_id,
+                    last_message_id: topic.latest_message_id,
+                    message_count: topic.message_count,
+                });
+            }
+        } else {
+            items.push({
+                item_type: "stream_topic",
+                stream_id: topic.stream_id,
+                topic_name: topic.topic_name,
+                first_message_id: topic.first_message_id,
+                last_message_id: topic.latest_message_id,
+                message_count: topic.message_count,
+            });
+        }
+        if (items.length >= 50) {
+            break;
+        }
+    }
+
+    catch_up_data.report_catch_up_usage(duration_ms, items);
 }
 
 // Filter state
@@ -734,4 +772,3 @@ function prepare_overview_context(data: OverviewResponse): object {
         topics,
     };
 }
-

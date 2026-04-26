@@ -37,6 +37,8 @@ export type CatchUpTopic = {
     keywords?: string[];
     is_dm?: boolean;
     dm_user_ids?: number[];
+    dm_sender_id?: number;
+    dm_recipient_id?: number;
     // Populated lazily when user clicks "Summarize"
     summary?: string;
 };
@@ -149,19 +151,41 @@ export async function fetch_catch_up_overview(
     });
 }
 
-export function report_catch_up_usage(duration_ms: number): void {
+export type CatchUpUsageItem =
+    | {
+          item_type: "stream_topic";
+          stream_id: number;
+          topic_name: string;
+          first_message_id: number;
+          last_message_id: number;
+          message_count: number;
+      }
+    | {
+          item_type: "dm_personal";
+          dm_sender_id: number;
+          first_message_id: number;
+          last_message_id: number;
+          message_count: number;
+      }
+    | {
+          item_type: "dm_group";
+          dm_recipient_id: number;
+          first_message_id: number;
+          last_message_id: number;
+          message_count: number;
+      };
+
+export function report_catch_up_usage(duration_ms: number, items?: CatchUpUsageItem[]): void {
     // Best-effort analytics; ignore failures.
     if (!Number.isFinite(duration_ms) || duration_ms <= 0) {
         return;
     }
-    /*if (duration_ms <= 0) {
-        return;
-    }*/
 
     void channel.post({
         url: "/json/catch-up/usage",
         data: {
             duration_ms: JSON.stringify(Math.round(duration_ms)),
+            ...(items && items.length > 0 ? {items: JSON.stringify(items)} : {}),
         },
     });
 }

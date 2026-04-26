@@ -25,7 +25,7 @@ from zerver.lib.catch_up import (
 )
 from zerver.lib.catch_up_summarizer import extract_key_messages, extract_keywords
 from zerver.lib.narrow import NarrowParameter
-from zerver.models import CatchUpSession, Client, Message, Recipient, UserProfile
+from zerver.models import CatchUpSession, CatchUpSessionItem, Client, Message, Recipient, UserMessage, UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -181,12 +181,12 @@ def do_record_catch_up_usage(
     client: Client,
     duration_ms: int,
     ended_at: datetime | None = None,
-) -> None:
+) -> CatchUpSession:
     if ended_at is None:
         ended_at = timezone_now()
 
     started_at = ended_at - timedelta(milliseconds=duration_ms)
-    CatchUpSession.objects.create(
+    return CatchUpSession.objects.create(
         user_profile=user_profile,
         realm=user_profile.realm,
         client=client,
@@ -194,3 +194,147 @@ def do_record_catch_up_usage(
         ended_at=ended_at,
         duration_ms=duration_ms,
     )
+
+
+def do_record_catch_up_surfaced_items(
+    *,
+    session: CatchUpSession,
+    user_profile: UserProfile,
+    items: list[dict[str, object]],
+) -> None:
+    """
+    Persist per-session "surfaced items" for the catch-up view.
+
+    This is intended for lightweight analytics and therefore stores only IDs
+    and counts, not message content.
+    """
+
+    if not items:
+        return
+
+    stream_ids: set[int] = set()
+    for item in items:
+        if item.get("item_type") == "stream_topic":
+            stream_id = item.get("stream_id")
+            if isinstance(stream_id, int):
+                stream_ids.add(stream_id)
+
+    stream_recipient_ids: dict[int, int] = {}
+    if stream_ids:
+        stream_recipient_ids = dict(
+            Recipient.objects.filter(
+                type=Recipient.STREAM,
+                type_id__in=stream_ids,
+            ).values_list("type_id", "id")
+        )
+
+    objects: list[CatchUpSessionItem] = []
+    for item in items:
+        item_type = item.get("item_type")
+        if not isinstance(item_type, str):
+            continue
+
+        first_message_id = item.get("first_message_id")
+        last_message_id = item.get("last_message_id")
+        message_count = item.get("message_count")
+
+        if (
+            not isinstance(first_message_id, int)
+            or not isinstance(last_message_id, int)
+            or not isinstance(message_count, int)
+        ):
+            continue
+        if first_message_id <= 0 or last_message_id <= 0 or last_message_id < first_message_id:
+            continue
+        if message_count <= 0:
+            continue
+
+        unread_count = 0
+        model_item_type: int | None = None
+        stream_id: int | None = None
+        topic_name: str | None = None
+        dm_sender_id: int | None = None
+        dm_recipient_id: int | None = None
+
+        if item_type == "stream_topic":
+            model_item_type = CatchUpSessionItem.STREAM_TOPIC
+            stream_id_val = item.get("stream_id")
+            topic_name_val = item.get("topic_name")
+            if not isinstance(stream_id_val, int) or not isinstance(topic_name_val, str):
+                continue
+            stream_id = stream_id_val
+            topic_name = topic_name_val
+
+            stream_recipient_id = stream_recipient_ids.get(stream_id)
+            if stream_recipient_id is None:
+                continue
+
+            unread_count = (
+                UserMessage.objects.filter(
+                    user_profile=user_profile,
+                    message_id__gte=first_message_id,
+                    message_id__lte=last_message_id,
+                    message__recipient_id=stream_recipient_id,
+                    message__subject=topic_name,
+                )
+                .extra(where=[UserMessage.where_unread()])  # noqa: S610
+                .count()
+            )
+
+        elif item_type == "dm_personal":
+            model_item_type = CatchUpSessionItem.DM_PERSONAL
+            dm_sender_id_val = item.get("dm_sender_id")
+            if not isinstance(dm_sender_id_val, int):
+                continue
+            dm_sender_id = dm_sender_id_val
+
+            unread_count = (
+                UserMessage.objects.filter(
+                    user_profile=user_profile,
+                    message_id__gte=first_message_id,
+                    message_id__lte=last_message_id,
+                    message__sender_id=dm_sender_id,
+                    message__recipient__type=Recipient.PERSONAL,
+                )
+                .extra(where=[UserMessage.where_unread()])  # noqa: S610
+                .count()
+            )
+
+        elif item_type == "dm_group":
+            model_item_type = CatchUpSessionItem.DM_GROUP
+            dm_recipient_id_val = item.get("dm_recipient_id")
+            if not isinstance(dm_recipient_id_val, int):
+                continue
+            dm_recipient_id = dm_recipient_id_val
+
+            unread_count = (
+                UserMessage.objects.filter(
+                    user_profile=user_profile,
+                    message_id__gte=first_message_id,
+                    message_id__lte=last_message_id,
+                    message__recipient_id=dm_recipient_id,
+                    message__recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+                )
+                .extra(where=[UserMessage.where_unread()])  # noqa: S610
+                .count()
+            )
+        else:
+            continue
+
+        objects.append(
+            CatchUpSessionItem(
+                session=session,
+                item_type=model_item_type,
+                stream_id=stream_id,
+                topic_name=topic_name,
+                dm_sender_id=dm_sender_id,
+                dm_recipient_id=dm_recipient_id,
+                first_message_id=first_message_id,
+                last_message_id=last_message_id,
+                message_count=message_count,
+                unread_count_at_surface=unread_count,
+            )
+        )
+
+    if objects:
+        CatchUpSessionItem.objects.bulk_create(objects)

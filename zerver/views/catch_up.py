@@ -4,12 +4,14 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import BaseModel, Json
+from typing_extensions import Literal
 
 from analytics.lib.counts import COUNT_STATS
 from zerver.actions.catch_up import (
     do_get_catch_up_data,
     do_get_catch_up_summary,
+    do_record_catch_up_surfaced_items,
     do_record_catch_up_usage,
 )
 from zerver.lib.exceptions import JsonableError
@@ -17,6 +19,17 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
+
+
+class CatchUpUsageItem(BaseModel):
+    item_type: Literal["stream_topic", "dm_personal", "dm_group"]
+    stream_id: int | None = None
+    topic_name: str | None = None
+    dm_sender_id: int | None = None
+    dm_recipient_id: int | None = None
+    first_message_id: int
+    last_message_id: int
+    message_count: int
 
 
 @typed_endpoint
@@ -104,6 +117,7 @@ def report_catch_up_usage(
     user_profile: UserProfile,
     *,
     duration_ms: Json[int],
+    items: Json[list[CatchUpUsageItem]] | None = None,
 ) -> HttpResponse:
     if duration_ms <= 0:
         raise JsonableError(_("'duration_ms' must be a positive integer."))
@@ -115,10 +129,20 @@ def report_catch_up_usage(
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.client is not None
 
-    do_record_catch_up_usage(
+    session = do_record_catch_up_usage(
         user_profile=user_profile,
         client=request_notes.client,
         duration_ms=duration_ms,
         ended_at=timezone_now(),
     )
+
+    if items is not None:
+        if len(items) > 100:
+            raise JsonableError(_("Too many items."))
+
+        do_record_catch_up_surfaced_items(
+            session=session,
+            user_profile=user_profile,
+            items=[item.model_dump() for item in items],
+        )
     return json_success(request)

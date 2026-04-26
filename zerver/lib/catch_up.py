@@ -120,6 +120,8 @@ class CatchUpTopic:
     keywords: list[str] = field(default_factory=list)
     is_dm: bool = False
     dm_user_ids: list[int] = field(default_factory=list)
+    dm_sender_id: int | None = None
+    dm_recipient_id: int | None = None
 
     @property
     def sender_count(self) -> int:
@@ -189,6 +191,10 @@ class CatchUpTopic:
         if self.is_dm:
             result["is_dm"] = True
             result["dm_user_ids"] = self.dm_user_ids
+            if self.dm_sender_id is not None:
+                result["dm_sender_id"] = self.dm_sender_id
+            if self.dm_recipient_id is not None:
+                result["dm_recipient_id"] = self.dm_recipient_id
         return result
 
 
@@ -534,6 +540,10 @@ def get_catch_up_dm_messages(
                 topic_name=display_name,
                 is_dm=True,
                 dm_user_ids=dm_user_ids,
+                dm_sender_id=message.sender_id if recipient.type == Recipient.PERSONAL else None,
+                dm_recipient_id=recipient.id
+                if recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+                else None,
                 first_message_id=message.id,
             )
 

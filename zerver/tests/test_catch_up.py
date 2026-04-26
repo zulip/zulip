@@ -1,5 +1,7 @@
+import json
 from datetime import timedelta
 
+from django.db.models import F
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.catch_up import (
@@ -19,6 +21,7 @@ from zerver.lib.catch_up_summarizer import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     CatchUpSession,
+    CatchUpSessionItem,
     Message,
     Reaction,
     Recipient,
@@ -412,6 +415,85 @@ class CatchUpEndpointTest(ZulipTestCase):
         self.assertEqual(session.duration_ms, 1500)
         self.assertLess(session.started_at, session.ended_at)
 
+    def test_catch_up_usage_endpoint_records_items_with_unread_counts(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        self.subscribe(hamlet, "Verona")
+        self.subscribe(cordelia, "Verona")
+
+        verona_stream_id = self.get_stream_id("Verona", hamlet.realm)
+
+        stream_msg_1 = self.send_stream_message(cordelia, "Verona", "hello", topic_name="greetings")
+        stream_msg_2 = self.send_stream_message(
+            cordelia, "Verona", "second", topic_name="greetings"
+        )
+
+        # Mark one message in the topic as read for hamlet, leaving one unread.
+        UserMessage.objects.filter(user_profile=hamlet, message_id=stream_msg_1).update(
+            flags=F("flags").bitor(UserMessage.flags.read),
+        )
+
+        dm_msg = self.send_personal_message(from_user=othello, to_user=hamlet, content="dm hello")
+        gdm_msg = self.send_group_direct_message(
+            from_user=othello, to_users=[hamlet, cordelia], content="group dm hello"
+        )
+        gdm_recipient_id = Message.objects.get(id=gdm_msg).recipient_id
+
+        items = [
+            {
+                "item_type": "stream_topic",
+                "stream_id": verona_stream_id,
+                "topic_name": "greetings",
+                "first_message_id": stream_msg_1,
+                "last_message_id": stream_msg_2,
+                "message_count": 2,
+            },
+            {
+                "item_type": "dm_personal",
+                "dm_sender_id": othello.id,
+                "first_message_id": dm_msg,
+                "last_message_id": dm_msg,
+                "message_count": 1,
+            },
+            {
+                "item_type": "dm_group",
+                "dm_recipient_id": gdm_recipient_id,
+                "first_message_id": gdm_msg,
+                "last_message_id": gdm_msg,
+                "message_count": 1,
+            },
+        ]
+
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/catch-up/usage", {"duration_ms": "1500", "items": json.dumps(items)}
+        )
+        self.assert_json_success(result)
+
+        session = CatchUpSession.objects.get(user_profile=hamlet)
+        self.assertEqual(CatchUpSessionItem.objects.filter(session=session).count(), 3)
+
+        stream_item = CatchUpSessionItem.objects.get(
+            session=session, item_type=CatchUpSessionItem.STREAM_TOPIC
+        )
+        self.assertEqual(stream_item.stream_id, verona_stream_id)
+        self.assertEqual(stream_item.topic_name, "greetings")
+        self.assertEqual(stream_item.unread_count_at_surface, 1)
+
+        dm_item = CatchUpSessionItem.objects.get(
+            session=session, item_type=CatchUpSessionItem.DM_PERSONAL
+        )
+        self.assertEqual(dm_item.dm_sender_id, othello.id)
+        self.assertEqual(dm_item.unread_count_at_surface, 1)
+
+        gdm_item = CatchUpSessionItem.objects.get(
+            session=session, item_type=CatchUpSessionItem.DM_GROUP
+        )
+        self.assertEqual(gdm_item.dm_recipient_id, gdm_recipient_id)
+        self.assertEqual(gdm_item.unread_count_at_surface, 1)
+
     def test_catch_up_usage_endpoint_invalid_duration(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -502,6 +584,7 @@ class CatchUpEndpointTest(ZulipTestCase):
             "latest_message_id",
             "first_message_id",
             "sample_messages",
+            "all_messages",
         }
         self.assertEqual(set(topic.keys()), expected_fields)
 

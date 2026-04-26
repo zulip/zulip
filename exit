@@ -1,0 +1,4 @@
+ id | user_profile_id | client_id | started_at | ended_at | duration_ms 
+----+-----------------+-----------+------------+----------+-------------
+(0 rows)
+
