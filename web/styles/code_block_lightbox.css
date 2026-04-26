@@ -1,0 +1,146 @@
+#code_block_lightbox_overlay {
+    z-index: 220;
+
+    .code-block-lightbox-content {
+        width: min(92vw, 1200px);
+        height: min(85vh, 900px);
+        margin: 4vh auto;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--color-markdown-pre-border);
+        border-radius: 6px;
+        background-color: var(--color-background);
+    }
+
+    .code-block-lightbox-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--color-markdown-pre-border);
+    }
+
+    .code-block-lightbox-title {
+        font-weight: 600;
+    }
+
+    .code-block-lightbox-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .open-code-in-new-tab {
+        border: 1px solid var(--color-border-input-default);
+        background: transparent;
+        border-radius: 4px;
+        padding: 3px 8px;
+    }
+
+    .edit-code-in-lightbox,
+    .copy-code-in-new-tab {
+        border: 1px solid var(--color-border-input-default);
+        background: transparent;
+        border-radius: 4px;
+        padding: 3px 8px;
+        line-height: 1;
+    }
+
+    .edit-code-in-lightbox.active {
+        background: var(--color-background-list-item-selected);
+    }
+
+    .exit {
+        border: none;
+        background: transparent;
+        line-height: 1;
+        padding: 2px;
+    }
+
+    pre {
+        margin: 0;
+        padding: 10px 12px;
+        overflow: auto;
+        height: 100%;
+        border: 0;
+        border-radius: 0;
+        background-color: var(--color-markdown-pre-background);
+        color: var(--color-markdown-pre-text);
+        font-size: 0.9em;
+        line-height: 1.4;
+        white-space: pre;
+    }
+
+    code {
+        background: none;
+        border: 0;
+        color: inherit;
+        padding: 0;
+        white-space: inherit;
+    }
+
+    .code-block-lightbox-editor {
+        display: none;
+        margin: 0;
+        padding: 10px 12px;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        border-radius: 0;
+        background-color: var(--color-markdown-pre-background);
+        color: var(--color-markdown-pre-text);
+        font-size: 0.9em;
+        line-height: 1.4;
+        white-space: pre;
+        overflow: auto;
+        resize: none;
+        font-family:
+            ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono",
+            "Courier New", monospace;
+    }
+
+    .code-block-lightbox-close-prompt {
+        display: none;
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        z-index: 1;
+        border: 1px solid var(--color-border-input-default);
+        border-radius: 6px;
+        background: var(--color-background);
+        padding: 8px;
+        box-shadow: 0 2px 8px hsl(0deg 0% 0% / 20%);
+    }
+
+    .prompt-text {
+        margin-bottom: 6px;
+        font-size: 0.95em;
+    }
+
+    .prompt-actions {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+
+    .prompt-actions button {
+        border: 1px solid var(--color-border-input-default);
+        background: transparent;
+        border-radius: 4px;
+        padding: 3px 8px;
+    }
+
+    &.show-close-prompt .code-block-lightbox-close-prompt {
+        display: block;
+    }
+
+    &.code-block-lightbox-edit-mode {
+        pre {
+            display: none;
+        }
+
+        .code-block-lightbox-editor {
+            display: block;
+        }
+    }
+}
