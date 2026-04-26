@@ -117,11 +117,17 @@ Structure changes as clean commits:
 - Backend and API changes (with tests and API doc changes documented
   fully using our double-entry changelog system). When starting an API
   change, reread `docs/documentation/api.md` to review the process for
-  documenting an API change. You'll run `tools/create-api-changelog`
-  to create an `api_docs/unmerged.d/ZF-RANDOM.md` file. Never update
-  `API_FEATURE_LEVEL` manually. **Changes** entries should use the
-  "New in Zulip 12.0 (Feature level RANDOM)" pattern, which will be
-  replaced with the final feature level when the changes are merged.
+  documenting an API change. Run `tools/create-api-changelog`; it
+  generates an empty `api_docs/unmerged.d/ZF-XXXXXX.md` file (where
+  `XXXXXX` is a random hex string the tool picks for you) and stages
+  it for you. Document the changes in that file with the header
+  `**Feature level ZF-XXXXXX**` and an unordered list (`*` bullets)
+  of the additions or changes, formatted to match `api_docs/changelog.md`.
+  In the OpenAPI yaml (`zerver/openapi/zulip.yaml`), reference the same
+  filename stem in **Changes** notes, e.g.,
+  `**Changes**: New in Zulip 12.0 (feature level ZF-XXXXXX).` The merge
+  process replaces the placeholder with the final feature level.
+  Never update `API_FEATURE_LEVEL` manually.
 - Frontend UI changes (with tests and user-facing documentation
   updates). Remember to plan to use your visual test skill to check
   your work whenever you change web app code (HTML, CSS, JS).
