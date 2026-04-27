@@ -193,7 +193,7 @@ Learning more:
   important announcements, including [new
   releases](../overview/release-lifecycle.md) and security issues.
 - Follow us on [Mastodon](https://fosstodon.org/@zulip) or
-  [X/Twitter](https://x.com/zulip).
+  [Bluesky](https://bsky.app/profile/zulip.bsky.social).
 - Learn how to [configure your Zulip server settings](settings.md).
 - Learn about [Backups, export and import](export-and-import.md)
   and [upgrading](upgrade.md) a production Zulip
