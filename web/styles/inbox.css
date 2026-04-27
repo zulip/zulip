@@ -827,9 +827,24 @@
         }
     }
 
+    /* Outline on the row-tall click wrapper rather than the
+       inner badge, with `-2px` offset so the painted ring sits
+       2px inside the wrapper edges — matching the action button
+       and state-marker focus rings (also -2px on a 30px wrapper)
+       so all four inbox focus indicators read at the same 26px
+       outer height. */
     .unread-count-focus-outline {
         &:focus-visible {
-            outline: 2px solid var(--color-outline-focus);
+            outline: var(--focus-ring-outline);
+            outline-offset: -0.125em; /* -2px at 16px/1em */
+            border-radius: 0.3125em; /* 5px at 16px/1em */
+
+            /* Suppress the inner badge's `inset` `box-shadow`
+               (from `.normal-count`) so it doesn't read as a
+               second, narrower outline inside the focus ring. */
+            .unread_count {
+                box-shadow: none;
+            }
         }
     }
 
