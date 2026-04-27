@@ -77,8 +77,12 @@
             .inbox-focus-border {
                 display: flex;
                 min-height: 1.875em; /* 30px at 16px em */
-                border: 2px solid transparent;
-                border-radius: 3px;
+                /* Holds the horizontal layout that the removed
+                   `border: 2px solid transparent` was reserving;
+                   `.inbox-row`'s outline-based focus doesn't reserve
+                   space. Vertical padding omitted so the 30px icon
+                   wrappers fit in the 30px row height. */
+                padding-inline: 0.125em; /* 2px at 16px/1em */
                 box-sizing: border-box;
                 justify-content: space-between;
             }
@@ -290,15 +294,6 @@
             .inbox-left-part-wrapper {
                 display: flex;
                 width: 80%;
-            }
-
-            #inbox-direct-messages-container {
-                /* Since a direct message row can have span to multiple lines,
-                   having an underline focus will not work very well.
-                */
-                .inbox-row:focus-visible {
-                    box-shadow: inset 0 0 0 2px var(--color-outline-focus);
-                }
             }
 
             .inbox-left-part {
@@ -743,9 +738,14 @@
 
     .inbox-header {
         &:focus-visible {
-            .inbox-focus-border {
-                border-color: var(--color-outline-focus);
-            }
+            /* Flush outline on the row itself instead of the old
+               2px inner-border on `.inbox-focus-border`; matches
+               `.recent-view-body-row`'s focus style, but inbox rows
+               are tighter (30px) so the outline sits at the row
+               edges instead of insetting 4px. */
+            outline: var(--focus-ring-outline);
+            outline-offset: var(--focus-ring-outline-offset-in-views);
+            border-radius: 0.625em; /* 10px at 16px/1em */
 
             .collapsible-button > .zulip-icon {
                 opacity: 1;
@@ -759,13 +759,9 @@
 
     .inbox-row {
         &:focus-visible {
-            .inbox-focus-border {
-                border: 2px solid var(--color-outline-focus);
-                border-radius: 3px;
-            }
-
-            outline: 0;
-            padding: 0;
+            outline: var(--focus-ring-outline);
+            outline-offset: var(--focus-ring-outline-offset-in-views);
+            border-radius: 0.625em; /* 10px at 16px/1em */
         }
     }
 

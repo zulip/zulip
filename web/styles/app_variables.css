@@ -1014,6 +1014,14 @@
        color change touches one place. */
     --focus-ring-outline: var(--focus-ring-width-in-views) solid
         var(--color-outline-focus);
+    /* Negative-offset paired with `--focus-ring-outline` to pull
+       the painted ring inside the element by its own stroke
+       width, so the ring sits flush with the element edges (used
+       by inbox row outlines that would otherwise clip against the
+       row's `overflow: hidden`). */
+    --focus-ring-outline-offset-in-views: calc(
+        -1 * var(--focus-ring-width-in-views)
+    );
     --color-background-search: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 17%));
     --color-background-search-collapsed: light-dark(
         hsl(0deg 0% 100%),
