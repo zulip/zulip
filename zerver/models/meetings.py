@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import CASCADE
 
@@ -27,6 +28,13 @@ class Meeting(models.Model):
         related_name="confirmed_for_meeting",
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if self.confirmed_slot_id is not None and self.pk is not None:
+            if self.confirmed_slot.meeting_id != self.pk:
+                raise ValidationError(
+                    {"confirmed_slot": "The confirmed slot must belong to this meeting."}
+                )
 
     class Meta:
         indexes = [
