@@ -432,7 +432,7 @@ function initialize_unread_ui() {
     unread_ui.initialize({mark_narrow_as_read: unread_ops.mark_narrow_as_read});
 }
 
-export async function initialize_everything(state_data) {
+export function initialize_everything(state_data) {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
@@ -520,7 +520,7 @@ export async function initialize_everything(state_data) {
     // has permission to access all other users.
     user_groups.initialize(state_data.user_groups);
 
-    await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
+    people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
     // Must happen after people.initialize(). And also before

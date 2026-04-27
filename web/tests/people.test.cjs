@@ -2009,7 +2009,15 @@ run_test("user fetch during initialize", async ({override}) => {
         const promise = people.fetch_users_from_ids_internal([15]);
         assert.ok(promise instanceof Promise);
     };
-    await people.initialize(my_user_id, params, user_group_params);
+    people.initialize(my_user_id, params, user_group_params);
+
+    // After initialize, missing users are placeholders while the
+    // background fetch is in flight.
+    assert.equal(people.get_by_user_id(15).is_placeholder_user, true);
+    assert.equal(people.get_by_user_id(16).is_placeholder_user, true);
+
+    // Wait for the background fetch to complete.
+    await people.get_or_fetch_users_from_ids([15, 16]);
     await promise_for_user_already_in_transit;
     assert.equal(user_GET_request_calls, 1);
 
@@ -2091,7 +2099,11 @@ run_test("user fetch batches a large request", async ({override}) => {
         const batch = JSON.parse(data.user_ids);
         // Users from the earlier batches are already known by the time we
         // request this one, rather than only once every batch has arrived.
-        assert.ok(requested_batches.flat().every((user_id) => people.is_known_user_id(user_id)));
+        assert.ok(
+            requested_batches
+                .flat()
+                .every((user_id) => !people.get_by_user_id(user_id).is_placeholder_user),
+        );
         requested_batches.push(batch);
         success({
             members: batch.map((user_id) => make_fetched_user(user_id)),
@@ -2100,7 +2112,8 @@ run_test("user fetch batches a large request", async ({override}) => {
         });
     });
 
-    await people.initialize(my_user_id, people_params, user_group_params);
+    people.initialize(my_user_id, people_params, user_group_params);
+    await people.get_or_fetch_users_from_ids(user_ids_to_fetch);
 
     assert.deepEqual(
         requested_batches.map((batch) => batch.length),
@@ -2162,7 +2175,8 @@ run_test("user fetch resumes after a failed batch", async ({override, override_r
     people.set_users_fetch_failing_callback((is_failing) => {
         fetch_failing_notifications.push(is_failing);
     });
-    await people.initialize(my_user_id, people_params, user_group_params);
+    people.initialize(my_user_id, people_params, user_group_params);
+    await people.get_or_fetch_users_from_ids(inaccessible_user_ids);
     assert.deepEqual(fetch_failing_notifications, [true, false, true, false]);
 
     // Only the failed batches are requested twice; the rest are not refetched.
