@@ -2,15 +2,27 @@ import os
 import re
 from contextlib import ExitStack
 from typing import Any
+from unittest import mock
 
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import SystemCheckError
 from django.test import override_settings
+from typing_extensions import override
 
 from zerver.lib.test_classes import ZulipTestCase
 
 
 class TestChecks(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        # The base tearDown removes LOCAL_UPLOADS_DIR after each test.
+        # Since call_command("check") runs check_uploads_settings which
+        # verifies the directory exists, we must re-create it.
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        os.makedirs(settings.LOCAL_UPLOADS_DIR, exist_ok=True)
+
     def assert_check_with_error(self, test: re.Pattern[str] | str | None, **kwargs: Any) -> None:
         with open(os.devnull, "w") as DEVNULL, override_settings(**kwargs), ExitStack() as stack:
             if isinstance(test, str):
@@ -156,3 +168,48 @@ class TestChecks(ZulipTestCase):
                 }
             },
         )
+
+    def test_checks_uploads_s3_missing_buckets(self) -> None:
+        self.assert_check_with_error(
+            "Neither settings.LOCAL_UPLOADS_DIR nor settings.S3_AUTH_UPLOADS_BUCKET is set",
+            LOCAL_UPLOADS_DIR=None,
+            S3_AUTH_UPLOADS_BUCKET="",
+            S3_AVATAR_BUCKET="some-avatar-bucket",
+        )
+
+        self.assert_check_with_error(
+            "Neither settings.LOCAL_UPLOADS_DIR nor settings.S3_AVATAR_BUCKET is set",
+            LOCAL_UPLOADS_DIR=None,
+            S3_AUTH_UPLOADS_BUCKET="some-uploads-bucket",
+            S3_AVATAR_BUCKET="",
+        )
+
+        self.assert_check_with_error(
+            "Neither settings.LOCAL_UPLOADS_DIR nor settings.S3_AUTH_UPLOADS_BUCKET is set",
+            LOCAL_UPLOADS_DIR=None,
+            S3_AUTH_UPLOADS_BUCKET="",
+            S3_AVATAR_BUCKET="",
+        )
+
+    def test_checks_uploads_s3_configured(self) -> None:
+        self.assert_check_with_error(
+            None,
+            LOCAL_UPLOADS_DIR=None,
+            S3_AUTH_UPLOADS_BUCKET="some-uploads-bucket",
+            S3_AVATAR_BUCKET="some-avatar-bucket",
+        )
+
+    def test_checks_uploads_local_dir_missing(self) -> None:
+        self.assert_check_with_error(
+            "(zulip.E006) settings.LOCAL_UPLOADS_DIR (/nonexistent/path) does not exist",
+            LOCAL_UPLOADS_DIR="/nonexistent/path",
+        )
+
+    def test_checks_uploads_local_dir_not_writable(self) -> None:
+        with mock.patch("os.access", return_value=False):
+            self.assert_check_with_error(
+                f"(zulip.E006) settings.LOCAL_UPLOADS_DIR ({settings.LOCAL_UPLOADS_DIR}) is not writable",
+            )
+
+    def test_checks_uploads_local_dir_valid(self) -> None:
+        self.assert_check_with_error(None)
