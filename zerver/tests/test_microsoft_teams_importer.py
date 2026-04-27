@@ -92,15 +92,6 @@ EXPORTED_MICROSOFT_TEAMS_TEAM_ID: dict[str, str] = {
 }
 
 
-def get_exported_microsoft_teams_user_data() -> list[MicrosoftTeamsFieldsT]:
-    test_class = ZulipTestCase()
-    return json.loads(
-        test_class.fixture_data(
-            "usersList.json", "microsoft_teams_fixtures/TeamsData_ZulipChat/users"
-        )
-    )
-
-
 def get_exported_team_data(team_id: str) -> MicrosoftTeamsFieldsT:
     test_class = ZulipTestCase()
     team_list = json.loads(
@@ -313,7 +304,7 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         self.converted_file_output_dir = make_export_output_dir()
         self.test_realm_subdomain = "test-import-teams-realm"
         self.import_microsoft_teams_export_fixture(fixture)
-        exported_user_data = get_exported_microsoft_teams_user_data()
+        exported_user_data = self.get_exported_microsoft_teams_user_data()
         self.exported_user_data_map = {u["Id"]: u for u in exported_user_data}
 
     def get_imported_realm_user_field_values(self, field: str, **kwargs: Any) -> list[str | int]:
