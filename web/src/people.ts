@@ -1521,12 +1521,16 @@ export function deactivate(person: User): void {
     non_active_user_dict.set(person.user_id, person);
 }
 
+function make_dummy_email(user_id: number): string {
+    return "user" + user_id + "@" + realm.realm_bot_domain;
+}
+
 export function remove_inaccessible_user(user_id: number): void {
     // We do not track inaccessible users in active_user_dict.
     active_user_dict.delete(user_id);
 
     // Create unknown user object for the inaccessible user.
-    const email = "user" + user_id + "@" + realm.realm_bot_domain;
+    const email = make_dummy_email(user_id);
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
 }
@@ -1592,7 +1596,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
 }
 
 export function add_inaccessible_user(user_id: number): User {
-    const email = "user" + user_id + "@" + realm.realm_bot_domain;
+    const email = make_dummy_email(user_id);
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
     return unknown_user;
@@ -1659,7 +1663,7 @@ export function add_missing_people_for_message_reactions(reactions: {user_id: nu
             continue;
         }
 
-        const email = "user" + reaction.user_id + "@" + realm.realm_bot_domain;
+        const email = make_dummy_email(reaction.user_id);
         report_late_add(reaction.user_id, email);
         _add_user(make_user(reaction.user_id, email, INACCESSIBLE_USER_NAME));
     }
