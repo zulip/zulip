@@ -921,22 +921,21 @@ function propose_meeting_modal_post_render(): void {
 }
 
 function on_add_all_users_click(): void {
-  const stream_id = narrow_state.stream_id();
-
-  if (!invite_users_widget || !stream_id) {
+  if (!invite_users_widget) {
     return;
   }
 
-  const already_added_ids = new Set(
-    user_pill.get_user_ids(invite_users_widget),
-  );
-  const user_ids = peer_data.get_subscriber_ids_assert_loaded(stream_id);
+  const already_added_ids = new Set(user_pill.get_user_ids(invite_users_widget));
+  const stream_id = narrow_state.stream_id();
 
-  for (const id of user_ids) {
+  const candidate_ids: number[] = stream_id !== undefined
+    ? [...peer_data.get_subscriber_ids_assert_loaded(stream_id)]
+    : people.get_realm_users().map((u) => u.user_id);
+
+  for (const id of candidate_ids) {
     if (already_added_ids.has(id)) {
       continue;
     }
-
     const user = people.get_by_user_id(id);
     if (user && !user.is_bot) {
       user_pill.append_user(user, invite_users_widget);
