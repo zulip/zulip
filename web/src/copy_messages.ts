@@ -518,6 +518,186 @@ function maybe_update_range_for_code_blocks(range: Range, ev: ClipboardEvent): b
     return false;
 }
 
+// Elements that start on a line of their own, as they do on screen.
+const PLAIN_TEXT_BLOCK_TAGS = new Set([
+    "BLOCKQUOTE",
+    "DIV",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6",
+    "HR",
+    "LI",
+    "OL",
+    "PRE",
+    "TABLE",
+    "TR",
+    "UL",
+]);
+
+function get_line_breaks_around(element: Element): {before: number; after: number} {
+    if (element.tagName === "P") {
+        // As with the `message-header paste output` rule in
+        // compose_paste, the recipient header sits on the line
+        // directly above the first sender's name.
+        if (element.getAttribute("data-message-header-paragraph") === "true") {
+            return {before: 2, after: 1};
+        }
+        return {before: 2, after: 2};
+    }
+    if (PLAIN_TEXT_BLOCK_TAGS.has(element.tagName)) {
+        return {before: 1, after: 1};
+    }
+    return {before: 0, after: 0};
+}
+
+// These match the `white-space` rules in rendered_markdown.css.
+function preserves_whitespace(element: Element, parent_preserves_whitespace: boolean): boolean {
+    if (element.classList.contains("code-buttons-container")) {
+        return false;
+    }
+    return (
+        parent_preserves_whitespace ||
+        element.tagName === "PRE" ||
+        element.tagName === "CODE" ||
+        element.classList.contains("stream-topic-inner") ||
+        element.classList.contains("decorated-channel-name")
+    );
+}
+
+// Returns the text a reader sees in the copy div, for `text/plain`.
+// Blocks start on a line of their own, a paragraph is set apart by a
+// blank line, and whitespace is collapsed except where it is displayed
+// as-is.
+export function get_plain_text_for_copy_div(copy_div: Element): string {
+    let plain_text = "";
+    // Line breaks to add before the next text.
+    //
+    // Where several block boundaries meet with no text between them,
+    // this is the most line breaks that any one of them needs.
+    // For example, between two messages from the same recipient,
+    // the copy div has:
+    //
+    //     <div>See the docs.</div><p></p><b>Desdemona: </b>
+    //
+    // `</div>` needs 1 line break, and `<p>` and `</p>` need 2 each.
+    // Taking the largest, 2, leaves one blank line before the next
+    // sender's name:
+    //
+    //     See the docs.
+    //
+    //     Desdemona:
+    //
+    // Adding them up would give 5 line breaks, and so four blank lines.
+    let pending_line_breaks = 0;
+    // Newlines that `plain_text` already ends with, from a `<br>` or
+    // the last line of a code block.
+    let trailing_line_breaks = 0;
+    // Whether `plain_text` ends with the tab between two table cells.
+    // This is tracked, rather than read from the end of `plain_text`,
+    // because checking the end of a string built up with `+=` makes
+    // the browser copy all of it.
+    let ends_with_tab = false;
+    let pending_space = false;
+
+    function is_at_line_start(): boolean {
+        return (
+            plain_text === "" ||
+            pending_line_breaks > 0 ||
+            trailing_line_breaks > 0 ||
+            ends_with_tab
+        );
+    }
+
+    function request_line_breaks(count: number): void {
+        if (count > 0) {
+            pending_line_breaks = Math.max(pending_line_breaks, count);
+            pending_space = false;
+        }
+    }
+
+    function append(text: string): void {
+        if (pending_line_breaks > trailing_line_breaks && plain_text !== "") {
+            plain_text += "\n".repeat(pending_line_breaks - trailing_line_breaks);
+            trailing_line_breaks = pending_line_breaks;
+        } else if (pending_space) {
+            plain_text += " ";
+            trailing_line_breaks = 0;
+        }
+        pending_line_breaks = 0;
+        pending_space = false;
+
+        plain_text += text;
+        ends_with_tab = text.endsWith("\t");
+        let text_trailing_line_breaks = 0;
+        while (text.at(-1 - text_trailing_line_breaks) === "\n") {
+            text_trailing_line_breaks += 1;
+        }
+        if (text_trailing_line_breaks === text.length) {
+            // Text that is only newlines, such as a `<br>`, joins the
+            // newlines already at the end of `plain_text`, so the count
+            // covers the whole run: after two `<br>`s in a row, it is 2.
+            trailing_line_breaks += text_trailing_line_breaks;
+        } else {
+            // Newlines before this text are no longer at the end.
+            trailing_line_breaks = text_trailing_line_breaks;
+        }
+    }
+
+    function append_collapsible_text(text: string): void {
+        let collapsed_text = text.replaceAll(/[\t\n\r ]+/g, " ");
+        if (collapsed_text.startsWith(" ")) {
+            // We ignore whitespace at the start of a line, like the browser does.
+            pending_space ||= !is_at_line_start();
+            collapsed_text = collapsed_text.slice(1);
+        }
+        if (collapsed_text === "") {
+            return;
+        }
+        if (collapsed_text.endsWith(" ")) {
+            append(collapsed_text.slice(0, -1));
+            pending_space = true;
+        } else {
+            append(collapsed_text);
+        }
+    }
+
+    function append_children(parent: Node, parent_preserves_whitespace: boolean): void {
+        for (const child of parent.childNodes) {
+            if (child.nodeType === Node.TEXT_NODE) {
+                const text = child.nodeValue ?? "";
+                if (!parent_preserves_whitespace) {
+                    append_collapsible_text(text);
+                } else if (text !== "") {
+                    append(text);
+                }
+            } else if (child instanceof Element) {
+                if (child.tagName === "BR") {
+                    pending_space = false;
+                    append("\n");
+                    continue;
+                }
+                const line_breaks = get_line_breaks_around(child);
+                request_line_breaks(line_breaks.before);
+                append_children(child, preserves_whitespace(child, parent_preserves_whitespace));
+                request_line_breaks(line_breaks.after);
+                if (
+                    (child.tagName === "TD" || child.tagName === "TH") &&
+                    child.nextElementSibling !== null
+                ) {
+                    pending_space = false;
+                    append("\t");
+                }
+            }
+        }
+    }
+
+    append_children(copy_div, false);
+    return plain_text;
+}
+
 export function copy_handler(ev: ClipboardEvent): boolean {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
@@ -606,7 +786,7 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     construct_copy_div($div, start_id, end_id);
 
     const html_content = $div.html().trim();
-    const plain_text = $div.text().trim();
+    const plain_text = get_plain_text_for_copy_div(the($div)).trim();
     ev.clipboardData?.setData("text/html", html_content);
     ev.clipboardData?.setData("text/plain", plain_text);
 
