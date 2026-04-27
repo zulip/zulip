@@ -274,6 +274,7 @@
             <tr>
                 <td class="comparison-table-feature">
                     <a href="/help/mobile-notifications">Mobile push notifications</a>
+                    <div class="comparison-table-feature-desc"><a href="https://zulip.com/help/mobile-notifications#end-to-end-encryption-e2ee-for-mobile-push-notifications">End-to-end encrypted</a></div>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
@@ -540,7 +541,8 @@
             </tr>
             <tr>
                 <td class="comparison-table-feature">
-                    <a href="/help/animated-gifs">Native GIPHY integration</a>
+                    <a href="/help/animated-gifs">Native GIF integration</a>
+                    <div class="comparison-table-feature-desc">Tenor, GIPHY or KLIPY</div>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -1037,7 +1039,7 @@
             <tr>
                 <td class="comparison-table-feature">
                     <a href="/help/configure-default-new-user-settings">
-                        Configure initial settings for new users
+                        Configure settings for new and current users
                     </a>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -1251,21 +1253,6 @@
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
-
-                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
-                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
-                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
-                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
-            </tr>
-            <tr class="self-hosted-feature-only">
-                <td class="comparison-table-feature">
-                    <a href="https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html">
-                        No-content push notifications
-                    </a>
-                </td>
-                <td class="comparison-value-null cloud-cell"></td>
-                <td class="comparison-value-null cloud-cell"></td>
-                <td class="comparison-value-null cloud-cell"></td>
 
                 <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
                 <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
@@ -1498,14 +1485,14 @@
             </tr>
             <tr class="self-hosted-feature-only">
                 <td class="comparison-table-feature">
-                    <a href="https://github.com/zulip/docker-zulip">Docker deployments</a>
+                    <a href="https://zulip.readthedocs.io/projects/docker/en/latest/">Docker deployments</a>
                 </td>
                 <td class="comparison-value-null cloud-cell"></td>
                 <td class="comparison-value-null cloud-cell"></td>
                 <td class="comparison-value-null cloud-cell"></td>
 
                 <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
-                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
             </tr>
@@ -1657,6 +1644,7 @@
             <tr>
                 <td class="comparison-table-feature">
                     Import data from <a href="/help/import-from-slack">Slack</a>,
+                    <a href="/help/import-from-microsoft-teams">Teams</a>,
                     <a href="/help/import-from-mattermost">Mattermost</a>, or
                     <a href="/help/import-from-rocketchat">Rocket.Chat</a>
                 </td>
