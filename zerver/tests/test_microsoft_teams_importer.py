@@ -5,7 +5,7 @@ import re
 import shutil
 import tempfile
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Concatenate, TypeAlias
@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, urlsplit
 import orjson
 import responses
 from django.utils.timezone import now as timezone_now
+from django_stubs_ext import QuerySetAny
 from requests import PreparedRequest
 from typing_extensions import ParamSpec
 
@@ -91,6 +92,12 @@ EXPORTED_MICROSOFT_TEAMS_TEAM_ID: dict[str, str] = {
     "Kandra Labs": "1d513e46-d8cd-41db-b84f-381fe5730794",
 }
 
+
+@dataclass
+class ImportableMessageResult:
+    importable_messages: list[MicrosoftTeamsFieldsT]
+    importable_message_datetimes: list[float]
+    importable_sender_messages_map: dict[str, list[float]]
 
 
 
@@ -309,6 +316,83 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
             ).values_list(field, flat=True)
         )
 
+    def filter_and_collect_importable_messages(
+        self, exported_messages: Sequence[dict[str, Any]]
+    ) -> ImportableMessageResult:
+        """
+        This filters out raw message data the importer can't or doesn't yet process
+        (e.g., messages in private Microsoft Teams channels). This also puts together
+        some metadata about the message data.
+        Handy for tests that check whether the imported data accurately represents
+        the raw exported data.
+        """
+        importable_message_datetimes: list[float] = []
+        importable_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+        importable_messages: list[dict[str, Any]] = []
+        for message in exported_messages:
+            if is_microsoft_teams_event_message(message):
+                continue
+            if (
+                message["ChannelIdentity"]
+                and message["ChannelIdentity"]["ChannelId"] in PRIVATE_MICROSOFT_TEAMS_CHANNELS
+            ):
+                # We currently don't support converting private Microsoft Teams channels
+                continue
+
+            sender_id = get_microsoft_teams_sender_id_from_message(message)
+            if sender_id not in self.exported_user_data_map:
+                assert sender_id in DELETED_MICROSOFT_TEAMS_USERS
+                sender_email = f"{sender_id}@zulip.example.com"
+            else:
+                sender_email = self.exported_user_data_map[sender_id]["Mail"]
+
+            message_datetime = get_timestamp_from_message(message)
+            importable_message_datetimes.append(message_datetime)
+            importable_sender_messages_map[sender_email].append(message_datetime)
+            importable_messages.append(message)
+
+        return ImportableMessageResult(
+            importable_messages=importable_messages,
+            importable_message_datetimes=importable_message_datetimes,
+            importable_sender_messages_map=importable_sender_messages_map,
+        )
+
+    def assert_imported_messages_match_exported(
+        self,
+        importable_message_data: ImportableMessageResult,
+        imported_messages: QuerySetAny[Message, Message],
+    ) -> None:
+        imported_message_datetimes: list[float] = []
+        imported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+        last_date_sent: float = float("-inf")
+        for imported_message in imported_messages:
+            message_date_sent = imported_message.date_sent.timestamp()
+
+            # Imported messages are sorted chronologically.
+            self.assertLessEqual(last_date_sent, message_date_sent)
+            last_date_sent = message_date_sent
+
+            self.assertIsNotNone(imported_message.content)
+            self.assertIsNotNone(imported_message.rendered_content)
+
+            imported_message_datetimes.append(message_date_sent)
+            imported_sender_messages_map[imported_message.sender.email].append(message_date_sent)
+
+        self.assertListEqual(
+            sorted(imported_message_datetimes),
+            sorted(importable_message_data.importable_message_datetimes),
+        )
+
+        # Message sender is correct.
+        for (
+            sender_email,
+            importable_message_datetimes,
+        ) in importable_message_data.importable_sender_messages_map.items():
+            self.assertListEqual(
+                sorted(importable_message_datetimes),
+                sorted(imported_sender_messages_map[sender_email]),
+            )
+
     def test_imported_users(self) -> None:
         self.do_import_realm_fixture()
         imported_user_emails = set(
@@ -391,30 +475,18 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         )
         assert channel.recipient is not None
 
-        convertable_exported_messages: list[MicrosoftTeamsFieldsT] = []
-        convertable_exported_message_datetimes: list[float] = []
-        exported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+        # Here we're just making sure these cases exist in the fixture we're
+        # using.
         private_channel_message_exists: bool
         deleted_user_message_exists: bool
-
         for message in exported_team_messages:
             if is_microsoft_teams_event_message(message):
                 continue
             if message["ChannelIdentity"]["ChannelId"] in PRIVATE_MICROSOFT_TEAMS_CHANNELS:
                 private_channel_message_exists = True
-                continue
             sender_id = get_microsoft_teams_sender_id_from_message(message)
             if sender_id not in self.exported_user_data_map:
-                assert sender_id in DELETED_MICROSOFT_TEAMS_USERS
-                sender_email = f"{sender_id}@zulip.example.com"
                 deleted_user_message_exists = True
-            else:
-                sender_email = self.exported_user_data_map[sender_id]["Mail"]
-
-            convertable_exported_messages.append(message)
-            message_datetime = get_timestamp_from_message(message)
-            convertable_exported_message_datetimes.append(message_datetime)
-            exported_sender_messages_map[sender_email].append(message_datetime)
         self.assertTrue(private_channel_message_exists)
         self.assertTrue(deleted_user_message_exists)
 
@@ -427,35 +499,12 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
             .order_by("id")
         )
         self.assertTrue(imported_channel_messages.exists())
-
-        imported_message_datetimes: list[float] = []
-        imported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
-        last_date_sent: float = float("-inf")
-
-        for imported_message in imported_channel_messages:
-            message_date_sent = imported_message.date_sent.timestamp()
-            # Imported messages are sorted chronologically.
-            self.assertLessEqual(last_date_sent, message_date_sent)
-            last_date_sent = max(last_date_sent, message_date_sent)
-
-            # Message content is not empty.
-            self.assertIsNotNone(imported_message.content)
-            self.assertIsNotNone(imported_message.rendered_content)
-
-            imported_message_datetimes.append(message_date_sent)
-            imported_sender_messages_map[imported_message.sender.email].append(message_date_sent)
-
-        self.assertListEqual(
-            sorted(imported_message_datetimes),
-            sorted(convertable_exported_message_datetimes),
+        importable_message_data = self.filter_and_collect_importable_messages(
+            exported_team_messages
         )
-
-        # Message sender is correct.
-        for sender_email, exported_message_datetimes in exported_sender_messages_map.items():
-            self.assertListEqual(
-                sorted(exported_message_datetimes),
-                sorted(imported_sender_messages_map[sender_email]),
-            )
+        self.assert_imported_messages_match_exported(
+            importable_message_data, imported_channel_messages
+        )
 
         microsoft_team_channel_metadata = self.get_exported_team_channel_metadata(
             EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
@@ -469,7 +518,7 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         ) in microsoft_team_channel_metadata.items():
             messages_in_a_microsoft_team_channel = [
                 m
-                for m in convertable_exported_messages
+                for m in importable_message_data.importable_messages
                 if m["ChannelIdentity"]["ChannelId"] == microsoft_team_channel_id
             ]
 
