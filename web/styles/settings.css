@@ -2289,7 +2289,6 @@ label.preferences-radio-choice-label {
 
         & .dropdown-widget-button {
             height: 1.4em;
-            max-width: 160px;
             box-sizing: content-box;
         }
 
@@ -2298,6 +2297,14 @@ label.preferences-radio-choice-label {
             filters to keep them aligned in .settings_panel_list_header */
             margin: 0;
         }
+    }
+
+    .user_filters .dropdown-widget-button {
+        max-width: 11em; /* 176px at 16px */
+    }
+
+    .bot-filters .dropdown-widget-button {
+        max-width: 160px;
     }
 
     .add_default_streams_button_container {
