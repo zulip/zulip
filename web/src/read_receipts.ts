@@ -141,3 +141,14 @@ export function show_user_list(message_id: number): void {
 export function hide_user_list(): void {
     modals.close_if_open("read_receipts_modal");
 }
+
+// The modal polls for read receipts only once a minute, so we
+// refetch now to show the loaded names right away.
+export function refresh_after_users_fetched(): void {
+    if (modals.is_active("read_receipts_modal")) {
+        const message_id = Number($("#read_receipts_modal").attr("data-message-id"));
+        if (message_id) {
+            fetch_read_receipts(message_id);
+        }
+    }
+}
