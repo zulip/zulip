@@ -22,7 +22,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
 [![GitHub release](https://img.shields.io/github/release/zulip/zulip.svg)](https://github.com/zulip/zulip/releases/latest)
 [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
-[![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](https://twitter.com/zulip)
+[![Bluesky](https://img.shields.io/badge/bluesky-@zulip.bsky.social-blue.svg?style=flat)](https://bsky.app/profile/zulip.bsky.social)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/zulip)](https://github.com/sponsors/zulip)
 
 [mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
