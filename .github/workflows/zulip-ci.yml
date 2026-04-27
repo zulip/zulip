@@ -198,7 +198,7 @@ jobs:
       - name: Run miscellaneous tests
         run: |
           source tools/ci/activate-venv
-          uv lock --check
+          env -u PYTHONDEVMODE -u PYTHONWARNINGS uv lock --check
 
           # ./tools/test-run-dev  # https://github.com/zulip/zulip/pull/14233
           #
