@@ -6,7 +6,7 @@ import logging
 import re
 import time
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from email.headerregistry import Address
 from functools import cache
 from typing import TYPE_CHECKING, Any, Final, Literal, Optional, TypeAlias, Union, cast
@@ -1452,9 +1452,7 @@ class APNsHTTPHeaders:
 
 @dataclass
 class APNsPayload(PushRequestBasePayload):
-    aps: dict[str, int | dict[str, str]] = field(
-        default_factory=lambda: {"mutable-content": 1, "alert": {"title": "New notification"}}
-    )
+    aps: dict[str, int | dict[str, str]]
 
 
 @dataclass
@@ -1520,9 +1518,13 @@ def send_push_notifications(
                 apns_priority=apns_priority,
                 apns_push_type=apns_push_type,
             )
+            aps: dict[str, int | dict[str, str]] = {"mutable-content": 1}
+            if not is_removal:
+                aps["alert"] = {"title": "New notification"}
             apns_payload = APNsPayload(
                 push_key_id=push_device.push_key_id,
                 encrypted_data=encrypted_data,
+                aps=aps,
             )
             apns_push_request = APNsPushRequest(
                 token_id=b64encode_token_id_int(push_device.push_token_id),

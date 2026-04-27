@@ -67,6 +67,12 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 mock_fcm_messaging.send_each.assert_called_once()
                 send_notification.assert_called_once()
 
+                apns_message = send_notification.call_args.args[0].message
+                self.assertEqual(
+                    apns_message["aps"],
+                    {"mutable-content": 1, "alert": {"title": "New notification"}},
+                )
+
                 self.assertEqual(
                     "INFO:zerver.lib.push_notifications:"
                     f"Sending push notifications to mobile clients for user {hamlet.id}",
@@ -871,6 +877,9 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
 
             mock_fcm_messaging.send_each.assert_called_once()
             send_notification.assert_called_once()
+
+            apns_message = send_notification.call_args.args[0].message
+            self.assertEqual(apns_message["aps"], {"mutable-content": 1})
 
             user_message.refresh_from_db()
             self.assertFalse(user_message.flags.active_mobile_push_notification)
