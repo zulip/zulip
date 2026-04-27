@@ -621,6 +621,12 @@ export function redraw_imported_users_list(force_update = false): void {
     should_redraw_active_users_list = true;
 }
 
+export function mark_users_lists_for_redraw(): void {
+    should_redraw_active_users_list = true;
+    should_redraw_deactivated_users_list = true;
+    should_redraw_imported_users_list = true;
+}
+
 function start_data_load(): void {
     loading.make_indicator($("#admin_page_users_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
