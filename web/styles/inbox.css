@@ -241,6 +241,19 @@
                    count from affecting overall row
                    size as test scales up. */
                 align-self: stretch;
+                /* Whole 30×stretched hit area is clickable; surface
+                   the same pointer cursor users had on the smaller
+                   badge before the click target was expanded. */
+                cursor: pointer;
+
+                /* Forward the badge's hover outline to the wrapper:
+                   the click handler now lives on the wrapper, so
+                   hovering anywhere in the wrapper (not just the
+                   small inner badge) should preview the click
+                   affordance. */
+                &:hover .unread_count {
+                    outline-width: 1.5px;
+                }
             }
 
             .unread_mention_info {
