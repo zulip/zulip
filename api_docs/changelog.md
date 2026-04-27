@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 498**
+
+No changes; API feature level used for the Zulip 12.0 release.
+
 **Feature level 497**
 
 * [`GET /users/{user_id_or_email}/presence`](/api/get-user-presence): The

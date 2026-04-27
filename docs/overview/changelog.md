@@ -1,21 +1,18 @@
 # Version history
 
-This page contains the release history for the Zulip server. See also
-the [Zulip release lifecycle](../overview/release-lifecycle.md).
+This page contains the release history for the Zulip Server 12.x stable
+release series. See the [current Zulip changelog][latest-changelog]
+for newer release series, or the [commit log][commit-log] for an
+up-to-date list of all changes.
 
-## Zulip Server 12.x series (development)
+See also the [Zulip release
+lifecycle](../overview/release-lifecycle.md).
 
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of all changes.
+## Zulip Server 12.x series
 
-## Zulip Server 12.0
+### Zulip Server 12.0
 
-_Unreleased_
-
-### Zulip Server 12.0-beta2
-
-_Released 2026-04-26_
+_Released 2026-04-27_
 
 #### Highlights
 
@@ -93,6 +90,9 @@ _Released 2026-04-26_
   in user email addresses, when provided with a unique ID for each
   user, matching the equivalent LDAP capability added in Zulip 11.0.
   SAML can now also sync the `full_name` user attribute on login.
+- The LDAP integration's automatic handling of email-address changes,
+  added in Zulip 11.0, now also applies during periodic
+  `sync_ldap_user_data` runs, in addition to login.
 - Added a `channels:archived` search filter.
 - Added support for quoting or forwarding multiple selected messages
   at once, with the compose box pre-configured based on the selected
@@ -257,6 +257,9 @@ _Released 2026-04-26_
 - Fixed several visual polish issues across modals, popovers, the
   saved-snippets dropdown, stream-privacy decoration, recent-view
   headers, and subscriber-list scrolling.
+- CVE-2026-40300: The "Move history only" setting for message edit
+  history visibility was incorrectly exposing the original message
+  content in the API alongside the move metadata.
 - Enabled several modern HTTP headers for security hardening.
 - Restricted the `/bot_storage` API endpoints to bot accounts.
 - Permitted bot users to call user-group management API endpoints.
@@ -5491,7 +5494,7 @@ _Released 2015-10-19_
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 12.0](#upgrade-notes-for-120)
+- [Upgrade notes for 12.0](#upgrade-notes-for-120)
 - [Upgrade notes for 11.0](#upgrade-notes-for-110)
 - [Upgrade notes for 10.0](#upgrade-notes-for-100)
 - [Upgrade notes for 9.0](#upgrade-notes-for-90)
