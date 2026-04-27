@@ -122,7 +122,7 @@ function submit_propose_meeting_form(): void {
   const slots: { start_time: string }[] = [];
   for (const date of dates) {
     for (const time of times) {
-      slots.push({ start_time: `${date}T${time}:00` });
+      slots.push({ start_time: new Date(`${date}T${time}:00`).toISOString() });
     }
   }
 
@@ -453,15 +453,13 @@ function rsvp_meeting_modal_post_render(): void {
       util.the($input),
       (selectedDate) => {
         const dt = new Date(selectedDate);
-        const tzOffsetMs = dt.getTimezoneOffset() * 60 * 1000;
-        const localDt = new Date(dt.getTime() - tzOffsetMs);
-        const isoValue = localDt.toISOString().slice(0, 16);
+        const isoValue = dt.toISOString();
 
         // Show human-readable string in the visible text input
         const formatted = timerender.get_full_datetime(dt, "time");
         $input.val(formatted);
 
-        // Store ISO value in hidden input — this is what submit/validation reads
+        // Store UTC ISO value in hidden input — this is what submit/validation reads
         $("#rsvp-meeting-datetime-value").val(isoValue).trigger("input");
 
         update_rsvp_submit_button_state();
@@ -879,9 +877,7 @@ function propose_meeting_modal_post_render(): void {
       util.the($input),
       (selectedDate) => {
         const dt = new Date(selectedDate);
-        const tzOffsetMs = dt.getTimezoneOffset() * 60 * 1000;
-        const localDt = new Date(dt.getTime() - tzOffsetMs);
-        const isoValue = localDt.toISOString().slice(0, 16);
+        const isoValue = dt.toISOString();
 
         $input.val(timerender.get_full_datetime(dt, "time"));
         $("#propose-rsvp-by-value").val(isoValue).trigger("input");
