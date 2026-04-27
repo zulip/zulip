@@ -110,10 +110,12 @@ function submit_propose_meeting_form(): void {
   assert(topic && dates_raw && times_raw && rsvp_by);
 
   const invitee_ids = user_pill.get_user_ids(invite_users_widget);
-  const stream_id = narrow_state.stream_id();
-  assert(stream_id !== undefined);
-
   const create_new_channel = $<HTMLInputElement>("#propose-create-channel").prop("checked") as boolean;
+  const stream_id = narrow_state.stream_id();
+
+  if (!create_new_channel && stream_id === undefined) {
+    return;
+  }
 
   const dates = dates_raw.split(",").map((s) => s.trim()).filter(Boolean);
   const times = times_raw.split(",").map((s) => s.trim()).filter(Boolean);
@@ -192,9 +194,14 @@ function update_propose_submit_button_state(): void {
   const times = $<HTMLInputElement>("#propose-meeting-times-value").val()?.trim();
   const rsvp_by = $<HTMLInputElement>("#propose-rsvp-by-value").val()?.trim();
   const has_invitees = user_pill.get_user_ids(invite_users_widget).length > 0;
+  const create_new_channel = $<HTMLInputElement>("#propose-create-channel").prop("checked") as boolean;
+  const stream_id = narrow_state.stream_id();
 
   const $submit_button = $("#add-propose-meeting-modal .dialog_submit_button");
-  $submit_button.prop("disabled", !topic || !dates || !times || !rsvp_by || !has_invitees);
+  $submit_button.prop(
+    "disabled",
+    !topic || !dates || !times || !rsvp_by || !has_invitees || (!create_new_channel && stream_id === undefined),
+  );
 }
 
 function escape_html(str: string): string {
