@@ -197,6 +197,14 @@ function update_propose_submit_button_state(): void {
   $submit_button.prop("disabled", !topic || !dates || !times || !rsvp_by || !has_invitees);
 }
 
+function escape_html(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function populate_rsvp_user_dropdown(): void {
   const $dropdown = $("#rsvp-user-dropdown");
 
@@ -221,10 +229,10 @@ function populate_rsvp_user_dropdown(): void {
   for (const user of users) {
     const html = `
         <div class="rsvp-user-item">
-            <img src="${user.avatar_url}" class="avatar" />
+            <img src="${escape_html(user.avatar_url ?? "")}" class="avatar" />
             <div class="user-info">
-                <div class="user-name">${user.full_name}</div>
-                <div class="user-email">${user.email}</div>
+                <div class="user-name">${escape_html(user.full_name)}</div>
+                <div class="user-email">${escape_html(user.email)}</div>
             </div>
         </div>
     `;
@@ -261,10 +269,10 @@ function populate_propose_user_dropdown(): void {
   for (const user of users) {
     const html = `
             <div class="rsvp-user-item">
-                <img src="${user.avatar_url}" class="avatar" />
+                <img src="${escape_html(user.avatar_url ?? "")}" class="avatar" />
                 <div class="user-info">
-                    <div class="user-name">${user.full_name}</div>
-                    <div class="user-email">${user.email}</div>
+                    <div class="user-name">${escape_html(user.full_name)}</div>
+                    <div class="user-email">${escape_html(user.email)}</div>
                 </div>
             </div>`;
 
