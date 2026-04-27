@@ -124,6 +124,10 @@ function bind_grid_events(): void {
       $(this).removeClass("availability-cell-selected");
     }
   });
+
+  $(document).on("mouseup.availability-grid", () => {
+    is_dragging = false;
+  });
 }
 
 function toggle_slot(slot: string): void {
