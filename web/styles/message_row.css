@@ -574,6 +574,47 @@
     }
 }
 
+.sender-block {
+    /* A run of consecutive messages from the same sender within a recipient
+       row. Wrapped at render time by `wrap_recipient_row_into_sender_blocks`.
+       The first message's `.message-avatar` element is moved out of its
+       grid cell to be a direct child of this wrapper, so it can be
+       `position: sticky` and follow the user's scroll across the whole
+       run, then release once the next sender's block begins. */
+    position: relative;
+
+    > .message-avatar {
+        position: sticky;
+        /* Stick below the navbar plus the sticky recipient header. The
+           recipient header height is dynamic, so this is an approximation:
+           ~28px content + ~10px header-padding-bottom + borders, plus a
+           few pixels of breathing room so the avatar's top doesn't tuck
+           under the header's bottom border. */
+        top: calc(var(--navbar-fixed-height) + 50px);
+        /* Below the recipient header (z-index: 4) but above message content. */
+        z-index: 2;
+
+        /* Match the avatar column placement inside `.messagebox-content`:
+           2px unread marker + 3px `.messagebox` padding + 10px
+           `.messagebox-content` padding from the row's left edge. */
+        margin-left: 15px;
+        margin-top: var(--message-box-vertical-margin);
+        width: var(--message-box-avatar-column-width);
+        height: var(--message-box-avatar-height);
+
+        /* Cancel the avatar's vertical footprint so the first `.message_row`
+           in this block starts at the top of the wrapper and the empty
+           avatar grid cell inside it sits directly behind this avatar. */
+        margin-bottom: calc(
+            -1 *
+                (
+                    var(--message-box-avatar-height) +
+                        var(--message-box-vertical-margin)
+                )
+        );
+    }
+}
+
 .message_controls {
     grid-area: controls;
     /* Let the controls occupy the entire height
