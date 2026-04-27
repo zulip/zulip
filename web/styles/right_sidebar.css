@@ -1,6 +1,13 @@
 :root {
-    /* Width of emoji used by user to display status. */
     --user-status-emoji-width: 24px;
+    --color-follow-button-border: light-dark(
+        var(--color-background-brand-solid-action-button),
+        hsl(261deg 79% 62%)
+    );
+    --color-follow-button-text: light-dark(
+        var(--color-background-brand-solid-action-button),
+        hsl(261deg 79% 82%)
+    );
 }
 
 /* Styling for Follow Button */
@@ -57,9 +64,9 @@
 
 .follow-user-btn {
     border-radius: 999px;
-    border: 2px solid var(--color-background-brand-solid-action-button);
+    border: 2px solid var(--color-follow-button-border);
     background-color: transparent;
-    color: var(--color-background-brand-solid-action-button);
+    color: var(--color-follow-button-text);
     padding: 4px 14px;
     white-space: nowrap;
     cursor: pointer;
