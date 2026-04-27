@@ -125,6 +125,7 @@ class Command(makemessages.Command):
             default="translations.json",
             help="Namespace of the frontend locale file",
         )
+        parser.set_defaults(add_location="file")
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
