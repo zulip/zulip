@@ -5,14 +5,7 @@ from typing import Any
 from django.conf import settings
 from typing_extensions import override
 
-from zerver.lib.push_notifications import (
-    handle_push_notification,
-    handle_remove_push_notification,
-    initialize_push_notifications,
-)
-from zerver.lib.push_registration import handle_register_push_device_to_bouncer
 from zerver.lib.queue import retry_event
-from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -38,6 +31,8 @@ class PushNotificationsWorker(QueueProcessingWorker):
 
     @override
     def start(self) -> None:
+        from zerver.lib.push_notifications import initialize_push_notifications
+
         # initialize_push_notifications doesn't strictly do anything
         # beyond printing some logging warnings if push notifications
         # are not available in the current configuration.
@@ -46,6 +41,13 @@ class PushNotificationsWorker(QueueProcessingWorker):
 
     @override
     def consume(self, event: dict[str, Any]) -> None:
+        from zerver.lib.push_notifications import (
+            handle_push_notification,
+            handle_remove_push_notification,
+        )
+        from zerver.lib.push_registration import handle_register_push_device_to_bouncer
+        from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+
         try:
             event_type = event.get("type")
             if event_type == "register_push_device_to_bouncer":

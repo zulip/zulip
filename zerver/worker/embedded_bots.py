@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from typing import Any
 
 from typing_extensions import override
-from zulip_bots.lib import extract_query_without_mention
 
 from zerver.lib.bot_lib import (
     EmbeddedBotHandler,
@@ -27,6 +26,8 @@ class EmbeddedBotWorker(QueueProcessingWorker):
 
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
+        from zulip_bots.lib import extract_query_without_mention
+
         user_profile_id = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
 

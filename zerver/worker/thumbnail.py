@@ -4,7 +4,6 @@ from dataclasses import asdict, dataclass
 from io import BytesIO
 from typing import Any
 
-import pyvips
 from django.db import transaction
 from typing_extensions import override
 
@@ -80,6 +79,10 @@ class ThumbnailingResult:
 
 
 def ensure_thumbnails(image_attachment: ImageAttachment) -> ThumbnailingResult:
+    # Lazily loaded to avoid loading this C extension (~7ms) at startup;
+    # only needed when actually generating thumbnails.
+    import pyvips
+
     needed_thumbnails = missing_thumbnails(image_attachment)
 
     if not needed_thumbnails:
