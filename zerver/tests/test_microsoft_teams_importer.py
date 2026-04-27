@@ -92,70 +92,6 @@ EXPORTED_MICROSOFT_TEAMS_TEAM_ID: dict[str, str] = {
 }
 
 
-def get_exported_team_data(team_id: str) -> MicrosoftTeamsFieldsT:
-    test_class = ZulipTestCase()
-    team_list = json.loads(
-        test_class.fixture_data(
-            "teamsList.json",
-            "microsoft_teams_fixtures/TeamsData_ZulipChat/teams",
-        )
-    )
-
-    team_list_data = next(team_data for team_data in team_list if team_id == team_data["GroupsId"])
-    team_settings = json.loads(
-        test_class.fixture_data(
-            "teamsSettings.json",
-            "microsoft_teams_fixtures/TeamsData_ZulipChat/teams",
-        )
-    )
-    team_settings_data = next(
-        team_data for team_data in team_settings if team_data["Id"] == team_id
-    )
-    return {**team_list_data, **team_settings_data}
-
-
-def get_exported_team_subscription_list(team_id: str) -> list[MicrosoftTeamsFieldsT]:
-    test_class = ZulipTestCase()
-    return json.loads(
-        test_class.fixture_data(
-            f"teamMembers_{team_id}.json",
-            f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
-        )
-    )
-
-
-def get_exported_team_message_list(team_id: str) -> list[MicrosoftTeamsFieldsT]:
-    test_class = ZulipTestCase()
-    return json.loads(
-        test_class.fixture_data(
-            f"messages_{team_id}.json",
-            f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
-        )
-    )
-
-
-def get_exported_team_channel_metadata(team_id: str) -> dict[str, ChannelMetadata]:
-    test_class = ZulipTestCase()
-    microsoft_teams_channel_metadata = {}
-    team_channels = json.loads(
-        test_class.fixture_data(
-            f"channels_{team_id}.json",
-            f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
-        )
-    )
-
-    for team_channel in team_channels:
-        microsoft_teams_channel_metadata[team_channel["Id"]] = ChannelMetadata(
-            display_name=team_channel["DisplayName"],
-            is_favourite_by_default=team_channel["IsFavoriteByDefault"],
-            is_archived=team_channel["IsArchived"],
-            is_favorite_by_default=team_channel["IsFavoriteByDefault"],
-            membership_type=team_channel["MembershipType"],
-            team_id=team_id,
-        )
-    return microsoft_teams_channel_metadata
-
-
 def graph_api_users_callback(request: PreparedRequest) -> ResponseTuple:
     assert request.url is not None
     parsed = urlsplit(request.url)
@@ -256,6 +192,64 @@ class MicrosoftTeamsImportTestCase(ZulipTestCase):
                 "usersList.json", "microsoft_teams_fixtures/TeamsData_ZulipChat/users"
             )
         )
+
+    def get_exported_team_data(self, team_id: str) -> MicrosoftTeamsFieldsT:
+        team_list = json.loads(
+            self.fixture_data(
+                "teamsList.json",
+                "microsoft_teams_fixtures/TeamsData_ZulipChat/teams",
+            )
+        )
+
+        team_list_data = next(
+            team_data for team_data in team_list if team_id == team_data["GroupsId"]
+        )
+        team_settings = json.loads(
+            self.fixture_data(
+                "teamsSettings.json",
+                "microsoft_teams_fixtures/TeamsData_ZulipChat/teams",
+            )
+        )
+        team_settings_data = next(
+            team_data for team_data in team_settings if team_data["Id"] == team_id
+        )
+        return {**team_list_data, **team_settings_data}
+
+    def get_exported_team_subscription_list(self, team_id: str) -> list[MicrosoftTeamsFieldsT]:
+        return json.loads(
+            self.fixture_data(
+                f"teamMembers_{team_id}.json",
+                f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
+            )
+        )
+
+    def get_exported_team_message_list(self, team_id: str) -> list[MicrosoftTeamsFieldsT]:
+        return json.loads(
+            self.fixture_data(
+                f"messages_{team_id}.json",
+                f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
+            )
+        )
+
+    def get_exported_team_channel_metadata(self, team_id: str) -> dict[str, ChannelMetadata]:
+        microsoft_teams_channel_metadata = {}
+        team_channels = json.loads(
+            self.fixture_data(
+                f"channels_{team_id}.json",
+                f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
+            )
+        )
+
+        for team_channel in team_channels:
+            microsoft_teams_channel_metadata[team_channel["Id"]] = ChannelMetadata(
+                display_name=team_channel["DisplayName"],
+                is_favourite_by_default=team_channel["IsFavoriteByDefault"],
+                is_archived=team_channel["IsArchived"],
+                is_favorite_by_default=team_channel["IsFavoriteByDefault"],
+                membership_type=team_channel["MembershipType"],
+                team_id=team_id,
+            )
+        return microsoft_teams_channel_metadata
 
 
 class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
@@ -364,7 +358,9 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
             channel_name = channel.name
 
             # Teams data are imported correctly
-            raw_team_data = get_exported_team_data(EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name])
+            raw_team_data = self.get_exported_team_data(
+                EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
+            )
             self.assertEqual(channel_name, raw_team_data["Name"])
             self.assertEqual(channel.description, raw_team_data["Description"] or "")
             self.assertEqual(channel.deactivated, raw_team_data["IsArchived"])
@@ -374,7 +370,7 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
             imported_channel_subscriber_emails = get_channel_subscriber_emails(
                 get_realm(self.test_realm_subdomain), channel_name
             )
-            raw_subscription_list = get_exported_team_subscription_list(
+            raw_subscription_list = self.get_exported_team_subscription_list(
                 EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
             )
             expected_subscriber_emails: set[str] = {
@@ -385,7 +381,7 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
     def test_imported_channel_messages(self) -> None:
         self.do_import_realm_fixture()
         channel_name = "Core team"
-        exported_team_messages = get_exported_team_message_list(
+        exported_team_messages = self.get_exported_team_message_list(
             EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
         )
         test_realm = get_realm(self.test_realm_subdomain)
@@ -461,7 +457,7 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
                 sorted(imported_sender_messages_map[sender_email]),
             )
 
-        microsoft_team_channel_metadata = get_exported_team_channel_metadata(
+        microsoft_team_channel_metadata = self.get_exported_team_channel_metadata(
             EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
         )
 
