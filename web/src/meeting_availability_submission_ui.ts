@@ -59,7 +59,7 @@ function render_grid(): void {
     .map((time_label, row_idx) => {
       const cells = dates
         .map((_date, col_idx) => {
-          const slot_key = all_slots[row_idx * dates.length + col_idx]!;
+          const slot_key = all_slots[col_idx * slots_per_date + row_idx]!;
           const is_selected = selected_slots.has(slot_key);
           const count = slot_counts[slot_key] ?? 0;
           const intensity =
