@@ -8,12 +8,14 @@ import type {Toggle} from "./components.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {redraw_all_bots_list, redraw_your_bots_list} from "./settings_bots.ts";
 import {resize_textareas_in_section} from "./settings_components.ts";
 import * as settings_sections from "./settings_sections.ts";
+import * as settings_users from "./settings_users.ts";
 import {
     redraw_active_users_list,
     redraw_deactivated_users_list,
@@ -436,5 +438,14 @@ export function update_imported_users_tab(
     $(".org-user-settings-switcher [data-tab-key='imported']").hide();
     if (hide_tab_if_active) {
         org_settings.org_user_settings_toggler.goto("active");
+    }
+}
+
+export function refresh_users_panel_after_fetch(): void {
+    if (overlays.settings_open()) {
+        update_imported_users_tab();
+        // We intentionally don't live-update the role filter dropdown
+        // counts here; they will refresh the next time the panel is opened.
+        settings_users.redraw_users_lists();
     }
 }
