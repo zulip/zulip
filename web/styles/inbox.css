@@ -736,6 +736,7 @@
         }
     }
 
+    .inbox-row,
     .inbox-header {
         &:focus-visible {
             /* Flush outline on the row itself instead of the old
@@ -746,22 +747,27 @@
             outline: var(--focus-ring-outline);
             outline-offset: var(--focus-ring-outline-offset-in-views);
             border-radius: 0.625em; /* 10px at 16px/1em */
+        }
 
-            .collapsible-button > .zulip-icon {
+        /* Don't show the icons unless user is visibly focused
+            on the element or one of the elements within it. */
+        &:focus-within:not(:focus),
+        &:focus-visible {
+            .channel-visibility-policy-indicator,
+            .inbox-row-visibility-policy-inherit,
+            .inbox-action-button {
                 opacity: 1;
-            }
-
-            .collapsible-button {
-                visibility: visible;
             }
         }
     }
 
-    .inbox-row {
-        &:focus-visible {
-            outline: var(--focus-ring-outline);
-            outline-offset: var(--focus-ring-outline-offset-in-views);
-            border-radius: 0.625em; /* 10px at 16px/1em */
+    .inbox-header:focus-visible {
+        .collapsible-button > .zulip-icon {
+            opacity: 1;
+        }
+
+        .collapsible-button {
+            visibility: visible;
         }
     }
 
@@ -781,20 +787,6 @@
     .unread-count-focus-outline {
         &:focus-visible {
             outline: 2px solid var(--color-outline-focus);
-        }
-    }
-
-    .inbox-row,
-    .inbox-header {
-        /* Don't show the icons unless user is visibly focused
-            on the element or one of the elements within it. */
-        &:focus-within:not(:focus),
-        &:focus-visible {
-            .channel-visibility-policy-indicator,
-            .inbox-row-visibility-policy-inherit,
-            .inbox-action-button {
-                opacity: 1;
-            }
         }
     }
 
