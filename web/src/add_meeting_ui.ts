@@ -92,6 +92,10 @@ function submit_rsvp_meeting_form(): void {
             const new_stream = streams.find((s) => s.name === topic);
             if (new_stream) {
               send_message(new_stream.stream_id);
+            } else {
+              // The stream was created but cannot be found by name in the
+              // subscribed list. Close the modal so the user can investigate.
+              modals.close_if_open("add-rsvp-meeting-modal");
             }
           },
         });
