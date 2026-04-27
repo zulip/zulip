@@ -154,6 +154,14 @@ function submit_propose_meeting_form(): void {
         const url = hash_util.by_stream_topic_url(target_stream_id, topic);
         browser_history.go_to_location(url);
       },
+      error() {
+        // The meeting was created on the server but the widget message
+        // could not be posted. Navigate to the channel so the user
+        // can see the state and manually retry posting.
+        modals.close_if_open("add-propose-meeting-modal");
+        const url = hash_util.by_stream_topic_url(target_stream_id, topic);
+        browser_history.go_to_location(url);
+      },
     });
   };
 
@@ -169,6 +177,8 @@ function submit_propose_meeting_form(): void {
     },
     success(data) {
       const result = data as { meeting_id: number; stream_id: number };
+      // Disable submit to prevent a duplicate meeting if the message send fails.
+      $("#add-propose-meeting-modal .dialog_submit_button").prop("disabled", true);
       send_message(result.stream_id, result.meeting_id);
     },
   });
