@@ -378,6 +378,16 @@ eyeballing screenshots — especially small full-page ones. Instead:
 - Be aware that CSS nesting can scope styles to a specific parent
   (e.g., `.parent .my-class`) — reusing the same class name in a
   different context may not pick up the expected styles.
+- To verify keyboard-focus styles, use real keyboard navigation
+  (`page.keyboard.press`); programmatic `.focus()` doesn't reliably
+  trigger `:focus-visible` and may be overridden by view-level focus
+  management.
+- Focus rings drawn as `::before` / `::after` pseudo-elements aren't
+  visible in `getComputedStyle` of the focused element — verify them
+  in a screenshot, not via computed styles.
+- For visual changes, produce before/after screenshot pairs by writing
+  one test and running it twice with a `SCREENSHOT_SUFFIX` env var
+  (`-old` on `main`, `-updated` on your branch).
 
 ## Self-Review Checklist
 
