@@ -16,6 +16,7 @@ type CopyMessagesOptions = {
     start_message: string;
     end_message: string;
     partial_selection_config?: PartialSelectionConfig;
+    send_copied_plain_text?: boolean;
 };
 
 async function copy_messages({
@@ -23,12 +24,14 @@ async function copy_messages({
     start_message,
     end_message,
     partial_selection_config,
+    send_copied_plain_text,
 }: CopyMessagesOptions): Promise<string[]> {
     return await page.evaluate(
         (
             start_message: string,
             end_message: string,
             partial_selection_config?: PartialSelectionConfig,
+            send_copied_plain_text?: boolean,
         ) => {
             function get_message_node(message: string): Element {
                 return [...document.querySelectorAll(".message-list .message_content")].find(
@@ -74,6 +77,11 @@ async function copy_messages({
             });
             document.dispatchEvent(copy_event);
 
+            if (send_copied_plain_text) {
+                const copied_plain_text = clipboard_data.getData("text/plain");
+                return copied_plain_text.split("\n");
+            }
+
             const copied_html = clipboard_data.getData("text/html");
 
             // Convert the copied HTML into separate message strings
@@ -89,6 +97,7 @@ async function copy_messages({
         start_message,
         end_message,
         partial_selection_config,
+        send_copied_plain_text,
     );
 }
 
@@ -197,6 +206,23 @@ async function test_copying_all_from_prev_first_from_next(page: Page): Promise<v
         "Verona > copy-paste-topic #2 | Today",
         "Desdemona:",
         "copy paste test C",
+    ];
+    assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
+}
+
+async function test_copying_plain_text(page: Page): Promise<void> {
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test A",
+        end_message: "copy paste test B",
+        send_copied_plain_text: true,
+    });
+    const expected_copied_lines = [
+        "**Desdemona:**",
+        "copy paste test A",
+        "",
+        "**Desdemona:**",
+        "copy paste test B",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
@@ -348,6 +374,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_messages_from_several_topics(page);
     await test_timestamp_clipboard_has_datetime(page);
     await test_multiple_message_selection_with_partially_selected_bookend_messages(page);
+    await test_copying_plain_text(page);
 }
 
 await common.run_test(copy_paste_test);
