@@ -41,8 +41,10 @@
     {{#unless is_current_user}}
     <button class="btn btn-sm follow-user-btn {{#if is_followed}}following{{/if}}" data-user-id="{{user_id}}">
         {{#if is_followed}}
+            <i class="zulip-icon zulip-icon-check" aria-hidden="true"></i>
             {{t "Following" }}
         {{else}}
+            <i class="zulip-icon zulip-icon-plus" aria-hidden="true"></i>
             {{t "Follow" }}
         {{/if}}
     </button>

@@ -52,26 +52,41 @@
 }
 
 .buddy-list-section li:hover .follow-user-btn {
-    display: inline-block;
+    display: flex;
 }
 
 .follow-user-btn {
     border-radius: 999px;
-    border: 2px solid #8988B7;
-    background-color: #8988B7;
-    color: white;
-    padding: 4px 14px; 
+    border: 2px solid var(--color-background-brand-solid-action-button);
+    background-color: transparent;
+    color: var(--color-background-brand-solid-action-button);
+    padding: 4px 14px;
     white-space: nowrap;
     cursor: pointer;
     flex-shrink: 0;
     margin-left: auto;  /* Pushes to the right */
     font-size: 14px;
+    display: none;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.1s ease;
 }
 
 .follow-user-btn.following {
-    background-color: transparent;
-    border-color: #8988B7;
-    color: #8988B7;
+    background-color: var(--color-background-brand-solid-action-button);
+    border-color: var(--color-background-brand-solid-action-button);
+    color: var(--color-text-brand-solid-action-button);
+}
+
+.follow-user-btn:hover {
+    background-color: var(--color-background-brand-solid-action-button-hover);
+    border-color: var(--color-background-brand-solid-action-button-hover);
+    color: var(--color-text-brand-solid-action-button);
+}
+
+.follow-user-btn.following:hover {
+    background-color: var(--color-background-brand-solid-action-button-hover);
+    border-color: var(--color-background-brand-solid-action-button-hover);
 }
 
 .right-sidebar {
