@@ -158,8 +158,8 @@ jobs:
         run: |
           source tools/ci/activate-venv
           ./manage.py makemessages --locale en
-          PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
-          PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+          ./tools/check-capitalization --no-generate
+          ./tools/check-frontend-i18n --no-generate
 
       - name: Run astro check
         if: ${{ matrix.include_frontend_tests }}
