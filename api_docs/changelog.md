@@ -18,6 +18,15 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 13.0
+
+**Feature level 502**
+
+No changes; start of Zulip 13.0 development branch.
+
+Feature levels 499-501 reserved for future use in 12.x maintenance
+releases.
+
 ## Changes in Zulip 12.0
 
 **Feature level 498**
