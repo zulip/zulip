@@ -737,7 +737,7 @@
     /* Only show focus outlines when user uses keyboard. */
     #inbox-filter_widget {
         &:focus-visible {
-            outline: 2px solid var(--color-outline-focus);
+            outline: var(--focus-ring-outline);
         }
     }
 
