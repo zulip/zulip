@@ -2128,11 +2128,11 @@ export async function fetch_placeholder_user_now(user_id: number): Promise<void>
     mark_unfetched_placeholder_users_inaccessible([user_id]);
 }
 
-export async function initialize(
+export function initialize(
     my_user_id: number,
     people_params: StateData["people"],
     user_group_params: StateData["user_groups"],
-): Promise<void> {
+): void {
     initialize_current_user(my_user_id);
     populate_valid_user_ids(
         user_group_params,
@@ -2161,8 +2161,11 @@ export async function initialize(
         user_ids_to_fetch.delete(person.user_id);
     }
 
-    // Fetch all the missing users. This code path is temporary: We
-    // plan to move to a model where the web app expects to have an
-    // incomplete users dataset in large organizations.
-    await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
+    // We don't wait for the missing users to be fetched, so that the
+    // app can load quickly in large organizations. Placeholder users
+    // stand in for them until their data arrives.
+    for (const user_id of user_ids_to_fetch) {
+        add_placeholder_user(user_id);
+    }
+    void get_or_fetch_users_from_ids([...user_ids_to_fetch]);
 }
