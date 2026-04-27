@@ -2507,7 +2507,8 @@ label.preferences-radio-choice-label {
 }
 
 #admin-user-list .tab-switcher .ind-tab {
-    width: 110px;
+    width: auto;
+    min-width: 110px;
 }
 
 #admin-user-list .tab-switcher {
@@ -2515,7 +2516,14 @@ label.preferences-radio-choice-label {
 }
 
 #data-exports .tab-switcher .ind-tab {
-    width: 160px;
+    width: auto;
+    min-width: 160px;
+}
+
+#admin-bot-list .tab-switcher .ind-tab,
+#personal-bot-list .tab-switcher .ind-tab {
+    width: auto;
+    min-width: 90px;
 }
 
 #admin_invites_table {
