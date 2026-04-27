@@ -1005,6 +1005,12 @@
     );
     --color-outline-focus: hsl(215deg 47% 50%);
     --focus-ring-width-in-views: 1.5px;
+    /* Standard focus ring stroke; used by `:focus-visible`
+       outlines on inbox rows, recent-view rows, action-button
+       wrappers, unread badges, etc. so that a future width or
+       color change touches one place. */
+    --focus-ring-outline: var(--focus-ring-width-in-views) solid
+        var(--color-outline-focus);
     --color-background-search: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 17%));
     --color-background-search-collapsed: light-dark(
         hsl(0deg 0% 100%),
