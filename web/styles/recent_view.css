@@ -872,7 +872,7 @@
     padding: 0;
 
     &:focus-visible {
-        outline: 2px solid var(--color-outline-focus);
+        outline: var(--focus-ring-outline);
     }
 }
 
