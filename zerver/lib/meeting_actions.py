@@ -16,6 +16,7 @@ Flow summary:
 
 from datetime import datetime, timezone
 
+from django.conf import settings
 from django.db.models import Count, Q
 from django.utils.translation import gettext as _
 
@@ -32,6 +33,7 @@ from zerver.models import Stream, UserProfile
 from zerver.models.channel_folders import ChannelFolder
 from zerver.models.meetings import Meeting, MeetingResponse, MeetingSlot
 from zerver.models.realms import Realm
+from zerver.models.users import get_system_bot
 
 
 # ---------------------------------------------------------------------------
@@ -284,8 +286,9 @@ def check_meeting_deadlines() -> None:
             f"{i + 1}. {s['start_time']} — {s['available_count']} available"
             for i, s in enumerate(ranked)
         )
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, meeting.owner.realm_id)
         internal_send_private_message(
-            meeting.owner,
+            notification_bot,
             meeting.owner,
             f"The RSVP deadline for **{meeting.topic}** (meeting {meeting.id}) has passed.\n\n"
             f"**Ranked availability:**\n{slot_lines}\n\n"
