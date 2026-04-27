@@ -26,11 +26,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-21 16:35+0000\n"
+"POT-Creation-Date: 2026-04-27 16:31+0000\n"
 "PO-Revision-Date: 2026-04-27 01:48+0000\n"
 "Last-Translator: Lev Shereshevsky <Lev.Shereshevsky@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/>"
-"\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/"
+">\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -40,7 +40,7 @@ msgstr ""
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 "X-Generator: Weblate 5.17.1-dev\n"
 
-#: analytics/views/stats.py:109 zerver/decorator.py:663 zerver/decorator.py:681
+#: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
 msgstr "Не разрешено для гостевых пользователей"
 
@@ -190,64 +190,64 @@ msgstr ""
 "Счета на более чем {max_licenses} лицензий не могут быть обработаны на этой "
 "странице. Для завершения апгрейда, пожалуйста, свяжитесь с {email}."
 
-#: corporate/lib/stripe.py:338
+#: corporate/lib/stripe.py:363
 msgid "No payment method on file."
 msgstr "Не указан способ оплаты."
 
-#: corporate/lib/stripe.py:346
+#: corporate/lib/stripe.py:371
 #, python-brace-format
 msgid "{brand} ending in {last4}"
 msgstr "{brand} заканчивается через {last4}"
 
-#: corporate/lib/stripe.py:354
+#: corporate/lib/stripe.py:379
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
 msgstr "Неизвестный способ оплаты. Пожалуйста, свяжитесь с {email}."
 
-#: corporate/lib/stripe.py:393
+#: corporate/lib/stripe.py:418
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr "Что-то пошло не так. Пожалуйста, свяжитесь с {email}."
 
-#: corporate/lib/stripe.py:394
+#: corporate/lib/stripe.py:419
 msgid "Something went wrong. Please reload the page."
 msgstr "Что-то пошло не так. Пожалуйста, перезагрузите страницу."
 
-#: corporate/lib/stripe.py:490
+#: corporate/lib/stripe.py:515
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr ""
 "Что-то пошло не так. Пожалуйста, подождите несколько секунд и попробуйте еще "
 "раз."
 
-#: corporate/lib/stripe.py:1917
+#: corporate/lib/stripe.py:1942
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
 "Пожалуйста, укажите данные платежной карты перед началом бесплатного "
 "пробного использования."
 
-#: corporate/lib/stripe.py:1939
+#: corporate/lib/stripe.py:1964
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 "Пожалуйста, укажите данные платежной карты для планирования обновления."
 
-#: corporate/lib/stripe.py:3039
+#: corporate/lib/stripe.py:3040
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr "Нет возможности обновить тариф. Тарифный план истёк и заменён новым."
 
-#: corporate/lib/stripe.py:3044
+#: corporate/lib/stripe.py:3045
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Невозможно обновить тариф. Тарифный план закончился."
 
-#: corporate/lib/stripe.py:3112
+#: corporate/lib/stripe.py:3113
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 "Не удается обновить лицензии в текущем расчетном периоде для бесплатного "
 "пробного тарифа."
 
-#: corporate/lib/stripe.py:3117 corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3118 corporate/lib/stripe.py:3146
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
@@ -255,19 +255,19 @@ msgstr ""
 "Невозможно обновить лицензии вручную. На вашем тарифе лицензия управляется "
 "автоматически."
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3124
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 "Ваш тариф уже включает {licenses} лицензий в текущем расчётном периоде."
 
-#: corporate/lib/stripe.py:3128
+#: corporate/lib/stripe.py:3129
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
 "Вы не можете уменьшить количество лицензий в текущем расчётном периоде."
 
-#: corporate/lib/stripe.py:3154
+#: corporate/lib/stripe.py:3155
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
@@ -275,7 +275,7 @@ msgstr ""
 "Не удается изменить лицензии для следующего платежного периода для тарифа, "
 "уровень которого будет понижен."
 
-#: corporate/lib/stripe.py:3160
+#: corporate/lib/stripe.py:3161
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
@@ -284,7 +284,7 @@ msgstr ""
 "Ваш тариф уже запланирован к продлению на {licenses_at_next_renewal} "
 "лицензий."
 
-#: corporate/lib/stripe.py:3184
+#: corporate/lib/stripe.py:3185
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
@@ -293,27 +293,27 @@ msgstr ""
 "Вы уже приобрели {licenses_at_next_renewal} лицензий на очередной расчетный "
 "период."
 
-#: corporate/lib/stripe.py:3206
+#: corporate/lib/stripe.py:3207
 msgid "Nothing to change."
 msgstr "Нечего менять."
 
-#: corporate/lib/stripe.py:3589
+#: corporate/lib/stripe.py:3590
 msgid "No customer for this organization!"
 msgstr "У этой организации нет клиентов!"
 
-#: corporate/lib/stripe.py:3598
+#: corporate/lib/stripe.py:3599
 msgid "Session not found"
 msgstr "Сеанс не найден"
 
-#: corporate/lib/stripe.py:3612
+#: corporate/lib/stripe.py:3613
 msgid "Payment intent not found"
 msgstr "Назначение платежа не найдено"
 
-#: corporate/lib/stripe.py:3615
+#: corporate/lib/stripe.py:3616
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr "Передайте stripe_session_id или stripe_invoice_id"
 
-#: corporate/lib/stripe.py:4408
+#: corporate/lib/stripe.py:4409
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -420,7 +420,7 @@ msgid "Method not allowed (405)"
 msgstr "Метод не разрешен (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:457 zerver/middleware.py:415
+#: zerver/actions/scheduled_messages.py:467 zerver/middleware.py:415
 msgid "Internal server error"
 msgstr "Внутренняя ошибка сервера"
 
@@ -822,24 +822,26 @@ msgstr "Отправить счет и начать бесплатный про�
 msgid "Send invoice"
 msgstr "Отправить счет"
 
-#: templates/corporate/communities.html:25
+#: templates/corporate/communities.html:24
 msgid "Open communities directory"
 msgstr "Каталог открытых сообществ"
 
-#: templates/corporate/communities.html:36
-#: templates/zerver/integrations/catalog.html:45
+#: templates/corporate/communities.html:35
+#: templates/zerver/integrations/catalog.html:44
 msgid "Filter by category"
 msgstr "Фильтр по категориям"
 
-#: templates/corporate/communities.html:55
-#: templates/zerver/integrations/catalog.html:80
-msgid "Categories"
-msgstr "Категории"
-
-#: templates/corporate/communities.html:57
-#: templates/zerver/integrations/catalog.html:82
+#: templates/corporate/communities.html:40
+#: templates/corporate/communities.html:54
+#: templates/zerver/integrations/catalog.html:55
+#: templates/zerver/integrations/catalog.html:79
 msgid "All"
 msgstr "Все"
+
+#: templates/corporate/communities.html:52
+#: templates/zerver/integrations/catalog.html:77
+msgid "Categories"
+msgstr "Категории"
 
 #: templates/corporate/comparison_table_integrated.html:103
 msgid "10,000 messages"
@@ -4016,16 +4018,18 @@ msgid "Support Zulip"
 msgstr "Поддержать Zulip"
 
 #: templates/zerver/footer.html:103
-msgid "X (Twitter)"
-msgstr "X (Twitter)"
-
-#: templates/zerver/footer.html:104
 msgid "Mastodon"
 msgstr "Mastodon"
 
-#: templates/zerver/footer.html:105
+#: templates/zerver/footer.html:104
 msgid "LinkedIn"
 msgstr "LinkedIn"
+
+#: templates/zerver/footer.html:105
+#, fuzzy
+#| msgid "Bluesky handle"
+msgid "Bluesky"
+msgstr "Идентификатор Bluesky"
 
 #: templates/zerver/footer.html:115
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
@@ -4043,12 +4047,12 @@ msgstr "Политика конфиденциальности"
 msgid "Website attributions"
 msgstr "Атрибуция веб-сайта"
 
-#: templates/zerver/integrations/catalog.html:23
+#: templates/zerver/integrations/catalog.html:22
 #, python-format
 msgid "Over %(integrations_count_display)s native integrations."
 msgstr "Более %(integrations_count_display)s собственных интеграций."
 
-#: templates/zerver/integrations/catalog.html:27
+#: templates/zerver/integrations/catalog.html:26
 msgid ""
 "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
 "href=\"/integrations/ifttt\">IFTTT</a>."
@@ -4056,29 +4060,37 @@ msgstr ""
 "И еще сотни с использованием <a href=\"/integrations/zapier\">Zapier</a> и "
 "<a href=\"/integrations/ifttt\">IFTTT</a>."
 
-#: templates/zerver/integrations/catalog.html:40
+#: templates/zerver/integrations/catalog.html:39
 msgid "Search integrations"
 msgstr "Поиск интергаций"
 
-#: templates/zerver/integrations/catalog.html:65
-#: templates/zerver/integrations/catalog.html:92
+#: templates/zerver/integrations/catalog.html:62
+#: templates/zerver/integrations/catalog.html:86
 msgid "Custom integrations"
 msgstr "Дополнительная интеграция"
 
-#: templates/zerver/integrations/catalog.html:67
-#: templates/zerver/integrations/catalog.html:94
+#: templates/zerver/integrations/catalog.html:64
+#: templates/zerver/integrations/catalog.html:88
 msgid "Incoming webhooks"
 msgstr "Входящие вебхуки"
 
-#: templates/zerver/integrations/catalog.html:70
-#: templates/zerver/integrations/catalog.html:97 zerver/lib/integrations.py:43
+#: templates/zerver/integrations/catalog.html:67
+#: templates/zerver/integrations/catalog.html:91 zerver/lib/integrations.py:43
 msgid "Interactive bots"
 msgstr "Интерактивные боты"
 
-#: templates/zerver/integrations/catalog.html:73
-#: templates/zerver/integrations/catalog.html:100
+#: templates/zerver/integrations/catalog.html:70
+#: templates/zerver/integrations/catalog.html:94
 msgid "REST API"
 msgstr "REST API"
+
+#: templates/zerver/integrations/doc.html:34
+msgid "Back to list"
+msgstr ""
+
+#: templates/zerver/integrations/doc.html:34
+msgid "Back"
+msgstr ""
 
 #: templates/zerver/invalid_email.html:4 templates/zerver/invalid_email.html:13
 msgid "Invalid email"
@@ -4383,7 +4395,7 @@ msgstr ""
 
 #: templates/zerver/portico_error_pages/user_deactivated.html:4
 #: templates/zerver/portico_error_pages/user_deactivated.html:11
-#: zerver/lib/exceptions.py:359
+#: zerver/lib/exceptions.py:372
 msgid "Account is deactivated"
 msgstr "Учётная запись отключена"
 
@@ -4874,68 +4886,68 @@ msgstr ""
 msgid "We weren't able to invite anyone."
 msgstr "Мы не смогли никого пригласить."
 
-#: zerver/actions/message_edit.py:136 zerver/views/scheduled_messages.py:78
+#: zerver/actions/message_edit.py:138 zerver/views/scheduled_messages.py:78
 msgid "Nothing to change"
 msgstr "Ничего не изменилось"
 
-#: zerver/actions/message_edit.py:140
+#: zerver/actions/message_edit.py:142
 msgid "Direct messages cannot be moved to channels."
 msgstr "Личные сообщения не могут быть перенесены в канал."
 
-#: zerver/actions/message_edit.py:142
+#: zerver/actions/message_edit.py:144
 msgid "Direct messages cannot have topics."
 msgstr "Личные сообщения не могут иметь тему."
 
-#: zerver/actions/message_edit.py:145
+#: zerver/actions/message_edit.py:147
 msgid "Invalid propagate_mode without topic edit"
 msgstr "Неверный propagate_mode без редактирования темы"
 
-#: zerver/actions/message_edit.py:151
+#: zerver/actions/message_edit.py:153
 msgid "General chat cannot be marked as resolved"
 msgstr "Общий чат нельзя отметить как решённый"
 
-#: zerver/actions/message_edit.py:157
+#: zerver/actions/message_edit.py:159
 msgid "Cannot change message content while changing channel"
 msgstr "Нельзя менять содержание сообщения при изменении канала"
 
-#: zerver/actions/message_edit.py:161
+#: zerver/actions/message_edit.py:163
 msgid "Widgets cannot be edited."
 msgstr "Виджеты нельзя редактировать."
 
-#: zerver/actions/message_edit.py:179
+#: zerver/actions/message_edit.py:181
 msgid "Your organization has turned off message editing"
 msgstr "В вашей организации выключено редактирование сообщений"
 
-#: zerver/actions/message_edit.py:183 zerver/actions/message_edit.py:1579
+#: zerver/actions/message_edit.py:185 zerver/actions/message_edit.py:1634
 msgid "You don't have permission to edit this message"
 msgstr "У вас нет прав для редактирования этого сообщения"
 
-#: zerver/actions/message_edit.py:188
+#: zerver/actions/message_edit.py:190
 msgid "The time limit for editing this message has passed"
 msgstr "Разрешенное время редактирования сообщения истекло"
 
-#: zerver/actions/message_edit.py:284
+#: zerver/actions/message_edit.py:286
 #, python-brace-format
 msgid "{user} has marked this topic as resolved."
 msgstr "{user} пометил эту тему как решенную."
 
-#: zerver/actions/message_edit.py:286
+#: zerver/actions/message_edit.py:288
 #, python-brace-format
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} пометил/а эту тему как нерешенную."
 
-#: zerver/actions/message_edit.py:1301
+#: zerver/actions/message_edit.py:1356
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "Эта тема была перенесена в {new_location} пользователем {user}."
 
-#: zerver/actions/message_edit.py:1305
+#: zerver/actions/message_edit.py:1360
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 "Сообщение было перенесено из этой темы в {new_location} пользователем {user}."
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1364
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4944,12 +4956,12 @@ msgstr ""
 "{changed_messages_count} сообщений было перенесено из этой темы в "
 "{new_location} пользователем {user}."
 
-#: zerver/actions/message_edit.py:1348
+#: zerver/actions/message_edit.py:1403
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "Эта тема была перенесена сюда из {old_location} пользователем {user}."
 
-#: zerver/actions/message_edit.py:1353
+#: zerver/actions/message_edit.py:1408
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4957,7 +4969,7 @@ msgstr ""
 "[Сообщение]({message_link}) было перенесено сюда из {old_location} "
 "пользователем {user}."
 
-#: zerver/actions/message_edit.py:1357
+#: zerver/actions/message_edit.py:1412
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4966,19 +4978,19 @@ msgstr ""
 "{changed_messages_count} сообщений было перенесено сюда из {old_location} "
 "пользователем {user}."
 
-#: zerver/actions/message_edit.py:1573
+#: zerver/actions/message_edit.py:1628
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "У вас нет права отмечать темы в этом канале как решенные."
 
-#: zerver/actions/message_edit.py:1592
+#: zerver/actions/message_edit.py:1647
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Разрешенное время редактирования темы сообщения истекло."
 
-#: zerver/actions/message_edit.py:1703
+#: zerver/actions/message_edit.py:1758
 msgid "You don't have permission to move this message"
 msgstr "У вас нет прав для переноса этого сообщения"
 
-#: zerver/actions/message_edit.py:1722
+#: zerver/actions/message_edit.py:1777
 msgid "The time limit for editing this message's channel has passed"
 msgstr "Разрешенное время для редактирования канала этого сообщения истекло"
 
@@ -4997,9 +5009,9 @@ msgstr "Флаг нередактируемый: '{flag}'"
 msgid "Invalid message flag operation: '{operation}'"
 msgstr "Неверное действие над флагом сообщения: '{operation}'"
 
-#: zerver/actions/message_flags.py:402 zerver/lib/message.py:408
-#: zerver/lib/message.py:423 zerver/lib/message.py:452
-#: zerver/lib/message.py:466
+#: zerver/actions/message_flags.py:402 zerver/lib/message.py:423
+#: zerver/lib/message.py:438 zerver/lib/message.py:467
+#: zerver/lib/message.py:481
 msgid "Invalid message(s)"
 msgstr "Неверное сообщение(я)"
 
@@ -5140,11 +5152,17 @@ msgstr "Сохраненный сниппет отсутствует."
 msgid "Scheduled message was already sent"
 msgstr "Отложенное сообщение уже отправлено"
 
-#: zerver/actions/scheduled_messages.py:347
+#: zerver/actions/scheduled_messages.py:325
+#, fuzzy
+#| msgid "Reminder does not exist"
+msgid "Reminder could not be sent."
+msgstr "Напоминание отсутствует"
+
+#: zerver/actions/scheduled_messages.py:357
 msgid "Message could not be sent at the scheduled time."
 msgstr "Сообщение не удалось отправить в запланированное время."
 
-#: zerver/actions/scheduled_messages.py:397
+#: zerver/actions/scheduled_messages.py:407
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
@@ -5153,7 +5171,7 @@ msgstr ""
 "Сообщение, которое вы запланировали на {delivery_datetime}, не было "
 "отправлено из-за следующей ошибки:"
 
-#: zerver/actions/scheduled_messages.py:402
+#: zerver/actions/scheduled_messages.py:412
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[Показать отложенные сообщения](#scheduled)"
 
@@ -5313,7 +5331,7 @@ msgstr "Неверный ID пользователя {user_id}"
 msgid "User group '{group_name}' already exists."
 msgstr "Группа пользователей '{group_name}' уже есть."
 
-#: zerver/decorator.py:199 zerver/decorator.py:704 zerver/lib/streams.py:145
+#: zerver/decorator.py:218 zerver/decorator.py:723 zerver/lib/streams.py:145
 #: zerver/lib/streams.py:241 zerver/lib/streams.py:243
 #: zerver/lib/streams.py:245 zerver/lib/streams.py:254
 #: zerver/lib/streams.py:1607 zerver/lib/streams.py:1663
@@ -5322,42 +5340,42 @@ msgstr "Группа пользователей '{group_name}' уже есть."
 #: zerver/lib/users.py:217 zerver/lib/users.py:286 zerver/lib/users.py:315
 #: zerver/lib/users.py:319 zerver/views/invite.py:161
 #: zerver/views/invite.py:290 zerver/views/message_summary.py:31
-#: zerver/views/presence.py:57 zerver/views/realm_emoji.py:35
+#: zerver/views/presence.py:56 zerver/views/realm_emoji.py:35
 #: zerver/views/streams.py:384 zerver/views/streams.py:387
 #: zerver/views/streams.py:396 zerver/views/streams.py:449
 #: zerver/views/streams.py:907
 msgid "Insufficient permission"
 msgstr "Недостаточно прав"
 
-#: zerver/decorator.py:253
+#: zerver/decorator.py:272
 msgid "This API is not available to incoming webhook bots."
 msgstr "Этот API не доступен для входящих вебхук ботов."
 
-#: zerver/decorator.py:291
+#: zerver/decorator.py:310
 msgid "Account is not associated with this subdomain"
 msgstr "Учетная запись не связана с этим поддоменом"
 
-#: zerver/decorator.py:552 zerver/decorator.py:685
+#: zerver/decorator.py:571 zerver/decorator.py:704
 msgid "This endpoint does not accept bot requests."
 msgstr "Конечная точка не принимает запросы бота."
 
-#: zerver/decorator.py:645
+#: zerver/decorator.py:664
 msgid "Must be an server administrator"
 msgstr "Нужно быть администратором сервера"
 
-#: zerver/decorator.py:746
+#: zerver/decorator.py:765
 msgid "This endpoint requires HTTP basic authentication."
 msgstr "Конечная точка требует базовую HTTP аутентификацию."
 
-#: zerver/decorator.py:753
+#: zerver/decorator.py:772
 msgid "Invalid authorization header for basic auth"
 msgstr "Неверный заголовок для Basic-авторизации"
 
-#: zerver/decorator.py:755
+#: zerver/decorator.py:774
 msgid "Missing authorization header for basic auth"
 msgstr "Отсутствует заголовок авторизации для Basic-авторизации"
 
-#: zerver/decorator.py:931
+#: zerver/decorator.py:950
 msgid "Webhook bots can only access webhooks"
 msgstr "Вебхук-ботам доступны только вебхуки"
 
@@ -5532,7 +5550,7 @@ msgstr "Отсутствует канал"
 msgid "Message must have recipients"
 msgstr "У сообщения должны быть получатели"
 
-#: zerver/lib/addressee.py:155 zerver/lib/outgoing_webhook.py:219
+#: zerver/lib/addressee.py:155 zerver/lib/outgoing_webhook.py:222
 msgid "Invalid message type"
 msgstr "Неверный тип сообщения"
 
@@ -5749,60 +5767,60 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "Отсутствует название эмодзи"
 
-#: zerver/lib/events.py:2199
+#: zerver/lib/events.py:2214
 msgid "Could not allocate event queue"
 msgstr "Не удается выделить очередь событий"
 
-#: zerver/lib/exceptions.py:165
+#: zerver/lib/exceptions.py:166
 msgid "Not logged in: API authentication or user session required"
 msgstr ""
 "Не авторизован: требуется аутентификация через API или пользовательский сеанс"
 
-#: zerver/lib/exceptions.py:193
+#: zerver/lib/exceptions.py:194
 #, python-brace-format
 msgid "Channel '{channel_name}' already exists"
 msgstr "Канал '{channel_name}' уже есть"
 
-#: zerver/lib/exceptions.py:206
+#: zerver/lib/exceptions.py:207
 #, python-brace-format
 msgid "Channel '{stream}' does not exist"
 msgstr "Канал '{stream}' отсутствует"
 
-#: zerver/lib/exceptions.py:219
+#: zerver/lib/exceptions.py:220
 #, python-brace-format
 msgid "Channel with ID '{stream_id}' does not exist"
 msgstr "Канал с ID '{stream_id}' отсутствует"
 
-#: zerver/lib/exceptions.py:231
+#: zerver/lib/exceptions.py:232
 #, python-brace-format
 msgid "Unsupported parameter combination: {parameters}"
 msgstr "Неподдерживаемое сочетание параметров: {parameters}"
 
-#: zerver/lib/exceptions.py:244
+#: zerver/lib/exceptions.py:245
 #, python-brace-format
 msgid "{required_parameter} is required when {set_parameter} is set."
 msgstr ""
 "Требуется {required_parameter}, если установлено значение {set_parameter}."
 
-#: zerver/lib/exceptions.py:253
+#: zerver/lib/exceptions.py:254
 msgid "organization owner"
 msgstr "владелец организации"
 
-#: zerver/lib/exceptions.py:253
+#: zerver/lib/exceptions.py:254
 msgid "user"
 msgstr "пользователь"
 
-#: zerver/lib/exceptions.py:258
+#: zerver/lib/exceptions.py:259
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
 msgstr "Нельзя отключить {entity}, т.к. других нет."
 
-#: zerver/lib/exceptions.py:271
+#: zerver/lib/exceptions.py:272
 #, python-brace-format
 msgid "Invalid Markdown include statement: {include_statement}"
 msgstr "Неверный оператор включения разметки Markdown: {include_statement}"
 
-#: zerver/lib/exceptions.py:285
+#: zerver/lib/exceptions.py:286
 msgid ""
 "API usage exceeded rate limit; see https://zulip.com/api/http-headers#rate-"
 "limiting-response-headers"
@@ -5810,52 +5828,58 @@ msgstr ""
 "Использование API превысило лимит частоты запросов; см. https://zulip.com/"
 "api/http-headers#rate-limiting-response-headers"
 
-#: zerver/lib/exceptions.py:312 zerver/lib/typed_endpoint.py:372
+#: zerver/lib/exceptions.py:313 zerver/lib/typed_endpoint.py:372
 #: zerver/lib/validator.py:736
 msgid "Malformed JSON"
 msgstr "Неверный JSON"
 
-#: zerver/lib/exceptions.py:324 zerver/views/invite.py:54
+#: zerver/lib/exceptions.py:325 zerver/views/invite.py:54
 #: zerver/views/invite.py:181 zerver/views/invite.py:305
 msgid "Must be an organization administrator"
 msgstr "Нужно быть администратором организации"
 
-#: zerver/lib/exceptions.py:336
+#: zerver/lib/exceptions.py:337
 msgid "Must be an organization owner"
 msgstr "Нужно быть владельцем организации"
 
-#: zerver/lib/exceptions.py:350
+#: zerver/lib/exceptions.py:349
+#, fuzzy
+#| msgid "Must be an organization owner"
+msgid "Must be a bot user"
+msgstr "Нужно быть владельцем организации"
+
+#: zerver/lib/exceptions.py:363
 msgid "Your username or password is incorrect"
 msgstr "Неправильное имя пользователя или пароль"
 
-#: zerver/lib/exceptions.py:368
+#: zerver/lib/exceptions.py:381
 msgid "This organization has been deactivated"
 msgstr "Эта организация отключена"
 
-#: zerver/lib/exceptions.py:378
+#: zerver/lib/exceptions.py:391
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
 msgstr ""
 "Регистрация сервиса мобильных push-уведомлений вашего сервера была отключена"
 
-#: zerver/lib/exceptions.py:388
+#: zerver/lib/exceptions.py:401
 msgid "Password authentication is disabled in this organization"
 msgstr "Парольная аутентификация отключена в этой организации"
 
-#: zerver/lib/exceptions.py:397
+#: zerver/lib/exceptions.py:410
 msgid "Your password has been disabled and needs to be reset"
 msgstr "Ваш пароль отключён, его необходимо сбросить"
 
-#: zerver/lib/exceptions.py:414
+#: zerver/lib/exceptions.py:427
 msgid "Invalid API key"
 msgstr "Неверный API-ключ"
 
-#: zerver/lib/exceptions.py:421
+#: zerver/lib/exceptions.py:434
 msgid "Malformed API key"
 msgstr "неверно оформленный API-ключ"
 
-#: zerver/lib/exceptions.py:461
+#: zerver/lib/exceptions.py:474
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
@@ -5864,27 +5888,27 @@ msgstr ""
 "Событие '{event_type}' в настоящее время не поддерживается вебхуком "
 "{webhook_name}; игнорируем"
 
-#: zerver/lib/exceptions.py:481
+#: zerver/lib/exceptions.py:494
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
 msgstr ""
 "Не удалось выделить данные из запроса: данное событие сгенерировано "
 "{webhook_name}?"
 
-#: zerver/lib/exceptions.py:508
+#: zerver/lib/exceptions.py:521
 msgid "User not authenticated"
 msgstr "Пользователь не аутентифицирован"
 
-#: zerver/lib/exceptions.py:521 zerver/views/auth.py:825
+#: zerver/lib/exceptions.py:534 zerver/views/auth.py:825
 #: zerver/views/auth.py:1184 zerver/views/auth.py:1250
 msgid "Invalid subdomain"
 msgstr "Неверный поддомен"
 
-#: zerver/lib/exceptions.py:555
+#: zerver/lib/exceptions.py:568
 msgid "You do not have permission to initiate direct message conversations."
 msgstr "У вас нет права начинать беседу личным сообщением."
 
-#: zerver/lib/exceptions.py:568
+#: zerver/lib/exceptions.py:581
 #, python-brace-format
 msgid ""
 "Sending messages to the {empty_topic_display_name} is not allowed in this "
@@ -5892,13 +5916,13 @@ msgid ""
 msgstr ""
 "Отправка сообщений в {empty_topic_display_name} не разрешена в этом канале."
 
-#: zerver/lib/exceptions.py:581
+#: zerver/lib/exceptions.py:594
 #, python-brace-format
 msgid "Only the {empty_topic_display_name} topic is allowed in this channel."
 msgstr ""
 "В этом канале разрешено использовать только тему {empty_topic_display_name}."
 
-#: zerver/lib/exceptions.py:594
+#: zerver/lib/exceptions.py:607
 #, python-brace-format
 msgid ""
 "To enable this configuration, all messages in this channel must be in the "
@@ -5908,19 +5932,19 @@ msgstr ""
 "{empty_topic_display_name}. Рассмотрите возможность переименования или "
 "удаления других тем."
 
-#: zerver/lib/exceptions.py:601
+#: zerver/lib/exceptions.py:614
 msgid "Direct messages are disabled in this organization."
 msgstr "Личные сообщения в этой организации отключены."
 
-#: zerver/lib/exceptions.py:603
+#: zerver/lib/exceptions.py:616
 msgid "This conversation does not include any users who can authorize it."
 msgstr "Эта беседа не включает никого, кто может ее согласовать."
 
-#: zerver/lib/exceptions.py:616
+#: zerver/lib/exceptions.py:629
 msgid "Access denied"
 msgstr "Доступ запрещен"
 
-#: zerver/lib/exceptions.py:656
+#: zerver/lib/exceptions.py:669
 #, python-brace-format
 msgid ""
 "You only have permission to move the {total_messages_allowed_to_move}/"
@@ -5929,15 +5953,15 @@ msgstr ""
 "У вас есть право переместить только {total_messages_allowed_to_move}/"
 "{total_messages_in_topic} самых последних сообщений в этой теме."
 
-#: zerver/lib/exceptions.py:669
+#: zerver/lib/exceptions.py:682
 msgid "Reaction already exists."
 msgstr "Реакция уже есть."
 
-#: zerver/lib/exceptions.py:681
+#: zerver/lib/exceptions.py:694
 msgid "Reaction doesn't exist."
 msgstr "Реакция отсутствует."
 
-#: zerver/lib/exceptions.py:706
+#: zerver/lib/exceptions.py:719
 msgid ""
 "Your organization is registered to a different Zulip server. Please contact "
 "Zulip support for assistance in resolving this issue."
@@ -5945,153 +5969,159 @@ msgstr ""
 "Ваша организация привязана к другому серверу Zulip. Пожалуйста, свяжитесь с "
 "поддержкой Zulip для помощи в решении этой проблемы."
 
-#: zerver/lib/exceptions.py:720
+#: zerver/lib/exceptions.py:733
 msgid "Organization not registered"
 msgstr "Организация не зарегистрирована"
 
-#: zerver/lib/exceptions.py:732
+#: zerver/lib/exceptions.py:745
 msgid ""
 "You do not have permission to use channel wildcard mentions in this channel."
 msgstr ""
 "У вас нет права использовать подстановочные упоминания канала в этом канале."
 
-#: zerver/lib/exceptions.py:744
+#: zerver/lib/exceptions.py:757
 msgid ""
 "You do not have permission to use topic wildcard mentions in this topic."
 msgstr ""
 "У вас нет права использовать подстановочные упоминания темы в этой теме."
 
-#: zerver/lib/exceptions.py:757
+#: zerver/lib/exceptions.py:770
 #, python-brace-format
 msgid "'{field_name}' value does not match the expected value."
 msgstr "'{field_name}' значение не соответствует ожидаемому."
 
-#: zerver/lib/exceptions.py:782
+#: zerver/lib/exceptions.py:795
 #, python-brace-format
 msgid "'{setting_name}' must be a system user group."
 msgstr "'{setting_name}' должно быть системной группой пользователей."
 
-#: zerver/lib/exceptions.py:798
+#: zerver/lib/exceptions.py:811
 msgid "Cannot deactivate user group in use."
 msgstr "Нельзя отключить используемую группу пользователей."
 
-#: zerver/lib/exceptions.py:808
+#: zerver/lib/exceptions.py:821
 msgid "You do not have permission to administer this channel."
 msgstr "У вас нет права управлять этим каналом."
 
-#: zerver/lib/exceptions.py:818
+#: zerver/lib/exceptions.py:831
 msgid "You do not have permission to change default channels."
 msgstr "У вас нет права изменять каналы по умолчанию."
 
-#: zerver/lib/exceptions.py:828
+#: zerver/lib/exceptions.py:841
 msgid "Email is already in use."
 msgstr "Адрес электронной почты уже используется."
 
-#: zerver/lib/exceptions.py:838
+#: zerver/lib/exceptions.py:851
 msgid "Scheduled delivery time must be in the future."
 msgstr "Запланированное время доставки должно быть в будущем."
 
-#: zerver/lib/exceptions.py:861
+#: zerver/lib/exceptions.py:874
 msgid "Invalid bouncer_public_key"
 msgstr "Неверный bouncer_public_key"
 
-#: zerver/lib/exceptions.py:873
+#: zerver/lib/exceptions.py:886
 msgid "Request expired"
 msgstr "Запрос истёк"
 
-#: zerver/lib/exceptions.py:883
+#: zerver/lib/exceptions.py:896
 msgid "Invalid encrypted_push_registration"
 msgstr "Неверный encrypted_push_registration"
 
-#: zerver/lib/exceptions.py:895
+#: zerver/lib/exceptions.py:908
 msgid "Server is not configured to use push notification service."
 msgstr "Сервер не настроен на использование службы push-уведомлений."
 
 #: zerver/lib/external_accounts.py:39
+#, fuzzy
+#| msgid "Already has an account."
+msgid "Atlassian account ID"
+msgstr "Уже имеет учетную запись."
+
+#: zerver/lib/external_accounts.py:45
 msgid "Behance username"
 msgstr "Имя пользователя Behance"
 
-#: zerver/lib/external_accounts.py:45
+#: zerver/lib/external_accounts.py:51
 msgid "Bitbucket username"
 msgstr "Имя пользователя Bitbucket"
 
-#: zerver/lib/external_accounts.py:51
+#: zerver/lib/external_accounts.py:57
 msgid "Bluesky handle"
 msgstr "Идентификатор Bluesky"
 
-#: zerver/lib/external_accounts.py:57
+#: zerver/lib/external_accounts.py:63
 msgid "Codeberg username"
 msgstr "Имя пользователя Codeberg"
 
-#: zerver/lib/external_accounts.py:63
+#: zerver/lib/external_accounts.py:69
 msgid "Discord tag"
 msgstr "Тег Discord"
 
-#: zerver/lib/external_accounts.py:69
+#: zerver/lib/external_accounts.py:75
 msgid "Dribbble username"
 msgstr "Имя пользователя Dribbble"
 
-#: zerver/lib/external_accounts.py:75
+#: zerver/lib/external_accounts.py:81
 msgid "Facebook username"
 msgstr "Имя пользователя Facebook"
 
-#: zerver/lib/external_accounts.py:81
+#: zerver/lib/external_accounts.py:87
 msgid "GitHub username"
 msgstr "Имя пользователя GitHub"
 
-#: zerver/lib/external_accounts.py:87
+#: zerver/lib/external_accounts.py:93
 msgid "GitLab username"
 msgstr "Имя пользователя GitLab"
 
-#: zerver/lib/external_accounts.py:93
+#: zerver/lib/external_accounts.py:99
 msgid "Instagram username"
 msgstr "Имя пользователя Instagram"
 
-#: zerver/lib/external_accounts.py:99
+#: zerver/lib/external_accounts.py:105
 msgid "LinkedIn profile name"
 msgstr "Имя профиля LinkedIn"
 
-#: zerver/lib/external_accounts.py:105
+#: zerver/lib/external_accounts.py:111
 msgid "Mastodon profile"
 msgstr "Профиль Mastodon"
 
-#: zerver/lib/external_accounts.py:111
+#: zerver/lib/external_accounts.py:117
 msgid "Medium username"
 msgstr "Имя пользователя Medium"
 
-#: zerver/lib/external_accounts.py:117
+#: zerver/lib/external_accounts.py:123
 msgid "Pinterest username"
 msgstr "Имя пользователя Pinterest"
 
-#: zerver/lib/external_accounts.py:123
+#: zerver/lib/external_accounts.py:129
 msgid "Reddit username"
 msgstr "Имя пользователя Reddit"
 
-#: zerver/lib/external_accounts.py:129
+#: zerver/lib/external_accounts.py:135
 msgid "Snapchat username"
 msgstr "Имя пользователя Snapchat"
 
-#: zerver/lib/external_accounts.py:135
+#: zerver/lib/external_accounts.py:141
 msgid "Threads username"
 msgstr "Имя пользователя Threads"
 
-#: zerver/lib/external_accounts.py:141
+#: zerver/lib/external_accounts.py:147
 msgid "TikTok username"
 msgstr "Имя пользователя TikTok"
 
-#: zerver/lib/external_accounts.py:147
+#: zerver/lib/external_accounts.py:153
 msgid "Twitch username"
 msgstr "Имя пользователя Twitch"
 
-#: zerver/lib/external_accounts.py:153
+#: zerver/lib/external_accounts.py:159
 msgid "X username"
 msgstr "Имя пользователя X"
 
-#: zerver/lib/external_accounts.py:159
+#: zerver/lib/external_accounts.py:165
 msgid "YouTube handle"
 msgstr "Идентификатор YouTube"
 
-#: zerver/lib/external_accounts.py:186
+#: zerver/lib/external_accounts.py:192
 msgid "Invalid external account type"
 msgstr "Неверный тип внешней учетной записи"
 
@@ -6163,12 +6193,12 @@ msgstr "Сообщение не должно быть пустым"
 msgid "Message must not contain null bytes"
 msgstr "Сообщение не должно содержать нулевые байты"
 
-#: zerver/lib/message.py:1510
+#: zerver/lib/message.py:1525
 #, python-brace-format
 msgid "You are not allowed to mention user group '{user_group_name}'."
 msgstr "Вам не разрешено упоминать группу пользователей '{user_group_name}'."
 
-#: zerver/lib/message.py:1740
+#: zerver/lib/message.py:1755
 #, python-brace-format
 msgid "{other_users} and {last_user}"
 msgstr "{other_users} и {last_user}"
@@ -6227,23 +6257,23 @@ msgstr "Неверные уточняющий оператор: {desc}"
 msgid "Invalid narrow operator combination: {desc}"
 msgstr "Неверное сочетание операторов уточнения: {desc}"
 
-#: zerver/lib/narrow.py:871
+#: zerver/lib/narrow.py:885
 msgid "Duplicate 'with' operators."
 msgstr "Повтор оператора 'with'."
 
-#: zerver/lib/narrow.py:881 zerver/lib/narrow.py:902
+#: zerver/lib/narrow.py:895 zerver/lib/narrow.py:916
 msgid "Invalid 'with' operator"
 msgstr "Неверный оператор 'with'"
 
-#: zerver/lib/narrow.py:1216
+#: zerver/lib/narrow.py:1230
 msgid "Missing 'anchor' argument."
 msgstr "Отсутствует аргумент 'anchor'."
 
-#: zerver/lib/narrow.py:1219
+#: zerver/lib/narrow.py:1233
 msgid "Missing 'anchor_date' argument."
 msgstr "Отсутствует аргумент 'anchor_date'."
 
-#: zerver/lib/narrow.py:1253
+#: zerver/lib/narrow.py:1267
 msgid "Invalid anchor"
 msgstr "Неверный якорь"
 
@@ -6700,11 +6730,11 @@ msgstr "начать беседу"
 msgid "greetings"
 msgstr "приветствие"
 
-#: zerver/lib/outgoing_webhook.py:322
+#: zerver/lib/outgoing_webhook.py:325
 msgid "Invalid JSON in response"
 msgstr "Неверный JSON в ответе"
 
-#: zerver/lib/outgoing_webhook.py:331
+#: zerver/lib/outgoing_webhook.py:334
 msgid "Invalid response format"
 msgstr "Неверный формат ответа"
 
@@ -6788,7 +6818,7 @@ msgstr ""
 "Проблема настройки push-уведомлений на сервере, обратитесь к администратору "
 "сервера или повторите попытку позже."
 
-#: zerver/lib/push_registration.py:192
+#: zerver/lib/push_registration.py:210
 msgid "Invalid `push_key`"
 msgstr "Неверный `push_key`"
 
@@ -7134,7 +7164,7 @@ msgid "{var_name} field is missing: {msg}"
 msgstr "поле {var_name} отсутствует: {msg}"
 
 #: zerver/lib/typed_endpoint.py:506 zerver/webhooks/ifttt/view.py:37
-#: zerver/webhooks/slack/view.py:217 zerver/webhooks/slack_incoming/view.py:67
+#: zerver/webhooks/slack/view.py:219 zerver/webhooks/slack_incoming/view.py:67
 msgid "Malformed payload"
 msgstr "Неверные данные"
 
@@ -7326,7 +7356,7 @@ msgstr "Нет такого бота"
 
 #: zerver/lib/users.py:308 zerver/lib/users.py:339 zerver/lib/users.py:356
 #: zerver/lib/users.py:435 zerver/lib/users.py:461 zerver/lib/users.py:483
-#: zerver/views/presence.py:45
+#: zerver/views/presence.py:44
 msgid "No such user"
 msgstr "Нет такого пользователя"
 
@@ -7462,7 +7492,7 @@ msgstr "Должен присутствовать ведущий слэш в zco
 msgid "No such command: {command}"
 msgstr "Нет такой команды: {command}"
 
-#: zerver/lib/zulip_update_announcements.py:817
+#: zerver/lib/zulip_update_announcements.py:866
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr "`zulip_update_announcements_stream` неожиданно отключен."
 
@@ -8044,16 +8074,16 @@ msgstr ""
 "Вы предпочли отложить посмотр ознакомительного видео [Welcome to Zulip]"
 "({navigation_tour_video_url}). Сейчас подходящее время?\n"
 
-#: zerver/views/presence.py:52
+#: zerver/views/presence.py:51
 msgid "Presence is not supported for bot users."
 msgstr "Присутствие не поддерживается для пользователей-ботов."
 
-#: zerver/views/presence.py:62
+#: zerver/views/presence.py:74
 #, python-brace-format
 msgid "No presence data for {user_id_or_email}"
 msgstr "Нет данных о присутствии {user_id_or_email}"
 
-#: zerver/views/presence.py:175
+#: zerver/views/presence.py:200
 #, python-brace-format
 msgid "Invalid status: {status}"
 msgstr "Неверный статус: {status}"
@@ -8780,7 +8810,7 @@ msgstr "Неверные данные JSON"
 msgid "Events key is missing from payload"
 msgstr "Ключ Events отсутствует в данных"
 
-#: zerver/webhooks/slack/view.py:151
+#: zerver/webhooks/slack/view.py:153
 msgid "Error: channels_map_to_topics parameter other than 0 or 1"
 msgstr "Ошибка: параметр channels_map_to_topics, не является 0 или 1"
 
@@ -8933,25 +8963,28 @@ msgstr "Обнаружена повторная регистрация."
 msgid "Malformed audit log data"
 msgstr "Искаженные данные журнала аудита"
 
-#: zproject/backends.py:579
+#: zproject/backends.py:584
 msgid "You need to reset your password."
 msgstr "Вам необходимо сбросить пароль."
 
-#: zproject/backends.py:3171
+#: zproject/backends.py:3213
 msgid "Missing id_token parameter"
 msgstr "Отсутствует параметр id_token"
 
-#: zproject/backends.py:3951
+#: zproject/backends.py:3993
 msgid "Missing idp param"
 msgstr "Отсутствует параметр idp"
 
-#: zproject/backends.py:4121
+#: zproject/backends.py:4163
 msgid "Invalid OTP"
 msgstr "Неверный OTP"
 
-#: zproject/backends.py:4124
+#: zproject/backends.py:4166
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Нельзя одновременно использовать mobile_flow_otp и desktop_flow_otp."
+
+#~ msgid "X (Twitter)"
+#~ msgstr "X (Twitter)"
 
 #~ msgid "Don't have an account?"
 #~ msgstr "Нет учетной записи?"
