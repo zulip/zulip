@@ -18,16 +18,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-21 16:35+0000\n"
-"PO-Revision-Date: 2026-03-31 19:05+0000\n"
-"Last-Translator: Mitja <mitja.leino@hotmail.com>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/"
-">\n"
+"PO-Revision-Date: 2026-04-27 14:57+0000\n"
+"Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>"
+"\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:663 zerver/decorator.py:681
 msgid "Not allowed for guest users"
@@ -781,10 +781,9 @@ msgstr "Palvelin on ylittänyt enimmäismäärän näitä toimintoja."
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:15
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:15
-#, fuzzy, python-format
-#| msgid "You can try again in %(retry_after)s seconds."
+#, python-format
 msgid "You can try again in %(retry_after_string)s."
-msgstr "Voit yrittää uudelleen %(retry_after)s sekunnin kuluttua."
+msgstr "Voit yrittää uudelleen %(retry_after_string)s."
 
 #: templates/corporate/billing/upgrade.html:5
 msgid "Upgrade"
@@ -1413,7 +1412,7 @@ msgstr "Kuvakaappaus Zulip keskustelusta"
 
 #: templates/corporate/role/engineers.html:165
 msgid "Screenshot of Zulip conversation with sentry bot"
-msgstr ""
+msgstr "Kuvakaappaus Zulip-keskustelusta sentry-botin kanssa"
 
 #: templates/corporate/role/engineers.html:178
 #: templates/corporate/role/engineers.html:215
@@ -1422,22 +1421,20 @@ msgstr "Kuvakaappaus Zulip saapuneet-näkymästä"
 
 #: templates/corporate/role/engineers.html:262
 msgid "Open laptop with book inside"
-msgstr ""
+msgstr "Avaa kannettava jonka sisällä on kirja"
 
 #: templates/corporate/role/engineers.html:275
 #: templates/corporate/role/engineers.html:333
 msgid "Two hands assembling puzzle"
-msgstr ""
+msgstr "Kaksi kättä kasaa palapeliä"
 
 #: templates/corporate/role/engineers.html:364
-#, fuzzy
-#| msgid "Messages sent over time"
 msgid "Message with code"
-msgstr "Viestit aikajaksolla"
+msgstr "Viestit jossa on koodi"
 
 #: templates/corporate/role/engineers.html:403
 msgid "Lightning"
-msgstr ""
+msgstr "Ukkonen"
 
 #: templates/corporate/role/engineers.html:451
 #: zerver/models/custom_profile_fields.py:123
@@ -1446,7 +1443,7 @@ msgstr "Linkki"
 
 #: templates/corporate/role/engineers.html:487
 msgid "Ship wheel"
-msgstr ""
+msgstr "Laivan ratas"
 
 #: templates/corporate/support/support_request.html:9
 #: templates/zerver/footer.html:46
@@ -1495,10 +1492,8 @@ msgstr ""
 "ohjekeskuksessa</a>."
 
 #: templates/corporate/zulip-cloud.html:20
-#, fuzzy
-#| msgid "Getting started"
 msgid "Get started"
-msgstr "Aloittaminen"
+msgstr "Aloita"
 
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
@@ -1587,7 +1582,7 @@ msgstr ""
 #: templates/zerver/app/index.html:143
 msgid ""
 "Because you're using an unsupported or very old browser, Zulip may not load."
-msgstr ""
+msgstr "Koska selain on vanha tai tukematon, Zulip ei välttämättä toimi."
 
 #: templates/zerver/app/index.html:147
 msgid ""
@@ -1595,6 +1590,9 @@ msgid ""
 "load. <a href=\"https://zulip.com/apps/\" target=\"_blank\" rel=\"noopener "
 "noreferrer\">Download the latest version.</a>"
 msgstr ""
+"Koska käytät vanhaa versiota työpöytäsovelluksesta, Zulip ei ehkä toimi. <a "
+"href=\"https://zulip.com/apps/\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Lataa uusin versio.</a>"
 
 #: templates/zerver/app/index.html:154
 msgid ""
@@ -1675,10 +1673,8 @@ msgstr "Jatka rekisteröintiin"
 
 #: templates/zerver/create_realm/create_demo_realm.html:4
 #: templates/zerver/create_realm/create_demo_realm.html:11
-#, fuzzy
-#| msgid "Must be a demo organization."
 msgid "Try Zulip in a demo organization"
-msgstr "On oltava demo-organisaatio."
+msgstr "Kokeile Zulipia demo-organisaatiolla"
 
 #: templates/zerver/create_realm/create_demo_realm.html:13
 #, python-format
@@ -1686,6 +1682,8 @@ msgid ""
 "No email required. Or <a class=\"registration-lead-subtitle-link\" "
 "href=\"%(root_domain_url)s/new/\">create a permanent organization</a>."
 msgstr ""
+"Sähköposti ei ole pakollinen. <a class=\"registration-lead-subtitle-link\" "
+"href=\"%(root_domain_url)s/new/\">Tai luo uusi organisaatio</a>."
 
 #: templates/zerver/create_realm/create_demo_realm.html:27
 msgid "Try Zulip"
@@ -1705,6 +1703,8 @@ msgid ""
 "Or <a class=\"registration-lead-subtitle-link\" href=\"%(root_domain_url)s/"
 "new/demo/\">create a demo organization</a> — no email required!"
 msgstr ""
+"Tai <a class=\"registration-lead-subtitle-link\" href=\"%(root_domain_url)s/"
+"new/demo/\">Luo demo-organisaatio</a> – sähköpostia ei tarvita."
 
 #: templates/zerver/create_realm/create_realm.html:39
 #: templates/zerver/reset.html:27
@@ -2122,7 +2122,7 @@ msgstr ""
 
 #: templates/zerver/desktop_redirect.html:17
 msgid "Copy"
-msgstr "Copy"
+msgstr "Kopio"
 
 #: templates/zerver/desktop_redirect.html:19
 msgid "You may then close this window."
@@ -2364,10 +2364,8 @@ msgstr ""
 "%(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt:1
-#, fuzzy
-#| msgid "Verify your new email address for your demo Zulip organization"
 msgid "Verify your email address for your Zulip demo organization"
-msgstr "vahvista uusi sähköpostiosoite Zulipin demo-organisaatiolle"
+msgstr "vahvista sähköpostiosoite Zulipin demo-organisaatiollesi"
 
 #: templates/zerver/emails/confirm_demo_organization_email.txt:9
 #: templates/zerver/emails/confirm_new_email.txt:9
@@ -2602,13 +2600,14 @@ msgstr ""
 
 #: templates/zerver/emails/digest.txt:26
 #: templates/zerver/emails/missed_message.txt:15
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "This email does not include message content because you have chosen to hide "
 "message content in email notifications. See %(help_url)s for more details."
 msgstr ""
 "Tämä sähköposti ei sisällä viestin sisältöä, koska olet piilottanut viestien "
-"sisällön näyttämisen sähköposti-ilmoituksissa. Lisätietoja %(help_url)s."
+"sisällön näyttämisen sähköposti-ilmoituksissa. Lisätietoja osoitteessa %"
+"(help_url)s."
 
 #: templates/zerver/emails/digest.txt:32
 #, python-format
@@ -3477,40 +3476,32 @@ msgstr ""
 
 #: templates/zerver/emails/realm_deactivated.html:15
 #: templates/zerver/emails/realm_deactivated.txt:7
-#, fuzzy, python-format
-#| msgid ""
-#| "You have deactivated your Zulip organization, %(realm_name)s, on "
-#| "%(localized_date)s."
+#, python-format
 msgid ""
 "You have deactivated your Zulip demo organization, %(realm_name)s, on "
 "%(localized_date)s."
 msgstr ""
-"Olet deaktivoinut Zulip-organisaation. %(realm_name)s kohteessa "
-"%(localized_date)s."
+"Olet deaktivoinut Zulipin demo-organisaation. %(realm_name)s kohteessa %"
+"(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:17
 #: templates/zerver/emails/realm_deactivated.txt:9
-#, fuzzy, python-format
-#| msgid ""
-#| "Your Zulip organization, %(realm_name)s, was deactivated by "
-#| "%(deactivating_owner)s on %(localized_date)s."
+#, python-format
 msgid ""
 "Your Zulip demo organization, %(realm_name)s, was deactivated by "
 "%(deactivating_owner)s on %(localized_date)s."
 msgstr ""
-"Zulip-organisaatios %(realm_name)s on deaktivoitu käyttäjän "
-"%(deactivating_owner)s toimesta ajalla %(localized_date)s."
+"Zulip-organisaatiosi %(realm_name)s on deaktivoitu käyttäjän %"
+"(deactivating_owner)s toimesta ajalla %(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:19
 #: templates/zerver/emails/realm_deactivated.txt:11
-#, fuzzy, python-format
-#| msgid ""
-#| "Your Zulip organization, %(realm_name)s, was deactivated on "
-#| "%(localized_date)s."
+#, python-format
 msgid ""
 "Your Zulip demo organization, %(realm_name)s, was deactivated on "
 "%(localized_date)s."
-msgstr "Zulip-organisaatiosoi %(realm_name)s deaktivoitiin %(localized_date)s."
+msgstr ""
+"Zulip-organisaatiosoi %(realm_name)s deaktivoitiin ajalla %(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:23
 #: templates/zerver/emails/realm_deactivated.txt:15
@@ -3580,16 +3571,13 @@ msgstr "Parahin aiempi järjestelmänvalvoja osoitteessa %(realm_name)s,"
 
 #: templates/zerver/emails/realm_reactivation.html:11
 #: templates/zerver/emails/realm_reactivation.txt:5
-#, fuzzy, python-format
-#| msgid ""
-#| "One of your administrators requested reactivation of the previously "
-#| "deactivated Zulip organization hosted at %(realm_url)s."
+#, python-format
 msgid ""
 "One of your administrators requested reactivation of the previously "
 "deactivated Zulip demo organization hosted at %(realm_url)s."
 msgstr ""
-"Administraattorisi on pyytänyt uudelleenaktivoitumista aiemmin "
-"deaktivoidulle organisaatiolle kohteessa %(realm_url)s."
+"Administraattorisi on pyytänyt uudelleenaktivoimista aiemmin deaktivoidulle "
+"organisaatiolle kohteessa %(realm_url)s."
 
 #: templates/zerver/emails/realm_reactivation.html:13
 #: templates/zerver/emails/realm_reactivation.txt:7
@@ -3619,10 +3607,8 @@ msgstr ""
 "tunnissa."
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:2
-#, fuzzy
-#| msgid "Reactivate your Zulip organization"
 msgid "Reactivate your Zulip demo organization"
-msgstr "Uudelleenaktivoi Zulip-organisaatio"
+msgstr "Uudelleenaktivoi Zulipin demo-organisaatio"
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:4
 msgid "Reactivate your Zulip organization"
@@ -3825,10 +3811,8 @@ msgid "Plans & pricing"
 msgstr "Suunnitelmat ja hinnat"
 
 #: templates/zerver/footer.html:12
-#, fuzzy
-#| msgid "Zulip Cloud status"
 msgid "Zulip Cloud"
-msgstr "Zulipin pilven tila"
+msgstr "Zulipin pilvi"
 
 #: templates/zerver/footer.html:13
 msgid "Self-hosting"
@@ -3880,7 +3864,7 @@ msgstr "Yhteisöt"
 
 #: templates/zerver/footer.html:33
 msgid "Engineers"
-msgstr ""
+msgstr "Insinöörit"
 
 #: templates/zerver/footer.html:34
 msgid "Customer stories"
@@ -4230,10 +4214,8 @@ msgstr ""
 "Jos vahvistautuminen on jumissa, vika on palvelimessa."
 
 #: templates/zerver/portico_error_pages/demo_creation_disabled.html:4
-#, fuzzy
-#| msgid "No organization found"
 msgid "Demo organizations disabled"
-msgstr "Ei organisaatioita löytynyt"
+msgstr "Demo-organisaatiot pois käytöstä"
 
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:4
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:11
@@ -4364,10 +4346,8 @@ msgid "Select your account"
 msgstr "Valitse tilisi"
 
 #: templates/zerver/realm_import_post_process.html:34
-#, fuzzy
-#| msgid "Create your account"
 msgid "Create new account"
-msgstr "Luo tilisi"
+msgstr "Luo uusi tili"
 
 #: templates/zerver/realm_reactivation.html:4
 msgid "Organization successfully reactivated"
@@ -4505,6 +4485,9 @@ msgid ""
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
 msgstr ""
+"Odottamaton virhe tuontiprosessissa. Seuraa ohjeita <a href=\"https://"
+"zulip.com/help/import-from-slack#import-your-data-into-zulip\">Zulip-pilven "
+"(tuen kautta) tuomiseksi</a> viimeistelläksesi tuomisen."
 
 #: templates/zerver/slack_import.html:45
 #, python-format
@@ -4538,22 +4521,16 @@ msgstr ""
 "voit tuoda Slack-viestihistoriaviennin."
 
 #: templates/zerver/slack_import.html:83
-#, fuzzy
-#| msgid "Start import"
 msgid "Start upload"
-msgstr "Aloita tuonti"
+msgstr "Aloita lataus"
 
 #: templates/zerver/slack_import.html:92
 msgid "Uploaded export file"
 msgstr "Lähetä vientitiedosto"
 
 #: templates/zerver/slack_import.html:101
-#, fuzzy
-#| msgid ""
-#| "Nobody in this Zulip organization will be able to see this email address."
 msgid "Who will be allowed to see other users' email addresses?"
-msgstr ""
-"Kukaan täss Zulip-organisaatiossa ei pusty näkemään tätä sähköpostiosoitetta."
+msgstr "Kuka pystyu näkemään käyttäjien sähköpostiosoitteita?"
 
 #: templates/zerver/slack_import.html:104
 msgid ""
@@ -4561,6 +4538,9 @@ msgid ""
 "target=\"_blank\">change</a> their email visibility configuration when they "
 "log in."
 msgstr ""
+"Käyttäjät voivat <a href=\"https://zulip.com/help/configure-email-"
+"visibility\" target=\"_blank\">muuttaa</a> sähköpostinäkyvyysasetuksia "
+"sisäänkirjautuneina."
 
 #: templates/zerver/slack_import.html:117
 msgid "Start import"
@@ -4571,6 +4551,8 @@ msgid ""
 "Feel free to step away. You can always come back to this page <br /> by "
 "clicking the <b>Complete registration</b> button in your email."
 msgstr ""
+"Voit poistua. Tälle sivulle voi aina palata <br /> klikkaamalla <b>"
+"Viimeisetele rekisteröinti</b>-nappia sähköpostissa."
 
 #: templates/zerver/slack_import.html:141
 msgid ""
@@ -4587,6 +4569,9 @@ msgid ""
 "href=\"/help/import-from-slack#import-your-data-into-zulip\" rel=\"noopener "
 "noreferrer\" target=\"_blank\">process</a> for imports via support."
 msgstr ""
+"Enimmäiskoko: %(max_file_size)s MiB. Isommille vienneille pitää seurata <a "
+"href=\"/help/import-from-slack#import-your-data-into-zulip\" rel=\"noopener "
+"noreferrer\" target=\"_blank\">prosessia</a> tuen avulla."
 
 #: templates/zerver/slack_import_file_upload_instruction.html:7
 #, python-format
@@ -4595,6 +4580,9 @@ msgid ""
 "href=\"/help/import-from-slack#import-your-data-into-zulip\" rel=\"noopener "
 "noreferrer\" target=\"_blank\">process</a> for self-hosted imports."
 msgstr ""
+"Enimmäiskoko: %(max_file_size)s MiB. Isommille vienneille pitää seurata <a "
+"href=\"/help/import-from-slack#import-your-data-into-zulip\" rel=\"noopener "
+"noreferrer\" target=\"_blank\">prosessia</a> itseḧostatuille vienneille."
 
 #: templates/zerver/social_auth_select_email.html:4
 msgid "Select account for authentication"
@@ -4705,10 +4693,8 @@ msgstr ""
 "sijaan."
 
 #: zerver/actions/create_user.py:717
-#, fuzzy
-#| msgid "Cannot deactivate user group in use."
 msgid "Cannot reactivate a deleted user"
-msgstr "Käytössä olevaa ryhmää ei voi poistaa käytöstä."
+msgstr "Poistettua käyttäjää ei voi reaktivoida."
 
 #: zerver/actions/custom_profile_fields.py:272 zerver/lib/users.py:557
 msgid ""
@@ -4999,13 +4985,12 @@ msgstr "Widgetit: {error_msg}"
 
 #: zerver/actions/message_send.py:2261
 msgid "The following changes have been made to your account."
-msgstr ""
+msgstr "Seuraavat muutokset on tehty tilillesi."
 
 #: zerver/actions/message_send.py:2264
-#, fuzzy, python-brace-format
-#| msgid "{user_name} created the following channels: {new_channels}."
+#, python-brace-format
 msgid "{user} has made the following changes to your account."
-msgstr "{user_name} loi kanavat: {new_channels}."
+msgstr "{user} teki seuraavat muutokset tilillesi."
 
 #: zerver/actions/message_send.py:2270
 #, python-brace-format
@@ -5014,6 +4999,9 @@ msgid ""
 "- **Old {field_name}:** {old_value}\n"
 "- **New {field_name}:** {new_value}\n"
 msgstr ""
+"\n"
+"- **Vanha {field_name}:** {old_value}\n"
+"- **Uusi {field_name}:** {new_value}\n"
 
 #: zerver/actions/realm_emoji.py:35 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
@@ -5371,8 +5359,6 @@ msgid "Verified that you're a human user!"
 msgstr "Vahvistettiin että olet ihmiskäyttäjä."
 
 #: zerver/forms.py:390
-#, fuzzy
-#| msgid "Verifying that you're not a bot..."
 msgid "Verifying that you're not a bot…"
 msgstr "Vahvistetaan ettet ole botti…"
 
@@ -5394,16 +5380,13 @@ msgid "New password confirmation"
 msgstr "Uuden salasanan vahvistaminen"
 
 #: zerver/forms.py:636
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "You're making too many attempts to sign in. Try again in {seconds} "
-#| "seconds or contact your organization administrator for help."
+#, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in "
 "{retry_after_string} or contact your organization administrator for help."
 msgstr ""
-"Yrität kirjautua sisään liian monta kertaa. Yritä uudelleen {seconds} "
-"sekunnin kuluttua tai ota yhteyttä organisaatiosi järjestelmänvalvojaan "
+"Yrität kirjautua sisään liian monta kertaa. Yritä uudelleen  "
+"{retry_after_string} tai ota yhteyttä organisaatiosi järjestelmänvalvojaan "
 "saadaksesi apua."
 
 #: zerver/forms.py:648
@@ -5493,14 +5476,7 @@ msgid "Configure owner account email address."
 msgstr "Aseta tilisi sähköpostiosoite."
 
 #: zerver/lib/demo_organizations.py:60
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Note that this is a [demo organization]({demo_organization_help_url}) "
-#| "and\n"
-#| "will be **automatically deleted** in 30 days, unless it's [converted "
-#| "into\n"
-#| "a permanent organization]({convert_demo_organization_help_url}).\n"
+#, python-brace-format
 msgid ""
 "\n"
 "As a reminder, this [demo organization]({demo_help}) will be automatically "
@@ -5508,16 +5484,14 @@ msgid ""
 "organization]({convert_demo}).\n"
 msgstr ""
 "\n"
-"Huomaathan että tämä on [demo-organisaatio]({demo_organization_help_url}) "
-"ja \n"
-"**poistetaan  automaattisesti** 30 päivässä, jolle sitä [muunneta\n"
-"pysyväksi]({convert_demo_organization_help_url}).\n"
+"Huomaathan että tämä on [demo-organisaatio]({demo_help}) ja \n"
+"poistetaan  automaattisesti {deletion_time}, jolle sitä [muunneta\n"
+"pysyväksi]({convert_demo}).\n"
 
 #: zerver/lib/devices.py:30
-#, fuzzy, python-brace-format
-#| msgid "{var_name} is not a date"
+#, python-brace-format
 msgid "{var_name} is not Base64 encoded"
-msgstr "{var_name} ei ole päivämäärä"
+msgstr "{var_name} ei ole Base64-koodattu"
 
 #: zerver/lib/devices.py:68
 #, fuzzy
