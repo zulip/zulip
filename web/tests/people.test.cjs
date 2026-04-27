@@ -513,6 +513,13 @@ run_test("check_active_non_active_users", ({override}) => {
     // If user cannot access a user, that user will be treated as active.
     override(settings_data, "user_can_access_all_other_users", () => false);
     assert.equal(people.is_person_active(99), true);
+
+    // Placeholder users are treated as active until their real data
+    // arrives, so that we don't render them as deactivated in the UI.
+    override(settings_data, "user_can_access_all_other_users", () => true);
+    const placeholder_user_id = 97;
+    people.add_placeholder_user(placeholder_user_id);
+    assert.equal(people.is_person_active(placeholder_user_id), true);
 });
 
 run_test("pm_lookup_key", () => {
@@ -1858,7 +1865,15 @@ run_test("fetch_users", async ({override}) => {
         const promise = people.fetch_users_from_ids_internal([15]);
         assert.ok(promise instanceof Promise);
     };
-    await people.initialize(my_user_id, params, user_group_params);
+    people.initialize(my_user_id, params, user_group_params);
+
+    // After initialize, missing users are placeholders while the
+    // background fetch is in flight.
+    assert.equal(people.get_by_user_id(15).is_placeholder_user, true);
+    assert.equal(people.get_by_user_id(16).is_placeholder_user, true);
+
+    // Wait for the background fetch to complete.
+    await people.get_or_fetch_users_from_ids([15, 16]);
     await promise_for_user_already_in_transit;
     assert.equal(user_GET_request_calls, 1);
 
