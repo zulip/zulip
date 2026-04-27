@@ -30,10 +30,6 @@ preparing a new release.
 - Update the Paper blog post draft with any new commits.
 - Merge updated translations from Weblate (using the appropriate
   branch for the release).
-- Use `build-release-tarball` to generate a pre-release tarball.
-- Test the new tarball extensively, both new install and upgrade from last
-  release, on Ubuntu 22.04.
-- Repeat until release is ready.
 - Send around the Paper blog post draft for review.
 - Move the blog post draft to Astro:
   - Use "··· > Export > Markdown" to get a pretty good Markdown
