@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-21 16:35+0000\n"
-"PO-Revision-Date: 2026-03-31 18:54+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"PO-Revision-Date: 2026-04-27 01:48+0000\n"
+"Last-Translator: MicXDev <msh2009@outlook.com>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
 "zulip/django/en_GB/>\n"
 "Language: en_GB\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:663 zerver/decorator.py:681
 msgid "Not allowed for guest users"
@@ -2760,8 +2760,7 @@ msgstr ""
 #: templates/zerver/emails/find_team.txt:26
 #: templates/zerver/emails/find_team.txt:34
 msgid "If you do not recognize this request, you can safely ignore this email."
-msgstr ""
-"If you do not recognize this request, you can safely ignore this email."
+msgstr "If you do not recognise this request, you can safely ignore this email."
 
 #: templates/zerver/emails/find_team.subject.txt:2
 msgid "Your Zulip accounts"
@@ -3117,7 +3116,7 @@ msgid ""
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
 msgstr ""
-"If you do not recognize this login, or think your account may have been "
+"If you do not recognise this login, or think your account may have been "
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
 
@@ -3152,7 +3151,7 @@ msgid ""
 "compromised, please reset your password at %(reset_link)s or contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"If you do not recognize this login, or think your account may have been "
+"If you do not recognise this login, or think your account may have been "
 "compromised, please reset your password at %(reset_link)s or contact us "
 "immediately at %(support_email)s."
 
@@ -4411,10 +4410,8 @@ msgid "Account is deactivated"
 msgstr "Account is deactivated"
 
 #: templates/zerver/realm_import_post_process.html:5
-#, fuzzy
-#| msgid "Invalid organization"
 msgid "Finalize organization import"
-msgstr "Invalid organisation"
+msgstr "Finalise organization import"
 
 #: templates/zerver/realm_import_post_process.html:13
 #, fuzzy
@@ -4700,7 +4697,7 @@ msgid ""
 "don't recognize the URL."
 msgstr ""
 "Hi there! It looks like you tried to unsubscribe from something, but we "
-"don't recognize the URL."
+"don't recognise the URL."
 
 #: templates/zerver/unsubscribe_link_error.html:19
 #, python-format
@@ -6436,9 +6433,9 @@ msgid ""
 msgstr ""
 "\n"
 "You can switch between [light and dark theme](/help/dark-theme), [pick your\n"
-"favorite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), "
+"favourite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), "
 "[change\n"
-"your language](/help/change-your-language), and otherwise customise your "
+"your language](/help/change-your-language) and otherwise customise your "
 "Zulip\n"
 "experience in your [Preferences](#settings/preferences).\n"
 
@@ -6806,11 +6803,11 @@ msgstr "This is a test notification from {realm_name} ({realm_url})."
 
 #: zerver/lib/push_notifications.py:2001
 msgid "Device not recognized"
-msgstr "Device not recognized"
+msgstr "Device not recognised"
 
 #: zerver/lib/push_notifications.py:2013
 msgid "Device not recognized by the push bouncer"
-msgstr "Device not recognized by the push bouncer"
+msgstr "Device not recognised by the push bouncer"
 
 #: zerver/lib/push_notifications.py:2051
 msgid "No active registered push device"
@@ -7189,12 +7186,12 @@ msgstr "Not a URL"
 
 #: zerver/lib/typed_endpoint_validators.py:79
 msgid "Not a recognized time zone"
-msgstr "Not a recognized time zone"
+msgstr "Not a recognised time zone"
 
 #: zerver/lib/typed_endpoint_validators.py:109
 #, python-brace-format
 msgid "{var_name} is not a valid hex color code"
-msgstr "{var_name} is not a valid hex color code"
+msgstr "{var_name} is not a valid hex colour code"
 
 #: zerver/lib/typed_endpoint_validators.py:124
 #, python-brace-format
@@ -8480,13 +8477,13 @@ msgstr ""
 "MiB)."
 
 #: zerver/views/tusd.py:273
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "Uploaded file is larger than the allowed limit of {max_file_size} MiB"
+#, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
 "MiB)."
-msgstr "Uploaded file is larger than the allowed limit of {max_file_size} MiB"
+msgstr ""
+"Uploaded file exceeds the maximum file size for imports ({max_file_size} MiB)"
+"."
 
 #: zerver/views/typing.py:53 zerver/views/typing.py:96
 msgid "User has disabled typing notifications for channel messages"
@@ -8656,7 +8653,7 @@ msgstr ""
 
 #: zerver/views/users.py:297
 msgid "User not authorized to change user emails"
-msgstr "User not authorized to change user emails"
+msgstr "User not authorised to change user emails"
 
 #: zerver/views/users.py:311
 msgid ""
@@ -8721,7 +8718,7 @@ msgstr "Invalid embedded bot name."
 
 #: zerver/views/users.py:903
 msgid "User not authorized to create users"
-msgstr "User not authorized to create users"
+msgstr "User not authorised to create users"
 
 #: zerver/views/users.py:920
 #, python-brace-format

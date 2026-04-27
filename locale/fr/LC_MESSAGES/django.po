@@ -35,17 +35,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-21 16:35+0000\n"
-"PO-Revision-Date: 2026-03-31 18:50+0000\n"
-"Last-Translator: Cyril Gros <cyril+weblate@velocipede.ch>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/"
-">\n"
+"PO-Revision-Date: 2026-04-27 16:30+0000\n"
+"Last-Translator: Raphaël Hertzog <hertzog@debian.org>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/>"
+"\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:663 zerver/decorator.py:681
 msgid "Not allowed for guest users"
@@ -828,10 +828,9 @@ msgstr ""
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:15
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:15
-#, fuzzy, python-format
-#| msgid "You can try again in %(retry_after)s seconds."
+#, python-format
 msgid "You can try again in %(retry_after_string)s."
-msgstr "Vous pouvez réessayer dans %(retry_after)s secondes."
+msgstr "Vous pouvez réessayer dans %(retry_after_string)s."
 
 #: templates/corporate/billing/upgrade.html:5
 msgid "Upgrade"
@@ -3043,17 +3042,19 @@ msgstr "Nouveaux messages"
 #: templates/zerver/emails/missed_message.txt:41
 #, python-format
 msgid "Reply to this email directly, or view it in %(realm_name)s Zulip:"
-msgstr "Répondez directement à cet e-mail ou affichez-le dans %(realm_name)s:"
+msgstr ""
+"Répondez directement à cet e-mail ou affichez-le dans le Zulip de %"
+"(realm_name)s :"
 
 #: templates/zerver/emails/missed_message.txt:45
 #, python-format
 msgid "View or reply in %(realm_name)s Zulip:"
-msgstr "Afficher ou répondre dans %(realm_name)s:"
+msgstr "Afficher ou répondre dans le Zulip de %(realm_name)s :"
 
 #: templates/zerver/emails/missed_message.txt:49
 #, python-format
 msgid "Reply in %(realm_name)s Zulip:"
-msgstr "Répondre en %(realm_name)s:"
+msgstr "Répondre dans le Zulip de %(realm_name)s :"
 
 #: templates/zerver/emails/missed_message.txt:53
 msgid ""
@@ -4621,6 +4622,10 @@ msgid ""
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
 msgstr ""
+"Une erreur inattendue est survenue lors du processus d'importation. Veuillez "
+"suivre les instructions du <a href=\"https://zulip.com/help/import-from-"
+"slack#import-your-data-into-zulip\"> processus d'importation Zulip Cloud "
+"(via le support) </a> pour finaliser votre importation."
 
 #: templates/zerver/slack_import.html:45
 #, python-format
@@ -4834,11 +4839,8 @@ msgstr ""
 "s'inscrire à la place."
 
 #: zerver/actions/create_user.py:717
-#, fuzzy
-#| msgid "Cannot deactivate user group in use."
 msgid "Cannot reactivate a deleted user"
-msgstr ""
-"Impossible de désactiver un groupe d'utilisateurs en cours d'utilisation."
+msgstr "Impossible de réactiver un utilisateur supprimé"
 
 #: zerver/actions/custom_profile_fields.py:272 zerver/lib/users.py:557
 msgid ""
@@ -5551,16 +5553,13 @@ msgid "New password confirmation"
 msgstr "Confirmation du nouveau mot de passe"
 
 #: zerver/forms.py:636
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "You're making too many attempts to sign in. Try again in {seconds} "
-#| "seconds or contact your organization administrator for help."
+#, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in "
 "{retry_after_string} or contact your organization administrator for help."
 msgstr ""
-"Vous effectuez trop de tentatives de connexion. Réessayez dans {seconds} "
-"secondes ou contactez un administrateur pour obtenir de l’aide."
+"Vous effectuez trop de tentatives de connexion. Réessayez dans "
+"{retry_after_string} ou contactez un administrateur pour obtenir de l’aide."
 
 #: zerver/forms.py:648
 msgid ""
@@ -5654,14 +5653,7 @@ msgid "Configure owner account email address."
 msgstr "Configurer l’adresse électronique du compte propriétaire."
 
 #: zerver/lib/demo_organizations.py:60
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "This [demo organization]({demo_organization_help_url}) will be "
-#| "**automatically\n"
-#| "deleted** in {demo_conversion_deadline} days, unless it's [converted "
-#| "into\n"
-#| "a permanent organization]({convert_demo_organization_help_url}).\n"
+#, python-brace-format
 msgid ""
 "\n"
 "As a reminder, this [demo organization]({demo_help}) will be automatically "
@@ -5669,23 +5661,18 @@ msgid ""
 "organization]({convert_demo}).\n"
 msgstr ""
 "\n"
-"Cette [organisation de démonstration]({demo_organization_help_url}) sera "
-"**automatiquement supprimée** \n"
-"dans {demo_conversion_deadline} jours, à moins qu'elle ne soit \n"
-"[convertie en organisation permanente]"
-"({convert_demo_organization_help_url}).\n"
+"À titre de rappel, cette [organisation de démonstration]({demo_help}) sera "
+"automatiquement supprimée le {deletion_time}, à moins qu'elle ne soit "
+"[convertie en organisation permanente]({convert_demo}).\n"
 
 #: zerver/lib/devices.py:30
-#, fuzzy, python-brace-format
-#| msgid "{var_name} is not a date"
+#, python-brace-format
 msgid "{var_name} is not Base64 encoded"
-msgstr "{var_name} n'est pas une date"
+msgstr "{var_name} n'est pas encodé au format Base64"
 
 #: zerver/lib/devices.py:68
-#, fuzzy
-#| msgid "Invalid emoji code."
 msgid "Invalid `device_id`"
-msgstr "Code d'emoji non valide."
+msgstr "`device_id` non valide"
 
 #: zerver/lib/digest.py:458
 #, python-brace-format
@@ -5877,7 +5864,7 @@ msgstr "Combinaison de paramètres non prise en charge : {parameters}"
 #: zerver/lib/exceptions.py:244
 #, python-brace-format
 msgid "{required_parameter} is required when {set_parameter} is set."
-msgstr ""
+msgstr "{required_parameter} est requis lorsque {set_parameter} est défini."
 
 #: zerver/lib/exceptions.py:253
 msgid "organization owner"
@@ -6279,7 +6266,7 @@ msgstr "Vous n'êtes pas autorisé à mentionner le groupe '{user_group_name}'."
 #: zerver/lib/message.py:1740
 #, python-brace-format
 msgid "{other_users} and {last_user}"
-msgstr ""
+msgstr "{other_users} et {last_user}"
 
 #: zerver/lib/message_report.py:51 zerver/lib/message_report.py:103
 #, python-brace-format
@@ -6291,30 +6278,23 @@ msgstr ""
 "{reported_user_mention} le {reported_message_date_sent}."
 
 #: zerver/lib/message_report.py:69
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "{reporting_user_mention} reported a direct message sent by "
-#| "{reported_user_mention} to {recipient_user} at "
-#| "{reported_message_date_sent}."
+#, python-brace-format
 msgid ""
 "{reporting_user_mention} reported a message sent by {reported_user_mention} "
 "to {recipient_user} at {reported_message_date_sent}."
 msgstr ""
-"{reporting_user_mention} a signalé un message direct envoyé par "
+"{reporting_user_mention} a signalé un message envoyé par "
 "{reported_user_mention} à {recipient_user} le {reported_message_date_sent}."
 
 #: zerver/lib/message_report.py:78
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "{reporting_user_mention} reported a direct message sent by "
-#| "{reported_user_mention} to {recipient_user} at "
-#| "{reported_message_date_sent}."
+#, python-brace-format
 msgid ""
 "{reporting_user_mention} reported a message sent by {reported_user_mention} "
 "to {list_of_direct_message_recipients} at {reported_message_date_sent}."
 msgstr ""
-"{reporting_user_mention} a signalé un message direct envoyé par "
-"{reported_user_mention} à {recipient_user} le {reported_message_date_sent}."
+"{reporting_user_mention} a signalé un message envoyé par "
+"{reported_user_mention} à {list_of_direct_message_recipients} le "
+"{reported_message_date_sent}."
 
 #: zerver/lib/message_report.py:114
 #, python-brace-format
@@ -6425,14 +6405,7 @@ msgstr ""
 "({organization_setup_url}).\n"
 
 #: zerver/lib/onboarding.py:120
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "This [demo organization]({demo_organization_help_url}) will be "
-#| "**automatically\n"
-#| "deleted** in {demo_conversion_deadline} days, unless it's [converted "
-#| "into\n"
-#| "a permanent organization]({convert_demo_organization_help_url}).\n"
+#, python-brace-format
 msgid ""
 "\n"
 "This [demo organization]({demo_organization_help_url}) will be "
@@ -6442,10 +6415,10 @@ msgid ""
 msgstr ""
 "\n"
 "Cette [organisation de démonstration]({demo_organization_help_url}) sera "
-"**automatiquement supprimée** \n"
-"dans {demo_conversion_deadline} jours, à moins qu'elle ne soit \n"
-"[convertie en organisation permanente]"
-"({convert_demo_organization_help_url}).\n"
+"**automatiquement\n"
+"supprimée** le {deletion_global_time}, à moins qu'elle ne soit\n"
+"[convertie en organisation permanente]({convert_demo_organization_help_url})"
+".\n"
 
 #: zerver/lib/onboarding.py:132
 msgid ""
@@ -6939,9 +6912,9 @@ msgstr "Valeur non valide de `push_key`"
 #, python-brace-format
 msgid "{secs}{nbsp}second"
 msgid_plural "{secs}{nbsp}seconds"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "{secs}{nbsp}seconde"
+msgstr[1] "{secs}{nbsp}secondes"
+msgstr[2] "{secs}{nbsp}secondes"
 
 #: zerver/lib/recipient_parsing.py:9
 msgid "Invalid data type for channel ID"
@@ -6971,22 +6944,17 @@ msgid "Maximum reminder note length: {max_length} characters"
 msgstr "Longueur maximale des notes de rappel : {max_length} caractères"
 
 #: zerver/lib/reminders.py:78
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "You requested a reminder for the following direct message. Note:\n"
-#| " > {note}"
+#, python-brace-format
 msgid ""
 "You requested a reminder for the following message. Note:\n"
 " > {note}"
 msgstr ""
-"Vous avez demandé un rappel pour le message direct suivant. Note :\n"
+"Vous avez demandé un rappel pour le message suivant. Note :\n"
 "> {note}"
 
 #: zerver/lib/reminders.py:83
-#, fuzzy
-#| msgid "You requested a reminder for the following direct message."
 msgid "You requested a reminder for the following message."
-msgstr "Vous avez demandé un rappel pour le message direct suivant."
+msgstr "Vous avez demandé un rappel pour le message suivant."
 
 #: zerver/lib/reminders.py:94
 #, python-brace-format
@@ -7002,51 +6970,48 @@ msgid "You requested a reminder for the following direct message."
 msgstr "Vous avez demandé un rappel pour le message direct suivant."
 
 #: zerver/lib/reminders.py:126
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
+#, python-brace-format
 msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} in "
 "{topic_pretty_link}."
 msgstr ""
-"{user_silent_mention} [a envoyé]({conversation_url}) une liste de taches."
+"{user_silent_mention} [a envoyé]({conversation_url}) un {widget} dans "
+"{topic_pretty_link}."
 
 #: zerver/lib/reminders.py:128
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [said]({conversation_url}):"
+#, python-brace-format
 msgid ""
 "{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr "{user_silent_mention} [a dit]({conversation_url}) :"
+msgstr ""
+"{user_silent_mention} [a dit]({conversation_url}) dans {topic_pretty_link} :"
 
 #: zerver/lib/reminders.py:132
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
+#, python-brace-format
 msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
 msgstr ""
-"{user_silent_mention} [a envoyé]({conversation_url}) une liste de taches."
+"{user_silent_mention} [a envoyé]({conversation_url}) un{widget} à "
+"{list_of_recipient_mentions}."
 
 #: zerver/lib/reminders.py:135
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [said]({conversation_url}):"
+#, python-brace-format
 msgid ""
 "{user_silent_mention} [said]({conversation_url}) to "
 "{list_of_recipient_mentions}:"
-msgstr "{user_silent_mention} [a dit]({conversation_url}) :"
+msgstr ""
+"{user_silent_mention} [a dit]({conversation_url}) à "
+"{list_of_recipient_mentions} :"
 
 #: zerver/lib/reminders.py:139
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
+#, python-brace-format
 msgid "You [sent]({conversation_url}) yourself a {widget}."
-msgstr ""
-"{user_silent_mention} [a envoyé]({conversation_url}) une liste de taches."
+msgstr "Vous vous [êtes envoyé]({conversation_url}) un {widget}."
 
 #: zerver/lib/reminders.py:140
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
+#, python-brace-format
 msgid "You [sent]({conversation_url}) a note to yourself:"
-msgstr ""
-"{user_silent_mention} [a envoyé]({conversation_url}) une liste de taches."
+msgstr "Vous vous [êtes envoyé]({conversation_url}) une note :"
 
 #: zerver/lib/reminders.py:173
 msgid "Reminder does not exist"
@@ -7261,16 +7226,14 @@ msgid "{var_name} is not length {length}"
 msgstr "{var_name} n’a pas une longueur de {length}"
 
 #: zerver/lib/typed_endpoint.py:342
-#, fuzzy, python-brace-format
-#| msgid "{var_name} is too long (limit: {max_length} characters)"
+#, python-brace-format
 msgid "{var_name} is too long (limit: {max_length} items)"
-msgstr "{var_name} est trop long (limite : {max_length} caractères)"
+msgstr "{var_name} est trop long (limite : {max_length} éléments)"
 
 #: zerver/lib/typed_endpoint.py:343
-#, fuzzy, python-brace-format
-#| msgid "{var_name} is too long (limit: {max_length} characters)"
+#, python-brace-format
 msgid "{var_name} is too short (minimum {min_length} items)"
-msgstr "{var_name} est trop long (limite : {max_length} caractères)"
+msgstr "{var_name} est trop court (minimum {min_length} éléments)"
 
 #: zerver/lib/typed_endpoint.py:377
 #, python-brace-format
@@ -7317,7 +7280,7 @@ msgstr "{setting_name} non valide"
 
 #: zerver/lib/typed_endpoint_validators.py:129
 msgid "Not a valid unsigned 32-bit integer"
-msgstr ""
+msgstr "Nombre invalide pour un entier non-signé de 32 bits"
 
 #: zerver/lib/upload/__init__.py:57
 msgid "Upload would exceed your organization's upload quota."
@@ -7401,12 +7364,17 @@ msgid ""
 "'{setting_name}' must be restricted to organization administrators for "
 "groups used in 'workplace_users_group'."
 msgstr ""
+"'{setting_name}' doit être réservé aux administrateurs de l'organisation "
+"pour les groupes utilisés dans 'workplace_users_group'."
 
 #: zerver/lib/user_groups.py:1405
 msgid ""
 "'can_manage_all_groups' must be restricted to organization administrators "
 "when 'workplace_users_group' includes user-defined groups."
 msgstr ""
+"'can_manage_all_groups' doit être restreint aux administrateurs de "
+"l'organisation lorsque 'workplace_users_group' inclut des groupes définis "
+"par l'utilisateur."
 
 #: zerver/lib/user_status.py:162
 msgid "Client did not pass any new values."
@@ -7612,6 +7580,8 @@ msgid ""
 "'workplace_users_group' must be a group whose membership can only be managed "
 "by organization administrators."
 msgstr ""
+"'workplace_users_group' doit être un groupe dont les membres ne peuvent être "
+"gérés que par les administrateurs de l'organisation."
 
 #: zerver/lib/zcommand.py:29
 msgid "There should be a leading slash in the zcommand."
@@ -7694,22 +7664,19 @@ msgstr "Tout le monde sur Internet"
 
 #: zerver/models/linkifiers.py:42
 msgid "Invalid auto-conversion field: missing '}' character."
-msgstr ""
+msgstr "Champ d'auto-conversion invalide : caractère '}' manquant."
 
 #: zerver/models/linkifiers.py:45
-#, fuzzy
-#| msgid "Invalid characters in emoji name"
 msgid "Invalid auto-conversion field: empty field name."
-msgstr "Caractères invalides dans le nom de l'emoji"
+msgstr "Champ d'auto-conversion invalide : nom de champ vide."
 
 #: zerver/models/linkifiers.py:49
-#, fuzzy, python-format
-#| msgid "Group %(name)r in URL template is not present in linkifier pattern."
+#, python-format
 msgid ""
 "Group %(name)r in auto-conversion field is not present in linkifier pattern."
 msgstr ""
-"Le groupe %(name)r dans le modèle d'URL n'est pas présent dans le motif de "
-"l'identificateur de lien."
+"Le groupe %(name)r dans le champ d'auto-conversion n'est pas présent dans le "
+"motif de l'identificateur de lien."
 
 #: zerver/models/linkifiers.py:74 zerver/models/linkifiers.py:77
 #, python-brace-format
@@ -7725,16 +7692,14 @@ msgid "Invalid URL template."
 msgstr "Format d'URL invalide."
 
 #: zerver/models/linkifiers.py:137
-#, fuzzy
-#| msgid "Group %(name)r in URL template is not present in linkifier pattern."
 msgid "Example input does not match the linkifier pattern."
 msgstr ""
-"Le groupe %(name)r dans le modèle d'URL n'est pas présent dans le motif de "
-"l'identificateur de lien."
+"L'entrée d'exemple ne contient pas de texte correspondant au modèle du lien "
+"automatique."
 
 #: zerver/models/linkifiers.py:141
 msgid "Example text does not match auto-conversion field."
-msgstr ""
+msgstr "Le texte d'exemple ne correspond pas au champ d'auto-conversion."
 
 #: zerver/models/linkifiers.py:157
 #, python-format
@@ -7752,31 +7717,29 @@ msgstr ""
 
 #: zerver/models/linkifiers.py:175
 msgid "An alternative URL template cannot be the same as the URL template."
-msgstr ""
+msgstr "Un modèle d'URL alternatif ne peut pas être identique au modèle d'URL."
 
 #: zerver/models/linkifiers.py:179
 msgid "Alternative URL templates must be unique."
-msgstr ""
+msgstr "Les modèles d'URL alternatifs doivent être unique."
 
 #: zerver/models/linkifiers.py:193
-#, fuzzy, python-format
-#| msgid "Group %(name)r in URL template is not present in linkifier pattern."
+#, python-format
 msgid ""
 "Group %(name)r in alternative URL template is not present in linkifier "
 "pattern."
 msgstr ""
-"Le groupe %(name)r dans le modèle d'URL n'est pas présent dans le motif de "
-"l'identificateur de lien."
+"Le groupe %(name)r dans le modèle d'URL alternatif n'est pas présent dans le "
+"motif de l'identificateur de lien."
 
 #: zerver/models/linkifiers.py:203
-#, fuzzy, python-format
-#| msgid "Group %(name)r in linkifier pattern is not present in URL template."
+#, python-format
 msgid ""
 "Group %(name)r in linkifier pattern is not present in alternative URL "
 "template."
 msgstr ""
 "Le groupe %(name)r dans le modèle de lien n'est pas présent dans le modèle "
-"d'URL."
+"d'URL alternatif."
 
 #: zerver/models/messages.py:380
 msgid "Unicode emoji"
@@ -7854,7 +7817,7 @@ msgstr ""
 
 #: zerver/models/realms.py:695
 msgid "Disabled"
-msgstr ""
+msgstr "Désactivé"
 
 #: zerver/models/realms.py:703
 msgid "Allow GIFs rated G (General audience)"
@@ -8084,10 +8047,8 @@ msgid "No such invitation"
 msgstr "Aucune invitation"
 
 #: zerver/views/invite.py:69
-#, fuzzy
-#| msgid "Invitation has already been revoked"
 msgid "Invitation already used or deactivated."
-msgstr "L'invitation a déjà été révoquée"
+msgstr "L'invitation a déjà été utilisée ou a été désactivée."
 
 #: zerver/views/invite.py:89
 msgid "Invitation has already been revoked"
@@ -8239,10 +8200,8 @@ msgid "Invalid status: {status}"
 msgstr "Statut non valide : {status}"
 
 #: zerver/views/push_notifications.py:151
-#, fuzzy
-#| msgid "You do not have permission to change default channels."
 msgid "You do not have permission to manage plans and billing."
-msgstr "Vous n'avez pas la permission de modifier les canaux par défaut."
+msgstr "Vous n'avez pas la permission de gérer les forfaits et la facturation."
 
 #: zerver/views/push_notifications.py:167
 msgid "Server doesn't use the push notification service"
@@ -8262,18 +8221,24 @@ msgid ""
 "Missing parameters: must provide either all push key fields, all token "
 "fields, or both."
 msgstr ""
+"Paramètres manquants : vous devez fournir tous les champs \"push key\", ou "
+"tous les champs \"token\", ou les deux."
 
 #: zerver/views/push_notifications.py:355
 msgid "No push registration exists to rotate key for."
 msgstr ""
+"Aucun enregistrement de notification push n'existe pour la rotation de la "
+"clé."
 
 #: zerver/views/push_notifications.py:365
 msgid "A registration for the device already in progress."
-msgstr ""
+msgstr "Un enregistrement est déjà en cours pour ce périphérique."
 
 #: zerver/views/push_notifications.py:376
 msgid "No push registration exists to rotate token for."
 msgstr ""
+"Aucun enregistrement de notification push n'existe pour la rotation du jeton "
+"(\"token\")."
 
 #: zerver/views/reactions.py:48
 msgid ""
@@ -8309,12 +8274,16 @@ msgstr "Valeur incorrecte pour gif_rating_policy : {gif_rating_policy}"
 msgid ""
 "Organization is not eligible for discounted pricing for non workplace users."
 msgstr ""
+"L'organisation n'est pas éligible au tarif réduit pour les utilisateurs non-"
+"professionnels."
 
 #: zerver/views/realm.py:407
 msgid ""
 "Discounted pricing for workplace users cannot be enabled with current "
 "discounted plan."
 msgstr ""
+"Le tarif réduit pour les utilisateurs professionnels ne peut pas être activé "
+"avec le forfait à tarif réduit actuel."
 
 #: zerver/views/realm.py:568
 msgid "Must be a demo organization."
@@ -8422,16 +8391,14 @@ msgid "You must upload exactly one logo."
 msgstr "Vous devez envoyer exactement un logo."
 
 #: zerver/views/realm_playgrounds.py:29
-#, fuzzy, python-brace-format
-#| msgid "Invalid characters in pygments language"
+#, python-brace-format
 msgid "Invalid character in language: {character}"
-msgstr "Caractères invalides dans la langue des pygments"
+msgstr "Caractère invalide dans le langage : {character}"
 
 #: zerver/views/realm_playgrounds.py:32
-#, fuzzy, python-brace-format
-#| msgid "Invalid language '{language}'"
+#, python-brace-format
 msgid "Language '{language}' is not allowed."
-msgstr "Langage non valide '{language}'"
+msgstr "Le langage '{language}' n'est pas autorisé."
 
 #: zerver/views/realm_playgrounds.py:40
 msgid "Invalid playground"
@@ -8727,6 +8694,8 @@ msgid ""
 "Subgroups of a group used for 'workplace_users_group' must allow only "
 "organization administrators to manage their membership."
 msgstr ""
+"Les sous-groupes d'un groupe utilisé pour 'workplace_users_group' ne doivent "
+"autoriser que les administrateurs de l'organisation à gérer leurs membres."
 
 #: zerver/views/user_groups.py:527
 #, python-brace-format
@@ -8775,10 +8744,10 @@ msgid "Wrong password!"
 msgstr "Mot de passe incorrect !"
 
 #: zerver/views/user_settings.py:491
-#, fuzzy, python-brace-format
-#| msgid "You're making too many attempts! Try again in {seconds} seconds."
+#, python-brace-format
 msgid "You're making too many attempts! Try again in {retry_after_string}."
-msgstr "Vous avez fait trop de tentatives ! Réessayez dans {seconds} secondes."
+msgstr ""
+"Vous avez fait trop de tentatives ! Réessayez dans {retry_after_string}."
 
 #: zerver/views/user_settings.py:497
 msgid "New password is too weak!"
@@ -8797,11 +8766,10 @@ msgid "Cannot deactivate the only organization owner"
 msgstr "Impossible de désactiver le seul propriétaire de l'organisation"
 
 #: zerver/views/users.py:154
-#, fuzzy
-#| msgid "Who will be allowed to see other users' email addresses?"
 msgid "User is not allowed to delete other user's messages."
 msgstr ""
-"Qui sera autorisé à voir les adresses électroniques des autres utilisateurs ?"
+"L'utilisateur n'est pas autorisé à supprimer les messages d'autres "
+"utilisateurs."
 
 #: zerver/views/users.py:297
 msgid "User not authorized to change user emails"
@@ -8906,22 +8874,19 @@ msgid "Invalid {provider_name} credentials"
 msgstr "Identifiants {provider_name} non valides"
 
 #: zerver/views/video_calls.py:91
-#, fuzzy, python-brace-format
-#| msgid "Error connecting to the BigBlueButton server."
+#, python-brace-format
 msgid "Error connecting to the {provider_name} server: {reason}"
-msgstr "Erreur de connexion au serveur BigBlueButton."
+msgstr "Erreur de connexion au serveur {provider_name} : {reason}"
 
 #: zerver/views/video_calls.py:100
-#, fuzzy, python-brace-format
-#| msgid "Error authenticating to the BigBlueButton server."
+#, python-brace-format
 msgid "Error authenticating to the {provider_name} server"
-msgstr "Erreur d'authentification sur le serveur BigBlueButton."
+msgstr "Erreur d'authentification sur le serveur {provider_name}"
 
 #: zerver/views/video_calls.py:109
-#, fuzzy, python-brace-format
-#| msgid "BigBlueButton server returned an unexpected error."
+#, python-brace-format
 msgid "{provider_name} server returned an unexpected error: {status}"
-msgstr "Le serveur BigBlueButton a renvoyé une erreur inattendue."
+msgstr "Le serveur {provider_name} a renvoyé une erreur inattendue : {status}"
 
 #: zerver/views/video_calls.py:118
 #, python-brace-format
@@ -8933,20 +8898,18 @@ msgid "Unknown Zoom user email"
 msgstr "Adresse électronique Zoom inconnue"
 
 #: zerver/views/video_calls.py:350
-#, fuzzy, python-brace-format
-#| msgid "Failed to create {provider_name} call"
+#, python-brace-format
 msgid "Failed to create {provider_name} public room."
-msgstr "Échec de la création de l’appel {provider_name}"
+msgstr "Échec de la création de la salle publique {provider_name}."
 
 #: zerver/views/video_calls.py:623
 msgid "Invalid signature."
 msgstr "Signature non valide."
 
 #: zerver/views/video_calls.py:697
-#, fuzzy, python-brace-format
-#| msgid "{full_name} mentioned you:"
+#, python-brace-format
 msgid "{full_name}'s Zulip room"
-msgstr "{full_name} vous a mentionné :"
+msgstr "La salle Zulip de {full_name}"
 
 #: zerver/webhooks/circleci/view.py:86
 msgid "Projects using this version control system provider aren't supported"
@@ -9092,10 +9055,9 @@ msgid "The host reported it has no verification secret."
 msgstr "L’hôte a signalé qu’il ne possède aucun secret de vérification."
 
 #: zilencer/views.py:413
-#, fuzzy, python-brace-format
-#| msgid "Error response received from the host: {status_code}"
+#, python-brace-format
 msgid "Unexpected status code received from the host: {status_code}"
-msgstr "Réponse d’erreur reçue de l’hôte : {status_code}"
+msgstr "Reçu un code de statut inattendu de l’hôte : {status_code}"
 
 #: zilencer/views.py:508
 msgid "Missing ios_app_id"
