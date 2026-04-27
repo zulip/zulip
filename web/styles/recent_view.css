@@ -942,4 +942,30 @@
 
 .recent-view-table-unread-count {
     border-radius: 0.3125em; /* 5px at 16px/1em */
+    position: relative;
+}
+
+/* Focus ring drawn as a pseudo-element so the ring's corner
+   radius can be set independently of the badge's, and so the
+   wrapper-level `:focus` outline rule on `.recent_view_focusable`
+   (which the badge also matches) does not stack a second concentric
+   outline on top. Scoped via `#recent_view:not(.no-visible-focus-outlines)`
+   so it stays suppressed alongside the wrapper outline until the
+   first keyboard navigation key removes the class (see
+   focus_outline_util.ts), and so the rule has high enough
+   specificity to beat the wrapper rule. Inset `-5px` matches the
+   breathing room the inbox wrapper-extending outline gets from its
+   `padding: 0 5px`. */
+#recent_view:not(.no-visible-focus-outlines)
+    .recent-view-table-unread-count:focus {
+    outline: none;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -0.3125em; /* -5px at 16px/1em */
+        border: var(--focus-ring-outline);
+        border-radius: 0.3125em; /* 5px at 16px/1em */
+        pointer-events: none;
+    }
 }
