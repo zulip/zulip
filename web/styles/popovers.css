@@ -939,6 +939,7 @@ ul.popover-group-menu-member-list {
         position: relative;
         width: 64px;
         height: 64px;
+        flex-shrink: 0;
     }
 
     .avatar-image {
@@ -978,7 +979,6 @@ ul.popover-group-menu-member-list {
         /* 20px at 18px/1em */
         line-height: 1.1111em;
         color: var(--color-text-full-name) !important;
-        max-width: 150px;
         overflow-wrap: anywhere;
     }
 
