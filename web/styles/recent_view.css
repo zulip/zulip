@@ -750,7 +750,7 @@
             gap: 8px;
 
             .stream-privacy {
-                height: 1em;
+                display: flex;
             }
         }
 
