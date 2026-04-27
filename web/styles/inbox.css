@@ -22,7 +22,7 @@
             transition: outline-width 0.1s ease;
 
             &:hover {
-                outline-width: 1.5px;
+                outline-width: var(--focus-ring-width-in-views);
             }
         }
 
@@ -252,7 +252,7 @@
                    small inner badge) should preview the click
                    affordance. */
                 &:hover .unread_count {
-                    outline-width: 1.5px;
+                    outline-width: var(--focus-ring-width-in-views);
                 }
             }
 

@@ -1004,6 +1004,7 @@
         hsl(0deg 0% 100% / 19%)
     );
     --color-outline-focus: hsl(215deg 47% 50%);
+    --focus-ring-width-in-views: 1.5px;
     --color-background-search: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 17%));
     --color-background-search-collapsed: light-dark(
         hsl(0deg 0% 100%),
