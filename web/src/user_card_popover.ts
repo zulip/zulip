@@ -295,6 +295,9 @@ export let fetch_presence_for_popover = (user_id: number): void => {
             // account creation, to avoid uselessly asking the server
             // again in this session.
             const user = people.get_by_user_id(user_id);
+            if (user.is_missing_server_data) {
+                return;
+            }
             presence.presence_info.set(user_id, {
                 status: "offline",
                 last_active: new Date(user.date_joined).getTime() / 1000,
