@@ -268,6 +268,15 @@ class zulip::app_frontend_base {
     group  => 'zulip',
     mode   => '0755',
   }
+  # /home/zulip/uploads is documented as something administrators may
+  # replace with a symlink to a different storage location, so we use
+  # an exec with a `test -d` guard (which follows symlinks) rather
+  # than a file resource that would replace the symlink.
+  exec { 'create-uploads-dir':
+    command => 'install -d -o zulip -g zulip -m 0755 /home/zulip/uploads',
+    unless  => 'test -d /home/zulip/uploads',
+    path    => '/usr/bin:/bin',
+  }
   file { [
     '/var/log/zulip/queue_error',
     '/var/log/zulip/queue_stats',
