@@ -70,7 +70,11 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 apns_message = send_notification.call_args.args[0].message
                 self.assertEqual(
                     apns_message["aps"],
-                    {"mutable-content": 1, "alert": {"title": "New notification"}},
+                    {
+                        "mutable-content": 1,
+                        "alert": {"title": "New notification"},
+                        "sound": "default",
+                    },
                 )
 
                 self.assertEqual(

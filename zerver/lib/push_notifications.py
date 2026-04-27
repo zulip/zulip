@@ -1452,7 +1452,7 @@ class APNsHTTPHeaders:
 
 @dataclass
 class APNsPayload(PushRequestBasePayload):
-    aps: dict[str, int | dict[str, str]]
+    aps: dict[str, int | str | dict[str, str]]
 
 
 @dataclass
@@ -1518,9 +1518,10 @@ def send_push_notifications(
                 apns_priority=apns_priority,
                 apns_push_type=apns_push_type,
             )
-            aps: dict[str, int | dict[str, str]] = {"mutable-content": 1}
+            aps: dict[str, int | str | dict[str, str]] = {"mutable-content": 1}
             if not is_removal:
                 aps["alert"] = {"title": "New notification"}
+                aps["sound"] = "default"
             apns_payload = APNsPayload(
                 push_key_id=push_device.push_key_id,
                 encrypted_data=encrypted_data,
