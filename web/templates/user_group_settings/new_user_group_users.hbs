@@ -2,7 +2,19 @@
     {{> add_members_form hide_add_button=true}}
 </div>
 
-<div class="create_member_list_header">
+<div class="add-members-subtitle">
+    {{#tr}}
+        You can add members by name or email address.
+        Enter a <z-user-roles-link>user role</z-user-roles-link>,
+        <z-user-groups-link>user group</z-user-groups-link>,
+        or <z-channel-link>#channel</z-channel-link> to add multiple users at once.
+        {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-channel-link"}}<a href="/help/introduction-to-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+</div>
+
+<div class="create_user_group_member_list_header">
     <h4 class="user_group_setting_subsection_title">{{t 'Members preview' }}</h4>
     <input class="add-user-list-filter filter_text_input" name="user_list_filter" type="text"
       autocomplete="off" placeholder="{{t 'Filter' }}" />
