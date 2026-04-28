@@ -455,6 +455,24 @@ function append_user_pill(
     pill_widget.clear_text();
 }
 
+export function refresh_user_pill_data(pill_widget: SearchPillWidget): void {
+    // Rebuild each search_user pill's display data in place from the
+    // current people store, leaving any typed-but-not-pilled text in
+    // the search input alone.
+    for (const item of pill_widget.items()) {
+        if (item.type !== "search_user") {
+            continue;
+        }
+        const pill = pill_widget.getPillByPredicate((it) => it === item);
+        if (!pill) {
+            continue;
+        }
+        const fresh_users = item.users.map((user) => people.get_by_user_id(user.user_id));
+        const fresh_data = search_user_pill_data(fresh_users, item.operator, item.negated);
+        pill_widget.updatePill(pill.$element[0]!, fresh_data);
+    }
+}
+
 export function set_search_bar_contents(
     search_terms: NarrowTermSuggestion[],
     pill_widget: SearchPillWidget,
