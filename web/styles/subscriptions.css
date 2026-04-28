@@ -323,7 +323,6 @@ h4.user_group_setting_subsection_title {
 
 .member_list_add {
     width: 100%;
-    margin: 0 0 10px;
 }
 
 .user_group_subscription_request_result,
@@ -411,7 +410,8 @@ h4.user_group_setting_subsection_title {
     padding-left: 2px;
 }
 
-#stream_settings .add-subscribers-subtitle {
+#stream_settings .add-subscribers-subtitle,
+#user_group_settings .add-members-subtitle {
     margin-bottom: 10px;
 }
 
