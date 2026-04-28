@@ -362,6 +362,113 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
         )
         self.assertEqual(result, {})
 
+    def test_hit_miss_mix_only_queries_missing_ids(self) -> None:
+        """A bulk fetch of N ids where some are pre-populated should only
+        call query_function for the missing ones, fill the cache for
+        those, and return all N."""
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+
+        # Warm the cache for hamlet and iago only.
+        get_user_profile_by_id(hamlet.id)
+        get_user_profile_by_id(iago.id)
+        cache_delete(user_profile_by_id_cache_key(othello.id))
+
+        queried_ids: list[int] = []
+
+        def query_function(ids: list[int]) -> list[UserProfile]:
+            queried_ids.extend(ids)
+            return list(UserProfile.objects.filter(id__in=ids))
+
+        result = bulk_cached_fetch(
+            cache_key_function=user_profile_by_id_cache_key,
+            query_function=query_function,
+            object_ids=[hamlet.id, iago.id, othello.id],
+            id_fetcher=get_user_id,
+        )
+        self.assertEqual(set(result), {hamlet.id, iago.id, othello.id})
+        self.assertEqual(queried_ids, [othello.id])
+
+        # othello should now be cached; a second bulk fetch doesn't
+        # re-query.
+        queried_ids.clear()
+        result = bulk_cached_fetch(
+            cache_key_function=user_profile_by_id_cache_key,
+            query_function=query_function,
+            object_ids=[hamlet.id, iago.id, othello.id],
+            id_fetcher=get_user_id,
+        )
+        self.assertEqual(queried_ids, [])
+
+    def test_race_writer_delete_during_bulk_query(self) -> None:
+        """If a writer invalidates a key while the reader's query_function
+        is running, the reader's cas() must fail and the stale value
+        must not be cached."""
+        hamlet = self.example_user("hamlet")
+        key = user_profile_by_id_cache_key(hamlet.id)
+        cache_delete(key)
+
+        counts_before = get_cache_fill_counts()
+
+        def racing_query(ids: list[int]) -> list[UserProfile]:
+            # Simulate the writer's invalidation landing while we're
+            # "reading" from the database.
+            cache_delete(key)
+            return list(UserProfile.objects.filter(id__in=ids))
+
+        result = bulk_cached_fetch(
+            cache_key_function=user_profile_by_id_cache_key,
+            query_function=racing_query,
+            object_ids=[hamlet.id],
+            id_fetcher=get_user_id,
+        )
+
+        # The caller still gets the fetched value...
+        self.assertIn(hamlet.id, result)
+        # ...but the cache is NOT populated, and the race was detected.
+        self.assertIsNone(cache_get(key))
+        self.assertEqual(
+            get_cache_fill_counts()["race_detected"] - counts_before["race_detected"],
+            1,
+        )
+
+    def test_race_bulk_writer_delete_then_other_reader_adds(self) -> None:
+        """Bulk analog of ReadThroughCacheTest.test_race_writer_delete_then_other_reader_adds:
+        during our query_function, a writer deletes our sentinel and another
+        reader (simulated) adds their own.  The cas id we got back from our
+        own add no longer matches the slot's current cas, so cache_cas_many
+        rejects the write and the stale DB value is not cached."""
+        hamlet = self.example_user("hamlet")
+        key = user_profile_by_id_cache_key(hamlet.id)
+        cache_delete(key)
+
+        counts_before = get_cache_fill_counts()
+
+        def racing_query(ids: list[int]) -> list[UserProfile]:
+            cache_delete(key)
+            added, _cas = cache_add(key, _CACHE_FILL_SENTINEL, CACHE_FILL_SENTINEL_TIMEOUT)
+            self.assertTrue(added)
+            return list(UserProfile.objects.filter(id__in=ids))
+
+        result = bulk_cached_fetch(
+            cache_key_function=user_profile_by_id_cache_key,
+            query_function=racing_query,
+            object_ids=[hamlet.id],
+            id_fetcher=get_user_id,
+        )
+
+        # Caller gets the fetched value, cache holds the other reader's
+        # sentinel (not our stale 1-tuple), and the race was counted.
+        # cache_gets exposes the raw value; cache_get filters sentinels.
+        self.assertIn(hamlet.id, result)
+        raw, _cas = cache_gets(key)
+        self.assertIsInstance(raw, _CacheFillSentinel)
+        self.assertEqual(
+            get_cache_fill_counts()["race_detected"] - counts_before["race_detected"],
+            1,
+        )
+
 
 class CASCapableBackendTest(ZulipTestCase):
     """Round-trip tests for the gets/cas/add backend operations that the
