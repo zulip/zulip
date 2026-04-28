@@ -30,21 +30,16 @@ list. For example, to add a new incoming webhook integration, declare a
 IncomingWebhookIntegration in the INCOMING_WEBHOOK_INTEGRATIONS list. All
 *_INTEGRATIONS lists are automatically aggregated into the INTEGRATIONS dict.
 
-To add a new integration category, add to either the CATEGORIES or
-META_CATEGORY dicts below. The META_CATEGORY dict is for categories
-that do not describe types of tools (e.g., bots or frameworks).
+To add a new integration category, add it to the CATEGORIES dict below.
 
 Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-META_CATEGORY: dict[str, StrPromise] = {
-    "meta-integration": gettext_lazy("Integration frameworks"),
-    "bots": gettext_lazy("Interactive bots"),
-}
 
 CATEGORIES: dict[str, StrPromise] = {
-    **META_CATEGORY,
+    "meta-integration": gettext_lazy("Integration frameworks"),
+    "bots": gettext_lazy("Interactive bots"),
     "video-calling": gettext_lazy("Video calling"),
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),

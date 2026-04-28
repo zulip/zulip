@@ -23,7 +23,6 @@ from zerver.lib.html_to_text import get_content_description
 from zerver.lib.integrations import (
     CATEGORIES,
     INTEGRATIONS,
-    META_CATEGORY,
     HubotIntegration,
     IncomingWebhookIntegration,
     Integration,
@@ -347,10 +346,7 @@ def add_integrations_open_graph_context(context: dict[str, Any], request: HttpRe
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        if path_name in META_CATEGORY:
-            context["PAGE_TITLE"] = f"{category} | Zulip integrations"
-        else:
-            context["PAGE_TITLE"] = f"{category} tools | Zulip integrations"
+        context["PAGE_TITLE"] = f"{category} | Zulip integrations"
         context["PAGE_DESCRIPTION"] = description
 
     elif path_name == "integrations":
