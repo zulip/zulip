@@ -959,9 +959,8 @@ def get_realm_config() -> Config:
     Config(
         table="zerver_realmexport",
         model=RealmExport,
-        normal_parent=realm_config,
-        include_rows="realm_id__in",
-        exclude=["export_path"],
+        virtual_parent=realm_config,
+        custom_fetch=custom_fetch_realm_exports,
     )
 
     Config(
@@ -1725,6 +1724,21 @@ def custom_fetch_onboarding_usermessage(response: TableData, context: Context) -
             yield onboarding_usermessage_obj
 
     response["zerver_onboardingusermessage"] = rows()
+
+
+def custom_fetch_realm_exports(response: TableData, context: Context) -> None:
+    realm = context["realm"]
+
+    def rows() -> Iterator[Record]:
+        for realm_export in RealmExport.objects.filter(realm=realm).iterator():
+            realm_export_obj = model_to_dict(realm_export)
+            if realm_export_obj["status"] == RealmExport.SUCCEEDED:
+                realm_export_obj["status"] = RealmExport.EXPORT_FROM_PRIOR_SERVER
+            # Never export the export path - that's a potential data leak.
+            realm_export_obj.pop("export_path", None)
+            yield realm_export_obj
+
+    response["zerver_realmexport"] = rows()
 
 
 def fetch_usermessages(
@@ -3183,6 +3197,7 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
             deleted_timestamp=deleted_timestamp,
             failed_timestamp=failed_timestamp,
             pending=pending,
+            export_from_prior_server=export.status == RealmExport.EXPORT_FROM_PRIOR_SERVER,
             export_type=get_export_type_slug(export.type),
         )
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict["id"])

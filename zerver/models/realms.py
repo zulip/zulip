@@ -1481,6 +1481,7 @@ class RealmExport(models.Model):
     SUCCEEDED = 3
     FAILED = 4
     DELETED = 5
+    EXPORT_FROM_PRIOR_SERVER = 6
     status = models.PositiveSmallIntegerField(default=REQUESTED)
 
     date_requested = models.DateTimeField()
