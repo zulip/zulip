@@ -11,6 +11,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.template import loader
 from django.template.response import TemplateResponse
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 from lxml import html
 from lxml.etree import Element, SubElement, XPath, _Element
@@ -22,6 +23,7 @@ from zerver.decorator import add_google_analytics_context
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.integrations import (
     CATEGORIES,
+    CATEGORY_SEARCH_PLACEHOLDERS,
     INTEGRATIONS,
     META_CATEGORY,
     HubotIntegration,
@@ -413,11 +415,16 @@ def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -
     # round down to the nearest multiple of 10.
     integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
 
+    search_placeholder = str(
+        CATEGORY_SEARCH_PLACEHOLDERS.get(category_slug, _("Search integrations"))
+    )
+
     context = add_base_integrations_context(request)
     context.update(
         {
             "categories_dict": OrderedDict(sorted(CATEGORIES.items())),
             "integrations_count_display": integrations_count_display,
+            "search_placeholder": search_placeholder,
             "selected_category_slug": category_slug,
             "visible_integrations": get_visible_integrations_for_category(category_slug),
         }

@@ -61,6 +61,25 @@ CATEGORIES: dict[str, StrPromise] = {
     "version-control": gettext_lazy("Version control"),
 }
 
+CATEGORY_SEARCH_PLACEHOLDERS: dict[str, StrPromise] = {
+    "meta-integration": gettext_lazy("Search integration frameworks"),
+    "bots": gettext_lazy("Search interactive bot integrations"),
+    "video-calling": gettext_lazy("Search video calling integrations"),
+    "continuous-integration": gettext_lazy("Search continuous integration tools"),
+    "customer-support": gettext_lazy("Search customer support integrations"),
+    "deployment": gettext_lazy("Search deployment integrations"),
+    "entertainment": gettext_lazy("Search entertainment integrations"),
+    "communication": gettext_lazy("Search communication integrations"),
+    "financial": gettext_lazy("Search financial integrations"),
+    "hr": gettext_lazy("Search human resources integrations"),
+    "marketing": gettext_lazy("Search marketing integrations"),
+    "misc": gettext_lazy("Search miscellaneous integrations"),
+    "monitoring": gettext_lazy("Search monitoring integrations"),
+    "project-management": gettext_lazy("Search project management integrations"),
+    "productivity": gettext_lazy("Search productivity integrations"),
+    "version-control": gettext_lazy("Search version control integrations"),
+}
+
 # Can also be computed from INTEGRATIONS by removing entries from
 # INCOMING_WEBHOOK_INTEGRATIONS and NO_SCREENSHOT_CONFIG, but defined explicitly to
 # avoid circular dependency
