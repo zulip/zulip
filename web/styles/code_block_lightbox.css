@@ -58,6 +58,16 @@
         padding: 2px;
     }
 
+    /* `.codehilite { display: block !important }` in rendered_markdown.css
+       would otherwise defeat flex layout and break overflow scrolling on pre. */
+    .codehilite.code-block-lightbox-hilite {
+        display: flex !important;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
     pre {
         margin: 0;
         padding: 10px 12px;
@@ -140,8 +150,9 @@
     }
 
     &.code-block-lightbox-edit-mode {
-        pre {
-            display: none;
+        /* Must win over `.codehilite.code-block-lightbox-hilite { display: flex !important }` above. */
+        .code-block-lightbox-hilite {
+            display: none !important;
         }
 
         .code-block-lightbox-editor {

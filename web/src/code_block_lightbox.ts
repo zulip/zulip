@@ -9,10 +9,16 @@ let is_open = false;
 let active_code = "";
 let edit_mode = false;
 let source_code_element: HTMLElement | undefined;
+/** Plain text when the user last entered edit mode (for restoring Pygments HTML if unchanged). */
+let plain_text_at_edit_start = "";
+/** Highlighted HTML in the lightbox when the user last entered edit mode. */
+let lightbox_pygments_html_at_edit_start = "";
 
 function get_current_code(): string {
     if (edit_mode) {
-        return $("#code_block_lightbox_overlay .code-block-lightbox-editor").val()?.toString() ?? "";
+        return (
+            $("#code_block_lightbox_overlay .code-block-lightbox-editor").val()?.toString() ?? ""
+        );
     }
     return active_code;
 }
@@ -33,22 +39,47 @@ function set_edit_mode(enabled: boolean): void {
     $overlay.find(".edit-code-in-lightbox").toggleClass("active", edit_mode);
     $overlay
         .find(".edit-code-in-lightbox")
-        .attr("aria-label", edit_mode ? $t({defaultMessage: "Done editing"}) : $t({defaultMessage: "Edit code"}));
+        .attr(
+            "aria-label",
+            edit_mode ? $t({defaultMessage: "Done editing"}) : $t({defaultMessage: "Edit code"}),
+        );
     if (edit_mode) {
+        plain_text_at_edit_start = active_code;
+        lightbox_pygments_html_at_edit_start =
+            $("#code_block_lightbox_overlay code").html() ?? "";
         const $editor = $overlay.find(".code-block-lightbox-editor");
         $editor.val(active_code);
         $editor.trigger("focus");
     }
 }
 
+function sync_lightbox_code_view_after_edit(new_plain: string): void {
+    active_code = new_plain;
+    const $code = $("#code_block_lightbox_overlay code");
+    if (new_plain === plain_text_at_edit_start) {
+        $code.html(lightbox_pygments_html_at_edit_start);
+    } else {
+        $code.text(new_plain);
+    }
+}
+
+function sync_source_code_element_after_save(new_plain: string): void {
+    if (source_code_element === undefined) {
+        return;
+    }
+    if (new_plain === plain_text_at_edit_start) {
+        $(source_code_element).html(lightbox_pygments_html_at_edit_start);
+    } else {
+        $(source_code_element).text(new_plain);
+    }
+}
+
 function close_lightbox(save_changes: boolean): void {
     if (save_changes && edit_mode) {
-        active_code =
+        const new_plain =
             $("#code_block_lightbox_overlay .code-block-lightbox-editor").val()?.toString() ?? "";
-        $("#code_block_lightbox_overlay code").text(active_code);
-        if (source_code_element !== undefined) {
-            $(source_code_element).text(active_code);
-        }
+        sync_lightbox_code_view_after_edit(new_plain);
+        sync_source_code_element_after_save(new_plain);
     }
     $("#code_block_lightbox_overlay").removeClass("show-close-prompt");
     set_edit_mode(false);
@@ -70,21 +101,24 @@ function clear_overlay(): void {
     $("#code_block_lightbox_overlay").removeClass("show-close-prompt");
     active_code = "";
     source_code_element = undefined;
+    plain_text_at_edit_start = "";
+    lightbox_pygments_html_at_edit_start = "";
     set_edit_mode(false);
 }
 
 function open_code_block_lightbox(
     language: string | undefined,
-    code: string,
     code_element: HTMLElement | undefined,
 ): void {
+    const code_plain = code_element?.textContent ?? "";
+    const code_html = code_element?.innerHTML ?? "";
     const title = language
         ? $t({defaultMessage: "Code Block ({language})"}, {language})
         : $t({defaultMessage: "Code Block"});
     $("#code_block_lightbox_overlay .code-block-lightbox-title").text(title);
-    $("#code_block_lightbox_overlay code").text(code);
-    $("#code_block_lightbox_overlay .code-block-lightbox-editor").val(code);
-    active_code = code;
+    $("#code_block_lightbox_overlay code").html(code_html);
+    $("#code_block_lightbox_overlay .code-block-lightbox-editor").val(code_plain);
+    active_code = code_plain;
     source_code_element = code_element;
     set_edit_mode(false);
 
@@ -107,9 +141,34 @@ function open_code_block_lightbox(
     is_open = true;
 }
 
+function copy_opener_stylesheets_to_document(target_document: Document): void {
+    for (const node of document.querySelectorAll('link[rel="stylesheet"]')) {
+        if (!(node instanceof HTMLLinkElement)) {
+            continue;
+        }
+        const link = node;
+        if (!link.href) {
+            continue;
+        }
+        let url: URL;
+        try {
+            url = new URL(link.href);
+        } catch {
+            continue;
+        }
+        if (url.origin !== window.location.origin) {
+            continue;
+        }
+        const copy = target_document.createElement("link");
+        copy.rel = "stylesheet";
+        copy.href = link.href;
+        target_document.head.append(copy);
+    }
+}
+
 function open_code_in_new_tab(): void {
-    const code = get_current_code();
-    if (code === "") {
+    const code_plain = get_current_code();
+    if (code_plain === "") {
         return;
     }
 
@@ -118,19 +177,46 @@ function open_code_in_new_tab(): void {
         return;
     }
 
-    popup.document.open();
-    popup.document.write("<!DOCTYPE html><html><head><meta charset='utf-8'><title>Zulip code block</title></head><body></body></html>");
-    popup.document.close();
+    const title =
+        $("#code_block_lightbox_overlay .code-block-lightbox-title").text() ||
+        $t({defaultMessage: "Code block"});
+    const use_highlighted = !edit_mode;
+    const code_html = $("#code_block_lightbox_overlay code").html() ?? "";
 
-    const pre = popup.document.createElement("pre");
-    pre.textContent = code;
-    pre.style.whiteSpace = "pre";
-    pre.style.overflowX = "auto";
-    pre.style.margin = "0";
-    pre.style.padding = "16px";
-    pre.style.fontFamily =
-        'ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
-    popup.document.body.append(pre);
+    const doc = popup.document;
+    doc.documentElement.lang = document.documentElement.lang;
+    doc.documentElement.className = document.documentElement.className;
+
+    const charset_meta = doc.createElement("meta");
+    charset_meta.setAttribute("charset", "utf8");
+    doc.head.prepend(charset_meta);
+
+    const title_element = doc.createElement("title");
+    title_element.textContent = title;
+    doc.head.append(title_element);
+
+    copy_opener_stylesheets_to_document(doc);
+
+    doc.body.replaceChildren();
+
+    if (use_highlighted && code_html !== "") {
+        const hilite = doc.createElement("div");
+        hilite.className = "codehilite";
+        const pre = doc.createElement("pre");
+        const code_el = doc.createElement("code");
+        code_el.innerHTML = code_html;
+        pre.append(code_el);
+        hilite.append(pre);
+        doc.body.append(hilite);
+    } else {
+        const pre = doc.createElement("pre");
+        const code_el = doc.createElement("code");
+        code_el.textContent = code_plain;
+        pre.append(code_el);
+        doc.body.append(pre);
+    }
+
+    doc.body.style.margin = "0";
 
     // Prevent the new tab from retaining a live opener handle.
     popup.opener = null;
@@ -172,8 +258,7 @@ export function initialize(): void {
             const $codehilite_div = $(this).closest(".codehilite");
             const language = $codehilite_div.attr("data-code-language");
             const $code_element = $codehilite_div.find("code").first();
-            const code = $code_element.text();
-            open_code_block_lightbox(language, code, $code_element.get(0));
+            open_code_block_lightbox(language, $code_element.get(0));
         },
     );
 
@@ -189,10 +274,12 @@ export function initialize(): void {
 
     $("#code_block_lightbox_overlay").on("click", ".edit-code-in-lightbox", (e) => {
         e.preventDefault();
+        e.stopPropagation();
         if (edit_mode) {
-            active_code =
-                $("#code_block_lightbox_overlay .code-block-lightbox-editor").val()?.toString() ?? "";
-            $("#code_block_lightbox_overlay code").text(active_code);
+            const new_plain =
+                $("#code_block_lightbox_overlay .code-block-lightbox-editor").val()?.toString() ??
+                "";
+            sync_lightbox_code_view_after_edit(new_plain);
         }
         set_edit_mode(!edit_mode);
     });
