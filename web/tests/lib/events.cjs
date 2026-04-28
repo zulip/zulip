@@ -601,6 +601,7 @@ exports.fixtures = {
                 deleted_timestamp: null,
                 failed_timestamp: null,
                 pending: true,
+                export_from_prior_server: false,
                 export_type: "public",
             },
         ],

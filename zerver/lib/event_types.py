@@ -520,6 +520,7 @@ class Export(BaseModel):
     deleted_timestamp: float | int | None
     failed_timestamp: float | int | None
     pending: bool
+    export_from_prior_server: bool
     export_type: RealmExportSlug
 
 
