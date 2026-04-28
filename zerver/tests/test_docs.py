@@ -15,7 +15,7 @@ from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.context_processors import get_apps_page_url
-from zerver.lib.integrations import BOT_INTEGRATIONS, CATEGORIES, INTEGRATIONS, META_CATEGORY
+from zerver.lib.integrations import BOT_INTEGRATIONS, CATEGORIES, INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.url_redirects import INTEGRATION_CATEGORY_SLUGS
@@ -542,12 +542,8 @@ class DocPageTest(ZulipTestCase):
         # Test category pages
         for category in CATEGORIES:
             url = f"/integrations/category/{category}"
-            if category in META_CATEGORY:
-                title = f"<title>{CATEGORIES[category]} | Zulip integrations</title>"
-                og_title = f'<meta property="og:title" content="{CATEGORIES[category]} | Zulip integrations" />'
-            else:
-                title = f"<title>{CATEGORIES[category]} tools | Zulip integrations</title>"
-                og_title = f'<meta property="og:title" content="{CATEGORIES[category]} tools | Zulip integrations" />'
+            title = f"<title>{CATEGORIES[category]} | Zulip integrations</title>"
+            og_title = f'<meta property="og:title" content="{CATEGORIES[category]} | Zulip integrations" />'
             self._test(url, [title, og_title, og_description, get_canonical_url(url)])
 
         # Test integrations index page
