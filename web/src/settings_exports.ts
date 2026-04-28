@@ -49,6 +49,7 @@ export const realm_export_schema = z.object({
     deleted_timestamp: z.nullable(z.number()),
     failed_timestamp: z.nullable(z.number()),
     pending: z.boolean(),
+    export_from_prior_server: z.boolean(),
     export_type: realm_export_type_schema,
 });
 type RealmExport = z.output<typeof realm_export_schema>;
@@ -126,6 +127,7 @@ export function populate_exports_table(exports: RealmExport[]): void {
                     time_failed: failed_timestamp,
                     pending: data.pending,
                     time_deleted: deleted_timestamp,
+                    export_from_prior_server: data.export_from_prior_server,
                     export_type_description:
                         settings_config.export_type_values[data.export_type].description,
                 },

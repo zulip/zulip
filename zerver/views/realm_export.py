@@ -131,7 +131,7 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
     except RealmExport.DoesNotExist:
         raise JsonableError(_("Invalid data export ID"))
 
-    if export_row.status == RealmExport.DELETED:
+    if export_row.status in [RealmExport.DELETED, RealmExport.EXPORT_FROM_PRIOR_SERVER]:
         raise JsonableError(_("Export already deleted"))
     if export_row.status == RealmExport.FAILED:
         raise JsonableError(_("Export failed, nothing to delete"))
