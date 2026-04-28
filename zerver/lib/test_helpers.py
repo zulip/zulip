@@ -137,6 +137,7 @@ def cache_tries_captured() -> Iterator[list[tuple[str, str | list[str], str | No
     orig_get = cache.cache_get
     orig_gets = cache.cache_gets
     orig_get_many = cache.cache_get_many
+    orig_gets_many = cache.cache_gets_many
 
     def my_cache_get(  # nocoverage -- no current test exercises this path
         key: str, cache_name: str | None = None
@@ -154,11 +155,18 @@ def cache_tries_captured() -> Iterator[list[tuple[str, str | list[str], str | No
         cache_queries.append(("getmany", keys, cache_name))
         return orig_get_many(keys, cache_name)
 
+    def my_cache_gets_many(
+        keys: list[str], cache_name: str | None = None
+    ) -> dict[str, tuple[Any, int]]:
+        cache_queries.append(("getsmany", keys, cache_name))
+        return orig_gets_many(keys, cache_name)
+
     with mock.patch.multiple(
         cache,
         cache_get=my_cache_get,
         cache_gets=my_cache_gets,
         cache_get_many=my_cache_get_many,
+        cache_gets_many=my_cache_gets_many,
     ):
         yield cache_queries
 
@@ -183,11 +191,18 @@ def simulated_empty_cache() -> Iterator[list[tuple[str, str | list[str], str | N
         cache_queries.append(("getmany", keys, cache_name))
         return {}
 
+    def my_cache_gets_many(  # nocoverage -- simulated code doesn't use this
+        keys: list[str], cache_name: str | None = None
+    ) -> dict[str, tuple[Any, int]]:
+        cache_queries.append(("getsmany", keys, cache_name))
+        return {}
+
     with mock.patch.multiple(
         cache,
         cache_get=my_cache_get,
         cache_gets=my_cache_gets,
         cache_get_many=my_cache_get_many,
+        cache_gets_many=my_cache_gets_many,
     ):
         yield cache_queries
 

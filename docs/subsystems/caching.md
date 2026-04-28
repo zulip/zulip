@@ -251,10 +251,17 @@ You can run the server with that behavior disabled using
 One thing be careful about with memcached queries is to avoid doing
 them in loops (the same applies for database queries!). Instead, one
 should use a bulk query. We have a fancy function,
-`generate_bulk_cached_fetch`, which is super magical and handles this
+`generic_bulk_cached_fetch`, which is super magical and handles this
 for us, with support for a bunch of fancy features like marshalling
 data before/after going into the cache (e.g., to compress `message`
 objects to minimize data transfer between Django and memcached).
+
+It protects against storing stale values in the same way as
+`cache_with_key`, and makes the same small number of memcached
+requests however many of the keys are missing from the cache. Every
+key it is given must be a valid cache key. Unlike `cache_with_key`,
+which skips the cache for an invalid key, it raises
+`InvalidCacheKeyError`.
 
 ## In-process caching in Django
 

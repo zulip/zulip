@@ -643,6 +643,14 @@ def cache_cas_many(
     return {fk.removeprefix(KEY_PREFIX) for fk in committed_raw}
 
 
+def cache_delete_cas_many(cas_ids: dict[str, int], cache_name: str | None = None) -> None:
+    """cache_delete_cas for each key.  bmemcached has no pipelined
+    conditional delete, so this is a round-trip per key; callers only
+    have claims to give up in rare cases."""
+    for key, cas_id in cas_ids.items():
+        cache_delete_cas(key, cas_id, cache_name=cache_name)
+
+
 def read_through_cache(
     key: str,
     fetcher: Callable[[], ReturnT],
@@ -748,6 +756,10 @@ CompressedItemT = TypeVar("CompressedItemT")
 # Required arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
+#   Every key it returns must pass validate_cache_key.  Unlike
+#   cache_with_key, which logs an invalid key and falls back to the
+#   database for that one lookup, an invalid key here fails the
+#   whole fetch with InvalidCacheKeyError.
 # * query_function: [object_ids] => [objects from database]
 # * setter: Function to call before storing items to cache (e.g. compression)
 # * extractor: Function to call on items returned from cache
@@ -785,38 +797,69 @@ def generic_bulk_cached_fetch(
             pickled_tupled=False,
         )
 
-    cache_keys: dict[ObjKT, str] = {}
-    for object_id in object_ids:
-        cache_keys[object_id] = cache_key_function(object_id)
+    global _cache_fill_hit, _cache_fill_won, _cache_fill_race_detected
+    global _cache_fill_claim_lost, _cache_fill_saw_sentinel
 
-    cached_objects_compressed: dict[str, CompressedItemT] = safe_cache_get_many(
-        [cache_keys[object_id] for object_id in object_ids],
-    )
+    cache_keys: dict[ObjKT, str] = {oid: cache_key_function(oid) for oid in object_ids}
 
-    cached_objects = {key: extractor(val) for key, val in cached_objects_compressed.items()}
-    needed_ids = [
-        object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects
+    # Initial read: one pipelined round-trip returning (value, cas_id) for every
+    # present key.
+    initial = cache_gets_many(list(cache_keys.values()))
+
+    # Drop sentinel entries -- a concurrent filler has written a sentinel we
+    # should not return to this caller.  These keys are treated as misses; our
+    # own add() below will fail, and we'll return the DB value without caching.
+    cached_objects: dict[str, CacheItemT] = {}
+    for key, (val, _cas) in initial.items():
+        if isinstance(val, _CacheFillSentinel):
+            _cache_fill_saw_sentinel += 1
+            continue
+        cached_objects[key] = extractor(val)
+    _cache_fill_hit += len(cached_objects)
+
+    needed: list[tuple[ObjKT, str]] = [
+        (oid, key) for oid, key in cache_keys.items() if key not in cached_objects
     ]
 
-    # Only call query_function if there are some ids to fetch from the database:
-    if len(needed_ids) > 0:
-        db_objects = query_function(needed_ids)
-    else:
-        db_objects = []
+    # Try to claim every missed key with the sentinel in a pipelined add_multi;
+    # we get back the new cas id for each successful add, which is our
+    # ownership token for the subsequent cas-commit.  Keys where we lose the
+    # add fell to another reader or already have a real value, and we won't
+    # write them.
+    owned_cas_ids: dict[str, int] = {}
+    if needed:
+        owned_cas_ids = cache_add_many(
+            {key: _CACHE_FILL_SENTINEL for _, key in needed},
+            CACHE_FILL_SENTINEL_TIMEOUT,
+        )
+        _cache_fill_claim_lost += len(needed) - len(owned_cas_ids)
 
-    items_for_remote_cache: dict[str, CompressedItemT] = {}
-    for obj in db_objects:
-        key = cache_keys[id_fetcher(obj)]
-        item = cache_transformer(obj)
-        items_for_remote_cache[key] = setter(item)
-        cached_objects[key] = item
-    if len(items_for_remote_cache) > 0:
-        safe_cache_set_many(items_for_remote_cache)
-    return {
-        object_id: cached_objects[cache_keys[object_id]]
-        for object_id in object_ids
-        if cache_keys[object_id] in cached_objects
-    }
+        # Collect values for pipelined cas writes.  Keys we don't own are still
+        # returned to the caller but never cached.
+        items_to_cas: dict[str, tuple[CompressedItemT, int]] = {}
+        try:
+            for obj in query_function([oid for oid, _ in needed]):
+                key = cache_keys[id_fetcher(obj)]
+                item = cache_transformer(obj)
+                cached_objects[key] = item
+                if key in owned_cas_ids:
+                    items_to_cas[key] = (setter(item), owned_cas_ids[key])
+        except Exception:
+            cache_delete_cas_many(owned_cas_ids)
+            raise
+
+        # Give up the claims on ids the query did not return.
+        cache_delete_cas_many(
+            {key: cas for key, cas in owned_cas_ids.items() if key not in items_to_cas}
+        )
+
+        if items_to_cas:
+            committed = cache_cas_many(items_to_cas)
+            _cache_fill_won += len(committed)
+            # cas failures == writer's delete() landed during our DB fetch.
+            _cache_fill_race_detected += len(items_to_cas) - len(committed)
+
+    return {oid: cached_objects[key] for oid, key in cache_keys.items() if key in cached_objects}
 
 
 def bulk_cached_fetch(
