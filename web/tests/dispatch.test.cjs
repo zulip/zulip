@@ -134,6 +134,7 @@ message_lists.current = {
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
+        get_messages_involving_user: () => [],
         filter: new Filter([]),
     },
 };
@@ -142,6 +143,7 @@ const cached_message_list = {
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
+        get_messages_involving_user: () => [],
     },
 };
 message_lists.all_rendered_message_lists = () => [cached_message_list, message_lists.current];

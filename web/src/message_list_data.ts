@@ -6,6 +6,7 @@ import {FetchStatus} from "./fetch_status.ts";
 import type {Filter} from "./filter.ts";
 import type {Message} from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
+import * as people from "./people.ts";
 import {current_user} from "./state_data.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -638,6 +639,14 @@ export class MessageListData {
             return [];
         }
         return msgs;
+    }
+
+    get_messages_involving_user(user_id: number): Message[] {
+        return this._items.filter(
+            (msg) =>
+                msg.sender_id === user_id ||
+                people.pm_with_user_ids(msg)?.includes(user_id) === true,
+        );
     }
 
     get_last_message_sent_by_me(): Message | undefined {
