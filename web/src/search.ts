@@ -186,7 +186,11 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 
     $search_query_box.on("change", () => {
-        search_typeahead.lookup(false);
+        // Removing a pill with its "x" triggers "change". That should
+        // refresh an open typeahead, but not open a closed one.
+        if (search_typeahead.shown) {
+            search_typeahead.lookup(false);
+        }
     });
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
