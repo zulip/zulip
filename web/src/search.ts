@@ -183,10 +183,12 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     search_pill_widget = search_pill.create_pills($pill_container);
     search_pill_widget.onPillRemove(() => {
         search_input_has_changed = true;
-    });
 
-    $search_query_box.on("change", () => {
-        search_typeahead.lookup(false);
+        if (search_typeahead.shown) {
+            // Update the typeahead with the current search content
+            // if it is visible
+            search_typeahead.lookup(false);
+        }
     });
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
