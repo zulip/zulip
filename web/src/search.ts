@@ -186,7 +186,10 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 
     $search_query_box.on("change", () => {
-        search_typeahead.lookup(false);
+        if (search_typeahead.shown) {
+            // Refresh the open typeahead with the current search content.
+            search_typeahead.lookup(false);
+        }
     });
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {

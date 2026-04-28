@@ -101,6 +101,18 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         on_narrow_search() {},
     });
 
+    // Removing a search pill triggers a "change" event on the search
+    // box. When the typeahead is closed, that shouldn't open it; an
+    // already-open typeahead is refreshed instead.
+    typeahead_forced_open = false;
+    search_typeahead.shown = false;
+    $search_query_box.trigger("change");
+    assert.ok(!typeahead_forced_open);
+    search_typeahead.shown = true;
+    $search_query_box.trigger("change");
+    assert.ok(typeahead_forced_open);
+    search_typeahead.shown = false;
+
     {
         {
             const search_suggestions = ["dm", "dm:"];
