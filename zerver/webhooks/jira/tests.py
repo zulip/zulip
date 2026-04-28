@@ -16,12 +16,7 @@ class JiraHookTests(WebhookTestCase):
             self.get_body("issue_created"),
             content_type="application/json",
         )
-        expected_content = """
-@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
-
-* **Priority**: Major
-* **Assignee**: no one
-""".strip()
+        expected_content = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) with Major priority."
         self.assert_channel_message(
             message=msg,
             channel_name="jira_custom",
@@ -31,12 +26,7 @@ class JiraHookTests(WebhookTestCase):
 
     def test_created(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
-        expected_message = """
-@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
-
-* **Priority**: Major
-* **Assignee**: no one
-""".strip()
+        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) with Major priority."
         self.check_webhook("issue_created", expected_topic_name, expected_message)
 
     def test_ignored_events(self) -> None:
@@ -61,22 +51,12 @@ class JiraHookTests(WebhookTestCase):
 
     def test_created_with_unicode(self) -> None:
         expected_topic_name = "BUG-15: New bug with à hook"
-        expected_message = """
-@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15):
-
-* **Priority**: Major
-* **Assignee**: no one
-""".strip()
+        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15) with Major priority."
         self.check_webhook("issue_created_with_unicode", expected_topic_name, expected_message)
 
     def test_created_assignee(self) -> None:
         expected_topic_name = "TEST-4: Test Created Assignee"
-        expected_message = """
-Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4):
-
-* **Priority**: Major
-* **Assignee**: Leonardo Franchi [Administrator]
-""".strip()
+        expected_message = "Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with Major priority (assigned to Leonardo Franchi [Administrator])."
         self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
 
     def test_deleted(self) -> None:
@@ -144,12 +124,7 @@ Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https:/
     def test_created_silent_mention_by_email_fallback(self) -> None:
         othello = self.example_user("othello")
         expected_topic_name = "BUG-15: New bug with hook"
-        expected_message = f"""
-@_**{othello.full_name}|{othello.id}** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
-
-* **Priority**: Major
-* **Assignee**: no one
-""".strip()
+        expected_message = f"@_**{othello.full_name}|{othello.id}** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) with Major priority."
         self.check_webhook("issue_created", expected_topic_name, expected_message)
 
     def test_comment_created_silent_mention_atlassian_account_id(self) -> None:
