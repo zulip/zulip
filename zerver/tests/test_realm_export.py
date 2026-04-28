@@ -295,6 +295,39 @@ class RealmExportTest(ZulipTestCase):
             ],
         )
 
+    def test_export_from_prior_server_status_in_api(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        # A RealmExport row whose tarball is no longer stored on this
+        # server - the result of the record being carried
+        # across a realm export->import.
+        prior_server_export = RealmExport.objects.create(
+            realm=admin.realm,
+            type=RealmExport.EXPORT_PUBLIC,
+            status=RealmExport.EXPORT_FROM_PRIOR_SERVER,
+            date_requested=timezone_now(),
+            date_succeeded=timezone_now(),
+            acting_user=admin,
+            export_path=None,
+        )
+
+        result = self.client_get("/json/export/realm")
+        response_dict = self.assert_json_success(result)
+        export_dict = response_dict["exports"]
+        self.assert_length(export_dict, 1)
+        self.assertEqual(export_dict[0]["id"], prior_server_export.id)
+        self.assertIsNone(export_dict[0]["export_url"])
+        self.assertEqual(export_dict[0]["pending"], False)
+        self.assertIsNone(export_dict[0]["deleted_timestamp"])
+        self.assertIsNone(export_dict[0]["failed_timestamp"])
+        self.assertEqual(export_dict[0]["export_from_prior_server"], True)
+        self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
+
+        # Trying to delete such a row reports it as already deleted.
+        result = self.client_delete(f"/json/export/realm/{prior_server_export.id}")
+        self.assert_json_error(result, "Export already deleted")
+
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user("iago")
         self.login_user(admin)

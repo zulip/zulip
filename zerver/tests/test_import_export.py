@@ -2011,12 +2011,16 @@ class RealmImportExportTest(ExportFile):
 
         get_user_by_delivery_email(prospero_email, imported_realm)
 
-        # Ensure RealmExport.export_path is excluded from the export and thus None after importing.
+        # Ensure RealmExport.export_path is excluded from the export and thus None after
+        # importing, and that the SUCCEEDED status was flipped to EXPORT_FROM_PRIOR_SERVER
+        # so the imported row reflects that the tarball is no longer available.
         exported_realm_exports = read_json("realm.json")["zerver_realmexport"]
         self.assert_length(exported_realm_exports, 1)
         self.assertNotIn("export_path", exported_realm_exports[0])
+        self.assertEqual(exported_realm_exports[0]["status"], RealmExport.EXPORT_FROM_PRIOR_SERVER)
         imported_realm_export = RealmExport.objects.get(realm=imported_realm)
         self.assertIsNone(imported_realm_export.export_path)
+        self.assertEqual(imported_realm_export.status, RealmExport.EXPORT_FROM_PRIOR_SERVER)
 
     def test_import_message_edit_history(self) -> None:
         realm = get_realm("zulip")
@@ -2422,7 +2426,15 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_realm_exports(r: Realm) -> set[tuple[datetime, int, int]]:
             return {
-                (rec.date_requested, rec.type, rec.status)
+                (
+                    rec.date_requested,
+                    rec.type,
+                    # SUCCEEDED rows are intentionally flipped to
+                    # EXPORT_FROM_PRIOR_SERVER during realm export.
+                    RealmExport.EXPORT_FROM_PRIOR_SERVER
+                    if rec.status == RealmExport.SUCCEEDED
+                    else rec.status,
+                )
                 for rec in RealmExport.objects.filter(realm=r)
             }
 

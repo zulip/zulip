@@ -18,6 +18,8 @@
         <div class="export_url_spinner"></div>
         {{else if time_deleted}}
         <span class="export_status">{{t 'Deleted' }}: {{time_deleted}}</span>
+        {{else if export_from_prior_server}}
+        <span class="export_status">{{t 'Export from a prior server' }}</span>
         {{/if}}
     </td>
     <td class="actions">

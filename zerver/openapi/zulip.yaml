@@ -4653,6 +4653,7 @@ paths:
                                         "deleted_timestamp": null,
                                         "failed_timestamp": 1594825444.4363360405,
                                         "pending": false,
+                                        "export_from_prior_server": false,
                                         "export_type": "public",
                                       },
                                     ],
@@ -17022,6 +17023,7 @@ paths:
                               "id": 323,
                               "failed_timestamp": null,
                               "pending": false,
+                              "export_from_prior_server": false,
                             },
                           ],
                         "msg": "",
@@ -27970,8 +27972,13 @@ components:
           description: |
             The URL to download the generated data export.
 
-            Will be `null` if the data export failed, or if it's
-            still being generated.
+            Will be `null` if the data export failed, if it's
+            still being generated, or if this export happened
+            on a previous server.
+
+            **Changes**: Starting in Zulip 13.0 (feature level ZF-6bb2a7),
+            this is also `null` for exports that happened on a previous
+            server.
         pending:
           type: boolean
           description: |
@@ -27982,6 +27989,16 @@ components:
             Depending on the size of the organization, it can take
             anywhere from seconds to an hour to generate the data
             export.
+        export_from_prior_server:
+          type: boolean
+          description: |
+            Whether this data export happened on a previous server,
+            and thus its tarball is no longer stored on this server.
+            This is `true` for records that were carried across a
+            realm import; the record is preserved for audit purposes
+            but its data is no longer available for download.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-6bb2a7).
         export_type:
           type: string
           enum:
