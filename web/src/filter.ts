@@ -663,6 +663,11 @@ export class Filter {
             case "id":
             case "near":
             case "with":
+                // Negating these doesn't have a useful meaning,
+                // so we reject it (matching `date` below).
+                if (term.negated) {
+                    return false;
+                }
                 return Number.isInteger(Number(term.operand));
             case "channel":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
