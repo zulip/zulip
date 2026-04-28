@@ -63,6 +63,7 @@ let fetch_users_storage: {
 };
 
 export let INACCESSIBLE_USER_NAME: string;
+let PLACEHOLDER_USER_NAME: string;
 export let WELCOME_BOT: User;
 export let EMAIL_GATEWAY_BOT: User;
 
@@ -91,6 +92,7 @@ export function init(): void {
     duplicate_full_name_data = new FoldDict();
 
     INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
+    PLACEHOLDER_USER_NAME = $t({defaultMessage: "Loading…"});
 
     fetch_users_storage = {
         pending_user_ids: new Set(),
@@ -1536,6 +1538,17 @@ export function add_inaccessible_user(user_id: number): User {
     return unknown_user;
 }
 
+export function add_placeholder_user(user_id: number): User {
+    const email = make_dummy_email(user_id);
+    const placeholder = make_user(user_id, email, PLACEHOLDER_USER_NAME);
+    placeholder.is_placeholder_user = true;
+    // Whether we can access this user is known only once their
+    // data is fetched, so don't mark them inaccessible yet.
+    placeholder.is_inaccessible_user = false;
+    add_active_user(placeholder);
+    return placeholder;
+}
+
 export function get_user_by_id_assert_valid(
     user_id: number,
     allow_missing_user = !settings_data.user_can_access_all_other_users(),
@@ -1785,6 +1798,11 @@ export function populate_valid_user_ids(
     }
 }
 
+function has_fetched_user(user_id: number): boolean {
+    const existing = people_by_user_id_dict.get(user_id);
+    return existing !== undefined && !existing.is_placeholder_user;
+}
+
 function get_combined_promise_for_user_ids(user_ids: Set<number>): {
     promise_for_all_requested_users: Promise<unknown>;
     user_ids_pending_fetch: Set<number>;
@@ -1793,7 +1811,7 @@ function get_combined_promise_for_user_ids(user_ids: Set<number>): {
     // Since start_fetch_for_requested_users is called after a `setTimeout`,
     // it is possible that some users have already been fetched.
     for (const user_id of user_ids) {
-        if (people_by_user_id_dict.has(user_id)) {
+        if (has_fetched_user(user_id)) {
             /* istanbul ignore next */
             user_ids.delete(user_id);
         }
@@ -1869,6 +1887,8 @@ async function start_fetch_for_requested_users(): Promise<void> {
         }
     }
 
+    mark_unfetched_placeholder_users_inaccessible(user_ids_pending_fetch);
+
     // Resolve promises waiting on this fetch after updating the data locally.
     fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolve();
     // Clean up in transit promise for this fetch.
@@ -1886,9 +1906,7 @@ async function start_fetch_for_requested_users(): Promise<void> {
 export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<unknown> => {
     // NOTE: NEVER USE THIS FUNCTION DIRECTLY.
     // Call get_or_fetch_users_from_ids instead.
-    const unknown_user_ids = new Set(
-        user_ids.filter((user_id) => !people_by_user_id_dict.has(user_id)),
-    );
+    const unknown_user_ids = new Set(user_ids.filter((user_id) => !has_fetched_user(user_id)));
 
     // We already have data for all requested users.
     if (unknown_user_ids.size === 0) {
@@ -2058,6 +2076,17 @@ function add_fetched_users(fetched_users: UsersFetchResponse["members"]): void {
                 non_active_user_dict.set(user.user_id, user);
             }
             _add_user(user);
+        }
+    }
+}
+
+// The server omits users we cannot access from its response, so a
+// placeholder that is still present after its fetch succeeded will
+// never get real data.
+function mark_unfetched_placeholder_users_inaccessible(requested_user_ids: Iterable<number>): void {
+    for (const user_id of requested_user_ids) {
+        if (is_placeholder_user(user_id)) {
+            remove_inaccessible_user(user_id);
         }
     }
 }

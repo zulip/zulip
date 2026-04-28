@@ -1649,6 +1649,24 @@ run_test("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.email, charles.email);
 });
 
+run_test("add_placeholder_user", ({override}) => {
+    initialize();
+    override(realm, "realm_bot_domain", "zulipdev.com");
+
+    const placeholder_user_id = 98;
+    const user = people.add_placeholder_user(placeholder_user_id);
+    assert.equal(user.full_name, "translated: Loading…");
+    assert.equal(user.user_id, placeholder_user_id);
+    assert.equal(user.email, "user98@zulipdev.com");
+    assert.ok(user.is_missing_server_data);
+    assert.ok(user.is_placeholder_user);
+
+    // Placeholder user should be retrievable via get_by_user_id.
+    const retrieved = people.get_by_user_id(placeholder_user_id);
+    assert.equal(retrieved.user_id, placeholder_user_id);
+    assert.equal(retrieved.full_name, "translated: Loading…");
+});
+
 run_test("user_can_initiate_direct_message_thread", ({override}) => {
     initialize();
     people.add_active_user(welcome_bot);
@@ -1938,7 +1956,11 @@ run_test("user fetch batches a large request", async ({override}) => {
         const batch = JSON.parse(data.user_ids);
         // Users from the earlier batches are already known by the time we
         // request this one, rather than only once every batch has arrived.
-        assert.ok(requested_batches.flat().every((user_id) => people.is_known_user_id(user_id)));
+        assert.ok(
+            requested_batches
+                .flat()
+                .every((user_id) => !people.get_by_user_id(user_id).is_placeholder_user),
+        );
         requested_batches.push(batch);
         success({
             members: batch.map((user_id) => make_fetched_user(user_id)),
@@ -1947,6 +1969,9 @@ run_test("user fetch batches a large request", async ({override}) => {
         });
     });
 
+    for (const user_id of user_ids_to_fetch) {
+        people.add_placeholder_user(user_id);
+    }
     await people.initialize(my_user_id, people_params, user_group_params);
 
     assert.deepEqual(
@@ -2005,6 +2030,10 @@ run_test("user fetch resumes after a failed batch", async ({override, override_r
         2,
     );
 
+    // Placeholders the server leaves out become inaccessible users.
+    for (const user_id of inaccessible_user_ids) {
+        people.add_placeholder_user(user_id);
+    }
     await people.initialize(my_user_id, people_params, user_group_params);
 
     // Only the failed batches are requested twice; the rest are not refetched.
