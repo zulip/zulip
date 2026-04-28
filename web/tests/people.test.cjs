@@ -1633,6 +1633,24 @@ run_test("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.email, charles.email);
 });
 
+run_test("add_placeholder_user", ({override}) => {
+    initialize();
+    override(realm, "realm_bot_domain", "zulipdev.com");
+
+    const placeholder_user_id = 98;
+    const user = people.add_placeholder_user(placeholder_user_id);
+    assert.equal(user.full_name, "translated: Loading…");
+    assert.equal(user.user_id, placeholder_user_id);
+    assert.equal(user.email, "user98@zulipdev.com");
+    assert.ok(user.is_missing_server_data);
+    assert.ok(user.is_placeholder_user);
+
+    // Placeholder user should be retrievable via get_by_user_id.
+    const retrieved = people.get_by_user_id(placeholder_user_id);
+    assert.equal(retrieved.user_id, placeholder_user_id);
+    assert.equal(retrieved.full_name, "translated: Loading…");
+});
+
 run_test("user_can_initiate_direct_message_thread", ({override}) => {
     initialize();
     people.add_active_user(welcome_bot);

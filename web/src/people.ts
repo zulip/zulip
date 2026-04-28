@@ -77,6 +77,7 @@ let fetch_users_storage: {
 };
 
 export let INACCESSIBLE_USER_NAME: string;
+export let PLACEHOLDER_USER_NAME: string;
 export let WELCOME_BOT: User;
 export let EMAIL_GATEWAY_BOT: User;
 
@@ -106,6 +107,7 @@ export function init(): void {
     duplicate_full_name_data = new FoldDict();
 
     INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
+    PLACEHOLDER_USER_NAME = $t({defaultMessage: "Loading…"});
 
     fetch_users_storage = {
         pending_user_ids: new Set(),
@@ -1609,6 +1611,17 @@ export function add_inaccessible_user(user_id: number): User {
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
     return unknown_user;
+}
+
+export function add_placeholder_user(user_id: number): User {
+    const email = make_dummy_email(user_id);
+    const placeholder = make_user(user_id, email, PLACEHOLDER_USER_NAME);
+    placeholder.is_placeholder_user = true;
+    // Placeholder users are known to be accessible (they're in
+    // valid_user_ids); we just haven't loaded their data yet.
+    placeholder.is_inaccessible_user = false;
+    add_active_user(placeholder);
+    return placeholder;
 }
 
 export function get_user_by_id_assert_valid(
