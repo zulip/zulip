@@ -38,6 +38,12 @@ function assert_msg_ids(messages, msg_ids) {
 
 mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
+    pm_with_user_ids(msg) {
+        if (msg.type !== "private") {
+            return undefined;
+        }
+        return msg.to_user_ids.split(",").map(Number);
+    },
 });
 
 run_test("basics", () => {
@@ -95,16 +101,21 @@ run_test("basics", () => {
         {id: 4, sender_id: 6, type: "private", to_user_ids: "6,9,10"},
         {id: 6, sender_id: 6, type: "private", to_user_ids: "6, 11"},
     ];
+    // A DM 6 received but did not send -- in get_messages_involving_user
+    // but not get_messages_sent_by_user.
+    const dm_received_by_6 = {id: 7, sender_id: 11, type: "private", to_user_ids: "11,6"};
+    const msgs_involving_6 = [...msgs_sent_by_6, dm_received_by_6];
     const msgs_with_sender_ids = [
         {id: 1, sender_id: 1, type: "stream", stream_id: 1, topic: "random1"},
         {id: 3, sender_id: 4, type: "stream", stream_id: 1, topic: "random2"},
         {id: 5, sender_id: 2, type: "private", to_user_ids: "2,10,11"},
         {id: 8, sender_id: 11, type: "private", to_user_ids: "10"},
         {id: 9, sender_id: 11, type: "private", to_user_ids: "9"},
-        ...msgs_sent_by_6,
+        ...msgs_involving_6,
     ];
     mld.add_messages(msgs_with_sender_ids, true);
     assert.deepEqual(mld.get_messages_sent_by_user(6), msgs_sent_by_6);
+    assert.deepEqual(mld.get_messages_involving_user(6), msgs_involving_6);
 
     mld.clear();
     assert_contents(mld, []);
