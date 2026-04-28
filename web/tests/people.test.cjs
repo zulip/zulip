@@ -1699,6 +1699,64 @@ run_test("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.email, charles.email);
 });
 
+run_test("add_placeholder_user", ({override}) => {
+    initialize();
+    override(realm, "realm_bot_domain", "zulipdev.com");
+
+    const placeholder_user_id = 98;
+    const user = people.add_placeholder_user(placeholder_user_id);
+    assert.equal(user.full_name, "translated: Loading…");
+    assert.equal(user.user_id, placeholder_user_id);
+    assert.equal(user.email, "user98@zulipdev.com");
+    assert.ok(user.is_missing_server_data);
+    assert.ok(user.is_placeholder_user);
+
+    // Placeholder user should be retrievable via get_by_user_id.
+    const retrieved = people.get_by_user_id(placeholder_user_id);
+    assert.equal(retrieved.user_id, placeholder_user_id);
+    assert.equal(retrieved.full_name, "translated: Loading…");
+
+    // Placeholder users are treated as active until their real data
+    // arrives, so that we don't render them as deactivated in the UI.
+    assert.equal(people.is_person_active(placeholder_user_id), true);
+});
+
+run_test("user fetch for placeholder users", async ({override}) => {
+    initialize();
+    people.init();
+    override(realm, "realm_bot_domain", "zulipdev.com");
+    override(settings_data, "user_can_access_all_other_users", () => false);
+
+    const accessible_user_id = 201;
+    const inaccessible_user_id = 202;
+    for (const user_id of [accessible_user_id, inaccessible_user_id]) {
+        people.add_valid_user_id(user_id);
+        people.add_placeholder_user(user_id);
+    }
+
+    const requested_batches = [];
+    override(channel, "get", ({data, success}) => {
+        requested_batches.push(JSON.parse(data.user_ids));
+        success({
+            members: [make_fetched_user(accessible_user_id)],
+            result: "success",
+            msg: "",
+        });
+    });
+
+    // Placeholders count as not yet fetched.
+    await people.get_or_fetch_users_from_ids([accessible_user_id, inaccessible_user_id]);
+    assert.deepEqual(requested_batches, [[accessible_user_id, inaccessible_user_id]]);
+    const accessible_user = people.get_by_user_id(accessible_user_id);
+    assert.equal(accessible_user.full_name, "User 201");
+    assert.ok(!accessible_user.is_placeholder_user);
+
+    // Placeholders the server leaves out become inaccessible users.
+    const inaccessible_user = people.get_by_user_id(inaccessible_user_id);
+    assert.ok(inaccessible_user.is_inaccessible_user);
+    assert.ok(!inaccessible_user.is_placeholder_user);
+});
+
 run_test("user_can_initiate_direct_message_thread", ({override}) => {
     initialize();
     people.add_active_user(welcome_bot);
