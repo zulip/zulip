@@ -497,7 +497,8 @@
     }
 
     .add-stream-icon-container:focus-visible .add_stream_icon,
-    &:focus-within .add_stream_icon {
+    &:focus-within .add_stream_icon,
+    &.highlighted_row .add_stream_icon {
         visibility: visible;
     }
 
@@ -658,17 +659,23 @@
     }
 }
 
-/* Only show section header unread counts when the section is collapsed
-   or when the header is being hovered over. */
+/* Only show section header unread counts when the section is collapsed,
+   when the header is being hovered over, when keyboard focus is inside
+   the header, or when the header is the current arrow-key target. */
 #streams_list .stream-list-section-container:not(.collapsed) {
-    .stream-list-subsection-header:not(:hover) {
+    .stream-list-subsection-header:not(
+            :hover,
+            :focus-within,
+            .highlighted_row
+        ) {
         .unread_count,
         .masked_unread_count {
             visibility: hidden;
         }
     }
 
-    .stream-list-subsection-header:not(:hover) .unread_mention_info {
+    .stream-list-subsection-header:not(:hover, :focus-within, .highlighted_row)
+        .unread_mention_info {
         display: none;
     }
 }
