@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import render_channel_message_link from "../templates/channel_message_link.hbs";
@@ -11,6 +12,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 
+import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as hash_util from "./hash_util.ts";
@@ -77,12 +79,17 @@ export function update_topic_or_message_link_element(
     stream_info: StreamInfo,
     topic_name: string,
     narrow_url: string,
+    message?: Message,
 ): void {
-    const topic_display_name = util.get_final_topic_display_name(topic_name);
+    let topic_display_name = _.escape(util.get_final_topic_display_name(topic_name));
+
+    if (message?.alerted) {
+        topic_display_name = alert_words.highlight_alert_words(topic_display_name);
+    }
 
     const context = {
         channel_name: stream_info.name,
-        topic_display_name,
+        topic_display_name_html: topic_display_name,
         is_empty_string_topic: topic_name === "",
         href: narrow_url,
     };
@@ -288,11 +295,13 @@ export const update_elements = ($content: JQuery): void => {
             // TODO: Ideally, we should NOT skip this if only topic is highlighted,
             // but we are doing so currently.
             assert(channel_topic.topic_name !== undefined);
+            message ??= get_message_for_message_content($content);
             update_topic_or_message_link_element(
                 $(this),
                 sub,
                 channel_topic.topic_name,
                 narrow_url,
+                message,
             );
         }
     });

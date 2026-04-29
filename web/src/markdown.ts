@@ -632,10 +632,11 @@ function handleStreamTopic({
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic);
+    const topic_display_name_html = _.escape(util.get_final_topic_display_name(topic));
     return render_topic_link({
         channel_id: stream.stream_id,
         channel_name: stream.name,
-        topic_display_name: util.get_final_topic_display_name(topic),
+        topic_display_name_html,
         is_empty_string_topic: topic === "",
         href,
     });
@@ -664,9 +665,10 @@ function handleStreamTopicMessage({
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic) + "/near/" + message_id;
+    const topic_display_name_html = _.escape(util.get_final_topic_display_name(topic));
     return render_channel_message_link({
         channel_name: stream.name,
-        topic_display_name: util.get_final_topic_display_name(topic),
+        topic_display_name_html,
         is_empty_string_topic: topic === "",
         href,
     });
