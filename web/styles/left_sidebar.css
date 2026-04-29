@@ -61,6 +61,16 @@
     border-radius: 3px;
     color: var(--color-sidebar-action);
 
+    /* The section-header variant is an <a>, so without this rule the
+       generic `a:focus` rule in zulip.css would shift the icon to the
+       interactive link color when focused. Re-state the default color
+       here so it stays consistent with the <span>/<div> sibling
+       buttons. */
+    &:focus,
+    &:focus-visible {
+        color: var(--color-sidebar-action);
+    }
+
     &:hover {
         color: var(--color-sidebar-action-hover);
         background-color: var(--color-background-sidebar-action-hover);
@@ -70,6 +80,10 @@
     &:focus-visible {
         outline: 2px solid var(--color-outline-focus);
         outline-offset: -2px;
+        /* `!important` overrides the `.dark-theme:root
+           a:not(:active):focus` rule in dark_theme.css, which would
+           otherwise set this anchor's focus outline to grey. */
+        outline-color: var(--color-outline-focus) !important;
     }
 
     .add_stream_icon {
