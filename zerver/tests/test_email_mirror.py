@@ -441,7 +441,8 @@ class TestStreamEmailMessages(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual(message.topic_name(), "a" * 57 + "...")
         self.assertEqual(
-            message.content, f"Subject: {long_subject}\n\nTestStreamEmailMessages body"
+            message.content,
+            f"Subject: {long_subject}\n\nTestStreamEmailMessages body",
         )
 
     def test_receive_private_stream_email_messages_success(self) -> None:

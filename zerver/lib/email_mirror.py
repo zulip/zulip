@@ -44,8 +44,8 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.clients import get_client
-from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot
 from zproject.backends import is_user_active
 
