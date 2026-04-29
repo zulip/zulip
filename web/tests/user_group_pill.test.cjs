@@ -163,7 +163,7 @@ run_test("generate_pill_html", () => {
             "Testers\n" +
             '        </span>&nbsp;<span class="group-members-count">(4)</span></span>\n' +
             '    <div class="exit">\n' +
-            '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +
+            '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n' +
             "    </div>\n" +
             "</div>\n",
     );
