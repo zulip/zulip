@@ -228,26 +228,19 @@ def cache_with_key(
             key = keyfunc(*args, **kwargs)
 
             try:
-                val = cache_get(key, cache_name=cache_name)
+                validate_cache_key(KEY_PREFIX + key)
             except InvalidCacheKeyError:
                 stack_trace = traceback.format_exc()
                 log_invalid_cache_keys(stack_trace, [key])
                 return checked(*args, **kwargs)
 
-            # Values are singleton tuples so that we can distinguish a
-            # result of None from a missing key.  Setting
-            # pickled_tupled=False avoids pickling the result (if it's
-            # a raw string or bytes) at the cost of losing this
-            # distinction.
-            if val is not None and pickled_tupled:
-                return val[0]
-
-            val = checked(*args, **kwargs)
-            cache_set(
-                key, val, cache_name=cache_name, timeout=timeout, pickled_tupled=pickled_tupled
+            return read_through_cache(
+                key,
+                lambda: checked(*args, **kwargs),
+                cache_name=cache_name,
+                timeout=timeout,
+                pickled_tupled=pickled_tupled,
             )
-
-            return val
 
         return func_with_caching
 
