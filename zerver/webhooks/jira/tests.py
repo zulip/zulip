@@ -56,7 +56,7 @@ class JiraHookTests(WebhookTestCase):
 
     def test_created_assignee(self) -> None:
         expected_topic_name = "TEST-4: Test Created Assignee"
-        expected_message = "Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with Major priority (assigned to Leonardo Franchi [Administrator])."
+        expected_message = "James Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with Major priority (assigned to James Williams)."
         self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
 
     def test_deleted(self) -> None:
@@ -73,7 +73,7 @@ class JiraHookTests(WebhookTestCase):
 
     def test_priority_updated(self) -> None:
         expected_topic_name = "TEST-1: Fix That"
-        expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1) (assigned to Leonardo Franchi [Administrator]):
+        expected_message = """James Williams updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1) (assigned to James Williams):
 
 * Changed priority from **Critical** to **Major**"""
         self.check_webhook("issue_updated__priority", expected_topic_name, expected_message)
