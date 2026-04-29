@@ -1,0 +1,8 @@
+{
+  "timestamp": 1778071365412,
+  "event": "page_restored",
+  "userKey": "abc123",
+  "page": {
+    "id": 123456
+  }
+}
