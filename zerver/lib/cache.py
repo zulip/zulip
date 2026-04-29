@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from zerver.models import Attachment, Message, MutedUser, Realm, Stream, SubMessage, UserProfile
 
 MEMCACHED_MAX_KEY_LENGTH = 250
+_VALID_CACHE_KEY_RE = re.compile(r"[!-~]+")
 
 ParamT = ParamSpec("ParamT")
 ReturnT = TypeVar("ReturnT")
@@ -226,10 +227,10 @@ def validate_cache_key(key: str, auto_prepend_prefix: bool = True) -> None:
     # https://github.com/memcached/memcached/blob/master/doc/protocol.txt
     # However, limiting the characters we allow in keys simiplifies things,
     # and anyway we use a hash function when forming some keys to ensure
-    # the resulting keys fit the regex below.
+    # the resulting keys fit the regex.
     # The regex checks "all characters between ! and ~ in the ascii table",
     # which happens to be the set of all "nice" ascii characters.
-    if not bool(re.fullmatch(r"([!-~])+", key)):
+    if _VALID_CACHE_KEY_RE.fullmatch(key) is None:
         raise InvalidCacheKeyError("Invalid characters in the cache key: " + key)
     if len(key) > MEMCACHED_MAX_KEY_LENGTH:
         raise InvalidCacheKeyError(f"Cache key too long: {key} Length: {len(key)}")
