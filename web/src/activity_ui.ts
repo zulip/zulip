@@ -342,12 +342,8 @@ function resolve_arrow_target($active: JQuery, direction: "up" | "down"): JQuery
         // nowhere to go; ArrowUp lands on the last visible user row.
         return direction === "down" ? undefined : last_user_in_buddy_list();
     }
-    // We've installed this handler on #buddy_list_wrapper, so every focusable
-    // descendant should be covered by a branch above. Log and bail if not.
-    blueslip.error("Unexpected focused element in buddy list", {
-        element: $active[0]?.nodeName,
-        class: $active[0]?.className,
-    });
+    // Focus isn't on anything we navigate between (e.g. SimpleBar's internal
+    // scroll wrappers, or #buddy_list_wrapper itself). Do nothing.
     return undefined;
 }
 
