@@ -176,11 +176,6 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         get_display_value_from_item: noop,
     });
 
-    let update_func_called = false;
-    function update_func() {
-        update_func_called = true;
-    }
-
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
         assert.ok(config.dropup);
@@ -232,7 +227,6 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
             config.updater(me_item, person_query);
             assert.equal(number_of_pills(), 1);
 
-            assert.ok(update_func_called);
         })();
 
         // input_pill_typeahead_called is set true if
@@ -240,7 +234,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         input_pill_typeahead_called = true;
     });
 
-    pill_typeahead.set_up_user($fake_input, $pill_widget, {update_func});
+    pill_typeahead.set_up_user($fake_input, $pill_widget, {});
     assert.ok(input_pill_typeahead_called);
 });
 
@@ -267,11 +261,6 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         get_text_from_item: noop,
         get_display_value_from_item: noop,
     });
-
-    let update_func_called = false;
-    function update_func() {
-        update_func_called = true;
-    }
 
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
@@ -320,8 +309,6 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
             assert.equal(number_of_pills(), 0);
             config.updater(denmark_item, stream_query);
             assert.equal(number_of_pills(), 1);
-
-            assert.ok(update_func_called);
         })();
 
         // input_pill_typeahead_called is set true if
@@ -329,7 +316,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         input_pill_typeahead_called = true;
     });
 
-    pill_typeahead.set_up_stream($fake_input, $pill_widget, {update_func});
+    pill_typeahead.set_up_stream($fake_input, $pill_widget, {});
     assert.ok(input_pill_typeahead_called);
 });
 
@@ -452,11 +439,6 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         get_text_from_item: noop,
         get_display_value_from_item: noop,
     });
-
-    let update_func_called = false;
-    function update_func() {
-        update_func_called = true;
-    }
 
     function mock_pill_removes(widget) {
         const pills = widget._get_pills_for_testing();
@@ -654,8 +636,6 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 config.updater(testers_item, group_query);
                 assert.equal(number_of_pills(), 3);
 
-                assert.ok(update_func_called);
-
                 // Clear pills for the next test.
                 mock_pill_removes($pill_widget);
                 $pill_widget.clear();
@@ -688,7 +668,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         {user_group: true, stream: true},
         {user_group: true, user: true},
         {user: true, stream: true},
-        {user_group: true, stream: true, user: true, update_func},
+        {user_group: true, stream: true, user: true},
     ];
 
     for (const config of all_possible_opts) {
