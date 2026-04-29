@@ -7,6 +7,8 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from email.headerregistry import Address
+from multiprocessing import Manager
+from multiprocessing.managers import ListProxy
 from typing import Any, Literal, TypeAlias
 from urllib.parse import SplitResult
 
@@ -438,7 +440,7 @@ def is_microsoft_teams_event_message(message: MicrosoftTeamsFieldsT) -> bool:
 
 
 def download_and_export_microsoft_teams_upload_file(
-    attachment_records: list[AttachmentRecordData],
+    attachment_records: ListProxy | list[AttachmentRecordData],  # type: ignore[type-arg] # ListProxy is not subscriptable
     output_dir: str,
     args: ExportMessageAttachmentParameter,
 ) -> None:
@@ -472,7 +474,8 @@ def download_and_export_microsoft_teams_upload_file(
             content_type=bare_content_type(raw_content_type),
             create_time=os.path.getmtime(file_output_path),
             file_name=os.path.basename(file_output_path),
-            id=NEXT_ID("attachment"),
+            # IDs will be assigned later after all uploads have been downloaded.
+            id=0,
             is_realm_public=True,
             messages=[args.message_id],
             owner=args.sender_id,
@@ -743,7 +746,21 @@ def convert_messages(
                 membership_type=team_channel["MembershipType"],
                 team_id=team_id,
             )
-    total_attachment_records: list[AttachmentRecordData] = []
+
+    # Attachment record data is only fully known after the file is
+    # downloaded, so records must be built inside the download
+    # workers. When processes > 1, workers run in separate processes
+    # and can't share memory with the parent, so we use a
+    # multiprocessing-shared list to gather their results.
+    #
+    # A nicer approach worth considering in the future would be to
+    # have run_parallel_queue return futures that the parent can
+    # wait on and collect results from, avoiding this shared-state
+    # coordination entirely.
+    total_attachment_records: list[AttachmentRecordData] | ListProxy = (  # type: ignore[type-arg] # ListProxy is not subscriptable
+        Manager().list() if processes > 1 else []
+    )
+
     total_accumulated_upload_records: list[UploadRecordData] = []
     with run_parallel_queue(
         partial(
@@ -778,7 +795,15 @@ def convert_messages(
                 f"/messages-{dump_file_id:06}.json",
             )
             dump_file_id += 1
-    return (total_accumulated_upload_records, total_attachment_records)
+
+    def fix_attachment_id(attachment: AttachmentRecordData) -> AttachmentRecordData:
+        attachment.id = NEXT_ID("attachment")
+        return attachment
+
+    return (
+        total_accumulated_upload_records,
+        list(map(fix_attachment_id, total_attachment_records)),
+    )
 
 
 def do_convert_directory(
