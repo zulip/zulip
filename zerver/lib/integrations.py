@@ -588,6 +588,15 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         legacy=True,
     ),
     IncomingWebhookIntegration(
+        "confluence",
+        ["project-management"],
+        display_name="Confluence Server/Data Center",
+        url_options=[
+            WebhookUrlOption(name="base_url", label="Confluence base URL", input_type="text"),
+            WebhookUrlOption(name="token", label="Personal access token", input_type="text"),
+        ],
+    ),
+    IncomingWebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
     ),
     IncomingWebhookIntegration(

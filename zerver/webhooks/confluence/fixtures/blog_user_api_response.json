@@ -1,0 +1,21 @@
+{
+  "email": "alicejones@example.com",
+  "type": "known",
+  "username": "ajones",
+  "userKey": "def",
+  "profilePicture": {
+    "path": "/images/icons/profilepics/default.svg",
+    "width": 48,
+    "height": 48,
+    "isDefault": true
+  },
+  "displayName": "Alice Jones",
+  "_links": {
+    "base": "https://wiki.example.com",
+    "context": "",
+    "self": "https://wiki.example.com/rest/api/user?key=3d9281940f461c2f020f461db7551111"
+  },
+  "_expandable": {
+    "status": ""
+  }
+}
