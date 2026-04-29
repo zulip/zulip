@@ -416,7 +416,32 @@ class TestStreamEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.topic_name(), "")
         self.assertEqual(
-            message.content, "**Subject:** Test subject\n\nTestStreamEmailMessages body"
+            message.content, "Subject: Test subject\n\nTestStreamEmailMessages body"
+        )
+
+    def test_receive_stream_email_long_subject(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+
+        long_subject = "a" * 61
+        incoming_valid_message["Subject"] = long_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.topic_name(), "a" * 57 + "...")
+        self.assertEqual(
+            message.content, f"Subject: {long_subject}\n\nTestStreamEmailMessages body"
         )
 
     def test_receive_private_stream_email_messages_success(self) -> None:

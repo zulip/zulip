@@ -45,6 +45,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.users import get_system_bot
 from zproject.backends import is_user_active
 
@@ -187,7 +188,7 @@ def construct_zulip_body(
         from_address = str(message.get("From", ""))
         preamble = f"**From:** {from_address}\n"
     if subject_in_body:
-        preamble += f"**Subject:** {subject}\n"
+        preamble += f"Subject: {subject}\n"
     if preamble != "":
         preamble += "\n"
 
@@ -459,6 +460,9 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
         options["include_quotes"] = is_forwarded(subject_header)
 
     subject = strip_from_subject(subject_header)
+    if len(subject) > MAX_TOPIC_NAME_LENGTH:
+        options["subject_in_body"] = True
+
     # We don't want to reject email messages with disallowed characters in the Subject,
     # so we just remove them to make it a valid Zulip topic name.
     subject = "".join([char for char in subject if is_character_printable(char)])
