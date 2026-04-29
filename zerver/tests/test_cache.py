@@ -2,6 +2,7 @@ from unittest.mock import Mock, patch
 
 from bmemcached.exceptions import MemcachedException
 from django.conf import settings
+from django.db.models import QuerySet
 
 from zerver.apps import flush_cache
 from zerver.lib.cache import (
@@ -157,6 +158,23 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
             result_two = get_user_function_can_return_none(last_user_id + 1)
 
         self.assertEqual(result_two, None)
+
+    def test_cache_with_key_rejects_queryset_return(self) -> None:
+        """Returning a QuerySet from a @cache_with_key-decorated function
+        raises AssertionError under TEST_SUITE / DEBUG; production skips
+        the check."""
+
+        def cache_key_function(user_id: int) -> str:
+            return f"CacheWithKeyDecoratorTest:queryset_return:{user_id}"
+
+        @cache_with_key(cache_key_function, timeout=1000)
+        def buggy_returns_queryset(user_id: int) -> QuerySet[UserProfile]:
+            return UserProfile.objects.filter(id=user_id)
+
+        hamlet = self.example_user("hamlet")
+        with self.assertRaises(AssertionError) as cm:
+            buggy_returns_queryset(hamlet.id)
+        self.assertIn("returned a QuerySet", str(cm.exception))
 
 
 class SetCacheExceptionTest(ZulipTestCase):

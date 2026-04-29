@@ -156,6 +156,26 @@ def get_cache_backend(cache_name: str | None) -> BaseCache:
     return caches[cache_name]
 
 
+def _no_queryset_returns(
+    func: Callable[ParamT, ReturnT],
+) -> Callable[ParamT, ReturnT]:
+    """Dev/test guard: assert a @cache_with_key-decorated function never
+    returns a QuerySet.  Production skips the check.
+    """
+
+    @wraps(func)
+    def wrapped(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
+        val = func(*args, **kwargs)
+        if isinstance(val, QuerySet):
+            raise AssertionError(
+                f"@cache_with_key {func.__qualname__} returned a QuerySet; "
+                f"materialize (e.g. list(qs)) before returning."
+            )
+        return val
+
+    return wrapped
+
+
 def cache_with_key(
     keyfunc: Callable[ParamT, str],
     cache_name: str | None = None,
@@ -170,6 +190,11 @@ def cache_with_key(
     other uses of caching."""
 
     def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
+        if settings.TEST_SUITE or settings.DEBUG:
+            checked = _no_queryset_returns(func)
+        else:
+            checked = func
+
         @wraps(func)
         def func_with_caching(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             key = keyfunc(*args, **kwargs)
@@ -179,7 +204,7 @@ def cache_with_key(
             except InvalidCacheKeyError:
                 stack_trace = traceback.format_exc()
                 log_invalid_cache_keys(stack_trace, [key])
-                return func(*args, **kwargs)
+                return checked(*args, **kwargs)
 
             # Values are singleton tuples so that we can distinguish a
             # result of None from a missing key.  Setting
@@ -189,16 +214,10 @@ def cache_with_key(
             if val is not None and pickled_tupled:
                 return val[0]
 
-            val = func(*args, **kwargs)
-            if isinstance(val, QuerySet):
-                logging.error(
-                    "cache_with_key attempted to store a full QuerySet object -- declining to cache",
-                    stack_info=True,
-                )
-            else:
-                cache_set(
-                    key, val, cache_name=cache_name, timeout=timeout, pickled_tupled=pickled_tupled
-                )
+            val = checked(*args, **kwargs)
+            cache_set(
+                key, val, cache_name=cache_name, timeout=timeout, pickled_tupled=pickled_tupled
+            )
 
             return val
 
