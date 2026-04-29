@@ -43,7 +43,6 @@ export function set_up_user(
     pills: UserPillWidget,
     opts: {
         exclude_bots?: boolean;
-        update_func?: () => void;
     },
 ): void {
     const exclude_bots = opts.exclude_bots;
@@ -76,7 +75,6 @@ export function set_up_user(
                 user_pill.append_user(item.user, pills);
             }
             $input.trigger("focus");
-            opts.update_func?.();
         },
         stopAdvance: true,
     });
@@ -89,7 +87,6 @@ export function set_up_stream(
         help_on_empty_strings?: boolean;
         hide_on_empty_after_backspace?: boolean;
         invite_streams?: boolean;
-        update_func?: () => void;
     },
 ): void {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
@@ -131,7 +128,6 @@ export function set_up_stream(
         updater(item: StreamPillData, _query: string): undefined {
             stream_pill.append_stream(item, pills);
             $input.trigger("focus");
-            opts.update_func?.();
         },
         stopAdvance: true,
     });
@@ -277,7 +273,6 @@ export function set_up_combined(
         user_source?: () => User[];
         user_group_source?: () => UserGroup[];
         exclude_bots?: boolean;
-        update_func?: () => void;
         for_stream_subscribers: boolean;
     },
 ): void {
@@ -444,9 +439,6 @@ export function set_up_combined(
             }
 
             $input.trigger("focus");
-            if (opts.update_func) {
-                opts.update_func();
-            }
         },
         stopAdvance: true,
     });
