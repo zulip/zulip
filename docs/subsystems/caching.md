@@ -99,6 +99,20 @@ This decorator implements a pretty classic caching paradigm:
 We use this decorator in about 30 places in Zulip, and it saves a
 huge amount of otherwise very self-similar caching code.
 
+Storing the value after a cache miss takes some care. If another
+process changes the user, and flushes the cache key, while we are
+fetching from the database, then the value we fetched is already
+stale. Storing it would leave the stale value in the cache until the
+user next changes.
+
+So on a miss, `cache_with_key` first puts a short-lived placeholder in
+the cache. After fetching from the database, it stores the value only
+if its placeholder is still there, using memcached's compare-and-swap
+operation. If the placeholder is gone, or if another process's
+placeholder was already there, the caller still gets the value from
+the database, but nothing is cached. This logic lives in
+`read_through_cache`.
+
 ### Cautions
 
 The one thing to be really careful with in using `cache_with_key` is
