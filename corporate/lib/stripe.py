@@ -973,6 +973,30 @@ class BillingSession(ABC):
         stripe.Invoice.finalize_invoice(stripe_invoice)
         return stripe_invoice
 
+    # Customer plan offers are always for negotiated, annual, fixed-price plans.
+    def create_customer_plan_offer(
+        self, *, customer: Customer, fixed_price: int, tier: int, sent_invoice_id: str | None = None
+    ) -> None:
+        status = CustomerPlanOffer.CONFIGURED
+        CustomerPlanOffer.objects.create(
+            customer=customer,
+            status=status,
+            sent_invoice_id=sent_invoice_id,
+            fixed_price=fixed_price,
+            tier=tier,
+        )
+        self.write_to_audit_log(
+            event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
+            event_time=timezone_now(),
+            extra_data={
+                "customer_id": customer.id,
+                "status": status,
+                "sent_invoice_id": sent_invoice_id,
+                "fixed_price": fixed_price,
+                "tier": tier,
+            },
+        )
+
     @abstractmethod
     def update_or_create_customer(
         self, stripe_customer_id: str | None = None, *, defaults: dict[str, Any] | None = None
@@ -1579,22 +1603,17 @@ class BillingSession(ABC):
                 # linked to the customer in stripe.
                 self.link_stripe_customer_id(str(invoice_customer_id))
 
-            fixed_price_plan_params["sent_invoice_id"] = sent_invoice_id
             Invoice.objects.create(
                 customer=customer,
                 stripe_invoice_id=sent_invoice_id,
                 status=Invoice.SENT,
             )
 
-        fixed_price_plan_params["status"] = CustomerPlanOffer.CONFIGURED
-        CustomerPlanOffer.objects.create(
+        self.create_customer_plan_offer(
             customer=customer,
-            **fixed_price_plan_params,
-        )
-        self.write_to_audit_log(
-            event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
-            event_time=timezone_now(),
-            extra_data=fixed_price_plan_params,
+            fixed_price=fixed_price_cents,
+            tier=customer.required_plan_tier,
+            sent_invoice_id=sent_invoice_id,
         )
         return f"Customer can now buy a fixed price {required_plan_tier_name} plan."
 
