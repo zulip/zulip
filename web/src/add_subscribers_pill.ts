@@ -79,6 +79,9 @@ export function set_up_pill_typeahead({
         opts.user_group_source = get_user_groups;
     }
     pill_typeahead.set_up_combined($pill_container.find(".input"), pill_widget, opts);
+    pill_widget.setSetupTypeahead(($edit) => {
+        pill_typeahead.set_up_combined($edit, pill_widget, opts);
+    });
 }
 
 export function get_display_value_from_item(item: CombinedPill): string {

@@ -173,6 +173,9 @@ export function initialize_custom_user_type_fields(
                 const $input = $pill_container.children(".input");
                 if (pill_update_handler) {
                     pill_typeahead.set_up_user($input, pills, {exclude_bots: true});
+                    pills.setSetupTypeahead(($edit) => {
+                        pill_typeahead.set_up_user($edit, pills, {exclude_bots: true});
+                    });
                     pills.onPillCreate(() => {
                         pill_update_handler(field, pills);
                     });
@@ -181,6 +184,9 @@ export function initialize_custom_user_type_fields(
                     });
                 } else {
                     pill_typeahead.set_up_user($input, pills, {exclude_bots: true});
+                    pills.setSetupTypeahead(($edit) => {
+                        pill_typeahead.set_up_user($edit, pills, {exclude_bots: true});
+                    });
                 }
             }
             user_pills.set(field.id, pills);
