@@ -49,6 +49,9 @@ const buddy_list = mock_esm("../src/buddy_list", {
 const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
     update_user_pill_active_status() {},
 });
+mock_esm("../src/compose_recipient", {
+    update_user_name_in_compose() {},
+});
 const pm_list = mock_esm("../src/pm_list", {
     update_private_messages() {},
 });

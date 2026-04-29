@@ -186,6 +186,18 @@ export function get_display_value_from_item(item: UserPill): string {
     return item.full_name ?? item.email;
 }
 
+export function update_pill_full_name(
+    pill_widget: UserPillWidget,
+    user_id: number,
+    full_name: string,
+): void {
+    const pill = pill_widget.getPillByPredicate((item) => item.user_id === user_id);
+    if (!pill) {
+        return;
+    }
+    pill_widget.updatePill(pill.$element[0]!, {...pill.item, full_name});
+}
+
 export function generate_pill_html(item: UserPill, show_user_status_emoji = false): string {
     let status_emoji_info;
     let has_status;
