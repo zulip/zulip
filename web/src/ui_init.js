@@ -459,6 +459,14 @@ export async function initialize_everything(state_data) {
     set_realm(state_data.realm);
     set_realm_billing(state_data.realm_billing);
 
+    if (page_params.narrow_stream !== undefined) {
+        // In the /?stream=X mini-window flow, the user's main Zulip
+        // window is the primary recipient of desktop notifications;
+        // suppress them here so the embedded window doesn't fire
+        // duplicate alerts.
+        state_data.user_settings.user_settings.enable_desktop_notifications = false;
+    }
+
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */

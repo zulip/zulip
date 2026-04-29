@@ -201,15 +201,13 @@ def build_page_params_for_home_page_load(
 
     page_params["state_data"] = state_data
 
-    if narrow_stream is not None and state_data is not None:
+    if narrow_stream is not None:
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic_name is not None:
             page_params["narrow_topic"] = narrow_topic_name
         page_params["narrow"] = [
             dict(operator=term.operator, operand=term.operand) for term in narrow
         ]
-        assert isinstance(state_data["user_settings"], dict)
-        state_data["user_settings"]["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
 

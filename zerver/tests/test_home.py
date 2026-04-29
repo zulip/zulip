@@ -1110,6 +1110,13 @@ class HomeTest(ZulipTestCase):
             page_params["state_data"]["max_message_id"],
             max_message_id_for_user(user_profile),
         )
+        # The mini-window's desktop-notification suppression is now
+        # applied client-side; the server returns the user's actual
+        # setting unchanged.
+        self.assertEqual(
+            page_params["state_data"]["user_settings"]["enable_desktop_notifications"],
+            user_profile.enable_desktop_notifications,
+        )
 
     @activate_push_notification_service()
     def test_has_pending_sponsorship_request(self) -> None:
