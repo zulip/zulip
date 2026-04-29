@@ -127,6 +127,13 @@ export function update_user_pill_active_status(user: User, is_active: boolean): 
     widget.updatePill(pill.$element[0]!, updated_pill);
 }
 
+export function update_user_pill_full_name(user_id: number, full_name: string): void {
+    if (!widget) {
+        return;
+    }
+    user_pill.update_pill_full_name(widget, user_id, full_name);
+}
+
 export function rewire_widget(value: UserPillWidget): void {
     widget = value;
 }

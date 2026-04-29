@@ -276,3 +276,25 @@ run_test("update_user_pill_active_status", ({override_rewire}) => {
 
     assert.ok(!pill_updated);
 });
+
+run_test("update_user_pill_full_name", ({override_rewire}) => {
+    // The pill-update logic lives in user_pill.update_pill_full_name and
+    // is tested there; here we just verify the wrapper delegates when
+    // the widget is set, and is a no-op otherwise.
+    let user_pill_function_called = false;
+    const widget = {
+        getPillByPredicate() {
+            user_pill_function_called = true;
+            return undefined;
+        },
+        updatePill() {},
+    };
+
+    override_rewire(compose_pm_pill, "widget", undefined);
+    compose_pm_pill.update_user_pill_full_name(1, "Othello the Moor");
+    assert.ok(!user_pill_function_called);
+
+    override_rewire(compose_pm_pill, "widget", widget);
+    compose_pm_pill.update_user_pill_full_name(1, "Othello the Moor");
+    assert.ok(user_pill_function_called);
+});
