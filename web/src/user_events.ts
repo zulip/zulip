@@ -30,6 +30,7 @@ import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
 import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
 import * as settings from "./settings.ts";
@@ -347,6 +348,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     );
     reactions.update_user_full_names(new Set(user_ids));
     compose_pm_pill.update_placeholder_user_pills();
+    rendered_markdown.update_placeholder_user_mentions(user_ids);
     submessage.rerender_widgets_in_current_list();
     compose_recipient.update_compose_area_placeholder_text();
     activity_ui.handle_users_fetched(user_ids);

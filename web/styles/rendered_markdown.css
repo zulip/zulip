@@ -321,6 +321,12 @@
         cursor: inherit;
     }
 
+    /* Clicking a mention of a placeholder user doesn't open their
+       user card. */
+    .user-mention.is-placeholder-user {
+        cursor: inherit;
+    }
+
     .user-mention[data-user-id="*"],
     .user-group-mention,
     .topic-mention {

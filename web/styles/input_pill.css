@@ -73,6 +73,12 @@
                 border-radius: 3px;
             }
 
+            /* Clicking the pill of a placeholder user doesn't open
+               their user card. */
+            &.view_user_profile {
+                cursor: default;
+            }
+
             .pill-label {
                 color: transparent;
             }
@@ -97,7 +103,7 @@
 
         /* Ensure a hover state on pills that can be clicked
            to reveal a user card. */
-        &.view_user_profile:hover {
+        &.view_user_profile:not(.pill-loading-shimmer):hover {
             background-color: var(--color-background-input-pill-hover);
         }
 

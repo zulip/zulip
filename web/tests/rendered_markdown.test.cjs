@@ -309,6 +309,32 @@ run_test("user-mention of placeholder users", () => {
 
     rm.update_elements($content);
     assert.equal($mention.text(), "@King Hamlet");
+    assert.ok($mention.hasClass("is-placeholder-user"));
+    assert.ok($mention.hasClass("view_user_card_tooltip"));
+
+    // Only the mentions of the users whose data arrived are updated.
+    const $other_mention = $.create("user-mention(other placeholder)");
+    $other_mention.attr("data-user-id", 35);
+    $other_mention.addClass("is-placeholder-user view_user_card_tooltip");
+    $.set_results(".user-mention.is-placeholder-user", [...$mention, ...$other_mention]);
+    people.add_active_user({
+        ...placeholder_user,
+        full_name: "King Hamlet II",
+        is_placeholder_user: false,
+    });
+    rm.update_placeholder_user_mentions([placeholder_user.user_id]);
+    assert.ok(!$mention.hasClass("is-placeholder-user"));
+    assert.ok(!$mention.hasClass("view_user_card_tooltip"));
+    assert.equal($mention.text(), "@King Hamlet II");
+    assert.ok($other_mention.hasClass("is-placeholder-user"));
+
+    // A user we turn out not to have access to keeps the name in
+    // the message.
+    $other_mention.text("@Ophelia");
+    people.add_inaccessible_user(35);
+    rm.update_placeholder_user_mentions([35]);
+    assert.ok(!$other_mention.hasClass("is-placeholder-user"));
+    assert.equal($other_mention.text(), "@Ophelia");
 });
 
 run_test("user-mention (stream wildcard)", () => {

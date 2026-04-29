@@ -135,6 +135,27 @@ function wrap_mention_content_in_dom_element(element: HTMLElement, is_bot = fals
     return element;
 }
 
+// Mentions of a placeholder user stay in messages that aren't
+// rerendered when the user's data arrives.
+export function update_placeholder_user_mentions(user_ids: number[]): void {
+    const fetched_user_ids = new Set(user_ids);
+    $(".user-mention.is-placeholder-user").each(function (): void {
+        const user_id = get_user_id_for_mention_button(this);
+        if (user_id === undefined || user_id === "*" || !fetched_user_ids.has(user_id)) {
+            return;
+        }
+        $(this).removeClass("is-placeholder-user view_user_card_tooltip");
+        const person = people.maybe_get_user_by_id(user_id, true);
+        if (
+            person !== undefined &&
+            !person.is_inaccessible_user &&
+            $(this).find(".highlight").length === 0
+        ) {
+            set_name_in_mention_element(this, person.full_name, user_id);
+        }
+    });
+}
+
 // Helper function to update a mentioned user's name.
 export function set_name_in_mention_element(
     element: HTMLElement,
@@ -219,6 +240,8 @@ export const update_elements = ($content: JQuery): void => {
                 // "Unknown user" popover.
                 if (person === undefined) {
                     people.add_inaccessible_user(user_id);
+                } else if (person.is_placeholder_user) {
+                    $(this).addClass("is-placeholder-user view_user_card_tooltip");
                 }
                 wrap_mention_content_in_dom_element(this);
                 return;

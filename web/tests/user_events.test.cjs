@@ -72,6 +72,9 @@ const compose_recipient = mock_esm("../src/compose_recipient", {
     update_compose_area_placeholder_text() {},
     update_user_name_in_compose() {},
 });
+const rendered_markdown = mock_esm("../src/rendered_markdown", {
+    update_placeholder_user_mentions() {},
+});
 const pm_list = mock_esm("../src/pm_list", {
     update_private_messages() {},
 });
@@ -583,6 +586,10 @@ run_test("initialize registers users_fetched callback", ({override}) => {
         updated_users = users;
     });
     override(compose_pm_pill, "update_placeholder_user_pills", noop);
+    let placeholder_mention_user_ids;
+    override(rendered_markdown, "update_placeholder_user_mentions", (user_ids) => {
+        placeholder_mention_user_ids = user_ids;
+    });
     let widgets_rerendered = false;
     override(submessage, "rerender_widgets_in_current_list", () => {
         widgets_rerendered = true;
@@ -630,6 +637,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     people.notify_users_fetched([isaac.user_id]);
 
     assert.ok(pm_list_updated);
+    assert.deepEqual(placeholder_mention_user_ids, [isaac.user_id]);
     assert.ok(widgets_rerendered);
     assert.ok(compose_placeholder_text_updated);
     assert.ok(reply_button_updated);

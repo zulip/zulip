@@ -11,7 +11,7 @@
             </a>
         {{else if user_list_style.WITH_AVATAR}}
             <div class="user-profile-picture-container">
-                <div class="user-profile-picture avatar-preload-background">
+                <div class="user-profile-picture avatar-preload-background{{#if is_placeholder_user}} is-placeholder-user{{/if}}">
                     <img loading="lazy" src="{{profile_picture}}"/>
                     <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
                 </div>
