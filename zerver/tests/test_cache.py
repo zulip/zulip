@@ -420,6 +420,45 @@ class CASCapableBackendTest(ZulipTestCase):
         self.assertFalse(self.backend.add(self.key, "second"))
         self.assertEqual(self.backend.get(self.key), "first")
 
+    def test_gets_multi_absent_keys_omitted(self) -> None:
+        self.backend.set(self.key, "v1")
+        other_key = self.key + ":other"
+        self.backend.delete(other_key)
+        got = self.backend.gets_multi([self.key, other_key])
+        self.assertIn(self.key, got)
+        self.assertEqual(got[self.key][0], "v1")
+        self.assertNotIn(other_key, got)
+
+    def test_add_multi_cas_returns_cas_for_added_keys_only(self) -> None:
+        other_key = self.key + ":other"
+        self.backend.set(self.key, "existing")
+        self.backend.delete(other_key)
+        added = self.backend.add_multi_cas({self.key: "nope", other_key: "added"})
+        self.assertEqual(set(added), {other_key})
+        # The cas id we got back matches what gets() would return for the
+        # newly-added value.
+        _, cas_id = self.backend.gets(other_key)
+        self.assertEqual(added[other_key], cas_id)
+        # The prior value at self.key wasn't overwritten.
+        self.assertEqual(self.backend.get(self.key), "existing")
+        self.assertEqual(self.backend.get(other_key), "added")
+
+    def test_cas_multi_commits_only_matching_cas(self) -> None:
+        other_key = self.key + ":other"
+        self.backend.set(self.key, "v1")
+        self.backend.set(other_key, "v1")
+        _, good_cas = self.backend.gets(self.key)
+        _, stale_cas = self.backend.gets(other_key)
+        assert good_cas is not None and stale_cas is not None
+        # Invalidate one of the cas ids by an intervening write.
+        self.backend.set(other_key, "intervening")
+        committed = self.backend.cas_multi(
+            {self.key: ("v2", good_cas), other_key: ("v2", stale_cas)}
+        )
+        self.assertEqual(committed, {self.key})
+        self.assertEqual(self.backend.get(self.key), "v2")
+        self.assertEqual(self.backend.get(other_key), "intervening")
+
 
 class ReadThroughCacheTest(ZulipTestCase):
     """Tests for read_through_cache() and its mark-then-fill race protection."""

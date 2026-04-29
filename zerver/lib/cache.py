@@ -464,6 +464,56 @@ def _backend_add(
     )
 
 
+def _backend_gets_multi(backend: BaseCache, pre_make_keys: list[str]) -> dict[str, tuple[Any, int]]:
+    """Pipelined gets across N keys in one round-trip; absent keys are omitted."""
+    if hasattr(backend, "gets_multi"):
+        return backend.gets_multi(pre_make_keys)
+    raw_to_orig = {backend.make_key(k): k for k in pre_make_keys}
+    raw = backend._cache.get_multi(  # type: ignore[attr-defined] # not in stubs
+        list(raw_to_orig), get_cas=True
+    )
+    return {raw_to_orig[rk]: (val, cas) for rk, (val, cas) in raw.items()}
+
+
+def _backend_add_multi(
+    backend: BaseCache, items: dict[str, Any], timeout: int | None
+) -> dict[str, int]:
+    """Pipelined add across N keys; returns cas ids of successful adds."""
+    if hasattr(backend, "add_multi_cas"):
+        return backend.add_multi_cas(items, timeout=timeout)
+    raw_to_orig = {backend.make_key(k): k for k in items}
+    # bmemcached.set_multi_cas with a (key, cas=0) mapping turns into a
+    # pipelined add, with per-key new cas ids returned for successful adds
+    # and None for keys that already existed.
+    raw_mappings = {(rk, 0): items[raw_to_orig[rk]] for rk in raw_to_orig}
+    raw_result: dict[str, int | None] = backend._cache.set_multi_cas(  # type: ignore[attr-defined] # not in stubs
+        raw_mappings, backend.get_backend_timeout(timeout)
+    )
+    return {raw_to_orig[rk]: cas for rk, cas in raw_result.items() if cas is not None}
+
+
+def _backend_cas_multi(
+    backend: BaseCache, items_with_cas: dict[str, tuple[Any, int]], timeout: int | None
+) -> set[str]:
+    """Pipelined cas across N keys; returns keys whose set committed."""
+    if hasattr(backend, "cas_multi"):
+        return backend.cas_multi(items_with_cas, timeout=timeout)
+    raw_to_orig = {backend.make_key(k): k for k in items_with_cas}
+    # bmemcached.set_multi treats a (key, cas != 0) mapping as a pipelined setq
+    # with the CAS field set, matching a single-key cas() call.
+    raw_mappings = {
+        (rk, items_with_cas[raw_to_orig[rk]][1]): items_with_cas[raw_to_orig[rk]][0]
+        for rk in raw_to_orig
+    }
+    failed_raw = backend._cache.set_multi(  # type: ignore[attr-defined] # not in stubs
+        raw_mappings, backend.get_backend_timeout(timeout)
+    )
+    failed_orig = {
+        raw_to_orig[entry[0] if isinstance(entry, tuple) else entry] for entry in failed_raw
+    }
+    return set(items_with_cas) - failed_orig
+
+
 def cache_gets(key: str, cache_name: str | None = None) -> tuple[Any, int | None]:
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
@@ -514,6 +564,60 @@ def cache_cas(
         ok = False
     remote_cache_stats_finish()
     return ok
+
+
+def cache_gets_many(keys: list[str], cache_name: str | None = None) -> dict[str, tuple[Any, int]]:
+    """Pipelined gets_many returning (value, cas_id) for each present key."""
+    final_keys = [KEY_PREFIX + k for k in keys]
+    for fk in final_keys:
+        validate_cache_key(fk)
+
+    remote_cache_stats_start()
+    raw = _backend_gets_multi(get_cache_backend(cache_name), final_keys)
+    remote_cache_stats_finish()
+    return {fk.removeprefix(KEY_PREFIX): v for fk, v in raw.items()}
+
+
+def cache_add_many(
+    items: dict[str, Any], timeout: int, cache_name: str | None = None
+) -> dict[str, int]:
+    """Pipelined add_many returning the new cas id for each successful add.
+
+    The cas ids can be passed back into cache_cas_many() to write
+    conditionally on the slots still being ours.
+    """
+    final_items = {KEY_PREFIX + k: v for k, v in items.items()}
+    for fk in final_items:
+        validate_cache_key(fk)
+
+    remote_cache_stats_start()
+    try:
+        added = _backend_add_multi(get_cache_backend(cache_name), final_items, timeout)
+    except MemcachedException as e:
+        logger.exception(e)
+        added = {}
+    remote_cache_stats_finish()
+    return {fk.removeprefix(KEY_PREFIX): cas for fk, cas in added.items()}
+
+
+def cache_cas_many(
+    items_with_cas: dict[str, tuple[Any, int]],
+    timeout: int | None = None,
+    cache_name: str | None = None,
+) -> set[str]:
+    """Pipelined cas_many.  Returns the keys where the conditional set committed."""
+    final_items = {KEY_PREFIX + k: v for k, v in items_with_cas.items()}
+    for fk in final_items:
+        validate_cache_key(fk)
+
+    remote_cache_stats_start()
+    try:
+        committed = _backend_cas_multi(get_cache_backend(cache_name), final_items, timeout)
+    except MemcachedException as e:
+        logger.exception(e)
+        committed = set()
+    remote_cache_stats_finish()
+    return {fk.removeprefix(KEY_PREFIX) for fk in committed}
 
 
 def read_through_cache(

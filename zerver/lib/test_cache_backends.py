@@ -93,3 +93,45 @@ class CASCapableLocMemCache(LocMemCache):
                 return False, None
             self._set(raw_key, pickled, timeout)
             return True, self._cas_tokens[raw_key]
+
+    # The multi-key variants below are sequential in this in-memory test
+    # backend, but mirror the interface that bmemcached implements via
+    # pipelined memcached commands, so callers can be exercised by the
+    # test suite without spinning up a real memcached.
+
+    def gets_multi(self, keys: list[str], version: Any = None) -> dict[str, tuple[Any, int]]:
+        result: dict[str, tuple[Any, int]] = {}
+        for key in keys:
+            val, cas_id = self.gets(key, version=version)
+            if cas_id is not None:
+                result[key] = (val, cas_id)
+        return result
+
+    def add_multi_cas(
+        self, items: dict[str, Any], timeout: Any = DEFAULT_TIMEOUT, version: Any = None
+    ) -> dict[str, int]:
+        """Pipelined add returning the new cas id for each successful add.
+
+        Mirrors bmemcached.Client.set_multi_cas with (key, 0) tuples (which
+        the protocol turns into pipelined add operations) -- on success the
+        per-key new cas id is returned to the caller.
+        """
+        result: dict[str, int] = {}
+        for key, value in items.items():
+            success, cas_id = self.add_cas(key, value, timeout=timeout, version=version)
+            if success:
+                assert cas_id is not None
+                result[key] = cas_id
+        return result
+
+    def cas_multi(
+        self,
+        items: dict[str, tuple[Any, int]],
+        timeout: Any = DEFAULT_TIMEOUT,
+        version: Any = None,
+    ) -> set[str]:
+        return {
+            key
+            for key, (value, cas_id) in items.items()
+            if self.cas(key, value, cas_id, timeout=timeout, version=version)
+        }
