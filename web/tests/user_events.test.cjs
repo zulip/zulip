@@ -4,9 +4,11 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_bot, make_user} = require("./lib/example_user.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const message_live_update = mock_esm("../src/message_live_update");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
@@ -78,14 +80,17 @@ mock_esm("../src/settings_streams", {
 });
 
 const bot_data = zrequire("bot_data");
+const message_lists = zrequire("message_lists");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
 const user_events = zrequire("user_events");
 
 const current_user = {};
 set_current_user(current_user);
 set_realm(make_realm());
+initialize_user_settings({user_settings: {default_language: "en"}});
 
 const me = make_user({
     email: "me@example.com",
@@ -173,12 +178,27 @@ run_test("updates", ({override}) => {
         full_name = full_name_arg;
     };
 
+    const $navbar_title = $("#message_view_header .message-header-navbar-title");
+
+    // The navbar title lists the participants of the current DM narrow,
+    // so renaming one of them refreshes its text in place.
+    people.add_valid_user_id(isaac.user_id);
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [isaac.user_id]}]));
+    $navbar_title.text("Isaac Newton");
+
     user_events.update_person({user_id: isaac.user_id, full_name: "Sir Isaac"});
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, "Sir Isaac");
     assert.equal(person.is_admin, true);
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, "Sir Isaac");
+    assert.equal($navbar_title.text(), "Sir Isaac");
+
+    // Renaming someone the title does not mention leaves it untouched.
+    user_events.update_person({user_id: me.user_id, full_name: "Me Interim"});
+    assert.equal($navbar_title.text(), "Sir Isaac");
+
+    message_lists.set_current(undefined);
 
     user_events.update_person({
         user_id: me.user_id,
@@ -375,4 +395,17 @@ run_test("updates", ({override}) => {
     };
     people.add_active_user(imported_user);
     user_events.update_person({user_id: imported_user.user_id, is_imported_stub: false});
+
+    // A non-common narrow (here sender: combined with is:) shows a search
+    // bar, not a name, so renaming the user must leave the title alone.
+    message_lists.set_current(
+        make_message_list([
+            {operator: "is", operand: "starred"},
+            {operator: "sender", operand: isaac.user_id},
+        ]),
+    );
+    $navbar_title.text("placeholder");
+    user_events.update_person({user_id: isaac.user_id, full_name: "Sir Isaac Newton"});
+    assert.equal($navbar_title.text(), "placeholder");
+    message_lists.set_current(undefined);
 });
