@@ -39,12 +39,19 @@
     }
 
     .edit-code-in-lightbox,
+    .save-edits-in-lightbox,
+    .discard-edits-in-lightbox,
     .copy-code-in-new-tab {
         border: 1px solid var(--color-border-input-default);
         background: transparent;
         border-radius: 4px;
         padding: 3px 8px;
         line-height: 1;
+    }
+
+    .save-edits-in-lightbox,
+    .discard-edits-in-lightbox {
+        display: none;
     }
 
     .edit-code-in-lightbox.active {
@@ -157,6 +164,11 @@
 
         .code-block-lightbox-editor {
             display: block;
+        }
+
+        .save-edits-in-lightbox,
+        .discard-edits-in-lightbox {
+            display: inline-flex;
         }
     }
 }
