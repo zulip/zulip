@@ -72,9 +72,14 @@ export function set_up_user(
         },
         updater(item: UserPillData, _query: string): undefined {
             if (people.is_known_user_id(item.user.user_id)) {
-                user_pill.append_user(item.user, pills);
+                const is_editing_pill = $input.hasClass("pill-edit-input");
+                if (is_editing_pill) {
+                    pills.replaceEditingPill(user_pill.create_pill_data(item.user));
+                } else {
+                    user_pill.append_user(item.user, pills);
+                    $input.trigger("focus");
+                }
             }
-            $input.trigger("focus");
         },
         stopAdvance: true,
     });
@@ -126,8 +131,16 @@ export function set_up_stream(
             return typeahead_helper.sort_streams_by_name(stream_matches, query);
         },
         updater(item: StreamPillData, _query: string): undefined {
-            stream_pill.append_stream(item, pills);
-            $input.trigger("focus");
+            const is_editing_pill = $input.hasClass("pill-edit-input");
+            if (is_editing_pill) {
+                pills.replaceEditingPill({
+                    type: "stream",
+                    stream_id: item.stream_id,
+                });
+            } else {
+                stream_pill.append_stream(item, pills);
+                $input.trigger("focus");
+            }
         },
         stopAdvance: true,
     });
@@ -165,8 +178,17 @@ export function set_up_user_group(
             return typeahead_helper.sort_user_groups(matches, query);
         },
         updater(item: UserGroupPillData, _query: string): undefined {
-            user_group_pill.append_user_group(item, pills);
-            $input.trigger("focus");
+            const is_editing_pill = $input.hasClass("pill-edit-input");
+            if (is_editing_pill) {
+                pills.replaceEditingPill({
+                    type: "user_group",
+                    group_id: item.id,
+                    group_name: item.name,
+                });
+            } else {
+                user_group_pill.append_user_group(item, pills);
+                $input.trigger("focus");
+            }
         },
         stopAdvance: true,
         helpOnEmptyStrings: () => true,
@@ -249,13 +271,28 @@ export function set_up_group_setting_typeahead(
             });
         },
         updater(item: GroupSettingTypeaheadItem, _query: string): undefined {
+            const is_editing_pill = $input.hasClass("pill-edit-input");
             if (item.type === "user_group") {
-                user_group_pill.append_user_group(item, pills);
+                if (is_editing_pill) {
+                    pills.replaceEditingPill({
+                        type: "user_group",
+                        group_id: item.id,
+                        group_name: item.name,
+                    });
+                } else {
+                    user_group_pill.append_user_group(item, pills);
+                }
             } else if (item.type === "user" && people.is_known_user_id(item.user.user_id)) {
-                user_pill.append_user(item.user, pills);
+                if (is_editing_pill) {
+                    pills.replaceEditingPill(user_pill.create_pill_data(item.user));
+                } else {
+                    user_pill.append_user(item.user, pills);
+                }
             }
 
-            $input.trigger("focus");
+            if (!is_editing_pill) {
+                $input.trigger("focus");
+            }
         },
         stopAdvance: true,
         helpOnEmptyStrings: () => true,
@@ -423,22 +460,45 @@ export function set_up_combined(
             });
         },
         updater(item: TypeaheadItem, query: string): undefined {
+            const is_editing_pill = $input.hasClass("pill-edit-input");
             if (include_streams(query) && item.type === "stream") {
-                stream_pill.append_stream(item, pills);
+                if (is_editing_pill) {
+                    pills.replaceEditingPill({
+                        type: "stream",
+                        stream_id: item.stream_id,
+                    });
+                } else {
+                    stream_pill.append_stream(item, pills);
+                }
             } else if (include_user_groups && item.type === "user_group") {
                 const show_expand_button =
                     !opts.for_stream_subscribers &&
                     (item.members.size > 0 || item.direct_subgroup_ids.size > 0);
-                user_group_pill.append_user_group(item, pills, true, show_expand_button);
+                if (is_editing_pill) {
+                    pills.replaceEditingPill({
+                        type: "user_group",
+                        group_id: item.id,
+                        group_name: item.name,
+                        show_expand_button,
+                    });
+                } else {
+                    user_group_pill.append_user_group(item, pills, true, show_expand_button);
+                }
             } else if (
                 include_users &&
                 item.type === "user" &&
                 people.is_known_user_id(item.user.user_id)
             ) {
-                user_pill.append_user(item.user, pills);
+                if (is_editing_pill) {
+                    pills.replaceEditingPill(user_pill.create_pill_data(item.user));
+                } else {
+                    user_pill.append_user(item.user, pills);
+                }
             }
 
-            $input.trigger("focus");
+            if (!is_editing_pill) {
+                $input.trigger("focus");
+            }
         },
         stopAdvance: true,
     });

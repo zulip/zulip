@@ -227,6 +227,19 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
             config.updater(me_item, person_query);
             assert.equal(number_of_pills(), 1);
 
+            // Test edit path: replaceEditingPill is called when the
+            // input has the pill-edit-input class.
+            $fake_input.addClass("pill-edit-input");
+            let replace_called = false;
+            $pill_widget.replaceEditingPill = (item) => {
+                replace_called = true;
+                assert.equal(item.user_id, me.user_id);
+            };
+            const pills_before = number_of_pills();
+            config.updater(me_item, person_query);
+            assert.ok(replace_called);
+            assert.equal(number_of_pills(), pills_before);
+            $fake_input.removeClass("pill-edit-input");
         })();
 
         // input_pill_typeahead_called is set true if
@@ -310,6 +323,19 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
             assert.equal(number_of_pills(), 0);
             config.updater(denmark_item, stream_query);
             assert.equal(number_of_pills(), 1);
+
+            // Test edit path.
+            $fake_input.addClass("pill-edit-input");
+            let replace_called = false;
+            $pill_widget.replaceEditingPill = (item) => {
+                replace_called = true;
+                assert.equal(item.stream_id, denmark.stream_id);
+            };
+            const pills_before = number_of_pills();
+            config.updater(denmark_item, stream_query);
+            assert.ok(replace_called);
+            assert.equal(number_of_pills(), pills_before);
+            $fake_input.removeClass("pill-edit-input");
         })();
 
         // input_pill_typeahead_called is set true if
@@ -401,6 +427,19 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
             assert.equal(number_of_pills(), 0);
             config.updater(testers_item, "<rendered-group-stub>");
             assert.equal(number_of_pills(), 1);
+
+            // Test edit path.
+            $fake_input.addClass("pill-edit-input");
+            let replace_called = false;
+            $pill_widget.replaceEditingPill = (item) => {
+                replace_called = true;
+                assert.equal(item.group_id, testers.id);
+            };
+            const pills_before = number_of_pills();
+            config.updater(testers_item, "<rendered-group-stub>");
+            assert.ok(replace_called);
+            assert.equal(number_of_pills(), pills_before);
+            $fake_input.removeClass("pill-edit-input");
         })();
 
         input_pill_typeahead_called = true;
@@ -642,6 +681,20 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 // Clear pills for the next test.
                 mock_pill_removes($pill_widget);
                 $pill_widget.clear();
+
+                // Test edit path: all three item types.
+                $fake_input.addClass("pill-edit-input");
+                let replace_count = 0;
+                $pill_widget.replaceEditingPill = (_item) => {
+                    replace_count += 1;
+                };
+                const pills_before_edit = number_of_pills();
+                config.updater(denmark_item, stream_query);
+                config.updater(me_item, person_query);
+                config.updater(testers_item, group_query);
+                assert.equal(replace_count, 3);
+                assert.equal(number_of_pills(), pills_before_edit);
+                $fake_input.removeClass("pill-edit-input");
             }
         })();
 
@@ -845,6 +898,30 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
             assert.equal(number_of_pills(), 1);
             config.updater(testers_item, group_query);
             assert.equal(number_of_pills(), 2);
+
+            // Test edit path: user_group item.
+            $fake_input.addClass("pill-edit-input");
+            let replace_called = false;
+            $pill_widget.replaceEditingPill = (item) => {
+                replace_called = true;
+                assert.equal(item.group_id, testers.id);
+            };
+            const pills_before_group = number_of_pills();
+            config.updater(testers_item, group_query);
+            assert.ok(replace_called);
+            assert.equal(number_of_pills(), pills_before_group);
+
+            // Test edit path: user item.
+            replace_called = false;
+            $pill_widget.replaceEditingPill = (item) => {
+                replace_called = true;
+                assert.equal(item.user_id, me.user_id);
+            };
+            const pills_before_user = number_of_pills();
+            config.updater(me_item, person_query);
+            assert.ok(replace_called);
+            assert.equal(number_of_pills(), pills_before_user);
+            $fake_input.removeClass("pill-edit-input");
         })();
 
         input_pill_typeahead_called = true;
