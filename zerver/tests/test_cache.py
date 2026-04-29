@@ -19,13 +19,16 @@ from zerver.lib.cache import (
     _CacheFillSentinel,
     bulk_cached_fetch,
     cache_add,
+    cache_add_many,
     cache_cas,
+    cache_cas_many,
     cache_delete,
     cache_delete_cas,
     cache_delete_many,
     cache_get,
     cache_get_many,
     cache_gets,
+    cache_gets_many,
     cache_set,
     cache_set_many,
     cache_with_key,
@@ -293,6 +296,48 @@ class BmemcachedBridgeTest(ZulipTestCase):
         self.assertIn("Error while storing to cache", logs.output[1])
         self.assertIn("Error while deleting from cache", logs.output[2])
 
+    def test_multi_key_helpers_route_to_raw_client(self) -> None:
+        backend = self._bmemcached_like_backend()
+        prefix = "raw:" + cache_module.KEY_PREFIX
+        backend._cache.get_multi.return_value = {prefix + "a": ("va", 1), prefix + "b": ("vb", 2)}
+        backend._cache.set_multi_cas.return_value = {prefix + "a": 3, prefix + "b": None}
+        # set_multi returns the keys whose write failed; bmemcached
+        # reports them as (key, cas) tuples for cas-mapped keys, and as
+        # bare keys on a disconnect.
+        backend._cache.set_multi.return_value = [(prefix + "b", 2), prefix + "c"]
+        with patch("zerver.lib.cache.get_cache_backend", return_value=backend):
+            self.assertEqual(cache_gets_many(["a", "b", "c"]), {"a": ("va", 1), "b": ("vb", 2)})
+            backend._cache.get_multi.assert_called_once_with(
+                [prefix + "a", prefix + "b", prefix + "c"], get_cas=True
+            )
+
+            self.assertEqual(cache_add_many({"a": "sa", "b": "sb"}, 30), {"a": 3})
+            backend._cache.set_multi_cas.assert_called_once_with(
+                {(prefix + "a", 0): "sa", (prefix + "b", 0): "sb"}, 321
+            )
+
+            self.assertEqual(
+                cache_cas_many({"a": ("va", 1), "b": ("vb", 2), "c": ("vc", 5)}, timeout=30),
+                {"a"},
+            )
+            backend._cache.set_multi.assert_called_once_with(
+                {(prefix + "a", 1): "va", (prefix + "b", 2): "vb", (prefix + "c", 5): "vc"}, 321
+            )
+
+    def test_multi_key_helpers_log_memcached_exceptions(self) -> None:
+        backend = self._bmemcached_like_backend()
+        backend._cache.set_multi_cas.side_effect = MemcachedException(b"Out of memory", 130)
+        backend._cache.set_multi.side_effect = MemcachedException(b"Out of memory", 130)
+        with (
+            patch("zerver.lib.cache.get_cache_backend", return_value=backend),
+            self.assertLogs("", level="INFO") as logs,
+        ):
+            self.assertEqual(cache_add_many({"a": "sa"}, 30), {})
+            self.assertEqual(cache_cas_many({"a": ("va", 1)}), set())
+        self.assert_length(logs.output, 2)
+        self.assertIn("Error while storing to cache", logs.output[0])
+        self.assertIn("Error while storing to cache", logs.output[1])
+
 
 class SafeCacheFunctionsTest(ZulipTestCase):
     def test_safe_cache_functions_with_all_good_keys(self) -> None:
@@ -506,6 +551,45 @@ class CASCapableBackendTest(ZulipTestCase):
         self.assertTrue(self.backend.add(self.key, "first"))
         self.assertFalse(self.backend.add(self.key, "second"))
         self.assertEqual(self.backend.get(self.key), "first")
+
+    def test_gets_multi_absent_keys_omitted(self) -> None:
+        self.backend.set(self.key, "v1")
+        other_key = self.key + ":other"
+        self.backend.delete(other_key)
+        got = self.backend.gets_multi([self.key, other_key])
+        self.assertIn(self.key, got)
+        self.assertEqual(got[self.key][0], "v1")
+        self.assertNotIn(other_key, got)
+
+    def test_add_multi_cas_returns_cas_for_added_keys_only(self) -> None:
+        other_key = self.key + ":other"
+        self.backend.set(self.key, "existing")
+        self.backend.delete(other_key)
+        added = self.backend.add_multi_cas({self.key: "nope", other_key: "added"})
+        self.assertEqual(set(added), {other_key})
+        # The cas id we got back matches what gets() would return for the
+        # newly-added value.
+        _, cas_id = self.backend.gets(other_key)
+        self.assertEqual(added[other_key], cas_id)
+        # The prior value at self.key wasn't overwritten.
+        self.assertEqual(self.backend.get(self.key), "existing")
+        self.assertEqual(self.backend.get(other_key), "added")
+
+    def test_cas_multi_commits_only_matching_cas(self) -> None:
+        other_key = self.key + ":other"
+        self.backend.set(self.key, "v1")
+        self.backend.set(other_key, "v1")
+        _, good_cas = self.backend.gets(self.key)
+        _, stale_cas = self.backend.gets(other_key)
+        assert good_cas is not None and stale_cas is not None
+        # Invalidate one of the cas ids by an intervening write.
+        self.backend.set(other_key, "intervening")
+        committed = self.backend.cas_multi(
+            {self.key: ("v2", good_cas), other_key: ("v2", stale_cas)}
+        )
+        self.assertEqual(committed, {self.key})
+        self.assertEqual(self.backend.get(self.key), "v2")
+        self.assertEqual(self.backend.get(other_key), "intervening")
 
 
 class ReadThroughCacheTest(ZulipTestCase):
