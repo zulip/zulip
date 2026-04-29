@@ -1,5 +1,6 @@
 #code_block_lightbox_overlay {
     z-index: 220;
+    --code-block-lightbox-label-blue: hsl(205deg 82% 72%);
 
     .code-block-lightbox-content {
         width: min(92vw, 1200px);
@@ -36,6 +37,18 @@
         background: transparent;
         border-radius: 4px;
         padding: 3px 8px;
+        color: var(--code-block-lightbox-label-blue);
+        transition:
+            color 120ms ease,
+            background-color 120ms ease,
+            border-color 120ms ease;
+    }
+
+    .open-code-in-new-tab:hover,
+    .open-code-in-new-tab:focus-visible {
+        background: hsl(205deg 82% 72% / 12%);
+        border-color: var(--code-block-lightbox-label-blue);
+        color: var(--code-block-lightbox-label-blue);
     }
 
     .edit-code-in-lightbox,
@@ -169,6 +182,14 @@
         .save-edits-in-lightbox,
         .discard-edits-in-lightbox {
             display: inline-flex;
+        }
+    }
+}
+
+[data-tippy-root] {
+    .tippy-box[data-theme~="code-block-lightbox-label"] {
+        .tippy-content {
+            color: hsl(205deg 82% 72%);
         }
     }
 }
