@@ -80,10 +80,6 @@
     &:focus-visible {
         outline: 2px solid var(--color-outline-focus);
         outline-offset: -2px;
-        /* `!important` overrides the `.dark-theme:root
-           a:not(:active):focus` rule in dark_theme.css, which would
-           otherwise set this anchor's focus outline to grey. */
-        outline-color: var(--color-outline-focus) !important;
     }
 
     .add_stream_icon {
