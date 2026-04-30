@@ -26,6 +26,7 @@ const settings = mock_esm("../src/settings");
 mock_esm("../src/settings_data", {
     user_can_create_public_streams: () => true,
 });
+const sidebar_ui = mock_esm("../src/sidebar_ui");
 const spectators = mock_esm("../src/spectators", {
     login_to_access() {},
 });
@@ -200,6 +201,10 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     override(popovers, "hide_all", () => {
         hide_all_called = true;
     });
+    let sidebar_hide_all_called = false;
+    override(sidebar_ui, "hide_all", () => {
+        sidebar_hide_all_called = true;
+    });
     window.location.hash = "#unknown_hash";
 
     browser_history.clear_for_testing();
@@ -207,6 +212,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     // If it's an unknown hash it should show the home view.
     assert.equal(recent_view_ui_shown, true);
     assert.equal(hide_all_called, true);
+    assert.equal(sidebar_hide_all_called, true);
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -214,10 +220,12 @@ run_test("hash_interactions", ({override, override_rewire}) => {
 
     window.location.hash = "#feed";
     hide_all_called = false;
+    sidebar_hide_all_called = false;
 
     helper.clear_events();
     $window_stub.trigger("hashchange");
     assert.equal(hide_all_called, true);
+    assert.equal(sidebar_hide_all_called, true);
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -439,6 +447,7 @@ run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
 run_test("fail_incorrectly_cased_URL", ({override, override_rewire}) => {
     browser_history.clear_for_testing();
     override(popovers, "hide_all", noop);
+    override(sidebar_ui, "hide_all", noop);
     const helper = test_helper({override, override_rewire, change_tab: false});
 
     // We can receive URLs which contain operators that
