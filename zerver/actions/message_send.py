@@ -387,6 +387,16 @@ def get_recipient_info(
             stream_id=stream_topic.stream_id,
             realm_id=realm_id,
         )
+        if followed_user_push_user_ids:
+            sender = UserProfile.objects.get(id=sender_id)
+            recipients = UserProfile.objects.filter(id__in=followed_user_push_user_ids)
+            recipient_names = ", ".join(u.full_name for u in recipients)
+            print(
+                f"\n*** FOLLOW NOTIFICATION ***\n"
+                f"    Sender:     {sender.full_name}\n"
+                f"    Notifying:  {recipient_names}\n"
+                f"    (followed-user push notification queued)\n"
+            )
         # Email notifications for followed users are not yet implemented,
         # but keeping the structure for future extensibility.
         followed_user_email_user_ids: set[int] = set()
