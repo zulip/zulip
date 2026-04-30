@@ -336,12 +336,30 @@ function create_open_tab_gutter(doc: Document, code: string): HTMLElement {
     return gutter;
 }
 
-function append_open_tab_scroll_sync_script(doc: Document): void {
-    const script = doc.createElement("script");
-    const g_sel = JSON.stringify(`.${OPEN_TAB_GUTTER_CLASS}`);
-    const w_sel = JSON.stringify(`.${OPEN_TAB_WRAP_CLASS}`);
-    script.textContent = `(function(){var g=document.querySelector(${g_sel});var w=document.querySelector(${w_sel});if(!g||!w)return;var p=w.querySelector("pre");if(!p)return;var s=false;function b(a,t){a.addEventListener("scroll",function(){if(s)return;s=true;t.scrollTop=a.scrollTop;s=false;});}b(g,p);b(p,g);})();`;
-    doc.body.append(script);
+function bind_open_tab_scroll_sync(doc: Document): void {
+    const gutter = doc.querySelector(`.${OPEN_TAB_GUTTER_CLASS}`);
+    const wrap = doc.querySelector(`.${OPEN_TAB_WRAP_CLASS}`);
+    if (!(gutter instanceof HTMLElement) || !(wrap instanceof HTMLElement)) {
+        return;
+    }
+    const pre = wrap.querySelector("pre");
+    if (!(pre instanceof HTMLElement)) {
+        return;
+    }
+
+    let syncing = false;
+    const bind = (from: HTMLElement, to: HTMLElement): void => {
+        from.addEventListener("scroll", () => {
+            if (syncing) {
+                return;
+            }
+            syncing = true;
+            to.scrollTop = from.scrollTop;
+            syncing = false;
+        });
+    };
+    bind(gutter, pre);
+    bind(pre, gutter);
 }
 
 function copy_opener_stylesheets_to_document(target_document: Document): void {
@@ -425,7 +443,7 @@ function open_code_in_new_tab(): void {
     }
 
     doc.body.append(wrap);
-    append_open_tab_scroll_sync_script(doc);
+    bind_open_tab_scroll_sync(doc);
 
     doc.body.style.margin = "0";
 
