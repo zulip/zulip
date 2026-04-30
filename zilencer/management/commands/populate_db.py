@@ -95,13 +95,7 @@ settings.ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
 settings.ZULIP_SERVICE_SECURITY_ALERTS = False
 settings.ANALYTICS_DATA_UPLOAD_LEVEL = AnalyticsDataUploadLevel.NONE
 settings.USING_TORNADO = False
-# Disable using memcached caches to avoid 'unsupported pickle
-# protocol' errors if `populate_db` is run with a different Python
-# from `run-dev`.
 default_cache = settings.CACHES["default"]
-settings.CACHES["default"] = {
-    "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-}
 
 DEFAULT_EMOJIS = [
     ("+1", "1f44d"),
