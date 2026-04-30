@@ -223,7 +223,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".header-main .column-left .left-sidebar-toggle-button",
+        target: ".header-main .column-left .left-sidebar-toggle-button, #streamlist-toggle",
         delay: LONG_HOVER_DELAY,
         placement: "bottom",
         appendTo: () => document.body,
