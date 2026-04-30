@@ -1,7 +1,7 @@
 <div class="header">
     <nav class="header-main" id="top_navbar">
         <div class="column-left">
-            <a class="header-button left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button" aria-label="{{t 'Toggle left sidebar' }}">
+            <a class="header-button left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button" aria-label="{{t 'Toggle left sidebar' }}" aria-expanded="true">
                 <i class="zulip-icon zulip-icon-panel-left-dashed"></i>
                 <i class="zulip-icon zulip-icon-panel-left"></i>
                 <span class="left-sidebar-toggle-unreadcount"></span>
@@ -13,7 +13,7 @@
         <div class="column-middle" id="navbar-middle">
             <div class="column-middle-inner">
                 <div id="streamlist-toggle" class="tippy-zulip-delayed-tooltip {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" data-tooltip-template-id="show-left-sidebar-tooltip-template">
-                    <a class="left-sidebar-toggle-button" role="button" tabindex="0" aria-label="{{t 'Toggle left sidebar' }}">
+                    <a class="left-sidebar-toggle-button" role="button" tabindex="0" aria-label="{{t 'Toggle left sidebar' }}" aria-expanded="true">
                         <i class="zulip-icon zulip-icon-panel-left-dashed"></i>
                         <i class="zulip-icon zulip-icon-panel-left"></i>
                         <span class="left-sidebar-toggle-unreadcount"></span>
@@ -66,7 +66,7 @@
                 </a>
             </div>
             <div id="userlist-toggle" class="hidden-for-spectators">
-                <a id="userlist-toggle-button" role="button" class="header-button navbar-item" tabindex="0" aria-label="{{t 'Toggle user list' }}">
+                <a id="userlist-toggle-button" role="button" class="header-button navbar-item" tabindex="0" aria-label="{{t 'Toggle user list' }}" aria-expanded="true">
                     <i class="zulip-icon zulip-icon-user-list"></i>
                 </a>
             </div>
