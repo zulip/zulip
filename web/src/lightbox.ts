@@ -37,7 +37,6 @@ let open_image: ($media: JQuery<HTMLImageElement>) => void;
 let open_video: ($media: JQuery<HTMLMediaElement>) => void;
 let overlay_restore_callback: (() => void) | undefined;
 
-/** Pan/zoom target inside `.zoom-element`: direct `img` (media) or `.code-lightbox-hilite` (code lightbox). */
 function get_lightbox_panzoom_content_element(): HTMLElement | undefined {
     const $zoom = $(".image-preview .zoom-element");
     if ($zoom.length === 0) {

@@ -37,8 +37,16 @@
                 </button>
             </div>
         </div>
-        <div class="codehilite code-block-lightbox-hilite"><pre><code></code></pre></div>
-        <textarea class="code-block-lightbox-editor" aria-label="{{t 'Edit code in lightbox' }}"></textarea>
+        <div class="codehilite code-block-lightbox-hilite">
+            <div class="code-block-lightbox-scroll-area">
+                <div class="code-block-lightbox-gutter" aria-hidden="true"></div>
+                <pre><code></code></pre>
+            </div>
+        </div>
+        <div class="code-block-lightbox-edit-row">
+            <div class="code-block-lightbox-gutter" aria-hidden="true"></div>
+            <textarea class="code-block-lightbox-editor" aria-label="{{t 'Edit code in lightbox' }}"></textarea>
+        </div>
         <div class="code-block-lightbox-close-prompt" aria-live="polite">
             <div class="prompt-text">{{t "Save changes before closing?" }}</div>
             <div class="prompt-actions">

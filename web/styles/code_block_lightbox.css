@@ -88,11 +88,63 @@
         overflow: hidden;
     }
 
+    .code-block-lightbox-scroll-area,
+    .code-block-lightbox-edit-row {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        min-height: 0;
+        align-items: stretch;
+        overflow: hidden;
+    }
+
+    .code-block-lightbox-edit-row {
+        display: none;
+    }
+
+    .code-block-lightbox-gutter {
+        box-sizing: border-box;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        min-width: 2.5em;
+        padding: 10px 0.6em 10px 0.8em;
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        text-align: right;
+        user-select: none;
+        color: hsl(0deg 0% 50%);
+        font-size: 0.9em;
+        line-height: 1.4;
+        font-family:
+            ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono",
+            "Courier New", monospace;
+        border-right: 1px solid var(--color-markdown-pre-border);
+        background-color: var(--color-markdown-pre-background);
+    }
+
+    .code-block-lightbox-gutter::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+
+    .code-block-lightbox-gutter span {
+        display: block;
+    }
+
+    :root.dark-theme & .code-block-lightbox-gutter {
+        color: hsl(0deg 0% 62%);
+    }
+
     pre {
         margin: 0;
         padding: 10px 12px;
         overflow: auto;
         flex: 1;
+        min-width: 0;
         min-height: 0;
         border: 0;
         border-radius: 0;
@@ -112,13 +164,11 @@
     }
 
     .code-block-lightbox-editor {
-        display: none;
         margin: 0;
         padding: 10px 12px;
         box-sizing: border-box;
-        width: 100%;
-        min-width: 0;
         flex: 1;
+        min-width: 0;
         min-height: 0;
         border: 0;
         border-radius: 0;
@@ -170,13 +220,12 @@
     }
 
     &.code-block-lightbox-edit-mode {
-        /* Must win over `.codehilite.code-block-lightbox-hilite { display: flex !important }` above. */
         .code-block-lightbox-hilite {
             display: none !important;
         }
 
-        .code-block-lightbox-editor {
-            display: block;
+        .code-block-lightbox-edit-row {
+            display: flex;
         }
 
         .save-edits-in-lightbox,

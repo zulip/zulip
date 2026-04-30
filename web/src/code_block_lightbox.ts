@@ -16,6 +16,37 @@ let edit_mode_original_code = "";
 let edit_mode_original_highlighted_code_html: string | undefined;
 let source_code_element: HTMLElement | undefined;
 
+function code_block_line_count(code: string): number {
+    return code.trimEnd().split("\n").length;
+}
+
+function fill_code_block_lightbox_gutters(code: string): void {
+    const line_count = code_block_line_count(code);
+    const $gutters = $("#code_block_lightbox_overlay .code-block-lightbox-gutter");
+    for (const gutter of $gutters) {
+        const $gutter = $(gutter).empty();
+        for (let i = 1; i <= line_count; i += 1) {
+            $gutter.append($("<span>").text(String(i)));
+        }
+    }
+}
+
+function bind_mutual_vertical_scroll($a: JQuery, $b: JQuery): void {
+    let syncing = false;
+    function attach(from: JQuery, to: JQuery): void {
+        from.on("scroll.code_block_lightbox_sync", () => {
+            if (syncing) {
+                return;
+            }
+            syncing = true;
+            to.prop("scrollTop", from.prop("scrollTop") as number);
+            syncing = false;
+        });
+    }
+    attach($a, $b);
+    attach($b, $a);
+}
+
 function get_current_code(): string {
     if (edit_mode) {
         return (
@@ -50,6 +81,7 @@ function set_edit_mode(enabled: boolean): void {
         edit_mode_original_highlighted_code_html = active_highlighted_code_html;
         const $editor = $overlay.find(".code-block-lightbox-editor");
         $editor.val(active_code);
+        fill_code_block_lightbox_gutters(active_code);
         $editor.trigger("focus");
     }
 }
@@ -92,17 +124,17 @@ function save_edits(): void {
     if (has_changes) {
         $("#code_block_lightbox_overlay code").text(active_code);
         active_highlighted_code_html = undefined;
+        fill_code_block_lightbox_gutters(active_code);
         if (source_code_element !== undefined) {
             $(source_code_element).text(active_code);
         }
-        // Ask backend Markdown renderer for highlighted HTML, then upgrade from plain
-        // text to tokenized markup when the response arrives.
         void render_highlighted_code_html(active_code, active_language).then((highlighted_html) => {
             if (highlighted_html === undefined || active_code !== edited_code) {
                 return;
             }
             active_highlighted_code_html = highlighted_html;
             $("#code_block_lightbox_overlay code").html(highlighted_html);
+            fill_code_block_lightbox_gutters(active_code);
             if (source_code_element !== undefined) {
                 $(source_code_element).html(highlighted_html);
             }
@@ -126,6 +158,7 @@ function discard_edits(): void {
         $("#code_block_lightbox_overlay code").text(active_code);
     }
     $("#code_block_lightbox_overlay .code-block-lightbox-editor").val(edit_mode_original_code);
+    fill_code_block_lightbox_gutters(active_code);
     set_edit_mode(false);
 }
 
@@ -150,6 +183,7 @@ function clear_overlay(): void {
     $("#code_block_lightbox_overlay .code-block-lightbox-title").text("");
     $("#code_block_lightbox_overlay code").text("");
     $("#code_block_lightbox_overlay .code-block-lightbox-editor").val("");
+    fill_code_block_lightbox_gutters("");
     $("#code_block_lightbox_overlay").removeClass("show-close-prompt");
     active_code = "";
     active_highlighted_code_html = undefined;
@@ -181,6 +215,7 @@ function open_code_block_lightbox(
     active_language = language;
     source_code_element = code_element;
     set_edit_mode(false);
+    fill_code_block_lightbox_gutters(code);
 
     if (is_open) {
         return;
@@ -199,6 +234,99 @@ function open_code_block_lightbox(
         },
     });
     is_open = true;
+}
+
+const OPEN_TAB_WRAP_CLASS = "code-block-lightbox-open-tab-wrap";
+const OPEN_TAB_GUTTER_CLASS = "code-block-lightbox-open-tab-gutter";
+
+function append_open_tab_document_styles(doc: Document): void {
+    const style = doc.createElement("style");
+    const wrap = `.${OPEN_TAB_WRAP_CLASS}`;
+    const gutter = `.${OPEN_TAB_GUTTER_CLASS}`;
+    style.textContent = `
+${wrap} {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+${wrap} ${gutter} {
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 2.5em;
+    padding: 10px 0.6em 10px 0.8em;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    text-align: right;
+    user-select: none;
+    font-size: 0.9em;
+    line-height: 1.4;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    color: hsl(0deg 0% 50%);
+    border-right: 1px solid var(--color-markdown-pre-border, hsl(0deg 0% 80%));
+    background-color: var(--color-markdown-pre-background, hsl(0deg 0% 96%));
+}
+${wrap} ${gutter}::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+${wrap} ${gutter} span {
+    display: block;
+}
+:root.dark-theme ${wrap} ${gutter} {
+    color: hsl(0deg 0% 62%);
+}
+${wrap} > .codehilite {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+${wrap} > .codehilite pre,
+${wrap} > pre {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 10px 12px;
+    overflow: auto;
+    font-size: 0.9em;
+    line-height: 1.4;
+    white-space: pre;
+    border: 0;
+    border-radius: 0;
+}
+`;
+    doc.head.append(style);
+}
+
+function create_open_tab_gutter(doc: Document, code: string): HTMLElement {
+    const gutter = doc.createElement("div");
+    gutter.className = OPEN_TAB_GUTTER_CLASS;
+    gutter.setAttribute("aria-hidden", "true");
+    const line_count = code_block_line_count(code);
+    for (let i = 1; i <= line_count; i += 1) {
+        const span = doc.createElement("span");
+        span.textContent = String(i);
+        gutter.append(span);
+    }
+    return gutter;
+}
+
+function append_open_tab_scroll_sync_script(doc: Document): void {
+    const script = doc.createElement("script");
+    const g_sel = JSON.stringify(`.${OPEN_TAB_GUTTER_CLASS}`);
+    const w_sel = JSON.stringify(`.${OPEN_TAB_WRAP_CLASS}`);
+    script.textContent = `(function(){var g=document.querySelector(${g_sel});var w=document.querySelector(${w_sel});if(!g||!w)return;var p=w.querySelector("pre");if(!p)return;var s=false;function b(a,t){a.addEventListener("scroll",function(){if(s)return;s=true;t.scrollTop=a.scrollTop;s=false;});}b(g,p);b(p,g);})();`;
+    doc.body.append(script);
 }
 
 function copy_opener_stylesheets_to_document(target_document: Document): void {
@@ -258,6 +386,11 @@ function open_code_in_new_tab(): void {
     copy_opener_stylesheets_to_document(doc);
 
     doc.body.replaceChildren();
+    append_open_tab_document_styles(doc);
+
+    const wrap = doc.createElement("div");
+    wrap.className = OPEN_TAB_WRAP_CLASS;
+    wrap.append(create_open_tab_gutter(doc, code_plain));
 
     if (use_highlighted && code_html !== "") {
         const hilite = doc.createElement("div");
@@ -267,18 +400,20 @@ function open_code_in_new_tab(): void {
         code_el.innerHTML = code_html;
         pre.append(code_el);
         hilite.append(pre);
-        doc.body.append(hilite);
+        wrap.append(hilite);
     } else {
         const pre = doc.createElement("pre");
         const code_el = doc.createElement("code");
         code_el.textContent = code_plain;
         pre.append(code_el);
-        doc.body.append(pre);
+        wrap.append(pre);
     }
+
+    doc.body.append(wrap);
+    append_open_tab_scroll_sync_script(doc);
 
     doc.body.style.margin = "0";
 
-    // Prevent the new tab from retaining a live opener handle.
     popup.opener = null;
 }
 
@@ -381,5 +516,19 @@ export function initialize(): void {
             e.stopPropagation();
             maybe_confirm_close();
         }
+    });
+
+    const $overlay = $("#code_block_lightbox_overlay");
+    bind_mutual_vertical_scroll(
+        $overlay.find(".code-block-lightbox-scroll-area pre"),
+        $overlay.find(".code-block-lightbox-scroll-area .code-block-lightbox-gutter"),
+    );
+    bind_mutual_vertical_scroll(
+        $overlay.find(".code-block-lightbox-editor"),
+        $overlay.find(".code-block-lightbox-edit-row .code-block-lightbox-gutter"),
+    );
+
+    $overlay.on("input", ".code-block-lightbox-editor", () => {
+        fill_code_block_lightbox_gutters(get_current_code());
     });
 }
