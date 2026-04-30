@@ -1657,7 +1657,7 @@ export function change_state(
         // Callback to .goto() will update browser_history unless a
         // group is being edited. We are always editing a group here
         // so its safe to call
-        if (left_side_tab !== group_list_toggler.value()) {
+        if (left_side_tab !== group_list_toggler.key()) {
             user_group_components.set_active_group_id(group.id);
             group_list_toggler.goto(left_side_tab);
         }
