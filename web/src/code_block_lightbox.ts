@@ -216,8 +216,8 @@ function open_code_block_lightbox(
     code_element: HTMLElement | undefined,
 ): void {
     const title = language
-        ? $t({defaultMessage: "Code Block ({language})"}, {language})
-        : $t({defaultMessage: "Code Block"});
+        ? $t({defaultMessage: "Code block ({language})"}, {language})
+        : $t({defaultMessage: "Code block"});
     $("#code_block_lightbox_overlay .code-block-lightbox-title").text(title);
     if (highlighted_code_html !== undefined) {
         $("#code_block_lightbox_overlay code").html(highlighted_code_html);
