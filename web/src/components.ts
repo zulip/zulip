@@ -23,6 +23,7 @@ export type Toggle = {
     disable_tab: (name: string) => void;
     enable_tab: (name: string) => void;
     value: () => string | undefined;
+    key: () => string | undefined;
     get: () => JQuery;
     goto: (name: string) => void;
     register_event_handlers: () => void;
@@ -181,6 +182,14 @@ export function toggle(opts: {
         value() {
             if (meta.idx >= 0) {
                 return opts.values[meta.idx]!.label;
+            }
+            /* istanbul ignore next */
+            return undefined;
+        },
+
+        key() {
+            if (meta.idx >= 0) {
+                return opts.values[meta.idx]!.key;
             }
             /* istanbul ignore next */
             return undefined;

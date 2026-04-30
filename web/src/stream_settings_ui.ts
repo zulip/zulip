@@ -1166,7 +1166,7 @@ export function change_state(
         // Callback to .goto() will update browser_history unless a
         // stream is being edited. We are always editing a stream here
         // so its safe to call
-        if (left_side_tab !== toggler.value()) {
+        if (left_side_tab !== toggler.key()) {
             toggler.goto(left_side_tab);
         }
         switch_to_stream_row(stream_id);
