@@ -1,5 +1,6 @@
 #code_block_lightbox_overlay {
     z-index: 220;
+
     --code-block-lightbox-label-blue: hsl(205deg 82% 72%);
 
     .code-block-lightbox-content {
@@ -109,8 +110,7 @@
         flex-direction: column;
         min-width: 2.5em;
         padding: 10px 0.6em 10px 0.8em;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden auto;
         scrollbar-width: none;
         -ms-overflow-style: none;
         text-align: right;
@@ -119,8 +119,8 @@
         font-size: 0.9em;
         line-height: 1.4;
         font-family:
-            ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono",
-            "Courier New", monospace;
+            ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+            "Liberation Mono", "Courier New", monospace;
         border-right: 1px solid var(--color-markdown-pre-border);
         background-color: var(--color-markdown-pre-background);
     }
@@ -180,8 +180,8 @@
         overflow: auto;
         resize: none;
         font-family:
-            ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono",
-            "Courier New", monospace;
+            ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+            "Liberation Mono", "Courier New", monospace;
     }
 
     .code-block-lightbox-close-prompt {

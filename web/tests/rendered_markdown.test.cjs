@@ -809,6 +809,7 @@ run_test("expand_codeblock passes highlighted HTML to lightbox", ({override, moc
     const $hilite = $.create("div.codehilite");
     const $pre = $.create("hilite-pre");
     const $code = $.create("hilite-code");
+    // eslint-disable-next-line no-jquery/no-parse-html-literal -- zjquery FakeElement keeps innerHTML and textContent independent
     $code.html('<span class="k">def</span> foo()');
     $code[0].textContent = "def foo()";
 

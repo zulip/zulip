@@ -1072,8 +1072,7 @@ export function initialize(): void {
             const is_click_within_link = $(e.target).closest("a").length > 0;
             if (
                 is_click_within_link ||
-                $(e.target)
-                    .closest(".copy_codeblock, .expand_codeblock, .view_code_block_lightbox")
+                $(e.target).closest(".copy_codeblock, .expand_codeblock, .view_code_block_lightbox")
                     .length > 0
             ) {
                 const is_selecting_link_text = is_click_within_link && mouse_drag.is_drag(e);

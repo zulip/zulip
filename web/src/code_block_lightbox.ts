@@ -39,7 +39,7 @@ function bind_mutual_vertical_scroll($a: JQuery, $b: JQuery): void {
                 return;
             }
             syncing = true;
-            to.prop("scrollTop", from.prop("scrollTop") as number);
+            to.prop("scrollTop", Number(from.prop("scrollTop")));
             syncing = false;
         });
     }
@@ -86,7 +86,10 @@ function set_edit_mode(enabled: boolean): void {
     }
 }
 
-function render_highlighted_code_html(code: string, language: string | undefined): Promise<string | undefined> {
+async function render_highlighted_code_html(
+    code: string,
+    language: string | undefined,
+): Promise<string | undefined> {
     const fence = get_unused_fence(code);
     const language_suffix = language !== undefined && language !== "" ? language : "";
     const markdown_content = `${fence}${language_suffix}\n${code}\n${fence}`;
@@ -95,8 +98,16 @@ function render_highlighted_code_html(code: string, language: string | undefined
         void channel.post({
             url: "/json/messages/render",
             data: {content: markdown_content},
-            success(response_data) {
-                const rendered = (response_data as {rendered?: unknown}).rendered;
+            success(response_data: unknown) {
+                if (
+                    typeof response_data !== "object" ||
+                    response_data === null ||
+                    !("rendered" in response_data)
+                ) {
+                    resolve(undefined);
+                    return;
+                }
+                const rendered = response_data.rendered;
                 if (typeof rendered !== "string") {
                     resolve(undefined);
                     return;
@@ -128,7 +139,11 @@ function save_edits(): void {
         if (source_code_element !== undefined) {
             $(source_code_element).text(active_code);
         }
-        void render_highlighted_code_html(active_code, active_language).then((highlighted_html) => {
+        void (async (): Promise<void> => {
+            const highlighted_html = await render_highlighted_code_html(
+                active_code,
+                active_language,
+            );
             if (highlighted_html === undefined || active_code !== edited_code) {
                 return;
             }
@@ -138,7 +153,7 @@ function save_edits(): void {
             if (source_code_element !== undefined) {
                 $(source_code_element).html(highlighted_html);
             }
-        });
+        })();
     } else if (edit_mode_original_highlighted_code_html !== undefined) {
         $("#code_block_lightbox_overlay code").html(edit_mode_original_highlighted_code_html);
         active_highlighted_code_html = edit_mode_original_highlighted_code_html;
@@ -437,6 +452,7 @@ async function copy_code_in_lightbox(): Promise<void> {
     textarea.style.opacity = "0";
     document.body.append(textarea);
     textarea.select();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- fallback when Clipboard API is unavailable
     document.execCommand("copy");
     textarea.remove();
 }
