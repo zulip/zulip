@@ -84,7 +84,7 @@ elif vendor == "ubuntu" and os_version == "24.04":  # noble
     POSTGRESQL_VERSION = "16"
 elif vendor == "ubuntu" and os_version == "26.04":  # resolute
     POSTGRESQL_VERSION = "18"
-elif vendor == "fedora" and os_version == "43":
+elif vendor == "fedora" and os_version in ("43", "44"):
     POSTGRESQL_VERSION = "17"
 elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
