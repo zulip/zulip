@@ -757,9 +757,11 @@ function test_code_playground(mock_template, viewing_code) {
     $hilite.attr("data-code-language", "javascript");
 
     const $code_buttons_container = $("<code-buttons-container-stub>");
+    const $expand_codeblock = $("<expand-codeblock-stub>");
     const $copy_code_button = $("<copy-code-button-stub>");
     const $view_code_in_playground = $.create("view_code_in_playground");
 
+    $code_buttons_container.set_find_results(".expand_codeblock", $expand_codeblock);
     $code_buttons_container.set_find_results(".copy_codeblock", $copy_code_button);
     $code_buttons_container.set_find_results(".code_external_link", $view_code_in_playground);
 
