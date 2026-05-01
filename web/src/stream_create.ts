@@ -668,13 +668,17 @@ export function set_up_handlers(): void {
 }
 
 export function initialize(): void {
-    $("#channels_overlay_container").on("click", "#archived_stream_rename", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
+    $("#channels_overlay_container").on(
+        "click",
+        "#archived_stream_rename",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
 
-        stream_edit.open_stream_edit_modal(stream_id);
-    });
+            stream_edit.open_stream_edit_modal(stream_id, $(this).attr("id")!);
+        },
+    );
 }
 
 export function set_channel_folder_dropdown_value(folder_id: number): void {
