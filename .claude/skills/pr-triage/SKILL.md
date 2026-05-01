@@ -9,14 +9,23 @@ argument-hint: "[date-range like 2026-04-01_2026-04-15]"
 The tool lives at `tools/triage/` — see its `README.md` for full docs. This
 skill is a thin pointer for AI assistants helping with a triage pass.
 
-## Two-step run
+## Two views, each a two-step run
 
 ```bash
+# Created-mode: PRs created in the range.
 python3 tools/triage/fetch.py YYYY-MM-DD_YYYY-MM-DD
 python3 tools/triage/build_html.py YYYY-MM-DD_YYYY-MM-DD
+# → tools/triage/<start>_to_<end>.html
+
+# Active-mode: PRs commented in the range, created earlier.
+python3 tools/triage/fetch_active.py YYYY-MM-DD_YYYY-MM-DD
+python3 tools/triage/build_active.py YYYY-MM-DD_YYYY-MM-DD
+# → tools/triage/<start>_to_<end>_active.html
 ```
 
-Output: `tools/triage/<start>_to_<end>.html`.
+Typically run both for the same range. The active view excludes
+same-range creations by default (override with
+`--exclude-created START_END` or `--exclude-created none`).
 
 ## Where AI judgment is load-bearing
 
