@@ -756,7 +756,7 @@ def bulk_access_messages(
             stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
             user_group_membership_details=user_group_membership_details,
-            is_modifying_message=False,
+            is_modifying_message=is_modifying_message,
         ):
             filtered_messages.append(message)
     return filtered_messages
