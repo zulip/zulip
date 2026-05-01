@@ -49,7 +49,9 @@ HTML are gitignored; nothing about a triage run is committed.
 
 ## Categories
 
-Drafts and `[WIP]`-titled PRs are excluded entirely.
+Drafts and `[WIP]`-titled PRs are excluded entirely. PRs labeled
+`integration review`, `chat.zulip.org review`, or `completion candidate`
+are routed to dedicated collapsed sections (cats 8, 9, 10).
 
 | Cat | Title                                           | What it means                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -60,8 +62,14 @@ Drafts and `[WIP]`-titled PRs are excluded entirely.
 | 5   | Idle, awaiting contributor (≥10 days)           | Maintainer requested changes; contributor hasn't acted in ≥10 days. Candidates for a nudge or close.                                                                                                                                                                                                                                                                                                                                                                           |
 | 6   | Core team PRs without `maintainer review` label | Maintainer-authored PRs that need another maintainer to review and apply the label.                                                                                                                                                                                                                                                                                                                                                                                            |
 | 7   | Other (informational)                           | Recent activity, ball on contributor (<10 days), or maintainer PRs already in review. Collapsed by default.                                                                                                                                                                                                                                                                                                                                                                    |
+| 8   | Integration review                              | PRs labeled `integration review`. Surfaced for awareness only. Collapsed by default.                                                                                                                                                                                                                                                                                                                                                                                           |
+| 9   | chat.zulip.org review                           | PRs labeled `chat.zulip.org review`. Surfaced for awareness only. Collapsed by default.                                                                                                                                                                                                                                                                                                                                                                                        |
+| 10  | Completion candidate                            | PRs labeled `completion candidate`. They aren't being actively worked on. Collapsed by default.                                                                                                                                                                                                                                                                                                                                                                                |
 
-A PR lands in only one category; cat 3 takes precedence over cat 4.
+A PR lands in only one category. The label-based routing (cats 8, 9, 10)
+is checked first and trumps the rest. If a PR has more than one routing
+label, priority order is `integration review` > `chat.zulip.org review` >
+`completion candidate`. Among cats 1–7, cat 3 takes precedence over cat 4.
 
 In active-mode, "meaningful comment" = any non-bot author's top-level
 comment, formal review submission, or inline review comment. The

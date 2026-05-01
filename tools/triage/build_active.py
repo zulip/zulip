@@ -14,6 +14,7 @@ from typing import Any
 from build_html import (  # type: ignore[import-not-found]  # sibling-script import
     BASE,
     CACHE,
+    CAT_TITLES,
     _skip_links,
     build_pr_row,
     classify_pr,
@@ -35,7 +36,7 @@ def main() -> None:
         combined = json.load(f)
     issue_titles = load_issue_titles()
 
-    rows_by_cat: dict[int, list[dict[str, Any]]] = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []}
+    rows_by_cat: dict[int, list[dict[str, Any]]] = {c: [] for c in CAT_TITLES}
     drafts_skipped: list[int] = []
     wip_skipped: list[int] = []
     for num_str, blob in combined.items():
@@ -58,7 +59,7 @@ def main() -> None:
     summary_html = (
         f"<p>Activity range: <strong>{range_start} .. {range_end}</strong> "
         f"(PRs whose most recent meaningful comment falls in this window). "
-        f"Filter: open, non-draft, not WIP, excluding <code>integration review</code> label. "
+        f"Filter: open, non-draft, not WIP. "
         f"Total PRs shown: <strong>{sum(len(v) for v in rows_by_cat.values())}</strong>"
         f" (skipped {len(drafts_skipped)} draft"
         f"{_skip_links(drafts_skipped)}, {len(wip_skipped)} WIP"

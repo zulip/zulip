@@ -142,6 +142,15 @@ def classify_pr(num: int, blob: dict[str, Any]) -> tuple[int, str]:
     author = pr["user"]["login"]
     is_maint_author = author.lower() in MAINTAINERS
     labels = [label["name"] for label in pr["labels"]]
+    # Routing labels — these PRs aren't being directly worked through the
+    # maintainer review pipeline. Priority: `integration review` >
+    # `chat.zulip.org review` > `completion candidate` if multiple are set.
+    if "integration review" in labels:
+        return 8, ""
+    if "chat.zulip.org review" in labels:
+        return 9, ""
+    if "completion candidate" in labels:
+        return 10, ""
     has_maint_review_label = "maintainer review" in labels
     has_conflicts = pr.get("mergeable_state") == "dirty" or "has conflicts" in labels
     ck = blob.get("check_runs", {}).get("check_runs", [])
@@ -550,6 +559,9 @@ CAT_TITLES = {
     5: "5. Idle PRs awaiting contributor (10+ days since contributor's last action)",
     6: "6. Core team PRs without 'maintainer review' label",
     7: "7. Other open PRs (informational — recent activity, not actionable)",
+    8: "8. PRs labeled 'integration review'",
+    9: "9. PRs labeled 'chat.zulip.org review'",
+    10: "10. PRs labeled 'completion candidate'",
 }
 
 PAGE_CSS = """
@@ -620,18 +632,18 @@ def render_html(
         "<ul>",
     ]
     parts += [
-        f"<li>{html.escape(CAT_TITLES[c])} — <strong>{len(rows_by_cat[c])}</strong></li>"
-        for c in [1, 2, 3, 4, 5, 6, 7]
+        f"<li>{html.escape(title)} — <strong>{len(rows_by_cat[c])}</strong></li>"
+        for c, title in CAT_TITLES.items()
     ]
     parts += ["</ul>", "</div>"]
 
-    for cat in [1, 2, 3, 4, 5, 6, 7]:
+    for cat, cat_title in CAT_TITLES.items():
         rows = rows_by_cat[cat]
-        is_open = cat != 7
+        is_open = cat not in (7, 8, 9, 10)
         show_next_on = cat in (2, 5, 6, 7)
         parts.append(f"<details{' open' if is_open else ''}>")
         parts.append(
-            f'<summary>{html.escape(CAT_TITLES[cat])}<span class="count">({len(rows)})</span></summary>'
+            f'<summary>{html.escape(cat_title)}<span class="count">({len(rows)})</span></summary>'
         )
         if not rows:
             parts.append('<div class="empty">None.</div>')
@@ -681,7 +693,7 @@ def main() -> None:
         combined = json.load(f)
     issue_titles = load_issue_titles()
 
-    rows_by_cat: dict[int, list[dict[str, Any]]] = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []}
+    rows_by_cat: dict[int, list[dict[str, Any]]] = {c: [] for c in CAT_TITLES}
     drafts_skipped: list[int] = []
     wip_skipped: list[int] = []
     for num_str, blob in combined.items():
@@ -703,7 +715,7 @@ def main() -> None:
 
     summary_html = (
         f"<p>Date range: <strong>{range_start} .. {range_end}</strong> (created window). "
-        f"Filter: open, non-draft, not WIP, excluding <code>integration review</code> label. "
+        f"Filter: open, non-draft, not WIP. "
         f"Total PRs shown: <strong>{sum(len(v) for v in rows_by_cat.values())}</strong>"
         f" (skipped {len(drafts_skipped)} draft"
         f"{_skip_links(drafts_skipped)}, {len(wip_skipped)} WIP"

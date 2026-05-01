@@ -49,8 +49,9 @@ AI-assisted) review:
 
 ## Things to keep in mind
 
-- Drafts, `[WIP]`-titled PRs, and PRs labeled `integration review` are
-  excluded.
+- Drafts and `[WIP]`-titled PRs are excluded entirely. PRs labeled
+  `integration review`, `chat.zulip.org review`, or `completion candidate`
+  go to dedicated collapsed sections (cats 8, 9, 10).
 - Cache lives at `tools/triage/cache/` and is gitignored. `fetch.py` is
   idempotent on cached data; reruns won't re-download.
 - The HTML output is also gitignored — share it by attaching the file or
