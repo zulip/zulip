@@ -180,7 +180,9 @@ async function search_and_check(
     await page.click(".search_icon");
     await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", search_str, item_to_select);
-    // Enter to trigger search
+    // Move the mouse back to the search input to de-highlight any active
+    // typeahead suggestion; Enter with no active suggestion submits the search.
+    await page.click("#search_query");
     await page.keyboard.press("Enter");
     await check(page);
     assert.strictEqual(await page.title(), expected_narrow_title);
@@ -192,7 +194,9 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
     await page.click(".search_icon");
     await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
-    // Enter to trigger search
+    // Move the mouse back to the search input to de-highlight any active
+    // typeahead suggestion; Enter with no active suggestion submits the search.
+    await page.click("#search_query");
     await page.keyboard.press("Enter");
     await page.waitForSelector(".empty_feed_notice", {visible: true});
     const expect_message = "You haven't received any messages sent by Email Gateway yet.";
