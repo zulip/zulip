@@ -12,11 +12,12 @@ from typing import Any
 BASE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(BASE, "cache")
 TODAY = datetime.now(timezone.utc)
-# Default to the last full UTC day if no range is given.
-_DEFAULT_DAY = (TODAY - timedelta(days=1)).date().isoformat()
-RANGE_KEY = sys.argv[1] if len(sys.argv) > 1 else f"{_DEFAULT_DAY}_{_DEFAULT_DAY}"
-RANGE_START, RANGE_END = RANGE_KEY.split("_")
-RANGE_LABEL = f"{RANGE_START}_to_{RANGE_END}"
+
+
+def _default_range_key() -> str:
+    """Last full UTC day, formatted as YYYY-MM-DD_YYYY-MM-DD."""
+    day = (TODAY - timedelta(days=1)).date().isoformat()
+    return f"{day}_{day}"
 
 
 def _load_maintainers() -> set[str]:
@@ -541,67 +542,17 @@ def reviewer_html(name: str | None) -> str:
     return f'<span class="{cls}">{html.escape(name)}{suffix}</span>'
 
 
-def main() -> None:
-    with open(f"{CACHE}/combined_{RANGE_KEY}.json") as f:
-        combined = json.load(f)
-    # Build issue title cache
-    issue_titles: dict[int, dict[str, Any]] = {}
-    for fn in os.listdir(CACHE):
-        m = re.fullmatch(r"issue_(\d+)\.json", fn)
-        if m:
-            n = int(m.group(1))
-        else:
-            continue
-        with open(f"{CACHE}/{fn}") as f:
-            data = json.load(f)
-        if "error" in data:
-            continue
-        issue_titles[n] = {
-            "title": data.get("title"),
-            "body": data.get("body") or "",
-            "is_pr": "pull_request" in data,
-        }
+CAT_TITLES = {
+    1: "1. Contributor PRs awaiting first maintainer review",
+    2: "2. Contributor PRs where the next step is on us (>3 days idle)",
+    3: "3. Contributor PRs that violate the AI use policy",
+    4: "4. Contributor PRs with other guideline issues",
+    5: "5. Idle PRs awaiting contributor (10+ days since contributor's last action)",
+    6: "6. Core team PRs without 'maintainer review' label",
+    7: "7. Other open PRs (informational — recent activity, not actionable)",
+}
 
-    rows_by_cat: dict[int, list[dict[str, Any]]] = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []}
-    drafts_skipped: list[int] = []
-    wip_skipped: list[int] = []
-    for num_str, blob in combined.items():
-        n = int(num_str)
-        if blob["pr"].get("draft"):
-            drafts_skipped.append(n)
-            continue
-        title_lower = blob["pr"]["title"].lower()
-        if "[wip]" in title_lower or "wip:" in title_lower:
-            wip_skipped.append(n)
-            continue
-        cat, reason = classify_pr(n, blob)
-        row = build_pr_row(num_str, blob, issue_titles)
-        row["reason"] = reason
-        rows_by_cat[cat].append(row)
-
-    # Sort each category by PR number desc
-    for rows in rows_by_cat.values():
-        rows.sort(key=lambda r: -int(r["num"]))
-
-    cat_titles = {
-        1: "1. Contributor PRs awaiting first maintainer review",
-        2: "2. Contributor PRs where the next step is on us (>3 days idle)",
-        3: "3. Contributor PRs that violate the AI use policy",
-        4: "4. Contributor PRs with other guideline issues",
-        5: "5. Idle PRs awaiting contributor (10+ days since contributor's last action)",
-        6: "6. Core team PRs without 'maintainer review' label",
-        7: "7. Other open PRs (informational — recent activity, not actionable)",
-    }
-
-    parts = (
-        [
-            "<!doctype html>",
-            '<html lang="en">',
-            "<head>",
-            '<meta charset="utf-8">',
-            f"<title>Zulip PR Triage: {RANGE_START} to {RANGE_END}</title>",
-            "<style>",
-            """
+PAGE_CSS = """
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 1400px; margin: 1.5em auto; padding: 0 1em; color: #222; }
 h1 { font-size: 1.4em; }
 .summary { background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 0.5em 1em; margin-bottom: 1.5em; }
@@ -623,26 +574,56 @@ tr:hover td { background: #fafbfc; }
 .empty { padding: 0.8em; color: #8c959f; }
 .author { white-space: nowrap; }
 .age { white-space: nowrap; color: #57606a; font-size: 0.9em; }
-""",
-            "</style>",
-            "</head>",
-            "<body>",
-            f"<h1>Zulip PR Triage — open PRs created {RANGE_START} to {RANGE_END}</h1>",
-            '<div class="summary">',
-            f"<p>Date range: <strong>{RANGE_START} .. {RANGE_END}</strong> (created window). "
-            f"Filter: open, non-draft, not WIP, excluding <code>integration review</code> label. "
-            f"Total PRs shown: <strong>{sum(len(v) for v in rows_by_cat.values())}</strong>"
-            f" (skipped {len(drafts_skipped)} draft"
-            f"{_skip_links(drafts_skipped)}, {len(wip_skipped)} WIP"
-            f"{_skip_links(wip_skipped)}).</p>",
-            "<ul>",
-        ]
-        + [
-            f"<li>{html.escape(cat_titles[c])} — <strong>{len(rows_by_cat[c])}</strong></li>"
-            for c in [1, 2, 3, 4, 5, 6, 7]
-        ]
-        + ["</ul>", "</div>"]
-    )
+"""
+
+
+def load_issue_titles() -> dict[int, dict[str, Any]]:
+    issue_titles: dict[int, dict[str, Any]] = {}
+    for fn in os.listdir(CACHE):
+        m = re.fullmatch(r"issue_(\d+)\.json", fn)
+        if not m:
+            continue
+        with open(f"{CACHE}/{fn}") as f:
+            data = json.load(f)
+        if "error" in data:
+            continue
+        issue_titles[int(m.group(1))] = {
+            "title": data.get("title"),
+            "body": data.get("body") or "",
+            "is_pr": "pull_request" in data,
+        }
+    return issue_titles
+
+
+def render_html(
+    rows_by_cat: dict[int, list[dict[str, Any]]],
+    page_title: str,
+    h1_text: str,
+    summary_html: str,
+    output_path: str,
+) -> None:
+    """Build and write the HTML report. Shared between created-mode and active-mode."""
+    parts = [
+        "<!doctype html>",
+        '<html lang="en">',
+        "<head>",
+        '<meta charset="utf-8">',
+        f"<title>{html.escape(page_title)}</title>",
+        "<style>",
+        PAGE_CSS,
+        "</style>",
+        "</head>",
+        "<body>",
+        f"<h1>{html.escape(h1_text)}</h1>",
+        '<div class="summary">',
+        summary_html,
+        "<ul>",
+    ]
+    parts += [
+        f"<li>{html.escape(CAT_TITLES[c])} — <strong>{len(rows_by_cat[c])}</strong></li>"
+        for c in [1, 2, 3, 4, 5, 6, 7]
+    ]
+    parts += ["</ul>", "</div>"]
 
     for cat in [1, 2, 3, 4, 5, 6, 7]:
         rows = rows_by_cat[cat]
@@ -650,7 +631,7 @@ tr:hover td { background: #fafbfc; }
         show_next_on = cat in (2, 5, 6, 7)
         parts.append(f"<details{' open' if is_open else ''}>")
         parts.append(
-            f'<summary>{html.escape(cat_titles[cat])}<span class="count">({len(rows)})</span></summary>'
+            f'<summary>{html.escape(CAT_TITLES[cat])}<span class="count">({len(rows)})</span></summary>'
         )
         if not rows:
             parts.append('<div class="empty">None.</div>')
@@ -686,10 +667,56 @@ tr:hover td { background: #fafbfc; }
         parts.append("</details>")
 
     parts += ["</body>", "</html>"]
-    out = os.path.join(BASE, f"{RANGE_LABEL}.html")
-    with open(out, "w") as f:
+    with open(output_path, "w") as f:
         f.write("\n".join(parts))
-    print("wrote", out)
+    print("wrote", output_path)
+
+
+def main() -> None:
+    range_key = sys.argv[1] if len(sys.argv) > 1 else _default_range_key()
+    range_start, range_end = range_key.split("_")
+    range_label = f"{range_start}_to_{range_end}"
+
+    with open(f"{CACHE}/combined_{range_key}.json") as f:
+        combined = json.load(f)
+    issue_titles = load_issue_titles()
+
+    rows_by_cat: dict[int, list[dict[str, Any]]] = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []}
+    drafts_skipped: list[int] = []
+    wip_skipped: list[int] = []
+    for num_str, blob in combined.items():
+        n = int(num_str)
+        if blob["pr"].get("draft"):
+            drafts_skipped.append(n)
+            continue
+        title_lower = blob["pr"]["title"].lower()
+        if "[wip]" in title_lower or "wip:" in title_lower:
+            wip_skipped.append(n)
+            continue
+        cat, reason = classify_pr(n, blob)
+        row = build_pr_row(num_str, blob, issue_titles)
+        row["reason"] = reason
+        rows_by_cat[cat].append(row)
+
+    for rows in rows_by_cat.values():
+        rows.sort(key=lambda r: -int(r["num"]))
+
+    summary_html = (
+        f"<p>Date range: <strong>{range_start} .. {range_end}</strong> (created window). "
+        f"Filter: open, non-draft, not WIP, excluding <code>integration review</code> label. "
+        f"Total PRs shown: <strong>{sum(len(v) for v in rows_by_cat.values())}</strong>"
+        f" (skipped {len(drafts_skipped)} draft"
+        f"{_skip_links(drafts_skipped)}, {len(wip_skipped)} WIP"
+        f"{_skip_links(wip_skipped)}).</p>"
+    )
+
+    render_html(
+        rows_by_cat=rows_by_cat,
+        page_title=f"Zulip PR Triage: {range_start} to {range_end}",
+        h1_text=f"Zulip PR Triage — open PRs created {range_start} to {range_end}",
+        summary_html=summary_html,
+        output_path=os.path.join(BASE, f"{range_label}.html"),
+    )
 
 
 if __name__ == "__main__":

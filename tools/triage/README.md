@@ -69,7 +69,7 @@ body content.
 - **Add a new heuristic** → drop it into `classify_pr` (or `analyze_commits`
   for commit-level checks).
 - **Add a column** → edit `build_pr_row` (data) and the table-rendering loop
-  in `main`.
+  in `render_html`.
 
 ## Caveats
 
