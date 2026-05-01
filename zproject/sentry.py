@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import sentry_sdk
 from django.utils.translation import override as override_language
+from sentry_sdk.integrations import Integration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.redis import RedisIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.tornado import TornadoIntegration
 from sentry_sdk.utils import capture_internal_exceptions
 
@@ -74,9 +74,8 @@ def setup_sentry(dsn: str | None, environment: str) -> None:
     if os.path.exists(os.path.join(DEPLOY_ROOT, "sentry-release")):
         with open(os.path.join(DEPLOY_ROOT, "sentry-release")) as sentry_release_file:
             sentry_release = sentry_release_file.readline().strip()
-    integrations = [
+    integrations: list[Integration] = [
         RedisIntegration(),
-        SqlalchemyIntegration(),
     ]
     disabled_integrations = []
     if settings.RUNNING_INSIDE_TORNADO:
