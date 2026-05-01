@@ -540,10 +540,15 @@ def main() -> None:
 
     rows_by_cat: dict[int, list[dict[str, Any]]] = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []}
     drafts_skipped: list[int] = []
+    wip_skipped: list[int] = []
     for num_str, blob in combined.items():
         n = int(num_str)
         if blob["pr"].get("draft"):
             drafts_skipped.append(n)
+            continue
+        title_lower = blob["pr"]["title"].lower()
+        if "[wip]" in title_lower or "wip:" in title_lower:
+            wip_skipped.append(n)
             continue
         cat, reason = classify_pr(n, blob)
         row = build_pr_row(num_str, blob, issue_titles)
@@ -601,9 +606,11 @@ tr:hover td { background: #fafbfc; }
             f"<h1>Zulip PR Triage — open PRs created {RANGE_START} to {RANGE_END}</h1>",
             '<div class="summary">',
             f"<p>Date range: <strong>{RANGE_START} .. {RANGE_END}</strong> (created window). "
-            f"Filter: open, non-draft, excluding <code>integration review</code> label. "
+            f"Filter: open, non-draft, not WIP, excluding <code>integration review</code> label. "
             f"Total PRs shown: <strong>{sum(len(v) for v in rows_by_cat.values())}</strong>"
-            f" (skipped {len(drafts_skipped)} draft{_skip_links(drafts_skipped)}).</p>",
+            f" (skipped {len(drafts_skipped)} draft"
+            f"{_skip_links(drafts_skipped)}, {len(wip_skipped)} WIP"
+            f"{_skip_links(wip_skipped)}).</p>",
             "<ul>",
         ]
         + [
