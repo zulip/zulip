@@ -206,6 +206,24 @@ def classify_pr(num: int, blob: dict[str, Any]) -> tuple[int, str]:
         cat4_reasons.append(f"CI failing ({ci_failures})")
     if template_marker_count >= 5 and len(body_no_comments) < 400:
         cat4_reasons.append("template not filled in")
+    # Screenshot check: if the PR touches CSS or HBS templates, expect at
+    # least one image attachment in the body. Authors who change visual
+    # output need to show the result.
+    files = blob.get("files", [])
+    visual_files = [
+        f["filename"]
+        for f in files
+        if f["filename"].endswith((".css", ".scss", ".hbs"))
+        or f["filename"].startswith("web/static/images/")
+    ]
+    has_screenshot = bool(
+        re.search(
+            r"<img\s|!\[[^\]]*\]\([^)]+\)|user-(?:images|attachments)\.githubusercontent\.com|github\.com/user-attachments/",
+            pr["body"] or "",
+        )
+    )
+    if visual_files and not has_screenshot:
+        cat4_reasons.append("no screenshots for visual change")
     # Check for "Fixes:" line that's free-text rather than an issue reference.
     fixes_m = re.search(
         r"^\s*\*?\*?fixes:?\*?\*?\s*([^\n]*)", body_no_comments, re.IGNORECASE | re.MULTILINE

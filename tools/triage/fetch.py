@@ -101,6 +101,7 @@ def fetch_pr_bundle(num: int) -> int:
     cached(
         f"commits_{num}", f"https://api.github.com/repos/{REPO}/pulls/{num}/commits?per_page=100"
     )
+    cached(f"files_{num}", f"https://api.github.com/repos/{REPO}/pulls/{num}/files?per_page=100")
     return num
 
 
@@ -119,6 +120,7 @@ def assemble_combined(range_key: str, numbers: list[int]) -> dict[str, Any]:
             "reviews": _read_json(f"{CACHE}/reviews_{n}.json"),
             "review_comments": _read_json(f"{CACHE}/review_comments_{n}.json"),
             "check_runs": _read_json(f"{CACHE}/check_runs_{n}.json"),
+            "files": _read_json(f"{CACHE}/files_{n}.json"),
         }
     with open(f"{CACHE}/combined_{range_key}.json", "w") as f:
         json.dump(out, f)
