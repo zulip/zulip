@@ -1,4 +1,4 @@
-/* Existing styles (KEEP THESE) */
+
 .user-circle-active {
     color: var(--color-user-circle-active);
 }
@@ -21,15 +21,15 @@
     color: var(--color-user-circle-deactivated);
 }
 
-/* ---------------- NEW CODE (YOUR CHANGE) ---------------- */
 
-/* Layout fix */
+
+
 .selectable_sidebar_block {
     display: flex;
     align-items: center;
 }
 
-/* Status dot */
+
 .selectable_sidebar_block::before {
     content: "";
     width: 8px;
@@ -39,7 +39,7 @@
     margin-right: 6px;
 }
 
-/* Status colors */
+
 .selectable_sidebar_block.user-circle-active::before {
     background-color: var(--color-user-circle-active);
 }
