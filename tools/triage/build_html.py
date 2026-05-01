@@ -206,6 +206,15 @@ def classify_pr(num: int, blob: dict[str, Any]) -> tuple[int, str]:
         cat4_reasons.append(f"CI failing ({ci_failures})")
     if template_marker_count >= 5 and len(body_no_comments) < 400:
         cat4_reasons.append("template not filled in")
+    # Self-review checklist check: the PR template asks for a checklist.
+    # Authors may drop irrelevant items or add their own, but the checklist
+    # should be present as a starting point. Accept either an explicit
+    # "Self-review" reference (kept from the template) or a substantial
+    # checklist (5+ items, suggesting genuine customization).
+    checkbox_count = len(re.findall(r"^\s*-\s*\[[ xX]\]", body_no_comments, re.MULTILINE))
+    has_self_review_label = bool(re.search(r"self[\s-]?review", body_no_comments, re.IGNORECASE))
+    if not has_self_review_label and checkbox_count < 5:
+        cat4_reasons.append("missing self-review checklist")
     # Screenshot check: if the PR touches CSS or HBS templates, expect at
     # least one image attachment in the body. Authors who change visual
     # output need to show the result.
