@@ -1,3 +1,4 @@
+/* Existing styles (KEEP THESE) */
 .user-circle-active {
     color: var(--color-user-circle-active);
 }
@@ -19,27 +20,38 @@
 .user-circle-deactivated {
     color: var(--color-user-circle-deactivated);
 }
+
+/* ---------------- NEW CODE (YOUR CHANGE) ---------------- */
+
+/* Layout fix */
+.selectable_sidebar_block {
+    display: flex;
+    align-items: center;
+}
+
+/* Status dot */
 .selectable_sidebar_block::before {
     content: "";
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    display: inline-block;
+    flex-shrink: 0;
     margin-right: 6px;
-    vertical-align: middle;
 }
+
+/* Status colors */
 .selectable_sidebar_block.user-circle-active::before {
-    background-color: #4caf50; /* green */
+    background-color: var(--color-user-circle-active);
 }
 
 .selectable_sidebar_block.user-circle-idle::before {
-    background-color: #ff9800; /* orange */
+    background: var(--gradient-user-circle-idle);
 }
 
 .selectable_sidebar_block.user-circle-offline::before {
-    background-color: #ccc; /* gray */
+    background-color: var(--color-user-circle-offline);
 }
-.selectable_sidebar_block {
-    display: flex;
-    align-items: center;
+
+.selectable_sidebar_block.user-circle-deactivated::before {
+    background-color: var(--color-user-circle-deactivated);
 }
