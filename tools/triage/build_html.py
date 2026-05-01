@@ -46,7 +46,9 @@ FIXUP_PATTERNS = [
 ]
 
 
-def analyze_commits(num: str | int) -> list[str]:
+def analyze_commits(
+    num: str | int, head_sha: str | None = None, head_ci_failing: bool = False
+) -> list[str]:
     """Return list of commit-discipline issue descriptions, or empty list if OK."""
     p = os.path.join(COMMITS_CACHE, f"commits_{num}.json")
     if not os.path.exists(p):
@@ -60,6 +62,28 @@ def analyze_commits(num: str | int) -> list[str]:
     merge_count = sum(1 for c in commits if len(c.get("parents", [])) > 1)
     if merge_count > 0:
         issues.append(f"{merge_count} merge commit{'s' if merge_count > 1 else ''}")
+
+    # Each commit must pass CI independently. Check non-HEAD commits' check
+    # runs — but only if HEAD CI is passing, since otherwise the HEAD-CI
+    # failure already covers the issue and listing intermediates is redundant.
+    if not head_ci_failing:
+        n_failing_intermediates = 0
+        for c in commits:
+            sha = c["sha"]
+            if sha == head_sha:
+                continue
+            ck_path = os.path.join(COMMITS_CACHE, f"check_runs_sha_{sha}.json")
+            if not os.path.exists(ck_path):
+                continue
+            with open(ck_path) as f:
+                ck = json.load(f)
+            if any(r.get("conclusion") == "failure" for r in ck.get("check_runs", [])):
+                n_failing_intermediates += 1
+        if n_failing_intermediates:
+            if n_failing_intermediates > 1:
+                issues.append("intermediate commits fail CI")
+            else:
+                issues.append("intermediate commit fails CI")
 
     n_ai_markers = sum(
         1
@@ -245,7 +269,7 @@ def classify_pr(num: int, blob: dict[str, Any]) -> tuple[int, str]:
             re.IGNORECASE,
         ):
             cat4_reasons.append("non-issue `Fixes:` line")
-    cat4_reasons.extend(analyze_commits(num))
+    cat4_reasons.extend(analyze_commits(num, pr["head"]["sha"], head_ci_failing=ci_failing))
 
     # Only put unreviewed PRs in cat 4. If a maintainer has reviewed, the PR is already
     # in the review process; CI failures/etc become cat 7 (ball on author).

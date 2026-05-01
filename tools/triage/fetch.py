@@ -98,9 +98,20 @@ def fetch_pr_bundle(num: int) -> int:
         f"check_runs_{num}",
         f"https://api.github.com/repos/{REPO}/commits/{pr['head']['sha']}/check-runs?per_page=100",
     )
-    cached(
+    commits = cached(
         f"commits_{num}", f"https://api.github.com/repos/{REPO}/pulls/{num}/commits?per_page=100"
     )
+    # For Zulip's "each commit must pass CI" discipline: fetch check runs for
+    # every non-HEAD commit too. (HEAD is already cached above.)
+    head_sha = pr["head"]["sha"]
+    for c in commits:
+        sha = c["sha"]
+        if sha == head_sha:
+            continue
+        cached(
+            f"check_runs_sha_{sha}",
+            f"https://api.github.com/repos/{REPO}/commits/{sha}/check-runs?per_page=100",
+        )
     cached(f"files_{num}", f"https://api.github.com/repos/{REPO}/pulls/{num}/files?per_page=100")
     return num
 
