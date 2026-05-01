@@ -396,8 +396,11 @@ def print_error(msg: str) -> None:
 
 def clean_file(orig_fn: str) -> str:
     fn = orig_fn
-    if not fn.endswith(".test.cjs"):
-        fn += ".test.cjs"
+    if not fn.endswith((".test.cjs", ".test.cts")):
+        if os.path.exists(os.path.join(ROOT_DIR, "web", "tests", fn + ".test.cts")):
+            fn += ".test.cts"
+        else:
+            fn += ".test.cjs"
     if "web/tests/" not in fn:
         fn = os.path.join(ROOT_DIR, "web", "tests", fn)
     fn = os.path.abspath(fn)
@@ -427,7 +430,10 @@ def run_tests_via_node_js() -> int:
         parallel = 1
         files = individual_files
     else:
-        files = sorted(glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.cjs")))
+        files = sorted(
+            glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.cjs"))
+            + glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.cts"))
+        )
 
     test_files = clean_files(files)
 
