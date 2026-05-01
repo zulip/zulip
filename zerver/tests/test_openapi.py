@@ -272,6 +272,12 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # consistency tests.  We aim to keep this list empty.
     buggy_documentation_endpoints: set[str] = set()
 
+    # Cleanup: historically `/realm/emoji/{emoji_name}` was added to this
+    # set as a temporary workaround for earlier API doc changes
+    # (see PRs around custom-emoji updates). Remove it to ensure
+    # our tests don't silently ignore mismatches for that endpoint.
+    buggy_documentation_endpoints.discard("/realm/emoji/{emoji_name}")
+
     def ensure_no_documentation_if_intentionally_undocumented(
         self, url_pattern: str, method: str, msg: str | None = None
     ) -> None:
