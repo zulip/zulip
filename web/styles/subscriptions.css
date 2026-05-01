@@ -588,6 +588,25 @@ h4.stream_setting_subsection_title {
                     white-space: nowrap;
                 }
 
+                /* Focus outlines in this header are inset and forced
+                   to the regular focus blue. The ancestor
+                   .stream-info-title and .display-type both set
+                   `overflow: hidden`, which would otherwise clip an
+                   outside-drawn focus outline. */
+                .selected-stream:focus-visible {
+                    outline: 2px solid var(--color-outline-focus);
+                    outline-offset: -2px;
+                }
+
+                /* `!important` is required to win against the
+                   `.icon-button:focus-visible` and
+                   `.action-button:focus-visible` rules in
+                   buttons.css, which use `!important` themselves. */
+                .button-group :is(.icon-button, .action-button):focus-visible {
+                    outline: 2px solid var(--color-outline-focus) !important;
+                    outline-offset: -2px;
+                }
+
                 /* These contain two button groups, the left group should stick to the
                    right side of the group/channel title name, and the right group that
                    should stick to the rightmost side of the right pane header. */
