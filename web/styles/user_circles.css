@@ -19,3 +19,27 @@
 .user-circle-deactivated {
     color: var(--color-user-circle-deactivated);
 }
+.selectable_sidebar_block::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.selectable_sidebar_block.user-circle-active::before {
+    background-color: #4caf50; /* green */
+}
+
+.selectable_sidebar_block.user-circle-idle::before {
+    background-color: #ff9800; /* orange */
+}
+
+.selectable_sidebar_block.user-circle-offline::before {
+    background-color: #ccc; /* gray */
+}
+.selectable_sidebar_block {
+    display: flex;
+    align-items: center;
+}
