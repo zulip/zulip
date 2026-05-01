@@ -4,14 +4,25 @@ from typing import Any
 
 import orjson
 from django.db import connection
-from django.db.models import F, Func, JSONField, Q, QuerySet, Subquery, TextField, Value
+from django.db.models import (
+    Exists,
+    F,
+    Func,
+    JSONField,
+    OuterRef,
+    Q,
+    QuerySet,
+    Subquery,
+    TextField,
+    Value,
+)
 from django.db.models.functions import Cast
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from zerver.lib.types import EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Reaction, UserMessage, UserProfile
+from zerver.models import Message, Reaction, UserMessage, UserProfile, UserTopic
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -393,3 +404,24 @@ def get_topic_display_name(topic_name: str, language: str) -> str:
         with override_language(language):
             return _(Message.EMPTY_TOPIC_FALLBACK_NAME)
     return topic_name
+
+
+def topic_match_q(topic_name: str) -> Q:
+    return Q(subject__iexact=topic_name, is_channel_message=True)
+
+
+def get_resolved_topic_condition_q() -> Q:
+    return Q(subject__startswith=RESOLVED_TOPIC_PREFIX, is_channel_message=True)
+
+
+def get_followed_topic_condition_q(user_id: int) -> Q:
+    return Q(
+        Exists(
+            UserTopic.objects.filter(
+                user_profile_id=user_id,
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+                topic_name__iexact=OuterRef("subject"),
+                recipient=OuterRef("recipient"),
+            )
+        )
+    )

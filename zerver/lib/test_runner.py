@@ -24,7 +24,6 @@ from scripts.lib.zulip_tools import (
 )
 from zerver.lib import test_helpers, upload
 from zerver.lib.partial import partial
-from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_fixtures import BACKEND_DATABASE_TEMPLATE
 from zerver.lib.test_helpers import append_instrumentation_data, write_instrumentation_reports
 
@@ -391,12 +390,8 @@ class Runner(DiscoverRunner):
             destroy_test_databases(_worker_id)
             create_test_databases(_worker_id)
 
-        # We have to do the next line to avoid flaky scenarios where we
-        # run a single test and getting an SA connection causes data from
-        # a Django connection to be rolled back mid-test.
-        with get_sqlalchemy_connection():
-            result = self.run_suite(suite)
-            assert isinstance(result, TextTestResult)
+        result = self.run_suite(suite)
+        assert isinstance(result, TextTestResult)
         self.teardown_test_environment()
         failed = self.suite_result(suite, result)
         if not failed:

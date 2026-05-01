@@ -5,14 +5,12 @@ from datetime import datetime
 from typing import TypedDict
 
 from django.db import connection, transaction
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
-from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
-from sqlalchemy.types import Integer
 
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic_sqlalchemy import topic_match_sa
+from zerver.lib.topic import topic_match_q
 from zerver.lib.types import UserTopicDict
 from zerver.models import Recipient, Subscription, UserProfile, UserTopic
 from zerver.models.streams import get_stream
@@ -228,9 +226,7 @@ def topic_has_visibility_policy(
     return has_visibility_policy
 
 
-def exclude_stream_and_topic_mutes(
-    conditions: list[ClauseElement], user_profile: UserProfile, stream_id: int | None
-) -> list[ClauseElement]:
+def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_id: int | None) -> Q:
     # Note: Unlike get_topic_mutes, here we always want to
     # consider topics in deactivated streams, so they are
     # never filtered from the query in this method.
@@ -244,26 +240,31 @@ def exclude_stream_and_topic_mutes(
         # by not considering topic mutes outside the stream.
         query = query.filter(stream_id=stream_id)
 
-    excluded_topic_rows = query.values(
-        "recipient_id",
-        "topic_name",
+    excluded_topic_rows = list(
+        query.values(
+            "recipient_id",
+            "topic_name",
+        )
     )
+
+    conditions = ~Q(pk__in=[])  # Always true.
 
     class RecipientTopicDict(TypedDict):
         recipient_id: int
         topic_name: str
 
-    def topic_cond(row: RecipientTopicDict) -> ClauseElement:
+    def topic_cond(row: RecipientTopicDict) -> Q:
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
-        stream_cond = column("recipient_id", Integer) == recipient_id
-        topic_cond = topic_match_sa(topic_name)
-        return and_(stream_cond, topic_cond)
+        assert isinstance(topic_name, str)
+        return Q(recipient_id=recipient_id) & topic_match_q(topic_name)
 
     # Add this query later to reduce the number of messages it has to run on.
     if excluded_topic_rows:
-        exclude_muted_topics_condition = not_(or_(*map(topic_cond, excluded_topic_rows)))
-        conditions = [*conditions, exclude_muted_topics_condition]
+        muted_topics_q = topic_cond(excluded_topic_rows[0])
+        for row in excluded_topic_rows[1:]:
+            muted_topics_q |= topic_cond(row)
+        conditions &= ~muted_topics_q
 
     # Channel-level muting only applies when looking at views that
     # include multiple channels, since we do want users to be able to
@@ -296,24 +297,21 @@ def exclude_stream_and_topic_mutes(
         )
 
         # Exclude muted_recipient_ids unless they match include_followed_or_unmuted_topics_condition
-        muted_stream_condition = column("recipient_id", Integer).in_(muted_recipient_ids)
+        muted_stream_condition = Q(recipient_id__in=muted_recipient_ids)
 
         if included_topic_rows:
-            include_followed_or_unmuted_topics_condition = or_(
-                *map(topic_cond, included_topic_rows)
-            )
+            include_followed_or_unmuted_topics_condition = topic_cond(included_topic_rows[0])
+            for row in included_topic_rows[1:]:  # nocoverage
+                include_followed_or_unmuted_topics_condition |= topic_cond(row)
 
-            exclude_muted_streams_condition = not_(
-                and_(
-                    muted_stream_condition,
-                    not_(include_followed_or_unmuted_topics_condition),
-                )
+            exclude_muted_streams_condition = ~(
+                muted_stream_condition & ~include_followed_or_unmuted_topics_condition
             )
         else:
             # If no included topics, exclude all muted streams
-            exclude_muted_streams_condition = not_(muted_stream_condition)
+            exclude_muted_streams_condition = ~muted_stream_condition
 
-        conditions = [*conditions, exclude_muted_streams_condition]
+        conditions &= exclude_muted_streams_condition
 
     return conditions
 
