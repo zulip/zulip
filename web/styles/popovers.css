@@ -1084,9 +1084,14 @@ ul.popover-group-menu-member-list {
 
             &:focus-visible {
                 border-radius: 4px;
-                /* Override the default focus style */
-                outline: 1px solid var(--color-outline-focus) !important;
-                outline-offset: -1px;
+                /* Use an inset box-shadow rather than
+                   `outline` with a negative `outline-offset`,
+                   which at fractional browser zoom levels can
+                   render at subpixel positions outside the item
+                   and get clipped by the menu's `overflow-x:
+                   hidden`. */
+                outline: none;
+                box-shadow: inset 0 0 0 1px var(--color-outline-focus);
                 background: var(--color-background-hover-popover-menu);
             }
 
