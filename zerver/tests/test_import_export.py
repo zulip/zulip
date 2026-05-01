@@ -406,11 +406,6 @@ class ExportFile(ZulipTestCase):
                 stale_migrations = [mig for mig in installed_app if mig.endswith(stale_migration)]
         self.assert_length(stale_migrations, 0)
 
-
-class RealmImportExportTest(ExportFile):
-    def create_user_and_login(self, email: str, realm: Realm) -> None:
-        self.register(email, "test", subdomain=realm.subdomain)
-
     def export_realm(
         self,
         realm: Realm,
@@ -448,6 +443,11 @@ class RealmImportExportTest(ExportFile):
             event_time=timezone_now(),
         )
         self.export_realm(original_realm, export_type, exportable_user_ids)
+
+
+class RealmImportExportTest(ExportFile):
+    def create_user_and_login(self, email: str, realm: Realm) -> None:
+        self.register(email, "test", subdomain=realm.subdomain)
 
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
