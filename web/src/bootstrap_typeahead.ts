@@ -354,7 +354,7 @@ export class Typeahead<ItemType extends string | object> {
         if (this.hideAfterSelect()) {
             return this.hide();
         }
-        return this.lookup(true);
+        return this.lookup(false);
     }
 
     set_value(): void {
