@@ -1,4 +1,3 @@
-
 .user-circle-active {
     color: var(--color-user-circle-active);
 }
@@ -21,14 +20,10 @@
     color: var(--color-user-circle-deactivated);
 }
 
-
-
-
 .selectable_sidebar_block {
     display: flex;
     align-items: center;
 }
-
 
 .selectable_sidebar_block::before {
     content: "";
@@ -38,7 +33,6 @@
     flex-shrink: 0;
     margin-right: 6px;
 }
-
 
 .selectable_sidebar_block.user-circle-active::before {
     background-color: var(--color-user-circle-active);
