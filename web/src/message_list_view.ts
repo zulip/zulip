@@ -1666,7 +1666,7 @@ export class MessageListView {
     _rerender_message(
         message_container: MessageContainer,
         opts: {message_content_edited: boolean; is_revealed: boolean},
-    ): void {
+    ): JQuery {
         const {message_content_edited, is_revealed} = opts;
         const $row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
@@ -1695,6 +1695,8 @@ export class MessageListView {
         if (was_selected && this.list === message_lists.current) {
             this.list.reselect_selected_id();
         }
+
+        return $rendered_msg;
     }
 
     reveal_hidden_message(message_id: number): void {
@@ -1759,6 +1761,7 @@ export class MessageListView {
 
         const message_groups = [];
         let current_group = [];
+        let $rerendered_rows = $();
 
         for (const message_container of message_containers) {
             if (
@@ -1770,11 +1773,23 @@ export class MessageListView {
                 message_groups.push(current_group);
                 current_group = [];
             }
-            this._rerender_message(message_container, {message_content_edited, is_revealed: false});
+            const $rendered = this._rerender_message(message_container, {
+                message_content_edited,
+                is_revealed: false,
+            });
+            $rerendered_rows = $rerendered_rows.add($rendered);
         }
 
         if (current_group.length > 0) {
             message_groups.push(current_group);
+        }
+
+        // Only the current message list needs its condense/collapse
+        // state refreshed here; non-current lists get
+        // `condense_and_collapse` reapplied via `restore_rendered_list`
+        // in `message_view` when they're brought back into view.
+        if (this.list === message_lists.current && $rerendered_rows.length > 0) {
+            condense.condense_and_collapse($rerendered_rows);
         }
 
         for (const messages_in_group of message_groups) {
