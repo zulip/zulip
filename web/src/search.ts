@@ -445,6 +445,12 @@ export let open_search_bar_and_close_narrow_description = (clear = false): void 
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
+    if (search_typeahead.shown) {
+        // close_search_bar_and_open_narrow_description() hides the dropdown
+        // element directly (bypassing hide()) to avoid a resize artifact as
+        // the bar collapses, leaving shown=true.  Restore visibility here.
+        $("#searchbox_form .dropdown-menu").show();
+    }
 };
 
 export function rewire_open_search_bar_and_close_narrow_description(
