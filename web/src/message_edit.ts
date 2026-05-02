@@ -1139,7 +1139,10 @@ export function end_message_row_edit($row: JQuery): void {
         message_lists.current.hide_edit_message($row);
         compose_call_session_manager.abandon_session(message.id.toString());
     }
-    if ($row.find(".could-be-condensed").length > 0) {
+
+    if (message?.collapsed) {
+        condense.show_message_expander($row);
+    } else if ($row.find(".could-be-condensed").length > 0) {
         if ($row.find(".condensed").length > 0) {
             condense.show_message_expander($row);
         } else {
