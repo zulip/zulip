@@ -2965,6 +2965,14 @@
         hsl(0deg 0% 90%),
         hsl(0deg 0% 0% / 20%)
     );
+    --color-background-select-option: light-dark(
+        hsl(0deg 0% 100%),
+        var(--color-background)
+    );
+    --color-text-select-option: light-dark(
+        hsl(0deg 0% 14%),
+        hsl(236deg 33% 90%)
+    );
     --color-text-input: light-dark(hsl(0deg 0% 14%), hsl(0deg 0% 95%));
     /* TODO: Light mode uses browser-default white
        backgrounds; we should extend the use of this
