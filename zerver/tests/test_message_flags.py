@@ -2202,6 +2202,7 @@ class MarkUnreadTest(ZulipTestCase):
             stream_dict={},
             huddle_dict={},
             mentions=set(),
+            personal_mentions=set(),
             muted_stream_ids=set(),
             unmuted_stream_msgs=set(),
             old_unreads_missing=False,
@@ -2224,6 +2225,7 @@ class MarkUnreadTest(ZulipTestCase):
             stream_dict={},
             huddle_dict={},
             mentions=set(),
+            personal_mentions=set(),
             muted_stream_ids=set(),
             unmuted_stream_msgs=set(),
             old_unreads_missing=False,
@@ -2428,6 +2430,7 @@ class MarkUnreadTest(ZulipTestCase):
                 dict(
                     type="stream",
                     mentioned=True,
+                    mentioned_me_directly=True,
                     topic="test",
                     unmuted_stream_msg=True,
                     stream_id=stream.id,
@@ -2754,6 +2757,7 @@ class MarkUnreadTest(ZulipTestCase):
                     type="private",
                     user_ids=[sender.id],
                     mentioned=True,
+                    mentioned_me_directly=True,
                 ),
             )
 
