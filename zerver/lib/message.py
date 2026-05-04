@@ -64,6 +64,7 @@ from zerver.models.recipients import DirectMessageGroup
 class MessageDetailsDict(TypedDict, total=False):
     type: str
     mentioned: bool
+    mentioned_me_directly: bool
     user_ids: list[int]
     stream_id: int
     topic: str
@@ -88,6 +89,7 @@ class RawUnreadMessagesResult(TypedDict):
     stream_dict: dict[int, RawUnreadStreamDict]
     huddle_dict: dict[int, RawUnreadDirectMessageGroupDict]
     mentions: set[int]
+    personal_mentions: set[int]
     muted_stream_ids: set[int]
     unmuted_stream_msgs: set[int]
     old_unreads_missing: bool
@@ -980,6 +982,7 @@ def extract_unread_data_from_um_rows(
         unmuted_stream_msgs=unmuted_stream_msgs,
         huddle_dict=direct_message_group_dict,
         mentions=mentions,
+        personal_mentions=set(),
         old_unreads_missing=False,
     )
 
@@ -1072,6 +1075,7 @@ def extract_unread_data_from_um_rows(
         ) != 0
         if is_mentioned:
             mentions.add(message_id)
+            raw_unread_messages["personal_mentions"].add(message_id)
         if is_stream_wildcard_mentioned or is_topic_wildcard_mentioned:
             if msg_type == Recipient.STREAM:
                 stream_id = row["recipient__type_id"]
@@ -1261,6 +1265,7 @@ def apply_unread_message_event(
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
+        state["personal_mentions"].add(message_id)
     if (
         "stream_wildcard_mentioned" in flags or "topic_wildcard_mentioned" in flags
     ) and message_id in state["unmuted_stream_msgs"]:
@@ -1275,6 +1280,7 @@ def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id
     state["huddle_dict"].pop(message_id, None)
     state["unmuted_stream_msgs"].discard(message_id)
     state["mentions"].discard(message_id)
+    state["personal_mentions"].discard(message_id)
 
 
 def format_unread_message_details(
@@ -1298,6 +1304,8 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+        if message_id in raw_unread_data["personal_mentions"]:
+            message_details["mentioned_me_directly"] = True
         unread_data[str(message_id)] = message_details
 
     for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
@@ -1312,6 +1320,8 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+        if message_id in raw_unread_data["personal_mentions"]:
+            message_details["mentioned_me_directly"] = True
         unread_data[str(message_id)] = message_details
 
     for message_id, huddle_message_details in raw_unread_data["huddle_dict"].items():
@@ -1328,6 +1338,8 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+        if message_id in raw_unread_data["personal_mentions"]:
+            message_details["mentioned_me_directly"] = True
         unread_data[str(message_id)] = message_details
 
     return unread_data
@@ -1341,6 +1353,8 @@ def add_message_to_unread_msgs(
 ) -> None:
     if message_details.get("mentioned"):
         state["mentions"].add(message_id)
+    if message_details.get("mentioned_me_directly"):
+        state["personal_mentions"].add(message_id)
 
     if message_details["type"] == "private":
         user_ids: list[int] = message_details["user_ids"]
