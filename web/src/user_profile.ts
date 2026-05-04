@@ -192,7 +192,7 @@ export function update_profile_modal_ui(
             name: user.full_name,
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         };
-        $("#name .user-profile-name").html(render_user_full_name(user_type));
+        $("#user-profile-name-heading .user-profile-name").html(render_user_full_name(user_type));
     }
 }
 
@@ -1643,20 +1643,28 @@ export function initialize(): void {
         add_user_to_groups(group_ids, user_id, $alert_box);
     });
 
-    $("body").on("click", "#user-profile-modal #name .user-profile-update-user-tab-button", (e) => {
-        show_manage_user_tab("manage-profile-tab");
-        e.stopPropagation();
-        e.preventDefault();
-    });
+    $("body").on(
+        "click",
+        "#user-profile-name-heading .user-profile-update-user-tab-button",
+        (e) => {
+            show_manage_user_tab("manage-profile-tab");
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
 
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
 
-    $("body").on("click", "#user-profile-modal #name .user-profile-profile-settings-button", () => {
-        hide_user_profile();
-        browser_history.go_to_location("#settings/profile");
-    });
+    $("body").on(
+        "click",
+        "#user-profile-name-heading .user-profile-profile-settings-button",
+        () => {
+            hide_user_profile();
+            browser_history.go_to_location("#settings/profile");
+        },
+    );
 
     $("body").on(
         "keydown",
