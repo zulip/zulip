@@ -2419,6 +2419,10 @@ label.preferences-radio-choice-label {
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+
+    &:disabled {
+        opacity: 0.7;
+    }
 }
 
 .empty-required-field {
