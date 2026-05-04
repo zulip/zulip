@@ -68,6 +68,7 @@ class ErrorCode(Enum):
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
     PERMISSION_DENIED = auto()
+    CHANNEL_ACCESS_DENIED = auto()
 
 
 class JsonableError(Exception):
@@ -192,6 +193,19 @@ class ChannelExistsError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Channel '{channel_name}' already exists")
+
+
+class ChannelAccessError(JsonableError):
+    code = ErrorCode.CHANNEL_ACCESS_DENIED
+    data_fields = ["channel_name"]
+
+    def __init__(self, channel_name: str) -> None:
+        self.channel_name: str = channel_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Unable to access channel ({channel_name}).")
 
 
 class StreamDoesNotExistError(JsonableError):
