@@ -1,19 +1,24 @@
-# PR triage tool
+# PR and issue triage tool
 
-Generates categorized HTML reports of open PRs in `zulip/zulip`, so a
-maintainer can quickly see what needs review, what's stuck, and what's
-already been handled. Two views:
+Generates categorized HTML reports of open PRs and issues in
+`zulip/zulip`, so a maintainer can quickly see what needs review,
+what's stuck, and what's already been handled. Three views:
 
-- **Created-mode** (`fetch.py` + `build_html.py`): PRs created in a date
-  range. Good for "what came in this week."
-- **Active-mode** (`fetch_active.py` + `build_active.py`): PRs whose most
-  recent meaningful comment falls in a date range, regardless of when the
-  PR was created. Good for "what got attention this week, and is anything
-  stuck."
+- **Created-mode PRs** (`fetch.py` + `build_html.py`): PRs created in a
+  date range. Good for "what came in this week."
+- **Active-mode PRs** (`fetch_active.py` + `build_active.py`): PRs whose
+  most recent meaningful comment falls in a date range, regardless of
+  when the PR was created. Good for "what got attention this week, and
+  is anything stuck."
+- **Issues** (`fetch_issues.py` + `build_issues.py`): open issues
+  active in a date range, split into actionable and informational
+  buckets based on creation date and in-range comment activity.
+  Issue volume is low enough that one combined report is more useful
+  than separate files.
 
-You'll typically run both for the same range. The active view excludes
-PRs created in the same range by default to avoid duplication with the
-created view.
+You'll typically run all three for the same range. The active PR view
+excludes PRs created in the same range by default to avoid duplication
+with the created view.
 
 ## Setup
 
@@ -38,6 +43,11 @@ python3 tools/triage/build_html.py 2026-04-01_2026-04-15
 python3 tools/triage/fetch_active.py 2026-04-01_2026-04-15
 python3 tools/triage/build_active.py 2026-04-01_2026-04-15
 # → tools/triage/2026-04-01_to_2026-04-15_active.html
+
+# Issues: new-in-range plus earlier issues with activity in range.
+python3 tools/triage/fetch_issues.py 2026-04-01_2026-04-15
+python3 tools/triage/build_issues.py 2026-04-01_2026-04-15
+# → tools/triage/2026-04-01_to_2026-04-15_issues.html
 ```
 
 `fetch_active.py` accepts `--exclude-created START_END` to override the
@@ -47,7 +57,7 @@ to keep all PRs.
 The cache (shared across modes — per-PR data is identical) and generated
 HTML are gitignored; nothing about a triage run is committed.
 
-## Categories
+## PR categories
 
 Drafts and `[WIP]`-titled PRs are excluded entirely. PRs labeled
 `integration review`, `chat.zulip.org review`, or `completion candidate`
@@ -77,6 +87,47 @@ classifier is the same as created-mode; cat 1 ("awaiting first review")
 will essentially always be empty in active-mode, since a PR can only
 enter the active view via a comment in range.
 
+## Issue categories
+
+The issue view splits into eight buckets, displayed in priority order
+(first match wins, top to bottom):
+
+| Cat | Title                                                        | What it means                                                                                                                                     |
+| --- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | New issues filed by non-maintainers                          | Created in range by a non-maintainer, no maintainer comments yet. The "needs triage" pile.                                                        |
+| 2   | New issues from maintainers with possibly unclear next steps | Maintainer-filed in range, no `help wanted` / `blocked` / `needs ...` label, no assignee, no other maintainer commented yet.                      |
+| 3   | Issues with in-range comments from the issue author          | OP added a non-maintainer comment in range that may need a response.                                                                              |
+| 4   | Issues with in-range comments from users                     | A non-OP, non-maintainer user added an in-range comment (default classification — most defaults land here).                                       |
+| 5   | Issues with in-range contributor questions for maintainers   | A contributor's in-range comment specifically asks a maintainer for help; routed here via `CONTRIBUTOR_HELP_REQUEST_IDS` in `local_overrides.py`. |
+| 6   | Other new issues filed by maintainers (for completeness)     | Maintainer-filed in range with the next step intentionally pinned somewhere else. Collapsed by default.                                           |
+| 7   | Updated issues (filed earlier, recent activity)              | Older issues with activity in range, no maintainer comments and no actionable in-range comment. Collapsed by default.                             |
+| 8   | Issues with maintainer replies (informational)               | Has at least one maintainer comment, and no other actionable signal in range. Collapsed by default.                                               |
+
+`needs ...` covers `needs discussion`, `needs more work`, `needs
+product spec`, `needs reproducer`, and `needs tech spec`.
+
+Cats 3–5 require comment-content judgment. The triage pass populates
+two sets in a gitignored `tools/triage/local_overrides.py` (date-
+specific data doesn't belong in the repo), which `build_issues.py`
+imports if present:
+
+- **`BORING_COMMENT_IDS`**: comment IDs to fully suppress (informal
+  claim requests, contributor technical chatter, contributor
+  coordination, contributor clarification questions on issues not
+  marked `help wanted`, etc.).
+- **`CONTRIBUTOR_HELP_REQUEST_IDS`**: contributor comments that
+  specifically ask a maintainer for help — routed to cat 5 instead
+  of cat 4. (Without an entry here, contributor comments default to
+  cat 4 unless suppressed.)
+
+Without a `local_overrides.py`, every default-classified comment
+lands in cats 3 or 4 and the report is much noisier.
+
+Programmatic filters that always drop comments: zulipbot, comments
+by maintainers (whether or not they're the OP), and any body
+containing `@zulipbot` (catches claim/abandon/unclaim variants and
+informal "@zulipbot please assign me" requests).
+
 ## How it works
 
 `fetch.py` searches `created:START..END`; `fetch_active.py` searches
@@ -96,6 +147,15 @@ output. The classifier is a single function with heuristics over
 timestamps, labels, CI state, merge conflicts, commit discipline, file
 paths, and PR body content.
 
+`fetch_issues.py` searches `is:issue is:open updated:START..END`, writes
+`issues_<range>.json` (a separate cache file from the PR data — issues
+and PRs are different GitHub objects), and fetches each issue's
+comments into `issue_comments_<num>.json` (the same cache key used by
+the PR tool, so reruns are free). `build_issues.py` reads both, runs
+the comment classifier, and routes each issue into one of the eight
+categories above. Routing is strict in-range: only comments with
+`created_at` in `[START, END]` drive cats 3–5.
+
 ## Tweaking it
 
 - **Change the maintainer team** → edit `maintainers.json`. Lookups are
@@ -103,6 +163,10 @@ paths, and PR body content.
 - **Mark a specific PR as an AI policy violation** → add an entry to
   `AI_POLICY_VIOLATION` in `build_html.py` with a short reason describing
   the violation type.
+- **Filter or reroute an issue comment** → add the comment ID to
+  `BORING_COMMENT_IDS` (suppress) or `CONTRIBUTOR_HELP_REQUEST_IDS`
+  (route to cat 5) in `tools/triage/local_overrides.py`. Create the
+  file if it doesn't exist; it's gitignored.
 - **Adjust thresholds** → edit `classify_pr` in `build_html.py`. The 3-day
   cat-2 threshold and 10-day cat-5 threshold are simple constants there.
 - **Add a new heuristic** → drop it into `classify_pr` (or `analyze_commits`
