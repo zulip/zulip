@@ -147,7 +147,7 @@ export function create<ItemType extends {type: string}>(
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
             if (!item) {
-                store.$input.addClass("shake");
+                store.$input.addClass("input-validation-shake");
 
                 if (store.show_outline_on_invalid_input) {
                     store.$parent.addClass("invalid");
@@ -461,7 +461,7 @@ export function create<ItemType extends {type: string}>(
         // when the shake animation is applied to the ".input" on invalid input,
         // we want to remove the class when finished automatically.
         store.$parent.on("animationend", ".input", function () {
-            $(this).removeClass("shake");
+            $(this).removeClass("input-validation-shake");
         });
 
         // replace formatted input with plaintext to allow for sane copy-paste

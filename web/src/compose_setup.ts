@@ -695,12 +695,12 @@ export function initialize(): void {
         if (topic.length > realm.max_topic_length) {
             topic = topic.slice(0, realm.max_topic_length);
             compose_state.topic(topic);
-            $("input#stream_message_recipient_topic").addClass("shake");
+            $("input#stream_message_recipient_topic").addClass("input-validation-shake");
         }
     }
 
     $("input#stream_message_recipient_topic").on("animationend", function () {
-        $(this).removeClass("shake");
+        $(this).removeClass("input-validation-shake");
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {

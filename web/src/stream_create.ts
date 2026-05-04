@@ -646,12 +646,12 @@ export function set_up_handlers(): void {
         if (channel_name.length > realm.max_stream_name_length) {
             channel_name = channel_name.slice(0, realm.max_stream_name_length);
             $channel_input.val(channel_name);
-            $channel_input.addClass("shake");
+            $channel_input.addClass("input-validation-shake");
         }
         stream_name_error.pre_validate(channel_name);
     }
     $("input#create_stream_name").on("animationend", function () {
-        $(this).removeClass("shake");
+        $(this).removeClass("input-validation-shake");
     });
     $container.on("input", "#create_stream_name", () => {
         handle_channel_name_length_limit();
