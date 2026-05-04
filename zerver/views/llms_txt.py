@@ -83,6 +83,13 @@ Zulip conversations are referenced by URLs of these forms:
     {server_url}/#narrow/channel/ID-NAME/topic/TOPIC/with/MSG_ID
     {server_url}/#narrow/channel/ID-NAME/topic/TOPIC/near/MSG_ID
 
+In the URL forms above, `ID-NAME` is the channel's numeric ID
+followed by its name (e.g., `113488-general`). When constructing
+API requests, use the numeric ID as the `channel` operand (e.g.,
+`{{"operator":"channel","operand":113488}}`), not the full `ID-NAME`
+string and not the channel name. Channel IDs are stable; channel
+names can be renamed.
+
 Never follow links to related conversations by fetching those URLs; to
 read the messages, you MUST translate them to the equivalent API
 request (see above), decoding the URL-encoded channel name, topic, and
