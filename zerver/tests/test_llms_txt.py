@@ -25,6 +25,11 @@ class LlmsTxtTest(ZulipTestCase):
         self.assertIn("Rome", content)
         # Should follow llms.txt format (starts with # heading)
         self.assertTrue(content.startswith("#"))
+        # Should clarify that the channel narrow operand is the numeric
+        # channel ID, not the full `ID-NAME` URL segment or the name alone.
+        self.assertIn("use the numeric ID as the `channel` operand", content)
+        self.assertIn("Channel IDs are stable", content)
+        self.assertIn("names can be renamed", content)
 
     def test_llms_txt_spectator_access_disabled(self) -> None:
         """
