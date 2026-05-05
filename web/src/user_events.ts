@@ -42,8 +42,10 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_events from "./stream_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
+import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_profile from "./user_profile.ts";
 
 export const user_update_schema = z.intersection(
@@ -348,6 +350,8 @@ export function initialize(): void {
         drafts_overlay_ui.refresh_after_users_fetched();
         search.refresh_after_users_fetched();
         composebox_typeahead.refresh_after_users_fetched();
+        stream_edit_subscribers.refresh_after_users_fetched();
+        user_group_edit_members.refresh_after_users_fetched();
         if (narrow_state.is_message_feed_visible()) {
             compose_closed_ui.update_reply_button();
             narrow_title.update_narrow_title(narrow_state.filter());

@@ -16,6 +16,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -64,6 +65,17 @@ export function update_member_list_widget(group: UserGroup): void {
     assert(group.id === current_group_id, "Unexpected group rerendering members list");
     const users = get_user_group_members(group);
     member_list_widget.replace_list_data(users);
+}
+
+export function refresh_after_users_fetched(): void {
+    if (member_list_widget === undefined) {
+        return;
+    }
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(current_group_id);
+    update_member_list_widget(group);
 }
 
 function format_member_list_elem(person: User, is_parent_system_group: boolean): string {
