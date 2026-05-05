@@ -19,7 +19,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, do_drop_all_analytics_tables, process_count_stat
-from analytics.models import FillState, RealmCount, UserCount
+from analytics.models import FillState, InstallationCount, RealmCount, UserCount
 from analytics.tests.test_counts import AnalyticsTestCase
 from version import ZULIP_VERSION
 from zerver.actions.alert_words import do_add_alert_words
@@ -3914,3 +3914,99 @@ class AnalyticsImportExportTest(AnalyticsTestCase, ExportFile):
             ],
         )
         self.assertFillStateEquals(stat, current_time)
+
+    def test_installation_count_not_updated(self) -> None:
+        """
+        This tracks a bug where if a new realm and its *Count tables
+        are imported, the server's InstallationCount table is
+        not updated and is wrong.
+        """
+        current_time = self.TIME_ZERO
+        stat = COUNT_STATS["messages_sent:message_type:day"]
+        self.current_property = stat.property
+
+        do_drop_all_analytics_tables()
+
+        # Send a message in default_realm and process stats.
+        public_channel = self.create_stream_with_recipient()[1]
+        exported_message = self.create_message(self.shylock, public_channel)
+        process_count_stat(stat, current_time)
+
+        self.assertTableState(
+            RealmCount,
+            ["property", "subgroup", "value", "end_time"],
+            [[stat.property, "public_stream", 1, current_time]],
+        )
+        self.assertTableState(
+            InstallationCount,
+            ["property", "subgroup", "value", "end_time"],
+            [[stat.property, "public_stream", 1, current_time]],
+        )
+
+        self.export_realm_and_create_auditlog(self.default_realm)
+
+        # Now we prepare the "new" server. Bump current_time, drop the
+        # analytics tables, and delete the messages we created in the
+        # exported realm earlier to make sure we don't re-log them in this
+        # "new" server. This is mainly for easier comparison/testing later
+        # on.
+        current_time += self.DAY
+        exported_message.delete()
+        do_drop_all_analytics_tables()
+        self.default_realm.delete()
+
+        # Switch to a different realm to simulate activity in the new server.
+        lear_realm = get_realm("lear")
+        # This makes sure we're logging the stats in a fixed/predictable time
+        # frame. See the setup() in AnalyticsTestCase.
+        lear_realm.date_created = self.TIME_ZERO - 2 * self.DAY
+        lear_realm.save()
+        self.default_realm = lear_realm
+
+        lear_private_channel = self.create_stream_with_recipient(
+            invite_only=True, realm=lear_realm
+        )[1]
+        lear_user = UserProfile.objects.filter(
+            realm=lear_realm, is_active=True, is_bot=False
+        ).first()
+        assert lear_user is not None
+        self.create_message(lear_user, lear_private_channel, date_sent=current_time - self.HOUR)
+        self.create_message(lear_user, lear_private_channel, date_sent=current_time - self.HOUR)
+
+        process_count_stat(stat, current_time)
+
+        # InstallationCount only reflects lear realm's 2 messages.
+        lear_realm_installation_count = [
+            stat.property,
+            "private_stream",
+            2,
+            current_time,
+        ]
+        self.assertTableState(
+            InstallationCount,
+            ["property", "subgroup", "value", "end_time"],
+            [lear_realm_installation_count],
+        )
+
+        # Import the previously exported realm with a public message
+        # and a row of RealmCount.
+        with self.assertLogs(level="INFO"):
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip")
+
+        # RealmCount now has rows from both the imported realm and lear realm.
+        self.assertTableState(
+            RealmCount,
+            ["property", "subgroup", "value", "end_time", "realm"],
+            [
+                [stat.property, "public_stream", 1, current_time - self.DAY, imported_realm],
+                [stat.property, "private_stream", 2, current_time, lear_realm],
+            ],
+        )
+
+        # But, InstallationCount is NOT updated by the import, it still only reflects
+        # lear realm's 2 messages, not 3 (+ 1 from import).
+        self.assertTableState(
+            InstallationCount,
+            ["property", "subgroup", "value", "end_time"],
+            [lear_realm_installation_count],
+        )
