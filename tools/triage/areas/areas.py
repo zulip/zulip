@@ -86,7 +86,7 @@ AREAS: dict[str, dict[str, list[str]]] = {
             "stream settings data",
             "stream-settings",
         ],
-        "meta": ["channels"],
+        "meta": [],
     },
     "group settings": {"aliases": ["group settings"], "meta": []},
     "user group settings": {"aliases": ["user group settings"], "meta": ["user groups"]},
@@ -102,7 +102,11 @@ AREAS: dict[str, dict[str, list[str]]] = {
         "meta": ["notifications"],
     },
     # =====================================================================
-    # CHANNELS (formerly streams; canonical name is now "channels")
+    # CHANNELS (formerly streams)
+    # No `channels` meta-area: channel list, channel settings, etc. are
+    # very different surfaces (left-sidebar UI vs. settings page vs.
+    # admin flow), and lumping them together produces misleading
+    # "channels expert" signal. Each sub-area stands alone.
     # =====================================================================
     "channels": {
         "aliases": [
@@ -139,24 +143,24 @@ AREAS: dict[str, dict[str, list[str]]] = {
     },
     "channel list": {
         "aliases": ["channel list", "stream list", "channel list item"],
-        "meta": ["channels", "left sidebar"],
+        "meta": ["left sidebar"],
     },
     "channel list sort": {
         "aliases": ["channel list sort", "stream list sort"],
-        "meta": ["channel list", "channels"],
+        "meta": ["channel list"],
     },
-    "channel data": {"aliases": ["channel data", "stream data"], "meta": ["channels"]},
+    "channel data": {"aliases": ["channel data", "stream data"], "meta": []},
     "channel events": {
         "aliases": ["channel events", "stream events", "stream events dispatch"],
-        "meta": ["channels", "events"],
+        "meta": ["events"],
     },
     "channel edit": {
         "aliases": ["channel edit", "stream edit", "stream edit subscribers"],
-        "meta": ["channels"],
+        "meta": [],
     },
     "channel create": {
         "aliases": ["channel create", "stream create", "create channel", "test channel creation"],
-        "meta": ["channels"],
+        "meta": [],
     },
     "channel folders": {
         "aliases": [
@@ -167,15 +171,15 @@ AREAS: dict[str, dict[str, list[str]]] = {
             "channel folders popover",
             "test channel folders",
         ],
-        "meta": ["channels"],
+        "meta": [],
     },
     "channel privacy": {
         "aliases": ["channel privacy", "test channel permissions"],
-        "meta": ["channels"],
+        "meta": [],
     },
     "channel popover": {
         "aliases": ["channel popover", "stream popover", "stream card popover"],
-        "meta": ["channels", "popovers"],
+        "meta": ["popovers"],
     },
     # =====================================================================
     # RECENT VIEW

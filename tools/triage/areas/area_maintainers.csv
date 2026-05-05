@@ -87,9 +87,9 @@ channel popover,vector73,3,3,0,,no
 channel settings,sahil839,42,42,0,,yes
 channel settings,vector73,7,7,0,,no
 channel settings,pieterck,4,4,0,,yes
-channels,sahil839,77,28,49,"channel settings:42,channel folders:15,channel create:4,channel list:4,channel popover:3,channel privacy:1,channel events:1,channel data:1,channel edit:1",yes
-channels,evykassirer,43,5,38,"channel list:24,channel folders:6,channel list sort:4,channel data:2,channel events:2,channel settings:2,channel create:1",yes
-channels,amanagr,31,3,28,"channel list:16,channel popover:3,channel list sort:3,channel folders:3,channel events:3,channel settings:1",yes
+channels,sahil839,28,28,0,,yes
+channels,timabbott,7,7,0,,yes
+channels,alexmv,6,6,0,,yes
 checks,alexmv,7,7,0,,yes
 checks,mateuszmandera,1,1,0,,yes
 ci,alexmv,2,2,0,,yes
@@ -98,9 +98,9 @@ click,amanagr,1,1,0,,yes
 common,amanagr,2,2,0,,yes
 components,evykassirer,2,2,0,,yes
 components,sahil839,1,1,0,,yes
-compose,amanagr,36,18,18,"compose ui:4,compose typeahead:4,compose validate:4,compose reply:4,compose recipient:3,compose send menu popover:2,compose notifications:2,compose paste:2,compose setup:2,compose banner:2,compose state:1,compose actions:1",yes
+compose,amanagr,36,18,18,"compose ui:4,compose typeahead:4,compose validate:4,compose reply:4,compose recipient:3,compose send menu popover:2,compose notifications:2,compose paste:2,compose setup:2,compose banner:2,compose actions:1,compose state:1",yes
 compose,karlstolley,25,22,3,"compose typeahead:1,compose paste:1,compose reply:1,compose ui:1",yes
-compose,evykassirer,21,10,11,"compose recipient:3,compose actions:3,compose typeahead:2,compose state:2,compose ui:2,compose validate:1,compose setup:1,compose send menu popover:1",yes
+compose,evykassirer,21,10,11,"compose actions:3,compose recipient:3,compose typeahead:2,compose ui:2,compose state:2,compose validate:1,compose setup:1,compose send menu popover:1",yes
 compose actions,evykassirer,3,3,0,,yes
 compose actions,amanagr,1,1,0,,yes
 compose banner,sahil839,3,3,0,,yes
@@ -187,7 +187,7 @@ echo,evykassirer,3,3,0,,yes
 echo,amanagr,2,2,0,,yes
 email,alexmv,23,2,21,"email mirror:13,send email:9,email backends:1",yes
 email,prakhar1144,8,3,5,"email notifications:3,email mirror:2",yes
-email,timabbott,4,0,4,"email mirror:2,send email:2,email notifications:1",yes
+email,timabbott,4,0,4,"send email:2,email mirror:2,email notifications:1",yes
 email mirror,alexmv,13,13,0,,yes
 email mirror,prakhar1144,2,2,0,,yes
 email mirror,rotempasharel1,2,2,0,,no
@@ -207,7 +207,7 @@ eslint,andersk,12,12,0,,yes
 event queue,prakhar1144,3,3,0,,yes
 event queue,alexmv,1,1,0,,yes
 event types,andersk,4,4,0,,yes
-events,evykassirer,8,3,5,"server events:3,message events:2,server events dispatch:2,channel events:2",yes
+events,evykassirer,8,3,5,"server events:3,message events:2,channel events:2,server events dispatch:2",yes
 events,sahil839,8,4,4,"user events:2,server events dispatch:1,channel events:1",yes
 events,amanagr,7,2,5,"channel events:3,user events:1,message events:1",yes
 events,andersk,7,1,6,"event types:4,server events:1,server events dispatch:1",yes

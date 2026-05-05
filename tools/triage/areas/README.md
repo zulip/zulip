@@ -99,7 +99,11 @@ Filtering for the output:
 ## Notable consolidations baked into `areas.py`
 
 - **`channels`** is the canonical name (renamed from `streams`); all
-  `stream*` raw prefixes alias into the channel hierarchy.
+  `stream*` raw prefixes alias into the channel-related canonical
+  areas. There's deliberately **no `channels` meta-rollup** — the
+  sub-areas (`channel list` / `channel settings` / `channel folders`
+  / etc.) are very different surfaces, and lumping them together
+  produces misleading "channels expert" signal. Each stands alone.
 - **Help vs. Starlight**: `help:` (Help Center articles, content) and
   `starlight_help:` / `help-beta:` (Starlight framework, build, components)
   are different skill sets — separate canonical areas.
