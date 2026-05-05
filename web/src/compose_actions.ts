@@ -66,7 +66,13 @@ const compose_clear_box_hooks: ComposeHook[] = [];
 const compose_cancel_hooks: ComposeHook[] = [];
 
 // Disallowed triggers for compose start.
-const disallowed_triggers = new Set(["hotkey", "hotkey enter", "message click", "hotkey pm"]);
+const disallowed_triggers = new Set([
+    "hotkey",
+    "hotkey enter",
+    "message click",
+    "hotkey pm",
+    "popover respond",
+]);
 
 export function register_compose_box_clear_hook(hook: ComposeHook): void {
     compose_clear_box_hooks.push(hook);
@@ -414,7 +420,11 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             stream !== undefined && stream_data.can_post_messages_in_stream(stream);
 
         // Close compose box if user doesn't have permission to post in the stream.
-        if (!can_post_messages_in_stream && disallowed_triggers.has(opts.trigger)) {
+        if (
+            !can_post_messages_in_stream &&
+            disallowed_triggers.has(opts.trigger) &&
+            !compose_state.get_is_processing_forward_message()
+        ) {
             hide_compose_box_and_maybe_display_missing_permissions_toast(opts.trigger);
             return;
         }
@@ -430,7 +440,11 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             opts.stream_id = undefined;
             compose_state.set_stream_id("");
             opts.topic = "";
-            compose_recipient.toggle_compose_recipient_dropdown();
+            // For forward message, the caller opens the dropdown after start()
+            // returns; we skip the toggle here to avoid canceling it out.
+            if (!compose_state.get_is_processing_forward_message()) {
+                compose_recipient.toggle_compose_recipient_dropdown();
+            }
         }
 
         if (
