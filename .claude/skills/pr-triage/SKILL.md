@@ -62,6 +62,21 @@ Most of the classifier is mechanical, but a few things benefit from human
    doesn't exist). Without this pass, cats 3 and 4 are noisy and the report
    loses most of its value.
 
+## Reviewer suggestions
+
+Each PR row in the created-mode and active-mode reports has a
+"Suggested" column with up to 3 alternate reviewers, derived from
+the area-maintainer snapshot in `tools/triage/areas/`. The
+already-engaged reviewer (last reviewer / next on) is excluded, so
+the column shows fresh names a maintainer might tag in. Numbers in
+parentheses are the candidate's per-area scores; the confidence tag
+(high / medium / low) reflects how strong the primary-area signal
+is.
+
+If suggestions look stale or wrong, the snapshot needs refreshing —
+see `tools/triage/areas/README.md` for the (slow) regeneration
+pipeline.
+
 ## Things to keep in mind
 
 - Drafts and `[WIP]`-titled PRs are excluded entirely. PRs labeled

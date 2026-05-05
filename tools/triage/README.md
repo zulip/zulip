@@ -147,6 +147,14 @@ output. The classifier is a single function with heuristics over
 timestamps, labels, CI state, merge conflicts, commit discipline, file
 paths, and PR body content.
 
+Each PR row also gets a "Suggested" column listing up to 3 likely
+reviewers, derived from the area-maintainer snapshot in `areas/`.
+The currently-engaged reviewer (`Last reviewer` / `Next on`) is
+excluded from the suggestions, so the column shows _alternate_
+reviewers a maintainer might tag in if needed. See `areas/README.md`
+for the canonical-area definitions, the scoring rules, and how to
+refresh the snapshot.
+
 `fetch_issues.py` searches `is:issue is:open updated:START..END`, writes
 `issues_<range>.json` (a separate cache file from the PR data — issues
 and PRs are different GitHub objects), and fetches each issue's
@@ -167,6 +175,10 @@ categories above. Routing is strict in-range: only comments with
   `BORING_COMMENT_IDS` (suppress) or `CONTRIBUTOR_HELP_REQUEST_IDS`
   (route to cat 5) in `tools/triage/local_overrides.py`. Create the
   file if it doesn't exist; it's gitignored.
+- **Tune the area map / refresh reviewer-suggestion data** → edit
+  `tools/triage/areas/areas.py` (canonical-area map) or rerun the
+  scripts under `tools/triage/areas/`. Full instructions in
+  `areas/README.md`.
 - **Adjust thresholds** → edit `classify_pr` in `build_html.py`. The 3-day
   cat-2 threshold and 10-day cat-5 threshold are simple constants there.
 - **Add a new heuristic** → drop it into `classify_pr` (or `analyze_commits`
