@@ -47,6 +47,7 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as stream_edit from "./stream_edit.ts";
 import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_events from "./stream_events.ts";
 import * as stream_popover from "./stream_popover.ts";
@@ -358,6 +359,8 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     user_group_edit_members.handle_users_fetched(user_ids);
     settings_invites.handle_users_fetched(user_ids);
     settings_bots.handle_users_fetched(user_ids);
+    stream_edit.handle_users_fetched(user_ids);
+    user_group_edit.handle_users_fetched(user_ids);
     user_profile.handle_users_fetched(user_ids);
     custom_profile_fields_ui.handle_users_fetched();
     user_group_popover.handle_users_fetched();
