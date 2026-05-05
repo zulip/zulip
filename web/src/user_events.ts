@@ -13,6 +13,7 @@ import {buddy_list} from "./buddy_list.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as message_live_update from "./message_live_update.ts";
@@ -346,6 +347,7 @@ export function initialize(): void {
         read_receipts.refresh_after_users_fetched();
         drafts_overlay_ui.refresh_after_users_fetched();
         search.refresh_after_users_fetched();
+        composebox_typeahead.refresh_after_users_fetched();
         if (narrow_state.is_message_feed_visible()) {
             compose_closed_ui.update_reply_button();
             narrow_title.update_narrow_title(narrow_state.filter());
