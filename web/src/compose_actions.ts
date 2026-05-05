@@ -65,6 +65,9 @@ type ComposeHook = () => void;
 const compose_clear_box_hooks: ComposeHook[] = [];
 const compose_cancel_hooks: ComposeHook[] = [];
 
+// Disallowed triggers for compose start.
+const disallowed_triggers = new Set(["hotkey", "hotkey enter", "message click"]);
+
 export function register_compose_box_clear_hook(hook: ComposeHook): void {
     compose_clear_box_hooks.push(hook);
 }
@@ -387,18 +390,22 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     if (opts.message_type === "private") {
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
         compose_recipient.on_compose_select_recipient_update();
-    } else if (opts.stream_id && opts.topic) {
+    } else if (opts.stream_id) {
         const stream = stream_data.get_sub_by_id(opts.stream_id);
-        compose_state.topic(opts.topic);
-        compose_state.set_stream_id(opts.stream_id);
-        compose_recipient.on_compose_select_recipient_update();
-        if (!(stream && stream_data.can_post_messages_in_stream(stream))) {
+        const can_post_messages_in_stream =
+            stream !== undefined && stream_data.can_post_messages_in_stream(stream);
+
+        // Close compose box if user doesn't have permission to post in the stream.
+        if (!can_post_messages_in_stream && disallowed_triggers.has(opts.trigger)) {
             hide_compose_box_and_maybe_display_missing_permissions_toast(opts.trigger);
             return;
         }
-    } else if (opts.stream_id) {
-        const stream = stream_data.get_sub_by_id(opts.stream_id);
-        if (stream && stream_data.can_post_messages_in_stream(stream)) {
+
+        // We set the compose recipient with the stream-topic details if the
+        // user has posting permissions to the stream or else we reset the
+        // recipients and open the stream selection dropdown.
+        if (stream && can_post_messages_in_stream) {
+            compose_state.topic(opts.topic);
             compose_state.set_stream_id(opts.stream_id);
             compose_recipient.on_compose_select_recipient_update();
         } else {
