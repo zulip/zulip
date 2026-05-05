@@ -11,7 +11,9 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -48,12 +50,16 @@ type Invite = z.output<typeof invite_schema> & {
     disable_buttons?: boolean;
     referrer_name?: string;
     img_src?: string;
+    referrer_is_placeholder_user?: boolean;
     notify_referrer_on_join?: boolean;
 };
 
 const meta = {
     loaded: false,
 };
+
+let invites_list_widget: ListWidgetType<Invite, Invite> | undefined;
+let inviter_user_ids = new Set<number>();
 
 export function reset(): void {
     meta.loaded = false;
@@ -90,9 +96,10 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
     }
 
     add_invited_as_text(invites_data.invites);
+    inviter_user_ids = new Set(invites_data.invites.map((invite) => invite.invited_by_user_id));
 
     const $invites_table = $("#admin_invites_table").expectOne();
-    ListWidget.create($invites_table, invites_data.invites, {
+    invites_list_widget = ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
@@ -106,6 +113,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
                 !current_user.is_owner;
             item.referrer_name = people.get_full_name(item.invited_by_user_id);
             item.img_src = people.small_avatar_url_for_user_id(item.invited_by_user_id);
+            item.referrer_is_placeholder_user = people.is_placeholder_user(item.invited_by_user_id);
             return render_admin_invites_list({invite: item});
         },
         filter: {
@@ -116,8 +124,13 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
                 const referrer = people.get_by_user_id(item.invited_by_user_id);
                 const referrer_email = referrer.email;
                 const referrer_name = referrer.full_name;
-                const referrer_name_matched = referrer_name.toLowerCase().includes(value);
-                const referrer_email_matched = referrer_email.toLowerCase().includes(value);
+                // The name and email of a placeholder user are not known
+                // yet, so they can't match.
+                const referrer_can_match = value === "" || !referrer.is_placeholder_user;
+                const referrer_name_matched =
+                    referrer_can_match && referrer_name.toLowerCase().includes(value);
+                const referrer_email_matched =
+                    referrer_can_match && referrer_email.toLowerCase().includes(value);
                 if (item.is_multiuse) {
                     return referrer_name_matched || referrer_email_matched;
                 }
@@ -342,5 +355,19 @@ export function update_invite_user_panel(): void {
         $("#admin-invites-list .invite-user-link").hide();
     } else {
         $("#admin-invites-list .invite-user-link").show();
+    }
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (invites_list_widget === undefined) {
+        return;
+    }
+    if (!overlays.settings_open()) {
+        return;
+    }
+    // Redrawing the list scrolls it back to the top, so we only do
+    // it when the data of an inviter has arrived.
+    if (user_ids.some((user_id) => inviter_user_ids.has(user_id))) {
+        invites_list_widget.hard_redraw();
     }
 }

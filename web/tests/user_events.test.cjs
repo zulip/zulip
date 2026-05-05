@@ -137,6 +137,9 @@ mock_esm("../src/stream_edit_subscribers", {
 mock_esm("../src/user_group_edit_members", {
     handle_users_fetched() {},
 });
+mock_esm("../src/settings_invites", {
+    handle_users_fetched() {},
+});
 mock_esm("../src/custom_profile_fields_ui", {
     handle_users_fetched() {},
 });

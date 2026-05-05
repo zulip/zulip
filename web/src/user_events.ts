@@ -37,6 +37,7 @@ import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";
+import * as settings_invites from "./settings_invites.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -355,6 +356,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     composebox_typeahead.handle_users_fetched();
     stream_edit_subscribers.handle_users_fetched(user_ids);
     user_group_edit_members.handle_users_fetched(user_ids);
+    settings_invites.handle_users_fetched(user_ids);
     settings_bots.handle_users_fetched(user_ids);
     user_profile.handle_users_fetched(user_ids);
     custom_profile_fields_ui.handle_users_fetched();
