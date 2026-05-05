@@ -104,6 +104,9 @@ mock_esm("../src/drafts_overlay_ui", {
 mock_esm("../src/search", {
     refresh_after_users_fetched() {},
 });
+mock_esm("../src/composebox_typeahead", {
+    refresh_after_users_fetched() {},
+});
 const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
     update_recipient_text_for_reply_button() {},
 });

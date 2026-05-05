@@ -150,6 +150,21 @@ export let private_message_recipient_typeahead: Typeahead<
 
 export let stream_message_topic_typeahead: Typeahead<string | UserPillData>;
 
+export function refresh_after_users_fetched(): void {
+    // Re-render any open compose typeahead dropdown so suggestion
+    // rows that were drawn with placeholder user data (shimmer) get
+    // replaced with the freshly fetched names and avatars.
+    if (private_message_recipient_typeahead?.shown) {
+        private_message_recipient_typeahead.lookup(false);
+    }
+    if (stream_message_topic_typeahead?.shown) {
+        stream_message_topic_typeahead.lookup(false);
+    }
+    if (compose_ui.compose_textarea_typeahead?.shown) {
+        compose_ui.compose_textarea_typeahead.lookup(false);
+    }
+}
+
 export function get_or_set_token_for_testing(val?: string): string {
     if (val !== undefined) {
         token = val;
