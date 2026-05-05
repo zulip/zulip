@@ -92,8 +92,9 @@ const stream_popover = mock_esm("../src/stream_popover");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const user_status_ui = mock_esm("../src/user_status_ui");
 
-mock_esm("../src/recent_view_ui", {
+const recent_view_ui = mock_esm("../src/recent_view_ui", {
     is_in_focus: () => false,
+    change_focused_element: () => false,
 });
 
 const spectators = zrequire("../src/spectators");
@@ -604,6 +605,53 @@ test_while_not_editing_text("n/p keys", () => {
 test_while_not_editing_text("narrow next unread followed topic", () => {
     assert_mapping("N", message_view, "narrow_to_next_topic", true);
 });
+
+run_test("recent view mock defaults", () => {
+    assert.equal(recent_view_ui.change_focused_element(), false);
+});
+
+run_test(
+    "recent view navigation hotkeys only route for recent targets",
+    ({override, override_rewire}) => {
+        override_rewire(hotkey, "processing_text", () => false);
+        override(recent_view_ui, "is_in_focus", () => true);
+        override(list_util, "inside_list", () => false);
+        override(message_lists.current, "visibly_empty", () => true);
+
+        const change_focused_element_calls = make_stub();
+        override(recent_view_ui, "change_focused_element", change_focused_element_calls.f);
+
+        const $recent_target = $.create("recent-target");
+        $recent_target.set_matches("body", false);
+        $recent_target.set_closest_results("#recent_view", $.create("recent-view-root"));
+
+        hotkey.process_keydown({
+            key: "ArrowDown",
+            target: $recent_target[0],
+        });
+        assert.equal(change_focused_element_calls.num_calls, 1);
+
+        const $outside_target = $.create("outside-target");
+        $outside_target.set_matches("body", false);
+        $outside_target.set_closest_results("#recent_view", []);
+
+        const handled_outside_target = hotkey.process_keydown({
+            key: "ArrowDown",
+            target: $outside_target[0],
+        });
+        assert.equal(handled_outside_target, false);
+        assert.equal(change_focused_element_calls.num_calls, 1);
+
+        const $body_target = $.create("body-target");
+        $body_target.set_matches("body", true);
+
+        hotkey.process_keydown({
+            key: "ArrowDown",
+            target: $body_target[0],
+        });
+        assert.equal(change_focused_element_calls.num_calls, 2);
+    },
+);
 
 test_while_not_editing_text("motion_keys", () => {
     $.set_results(".navbar-item:focus", []);
