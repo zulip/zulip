@@ -73,6 +73,18 @@ service (or back):
 
 ## Backups
 
+:::{important}
+
+If you are using [Docker](docker.md), the recommended backup unit
+is a snapshot of the `/data` volume containing a recent `app:backup`
+database dump; see {doc}`docker:reference/data-volume`. The
+`manage.py backup` tool documented below also works for migrating
+between Docker and a standard installation in either direction, but
+is not the recommended mechanism for routine backups of a Docker
+deployment.
+
+:::
+
 The Zulip server has a built-in backup tool:
 
 ```bash
@@ -193,6 +205,12 @@ typing status data, API rate-limiting counters, and RabbitMQ queues
 that are essentially always empty in a healthy server (like outgoing
 emails to send). You can check whether these queues are empty using
 `rabbitmqctl list_queues`.
+
+On a [Docker](docker.md) deployment, the inclusion list is different
+— the backup unit is the `/data` volume rather than a `manage.py
+backup` tarball. See {doc}`docker:reference/data-volume` for the
+layout, and {ref}`docker:compose-volume-snapshot` or
+{ref}`docker:helm-volume-snapshot` for capturing it.
 
 #### Backup details
 
