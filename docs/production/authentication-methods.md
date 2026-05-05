@@ -23,6 +23,16 @@ edit the `AUTHENTICATION_BACKENDS` setting in
 `/etc/zulip/settings.py`, as well as any additional configuration your
 chosen authentication methods require; then restart the Zulip server.
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-authentication` for the
+`ZULIP_AUTH_BACKENDS` variable that replaces
+`AUTHENTICATION_BACKENDS`. Other authentication settings on this
+page use standard `SETTING_*` environment variables.
+
+:::
+
 If your authentication provider is not supported out-of-the-box, you can
 configure [custom authentication backends](#custom-authentication-backends). If
 you need help, best-effort community support is available in the [Zulip

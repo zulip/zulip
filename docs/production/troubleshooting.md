@@ -55,6 +55,15 @@ on this page includes details about how to fix common issues with Zulip services
 
 ## Using supervisorctl
 
+:::{important}
+
+If you are using [Docker](docker.md), `supervisorctl` runs inside
+the container; see {doc}`docker:how-to/compose-commands` and
+{doc}`docker:how-to/helm-commands` for shell access and log
+retrieval.
+
+:::
+
 To see what Zulip-related services are configured to
 use Supervisor, look at `/etc/supervisor/conf.d/zulip.conf` and
 `/etc/supervisor/conf.d/zulip-db.conf`.
