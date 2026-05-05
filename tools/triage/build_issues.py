@@ -302,13 +302,13 @@ def render_html(
         if not rows:
             parts.append('<div class="empty">None.</div>')
         else:
-            parts.append("<table><thead><tr>")
+            parts.append('<div class="table-wrap"><table><thead><tr>')
             parts.append("<th>Issue</th><th>Author</th><th>Labels</th>")
             parts.append("<th>Assignees</th><th>Age</th><th>Last activity</th>")
             parts.append("</tr></thead><tbody>")
             for issue, surfaced in rows:
                 parts.append(issue_row(issue, surfaced))
-            parts.append("</tbody></table>")
+            parts.append("</tbody></table></div>")
         parts.append("</details>")
 
     parts += ["</body>", "</html>"]

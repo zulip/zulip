@@ -595,6 +595,7 @@ CAT_TITLES = {
 
 PAGE_CSS = """
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 1400px; margin: 1.5em auto; padding: 0 1em; color: #222; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 h1 { font-size: 1.4em; }
 .summary { background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 0.5em 1em; margin-bottom: 1.5em; }
 .summary ul { margin: 0.3em 0; }
@@ -602,7 +603,7 @@ details { border: 1px solid #d0d7de; border-radius: 6px; margin-bottom: 0.8em; p
 details > summary { padding: 0.7em 1em; cursor: pointer; font-weight: 600; background: #f6f8fa; border-radius: 6px; }
 details[open] > summary { border-bottom: 1px solid #d0d7de; border-radius: 6px 6px 0 0; }
 .count { color: #57606a; font-weight: normal; margin-left: 0.5em; }
-table { border-collapse: collapse; width: 100%; font-size: 0.92em; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92em; min-width: 700px; }
 th, td { border-top: 1px solid #d0d7de; padding: 0.55em 0.75em; vertical-align: top; text-align: left; }
 th { background: #fff; font-weight: 600; color: #57606a; }
 tr:hover td { background: #fafbfc; }
@@ -683,7 +684,7 @@ def render_html(
         if not rows:
             parts.append('<div class="empty">None.</div>')
         else:
-            parts.append("<table>")
+            parts.append('<div class="table-wrap"><table>')
             header_cells = ["<th>PR</th>", "<th>Author</th>", "<th>Last reviewer</th>"]
             if show_next_on:
                 header_cells.append("<th>Next on</th>")
@@ -715,7 +716,7 @@ def render_html(
                 parts.append(f'<td class="age">{html.escape(r["last_activity"])}</td>')
                 parts.append(f'<td class="reason">{html.escape(r["reason"])}</td>')
                 parts.append("</tr>")
-            parts.append("</tbody></table>")
+            parts.append("</tbody></table></div>")
         parts.append("</details>")
 
     parts += ["</body>", "</html>"]
