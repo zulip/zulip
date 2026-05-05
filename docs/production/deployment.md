@@ -38,18 +38,7 @@ our next major release has a reliable install experience.
 
 ## Zulip in Docker
 
-In addition to the [standard installer](./install.md), Zulip has an
-{doc}`official Docker image <docker:index>`.
-
-We recommend using the Docker image only if your organization has a
-preference for deploying services using Docker. Deploying with Docker
-moderately increases the effort required to install, maintain, and
-upgrade a Zulip installation.
-
-Zulip's [backup tool][backups] supports migrating between Docker and a
-standard installation, so you can change your mind later.
-
-[backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+See [Running Zulip in Docker](docker.md).
 
 ## Zulip installer details
 

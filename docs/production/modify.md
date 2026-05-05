@@ -115,7 +115,7 @@ branch, as before.
 
 ### Making changes with docker-zulip
 
-If you are using {doc}`our Docker image <docker:index>`, there are two
+If you are using [our Docker image](docker.md), there are two
 things that are different from the above:
 
 - Because of how container images work, editing files directly is even

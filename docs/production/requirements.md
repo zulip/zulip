@@ -32,7 +32,7 @@ The installer expects Zulip to be the **only thing** running on the
 system; it will install system packages with `apt` (like nginx,
 PostgreSQL, and Redis) and configure them for its own use. We strongly
 recommend using either a fresh machine instance in a cloud provider, a
-fresh VM, {doc}`our Docker image <docker:index>`, or a dedicated
+fresh VM, [our Docker image](docker.md), or a dedicated
 machine. If you decide to disregard our advice and use a server that
 hosts other services, we can't support you, but [we do have some notes
 on issues you'll encounter](install-existing-server.md).
@@ -42,7 +42,7 @@ on issues you'll encounter](install-existing-server.md).
 Ubuntu 22.04, Ubuntu 24.04, Ubuntu 26.04, Debian 12, and Debian 13
 are supported for running Zulip in production. You can also
 run Zulip on other platforms that support Docker using
-{doc}`our Docker image <docker:index>`.
+[our Docker image](docker.md).
 
 We recommend installing on the newest supported OS release you're
 comfortable with, to save a bit of future work [upgrading the
@@ -172,8 +172,8 @@ In the following, we discuss a configuration with at most two types of
 servers: application servers (running Django, Tornado, RabbitMQ,
 Redis, Memcached, etc.) and database servers. Of the application
 server services, Django dominates the resource requirements. One can
-run every service on its own system (as {doc}`our Docker deployment
-<docker:index>` does) but for most use cases, there's little
+run every service on its own system (as [our Docker
+deployment](docker.md) does) but for most use cases, there's little
 scalability benefit to doing so. See [deployment
 options](deployment.md) for details on installing Zulip with a
 dedicated database server.
