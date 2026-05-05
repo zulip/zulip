@@ -107,6 +107,12 @@ mock_esm("../src/search", {
 mock_esm("../src/composebox_typeahead", {
     refresh_after_users_fetched() {},
 });
+mock_esm("../src/stream_edit_subscribers", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/user_group_edit_members", {
+    refresh_after_users_fetched() {},
+});
 const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
     update_recipient_text_for_reply_button() {},
 });

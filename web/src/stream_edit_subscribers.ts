@@ -522,6 +522,17 @@ function update_subscribers_list_widget(subscriber_ids: number[]): void {
     $(".subscriber_list_settings_container").show();
 }
 
+export function refresh_after_users_fetched(): void {
+    if (subscribers_list_widget === undefined) {
+        return;
+    }
+    if (!hash_parser.is_editing_stream(current_stream_id)) {
+        return;
+    }
+    const subscriber_ids = peer_data.get_subscriber_ids_assert_loaded(current_stream_id);
+    update_subscribers_list_widget(subscriber_ids);
+}
+
 export function rerender_subscribers_list(sub: sub_store.StreamSubscription): void {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         blueslip.info("ignoring subscription for stream that is no longer being edited");
