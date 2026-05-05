@@ -66,7 +66,7 @@ const compose_clear_box_hooks: ComposeHook[] = [];
 const compose_cancel_hooks: ComposeHook[] = [];
 
 // Disallowed triggers for compose start.
-const disallowed_triggers = new Set(["hotkey", "hotkey enter", "message click"]);
+const disallowed_triggers = new Set(["hotkey", "hotkey enter", "message click", "hotkey pm"]);
 
 export function register_compose_box_clear_hook(hook: ComposeHook): void {
     compose_clear_box_hooks.push(hook);
@@ -315,13 +315,19 @@ function same_recipient_as_before(opts: ComposeActionsOpts): boolean {
 
 function hide_compose_box_and_maybe_display_missing_permissions_toast(trigger: string): void {
     cancel();
-    if (trigger === "hotkey") {
+    if (trigger === "hotkey" || trigger === "hotkey pm") {
         feedback_widget.show({
             title_text: $t({defaultMessage: "Reply not allowed"}),
             populate($container) {
-                const message = $t({
-                    defaultMessage: "You don't have permission to reply to this conversation.",
-                });
+                const message =
+                    trigger === "hotkey"
+                        ? $t({
+                              defaultMessage:
+                                  "You don't have permission to reply to this conversation.",
+                          })
+                        : $t({
+                              defaultMessage: "You don't have permission to reply to the sender.",
+                          });
                 $container.text(message);
             },
         });
@@ -388,6 +394,18 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     }
 
     if (opts.message_type === "private") {
+        const user_ids = opts.private_message_recipient_ids;
+
+        // we don't show compose if the user doesn't have permission to send direct
+        // message to the recipients.
+        if (
+            user_ids.length > 0 &&
+            !message_util.user_can_send_direct_message(user_ids.join(",")) &&
+            disallowed_triggers.has(opts.trigger)
+        ) {
+            hide_compose_box_and_maybe_display_missing_permissions_toast(opts.trigger);
+            return;
+        }
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
         compose_recipient.on_compose_select_recipient_update();
     } else if (opts.stream_id) {
