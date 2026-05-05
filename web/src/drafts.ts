@@ -612,6 +612,7 @@ export function get_last_restorable_draft_based_on_compose_state():
 export type FormattedDraft =
     | {
           is_stream: true;
+          is_sending_saving: boolean;
           draft_id: string;
           stream_name?: string | undefined;
           recipient_bar_color: string;
@@ -626,6 +627,7 @@ export type FormattedDraft =
       }
     | {
           is_stream: false;
+          is_sending_saving: boolean;
           is_dm_with_self?: boolean;
           draft_id: string;
           recipients: string;
@@ -700,6 +702,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         return {
             draft_id: draft.id,
             is_stream: true,
+            is_sending_saving: draft.is_sending_saving,
             stream_name,
             recipient_bar_color: stream_color.get_recipient_bar_color(draft_stream_color),
             stream_privacy_icon_color:
@@ -720,6 +723,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         return {
             draft_id: draft.id,
             is_stream: false,
+            is_sending_saving: draft.is_sending_saving,
             has_recipient_data: false,
             recipients: "",
             raw_content: draft.content,
@@ -735,6 +739,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
     return {
         draft_id: draft.id,
         is_stream: false,
+        is_sending_saving: draft.is_sending_saving,
         is_dm_with_self,
         recipients,
         raw_content: draft.content,

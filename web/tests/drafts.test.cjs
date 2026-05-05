@@ -555,6 +555,7 @@ test("format_drafts", ({override, mock_template}) => {
             time_stamp: "7:55 AM",
             invite_only: stream_1.invite_only,
             is_web_public: stream_1.is_web_public,
+            is_sending_saving: false,
         },
         {
             draft_id: "id2",
@@ -564,6 +565,7 @@ test("format_drafts", ({override, mock_template}) => {
             recipients: "Aaron",
             raw_content: "Test direct message",
             time_stamp: "Jan 30",
+            is_sending_saving: false,
         },
         {
             draft_id: "id5",
@@ -573,6 +575,7 @@ test("format_drafts", ({override, mock_template}) => {
             has_recipient_data: true,
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
+            is_sending_saving: false,
         },
         {
             draft_id: "id4",
@@ -582,6 +585,7 @@ test("format_drafts", ({override, mock_template}) => {
             has_recipient_data: true,
             raw_content: "Test direct message 2",
             time_stamp: "Jan 26",
+            is_sending_saving: false,
         },
         {
             draft_id: "id3",
@@ -596,6 +600,7 @@ test("format_drafts", ({override, mock_template}) => {
             time_stamp: "Jan 21",
             invite_only: stream_2.invite_only,
             is_web_public: stream_2.is_web_public,
+            is_sending_saving: false,
         },
         {
             draft_id: "id6",
@@ -610,6 +615,7 @@ test("format_drafts", ({override, mock_template}) => {
             time_stamp: "Jan 20",
             invite_only: stream_2.invite_only,
             is_web_public: stream_2.is_web_public,
+            is_sending_saving: false,
         },
         {
             draft_id: "id7",
@@ -618,6 +624,7 @@ test("format_drafts", ({override, mock_template}) => {
             recipients: "",
             raw_content: "Test direct message 4",
             time_stamp: "Jan 19",
+            is_sending_saving: false,
         },
     ];
 
@@ -724,6 +731,7 @@ test("filter_drafts", ({override, mock_template}) => {
             recipients: "Aaron",
             raw_content: "Test direct message",
             time_stamp: "Jan 30",
+            is_sending_saving: false,
         },
         {
             draft_id: "id5",
@@ -733,6 +741,7 @@ test("filter_drafts", ({override, mock_template}) => {
             recipients: "Aaron",
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
+            is_sending_saving: false,
         },
         {
             draft_id: "id4",
@@ -742,6 +751,7 @@ test("filter_drafts", ({override, mock_template}) => {
             recipients: "Aaron",
             raw_content: "Test direct message 2",
             time_stamp: "Jan 26",
+            is_sending_saving: false,
         },
     ];
 
@@ -759,6 +769,7 @@ test("filter_drafts", ({override, mock_template}) => {
             time_stamp: "7:55 AM",
             invite_only: stream_1.invite_only,
             is_web_public: stream_1.is_web_public,
+            is_sending_saving: false,
         },
         {
             draft_id: "id3",
@@ -773,6 +784,7 @@ test("filter_drafts", ({override, mock_template}) => {
             time_stamp: "Jan 21",
             invite_only: stream_2.invite_only,
             is_web_public: stream_2.is_web_public,
+            is_sending_saving: false,
         },
     ];
 
