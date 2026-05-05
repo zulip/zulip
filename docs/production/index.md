@@ -22,6 +22,7 @@ upload-backends
 ssl-certificates
 email
 deployment
+docker
 reverse-proxies
 multiple-organizations
 email-gateway
