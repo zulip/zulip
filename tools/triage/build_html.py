@@ -13,6 +13,15 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(BASE, "cache")
 TODAY = datetime.now(timezone.utc)
 
+# Reviewer suggestions for cat-1 PRs come from the area-mapping snapshot.
+sys.path.insert(0, os.path.join(BASE, "areas"))
+from suggest import (  # type: ignore[import-not-found]  # sibling-script import
+    Suggestion,
+    load_alias_lookup,
+    load_maintainers_per_area,
+    suggest_reviewers,
+)
+
 
 def _default_range_key() -> str:
     """Last full UTC day, formatted as YYYY-MM-DD_YYYY-MM-DD."""
@@ -542,6 +551,26 @@ def _skip_links(nums: list[int]) -> str:
     return f": {links}"
 
 
+def _suggested_reviewers_html(suggestions: list[Suggestion], confidence: str) -> str:
+    if not suggestions:
+        return ""
+    parts = []
+    for s in suggestions:
+        breakdown = ", ".join(
+            f"{a} {p}" for a, p in sorted(s.breakdown.items(), key=lambda x: -x[1])
+        )
+        login_html = (
+            f'<a href="https://github.com/{html.escape(s.login)}" target="_blank">'
+            f"{html.escape(s.login)}</a>"
+        )
+        parts.append(f'<span class="suggested-name">{login_html}</span> ({html.escape(breakdown)})')
+    return (
+        '<div class="suggested-reviewers">Suggested: '
+        + " · ".join(parts)
+        + f' <span class="suggested-confidence suggested-{html.escape(confidence)}">{html.escape(confidence)}</span></div>'
+    )
+
+
 def reviewer_html(name: str | None) -> str:
     if not name:
         return '<span class="muted">—</span>'
@@ -586,6 +615,12 @@ tr:hover td { background: #fafbfc; }
 .empty { padding: 0.8em; color: #8c959f; }
 .author { white-space: nowrap; }
 .age { white-space: nowrap; color: #57606a; font-size: 0.9em; }
+.suggested-reviewers { color: #57606a; font-size: 0.88em; margin-top: 0.3em; }
+.suggested-name { font-weight: 500; }
+.suggested-confidence { font-style: italic; margin-left: 0.4em; }
+.suggested-high { color: #1f883d; }
+.suggested-medium { color: #9a6700; }
+.suggested-low { color: #8c959f; }
 """
 
 
@@ -663,8 +698,13 @@ def render_html(
             for r in rows:
                 pr_link = f'<a href="{html.escape(r["pr_url"])}" target="_blank">#{r["num"]}</a>'
                 title_html = f'<span class="title">{html.escape(r["title"])}</span>'
+                suggested_html = _suggested_reviewers_html(
+                    r.get("suggestions", []), r.get("suggestion_confidence", "none")
+                )
                 parts.append("<tr>")
-                parts.append(f'<td><span class="pr-num">{pr_link}</span>{title_html}</td>')
+                parts.append(
+                    f'<td><span class="pr-num">{pr_link}</span>{title_html}{suggested_html}</td>'
+                )
                 parts.append(f'<td class="author">{html.escape(r["author"])}</td>')
                 parts.append(f"<td>{reviewer_html(r['last_reviewer'])}</td>")
                 if show_next_on:
@@ -684,6 +724,23 @@ def render_html(
     print("wrote", output_path)
 
 
+def _suggest_for_pr(
+    num: int,
+    author: str,
+    alias_lookup: dict[str, str],
+    maintainers_per_area: dict[str, list[tuple[str, int, bool]]],
+) -> tuple[list[Suggestion], str]:
+    """Compute reviewer suggestions for a PR. Empty if no commits cached."""
+    p = os.path.join(CACHE, f"commits_{num}.json")
+    if not os.path.exists(p):
+        return [], "none"
+    with open(p) as f:
+        commits = json.load(f)
+    if not commits:
+        return [], "none"
+    return suggest_reviewers(commits, author, alias_lookup, maintainers_per_area)
+
+
 def main() -> None:
     range_key = sys.argv[1] if len(sys.argv) > 1 else _default_range_key()
     range_start, range_end = range_key.split("_")
@@ -692,6 +749,8 @@ def main() -> None:
     with open(f"{CACHE}/combined_{range_key}.json") as f:
         combined = json.load(f)
     issue_titles = load_issue_titles()
+    alias_lookup = load_alias_lookup()
+    maintainers_per_area = load_maintainers_per_area()
 
     rows_by_cat: dict[int, list[dict[str, Any]]] = {c: [] for c in CAT_TITLES}
     drafts_skipped: list[int] = []
@@ -708,6 +767,11 @@ def main() -> None:
         cat, reason = classify_pr(n, blob)
         row = build_pr_row(num_str, blob, issue_titles)
         row["reason"] = reason
+        row["suggestions"], row["suggestion_confidence"] = (
+            _suggest_for_pr(n, row["author"], alias_lookup, maintainers_per_area)
+            if cat in (1, 6)
+            else ([], "none")
+        )
         rows_by_cat[cat].append(row)
 
     for rows in rows_by_cat.values():
