@@ -13,6 +13,16 @@ configuration of the various services that make up a complete Zulip installation
 [realm-admin-docs]: https://zulip.com/help/moving-to-zulip
 [user-roles]: https://zulip.com/help/user-roles
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-settings` for configuring `settings.py`
+via `SETTING_*` environment variables, or
+{doc}`docker:how-to/compose-manual-configuration` to edit it
+directly.
+
+:::
+
 ## Server settings overview
 
 The Zulip server self-documents more than a hundred settings in the

@@ -322,6 +322,15 @@ include directories you can use, in different [contexts][context]:
 
 ## Upgrading PostgreSQL
 
+:::{important}
+
+If you are using [Docker](docker.md), PostgreSQL is upgraded via
+image bumps rather than the `upgrade-postgresql` script; see
+{doc}`docker:how-to/compose-upgrading` and
+{doc}`docker:reference/versioning`.
+
+:::
+
 The major version of PostgreSQL is upgraded separately from the Zulip
 server version. Further, the version of PostgreSQL included with a
 Zulip server is not linked to that of the host OS; the Zulip installer
@@ -370,6 +379,14 @@ You should now be able to navigate to the Zulip server's URL and
 confirm everything is working correctly.
 
 ## Upgrading the operating system
+
+:::{important}
+
+If you are using [Docker](docker.md), the operating system is part
+of the container image and is upgraded with it; the instructions
+below do not apply.
+
+:::
 
 When you upgrade the operating system on which Zulip is installed
 (e.g., Ubuntu 22.04 to Ubuntu 24.04), you need to take some additional

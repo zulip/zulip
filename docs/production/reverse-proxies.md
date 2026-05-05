@@ -45,6 +45,13 @@ its proxy (see the next section), or clients may see infinite redirects.
 
 #### Configuring Zulip to trust proxies
 
+:::{important}
+
+If you are using [Docker](docker.md), see {ref}`docker:proxies` for
+the equivalent `LOADBALANCER_IPS` / `TRUST_GATEWAY_IP` mechanism.
+
+:::
+
 Before placing Zulip behind a reverse proxy, it needs to be configured to trust
 the client IP addresses that the proxy reports via the `X-Forwarded-For` header,
 and the protocol reported by the `X-Forwarded-Proto` header. This is important

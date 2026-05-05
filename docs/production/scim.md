@@ -13,6 +13,14 @@ Synchronizing groups via SCIM is currently not supported.
 
 ## Server configuration
 
+:::{important}
+
+If you are using [Docker](docker.md), set `SCIM_CONFIG` via the
+`SETTING_SCIM_CONFIG` environment variable; see
+{doc}`docker:how-to/compose-settings`.
+
+:::
+
 The Zulip server-side configuration is straightforward:
 
 1. Pick a client name for your SCIM client. This name is internal to

@@ -16,6 +16,15 @@ The `zulip-puppet-apply` command will display the configuration
 changes it will make and prompt for you to confirm you'd like to make
 those changes, before executing them (if you approve).
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-settings` and
+{doc}`docker:reference/environment-vars` for configuring
+`zulip.conf` via `CONFIG_*` environment variables.
+
+:::
+
 ### Truthy values
 
 When a setting refers to "set to true" or "set to false", the values

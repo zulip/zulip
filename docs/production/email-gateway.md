@@ -40,6 +40,13 @@ Incoming emails are rate-limited, with the following limits:
 
 ## Local delivery setup
 
+:::{important}
+
+If you are using [Docker](docker.md), the container ships with
+port 25 preconfigured; see {doc}`docker:how-to/compose-incoming-email`.
+
+:::
+
 Zulip's Puppet configuration provides everything needed to run this
 integration; you just need to enable and configure it as follows.
 
