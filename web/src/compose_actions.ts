@@ -414,13 +414,14 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         }
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
         compose_recipient.on_compose_select_recipient_update();
-    } else if (opts.stream_id) {
-        const stream = stream_data.get_sub_by_id(opts.stream_id);
+    } else {
+        const stream = opts.stream_id ? stream_data.get_sub_by_id(opts.stream_id) : undefined;
         const can_post_messages_in_stream =
             stream !== undefined && stream_data.can_post_messages_in_stream(stream);
 
         // Close compose box if user doesn't have permission to post in the stream.
         if (
+            opts.stream_id !== undefined &&
             !can_post_messages_in_stream &&
             disallowed_triggers.has(opts.trigger) &&
             !compose_state.get_is_processing_forward_message()
@@ -432,14 +433,14 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         // We set the compose recipient with the stream-topic details if the
         // user has posting permissions to the stream or else we reset the
         // recipients and open the stream selection dropdown.
-        if (stream && can_post_messages_in_stream) {
+        if (opts.stream_id && can_post_messages_in_stream) {
             compose_state.topic(opts.topic);
             compose_state.set_stream_id(opts.stream_id);
             compose_recipient.on_compose_select_recipient_update();
         } else {
+            opts.topic = opts.stream_id !== undefined ? "" : opts.topic;
             opts.stream_id = undefined;
             compose_state.set_stream_id("");
-            opts.topic = "";
             // For forward message, the caller opens the dropdown after start()
             // returns; we skip the toggle here to avoid canceling it out.
             if (!compose_state.get_is_processing_forward_message()) {
@@ -455,10 +456,6 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             // Open the typahead so that user can select an existing topic.
             composebox_typeahead.stream_message_topic_typeahead.lookup(false, true);
         }
-    } else {
-        // Open stream selection dropdown if no stream is selected.
-        compose_state.set_stream_id("");
-        compose_recipient.toggle_compose_recipient_dropdown();
     }
     compose_recipient.update_topic_displayed_text(opts.topic);
 
