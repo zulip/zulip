@@ -56,6 +56,7 @@ function format_member_list_elem(person: User, user_can_remove_subscribers: bool
         for_user_group_members: false,
         img_src: people.small_avatar_url_for_person(person),
         is_bot: person.is_bot,
+        is_placeholder_user: person.is_placeholder_user ?? false,
     });
 }
 
