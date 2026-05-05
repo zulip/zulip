@@ -33,6 +33,7 @@ import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";
+import * as settings_invites from "./settings_invites.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -352,6 +353,7 @@ export function initialize(): void {
         composebox_typeahead.refresh_after_users_fetched();
         stream_edit_subscribers.refresh_after_users_fetched();
         user_group_edit_members.refresh_after_users_fetched();
+        settings_invites.refresh_after_users_fetched();
         if (narrow_state.is_message_feed_visible()) {
             compose_closed_ui.update_reply_button();
             narrow_title.update_narrow_title(narrow_state.filter());

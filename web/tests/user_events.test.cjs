@@ -119,6 +119,9 @@ mock_esm("../src/stream_edit_subscribers", {
 mock_esm("../src/user_group_edit_members", {
     refresh_after_users_fetched() {},
 });
+mock_esm("../src/settings_invites", {
+    refresh_after_users_fetched() {},
+});
 const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
     update_reply_button() {},
 });
