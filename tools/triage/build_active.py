@@ -16,9 +16,10 @@ from build_html import (  # type: ignore[import-not-found]  # sibling-script imp
     CACHE,
     CAT_TITLES,
     _skip_links,
-    build_pr_row,
-    classify_pr,
+    load_alias_lookup,
     load_issue_titles,
+    load_maintainers_per_area,
+    prepare_row,
     render_html,
 )
 
@@ -35,6 +36,8 @@ def main() -> None:
     with open(f"{CACHE}/combined_active_{range_key}.json") as f:
         combined = json.load(f)
     issue_titles = load_issue_titles()
+    alias_lookup = load_alias_lookup()
+    maintainers_per_area = load_maintainers_per_area()
 
     rows_by_cat: dict[int, list[dict[str, Any]]] = {c: [] for c in CAT_TITLES}
     drafts_skipped: list[int] = []
@@ -48,9 +51,7 @@ def main() -> None:
         if "[wip]" in title_lower or "wip:" in title_lower:
             wip_skipped.append(n)
             continue
-        cat, reason = classify_pr(n, blob)
-        row = build_pr_row(num_str, blob, issue_titles)
-        row["reason"] = reason
+        cat, row = prepare_row(num_str, blob, issue_titles, alias_lookup, maintainers_per_area)
         rows_by_cat[cat].append(row)
 
     for rows in rows_by_cat.values():

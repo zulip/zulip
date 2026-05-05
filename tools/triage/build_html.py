@@ -13,7 +13,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(BASE, "cache")
 TODAY = datetime.now(timezone.utc)
 
-# Reviewer suggestions for cat-1 PRs come from the area-mapping snapshot.
+# Reviewer suggestions come from the area-mapping snapshot.
 sys.path.insert(0, os.path.join(BASE, "areas"))
 from suggest import (  # type: ignore[import-not-found]  # sibling-script import
     Suggestion,
@@ -551,10 +551,10 @@ def _skip_links(nums: list[int]) -> str:
     return f": {links}"
 
 
-def _suggested_reviewers_html(suggestions: list[Suggestion], confidence: str) -> str:
+def _suggested_reviewers_cell(suggestions: list[Suggestion], confidence: str) -> str:
     if not suggestions:
-        return ""
-    parts = []
+        return '<span class="muted">—</span>'
+    lines = []
     for s in suggestions:
         breakdown = ", ".join(
             f"{a} {p}" for a, p in sorted(s.breakdown.items(), key=lambda x: -x[1])
@@ -563,12 +563,14 @@ def _suggested_reviewers_html(suggestions: list[Suggestion], confidence: str) ->
             f'<a href="https://github.com/{html.escape(s.login)}" target="_blank">'
             f"{html.escape(s.login)}</a>"
         )
-        parts.append(f'<span class="suggested-name">{login_html}</span> ({html.escape(breakdown)})')
-    return (
-        '<div class="suggested-reviewers">Suggested: '
-        + " · ".join(parts)
-        + f' <span class="suggested-confidence suggested-{html.escape(confidence)}">{html.escape(confidence)}</span></div>'
+        lines.append(
+            f'<div><span class="suggested-name">{login_html}</span> '
+            f'<span class="suggested-breakdown">({html.escape(breakdown)})</span></div>'
+        )
+    lines.append(
+        f'<div class="suggested-confidence suggested-{html.escape(confidence)}">{html.escape(confidence)}</div>'
     )
+    return "".join(lines)
 
 
 def reviewer_html(name: str | None) -> str:
@@ -616,9 +618,11 @@ tr:hover td { background: #fafbfc; }
 .empty { padding: 0.8em; color: #8c959f; }
 .author { white-space: nowrap; }
 .age { white-space: nowrap; color: #57606a; font-size: 0.9em; }
-.suggested-reviewers { color: #57606a; font-size: 0.88em; margin-top: 0.3em; }
+.suggested-cell { font-size: 0.88em; min-width: 14em; }
 .suggested-name { font-weight: 500; }
-.suggested-confidence { font-style: italic; margin-left: 0.4em; }
+.suggested-breakdown { color: #57606a; }
+.suggested-confidence { font-style: italic; margin-top: 0.2em; font-size: 0.92em; }
+.suggested-none { color: #8c959f; }
 .suggested-high { color: #1f883d; }
 .suggested-medium { color: #9a6700; }
 .suggested-low { color: #8c959f; }
@@ -689,6 +693,7 @@ def render_html(
             if show_next_on:
                 header_cells.append("<th>Next on</th>")
             header_cells += [
+                "<th>Suggested</th>",
                 "<th>Issue</th>",
                 "<th>CZO</th>",
                 "<th>Age</th>",
@@ -699,17 +704,16 @@ def render_html(
             for r in rows:
                 pr_link = f'<a href="{html.escape(r["pr_url"])}" target="_blank">#{r["num"]}</a>'
                 title_html = f'<span class="title">{html.escape(r["title"])}</span>'
-                suggested_html = _suggested_reviewers_html(
-                    r.get("suggestions", []), r.get("suggestion_confidence", "none")
-                )
                 parts.append("<tr>")
-                parts.append(
-                    f'<td><span class="pr-num">{pr_link}</span>{title_html}{suggested_html}</td>'
-                )
+                parts.append(f'<td><span class="pr-num">{pr_link}</span>{title_html}</td>')
                 parts.append(f'<td class="author">{html.escape(r["author"])}</td>')
                 parts.append(f"<td>{reviewer_html(r['last_reviewer'])}</td>")
                 if show_next_on:
                     parts.append(f"<td>{reviewer_html(r['next_on'])}</td>")
+                suggested_cell = _suggested_reviewers_cell(
+                    r.get("suggestions", []), r.get("suggestion_confidence", "none")
+                )
+                parts.append(f'<td class="suggested-cell">{suggested_cell}</td>')
                 parts.append(f"<td>{issue_link_html(r['issue_num'], r['issue_title'])}</td>")
                 parts.append(f"<td>{czo_link_html(r['czo'])}</td>")
                 parts.append(f'<td class="age">{html.escape(r["age"])}</td>')
@@ -728,10 +732,17 @@ def render_html(
 def _suggest_for_pr(
     num: int,
     author: str,
+    last_reviewer: str | None,
+    next_on: str | None,
     alias_lookup: dict[str, str],
     maintainers_per_area: dict[str, list[tuple[str, int, bool]]],
 ) -> tuple[list[Suggestion], str]:
-    """Compute reviewer suggestions for a PR. Empty if no commits cached."""
+    """Compute reviewer suggestions for a PR.
+
+    Excludes the currently-engaged reviewer(s) — i.e., whoever is shown
+    in the report's `last reviewer` and `next on` columns — since a
+    triaging maintainer doesn't need to be reminded of them.
+    """
     p = os.path.join(CACHE, f"commits_{num}.json")
     if not os.path.exists(p):
         return [], "none"
@@ -739,7 +750,31 @@ def _suggest_for_pr(
         commits = json.load(f)
     if not commits:
         return [], "none"
-    return suggest_reviewers(commits, author, alias_lookup, maintainers_per_area)
+    exclude = frozenset(login.lower() for login in (last_reviewer, next_on) if login)
+    return suggest_reviewers(commits, author, alias_lookup, maintainers_per_area, exclude=exclude)
+
+
+def prepare_row(
+    num_str: str,
+    blob: dict[str, Any],
+    issue_titles: dict[int, dict[str, Any]],
+    alias_lookup: dict[str, str],
+    maintainers_per_area: dict[str, list[tuple[str, int, bool]]],
+) -> tuple[int, dict[str, Any]]:
+    """Classify a PR, build its row dict, and attach reviewer suggestions."""
+    n = int(num_str)
+    cat, reason = classify_pr(n, blob)
+    row = build_pr_row(num_str, blob, issue_titles)
+    row["reason"] = reason
+    row["suggestions"], row["suggestion_confidence"] = _suggest_for_pr(
+        n,
+        row["author"],
+        row["last_reviewer"],
+        row["next_on"],
+        alias_lookup,
+        maintainers_per_area,
+    )
+    return cat, row
 
 
 def main() -> None:
@@ -765,14 +800,7 @@ def main() -> None:
         if "[wip]" in title_lower or "wip:" in title_lower:
             wip_skipped.append(n)
             continue
-        cat, reason = classify_pr(n, blob)
-        row = build_pr_row(num_str, blob, issue_titles)
-        row["reason"] = reason
-        row["suggestions"], row["suggestion_confidence"] = (
-            _suggest_for_pr(n, row["author"], alias_lookup, maintainers_per_area)
-            if cat in (1, 6)
-            else ([], "none")
-        )
+        cat, row = prepare_row(num_str, blob, issue_titles, alias_lookup, maintainers_per_area)
         rows_by_cat[cat].append(row)
 
     for rows in rows_by_cat.values():

@@ -121,8 +121,12 @@ def suggest_reviewers(
     author_login: str,
     alias_lookup: dict[str, str],
     maintainers_per_area: dict[str, list[AreaRow]],
+    exclude: frozenset[str] = frozenset(),
 ) -> tuple[list[Suggestion], str]:
     """Return (top-3 suggestions, confidence label).
+
+    `exclude` is a set of lowercased logins to omit from candidates
+    (typically the PR's already-engaged reviewer(s)).
 
     Returns ([], "none") if the PR has no canonical-area coverage.
     """
@@ -134,12 +138,13 @@ def suggest_reviewers(
     primary_area, primary_count = areas.most_common(1)[0]
     confidence = confidence_label(primary_area, maintainers_per_area)
     author_lower = author_login.lower()
+    skip = {author_lower, *exclude}
 
     # Primary-area-only mode if the PR is dominated by one area.
     if primary_count / total > 0.6:
         suggestions: list[Suggestion] = []
         for login, pts, is_maint in maintainers_per_area.get(primary_area, []):
-            if login == author_lower:
+            if login in skip:
                 continue
             suggestions.append(Suggestion(login, float(pts), {primary_area: pts}, is_maint))
             if len(suggestions) == 3:
@@ -153,7 +158,7 @@ def suggest_reviewers(
     for area in areas:
         weight = 1.0 if area == primary_area else 0.3
         for login, pts, is_maint in maintainers_per_area.get(area, []):
-            if login == author_lower:
+            if login in skip:
                 continue
             scores[login] += weight * pts
             breakdowns[login][area] = pts
