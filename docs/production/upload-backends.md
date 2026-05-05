@@ -23,6 +23,8 @@ desktop apps.
 
 ## S3 backend configuration
 
+(s3-backend)=
+
 :::{important}
 
 If you are using [Docker](docker.md), see

@@ -73,6 +73,8 @@ service (or back):
 
 ## Backups
 
+(backups)=
+
 :::{important}
 
 If you are using [Docker](docker.md), the recommended backup unit
@@ -524,6 +526,8 @@ See `/home/zulip/deployments/current/manage.py export_search --help`
 for more details on supported options.
 
 ## Database-only backup tools
+
+(wal-g)=
 
 The [Zulip-specific backup tool documented above](#backups) is perfect for an
 all-in-one backup solution, and can be used for nightly backups. For
