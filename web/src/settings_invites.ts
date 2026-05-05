@@ -48,6 +48,7 @@ type Invite = z.output<typeof invite_schema> & {
     disable_buttons?: boolean;
     referrer_name?: string;
     img_src?: string;
+    referrer_is_placeholder_user?: boolean;
     notify_referrer_on_join?: boolean;
 };
 
@@ -106,6 +107,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
                 !current_user.is_owner;
             item.referrer_name = people.get_full_name(item.invited_by_user_id);
             item.img_src = people.small_avatar_url_for_user_id(item.invited_by_user_id);
+            item.referrer_is_placeholder_user = people.is_placeholder_user(item.invited_by_user_id);
             return render_admin_invites_list({invite: item});
         },
         filter: {
