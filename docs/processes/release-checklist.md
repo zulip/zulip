@@ -15,8 +15,10 @@ preparing a new release.
   - [Post a message to
     Weblate](https://hosted.weblate.org/projects/zulip/#announcement)
     inviting translators to translate new strings.
-  - Merge draft updates to the [changelog](../overview/changelog.md)
-    with changes since the last release.
+  - Prepare draft updates to the [changelog](../overview/changelog.md)
+    with changes since the last release. The `/write-changelog` experimental
+    Claude skill may be a better starting point than the original
+    `git log --stat 12.x..upstream/main` marathon workflow.
   - Use updating the changelog and drafting the release blog post as review
     passes to identify:
     - Projects that require follow-up work.
