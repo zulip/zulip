@@ -34,6 +34,17 @@ export function _patch_waiting_for_ack(data: Map<string, LocalMessage>): void {
     waiting_for_ack = data;
 }
 
+export function get_message_waiting_for_ack_by_draft_id(
+    draft_id: string,
+): LocalMessage | undefined {
+    for (const message of waiting_for_ack.values()) {
+        if (message.draft_id === draft_id) {
+            return message;
+        }
+    }
+    return undefined;
+}
+
 export function get_waiting_for_ack_local_ids_by_topic(channel_id: number): Map<string, number> {
     const max_message_id_by_topic = new Map<string, number>();
 
