@@ -77,6 +77,7 @@ function format_member_list_elem(person: User, is_parent_system_group: boolean):
             !is_parent_system_group,
         for_user_group_members: true,
         img_src: people.small_avatar_url_for_person(person),
+        is_placeholder_user: person.is_placeholder_user ?? false,
     });
 }
 
