@@ -23,6 +23,16 @@ desktop apps.
 
 ## S3 backend configuration
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-settings` for `SETTING_S3_*`
+configuration and {doc}`docker:how-to/compose-secrets` for the
+`s3_key` / `s3_secret_key` secrets. Switching to S3 also keeps
+uploads out of the `/data` volume.
+
+:::
+
 Here, we document the process for configuring Zulip's S3 file upload
 backend. To enable this backend, you need to do the following:
 

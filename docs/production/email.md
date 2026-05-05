@@ -3,6 +3,15 @@
 Zulip needs to be able to send email so it can confirm new users'
 email addresses and send notifications.
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-settings` for `SETTING_EMAIL_*`
+configuration and {doc}`docker:how-to/compose-secrets` for the
+`email_password` secret.
+
+:::
+
 ## How to configure
 
 1. Identify an outgoing email (SMTP) account where you can have Zulip

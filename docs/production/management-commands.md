@@ -10,6 +10,15 @@ users will need to contact support for situations requiring them.
 
 ## Running management commands
 
+:::{important}
+
+If you are using [Docker](docker.md), management commands are run
+inside the container; see {doc}`docker:how-to/compose-commands` for
+Docker Compose deployments and {doc}`docker:how-to/helm-commands`
+for Helm deployments.
+
+:::
+
 Start by logging in as the `zulip` user on the Zulip server. Then run
 them as follows:
 

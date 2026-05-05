@@ -13,6 +13,16 @@ PostgreSQL][upgrade-postgresql] supported by their version of Zulip.
 
 ## Separate PostgreSQL database
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-existing-services` for using an external
+PostgreSQL with Docker Compose, or
+{doc}`docker:how-to/helm-existing-services` for the Helm chart's
+`externalPostgresql` configuration.
+
+:::
+
 It is possible to run Zulip against a PostgreSQL database which is not on the
 primary application server. There are two possible flavors of this -- using a
 managed PostgreSQL instance from a cloud provider, or separating the PostgreSQL
