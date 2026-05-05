@@ -217,6 +217,31 @@ async function render_subscriber_list_widget(
     $(".subscriber_list_settings_container").toggleClass("no-display", false);
 }
 
+function update_subscribers_list_loading_indicator(is_loading: boolean): void {
+    const $loading_indicator = $(".edit_subscribers_for_stream .subscriber_list_loading_indicator");
+    if (is_loading) {
+        loading.make_indicator_if_missing($loading_indicator);
+    } else {
+        loading.destroy_indicator($loading_indicator);
+    }
+    $(".edit_subscribers_for_stream .subscriber_table").toggle(!is_loading);
+}
+
+// Until the data of every subscriber has arrived, the list is
+// incomplete, so it has no rows and shows a loading indicator.
+function are_subscribers_loading(subscriber_ids: number[]): boolean {
+    return subscriber_ids.some((user_id) => people.is_placeholder_user(user_id));
+}
+
+function get_users_for_subscribers_list(subscriber_ids: number[], is_loading: boolean): User[] {
+    if (is_loading) {
+        return [];
+    }
+    const users = people.get_users_from_ids(subscriber_ids);
+    people.sort_but_pin_current_user_on_top(users);
+    return users;
+}
+
 function make_list_widget({
     $parent_container,
     name,
@@ -228,8 +253,9 @@ function make_list_widget({
     user_ids: number[];
     user_can_remove_subscribers: boolean;
 }): ListWidgetType<User, User> {
-    const users = people.get_users_from_ids(user_ids);
-    people.sort_but_pin_current_user_on_top(users);
+    const is_loading = are_subscribers_loading(user_ids);
+    const users = get_users_for_subscribers_list(user_ids, is_loading);
+    update_subscribers_list_loading_indicator(is_loading);
 
     const $list_container = $parent_container.find(".subscriber_table");
     $list_container.empty();
@@ -535,10 +561,29 @@ function update_subscribers_list_widget(subscriber_ids: number[]): void {
     }
     // This re-renders the subscribers_list_widget with a new
     // list of subscriber_ids.
-    const users = people.get_users_from_ids(subscriber_ids);
-    people.sort_but_pin_current_user_on_top(users);
+    const is_loading = are_subscribers_loading(subscriber_ids);
+    const users = get_users_for_subscribers_list(subscriber_ids, is_loading);
     subscribers_list_widget.replace_list_data(users);
+    update_subscribers_list_loading_indicator(is_loading);
     $(".subscriber_list_settings_container").show();
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!hash_parser.is_editing_stream(current_stream_id)) {
+        return;
+    }
+    // The subscribers of a channel that was just opened may still be
+    // on their way. The list is built when they arrive.
+    if (!peer_data.has_full_subscriber_data(current_stream_id)) {
+        return;
+    }
+    const subscriber_ids = peer_data.get_subscriber_ids_assert_loaded(current_stream_id);
+    // Redrawing the list scrolls it back to the top, so we only do
+    // it when the data of a subscriber has arrived.
+    const fetched_user_ids = new Set(user_ids);
+    if (subscriber_ids.some((user_id) => fetched_user_ids.has(user_id))) {
+        update_subscribers_list_widget(subscriber_ids);
+    }
 }
 
 export function rerender_subscribers_list(sub: sub_store.StreamSubscription): void {

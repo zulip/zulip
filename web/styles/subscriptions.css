@@ -4,12 +4,15 @@
 
 .member_list_loading_indicator,
 .subscriber_list_loading_indicator {
-    margin: 10px auto;
+    margin: 0 auto;
+    /* loading.make_indicator sets no height, so the bottom padding
+       makes room for the spinner. */
+    padding: 20px 0 calc(2.7143em + 20px);
 }
 
 .member_list_loading_indicator:empty,
 .subscriber_list_loading_indicator:empty {
-    margin: 0;
+    padding: 0;
 }
 
 .subscriptions div #response {

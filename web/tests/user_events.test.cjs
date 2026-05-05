@@ -130,6 +130,9 @@ mock_esm("../src/search", {
 mock_esm("../src/composebox_typeahead", {
     handle_users_fetched() {},
 });
+mock_esm("../src/stream_edit_subscribers", {
+    handle_users_fetched() {},
+});
 mock_esm("../src/custom_profile_fields_ui", {
     handle_users_fetched() {},
 });
