@@ -52,6 +52,7 @@ import * as stream_popover from "./stream_popover.ts";
 import * as submessage from "./submessage.ts";
 import * as typing_events from "./typing_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
+import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import * as user_profile from "./user_profile.ts";
 
@@ -353,6 +354,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     search.handle_users_fetched();
     composebox_typeahead.handle_users_fetched();
     stream_edit_subscribers.handle_users_fetched(user_ids);
+    user_group_edit_members.handle_users_fetched(user_ids);
     user_profile.handle_users_fetched(user_ids);
     custom_profile_fields_ui.handle_users_fetched();
     user_group_popover.handle_users_fetched();

@@ -17,6 +17,8 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -61,10 +63,50 @@ function get_user_group_members(group: UserGroup): (User | UserGroup)[] {
     return [...subgroups, ...member_users];
 }
 
+function update_member_list_loading_indicator(is_loading: boolean): void {
+    const $loading_indicator = $(".edit_members_for_user_group .member_list_loading_indicator");
+    if (is_loading) {
+        loading.make_indicator_if_missing($loading_indicator);
+    } else {
+        loading.destroy_indicator($loading_indicator);
+    }
+    $(".edit_members_for_user_group .member_table").toggle(!is_loading);
+}
+
+// Until the data of every member has arrived, the list is incomplete,
+// so it has no rows and shows a loading indicator.
+function are_members_loading(group: UserGroup): boolean {
+    return [...group.members].some((user_id) => people.is_placeholder_user(user_id));
+}
+
+function get_members_for_member_list(group: UserGroup, is_loading: boolean): (User | UserGroup)[] {
+    if (is_loading) {
+        return [];
+    }
+    return get_user_group_members(group);
+}
+
 export function update_member_list_widget(group: UserGroup): void {
     assert(group.id === current_group_id, "Unexpected group rerendering members list");
-    const users = get_user_group_members(group);
+    const is_loading = are_members_loading(group);
+    const users = get_members_for_member_list(group, is_loading);
     member_list_widget.replace_list_data(users);
+    update_member_list_loading_indicator(is_loading);
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (member_list_widget === undefined) {
+        return;
+    }
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(current_group_id);
+    // Redrawing the list scrolls it back to the top, so we only do
+    // it when the data of a member has arrived.
+    if (user_ids.some((user_id) => group.members.has(user_id))) {
+        update_member_list_widget(group);
+    }
 }
 
 function format_member_list_elem(person: User, is_parent_system_group: boolean): string {
@@ -100,7 +142,9 @@ function make_list_widget({
     name: string;
     group: UserGroup;
 }): ListWidgetType<User | UserGroup, User | UserGroup> {
-    const users = get_user_group_members(group);
+    const is_loading = are_members_loading(group);
+    const users = get_members_for_member_list(group, is_loading);
+    update_member_list_loading_indicator(is_loading);
     const $list_container = $parent_container.find(".member_table");
     $list_container.empty();
 
