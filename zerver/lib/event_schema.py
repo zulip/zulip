@@ -14,105 +14,47 @@ from typing import cast
 from pydantic import BaseModel
 
 from zerver.lib.event_types import (
+    AlertWordsEvent,
     AllowMessageEditingData,
+    AttachmentAddEvent,
+    AttachmentRemoveEvent,
+    AttachmentUpdateEvent,
     AuthenticationData,
     BaseEvent,
     BotServicesEmbedded,
     BotServicesOutgoing,
-    EventAlertWords,
-    EventAttachmentAdd,
-    EventAttachmentRemove,
-    EventAttachmentUpdate,
-    EventChannelFolderAdd,
-    EventChannelFolderReorder,
-    EventChannelFolderUpdate,
-    EventCustomProfileFields,
-    EventDefaultStreamGroups,
-    EventDefaultStreams,
-    EventDeleteMessage,
-    EventDeviceAdd,
-    EventDeviceRemove,
-    EventDeviceUpdate,
-    EventDirectMessage,
-    EventDraftsAdd,
-    EventDraftsRemove,
-    EventDraftsUpdate,
-    EventHasWebexToken,
-    EventHasZoomToken,
-    EventHeartbeat,
-    EventInvitesChanged,
-    EventLegacyPresence,
-    EventMessage,
-    EventModernPresence,
-    EventMutedTopics,
-    EventMutedUsers,
-    EventNavigationViewAdd,
-    EventNavigationViewRemove,
-    EventNavigationViewUpdate,
-    EventOnboardingSteps,
-    EventReactionAdd,
-    EventReactionRemove,
-    EventRealmBotAdd,
-    EventRealmBotDelete,
-    EventRealmBotUpdate,
-    EventRealmDeactivated,
-    EventRealmDomainsAdd,
-    EventRealmDomainsChange,
-    EventRealmDomainsRemove,
-    EventRealmEmojiAdd,
-    EventRealmEmojiUpdate,
-    EventRealmEmojiUpdateOne,
-    EventRealmExport,
-    EventRealmExportConsent,
-    EventRealmLinkifiers,
-    EventRealmPlaygrounds,
-    EventRealmUpdate,
-    EventRealmUpdateDict,
-    EventRealmUserAdd,
-    EventRealmUserRemove,
-    EventRealmUserSettingsDefaultsUpdate,
-    EventRealmUserUpdate,
-    EventRemindersAdd,
-    EventRemindersRemove,
-    EventRestart,
-    EventSavedSnippetsAdd,
-    EventSavedSnippetsRemove,
-    EventSavedSnippetsUpdate,
-    EventScheduledMessagesAdd,
-    EventScheduledMessagesRemove,
-    EventScheduledMessagesUpdate,
-    EventStreamCreate,
-    EventStreamDelete,
-    EventStreamUpdate,
-    EventSubmessage,
-    EventSubscriptionAdd,
-    EventSubscriptionPeerAdd,
-    EventSubscriptionPeerRemove,
-    EventSubscriptionRemove,
-    EventSubscriptionUpdate,
-    EventTypingEditMessageStart,
-    EventTypingEditMessageStop,
-    EventTypingStart,
-    EventTypingStop,
-    EventUpdateMessage,
-    EventUpdateMessageFlagsAdd,
-    EventUpdateMessageFlagsRemove,
-    EventUserGroupAdd,
-    EventUserGroupAddMembers,
-    EventUserGroupAddSubgroups,
-    EventUserGroupRemove,
-    EventUserGroupRemoveMembers,
-    EventUserGroupRemoveSubgroups,
-    EventUserGroupUpdate,
-    EventUserSettingsUpdate,
-    EventUserStatus,
-    EventUserTopic,
-    EventWebReloadClient,
+    ChannelFolderAddEvent,
+    ChannelFolderReorderEvent,
+    ChannelFolderUpdateEvent,
+    CustomProfileFieldsEvent,
+    DefaultStreamGroupsEvent,
+    DefaultStreamsEvent,
+    DeleteMessageEvent,
+    DeviceAddEvent,
+    DeviceRemoveEvent,
+    DeviceUpdateEvent,
+    DirectMessageEvent,
+    DraftsAddEvent,
+    DraftsRemoveEvent,
+    DraftsUpdateEvent,
     GroupSettingUpdateData,
+    HasWebexTokenEvent,
+    HasZoomTokenEvent,
+    HeartbeatEvent,
     IconData,
+    InvitesChangedEvent,
+    LegacyPresenceEvent,
     LogoData,
     MessageContentEditLimitSecondsData,
+    MessageEvent,
+    ModernPresenceEvent,
+    MutedTopicsEvent,
+    MutedUsersEvent,
+    NavigationViewAddEvent,
+    NavigationViewRemoveEvent,
+    NavigationViewUpdateEvent,
     NightLogoData,
+    OnboardingStepsEvent,
     PersonAvatarFields,
     PersonBotOwnerId,
     PersonCustomProfileField,
@@ -125,8 +67,66 @@ from zerver.lib.event_types import (
     PersonRole,
     PersonTimezone,
     PlanTypeData,
+    ReactionAddEvent,
+    ReactionRemoveEvent,
+    RealmBotAddEvent,
+    RealmBotDeleteEvent,
+    RealmBotUpdateEvent,
+    RealmDeactivatedEvent,
     RealmDescriptionData,
+    RealmDomainsAddEvent,
+    RealmDomainsChangeEvent,
+    RealmDomainsRemoveEvent,
+    RealmEmojiAddEvent,
+    RealmEmojiUpdateEvent,
+    RealmEmojiUpdateOneEvent,
+    RealmExportConsentEvent,
+    RealmExportEvent,
+    RealmLinkifiersEvent,
+    RealmPlaygroundsEvent,
     RealmTopicsPolicyData,
+    RealmUpdateDictEvent,
+    RealmUpdateEvent,
+    RealmUserAddEvent,
+    RealmUserRemoveEvent,
+    RealmUserSettingsDefaultsUpdateEvent,
+    RealmUserUpdateEvent,
+    RemindersAddEvent,
+    RemindersRemoveEvent,
+    RestartEvent,
+    SavedSnippetsAddEvent,
+    SavedSnippetsRemoveEvent,
+    SavedSnippetsUpdateEvent,
+    ScheduledMessagesAddEvent,
+    ScheduledMessagesRemoveEvent,
+    ScheduledMessagesUpdateEvent,
+    StreamCreateEvent,
+    StreamDeleteEvent,
+    StreamUpdateEvent,
+    SubmessageEvent,
+    SubscriptionAddEvent,
+    SubscriptionPeerAddEvent,
+    SubscriptionPeerRemoveEvent,
+    SubscriptionRemoveEvent,
+    SubscriptionUpdateEvent,
+    TypingEditMessageStartEvent,
+    TypingEditMessageStopEvent,
+    TypingStartEvent,
+    TypingStopEvent,
+    UpdateMessageEvent,
+    UpdateMessageFlagsAddEvent,
+    UpdateMessageFlagsRemoveEvent,
+    UserGroupAddEvent,
+    UserGroupAddMembersEvent,
+    UserGroupAddSubgroupsEvent,
+    UserGroupRemoveEvent,
+    UserGroupRemoveMembersEvent,
+    UserGroupRemoveSubgroupsEvent,
+    UserGroupUpdateEvent,
+    UserSettingsUpdateEvent,
+    UserStatusEvent,
+    UserTopicEvent,
+    WebReloadClientEvent,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.lib.types import UserGroupMembersDict
@@ -175,74 +175,74 @@ Here is the event:
     return f
 
 
-check_alert_words = make_checker(EventAlertWords)
-check_attachment_add = make_checker(EventAttachmentAdd)
-check_attachment_remove = make_checker(EventAttachmentRemove)
-check_attachment_update = make_checker(EventAttachmentUpdate)
-check_channel_folder_add = make_checker(EventChannelFolderAdd)
-check_channel_folder_reorder = make_checker(EventChannelFolderReorder)
-check_custom_profile_fields = make_checker(EventCustomProfileFields)
-check_default_stream_groups = make_checker(EventDefaultStreamGroups)
-check_default_streams = make_checker(EventDefaultStreams)
-check_device_add = make_checker(EventDeviceAdd)
-check_device_remove = make_checker(EventDeviceRemove)
-check_device_update = make_checker(EventDeviceUpdate)
-check_direct_message = make_checker(EventDirectMessage)
-check_draft_add = make_checker(EventDraftsAdd)
-check_draft_remove = make_checker(EventDraftsRemove)
-check_draft_update = make_checker(EventDraftsUpdate)
-check_heartbeat = make_checker(EventHeartbeat)
-check_invites_changed = make_checker(EventInvitesChanged)
-check_message = make_checker(EventMessage)
-check_muted_users = make_checker(EventMutedUsers)
-check_navigation_view_add = make_checker(EventNavigationViewAdd)
-check_navigation_view_remove = make_checker(EventNavigationViewRemove)
-check_navigation_view_update = make_checker(EventNavigationViewUpdate)
-check_onboarding_steps = make_checker(EventOnboardingSteps)
-check_reaction_add = make_checker(EventReactionAdd)
-check_reaction_remove = make_checker(EventReactionRemove)
-check_realm_bot_delete = make_checker(EventRealmBotDelete)
-check_realm_deactivated = make_checker(EventRealmDeactivated)
-check_realm_domains_add = make_checker(EventRealmDomainsAdd)
-check_realm_domains_change = make_checker(EventRealmDomainsChange)
-check_realm_domains_remove = make_checker(EventRealmDomainsRemove)
-check_realm_emoji_add = make_checker(EventRealmEmojiAdd)
-check_realm_emoji_update_one = make_checker(EventRealmEmojiUpdateOne)
-check_realm_export_consent = make_checker(EventRealmExportConsent)
-check_realm_linkifiers = make_checker(EventRealmLinkifiers)
-check_realm_playgrounds = make_checker(EventRealmPlaygrounds)
-check_realm_user_add = make_checker(EventRealmUserAdd)
-check_realm_user_remove = make_checker(EventRealmUserRemove)
-check_reminder_add = make_checker(EventRemindersAdd)
-check_reminder_remove = make_checker(EventRemindersRemove)
-check_restart = make_checker(EventRestart)
-check_saved_snippets_add = make_checker(EventSavedSnippetsAdd)
-check_saved_snippets_remove = make_checker(EventSavedSnippetsRemove)
-check_saved_snippets_update = make_checker(EventSavedSnippetsUpdate)
-check_scheduled_message_add = make_checker(EventScheduledMessagesAdd)
-check_scheduled_message_remove = make_checker(EventScheduledMessagesRemove)
-check_scheduled_message_update = make_checker(EventScheduledMessagesUpdate)
-check_stream_create = make_checker(EventStreamCreate)
-check_stream_delete = make_checker(EventStreamDelete)
-check_submessage = make_checker(EventSubmessage)
-check_subscription_add = make_checker(EventSubscriptionAdd)
-check_subscription_peer_add = make_checker(EventSubscriptionPeerAdd)
-check_subscription_peer_remove = make_checker(EventSubscriptionPeerRemove)
-check_subscription_remove = make_checker(EventSubscriptionRemove)
-check_typing_start = make_checker(EventTypingStart)
-check_typing_stop = make_checker(EventTypingStop)
-check_typing_edit_message_start = make_checker(EventTypingEditMessageStart)
-check_typing_edit_message_stop = make_checker(EventTypingEditMessageStop)
-check_update_message_flags_add = make_checker(EventUpdateMessageFlagsAdd)
-check_update_message_flags_remove = make_checker(EventUpdateMessageFlagsRemove)
-check_user_group_add = make_checker(EventUserGroupAdd)
-check_user_group_add_members = make_checker(EventUserGroupAddMembers)
-check_user_group_add_subgroups = make_checker(EventUserGroupAddSubgroups)
-check_user_group_remove = make_checker(EventUserGroupRemove)
-check_user_group_remove_members = make_checker(EventUserGroupRemoveMembers)
-check_user_group_remove_subgroups = make_checker(EventUserGroupRemoveSubgroups)
-check_user_topic = make_checker(EventUserTopic)
-check_web_reload_client_event = make_checker(EventWebReloadClient)
+check_alert_words = make_checker(AlertWordsEvent)
+check_attachment_add = make_checker(AttachmentAddEvent)
+check_attachment_remove = make_checker(AttachmentRemoveEvent)
+check_attachment_update = make_checker(AttachmentUpdateEvent)
+check_channel_folder_add = make_checker(ChannelFolderAddEvent)
+check_channel_folder_reorder = make_checker(ChannelFolderReorderEvent)
+check_custom_profile_fields = make_checker(CustomProfileFieldsEvent)
+check_default_stream_groups = make_checker(DefaultStreamGroupsEvent)
+check_default_streams = make_checker(DefaultStreamsEvent)
+check_device_add = make_checker(DeviceAddEvent)
+check_device_remove = make_checker(DeviceRemoveEvent)
+check_device_update = make_checker(DeviceUpdateEvent)
+check_direct_message = make_checker(DirectMessageEvent)
+check_draft_add = make_checker(DraftsAddEvent)
+check_draft_remove = make_checker(DraftsRemoveEvent)
+check_draft_update = make_checker(DraftsUpdateEvent)
+check_heartbeat = make_checker(HeartbeatEvent)
+check_invites_changed = make_checker(InvitesChangedEvent)
+check_message = make_checker(MessageEvent)
+check_muted_users = make_checker(MutedUsersEvent)
+check_navigation_view_add = make_checker(NavigationViewAddEvent)
+check_navigation_view_remove = make_checker(NavigationViewRemoveEvent)
+check_navigation_view_update = make_checker(NavigationViewUpdateEvent)
+check_onboarding_steps = make_checker(OnboardingStepsEvent)
+check_reaction_add = make_checker(ReactionAddEvent)
+check_reaction_remove = make_checker(ReactionRemoveEvent)
+check_realm_bot_delete = make_checker(RealmBotDeleteEvent)
+check_realm_deactivated = make_checker(RealmDeactivatedEvent)
+check_realm_domains_add = make_checker(RealmDomainsAddEvent)
+check_realm_domains_change = make_checker(RealmDomainsChangeEvent)
+check_realm_domains_remove = make_checker(RealmDomainsRemoveEvent)
+check_realm_emoji_add = make_checker(RealmEmojiAddEvent)
+check_realm_emoji_update_one = make_checker(RealmEmojiUpdateOneEvent)
+check_realm_export_consent = make_checker(RealmExportConsentEvent)
+check_realm_linkifiers = make_checker(RealmLinkifiersEvent)
+check_realm_playgrounds = make_checker(RealmPlaygroundsEvent)
+check_realm_user_add = make_checker(RealmUserAddEvent)
+check_realm_user_remove = make_checker(RealmUserRemoveEvent)
+check_reminder_add = make_checker(RemindersAddEvent)
+check_reminder_remove = make_checker(RemindersRemoveEvent)
+check_restart = make_checker(RestartEvent)
+check_saved_snippets_add = make_checker(SavedSnippetsAddEvent)
+check_saved_snippets_remove = make_checker(SavedSnippetsRemoveEvent)
+check_saved_snippets_update = make_checker(SavedSnippetsUpdateEvent)
+check_scheduled_message_add = make_checker(ScheduledMessagesAddEvent)
+check_scheduled_message_remove = make_checker(ScheduledMessagesRemoveEvent)
+check_scheduled_message_update = make_checker(ScheduledMessagesUpdateEvent)
+check_stream_create = make_checker(StreamCreateEvent)
+check_stream_delete = make_checker(StreamDeleteEvent)
+check_submessage = make_checker(SubmessageEvent)
+check_subscription_add = make_checker(SubscriptionAddEvent)
+check_subscription_peer_add = make_checker(SubscriptionPeerAddEvent)
+check_subscription_peer_remove = make_checker(SubscriptionPeerRemoveEvent)
+check_subscription_remove = make_checker(SubscriptionRemoveEvent)
+check_typing_start = make_checker(TypingStartEvent)
+check_typing_stop = make_checker(TypingStopEvent)
+check_typing_edit_message_start = make_checker(TypingEditMessageStartEvent)
+check_typing_edit_message_stop = make_checker(TypingEditMessageStopEvent)
+check_update_message_flags_add = make_checker(UpdateMessageFlagsAddEvent)
+check_update_message_flags_remove = make_checker(UpdateMessageFlagsRemoveEvent)
+check_user_group_add = make_checker(UserGroupAddEvent)
+check_user_group_add_members = make_checker(UserGroupAddMembersEvent)
+check_user_group_add_subgroups = make_checker(UserGroupAddSubgroupsEvent)
+check_user_group_remove = make_checker(UserGroupRemoveEvent)
+check_user_group_remove_members = make_checker(UserGroupRemoveMembersEvent)
+check_user_group_remove_subgroups = make_checker(UserGroupRemoveSubgroupsEvent)
+check_user_topic = make_checker(UserTopicEvent)
+check_web_reload_client_event = make_checker(WebReloadClientEvent)
 
 
 # Now for the slightly more tricky bits.  All the following functions
@@ -257,27 +257,27 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 # TODO: work through the bottom of this file to try to find ways to
 #       simplify our types or make them more robust
 
-_check_channel_folder_update = make_checker(EventChannelFolderUpdate)
-_check_delete_message = make_checker(EventDeleteMessage)
-_check_has_zoom_token = make_checker(EventHasZoomToken)
-_check_has_webex_token = make_checker(EventHasWebexToken)
-_check_legacy_presence = make_checker(EventLegacyPresence)
-_check_modern_presence = make_checker(EventModernPresence)
-_check_muted_topics = make_checker(EventMutedTopics)
-_check_realm_bot_add = make_checker(EventRealmBotAdd)
-_check_realm_bot_update = make_checker(EventRealmBotUpdate)
-_check_realm_default_update = make_checker(EventRealmUserSettingsDefaultsUpdate)
-_check_realm_emoji_update = make_checker(EventRealmEmojiUpdate)
-_check_realm_export = make_checker(EventRealmExport)
-_check_realm_update = make_checker(EventRealmUpdate)
-_check_realm_update_dict = make_checker(EventRealmUpdateDict)
-_check_realm_user_update = make_checker(EventRealmUserUpdate)
-_check_stream_update = make_checker(EventStreamUpdate)
-_check_subscription_update = make_checker(EventSubscriptionUpdate)
-_check_update_message = make_checker(EventUpdateMessage)
-_check_user_group_update = make_checker(EventUserGroupUpdate)
-_check_user_settings_update = make_checker(EventUserSettingsUpdate)
-_check_user_status = make_checker(EventUserStatus)
+_check_channel_folder_update = make_checker(ChannelFolderUpdateEvent)
+_check_delete_message = make_checker(DeleteMessageEvent)
+_check_has_zoom_token = make_checker(HasZoomTokenEvent)
+_check_has_webex_token = make_checker(HasWebexTokenEvent)
+_check_legacy_presence = make_checker(LegacyPresenceEvent)
+_check_modern_presence = make_checker(ModernPresenceEvent)
+_check_muted_topics = make_checker(MutedTopicsEvent)
+_check_realm_bot_add = make_checker(RealmBotAddEvent)
+_check_realm_bot_update = make_checker(RealmBotUpdateEvent)
+_check_realm_default_update = make_checker(RealmUserSettingsDefaultsUpdateEvent)
+_check_realm_emoji_update = make_checker(RealmEmojiUpdateEvent)
+_check_realm_export = make_checker(RealmExportEvent)
+_check_realm_update = make_checker(RealmUpdateEvent)
+_check_realm_update_dict = make_checker(RealmUpdateDictEvent)
+_check_realm_user_update = make_checker(RealmUserUpdateEvent)
+_check_stream_update = make_checker(StreamUpdateEvent)
+_check_subscription_update = make_checker(SubscriptionUpdateEvent)
+_check_update_message = make_checker(UpdateMessageEvent)
+_check_user_group_update = make_checker(UserGroupUpdateEvent)
+_check_user_settings_update = make_checker(UserSettingsUpdateEvent)
+_check_user_status = make_checker(UserStatusEvent)
 
 
 PERSON_TYPES: dict[str, type[BaseModel]] = dict(
