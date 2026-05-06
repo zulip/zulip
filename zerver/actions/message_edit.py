@@ -1033,11 +1033,10 @@ def do_update_message(
             # This does message.save(update_fields=[...])
             save_message_for_edit_use_case(message=target_message)
 
-            # Invalidate the message cache only after the transaction
-            # commits, so that concurrent readers don't repopulate it
-            # with stale pre-commit data.
-            message_id = target_message.id
-            transaction.on_commit(lambda: cache_delete(to_dict_cache_key_id(message_id)))
+            # Invalidate the message cache.  The delete is buffered
+            # until this atomic block commits (see
+            # zerver.lib.cache_invalidation_buffer).
+            cache_delete(to_dict_cache_key_id(target_message.id))
             event.message_ids = [target_message.id]
             users_to_be_notified = list(map(user_info, ums))
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
@@ -1302,13 +1301,11 @@ def do_update_message(
     # for any propagated messages.
     save_changes_for_propagation_mode()
 
-    # Invalidate the message cache for all changed messages.  They'll
-    # be lazily rebuilt from the database on next access.  We defer
-    # this to after the transaction commits so that concurrent readers
-    # don't repopulate the cache with stale pre-commit data.
-    transaction.on_commit(
-        lambda: cache_delete_many(to_dict_cache_key_id(msg_id) for msg_id in changed_message_ids)
-    )
+    # Invalidate the message cache for all changed messages; they'll
+    # be lazily rebuilt from the database on next access.  The delete
+    # is buffered until this atomic block commits (see
+    # zerver.lib.cache_invalidation_buffer).
+    cache_delete_many(to_dict_cache_key_id(msg_id) for msg_id in changed_message_ids)
     event.message_ids = sorted(changed_message_ids)
 
     # The following blocks arranges that users who are subscribed to a

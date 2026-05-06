@@ -207,6 +207,8 @@ writes and deletes.
 This has a few consequences to keep in mind when writing code that
 changes data:
 
+- Don't defer cache invalidation with `transaction.on_commit`. Call
+  `cache_delete`, or the flush function, directly.
 - Delete the affected cache keys, rather than writing the new value
   with `cache_set`. Deletes are correct in any order, whereas writes
   from two concurrent transactions can reach memcached in the opposite
