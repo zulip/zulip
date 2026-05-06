@@ -903,8 +903,7 @@ h4.stream_setting_subsection_title {
     width: 100%;
 }
 
-.left .group-name-wrapper .fa-ban,
-.right .group-name .fa-ban {
+.left .group-name-wrapper .deactivated-user-icon {
     font-size: 0.8em;
     opacity: 0.6;
 }
