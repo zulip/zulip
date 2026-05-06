@@ -38,7 +38,7 @@ class BaseEvent(BaseModel):
 
 
 class AlertWordsEvent(BaseEvent):
-    type: Literal["alert_words"]
+    type: Literal["alert_words"] = "alert_words"
     alert_words: list[str]
 
 
