@@ -663,8 +663,8 @@ class PlanTypeData(BaseModel):
 
 
 class RealmUpdateDictEvent(BaseEvent):
-    type: Literal["realm"]
-    op: Literal["update_dict"]
+    type: Literal["realm"] = "realm"
+    op: Literal["update_dict"] = "update_dict"
     property: Literal["default", "icon", "logo", "night_logo"]
     data: (
         AllowMessageEditingData
