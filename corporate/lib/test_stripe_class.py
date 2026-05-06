@@ -117,8 +117,19 @@ def generate_and_save_stripe_fixture(
                     assert e.json_body is not None
                     # Convert e.json_body to be a JSON string, since that's what stripe expects.
                     error_dict["http_body"] = json.dumps(e.json_body)
+                # vars(e) includes a stripe.ErrorObject, which is a StripeObject subclass that
+                # json.dumps doesn't know how to serialize. Since read_stripe_fixture only
+                # consumes http_body, http_status and headers for StripeError test fixtures,
+                # coercing the rest to strings via `default=str` is safe.
                 f.write(
-                    json.dumps(error_dict, indent=2, separators=(",", ": "), sort_keys=True) + "\n"
+                    json.dumps(
+                        error_dict,
+                        indent=2,
+                        separators=(",", ": "),
+                        sort_keys=True,
+                        default=str,
+                    )
+                    + "\n"
                 )
             raise
         with open(fixture_path, "w") as f:
