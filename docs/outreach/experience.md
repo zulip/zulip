@@ -111,6 +111,10 @@ You can find many examples in the
   twice a week, e.g., Tuesday and Friday. If you are working less than 20 hours
   per week, post a check-in at least once a week.
 
+  Swatches of low productivity are very common, so post your check-ins no matter
+  how much progress you've made. Regular communication helps your mentor keep up
+  with your progress. Mentors can also help you out if you are facing any difficulties.
+
 - **Where to post**: Unless your mentor or program administrator requests
   otherwise, post your check-ins in the
   [#checkins](https://chat.zulip.org/#narrow/channel/65-checkins) channel, using your
@@ -121,7 +125,9 @@ You can find many examples in the
   - The **status** of each ongoing project, e.g., in progress, awaiting feedback,
     addressing review feedback, stuck on something, blocked on other work, etc.
     To make your update easy to read, include brief descriptions of what you're
-    working on, not just issue/PR numbers.
+    working on, not just issue/PR numbers. Please also include what has changed
+    for each project since the last check-in. If nothing has changed, mention
+    that explicitly as well.
 
   - For projects where you are waiting on feedback, what **type of feedback** is
     needed (e.g., product review, next round of code review after initial
