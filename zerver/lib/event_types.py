@@ -1,8 +1,9 @@
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from pydantic import AfterValidator, BaseModel
+from typing_extensions import override
 
 from zerver.lib.types import UserGroupMembersDict
 from zerver.models.realms import RealmExportSlug
@@ -20,7 +21,20 @@ Url = Annotated[str, AfterValidator(check_url)]
 
 
 class BaseEvent(BaseModel):
-    pass
+    @override
+    def model_post_init(self, context: Any) -> None:
+        # We serialize events with model_dump(exclude_unset=True) so an
+        # event constructed with a subset of its kwargs has the same
+        # field-presence shape as the legacy dict construction. To make
+        # discriminator fields (type, op) survive that pruning when they
+        # rely on a class-level default, mark any non-None defaulted
+        # field as "set" so it ends up in the serialized output.
+        for name, field_info in type(self).model_fields.items():
+            if name in self.__pydantic_fields_set__:
+                continue
+            default = field_info.get_default(call_default_factory=True)
+            if default is not None:
+                self.__pydantic_fields_set__.add(name)
 
 
 class AlertWordsEvent(BaseEvent):
