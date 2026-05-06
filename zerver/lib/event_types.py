@@ -286,7 +286,7 @@ class OnboardingSteps(BaseModel):
 
 
 class OnboardingStepsEvent(BaseEvent):
-    type: Literal["onboarding_steps"]
+    type: Literal["onboarding_steps"] = "onboarding_steps"
     onboarding_steps: list[OnboardingSteps]
 
 
