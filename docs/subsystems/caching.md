@@ -213,6 +213,14 @@ time when debugging, since developers don't need to think about things
 like whether some test changed Hamlet's email address and that's why
 login is broken.
 
+The backend tests don't talk to a real memcached server. They use an
+in-process cache backend, `CASCapableLocMemCache` in
+`zerver/lib/test_cache_backends.py`, which implements the memcached
+operations that `zerver/lib/cache.py` relies on. This means that the
+small amount of code in `zerver/lib/cache.py` that is specific to our
+production memcached client is only tested using mocks. If you change
+it, test it manually against memcached in the development environment.
+
 More full-stack test suites like `test-js-with-puppeteer` or `test-api`
 use a similar strategy (set a random `KEY_PREFIX` at the start of the
 test run).
