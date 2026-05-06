@@ -8,7 +8,7 @@ h3,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
 .settings-section-title {
-    .fa-info-circle {
+    .zulip-icon-info {
         top: 1px;
         position: relative;
     }
@@ -18,6 +18,7 @@ h3,
    allowing us to deduplicate at least the opacity CSS with the
    fa-question-circle-o logic above. */
 .settings-info-icon {
+    vertical-align: -0.1em;
     padding-left: 3px;
     opacity: 0.7;
 
@@ -31,7 +32,7 @@ a.help_link_widget {
     color: inherit;
     margin-left: 3px;
 
-    .fa-question-circle-o {
+    .zulip-icon-question {
         position: relative;
         top: 1px;
     }
@@ -1028,15 +1029,19 @@ input[type="checkbox"] {
 .admin_channel_folders_table {
     .movable-row {
         .move-handle {
+            vertical-align: middle;
             cursor: move;
             user-select: none;
             margin-right: 5px;
         }
 
-        .fa-ellipsis-v {
+        .zulip-icon-more-vertical {
             color: hsl(0deg 0% 75%);
-            position: relative;
-            top: 1px;
+            vertical-align: -0.1em;
+
+            &:first-child {
+                margin-right: -0.6em;
+            }
         }
     }
 }
