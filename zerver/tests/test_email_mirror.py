@@ -2146,6 +2146,59 @@ class TestEmailMirrorServer(ZulipTestCase):
             self.assert_length(error_logs.output, 1)
             self.assertTrue("Exception: Some bug" in error_logs.output[0])
 
+    @override_settings(NOREPLY_EMAIL_ADDRESS="noreply@zulip.example.com")
+    async def test_handler_noreply(self) -> None:
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    "RCPT TO: <noreply@zulip.example.com>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.1.1 This address is not monitored. Please reply within Zulip.\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
+    @override_settings(
+        NOREPLY_EMAIL_ADDRESS="noreply@zulip.example.com",
+        TOKENIZED_NOREPLY_EMAIL_ADDRESS="noreply-{token}@zulip.example.com",
+        ADD_TOKENS_TO_NOREPLY_ADDRESS=True,
+    )
+    async def test_handler_tokenized_noreply(self) -> None:
+        # A valid 24-character base32 token (a-z, 2-7)
+        token = (
+            "abc234567890def123456789".replace("0", "2")
+            .replace("1", "3")
+            .replace("8", "4")
+            .replace("9", "5")
+        )
+        # Wait, the regex I used was [a-z2-7]{24}.
+        token = "abcdefghijklmnopqrstuvw2"  # 24 chars
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    f"RCPT TO: <noreply-{token}@zulip.example.com>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.1.1 This address is not monitored. Please reply within Zulip.\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
     @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
     async def test_handler_invalid_domain(self) -> None:
         self.assertEqual(

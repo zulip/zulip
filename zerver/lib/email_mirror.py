@@ -111,6 +111,20 @@ def is_missed_message_address(address: str) -> bool:
     return is_mm_32_format(msg_string)
 
 
+def is_noreply_address(address: str) -> bool:
+    if address.lower() == settings.NOREPLY_EMAIL_ADDRESS.lower():
+        return True
+
+    if settings.ADD_TOKENS_TO_NOREPLY_ADDRESS:
+        tokenized_noreply_pattern = re.escape(settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS).replace(
+            r"\{token\}", r"[a-z2-7]{24}"
+        )
+        if re.fullmatch(tokenized_noreply_pattern, address, re.IGNORECASE):
+            return True
+
+    return False
+
+
 def is_mm_32_format(msg_string: str | None) -> bool:
     """
     Missed message strings are formatted with a little "mm" prefix
