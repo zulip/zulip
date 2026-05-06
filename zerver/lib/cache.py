@@ -17,7 +17,7 @@ from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q, QuerySet
-from typing_extensions import ParamSpec
+from typing_extensions import ParamSpec, override
 
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments
 
@@ -39,6 +39,16 @@ remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
 remote_cache_total_requests = 0
 
+# Counters for the read-through mark-then-fill path in read_through_cache().
+# These are in-process only; they match the existing
+# remote_cache_total_requests convention rather than introducing a separate
+# statsd pipeline.
+_cache_fill_hit = 0
+_cache_fill_won = 0
+_cache_fill_race_detected = 0
+_cache_fill_claim_lost = 0
+_cache_fill_saw_sentinel = 0
+
 
 def get_remote_cache_time() -> float:
     return remote_cache_total_time
@@ -46,6 +56,24 @@ def get_remote_cache_time() -> float:
 
 def get_remote_cache_requests() -> int:
     return remote_cache_total_requests
+
+
+def get_cache_fill_counts() -> dict[str, int]:
+    """Counters for read_through_cache outcomes.
+
+    race_detected counts misses where the reader's cas() failed (or the
+    sentinel disappeared between add and gets) -- i.e., a writer's
+    delete() landed during the fill.  A nonzero value here is the
+    point: it's a race that would previously have written a stale value
+    into the cache and is now being correctly rejected.
+    """
+    return {
+        "hit": _cache_fill_hit,
+        "won": _cache_fill_won,
+        "race_detected": _cache_fill_race_detected,
+        "claim_lost": _cache_fill_claim_lost,
+        "saw_sentinel": _cache_fill_saw_sentinel,
+    }
 
 
 def remote_cache_stats_start() -> None:
@@ -285,6 +313,10 @@ def cache_get(key: str, cache_name: str | None = None) -> Any:
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.get(final_key)
     remote_cache_stats_finish()
+    if isinstance(ret, _CacheFillSentinel):
+        # A read_through_cache fill is in progress (or recently aborted);
+        # the sentinel is an internal marker, not a value to return.
+        return None
     return ret
 
 
@@ -295,7 +327,11 @@ def cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, 
     remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
     remote_cache_stats_finish()
-    return {key.removeprefix(KEY_PREFIX): value for key, value in ret.items()}
+    return {
+        key.removeprefix(KEY_PREFIX): value
+        for key, value in ret.items()
+        if not isinstance(value, _CacheFillSentinel)
+    }
 
 
 def safe_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
@@ -368,6 +404,185 @@ def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> No
             validate_cache_key(key, auto_prepend_prefix=False)
         get_cache_backend(cache_name).delete_many(batch)
     remote_cache_stats_finish()
+
+
+def _get_cache_fill_sentinel() -> "_CacheFillSentinel":
+    return _CACHE_FILL_SENTINEL
+
+
+class _CacheFillSentinel:
+    """Marker stored during a read-through fill to detect concurrent invalidation.
+
+    read_through_cache() writes this value via add(get_cas=True), keeps the
+    cas id memcached returns, and later cas-commits the fetched value with
+    that cas id.  If a writer's delete() (or any other write) intervenes,
+    the slot's cas changes, and the cas-commit fails atomically -- so the
+    (potentially stale) value is not cached.  The cas id is the ownership
+    token; the sentinel value just needs to be a non-collidable placeholder.
+
+    The sentinel pickles to a stable singleton via _get_cache_fill_sentinel
+    so identity / isinstance checks work after a memcached round-trip.
+    """
+
+    __slots__ = ()
+
+    @override
+    def __reduce__(self) -> tuple[Any, tuple[Any, ...]]:
+        return (_get_cache_fill_sentinel, ())
+
+
+_CACHE_FILL_SENTINEL = _CacheFillSentinel()
+
+
+# Lifetime of the sentinel slot during a fill.  Must exceed any plausible
+# DB fetch; short enough that a crashed filler doesn't block the key for long.
+CACHE_FILL_SENTINEL_TIMEOUT = 30
+
+
+def _backend_gets(backend: BaseCache, pre_make_key: str) -> tuple[Any, int | None]:
+    """Memcached gets(); returns (None, None) on miss."""
+    if hasattr(backend, "gets"):
+        return backend.gets(pre_make_key)
+    raw_key = backend.make_key(pre_make_key)
+    return backend._cache.gets(raw_key)  # type: ignore[attr-defined] # not in stubs
+
+
+def _backend_cas(
+    backend: BaseCache, pre_make_key: str, value: Any, cas_id: int, timeout: int | None
+) -> bool:
+    """Memcached cas(): conditional set keyed on a matching cas_token."""
+    if hasattr(backend, "cas"):
+        return backend.cas(pre_make_key, value, cas_id, timeout)
+    raw_key = backend.make_key(pre_make_key)
+    return backend._cache.cas(  # type: ignore[attr-defined] # not in stubs
+        raw_key, value, cas_id, backend.get_backend_timeout(timeout)
+    )
+
+
+def _backend_add(
+    backend: BaseCache, pre_make_key: str, value: Any, timeout: int | None
+) -> tuple[bool, int | None]:
+    """Memcached add(); returns the new cas id on success."""
+    if hasattr(backend, "add_cas"):
+        return backend.add_cas(pre_make_key, value, timeout=timeout)
+    raw_key = backend.make_key(pre_make_key)
+    return backend._cache.add(  # type: ignore[attr-defined] # not in stubs
+        raw_key, value, backend.get_backend_timeout(timeout), get_cas=True
+    )
+
+
+def cache_gets(key: str, cache_name: str | None = None) -> tuple[Any, int | None]:
+    final_key = KEY_PREFIX + key
+    validate_cache_key(final_key)
+
+    remote_cache_stats_start()
+    ret = _backend_gets(get_cache_backend(cache_name), final_key)
+    remote_cache_stats_finish()
+    return ret
+
+
+def cache_add(
+    key: str, val: Any, timeout: int, cache_name: str | None = None
+) -> tuple[bool, int | None]:
+    """Add-if-absent that returns the cas id of the just-added value.
+
+    On success returns (True, cas_id); on failure (key already present)
+    returns (False, None).  The cas id can be passed to a later cache_cas()
+    to write conditionally on the value still being ours.
+    """
+    final_key = KEY_PREFIX + key
+    validate_cache_key(final_key)
+
+    remote_cache_stats_start()
+    try:
+        added, cas_id = _backend_add(get_cache_backend(cache_name), final_key, val, timeout)
+    except MemcachedException as e:
+        logger.exception(e)
+        added, cas_id = False, None
+    remote_cache_stats_finish()
+    return added, cas_id
+
+
+def cache_cas(
+    key: str,
+    val: Any,
+    cas_id: int,
+    timeout: int | None = None,
+    cache_name: str | None = None,
+) -> bool:
+    final_key = KEY_PREFIX + key
+    validate_cache_key(final_key)
+
+    remote_cache_stats_start()
+    try:
+        ok = _backend_cas(get_cache_backend(cache_name), final_key, val, cas_id, timeout)
+    except MemcachedException as e:
+        logger.exception(e)
+        ok = False
+    remote_cache_stats_finish()
+    return ok
+
+
+def read_through_cache(
+    key: str,
+    fetcher: Callable[[], ReturnT],
+    *,
+    cache_name: str | None = None,
+    timeout: int | None = None,
+    pickled_tupled: bool = True,
+) -> ReturnT:
+    """Fetch a value through the cache, mark-then-fill to avoid stale writes.
+
+    On miss, we claim the fill slot with the _CACHE_FILL_SENTINEL via add(),
+    which gives us back the cas id of the just-added sentinel.  After the
+    DB fetch we cas-commit the value with that cas id; the cas succeeds
+    only if the slot has not been touched since (same value, same cas id).
+    A writer's delete() during the fetch -- or a delete followed by another
+    reader's add of their own sentinel -- changes the slot's cas, so the
+    cas-commit fails atomically and the (possibly stale) value is not
+    cached.  Callers that lose the initial add race -- or that see an
+    existing sentinel -- fall back to the DB directly and do not write to
+    the cache.
+
+    When pickled_tupled=True (the default), the value is wrapped in a
+    1-tuple on write and unwrapped on read, so that a cached None is
+    distinguishable from a missing key.  Setting pickled_tupled=False
+    skips the wrap (and the pickle it would force) -- a performance
+    optimization, reasonable when the value is a string or bytes that
+    cannot be None.  The sentinel class is separate, so
+    isinstance(val, _CacheFillSentinel) reliably distinguishes it from
+    any wrapped real value.
+    """
+    global _cache_fill_hit, _cache_fill_won, _cache_fill_race_detected
+    global _cache_fill_claim_lost, _cache_fill_saw_sentinel
+
+    val, _cas_id = cache_gets(key, cache_name=cache_name)
+
+    if isinstance(val, _CacheFillSentinel):
+        _cache_fill_saw_sentinel += 1
+        return fetcher()
+    if val is not None:
+        _cache_fill_hit += 1
+        return val[0] if pickled_tupled else val
+
+    # Genuine miss.  Claim the fill; the cas id we get back is our
+    # ownership token for the subsequent cas-commit.
+    claimed, our_cas = cache_add(
+        key, _CACHE_FILL_SENTINEL, CACHE_FILL_SENTINEL_TIMEOUT, cache_name=cache_name
+    )
+    if not claimed:
+        _cache_fill_claim_lost += 1
+        return fetcher()
+    assert our_cas is not None
+
+    value = fetcher()
+
+    payload: Any = (value,) if pickled_tupled else value
+    if cache_cas(key, payload, our_cas, timeout=timeout, cache_name=cache_name):
+        _cache_fill_won += 1
+    else:
+        _cache_fill_race_detected += 1
+    return value
 
 
 def filter_good_and_bad_keys(keys: list[str]) -> tuple[list[str], list[str]]:

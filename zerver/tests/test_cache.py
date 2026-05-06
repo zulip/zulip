@@ -1,5 +1,8 @@
+import threading
+from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 
+import time_machine
 from bmemcached.exceptions import MemcachedException
 from django.conf import settings
 from django.core.cache import caches
@@ -8,16 +11,23 @@ from typing_extensions import override
 
 from zerver.apps import flush_cache
 from zerver.lib.cache import (
+    _CACHE_FILL_SENTINEL,
+    CACHE_FILL_SENTINEL_TIMEOUT,
     MEMCACHED_MAX_KEY_LENGTH,
     InvalidCacheKeyError,
+    _CacheFillSentinel,
     bulk_cached_fetch,
+    cache_add,
     cache_delete,
     cache_delete_many,
     cache_get,
     cache_get_many,
+    cache_gets,
     cache_set,
     cache_set_many,
     cache_with_key,
+    get_cache_fill_counts,
+    read_through_cache,
     safe_cache_get_many,
     safe_cache_set_many,
     user_profile_by_id_cache_key,
@@ -409,3 +419,196 @@ class CASCapableBackendTest(ZulipTestCase):
         self.assertTrue(self.backend.add(self.key, "first"))
         self.assertFalse(self.backend.add(self.key, "second"))
         self.assertEqual(self.backend.get(self.key), "first")
+
+
+class ReadThroughCacheTest(ZulipTestCase):
+    """Tests for read_through_cache() and its mark-then-fill race protection."""
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.key = "ReadThroughCacheTest:key"
+        cache_delete(self.key)
+        # Snapshot counters so assertions can compare deltas.
+        self._counts_before = get_cache_fill_counts()
+
+    def _delta(self, name: str) -> int:
+        return get_cache_fill_counts()[name] - self._counts_before[name]
+
+    def test_hit_returns_cached_value(self) -> None:
+        cache_set(self.key, "stored")
+        fetcher = Mock()
+        result = read_through_cache(self.key, fetcher)
+        self.assertEqual(result, "stored")
+        fetcher.assert_not_called()
+        self.assertEqual(self._delta("hit"), 1)
+
+    def test_miss_fills_cache(self) -> None:
+        fetcher = Mock(return_value="fetched")
+        result = read_through_cache(self.key, fetcher)
+        self.assertEqual(result, "fetched")
+        fetcher.assert_called_once()
+        self.assertEqual(self._delta("won"), 1)
+
+        # Second read is a hit.
+        fetcher.reset_mock()
+        result = read_through_cache(self.key, fetcher)
+        self.assertEqual(result, "fetched")
+        fetcher.assert_not_called()
+
+    def test_writer_delete_during_fill_is_detected(self) -> None:
+        """The core race test: writer deletes during the reader's fetch,
+        reader's cas() must fail and the stale value must not be cached."""
+
+        def fetcher() -> str:
+            cache_delete(self.key)
+            return "stale"
+
+        result = read_through_cache(self.key, fetcher)
+        self.assertEqual(result, "stale")
+        self.assertEqual(self._delta("race_detected"), 1)
+        self.assertEqual(self._delta("won"), 0)
+
+        # Cache is empty; the next read causes a fresh fetch.
+        next_fetcher = Mock(return_value="fresh")
+        self.assertEqual(read_through_cache(self.key, next_fetcher), "fresh")
+        next_fetcher.assert_called_once()
+
+    def test_concurrent_readers_only_one_fills(self) -> None:
+        """Two readers miss simultaneously; only one wins the add()."""
+        reader_a_in_fetcher = threading.Event()
+        allow_a_to_finish = threading.Event()
+        fetcher_call_count = 0
+        call_count_lock = threading.Lock()
+
+        def slow_fetcher() -> str:
+            nonlocal fetcher_call_count
+            with call_count_lock:
+                fetcher_call_count += 1
+            reader_a_in_fetcher.set()
+            allow_a_to_finish.wait(timeout=5)
+            return "A-value"
+
+        results: dict[str, str] = {}
+
+        def reader_a() -> None:
+            results["A"] = read_through_cache(self.key, slow_fetcher)
+
+        thread = threading.Thread(target=reader_a)
+        thread.start()
+        self.assertTrue(reader_a_in_fetcher.wait(timeout=5))
+
+        # Reader B arrives mid-fill; it must see the sentinel and bypass.
+        def fast_fetcher() -> str:
+            nonlocal fetcher_call_count
+            with call_count_lock:
+                fetcher_call_count += 1
+            return "B-value"
+
+        results["B"] = read_through_cache(self.key, fast_fetcher)
+        self.assertEqual(results["B"], "B-value")
+
+        allow_a_to_finish.set()
+        thread.join(timeout=5)
+        self.assertEqual(results["A"], "A-value")
+
+        # Both fetchers ran.  B's path was saw_sentinel, not claim_lost,
+        # because the sentinel was visible when B arrived.
+        self.assertEqual(fetcher_call_count, 2)
+        self.assertEqual(self._delta("saw_sentinel"), 1)
+        self.assertEqual(self._delta("won"), 1)
+
+    def test_sentinel_expires_if_filler_crashes(self) -> None:
+        """If the filler raises before cas(), the sentinel must expire
+        so that the next reader can fill normally."""
+
+        class FillerError(Exception):
+            pass
+
+        def crashing_fetcher() -> str:
+            raise FillerError
+
+        t0 = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        with time_machine.travel(t0, tick=False) as traveller:
+            with self.assertRaises(FillerError):
+                read_through_cache(self.key, crashing_fetcher)
+
+            # While the sentinel is still live, the next reader bypasses
+            # (saw_sentinel) and does not write to the cache.
+            recovered = Mock(return_value="recovered")
+            self.assertEqual(read_through_cache(self.key, recovered), "recovered")
+            recovered.assert_called_once()
+
+            # Advance past the sentinel's TTL.
+            traveller.shift(timedelta(seconds=CACHE_FILL_SENTINEL_TIMEOUT + 1))
+
+            recovered.reset_mock()
+            self.assertEqual(read_through_cache(self.key, recovered), "recovered")
+            recovered.assert_called_once()
+            # The cache is now populated with the recovered value.
+            self.assertEqual(cache_get(self.key), ("recovered",))
+
+    def test_cache_get_of_sentinel_is_not_exposed_to_callers(self) -> None:
+        """Belt-and-suspenders: a raw cache_get of a key mid-fill must not
+        leak the sentinel into application code via read_through_cache."""
+        # Manually plant a sentinel.
+        added, _cas = cache_add(self.key, _CACHE_FILL_SENTINEL, CACHE_FILL_SENTINEL_TIMEOUT)
+        self.assertTrue(added)
+
+        fetcher = Mock(return_value="real-value")
+        result = read_through_cache(self.key, fetcher)
+        self.assertEqual(result, "real-value")
+        fetcher.assert_called_once()
+        self.assertEqual(self._delta("saw_sentinel"), 1)
+
+    def test_cache_get_filters_sentinel(self) -> None:
+        """cache_get hides the in-progress-fill marker; an in-progress fill
+        looks the same as a missing key from the public API."""
+        added, _cas = cache_add(self.key, _CACHE_FILL_SENTINEL, CACHE_FILL_SENTINEL_TIMEOUT)
+        self.assertTrue(added)
+        self.assertIsNone(cache_get(self.key))
+
+    def test_cache_get_many_filters_sentinel(self) -> None:
+        """cache_get_many drops sentinel entries from the result dict, the
+        same way cache_get returns None for a sentinel."""
+        cache_set(self.key + ":real", "real-value")
+        added, _cas = cache_add(
+            self.key + ":fill", _CACHE_FILL_SENTINEL, CACHE_FILL_SENTINEL_TIMEOUT
+        )
+        self.assertTrue(added)
+
+        result = cache_get_many([self.key + ":real", self.key + ":fill", self.key + ":missing"])
+        # cache_set wraps with pickled_tupled=True, so the value is a 1-tuple.
+        self.assertEqual(result, {self.key + ":real": ("real-value",)})
+
+    def test_fetcher_raise_does_not_leak_sentinel_via_cache_get(self) -> None:
+        """If the read_through_cache fetcher raises, the sentinel is left to
+        expire on its TTL.  A subsequent raw cache_get must not return it."""
+        fetcher = Mock(side_effect=RuntimeError("boom"))
+        with self.assertRaises(RuntimeError):
+            read_through_cache(self.key, fetcher)
+        self.assertIsNone(cache_get(self.key))
+
+    def test_race_writer_delete_then_other_reader_adds(self) -> None:
+        """The subtle race: while we're fetching, a writer deletes our sentinel
+        and another reader adds their own in the now-empty slot.  Our cas-
+        commit uses the cas id we got from our own add, so the slot's new
+        cas (assigned to the other reader's add) won't match and the cas
+        will fail -- we must not cache the stale value."""
+
+        def racing_fetcher() -> str:
+            # While we "fetch", simulate writer-delete + other-reader-add
+            # landing on the same key.
+            cache_delete(self.key)
+            added, _cas = cache_add(self.key, _CACHE_FILL_SENTINEL, CACHE_FILL_SENTINEL_TIMEOUT)
+            self.assertTrue(added)
+            return "stale"
+
+        result = read_through_cache(self.key, racing_fetcher)
+        self.assertEqual(result, "stale")
+        self.assertEqual(self._delta("race_detected"), 1)
+        self.assertEqual(self._delta("won"), 0)
+        # The slot holds the other reader's sentinel, not our stale 1-tuple.
+        # cache_gets exposes the raw value; cache_get filters sentinels.
+        raw, _cas = cache_gets(self.key)
+        self.assertIsInstance(raw, _CacheFillSentinel)
