@@ -126,8 +126,8 @@ export function initialize(): void {
                 return;
             }
             const $img = $(this);
-            $img.closest(".message-media-preview-image, .message-media-inline-image").removeClass(
-                "message_inline_animated_image_still",
+            $img.closest(".message-media-preview-image, .message-media-inline-image").addClass(
+                "animated-preview-hover",
             );
             $img.attr(
                 "src",
@@ -144,8 +144,8 @@ export function initialize(): void {
                 return;
             }
             const $img = $(this);
-            $img.closest(".message-media-preview-image, .message-media-inline-image").addClass(
-                "message_inline_animated_image_still",
+            $img.closest(".message-media-preview-image, .message-media-inline-image").removeClass(
+                "animated-preview-hover",
             );
             $img.attr(
                 "src",

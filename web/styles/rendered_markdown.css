@@ -730,6 +730,25 @@
         }
     }
 
+    /* For the sake of ultra-narrow or ultra-wide
+       animated stills, we want to keep the image
+       area at least as wide and tall as the play
+       button. */
+    .message_inline_animated_image_still {
+        min-width: var(--play-button-length);
+        min-height: var(--play-button-length);
+    }
+
+    /* We add an .animated-preview-hover class to hide
+       the play button and zero its width so the button
+       itself cannot be hovered. Users can still
+       click anywhere on the image to open it in the
+       lightbox. */
+    .message_inline_animated_image_still.animated-preview-hover::after {
+        background-image: none;
+        width: 0;
+    }
+
     .message_inline_video.video-format-unsupported {
         display: none;
     }
