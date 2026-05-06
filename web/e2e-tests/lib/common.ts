@@ -286,7 +286,7 @@ export async function log_out(page: Page): Promise<void> {
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
     await page.waitForSelector(logout_selector);
-    await page.click(logout_selector);
+    await Promise.all([page.waitForNavigation(), page.click(logout_selector)]);
 
     // Wait for a email input in login page so we know login
     // page is loaded. Then check that we are at the login url.
