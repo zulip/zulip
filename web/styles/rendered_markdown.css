@@ -679,6 +679,8 @@
     .message_inline_video,
     .message_inline_animated_image_still,
     .youtube-video .media-anchor-element {
+        /* 32px at 14px/1em */
+        --play-button-length: 2.2857em;
         /* Once collections of thumbnails are set to render as
            flex items, this can be updated to use `display: grid`
            instead of `display: inline-grid`. */
@@ -706,12 +708,11 @@
             background-image: url("../images/play_button.svg");
             background-position: center center;
             background-repeat: no-repeat;
-            /* 32px at 14px/1em */
-            background-size: 2.2857em;
+            background-size: var(--play-button-length);
             /* Match the box to the play button's
                background-size value. */
-            width: 2.2857em;
-            height: 2.2857em;
+            width: var(--play-button-length);
+            height: var(--play-button-length);
             border-radius: 100%;
             transform: scale(0.8);
             transition: transform 0.2s;
