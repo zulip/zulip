@@ -112,9 +112,8 @@ You can find many examples in the
   per week, post a check-in at least once a week.
 
 - **Where to post**: Unless your mentor or program administrator requests
-  otherwise, post your check-ins in the channel for your program
-  (e.g., [#GSoC](https://chat.zulip.org/#narrow/channel/14-GSoC) or
-  [#Outreachy](https://chat.zulip.org/#narrow/channel/391-Outreachy)), using your
+  otherwise, post your check-ins in the
+  [#checkins](https://chat.zulip.org/#narrow/channel/65-checkins) channel, using your
   name as the topic.
 
 - **What to include** in each check-in:
