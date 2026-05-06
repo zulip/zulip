@@ -48,6 +48,9 @@ function MessageListView() {
 mock_esm("../src/message_list_view", {
     MessageListView,
 });
+mock_esm("../src/message_util", {
+    user_can_send_direct_message: () => true,
+});
 mock_esm("../src/ui_util", {
     listener_for_preferred_color_scheme_change: noop,
 });
@@ -60,6 +63,7 @@ mock_esm("../src/stream_data", {
     get_sub_by_id: () => noop,
     user_can_move_messages_within_channel: () => true,
     is_empty_topic_only_channel: () => false,
+    can_post_messages_in_stream: () => true,
 });
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config() {

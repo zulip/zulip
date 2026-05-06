@@ -4,6 +4,7 @@
 import assert from "minimalistic-assert";
 
 import * as buddy_data from "./buddy_data.ts";
+import * as compose_state from "./compose_state.ts";
 import * as gear_menu_util from "./gear_menu_util.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -11,6 +12,7 @@ import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -41,6 +43,7 @@ type ActionPopoverContext = {
     should_display_remind_me_option: boolean;
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
+    should_display_forward_message: boolean;
     should_display_quote_message: boolean;
     conversation_time_url: string;
     should_display_delete_option: boolean;
@@ -204,7 +207,25 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     const should_display_uncollapse =
         !message.locally_echoed && !message.is_me_message && message.collapsed;
 
-    const should_display_quote_message = not_spectator;
+    const should_display_quote_message = (): boolean => {
+        if (!not_spectator) {
+            return false;
+        }
+
+        // If the compose has some content in it, we allow quote message to work
+        // irrespective of posting permissions.
+        if (compose_state.has_message_content()) {
+            return true;
+        }
+
+        if (message.type === "stream") {
+            const stream = stream_data.get_sub_by_id(message.stream_id);
+            return stream !== undefined && stream_data.can_post_messages_in_stream(stream);
+        }
+
+        return message_util.user_can_send_direct_message(message.to_user_ids);
+    };
+    const should_display_forward_message = not_spectator;
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
@@ -254,7 +275,8 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         conversation_time_url,
         should_display_delete_option,
         should_display_read_receipts_option,
-        should_display_quote_message,
+        should_display_forward_message,
+        should_display_quote_message: should_display_quote_message(),
         should_display_message_report_option: should_display_message_report_option(),
     };
 }
