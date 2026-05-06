@@ -36,6 +36,11 @@ help you along.
   new major features that you have implemented. The sections of code you worked
   on should be more readable, better-tested, and have clearer documentation.
 
+Please note that outreach programs are not a competition. Different participants
+have different types of projects and progress will look different for each project.
+Your focus should be on making steady and consistent progress and continuously
+learning from your work.
+
 Don't forget to have fun! Spending a few months coding on open source is an
 amazing opportunity, and we hope you'll have a blast. Your acceptance to the
 program means that we are confident that if you put in the effort, your
