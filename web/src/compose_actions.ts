@@ -311,7 +311,7 @@ function same_recipient_as_before(opts: ComposeActionsOpts): boolean {
 }
 
 function hide_compose_box_and_maybe_display_missing_permissions_toast(trigger: string): void {
-    hide_box();
+    cancel();
     if (trigger === "hotkey") {
         feedback_widget.show({
             title_text: $t({defaultMessage: "Reply not allowed"}),
@@ -323,9 +323,6 @@ function hide_compose_box_and_maybe_display_missing_permissions_toast(trigger: s
             },
         });
     }
-    // This is done to avoid a faded group of messages on clicking a message
-    // to which we cannot reply when it is part of a mixed narrow.
-    compose_fade.start_compose("stream");
 }
 
 export let start = (raw_opts: ComposeActionsStartOpts): void => {
