@@ -21,6 +21,7 @@ from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
+from analytics.lib.counts import ALL_COUNT_STATS, process_count_stat
 from analytics.models import FillState, RealmCount, StreamCount, UserCount
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import set_default_for_realm_permission_group_settings
@@ -64,7 +65,7 @@ from zerver.lib.thumbnail import (
     manifest_and_get_user_upload_previews,
     maybe_thumbnail,
 )
-from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timestamp import datetime_to_timestamp, floor_to_hour
 from zerver.lib.upload import (
     ensure_avatar_image,
     generate_message_upload_path,
@@ -1318,6 +1319,24 @@ def disable_restricted_authentication_methods(data: ImportedTableData) -> None:
     data["zerver_realmauthenticationmethod"] = non_restricted_methods
 
 
+def update_analytics_counts_for_third_party_imports(import_dir: str, realm: Realm) -> None:
+    """
+    This automatically updates the realm's analytics counts if it's
+    a third-party import and it's the only realm in the server.
+    """
+    if not server_is_initialized_and_has_no_other_realm(realm):
+        return
+
+    analytics_filename = os.path.join(import_dir, "analytics.json")
+    if os.path.exists(analytics_filename):
+        return
+
+    fill_to_time = floor_to_hour(timezone_now())
+    stats = list(ALL_COUNT_STATS.values())
+    for stat in stats:
+        process_count_stat(stat, fill_to_time)
+
+
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
 #
@@ -2137,6 +2156,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         send_zulip_initial_messages_after_import(
             realm, target_channel=realm.zulip_update_announcements_stream
         )
+
+    # Do this after we've imported all other tables.
+    update_analytics_counts_for_third_party_imports(import_dir, realm)
 
     return realm
 

@@ -9,6 +9,7 @@ from typing import Any
 from unittest.mock import patch
 
 import orjson
+import time_machine
 from attr import dataclass
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -19,7 +20,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS, do_drop_all_analytics_tables, process_count_stat
-from analytics.models import FillState, InstallationCount, RealmCount, UserCount
+from analytics.models import FillState, InstallationCount, RealmCount, StreamCount, UserCount
 from analytics.tests.test_counts import AnalyticsTestCase
 from version import ZULIP_VERSION
 from zerver.actions.alert_words import do_add_alert_words
@@ -4010,3 +4011,43 @@ class AnalyticsImportExportTest(AnalyticsTestCase, ExportFile):
             ["property", "subgroup", "value", "end_time"],
             [lear_realm_installation_count],
         )
+
+    def test_update_analytics_counts_for_third_party_imports(self) -> None:
+        current_time = self.TIME_ZERO
+        stat = COUNT_STATS["messages_sent:is_bot:hour"]
+        self.current_property = stat.property
+
+        public_channel = self.create_stream_with_recipient()[1]
+        self.create_message(self.shylock, public_channel)
+        do_drop_all_analytics_tables()
+
+        # Export the realm and delete the analytics.json file,
+        # import tools for third-party don't generate it.
+        self.export_realm_and_create_auditlog(self.default_realm)
+        analytics_file = os.path.join(get_output_dir(), "analytics.json")
+        os.remove(analytics_file)
+
+        # Make sure it's an empty server, import should only generate the
+        # analytics tables on an empty server.
+        Realm.objects.all().exclude(string_id=settings.SYSTEM_BOT_REALM).delete()
+        current_time += self.DAY
+        with (
+            self.assertLogs(level="INFO"),
+            # This is just to shorten the test run time.
+            time_machine.travel(current_time + self.DAY, tick=False),
+        ):
+            imported_realm = do_import_realm(get_output_dir(), "cool-chat-app")
+        self.assert_length(
+            RealmCount.objects.filter(
+                realm=imported_realm,
+                property=stat.property,
+                subgroup="false",
+                value=1,
+                end_time=current_time - self.DAY,
+            ),
+            1,
+        )
+        self.assert_length(UserCount.objects.filter(realm=imported_realm), 3)
+        self.assert_length(StreamCount.objects.filter(realm=imported_realm), 1)
+        self.assert_length(RealmCount.objects.filter(realm=imported_realm), 7)
+        self.assert_length(InstallationCount.objects.all(), 7)
