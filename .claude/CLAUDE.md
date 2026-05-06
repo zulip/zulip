@@ -623,34 +623,11 @@ docs/             # ReadTheDocs documentation source
 
 ## Help Center Documentation
 
-Help center articles are MDX files in `starlight_help/src/content/docs/`.
-Images go in `starlight_help/src/images`. Include files go in the `include/`
-subdirectory with an `_` prefix (e.g., `_AdminOnly.mdx`). New articles need
-a sidebar entry in `starlight_help/astro.config.mjs`.
-
-See `docs/documentation/helpcenter.md` for the full writing guide. Key points:
-
-- **Bold** UI element names (e.g., **Settings** page, **Save changes** button).
-- Do not specify default values or list out options — the user can see
-  them in the UI. For dropdowns, refer to the setting by its label name
-  rather than enumerating the choices.
-- Do not use "we" to refer to Zulip; use "you" for the reader.
-- Fewer words is better; many users have English as a second language.
-- Use `<kbd>Enter</kbd>` for keyboard keys (non-Mac; auto-translated for Mac).
-- Use `FlattenedList` to merge adjacent bullet lists (inline markdown
-  and/or include components) into a single visual list. Use
-  `FlattenedSteps` for the same purpose with ordered (numbered) lists.
-- Common components and their imports:
-  ```
-  import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
-  import FlattenedList from "../../components/FlattenedList.astro";
-  import FlattenedSteps from "../../components/FlattenedSteps.astro";
-  import NavigationSteps from "../../components/NavigationSteps.astro";
-  import ZulipTip from "../../components/ZulipTip.astro";
-  import ZulipNote from "../../components/ZulipNote.astro";
-  import AdminOnly from "../include/_AdminOnly.mdx";
-  import SaveChanges from "../include/_SaveChanges.mdx";
-  ```
+When making any user-facing change, **read
+`docs/documentation/helpcenter.md`** in full and review the relevant
+help center articles under `starlight_help/src/content/docs/` for any
+updates that should be made. The writing guide there is the source
+of truth for help center conventions, components, and structure.
 
 ## Zulip Chat Links
 
