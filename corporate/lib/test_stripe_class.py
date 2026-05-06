@@ -69,11 +69,27 @@ def stripe_fixture_path(
 def fixture_files_for_function(decorated_function: CallableT) -> list[str]:  # nocoverage
     decorated_function_name = decorated_function.__name__
     decorated_function_name = decorated_function_name.removeprefix("test_")
-    return sorted(
+
+    def call_order_key(filename: str) -> tuple[str, int]:
+        # Filenames look like `upgrade_by_card--Customer.create.10.json`,
+        # e.g., `<test>--<class>.<method>.<call_count>.json`. Split the
+        # filename strings and sort such that a call_count of 2 comes
+        # before 10, matching regen order.
+        stem = filename[: -len(".json")]
+        prefix, _, call_count = stem.rpartition(".")
+        return (prefix, int(call_count))
+
+    return [
         f"{STRIPE_FIXTURES_DIR}/{f}"
-        for f in os.listdir(STRIPE_FIXTURES_DIR)
-        if f.startswith(decorated_function_name + "--")
-    )
+        for f in sorted(
+            (
+                f
+                for f in os.listdir(STRIPE_FIXTURES_DIR)
+                if f.startswith(decorated_function_name + "--")
+            ),
+            key=call_order_key,
+        )
+    ]
 
 
 def generate_and_save_stripe_fixture(
