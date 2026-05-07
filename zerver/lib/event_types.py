@@ -538,7 +538,7 @@ class Export(BaseModel):
 
 
 class RealmExportEvent(BaseEvent):
-    type: Literal["realm_export"]
+    type: Literal["realm_export"] = "realm_export"
     exports: list[Export]
 
 
