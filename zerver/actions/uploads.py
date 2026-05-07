@@ -5,6 +5,8 @@ from typing import Any
 from django.db import transaction
 
 from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
+from zerver.lib.event_types import Attachment as AttachmentData
+from zerver.lib.event_types import AttachmentUpdateEvent
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.upload import claim_attachment, delete_message_attachments
 from zerver.models import (
@@ -14,7 +16,6 @@ from zerver.models import (
     Message,
     ScheduledMessage,
     Stream,
-    UserProfile,
 )
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -23,18 +24,6 @@ from zerver.tornado.django_api import send_event_on_commit
 class AttachmentChangeResult:
     did_attachment_change: bool
     detached_attachments: list[dict[str, Any]]
-
-
-def notify_attachment_update(
-    user_profile: UserProfile, op: str, attachment_dict: dict[str, Any]
-) -> None:
-    event = {
-        "type": "attachment",
-        "op": op,
-        "attachment": attachment_dict,
-        "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
-    }
-    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def do_claim_attachments(
@@ -83,7 +72,11 @@ def do_claim_attachments(
         if not isinstance(message, ScheduledMessage):
             # attachment update events don't say anything about scheduled messages,
             # so sending an event is pointless.
-            notify_attachment_update(user_profile, "update", attachment.to_dict())
+            event = AttachmentUpdateEvent(
+                attachment=AttachmentData(**attachment.to_dict()),
+                upload_space_used=user_profile.realm.currently_used_upload_space_bytes(),
+            )
+            send_event_on_commit(user_profile.realm, event, [user_profile.id])
     return claimed
 
 
