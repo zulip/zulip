@@ -88,6 +88,7 @@ export type DialogWidgetConfig = {
     always_visible_scrollbar?: boolean;
     footer_minor_text?: string;
     close_on_overlay_click?: boolean;
+    dangerous_action?: boolean;
 };
 
 type RequestOpts = {
@@ -203,6 +204,8 @@ export function launch(conf: DialogWidgetConfig): string {
     //   has scrollable content. Default behaviour is to hide the scrollbar when it is
     //   not in use.
     // * close_on_overlay_click: Whether to close modal on clicking overlay.
+    // * dangerous_action: If true, styles the submit button as a danger
+    //   button (e.g., for delete or deactivate actions).
 
     widget_id_counter += 1;
     const modal_unique_id = current_dialog_widget_id();
@@ -229,6 +232,7 @@ export function launch(conf: DialogWidgetConfig): string {
         footer_minor_text: conf.footer_minor_text,
         close_on_overlay_click: conf.close_on_overlay_click ?? true,
         hide_footer: conf.hide_footer,
+        dangerous_action: conf.dangerous_action,
     });
     const $dialog = $(html);
     $("body").append($dialog);
