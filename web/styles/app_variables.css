@@ -1293,8 +1293,14 @@
         hsl(0deg 0% 0% / 40%)
     );
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
-    --color-compose-send-button-background: hsl(240deg 96% 68%);
-    --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
+    --color-compose-send-button-background: light-dark(
+        hsl(240deg 80% 66%),
+        hsl(245deg 55% 50%)
+    );
+    --color-compose-send-button-background-interactive: light-dark(
+        hsl(240deg 63% 59%),
+        hsl(245deg 60% 58%)
+    );
     --color-compose-send-button-focus-border: hsl(232deg 20% 10%);
     --color-compose-send-button-focus-shadow: light-dark(
         hsl(230deg 100% 20%),
