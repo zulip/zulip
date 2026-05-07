@@ -194,7 +194,7 @@ class OAuthVideoCallProvider(ABC):
     token_url: str = NotImplemented
     auto_refresh_url: str = NotImplemented
     create_meeting_url: str = NotImplemented
-    token_key_name: str = NotImplemented
+    token_key_name: Literal["zoom", "webex"] = NotImplemented
 
     def get_token(self, user: UserProfile) -> object | None:
         return user.third_party_api_state.get(self.token_key_name)
