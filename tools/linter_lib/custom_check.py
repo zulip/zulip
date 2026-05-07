@@ -478,6 +478,21 @@ python_rules = RuleList(
             "description": 'A mock function is missing a leading "assert_"',
         },
         {
+            "pattern": r"SET TRANSACTION ISOLATION LEVEL REPEATABLE READ",
+            "description": (
+                "Use snapshot_isolation.repeatable_read_atomic() instead of "
+                "raw SET TRANSACTION; the wrapper sets the threadlocal marker "
+                "the cache layer checks to refuse fills it can't make "
+                "snapshot-safe."
+            ),
+            "exclude_line": {
+                (
+                    "zerver/lib/snapshot_isolation.py",
+                    'connection.cursor().execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")',
+                ),
+            },
+        },
+        {
             "pattern": r"transaction\.atomic$|transaction\.atomic\(\)|savepoint=True",
             "description": "Use 'durable=True' or 'savepoint=False' argument explicitly to avoid the possibility of creating savepoints.",
             "exclude": {"confirmation/migrations/", "zerver/migrations/", "zilencer/migrations/"},

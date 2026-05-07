@@ -4740,7 +4740,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "narrow": "[]",
         }
 
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(14):
             result = self.get_and_check_messages(get_and_check_messages_options)
 
         self.assertEqual(result["anchor"], anchor_message_id)
@@ -4752,7 +4752,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # we should choose the message sent first.
         first_message_with_same_timestamp_id = anchor_message_id
         Message.objects.filter(id=newer_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(14):
             result = self.get_and_check_messages(get_and_check_messages_options)
         self.assertEqual(result["anchor"], first_message_with_same_timestamp_id)
         self.assert_length(result["messages"], 1)
@@ -4761,7 +4761,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # In case of no message at or after the anchor date,
         # we should fall back to the newest message.
-        with self.assert_database_query_count(13):
+        with self.assert_database_query_count(15):
             result = self.get_and_check_messages(
                 {
                     **get_and_check_messages_options,
@@ -4776,7 +4776,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Narrow conditions should be respected when passing `anchor_date`.
         scotland_channel_message_id = self.send_stream_message(sender, "Scotland")
         Message.objects.filter(id=scotland_channel_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(18):
             result = self.get_and_check_messages(
                 {
                     **get_and_check_messages_options,

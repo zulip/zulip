@@ -241,9 +241,9 @@ def cache_with_key(
     other uses of caching.
 
     Inside repeatable_read_atomic the fetcher is opaque to this
-    wrapper, so we can't auto-detect when its result is stale
-    relative to the world outside our snapshot.  Two opt-ins keep
-    the cache correct (see zerver.lib.snapshot_isolation for the why):
+    wrapper, so it raises SnapshotIsolationError unless one of two
+    opt-ins declares how to keep the cache correct under snapshot
+    isolation (see zerver.lib.snapshot_isolation for the why):
 
       * model + staleness_filter for per-row caches: after the
         fetcher runs, an xmax / pg_xact_status check on the row
@@ -264,6 +264,7 @@ def cache_with_key(
         assert not aggregation, (
             "cache_with_key: aggregation=True is mutually exclusive with model + staleness_filter"
         )
+    snapshot_safe = model is not None or aggregation
 
     def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         if settings.TEST_SUITE or settings.DEBUG:
@@ -274,6 +275,19 @@ def cache_with_key(
         @wraps(func)
         def func_with_caching(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             in_rr = in_repeatable_read_transaction()
+            if in_rr and not snapshot_safe:
+                # Lazy import to avoid a circular dependency at module
+                # load time -- cache.py is imported very early.
+                from zerver.lib.snapshot_isolation import SnapshotIsolationError
+
+                raise SnapshotIsolationError(
+                    f"@cache_with_key {func.__qualname__} reached from a "
+                    "REPEATABLE READ transaction without a snapshot-safe "
+                    "shape.  Pass model + staleness_filter for a per-row "
+                    "xmax check, or aggregation=True for SELECT-many "
+                    "caches that read-through-only inside RR."
+                )
+
             key = keyfunc(*args, **kwargs)
 
             try:
@@ -1053,6 +1067,7 @@ def _detect_stale_pks(model: type[Any], pk_field: str, pk_values: list[Any]) -> 
 # caller asserts that each entry in object_ids is the value of
 # pk_field on a row in model, and the helper drops fills for rows
 # that PostgreSQL says have been updated since our snapshot started.
+# Callers reached from inside repeatable_read_atomic must pass these.
 def generic_bulk_cached_fetch(
     cache_key_function: Callable[[ObjKT], str],
     query_function: Callable[[list[ObjKT]], Iterable[ItemT]],
@@ -1066,6 +1081,15 @@ def generic_bulk_cached_fetch(
     model: type[Any] | None = None,
     pk_field: str | None = None,
 ) -> dict[ObjKT, CacheItemT]:
+    if model is None and in_repeatable_read_transaction():
+        from zerver.lib.snapshot_isolation import SnapshotIsolationError
+
+        raise SnapshotIsolationError(
+            f"generic_bulk_cached_fetch on {cache_key_function.__qualname__} "
+            "reached from a REPEATABLE READ transaction without "
+            "model+pk_field; the fill could cache rows whose committed "
+            "value already differs from our snapshot."
+        )
     if model is not None:
         assert pk_field is not None, "generic_bulk_cached_fetch: model requires pk_field"
 

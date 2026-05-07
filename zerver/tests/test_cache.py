@@ -1198,3 +1198,24 @@ class SnapshotIsolationGuardTest(ZulipTestCase):
 
         sqls = [q.sql for q in queries]
         self.assertFalse(any("pg_xact_status" in s for s in sqls))
+
+    def test_cache_with_key_raises_inside_repeatable_read(self) -> None:
+        from zerver.lib.snapshot_isolation import SnapshotIsolationError, repeatable_read_atomic
+
+        @cache_with_key(lambda x: f"snapshot_test_unsafe:{x}", timeout=60)
+        def lookup(x: int) -> int:
+            return x * 10  # nocoverage
+
+        with repeatable_read_atomic(), self.assertRaises(SnapshotIsolationError):
+            lookup(1)
+
+    def test_bulk_cached_fetch_raises_without_model(self) -> None:
+        from zerver.lib.snapshot_isolation import SnapshotIsolationError, repeatable_read_atomic
+
+        with repeatable_read_atomic(), self.assertRaises(SnapshotIsolationError):
+            bulk_cached_fetch(
+                cache_key_function=lambda i: f"snapshot_bulk_unsafe:{i}",
+                query_function=lambda ids: [{"id": i, "name": f"row{i}"} for i in ids],
+                object_ids=[1, 2],
+                id_fetcher=lambda row: row["id"],
+            )
