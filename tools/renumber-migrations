@@ -58,7 +58,8 @@ def renumber_migration(
     last_correct_migration: str,
     migrations_dir: str,
     app_label: str,
-) -> None:
+) -> list[tuple[str, str]]:
+    renames: list[tuple[str, str]] = []
     seen_prefixes: set[str] = set()
     for i in order:
         prefix = conflicts[i - 1][0:4]
@@ -66,15 +67,18 @@ def renumber_migration(
             seen_prefixes.add(prefix)
             continue
         new_number = int(last_correct_migration[0:4]) + 1
+        old_name = conflicts[i - 1]
         new_name = renumber_one(
-            conflicts[i - 1], new_number, last_correct_migration, migrations_dir, app_label
+            old_name, new_number, last_correct_migration, migrations_dir, app_label
         )
+        renames.append((old_name, new_name))
         last_correct_migration = new_name.removesuffix(".py")
+    return renames
 
 
 def resolve_conflicts_interactive(
     conflicts: list[str], migrations_dir: str, app_label: str
-) -> None:
+) -> list[tuple[str, str]]:
     print("Conflicting migrations:")
     for i, name in enumerate(conflicts, 1):
         print(f"{i}. {name}")
@@ -84,7 +88,7 @@ def resolve_conflicts_interactive(
     validate_order(order, len(conflicts))
 
     last_correct_migration = conflicts[order[0] - 1].removesuffix(".py")
-    renumber_migration(conflicts, order, last_correct_migration, migrations_dir, app_label)
+    return renumber_migration(conflicts, order, last_correct_migration, migrations_dir, app_label)
 
 
 def get_upstream_files(app_label: str) -> set[str] | None:
@@ -168,6 +172,81 @@ def renumber_locals_past_tip(
     return renames
 
 
+def find_introducing_commit(rel_path: str) -> str | None:
+    """Most recent commit between @{u} and HEAD that added rel_path."""
+    try:
+        result = subprocess.run(
+            ["git", "log", "--diff-filter=A", "--format=%H", "@{u}..HEAD", "--", rel_path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    lines = result.stdout.strip().splitlines()
+    return lines[0] if lines else None
+
+
+def has_merge_commits_since_upstream() -> bool:
+    """True if @{u}..HEAD contains any merge commit."""
+    result = subprocess.run(
+        ["git", "rev-list", "--merges", "@{u}..HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return bool(result.stdout.strip())
+
+
+def squash_renumbers_into_origin(renames: list[tuple[str, str]], migrations_dir: str) -> None:
+    """Build `fixup!` commits for each rename, then rebase to squash them
+    into the commits that originally added the migrations."""
+    if has_merge_commits_since_upstream():
+        # `git rebase -i --autosquash` would silently linearize merge
+        # commits, and `--autostash` makes recovery awkward. Bail out
+        # and let the user handle the squash by hand.
+        print(
+            "Refusing to rebase: @{u}..HEAD contains merge commit(s), which "
+            "would be linearized. Re-run with --no-rebase, or fold the renumbers "
+            "into the appropriate commits by hand."
+        )
+        sys.exit(1)
+    fixups = 0
+    for old, new in renames:
+        old_path = os.path.join(migrations_dir, old)
+        new_path = os.path.join(migrations_dir, new)
+        target = find_introducing_commit(old_path)
+        if target is None:
+            print(f"  Leaving {old} -> {new} in your working tree (no in-branch commit added it).")
+            continue
+        subprocess.run(["git", "add", "--", old_path, new_path], check=True)
+        # Pass the paths to `git commit --only` so any unrelated changes
+        # the user had already staged don't get folded into the fixup.
+        subprocess.run(
+            [
+                "git",
+                "commit",
+                "--quiet",
+                f"--fixup={target}",
+                "--only",
+                "--",
+                old_path,
+                new_path,
+            ],
+            check=True,
+        )
+        fixups += 1
+    if fixups == 0:
+        return
+    print(f"Squashing {fixups} renumber(s) into the commits that introduced them...")
+    env = {**os.environ, "GIT_SEQUENCE_EDITOR": "true"}
+    subprocess.run(
+        ["git", "rebase", "-i", "--autosquash", "--autostash", "@{u}"],
+        check=True,
+        env=env,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Renumber migration files.")
     parser.add_argument(
@@ -175,6 +254,12 @@ def main() -> None:
         nargs="?",
         default="zerver",
         help="The Django app label to process (e.g. zerver, analytics)",
+    )
+    parser.add_argument(
+        "--no-rebase",
+        action="store_true",
+        help="Leave the renumbers as uncommitted changes instead of squashing "
+        "them into the commits that introduced each local migration.",
     )
     args = parser.parse_args()
 
@@ -196,7 +281,7 @@ def main() -> None:
             groups = find_conflict_groups(files_list)
             if not groups:
                 break
-            resolve_conflicts_interactive(groups[0], migrations_dir, args.app_label)
+            renames.extend(resolve_conflicts_interactive(groups[0], migrations_dir, args.app_label))
     else:
         files_list = sorted(
             os.path.basename(path) for path in glob.glob(os.path.join(migrations_dir, "????_*.py"))
@@ -222,6 +307,8 @@ def main() -> None:
             )
 
     print("All conflicts resolved")
+    if renames and not args.no_rebase:
+        squash_renumbers_into_origin(renames, migrations_dir)
 
 
 if __name__ == "__main__":
