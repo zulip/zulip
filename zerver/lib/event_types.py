@@ -864,20 +864,20 @@ class ScheduledMessageFields(ScheduledMessageFieldsCore):
 
 
 class ScheduledMessagesAddEvent(BaseEvent):
-    type: Literal["scheduled_messages"]
-    op: Literal["add"]
+    type: Literal["scheduled_messages"] = "scheduled_messages"
+    op: Literal["add"] = "add"
     scheduled_messages: list[ScheduledMessageFields]
 
 
 class ScheduledMessagesRemoveEvent(BaseEvent):
-    type: Literal["scheduled_messages"]
-    op: Literal["remove"]
+    type: Literal["scheduled_messages"] = "scheduled_messages"
+    op: Literal["remove"] = "remove"
     scheduled_message_id: int
 
 
 class ScheduledMessagesUpdateEvent(BaseEvent):
-    type: Literal["scheduled_messages"]
-    op: Literal["update"]
+    type: Literal["scheduled_messages"] = "scheduled_messages"
+    op: Literal["update"] = "update"
     scheduled_message: ScheduledMessageFields
 
 
@@ -893,14 +893,14 @@ class ReminderFields(BaseModel):
 
 
 class RemindersAddEvent(BaseEvent):
-    type: Literal["reminders"]
-    op: Literal["add"]
+    type: Literal["reminders"] = "reminders"
+    op: Literal["add"] = "add"
     reminders: list[ReminderFields]
 
 
 class RemindersRemoveEvent(BaseEvent):
-    type: Literal["reminders"]
-    op: Literal["remove"]
+    type: Literal["reminders"] = "reminders"
+    op: Literal["remove"] = "remove"
     reminder_id: int
 
 
