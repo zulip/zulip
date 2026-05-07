@@ -236,11 +236,12 @@ def _event_to_dict(event: Mapping[str, Any] | BaseEvent) -> Mapping[str, Any]:
             if name not in data:
                 default = field_info.get_default(call_default_factory=True)
                 if default is not None:
-                    # Only the constant type/op discriminators are spelled
-                    # as class defaults; a default on any other field would
-                    # silently change which fields are sent by call sites
-                    # that omit it.
-                    assert name in ("type", "op")
+                    # Only the constant type/op discriminators (and the
+                    # legacy "operation" duplicate) are spelled as class
+                    # defaults; a default on any other field would silently
+                    # change which fields are sent by call sites that omit
+                    # it.
+                    assert name in ("type", "op", "operation")
                     data[name] = default
         return data
     return event
