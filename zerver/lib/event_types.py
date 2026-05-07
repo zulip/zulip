@@ -1256,7 +1256,7 @@ class UserSettingsUpdateEvent(UserSettingsUpdateCoreEvent):
 
 
 class UserStatusCoreEvent(BaseEvent):
-    type: Literal["user_status"]
+    type: Literal["user_status"] = "user_status"
     user_id: int
 
 
@@ -1266,7 +1266,7 @@ class UserStatusEvent(UserStatusCoreEvent):
     status_text: str | None = None
     emoji_name: str | None = None
     emoji_code: str | None = None
-    reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"] | None = None
+    reaction_type: ReactionType | None = None
 
 
 class UserTopicEvent(BaseEvent):
