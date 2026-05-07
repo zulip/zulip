@@ -4,6 +4,7 @@ import fileinput
 import glob
 import os
 import re
+import subprocess
 import sys
 
 # When we need to backport migrations to a previous release, we
@@ -71,7 +72,9 @@ def renumber_migration(
         last_correct_migration = new_name.removesuffix(".py")
 
 
-def resolve_conflicts(conflicts: list[str], migrations_dir: str, app_label: str) -> None:
+def resolve_conflicts_interactive(
+    conflicts: list[str], migrations_dir: str, app_label: str
+) -> None:
     print("Conflicting migrations:")
     for i, name in enumerate(conflicts, 1):
         print(f"{i}. {name}")
@@ -84,6 +87,35 @@ def resolve_conflicts(conflicts: list[str], migrations_dir: str, app_label: str)
     renumber_migration(conflicts, order, last_correct_migration, migrations_dir, app_label)
 
 
+def get_upstream_files(app_label: str) -> set[str] | None:
+    """`NNNN_*.py` migration filenames on @{u}, or None if @{u} is unavailable.
+
+    Skips non-migration entries such as `__init__.py`.
+    """
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "ls-tree",
+                "-r",
+                "--name-only",
+                "@{u}",
+                "--",
+                f"{app_label}/migrations/",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    return {
+        basename
+        for line in result.stdout.splitlines()
+        if re.fullmatch(r"\d{4}_.*\.py", basename := os.path.basename(line))
+    }
+
+
 def find_conflict_groups(files_list: list[str]) -> list[list[str]]:
     """Return migration filenames grouped by NNNN prefix, only for groups in conflict."""
     groups: dict[str, list[str]] = {}
@@ -94,6 +126,46 @@ def find_conflict_groups(files_list: list[str]) -> list[list[str]]:
         for prefix, group in sorted(groups.items())
         if len(group) > 1 and prefix not in MIGRATIONS_TO_SKIP
     ]
+
+
+def renumber_locals_past_tip(
+    files_list: list[str],
+    groups: list[list[str]],
+    upstream_files: set[str],
+    migrations_dir: str,
+    app_label: str,
+) -> list[tuple[str, str]]:
+    """Renumber every branch-local migration at-or-past the first conflict
+    contiguously past the upstream tip, in NNNN order.
+
+    The new NNNNs fill in from `upstream_tip + 1` and increment by 1, so
+    non-conflicting locals that sit between conflicts and the new tip (and
+    would otherwise be left with stale dependencies) get pulled into the
+    chain too.
+    """
+    min_conflict_nnnn = int(groups[0][0][0:4])
+    local_files = sorted(
+        (f for f in files_list if f not in upstream_files and int(f[0:4]) >= min_conflict_nnnn),
+        key=lambda f: int(f[0:4]),
+    )
+
+    # Use `upstream_files` directly here, not the intersection with the
+    # working tree: if the local checkout is missing one of the upstream
+    # migrations, we still need the new NNNN to land past where it would
+    # come back on the next pull.
+    upstream_tip = max(upstream_files, key=lambda f: int(f[0:4]))
+    new_predecessor = upstream_tip.removesuffix(".py")
+    new_number = int(upstream_tip[0:4]) + 1
+
+    print(f"Renumbering {len(local_files)} branch-local migration(s) past the tip of the graph:")
+    renames: list[tuple[str, str]] = []
+    for local_file in local_files:
+        new_name = renumber_one(local_file, new_number, new_predecessor, migrations_dir, app_label)
+        print(f"  {local_file} -> {new_name} (now follows {new_predecessor})")
+        renames.append((local_file, new_name))
+        new_predecessor = new_name.removesuffix(".py")
+        new_number += 1
+    return renames
 
 
 def main() -> None:
@@ -111,14 +183,43 @@ def main() -> None:
         print(f"Error: Directory '{migrations_dir}' does not exist.")
         sys.exit(1)
 
-    while True:
+    upstream_files = get_upstream_files(args.app_label)
+    renames: list[tuple[str, str]] = []
+
+    if upstream_files is None:
+        # @{u} can't be resolved: fall back to one prompt per conflict group.
+        while True:
+            files_list = sorted(
+                os.path.basename(path)
+                for path in glob.glob(os.path.join(migrations_dir, "????_*.py"))
+            )
+            groups = find_conflict_groups(files_list)
+            if not groups:
+                break
+            resolve_conflicts_interactive(groups[0], migrations_dir, args.app_label)
+    else:
         files_list = sorted(
             os.path.basename(path) for path in glob.glob(os.path.join(migrations_dir, "????_*.py"))
         )
         groups = find_conflict_groups(files_list)
-        if not groups:
-            break
-        resolve_conflicts(groups[0], migrations_dir, args.app_label)
+        if groups:
+            # Each conflict must have exactly one branch-local file; 0 means
+            # an all-upstream backport that belongs in MIGRATIONS_TO_SKIP, and
+            # 2+ means the user added the same NNNN twice locally and we
+            # can't pick a relative order for them.
+            for group in groups:
+                locals_in_group = [f for f in group if f not in upstream_files]
+                if len(locals_in_group) != 1:
+                    label = (
+                        "no local files (backport?)"
+                        if not locals_in_group
+                        else "multiple local files (order ambiguous)"
+                    )
+                    print(f"Conflict at {group[0][0:4]}: {label}; resolve by hand.")
+                    sys.exit(1)
+            renames = renumber_locals_past_tip(
+                files_list, groups, upstream_files, migrations_dir, args.app_label
+            )
 
     print("All conflicts resolved")
 
