@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from zerver.lib.display_recipient import get_display_recipient
+from zerver.lib.event_types import RemindersRemoveEvent
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
@@ -174,9 +175,5 @@ def access_reminder(user_profile: UserProfile, reminder_id: int) -> ScheduledMes
 
 
 def notify_remove_reminder(user_profile: UserProfile, reminder_id: int) -> None:
-    event = {
-        "type": "reminders",
-        "op": "remove",
-        "reminder_id": reminder_id,
-    }
+    event = RemindersRemoveEvent(reminder_id=reminder_id)
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
