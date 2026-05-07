@@ -831,20 +831,20 @@ class SavedSnippetFields(BaseModel):
 
 
 class SavedSnippetsAddEvent(BaseEvent):
-    type: Literal["saved_snippets"]
-    op: Literal["add"]
+    type: Literal["saved_snippets"] = "saved_snippets"
+    op: Literal["add"] = "add"
     saved_snippet: SavedSnippetFields
 
 
 class SavedSnippetsUpdateEvent(BaseEvent):
-    type: Literal["saved_snippets"]
-    op: Literal["update"]
+    type: Literal["saved_snippets"] = "saved_snippets"
+    op: Literal["update"] = "update"
     saved_snippet: SavedSnippetFields
 
 
 class SavedSnippetsRemoveEvent(BaseEvent):
-    type: Literal["saved_snippets"]
-    op: Literal["remove"]
+    type: Literal["saved_snippets"] = "saved_snippets"
+    op: Literal["remove"] = "remove"
     saved_snippet_id: int
 
 

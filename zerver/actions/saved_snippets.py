@@ -4,6 +4,12 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from zerver.lib.event_types import (
+    SavedSnippetFields,
+    SavedSnippetsAddEvent,
+    SavedSnippetsRemoveEvent,
+    SavedSnippetsUpdateEvent,
+)
 from zerver.lib.exceptions import ResourceNotFoundError
 from zerver.models import RealmAuditLog, SavedSnippet, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -32,11 +38,9 @@ def do_create_saved_snippet(
         extra_data={"saved_snippet_id": saved_snippet.id},
     )
 
-    event = {
-        "type": "saved_snippets",
-        "op": "add",
-        "saved_snippet": saved_snippet.to_api_dict(),
-    }
+    event = SavedSnippetsAddEvent(
+        saved_snippet=SavedSnippetFields(**saved_snippet.to_api_dict()),
+    )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     return saved_snippet
@@ -61,11 +65,9 @@ def do_edit_saved_snippet(
     with transaction.atomic(durable=True):
         saved_snippet.save()
 
-        event = {
-            "type": "saved_snippets",
-            "op": "update",
-            "saved_snippet": saved_snippet.to_api_dict(),
-        }
+        event = SavedSnippetsUpdateEvent(
+            saved_snippet=SavedSnippetFields(**saved_snippet.to_api_dict()),
+        )
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     return saved_snippet
@@ -87,5 +89,5 @@ def do_delete_saved_snippet(
         raise ResourceNotFoundError(_("Saved snippet does not exist."))
     saved_snippet.delete()
 
-    event = {"type": "saved_snippets", "op": "remove", "saved_snippet_id": saved_snippet_id}
+    event = SavedSnippetsRemoveEvent(saved_snippet_id=saved_snippet_id)
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
