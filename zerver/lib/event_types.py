@@ -414,8 +414,8 @@ class Bot(BaseModel):
 
 
 class RealmBotAddEvent(BaseEvent):
-    type: Literal["realm_bot"]
-    op: Literal["add"]
+    type: Literal["realm_bot"] = "realm_bot"
+    op: Literal["add"] = "add"
     bot: Bot
 
 
@@ -424,8 +424,8 @@ class BotTypeForDelete(BaseModel):
 
 
 class RealmBotDeleteEvent(BaseEvent):
-    type: Literal["realm_bot"]
-    op: Literal["delete"]
+    type: Literal["realm_bot"] = "realm_bot"
+    op: Literal["delete"] = "delete"
     bot: BotTypeForDelete
 
 
@@ -442,8 +442,8 @@ class BotTypeForUpdate(BotTypeForUpdateCore):
 
 
 class RealmBotUpdateEvent(BaseEvent):
-    type: Literal["realm_bot"]
-    op: Literal["update"]
+    type: Literal["realm_bot"] = "realm_bot"
+    op: Literal["update"] = "update"
     bot: BotTypeForUpdate
 
 
@@ -787,8 +787,8 @@ class PersonDateJoined(BaseModel):
 
 
 class RealmUserUpdateEvent(BaseEvent):
-    type: Literal["realm_user"]
-    op: Literal["update"]
+    type: Literal["realm_user"] = "realm_user"
+    op: Literal["update"] = "update"
     person: (
         PersonAvatarFields
         | PersonBotOwnerId
