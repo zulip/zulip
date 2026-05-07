@@ -564,7 +564,7 @@ class RealmPlayground(BaseModel):
 
 
 class RealmPlaygroundsEvent(BaseEvent):
-    type: Literal["realm_playgrounds"]
+    type: Literal["realm_playgrounds"] = "realm_playgrounds"
     realm_playgrounds: list[RealmPlayground]
 
 
