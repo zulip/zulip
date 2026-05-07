@@ -964,7 +964,7 @@ class StreamUpdateEvent(StreamUpdateCoreEvent):
 
 
 class SubmessageEvent(BaseEvent):
-    type: Literal["submessage"]
+    type: Literal["submessage"] = "submessage"
     message_id: int
     submessage_id: int
     sender_id: int
