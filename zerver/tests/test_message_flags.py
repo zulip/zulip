@@ -10,6 +10,7 @@ from zerver.actions.streams import do_change_stream_group_based_setting, do_chan
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib.event_types import MessageDetails
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDetailsDict,
@@ -2211,7 +2212,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assertEqual(
             message_details,
             {
-                str(message_id): dict(type="private", user_ids=[]),
+                str(message_id): MessageDetails(type="private", user_ids=[]),
             },
         )
 

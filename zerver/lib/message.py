@@ -16,6 +16,7 @@ from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient_by_id
+from zerver.lib.event_types import MessageDetails
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.mention import MentionData, sender_can_mention_group, silent_mention_syntax_for_user
@@ -62,7 +63,7 @@ from zerver.models.recipients import DirectMessageGroup
 
 
 class MessageDetailsDict(TypedDict, total=False):
-    type: str
+    type: Literal["private", "stream"]
     mentioned: bool
     user_ids: list[int]
     stream_id: int
@@ -1287,7 +1288,7 @@ def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id
 def format_unread_message_details(
     my_user_id: int,
     raw_unread_data: RawUnreadMessagesResult,
-) -> dict[str, MessageDetailsDict]:
+) -> dict[str, MessageDetails]:
     unread_data = {}
 
     for message_id, private_message_details in raw_unread_data["pm_dict"].items():
@@ -1299,18 +1300,18 @@ def format_unread_message_details(
 
         # Note that user_ids excludes ourself, even for the case we send messages
         # to ourself.
-        message_details = MessageDetailsDict(
+        message_details = MessageDetails(
             type="private",
             user_ids=user_ids,
         )
         if message_id in raw_unread_data["mentions"]:
-            message_details["mentioned"] = True
+            message_details.mentioned = True
         unread_data[str(message_id)] = message_details
 
     for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
         unmuted_stream_msg = message_id in raw_unread_data["unmuted_stream_msgs"]
 
-        message_details = MessageDetailsDict(
+        message_details = MessageDetails(
             type="stream",
             stream_id=stream_message_details["stream_id"],
             topic=stream_message_details["topic"],
@@ -1318,7 +1319,7 @@ def format_unread_message_details(
             unmuted_stream_msg=unmuted_stream_msg,
         )
         if message_id in raw_unread_data["mentions"]:
-            message_details["mentioned"] = True
+            message_details.mentioned = True
         unread_data[str(message_id)] = message_details
 
     for message_id, huddle_message_details in raw_unread_data["huddle_dict"].items():
@@ -1329,12 +1330,12 @@ def format_unread_message_details(
             for s in huddle_message_details["user_ids_string"].split(",")
             if (user_id := int(s)) != my_user_id
         )
-        message_details = MessageDetailsDict(
+        message_details = MessageDetails(
             type="private",
             user_ids=user_ids,
         )
         if message_id in raw_unread_data["mentions"]:
-            message_details["mentioned"] = True
+            message_details.mentioned = True
         unread_data[str(message_id)] = message_details
 
     return unread_data
