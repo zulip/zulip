@@ -1266,7 +1266,7 @@ class UserSettingsUpdateEvent(UserSettingsUpdateCoreEvent):
 
 
 class UserStatusCoreEvent(BaseEvent):
-    type: Literal["user_status"]
+    type: Literal["user_status"] = "user_status"
     user_id: int
 
 
