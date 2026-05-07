@@ -42,7 +42,7 @@
                 <button class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{ modal_exit_button_text }}</button>
                 {{/unless}}
                 <div class="dialog_submit_button_container">
-                    <button class="modal__button dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
+                    <button class="modal__button dialog_submit_button{{#if dangerous_action}} dangerous_action_button{{/if}}"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
                         <span class="submit-button-text">{{ modal_submit_button_text }}</span>
                         <span class="modal__spinner"></span>
                     </button>

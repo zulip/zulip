@@ -2694,7 +2694,7 @@
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
     --color-background-danger-solid-action-button: light-dark(
-        hsl(4deg 75% 53%),
+        hsl(4deg 75% 51%),
         hsl(2deg 74% 47%)
     );
     --color-background-danger-solid-action-button-hover: light-dark(
