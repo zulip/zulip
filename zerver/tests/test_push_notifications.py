@@ -1933,7 +1933,6 @@ class TestGetGCMPayload(PushNotificationTestCase):
         self.assertEqual(payload["recipient_type"], "direct")
         self.assertEqual(payload["recipient_user_ids"], [hamlet.id])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_message_payload_personal_message_to_self_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
 

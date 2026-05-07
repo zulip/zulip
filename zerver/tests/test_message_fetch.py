@@ -2634,7 +2634,6 @@ class GetOldMessagesTest(ZulipTestCase):
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_get_messages_with_narrow_dm(self) -> None:
         """
         A request for old messages with a narrow by direct message only returns
