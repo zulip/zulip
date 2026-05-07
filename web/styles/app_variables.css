@@ -1322,8 +1322,12 @@
         hsl(0deg 0% 0% / 40%)
     );
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
-    --color-compose-send-button-background: hsl(240deg 96% 68%);
-    --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
+    --color-compose-send-button-background: var(
+        --color-background-modal-confirm-button
+    );
+    --color-compose-send-button-background-interactive: var(
+        --color-background-modal-confirm-button-hover
+    );
     --color-compose-send-button-focus-border: hsl(232deg 20% 10%);
     --color-compose-send-button-focus-shadow: light-dark(
         hsl(230deg 100% 20%),
