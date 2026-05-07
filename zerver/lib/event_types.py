@@ -471,20 +471,20 @@ class RealmDomain(BaseModel):
 
 
 class RealmDomainsAddEvent(BaseEvent):
-    type: Literal["realm_domains"]
-    op: Literal["add"]
+    type: Literal["realm_domains"] = "realm_domains"
+    op: Literal["add"] = "add"
     realm_domain: RealmDomain
 
 
 class RealmDomainsChangeEvent(BaseEvent):
-    type: Literal["realm_domains"]
-    op: Literal["change"]
+    type: Literal["realm_domains"] = "realm_domains"
+    op: Literal["change"] = "change"
     realm_domain: RealmDomain
 
 
 class RealmDomainsRemoveEvent(BaseEvent):
-    type: Literal["realm_domains"]
-    op: Literal["remove"]
+    type: Literal["realm_domains"] = "realm_domains"
+    op: Literal["remove"] = "remove"
     domain: str
 
 
