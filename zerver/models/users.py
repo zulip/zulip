@@ -1003,7 +1003,14 @@ def base_get_user_queryset() -> QuerySet[UserProfile]:
     return UserProfile.objects.select_related("realm", "bot_owner")
 
 
-@cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(
+    user_profile_by_id_cache_key,
+    timeout=3600 * 24 * 7,
+    # Snapshot-safe under message_fetch's REPEATABLE READ block: drop
+    # the fill if this row was updated since our snapshot started.
+    model=UserProfile,
+    staleness_filter=lambda user_profile_id: {"id": user_profile_id},
+)
 def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
     return base_get_user_queryset().get(id=user_profile_id)
 
@@ -1089,7 +1096,19 @@ def get_users_by_delivery_email(emails: set[str], realm: "Realm") -> QuerySet[Us
     return UserProfile.objects.filter(realm=realm).filter(email_filter)
 
 
-@cache_with_key(user_profile_by_email_realm_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(
+    user_profile_by_email_realm_cache_key,
+    timeout=3600 * 24 * 7,
+    # Snapshot-safe under message_fetch's REPEATABLE READ block.  The
+    # lookup isn't by primary key, so the staleness_filter mirrors the
+    # case-insensitive email + realm lookup the fetcher uses; the xmax
+    # check runs against whichever row matches.
+    model=UserProfile,
+    staleness_filter=lambda email, realm: {
+        "email__iexact": email.strip(),
+        "realm": realm,
+    },
+)
 def get_user(email: str, realm: "Realm") -> UserProfile:
     """Fetches the user by its visible-to-other users username (in the
     `email` field).  For use in API contexts; do not use in

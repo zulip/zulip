@@ -211,7 +211,15 @@ def get_linkifiers_cache_key(realm_id: int) -> str:
 
 
 @cache_for_current_request
-@cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(
+    get_linkifiers_cache_key,
+    timeout=3600 * 24 * 7,
+    # Reached from message_fetch's REPEATABLE READ block via markdown
+    # rendering.  SELECT-many over RealmFilter rows, so the per-row
+    # xmax check can't apply; aggregation=True read-throughs but
+    # doesn't fill inside RR.  See cache_with_key.
+    aggregation=True,
+)
 def linkifiers_for_realm(realm_id: int) -> list[LinkifierDict]:
     return [
         LinkifierDict(

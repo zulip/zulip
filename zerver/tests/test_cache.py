@@ -34,6 +34,7 @@ from zerver.lib.cache import (
     read_through_cache,
     safe_cache_get_many,
     safe_cache_set_many,
+    single_user_display_recipient_cache_key,
     user_profile_by_id_cache_key,
     validate_cache_key,
 )
@@ -1154,3 +1155,46 @@ class SnapshotIsolationGuardTest(ZulipTestCase):
         self.assertIsNone(
             caches["default"].get(cache_module.KEY_PREFIX + "snapshot_test_aggregation:2")
         )
+
+    def test_bulk_cached_fetch_with_model_runs_xmax_check_in_rr(self) -> None:
+        """Inside repeatable_read_atomic the bulk path must issue the
+        xmax-and-pg_xact_status query that decides which fills to drop.
+        (We can't reliably observe an actually-stale row from inside
+        Django's TestCase wrapper, since the wrapper holds every write
+        as 'in progress' until tearDown rollback -- so we instead pin
+        the SQL shape that production relies on.)"""
+        from zerver.lib.snapshot_isolation import repeatable_read_atomic
+        from zerver.lib.test_helpers import queries_captured
+
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        cache_delete(single_user_display_recipient_cache_key(hamlet.id))
+        cache_delete(single_user_display_recipient_cache_key(iago.id))
+
+        from zerver.lib.display_recipient import bulk_fetch_single_user_display_recipients
+
+        with queries_captured() as queries, repeatable_read_atomic():
+            bulk_fetch_single_user_display_recipients([hamlet.id, iago.id])
+
+        sqls = [q.sql for q in queries]
+        xmax_sqls = [s for s in sqls if "pg_xact_status" in s and "xmax" in s]
+        self.assert_length(xmax_sqls, 1)
+
+    def test_bulk_cached_fetch_with_model_skips_xmax_check_outside_rr(self) -> None:
+        """Outside REPEATABLE READ the xmax check is unnecessary
+        (READ COMMITTED takes a fresh snapshot per statement) and we
+        save the round-trip."""
+        from zerver.lib.test_helpers import queries_captured
+
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        cache_delete(single_user_display_recipient_cache_key(hamlet.id))
+        cache_delete(single_user_display_recipient_cache_key(iago.id))
+
+        from zerver.lib.display_recipient import bulk_fetch_single_user_display_recipients
+
+        with queries_captured() as queries:
+            bulk_fetch_single_user_display_recipients([hamlet.id, iago.id])
+
+        sqls = [q.sql for q in queries]
+        self.assertFalse(any("pg_xact_status" in s for s in sqls))

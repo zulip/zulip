@@ -317,6 +317,13 @@ def messages_for_ids(
         extractor=extract_message_dict,
         setter=stringify_message_dict,
         pickled_tupled=False,
+        # Snapshot-safe under message_fetch's REPEATABLE READ block:
+        # drop fills for messages edited since our snapshot started --
+        # otherwise an edit committed before our snapshot but after
+        # the writer's invalidation would leave us caching the pre-
+        # edit body.
+        model=Message,
+        pk_field="id",
     )
 
     message_list: list[dict[str, Any]] = []
