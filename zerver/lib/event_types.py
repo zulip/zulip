@@ -280,7 +280,7 @@ class MessageEvent(BaseEvent):
 
 
 class MutedTopicsEvent(BaseEvent):
-    type: Literal["muted_topics"]
+    type: Literal["muted_topics"] = "muted_topics"
     muted_topics: list[list[str | int]]
 
 
@@ -1280,7 +1280,7 @@ class UserStatusEvent(UserStatusCoreEvent):
 
 
 class UserTopicEvent(BaseEvent):
-    type: Literal["user_topic"]
+    type: Literal["user_topic"] = "user_topic"
     stream_id: int
     topic_name: str
     last_updated: int
