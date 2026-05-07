@@ -18,6 +18,8 @@ def check_url(val: str) -> str:
 
 Url = Annotated[str, AfterValidator(check_url)]
 
+ReactionType = Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
+
 
 class BaseEvent(BaseModel):
     pass
@@ -373,22 +375,22 @@ class ModernPresenceEvent(BaseEvent):
 
 
 class ReactionAddEvent(BaseEvent):
-    type: Literal["reaction"]
-    op: Literal["add"]
+    type: Literal["reaction"] = "reaction"
+    op: Literal["add"] = "add"
     message_id: int
     emoji_name: str
     emoji_code: str
-    reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
+    reaction_type: ReactionType
     user_id: int
 
 
 class ReactionRemoveEvent(BaseEvent):
-    type: Literal["reaction"]
-    op: Literal["remove"]
+    type: Literal["reaction"] = "reaction"
+    op: Literal["remove"] = "remove"
     message_id: int
     emoji_name: str
     emoji_code: str
-    reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
+    reaction_type: ReactionType
     user_id: int
 
 
