@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 499
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (377, 1)  # bumped 2026-04-22 to upgrade django-bitfield
+PROVISION_VERSION = (378, 0)  # bumped 2026-05-07 to remove litellm

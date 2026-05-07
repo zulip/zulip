@@ -812,12 +812,17 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ################
 ## AI Features
 ##
-## Specify the model and provider to use for topic summarization. The
-## `model` field from https://docs.litellm.ai/docs/providers specifies
-## your preferred provider/model combination.
-# TOPIC_SUMMARIZATION_MODEL = "huggingface/meta-llama/Meta-Llama-3-8B-Instruct"
-## Other configuration parameters, passed through to litellm's `completion` call
-## See https://docs.litellm.ai/docs/completion/input
+## Specify the model to use for topic summarization. Zulip uses the
+## OpenAI Python SDK, which supports OpenAI's API as well as any
+## OpenAI-compatible provider.
+# TOPIC_SUMMARIZATION_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct"
+## Override the API base URL when using an OpenAI-compatible provider
+## (e.g., Hugging Face, Groq, Together, or a self-hosted endpoint).
+## Leave unset to use OpenAI's default endpoint.
+# TOPIC_SUMMARIZATION_API_BASE = "https://router.huggingface.co/v1"
+## Other configuration parameters, passed through to the OpenAI SDK's
+## `chat.completions.create` call. See
+## https://platform.openai.com/docs/api-reference/chat/create
 # TOPIC_SUMMARIZATION_PARAMETERS = {}
 
 ## Set usage costs based on your model, and a maximum per-user monthly
