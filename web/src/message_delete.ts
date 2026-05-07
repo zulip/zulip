@@ -124,6 +124,7 @@ export function delete_message(msg_id: number): void {
         help_link: "/help/delete-a-message#delete-a-message-completely",
         on_click: do_delete_message,
         loading_spinner: true,
+        dangerous_action: true,
     });
 }
 
