@@ -2674,7 +2674,7 @@
     );
     --color-background-danger-solid-action-button-active: light-dark(
         hsl(359deg 93% 39%),
-        hsl(2deg 74% 47%)
+        hsl(2deg 92% 33%)
     );
     --color-text-danger-subtle-action-button: light-dark(
         hsl(359deg 94% 35%),
