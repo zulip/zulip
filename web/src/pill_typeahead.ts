@@ -130,7 +130,7 @@ export function set_up_stream(
             return typeahead_helper.sort_streams_by_name(stream_matches, query);
         },
         updater(item: StreamPillData, _query: string): undefined {
-            stream_pill.append_stream(item, pills, false);
+            stream_pill.append_stream(item, pills);
             $input.trigger("focus");
             opts.update_func?.();
         },

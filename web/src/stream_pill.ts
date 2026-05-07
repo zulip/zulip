@@ -11,7 +11,6 @@ import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
 export type StreamPill = {
     type: "stream";
     stream_id: number;
-    show_subscriber_count: boolean;
 };
 
 export type StreamPillWidget = InputPillContainer<StreamPill>;
@@ -23,7 +22,6 @@ export function create_item_from_stream_name(
     current_items: CombinedPill[],
     stream_prefix_required = true,
     get_allowed_streams: () => StreamSubscription[] = stream_data.get_unsorted_subs,
-    show_subscriber_count = true,
 ): StreamPill | undefined {
     stream_name = stream_name.trim();
     if (stream_prefix_required) {
@@ -49,7 +47,6 @@ export function create_item_from_stream_name(
 
     return {
         type: "stream",
-        show_subscriber_count,
         stream_id: sub.stream_id,
     };
 }
@@ -106,11 +103,9 @@ export function generate_pill_html(item: StreamPill): string {
 export function append_stream(
     stream: StreamSubscription,
     pill_widget: StreamPillWidget | CombinedPillContainer,
-    show_subscriber_count = true,
 ): void {
     pill_widget.appendValidatedData({
         type: "stream",
-        show_subscriber_count,
         stream_id: stream.stream_id,
     });
     pill_widget.clear_text();
