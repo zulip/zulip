@@ -552,7 +552,7 @@ class RealmLinkifier(BaseModel):
 
 
 class RealmLinkifiersEvent(BaseEvent):
-    type: Literal["realm_linkifiers"]
+    type: Literal["realm_linkifiers"] = "realm_linkifiers"
     realm_linkifiers: list[RealmLinkifier]
 
 
