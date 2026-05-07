@@ -187,7 +187,7 @@ RUNNING_OPENAPI_CURL_TEST = False
 # This is overridden in test_settings.py for the test suites
 GENERATE_STRIPE_FIXTURES = False
 # This is overridden in test_settings.py for the test suites
-GENERATE_LITELLM_FIXTURES = False
+GENERATE_LLM_FIXTURES = False
 # This is overridden in test_settings.py for the test suites
 BAN_CONSOLE_OUTPUT = False
 # This is overridden in test_settings.py for the test suites

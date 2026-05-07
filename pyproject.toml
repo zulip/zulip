@@ -188,7 +188,7 @@ prod = [
   "annotated-types",
 
   # For requesting LLM API endpoints.
-  "litellm",
+  "openai",
 
   # Used for running the Zulip production Django server
   "uwsgi",

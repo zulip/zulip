@@ -760,7 +760,8 @@ MAX_DEACTIVATED_REALM_DELETION_DAYS: int | None = None
 
 
 TOPIC_SUMMARIZATION_MODEL: str | None = None
-TOPIC_SUMMARIZATION_PARAMETERS: dict[str, object] = {}
+TOPIC_SUMMARIZATION_API_BASE: str | None = None
+TOPIC_SUMMARIZATION_PARAMETERS: dict[str, Any] = {}
 # Price per token for input and output tokens, and maximum cost. Units
 # are arbitrarily, but typically will be USD.
 INPUT_COST_PER_GIGATOKEN: int = 0
