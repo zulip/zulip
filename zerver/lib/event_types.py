@@ -52,8 +52,8 @@ class Attachment(BaseModel):
 
 
 class AttachmentAddEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["add"]
+    type: Literal["attachment"] = "attachment"
+    op: Literal["add"] = "add"
     attachment: Attachment
     upload_space_used: int
 
@@ -63,15 +63,15 @@ class AttachmentFieldForAttachmentRemoveEvent(BaseModel):
 
 
 class AttachmentRemoveEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["remove"]
+    type: Literal["attachment"] = "attachment"
+    op: Literal["remove"] = "remove"
     attachment: AttachmentFieldForAttachmentRemoveEvent
     upload_space_used: int
 
 
 class AttachmentUpdateEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["update"]
+    type: Literal["attachment"] = "attachment"
+    op: Literal["update"] = "update"
     attachment: Attachment
     upload_space_used: int
 
