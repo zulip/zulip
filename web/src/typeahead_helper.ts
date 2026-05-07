@@ -120,12 +120,13 @@ export let render_person = (
 
     // Show the email or a matched custom profile field in the secondary text.
     // If both the email and a custom profile field match the query, show both.
-    let secondary_text = person.user.delivery_email;
+    const user_email = person.user.delivery_email;
+    let secondary_text = user_email;
 
     if (opts) {
         const email_matches = typeahead.query_matches_string_in_order(
             opts.query,
-            secondary_text ?? "",
+            user_email ?? "",
             "",
             opts.should_remove_diacritics,
         );
@@ -152,10 +153,12 @@ export let render_person = (
         }
 
         // if both email and custom field matches, show both.
-        if (email_matches && matched_custom_field) {
-            secondary_text = `${secondary_text}, ${matched_custom_field}`;
-        } else if (matched_custom_field) {
-            secondary_text = matched_custom_field;
+        if (matched_custom_field) {
+            if (user_email !== null && email_matches) {
+                secondary_text = `${user_email}, ${matched_custom_field}`;
+            } else {
+                secondary_text = matched_custom_field;
+            }
         }
     }
     const typeahead_arguments = {
