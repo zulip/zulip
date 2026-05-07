@@ -1802,6 +1802,47 @@ test("render_person skips custom profile fields not used for user matching", ({
     assert.ok(rendered);
 });
 
+test("render_person with matching custom profile field but email hidden", ({
+    mock_template,
+    override,
+}) => {
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        PRONOUNS: {id: 3, name: "Pronouns"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 1,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+    ]);
+
+    b_user_1.delivery_email = null;
+
+    people.set_custom_profile_field_data(b_user_1.user_id, {
+        id: 1,
+        value: "Alpha",
+    });
+
+    let rendered = false;
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        // When email is null and custom field matches,
+        // secondary should only show the custom field value, not "null, value"
+        assert.equal(args.secondary, "Alpha");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(
+        th.render_person(b_user_1_item, {query: "", should_remove_diacritics: true}),
+        "typeahead-item-stub",
+    );
+    assert.ok(rendered);
+});
+
 test("query_matches_person matches custom profile fields when they are enabled for user matching ", ({
     override,
 }) => {
