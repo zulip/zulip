@@ -305,20 +305,20 @@ class OnboardingStepsEvent(BaseEvent):
 
 
 class DeviceAddEvent(BaseEvent):
-    type: Literal["device"]
-    op: Literal["add"]
+    type: Literal["device"] = "device"
+    op: Literal["add"] = "add"
     device_id: int
 
 
 class DeviceRemoveEvent(BaseEvent):
-    type: Literal["device"]
-    op: Literal["remove"]
+    type: Literal["device"] = "device"
+    op: Literal["remove"] = "remove"
     device_id: int
 
 
 class DeviceUpdateEvent(BaseEvent):
-    type: Literal["device"]
-    op: Literal["update"]
+    type: Literal["device"] = "device"
+    op: Literal["update"] = "update"
     device_id: int
     push_key_id: int | None = None
     push_token_id: str | None = None
