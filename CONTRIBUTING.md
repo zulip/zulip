@@ -81,8 +81,8 @@ excited to:
 - **Take pride in your work**. Strive to write the best
   [commits][commit discipline] you can, carefully [review][reviewing code] your
   own work, and take the time to [explain][submitting a PR] it clearly to
-  project maintainers. Do your very best to overcome any challenges you run in
-  to before asking for help.
+  project maintainers. Do your very best to overcome any challenges you run into
+  before asking for help.
 - **Learn from feedback.** Every pull request undergoes a rigorous [review
   process][review process]. We need contributors to carefully apply and respond
   to the feedback they receive, and to take advantage of the learning experience

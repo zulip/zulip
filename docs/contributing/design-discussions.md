@@ -162,7 +162,7 @@ design discussion:
   can serve as a good reset.
 
 If a conversation is going off-track and you are not sure how to fix it, please
-ping someone on the core team to intervene and help get the conversion into a
+ping someone on the core team to intervene and help get the conversation into a
 better state.
 
 ### Moving threads to the most appropriate channel
@@ -244,7 +244,7 @@ good use of everyone's time and attention, and getting useful feedback.
 
 ### From discussion to decision
 
-There is a number of factors that affect when it’s time to move a thread from
+There are a number of factors that affect when it’s time to move a thread from
 discussion to a decision. In part, this depends on how significant a commitment
 we are making with the decision at hand:
 

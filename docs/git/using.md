@@ -131,7 +131,7 @@ push a new commit, you can also run them locally. See
 
 ## Stage changes
 
-Recall that files tracked with Git have possible three states:
+Recall that files tracked with Git have three possible states:
 committed, modified, and staged.
 
 To prepare a commit, first add the files with changes that you want
