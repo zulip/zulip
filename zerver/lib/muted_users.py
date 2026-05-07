@@ -1,21 +1,22 @@
 from datetime import datetime
 
 from zerver.lib.cache import cache_with_key, get_muting_users_cache_key
+from zerver.lib.event_types import MutedUser as MutedUserData
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import MutedUser, UserProfile
 
 
-def get_user_mutes(user_profile: UserProfile) -> list[dict[str, int]]:
+def get_user_mutes(user_profile: UserProfile) -> list[MutedUserData]:
     rows = MutedUser.objects.filter(user_profile=user_profile).values(
         "muted_user_id",
         "date_muted",
     )
     return [
-        {
-            "id": row["muted_user_id"],
-            "timestamp": datetime_to_timestamp(assert_is_not_none(row["date_muted"])),
-        }
+        MutedUserData(
+            id=row["muted_user_id"],
+            timestamp=datetime_to_timestamp(assert_is_not_none(row["date_muted"])),
+        )
         for row in rows
     ]
 
