@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 from django.conf import settings
 from django.db import models
@@ -141,7 +141,7 @@ class APIScheduledDirectMessageDict(TypedDict):
 class APIReminderDirectMessageDict(TypedDict):
     reminder_id: int
     to: list[int]
-    type: str
+    type: Literal["private"]
     content: str
     rendered_content: str
     scheduled_delivery_timestamp: int
@@ -266,7 +266,7 @@ class ScheduledMessage(models.Model):
         return APIReminderDirectMessageDict(
             reminder_id=self.id,
             to=recipient,
-            type=recipient_type_str,
+            type="private",
             content=self.content,
             rendered_content=self.rendered_content,
             scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
