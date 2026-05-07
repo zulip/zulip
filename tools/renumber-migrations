@@ -84,6 +84,18 @@ def resolve_conflicts(conflicts: list[str], migrations_dir: str, app_label: str)
     renumber_migration(conflicts, order, last_correct_migration, migrations_dir, app_label)
 
 
+def find_conflict_groups(files_list: list[str]) -> list[list[str]]:
+    """Return migration filenames grouped by NNNN prefix, only for groups in conflict."""
+    groups: dict[str, list[str]] = {}
+    for f in files_list:
+        groups.setdefault(f[0:4], []).append(f)
+    return [
+        sorted(group)
+        for prefix, group in sorted(groups.items())
+        if len(group) > 1 and prefix not in MIGRATIONS_TO_SKIP
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Renumber migration files.")
     parser.add_argument(
@@ -100,25 +112,13 @@ def main() -> None:
         sys.exit(1)
 
     while True:
-        files_list = [
+        files_list = sorted(
             os.path.basename(path) for path in glob.glob(os.path.join(migrations_dir, "????_*.py"))
-        ]
-        prefixes = [file[0:4] for file in files_list]
-
-        conflicts: list[str] = []
-        seen_prefixes: set[str] = set()
-        for prefix in prefixes:
-            if (
-                prefixes.count(prefix) > 1
-                and prefix not in seen_prefixes
-                and prefix not in MIGRATIONS_TO_SKIP
-            ):
-                conflicts += [f for f in files_list if f.startswith(prefix)]
-                seen_prefixes.add(prefix)
-
-        if not conflicts:
+        )
+        groups = find_conflict_groups(files_list)
+        if not groups:
             break
-        resolve_conflicts(conflicts, migrations_dir, args.app_label)
+        resolve_conflicts(groups[0], migrations_dir, args.app_label)
 
     print("All conflicts resolved")
 
