@@ -17,11 +17,15 @@ from bmemcached.exceptions import MemcachedException
 from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
+from django.db import connection
 from django.db.models import Q, QuerySet
+from psycopg2 import sql
 from typing_extensions import ParamSpec, override
 
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments
 from zerver.lib.cache_invalidation_buffer import PendingOp, get_buffer
+from zerver.lib.partial import partial
+from zerver.lib.snapshot_isolation import in_repeatable_read_transaction
 
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
@@ -206,18 +210,47 @@ def _no_queryset_returns(
     return wrapped
 
 
+def _row_matching_filter_is_stale(model: type[Any], **filter_kwargs: Any) -> bool:
+    """True if any row in `model` matching `filter_kwargs` has been
+    updated since our snapshot started.  Same xmax / pg_xact_status
+    check as _detect_stale_pks, expressed via the ORM for callers
+    whose lookup key isn't the primary key (e.g., get_user looks up
+    by email + realm).
+    """
+    return (
+        model.objects.filter(**filter_kwargs)
+        .extra(where=["xmax != '0'::xid AND pg_xact_status(xmax::text::xid8) = 'committed'"])
+        .exists()
+    )
+
+
 def cache_with_key(
     keyfunc: Callable[ParamT, str],
     cache_name: str | None = None,
     timeout: int | None = None,
     pickled_tupled: bool = True,
+    model: type[Any] | None = None,
+    staleness_filter: Callable[ParamT, dict[str, Any]] | None = None,
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
     Decorator argument is a function which computes a cache key
     from the original function's arguments.  You are responsible
     for avoiding collisions with other uses of this decorator or
-    other uses of caching."""
+    other uses of caching.
+
+    Per-row caches reached from inside repeatable_read_atomic should
+    pass model + staleness_filter: after the fetcher runs, an xmax /
+    pg_xact_status check on the row selected by
+    `model.objects.filter(**staleness_filter(*args, **kwargs))`
+    decides whether to skip the cache write (see _detect_stale_pks
+    for the MVCC primer).  The sentinel from cache_add expires on
+    its short TTL.
+    """
+    if model is not None or staleness_filter is not None:
+        assert model is not None and staleness_filter is not None, (
+            "cache_with_key: model and staleness_filter must be set together"
+        )
 
     def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         if settings.TEST_SUITE or settings.DEBUG:
@@ -227,6 +260,7 @@ def cache_with_key(
 
         @wraps(func)
         def func_with_caching(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
+            in_rr = in_repeatable_read_transaction()
             key = keyfunc(*args, **kwargs)
 
             try:
@@ -236,12 +270,19 @@ def cache_with_key(
                 log_invalid_cache_keys(stack_trace, [key])
                 return checked(*args, **kwargs)
 
+            staleness_check_fn: Callable[[], bool] | None = None
+            if in_rr and model is not None:
+                assert staleness_filter is not None
+                filter_kwargs = staleness_filter(*args, **kwargs)
+                staleness_check_fn = partial(_row_matching_filter_is_stale, model, **filter_kwargs)
+
             return read_through_cache(
                 key,
                 lambda: checked(*args, **kwargs),
                 cache_name=cache_name,
                 timeout=timeout,
                 pickled_tupled=pickled_tupled,
+                staleness_check_fn=staleness_check_fn,
             )
 
         return func_with_caching
@@ -835,6 +876,7 @@ def read_through_cache(
     cache_name: str | None = None,
     timeout: int | None = None,
     pickled_tupled: bool = True,
+    staleness_check_fn: Callable[[], bool] | None = None,
 ) -> ReturnT:
     """Fetch a value through the cache, mark-then-fill to avoid stale writes.
 
@@ -857,6 +899,11 @@ def read_through_cache(
     cannot be None.  The sentinel class is separate, so
     isinstance(val, _CacheFillSentinel) reliably distinguishes it from
     any wrapped real value.
+
+    staleness_check_fn, if provided, is called between fetcher and
+    cache_cas: returning True returns the value without writing the
+    cache.  Used by snapshot-aware cache_with_key callers to drop
+    fills whose row was updated since the reader's snapshot started.
     """
     global _cache_fill_hit, _cache_fill_won, _cache_fill_race_detected
     global _cache_fill_claim_lost, _cache_fill_saw_sentinel
@@ -881,6 +928,12 @@ def read_through_cache(
     assert our_cas is not None
 
     value = fetcher()
+
+    if staleness_check_fn is not None and staleness_check_fn():
+        # Caller signaled snapshot staleness; return the value but
+        # don't write the cache.  The sentinel expires on its short TTL.
+        _cache_fill_race_detected += 1
+        return value
 
     payload: Any = (value,) if pickled_tupled else value
     if cache_cas(key, payload, our_cas, timeout=timeout, cache_name=cache_name):
@@ -921,6 +974,44 @@ CacheItemT = TypeVar("CacheItemT")
 CompressedItemT = TypeVar("CompressedItemT")
 
 
+def _detect_stale_pks(model: type[Any], pk_field: str, pk_values: list[Any]) -> set[Any]:
+    """Return the subset of `pk_values` whose row, as visible to our
+    snapshot, is stale relative to the latest committed state.
+
+    PostgreSQL stores hidden `xmin` (creating xid) and `xmax`
+    (deleting/updating xid) columns on every row version.  An UPDATE
+    creates a new row version with xmin=updater_xid and sets the OLD
+    version's xmax to that same xid.  A REPEATABLE READ snapshot
+    returns the version visible at the moment its snapshot was taken,
+    so an UPDATE that committed *after* our snapshot is invisible: we
+    see the old version, and that version's xmax names the updater.
+
+    `pg_xact_status(xid)` reports whether that xid is committed / in
+    progress / aborted (or NULL for transactions whose xact log has
+    been truncated).  If our row's xmax names a *committed*
+    transaction, a newer version exists and our snapshot's value is
+    stale -- that's the row PK we return here so the caller can skip
+    caching it.  An xmax of 0 (no updater) or a not-committed xmax
+    means our row is current.
+    """
+    if not pk_values:
+        return set()
+    # xmax is a 32-bit xid; pg_xact_status takes xid8 (added in PG 13).
+    # Cast via text since xid -> xid8 isn't a direct cast.
+    query = sql.SQL(
+        "SELECT {col} FROM {table} "
+        "WHERE {col} = ANY(%s) "
+        "AND xmax != '0'::xid "
+        "AND pg_xact_status(xmax::text::xid8) = 'committed'"
+    ).format(
+        col=sql.Identifier(pk_field),
+        table=sql.Identifier(model._meta.db_table),
+    )
+    with connection.cursor() as cur:
+        cur.execute(query, [list(pk_values)])
+        return {row[0] for row in cur.fetchall()}
+
+
 # Required arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
@@ -934,6 +1025,11 @@ CompressedItemT = TypeVar("CompressedItemT")
 # * cache_transformer: Function mapping an object from database =>
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
+#
+# Optional model + pk_field opt the call into snapshot safety: the
+# caller asserts that each entry in object_ids is the value of
+# pk_field on a row in model, and the helper drops fills for rows
+# that PostgreSQL says have been updated since our snapshot started.
 def generic_bulk_cached_fetch(
     cache_key_function: Callable[[ObjKT], str],
     query_function: Callable[[list[ObjKT]], Iterable[ItemT]],
@@ -944,7 +1040,12 @@ def generic_bulk_cached_fetch(
     id_fetcher: Callable[[ItemT], ObjKT],
     cache_transformer: Callable[[ItemT], CacheItemT],
     pickled_tupled: bool = True,
+    model: type[Any] | None = None,
+    pk_field: str | None = None,
 ) -> dict[ObjKT, CacheItemT]:
+    if model is not None:
+        assert pk_field is not None, "generic_bulk_cached_fetch: model requires pk_field"
+
     if len(object_ids) == 0:
         # Nothing to fetch.
         return {}
@@ -959,6 +1060,8 @@ def generic_bulk_cached_fetch(
             id_fetcher=id_fetcher,
             cache_transformer=cache_transformer,
             pickled_tupled=False,
+            model=model,
+            pk_field=pk_field,
         )
 
     global _cache_fill_hit, _cache_fill_won, _cache_fill_race_detected
@@ -1001,12 +1104,25 @@ def generic_bulk_cached_fetch(
         # Collect values for pipelined cas writes.  Keys we don't own are still
         # returned to the caller but never cached.
         items_to_cas: dict[str, tuple[CompressedItemT, int]] = {}
+        key_to_oid: dict[str, ObjKT] = {key: oid for oid, key in needed}
         for obj in query_function([oid for oid, _ in needed]):
             key = cache_keys[id_fetcher(obj)]
             item = cache_transformer(obj)
             cached_objects[key] = item
             if key in owned_cas_ids:
                 items_to_cas[key] = (setter(item), owned_cas_ids[key])
+
+        # Inside REPEATABLE READ, drop rows whose current committed
+        # version post-dates our snapshot.  READ COMMITTED takes a
+        # fresh snapshot per statement, so no check needed there.
+        if model is not None and items_to_cas and in_repeatable_read_transaction():
+            assert pk_field is not None
+            pk_values = [key_to_oid[key] for key in items_to_cas]
+            stale_pks = _detect_stale_pks(model, pk_field, pk_values)
+            if stale_pks:
+                items_to_cas = {
+                    key: v for key, v in items_to_cas.items() if key_to_oid[key] not in stale_pks
+                }
 
         if items_to_cas:
             committed = cache_cas_many(items_to_cas)
@@ -1023,6 +1139,8 @@ def bulk_cached_fetch(
     object_ids: Sequence[ObjKT],
     *,
     id_fetcher: Callable[[ItemT], ObjKT],
+    model: type[Any] | None = None,
+    pk_field: str | None = None,
 ) -> dict[ObjKT, ItemT]:
     return generic_bulk_cached_fetch(
         cache_key_function,
@@ -1032,6 +1150,8 @@ def bulk_cached_fetch(
         extractor=lambda obj: obj,
         setter=lambda obj: obj,
         cache_transformer=lambda obj: obj,
+        model=model,
+        pk_field=pk_field,
     )
 
 
