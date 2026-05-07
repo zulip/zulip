@@ -1,9 +1,8 @@
-from typing import Literal
-
-from typing_extensions import TypedDict
+from typing import Literal, cast
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
+from zerver.lib.event_types import BaseEvent, ReactionAddEvent, ReactionRemoveEvent
 from zerver.lib.exceptions import ReactionExistsError
 from zerver.lib.message import (
     access_message_and_usermessage,
@@ -19,31 +18,34 @@ from zerver.models import Message, Reaction, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 
-class ReactionEvent(TypedDict):
-    type: Literal["reaction"]
-    op: Literal["add", "remove"]
-    user_id: int
-    message_id: int
-    emoji_name: str
-    emoji_code: str
-    reaction_type: str
-
-
 def notify_reaction_update(
     user_profile: UserProfile,
     message: Message,
     reaction: Reaction,
     op: Literal["add", "remove"],
 ) -> None:
-    event: ReactionEvent = {
-        "type": "reaction",
-        "op": op,
-        "user_id": user_profile.id,
-        "message_id": message.id,
-        "emoji_name": reaction.emoji_name,
-        "emoji_code": reaction.emoji_code,
-        "reaction_type": reaction.reaction_type,
-    }
+    # The reaction_type column is a CharField restricted to these
+    # values via choices, so the cast is safe.
+    reaction_type = cast(
+        Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"], reaction.reaction_type
+    )
+    event: BaseEvent
+    if op == "add":
+        event = ReactionAddEvent(
+            user_id=user_profile.id,
+            message_id=message.id,
+            emoji_name=reaction.emoji_name,
+            emoji_code=reaction.emoji_code,
+            reaction_type=reaction_type,
+        )
+    else:
+        event = ReactionRemoveEvent(
+            user_id=user_profile.id,
+            message_id=message.id,
+            emoji_name=reaction.emoji_name,
+            emoji_code=reaction.emoji_code,
+            reaction_type=reaction_type,
+        )
 
     # Update the cached message since new reaction is added.
     update_message_cache([message])

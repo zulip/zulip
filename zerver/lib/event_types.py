@@ -387,8 +387,8 @@ class ModernPresenceEvent(BaseEvent):
 
 
 class ReactionAddEvent(BaseEvent):
-    type: Literal["reaction"]
-    op: Literal["add"]
+    type: Literal["reaction"] = "reaction"
+    op: Literal["add"] = "add"
     message_id: int
     emoji_name: str
     emoji_code: str
@@ -397,8 +397,8 @@ class ReactionAddEvent(BaseEvent):
 
 
 class ReactionRemoveEvent(BaseEvent):
-    type: Literal["reaction"]
-    op: Literal["remove"]
+    type: Literal["reaction"] = "reaction"
+    op: Literal["remove"] = "remove"
     message_id: int
     emoji_name: str
     emoji_code: str
