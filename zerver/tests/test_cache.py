@@ -1096,3 +1096,20 @@ class TransactionCacheBufferTest(ZulipTestCase):
             cache_set(self.key, "fresh")
         # The fresh value flushed; the stale-stash ops are gone, not merged.
         self.assertEqual(self._raw_memcached_get(), ("fresh",))
+
+
+class SnapshotIsolationGuardTest(ZulipTestCase):
+    """Unit tests of the cache layer's snapshot-isolation behavior; the
+    cross-transaction integration tests live in
+    zerver/transaction_tests/test_snapshot_isolation."""
+
+    def test_marker_is_active_only_inside_repeatable_read_atomic(self) -> None:
+        from zerver.lib.snapshot_isolation import (
+            in_repeatable_read_transaction,
+            repeatable_read_atomic,
+        )
+
+        self.assertFalse(in_repeatable_read_transaction())
+        with repeatable_read_atomic():
+            self.assertTrue(in_repeatable_read_transaction())
+        self.assertFalse(in_repeatable_read_transaction())
