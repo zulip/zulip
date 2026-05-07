@@ -1055,8 +1055,8 @@ class TypingPerson(BaseModel):
 
 
 class TypingStartCoreEvent(BaseEvent):
-    type: Literal["typing"]
-    op: Literal["start"]
+    type: Literal["typing"] = "typing"
+    op: Literal["start"] = "start"
     message_type: Literal["direct", "stream"]
     sender: TypingPerson
 
@@ -1069,8 +1069,8 @@ class TypingStartEvent(TypingStartCoreEvent):
 
 
 class TypingStopCoreEvent(BaseEvent):
-    type: Literal["typing"]
-    op: Literal["stop"]
+    type: Literal["typing"] = "typing"
+    op: Literal["stop"] = "stop"
     message_type: Literal["direct", "stream"]
     sender: TypingPerson
 
@@ -1094,16 +1094,16 @@ class RecipientFieldForTypingEditDirectMessage(BaseModel):
 
 
 class TypingEditMessageStartEvent(BaseEvent):
-    type: Literal["typing_edit_message"]
-    op: Literal["start"]
+    type: Literal["typing_edit_message"] = "typing_edit_message"
+    op: Literal["start"] = "start"
     sender_id: int
     message_id: int
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
 class TypingEditMessageStopEvent(BaseEvent):
-    type: Literal["typing_edit_message"]
-    op: Literal["stop"]
+    type: Literal["typing_edit_message"] = "typing_edit_message"
+    op: Literal["stop"] = "stop"
     sender_id: int
     message_id: int
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
