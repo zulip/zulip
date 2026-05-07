@@ -278,7 +278,7 @@ class MutedUser(BaseModel):
 
 
 class MutedUsersEvent(BaseEvent):
-    type: Literal["muted_users"]
+    type: Literal["muted_users"] = "muted_users"
     muted_users: list[MutedUser]
 
 
