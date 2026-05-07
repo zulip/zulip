@@ -78,6 +78,14 @@ def build_timezones_data_paths() -> list[str]:
     return paths
 
 
+def build_oembed_providers_paths() -> list[str]:
+    paths = [
+        "tools/setup/build_oembed_providers",
+        "pnpm-lock.yaml",
+    ]
+    return paths
+
+
 def build_landing_page_images_paths() -> list[str]:
     paths = ["tools/setup/generate_landing_page_images.py"]
     paths += glob.glob("static/images/landing-page/hello/original/*")
@@ -218,6 +226,16 @@ def need_to_run_build_timezone_data() -> bool:
     )
 
 
+def need_to_run_build_oembed_providers() -> bool:
+    if not os.path.exists("static/generated/oembed-providers.json"):
+        return True
+
+    return is_digest_obsolete(
+        "build_oembed_providers_hash",
+        build_oembed_providers_paths(),
+    )
+
+
 def need_to_regenerate_landing_page_images() -> bool:
     if not os.path.exists("static/images/landing-page/hello/generated"):
         return True
@@ -298,6 +316,15 @@ def main(options: argparse.Namespace) -> int:
         )
     else:
         print("No need to run `tools/setup/build_timezone_values`.")
+
+    if options.is_force or need_to_run_build_oembed_providers():
+        run(["tools/setup/build_oembed_providers"])
+        write_new_digest(
+            "build_oembed_providers_hash",
+            build_oembed_providers_paths(),
+        )
+    else:
+        print("No need to run `tools/setup/build_oembed_providers`.")
 
     if options.is_force or need_to_regenerate_landing_page_images():
         run(["tools/setup/generate_landing_page_images.py"])
