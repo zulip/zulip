@@ -515,16 +515,17 @@ class StripeTestCase(ZulipTestCase):
             "api_version": STRIPE_API_VERSION,
         }
 
-        response = self.client_post(
-            "/stripe/webhook/", event_payload, content_type="application/json"
-        )
-        assert response.status_code == 200
+        self._post_webhook_event(event_payload, event_label="checkout.session.completed")
 
     def send_stripe_webhook_event(self, event: stripe.Event) -> None:
-        response = self.client_post(
-            "/stripe/webhook/", event.to_dict(for_json=True), content_type="application/json"
+        self._post_webhook_event(event.to_dict(for_json=True), event_label=event.type)
+
+    def _post_webhook_event(self, payload: dict[str, Any], event_label: str) -> None:
+        response = self.client_post("/stripe/webhook/", payload, content_type="application/json")
+        assert response.status_code == 200, (
+            f"/stripe/webhook/ returned {response.status_code} for {event_label} "
+            f"event {payload.get('id')!r}: {response.content.decode(errors='replace')!r}"
         )
-        assert response.status_code == 200
 
     def send_stripe_webhook_events(
         self, most_recent_event: stripe.Event, must_have_event: str | None = None
