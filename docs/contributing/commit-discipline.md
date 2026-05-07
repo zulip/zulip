@@ -41,7 +41,7 @@ rest of the project.
   change the functionality of the product, make those changes into a
   series of preparatory commits that can be merged independently of
   building the feature itself.
-- Moving code from one file to another should be done in a separate
+- Moving code from one file to another should be done in separate
   commits from functional changes or even refactoring within a file.
 - 2 different refactorings should be done in different commits.
 - 2 different features should be done in different commits.

@@ -12,7 +12,7 @@ decision, include those variants in the comments.
 ## What to capture
 
 Always include screenshots of _all_ the UI components and states affected by
-your PR. For example, a PR that adds a new dropwdown setting would need
+your PR. For example, a PR that adds a new dropdown setting would need
 screenshots to demonstrate:
 
 - What the setting looks like in the settings UI (with some surrounding context).
