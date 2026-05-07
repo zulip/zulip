@@ -1136,9 +1136,9 @@ class UpdateMessageEvent(UpdateMessageCoreEvent):
 
 
 class UpdateMessageFlagsAddEvent(BaseEvent):
-    type: Literal["update_message_flags"]
-    op: Literal["add"]
-    operation: Literal["add"]
+    type: Literal["update_message_flags"] = "update_message_flags"
+    op: Literal["add"] = "add"
+    operation: Literal["add"] = "add"
     flag: str
     messages: list[int]
     all: bool
@@ -1158,9 +1158,9 @@ class MessageDetails(MessageDetailsCore):
 
 
 class UpdateMessageFlagsRemoveCoreEvent(BaseEvent):
-    type: Literal["update_message_flags"]
-    op: Literal["remove"]
-    operation: Literal["remove"]
+    type: Literal["update_message_flags"] = "update_message_flags"
+    op: Literal["remove"] = "remove"
+    operation: Literal["remove"] = "remove"
     flag: str
     messages: list[int]
     all: bool
