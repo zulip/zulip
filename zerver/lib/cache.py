@@ -231,6 +231,7 @@ def cache_with_key(
     pickled_tupled: bool = True,
     model: type[Any] | None = None,
     staleness_filter: Callable[ParamT, dict[str, Any]] | None = None,
+    aggregation: bool = False,
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
@@ -239,17 +240,29 @@ def cache_with_key(
     for avoiding collisions with other uses of this decorator or
     other uses of caching.
 
-    Per-row caches reached from inside repeatable_read_atomic should
-    pass model + staleness_filter: after the fetcher runs, an xmax /
-    pg_xact_status check on the row selected by
-    `model.objects.filter(**staleness_filter(*args, **kwargs))`
-    decides whether to skip the cache write (see _detect_stale_pks
-    for the MVCC primer).  The sentinel from cache_add expires on
-    its short TTL.
+    Inside repeatable_read_atomic the fetcher is opaque to this
+    wrapper, so we can't auto-detect when its result is stale
+    relative to the world outside our snapshot.  Two opt-ins keep
+    the cache correct (see zerver.lib.snapshot_isolation for the why):
+
+      * model + staleness_filter for per-row caches: after the
+        fetcher runs, an xmax / pg_xact_status check on the row
+        selected by `model.objects.filter(**staleness_filter(*args,
+        **kwargs))` decides whether to skip the cache write.  The
+        sentinel from cache_add expires on its short TTL.
+
+      * aggregation=True for SELECT-many caches: the per-row check
+        can't apply (an INSERT absent from our snapshot wouldn't be
+        in our result for xmax to vote on), so on a miss we run the
+        fetcher and return the value without writing the cache or
+        claiming a sentinel; non-RR callers fill the slot.
     """
     if model is not None or staleness_filter is not None:
         assert model is not None and staleness_filter is not None, (
             "cache_with_key: model and staleness_filter must be set together"
+        )
+        assert not aggregation, (
+            "cache_with_key: aggregation=True is mutually exclusive with model + staleness_filter"
         )
 
     def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
@@ -268,6 +281,16 @@ def cache_with_key(
             except InvalidCacheKeyError:
                 stack_trace = traceback.format_exc()
                 log_invalid_cache_keys(stack_trace, [key])
+                return checked(*args, **kwargs)
+
+            if in_rr and aggregation:
+                # Read-through but never fill: a hit is fine (someone
+                # outside our snapshot put it there), a miss runs the
+                # fetcher and returns without writing, leaving the cache
+                # for a non-RR caller to fill correctly.
+                val = cache_get(key, cache_name=cache_name)
+                if val is not None:
+                    return val[0] if pickled_tupled else val
                 return checked(*args, **kwargs)
 
             staleness_check_fn: Callable[[], bool] | None = None

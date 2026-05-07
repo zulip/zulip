@@ -1113,3 +1113,44 @@ class SnapshotIsolationGuardTest(ZulipTestCase):
         with repeatable_read_atomic():
             self.assertTrue(in_repeatable_read_transaction())
         self.assertFalse(in_repeatable_read_transaction())
+
+    def test_cache_with_key_aggregation_reads_through_inside_rr(self) -> None:
+        """An aggregation cache returns from memcached on hit even
+        inside REPEATABLE READ; on miss it runs the fetcher and
+        returns the value but doesn't write to the cache.  The cache
+        stays correct -- a non-RR caller will fill it next."""
+        from zerver.lib.snapshot_isolation import repeatable_read_atomic
+
+        fetch_calls = 0
+
+        @cache_with_key(
+            lambda x: f"snapshot_test_aggregation:{x}",
+            timeout=60,
+            aggregation=True,
+        )
+        def lookup(x: int) -> int:
+            nonlocal fetch_calls
+            fetch_calls += 1
+            return x * 10
+
+        # Outside RR: a normal cache_with_key fill.  First call
+        # fetches, second call hits cache.
+        cache_delete("snapshot_test_aggregation:1")
+        self.assertEqual(lookup(1), 10)
+        self.assertEqual(fetch_calls, 1)
+        self.assertEqual(lookup(1), 10)
+        self.assertEqual(fetch_calls, 1)
+
+        # Inside RR with a hit: returns the cached value, no fetch.
+        with repeatable_read_atomic():
+            self.assertEqual(lookup(1), 10)
+        self.assertEqual(fetch_calls, 1)
+
+        # Inside RR with a miss: runs the fetcher but does not cache.
+        cache_delete("snapshot_test_aggregation:2")
+        with repeatable_read_atomic():
+            self.assertEqual(lookup(2), 20)
+        self.assertEqual(fetch_calls, 2)
+        self.assertIsNone(
+            caches["default"].get(cache_module.KEY_PREFIX + "snapshot_test_aggregation:2")
+        )
