@@ -280,9 +280,9 @@ def main() -> None:
         help="Generate Stripe test fixtures by making requests to Stripe test network",
     )
     parser.add_argument(
-        "--generate-litellm-fixtures",
+        "--generate-llm-fixtures",
         action="store_true",
-        help="Generate litellm test fixtures using credentials in zproject/dev-secrets.conf",
+        help="Generate LLM test fixtures using credentials in zproject/dev-secrets.conf",
     )
     parser.add_argument("args", nargs="*")
     parser.add_argument(
@@ -392,15 +392,15 @@ def main() -> None:
         default_parallel = 1
         os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
 
-    if options.generate_litellm_fixtures:
+    if options.generate_llm_fixtures:
         if full_suite:
             suites = [
                 "zerver.tests.test_message_summary",
             ]
             full_suite = False
-        print("-- Forcing serial mode for generating litellm fixtures.", flush=True)
+        print("-- Forcing serial mode for generating LLM fixtures.", flush=True)
         default_parallel = 1
-        os.environ["GENERATE_LITELLM_FIXTURES"] = "1"
+        os.environ["GENERATE_LLM_FIXTURES"] = "1"
 
     assert_provisioning_status_ok(options.skip_provision_check)
 
