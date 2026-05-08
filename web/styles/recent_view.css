@@ -467,8 +467,10 @@
             padding-right: 0;
         }
 
-        .fa-user {
+        .zulip-icon-user {
             opacity: 0.7;
+            font-size: 1em;
+            margin-left: 0.1em;
         }
     }
 

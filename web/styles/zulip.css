@@ -219,6 +219,11 @@ p.n-margin {
 
     .all-messages-search-caution-icon {
         margin: 0 3px 0 1px;
+        vertical-align: middle;
+    }
+
+    .zulip-icon-exclamation-circle {
+        vertical-align: -0.1em;
     }
 
     & p {

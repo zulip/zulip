@@ -36,6 +36,11 @@ a.help_link_widget {
         top: 1px;
     }
 
+    .zulip-icon-help {
+        vertical-align: -0.16em;
+        font-size: 0.88em;
+    }
+
     &:hover {
         color: inherit;
         opacity: 1;
@@ -47,6 +52,10 @@ h3,
 .settings-section-title {
     .help_link_widget {
         margin-left: 5px;
+
+        .zulip-icon-help {
+            vertical-align: -0.15em;
+        }
     }
 }
 
