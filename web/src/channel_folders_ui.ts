@@ -32,10 +32,6 @@ let channel_folder_stream_list_widget: ListWidgetType<StreamSubscription> | unde
 let stream_list_widget_stream_ids: Set<number> | undefined;
 let add_channel_folder_widget: DropdownWidget | undefined;
 
-function compare_by_name(a: dropdown_widget.Option, b: dropdown_widget.Option): number {
-    return util.strcmp(a.name, b.name);
-}
-
 export function add_channel_folder(on_create?: (folder_id: number) => void): void {
     const modal_content_html = render_create_channel_folder_modal({
         max_channel_folder_name_length: realm.max_channel_folder_name_length,
@@ -296,7 +292,7 @@ function get_channel_folder_candidates(folder_id: number): dropdown_widget.Optio
                   ]
                 : [],
         )
-        .toSorted(compare_by_name);
+        .toSorted((a, b) => util.compare_stream_by_archived_then_name(a.stream, b.stream));
 }
 
 function get_channel_folder_candidates_for_dropdown(): dropdown_widget.Option[] {
