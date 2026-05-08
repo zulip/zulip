@@ -597,6 +597,13 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ],
     ),
     IncomingWebhookIntegration(
+        "confluence_cloud",
+        ["project-management"],
+        client_name="ZulipConfluenceCloudWebhook",
+        display_name="Confluence Cloud",
+        logo="images/integrations/logos/confluence.svg",
+    ),
+    IncomingWebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
     ),
     IncomingWebhookIntegration(
@@ -1173,7 +1180,7 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # Disabled integrations that are in the process of being added or rewritten.
     | {"intercom", "notion"}
     # Integrations that call external API endpoints.
-    | {"slack"}
+    | {"confluence", "confluence_cloud", "slack"}
     | hubot_integration_names
 )
 
