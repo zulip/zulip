@@ -64,7 +64,10 @@ def do_puppet_module_install(
 def install_puppet_module(
     target_path: str, module: str, version: str, expected_sha256sum: str
 ) -> None:
-    with urlopen(f"https://forgeapi.puppet.com/v3/releases/{module}-{version}") as forge_resp:
+    print(f"Fetching {module}-{version} from forgeapi.puppet.com...")
+    with urlopen(
+        f"https://forgeapi.puppet.com/v3/releases/{module}-{version}", timeout=60
+    ) as forge_resp:
         forge_data = json.load(forge_resp)
 
     forge_sha256sum = forge_data["file_sha256"]
@@ -78,7 +81,9 @@ def install_puppet_module(
         prefix=f"zulip-puppet-{module}-{version}-",
         suffix=".tar.gz",
     ) as tarball:
-        with urlopen("https://forgeapi.puppet.com" + forge_data["file_uri"]) as tarball_resp:
+        with urlopen(
+            "https://forgeapi.puppet.com" + forge_data["file_uri"], timeout=60
+        ) as tarball_resp:
             tarball_content = tarball_resp.read()
             local_sha256sum = hashlib.sha256(tarball_content).hexdigest()
             if local_sha256sum != expected_sha256sum:
