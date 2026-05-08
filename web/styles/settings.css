@@ -281,6 +281,17 @@ h3,
         }
     }
 
+    /* Bare <h3> section titles in settings panels get their font-size,
+       font-weight, and line-height from the '#settings_page h3' rule
+       further down in this file; previously their margin came from the
+       universal h1-h4 reset in bootstrap.app.css. Set the margin
+       explicitly here so the spacing survives that reset's removal.
+       Specificity matches the existing '.admin-realm-form h3' margin
+       override, which appears later in this file and so still wins. */
+    & h3 {
+        margin: 10px 0;
+    }
+
     .table-sticky-headers {
         position: sticky;
         top: 0;
