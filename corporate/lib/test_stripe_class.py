@@ -277,6 +277,10 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         file_content = re.sub(
             r'"webhooks_delivered_at": [0-9]+', '"webhooks_delivered_at": null', file_content
         )
+        # The ``pending_webhooks`` field ticks down as Stripe delivers
+        # webhooks. We handle this inconsistency in fixture generation by
+        # normalizing on 0.
+        file_content = re.sub(r'"pending_webhooks": [0-9]+', '"pending_webhooks": 0', file_content)
         # Dates
         file_content = re.sub(r'(?<="Date": )"(.* GMT)"', '"NORMALIZED DATETIME"', file_content)
         file_content = re.sub(r"[0-3]\d [A-Z][a-z]{2} 20[1-2]\d", "NORMALIZED DATE", file_content)
