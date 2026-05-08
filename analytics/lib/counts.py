@@ -7,6 +7,7 @@ from typing import TypeAlias, Union
 
 from django.conf import settings
 from django.db import connection, models
+from django.db.backends.utils import CursorWrapper
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 from typing_extensions import override
@@ -231,6 +232,46 @@ def do_delete_counts_at_hour(stat: CountStat, end_time: datetime) -> None:
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
 
 
+def do_aggregate_into_installation_count(
+    stat: CountStat, end_time: datetime, realm: Realm | None, cursor: CursorWrapper
+) -> None:
+    if realm is not None:
+        # Aggregate into InstallationCount.  Only run if we just
+        # processed counts for all realms.
+        #
+        # TODO: Add support for updating installation data after
+        # changing an individual realm's values.
+        return
+    installationcount_query = SQL(
+        """
+        INSERT INTO analytics_installationcount
+            (value, property, subgroup, end_time)
+        SELECT
+            sum(value), %(property)s, analytics_realmcount.subgroup, %(end_time)s
+        FROM analytics_realmcount
+        WHERE
+            property = %(property)s AND
+            end_time = %(end_time)s
+        GROUP BY analytics_realmcount.subgroup
+    """
+    )
+    start = time.time()
+    cursor.execute(
+        installationcount_query,
+        {
+            "property": stat.property,
+            "end_time": end_time,
+        },
+    )
+    end = time.time()
+    logger.info(
+        "%s InstallationCount aggregation (%dms/%sr)",
+        stat.property,
+        (end - start) * 1000,
+        cursor.rowcount,
+    )
+
+
 def do_aggregate_to_summary_table(
     stat: CountStat, end_time: datetime, realm: Realm | None = None
 ) -> None:
@@ -279,40 +320,7 @@ def do_aggregate_to_summary_table(
                 cursor.rowcount,
             )
 
-        if realm is None:
-            # Aggregate into InstallationCount.  Only run if we just
-            # processed counts for all realms.
-            #
-            # TODO: Add support for updating installation data after
-            # changing an individual realm's values.
-            installationcount_query = SQL(
-                """
-                INSERT INTO analytics_installationcount
-                    (value, property, subgroup, end_time)
-                SELECT
-                    sum(value), %(property)s, analytics_realmcount.subgroup, %(end_time)s
-                FROM analytics_realmcount
-                WHERE
-                    property = %(property)s AND
-                    end_time = %(end_time)s
-                GROUP BY analytics_realmcount.subgroup
-            """
-            )
-            start = time.time()
-            cursor.execute(
-                installationcount_query,
-                {
-                    "property": stat.property,
-                    "end_time": end_time,
-                },
-            )
-            end = time.time()
-            logger.info(
-                "%s InstallationCount aggregation (%dms/%sr)",
-                stat.property,
-                (end - start) * 1000,
-                cursor.rowcount,
-            )
+        do_aggregate_into_installation_count(stat, end_time, realm, cursor)
 
 
 ## Utility functions called from outside counts.py ##
