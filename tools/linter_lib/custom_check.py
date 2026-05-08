@@ -491,6 +491,14 @@ python_rules = RuleList(
                     "with transaction.atomic(savepoint=True):",
                 ),
                 (
+                    "zerver/tests/test_cache.py",
+                    "with transaction.atomic(savepoint=True):",
+                ),
+                (
+                    "zerver/tests/test_cache.py",
+                    "with self.assertRaises(RuntimeError), transaction.atomic(savepoint=True):",
+                ),
+                (
                     "zerver/tests/test_subs.py",
                     "with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):",
                 ),

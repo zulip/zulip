@@ -20,6 +20,7 @@ from django.db.models import Q, QuerySet
 from typing_extensions import ParamSpec, override
 
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments
+from zerver.lib.cache_invalidation_buffer import PendingOp, get_buffer
 
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
@@ -286,11 +287,18 @@ def cache_set(
 ) -> None:
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
+    if pickled_tupled:
+        val = (val,)
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # Defer to commit-time so that a rollback leaves memcached
+        # untouched.  The buffered value is also returned to subsequent
+        # reads in the same transaction (read-your-writes).
+        buffer.record_set(key, val, timeout)
+        return
 
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
-    if pickled_tupled:
-        val = (val,)
     try:
         cache_backend.set(final_key, val, timeout=timeout)
     except MemcachedException as e:
@@ -299,6 +307,12 @@ def cache_set(
 
 
 def cache_get(key: str, cache_name: str | None = None) -> Any:
+    op = get_buffer().lookup(key)
+    if op is not None:
+        kind, val, _, _ = op
+        if kind == "delete" or isinstance(val, _CacheFillSentinel):
+            return None
+        return val
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
 
@@ -314,17 +328,31 @@ def cache_get(key: str, cache_name: str | None = None) -> Any:
 
 
 def cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
-    keys = [KEY_PREFIX + key for key in keys]
+    buffer = get_buffer()
+    result: dict[str, Any] = {}
+    remaining: list[str] = []
     for key in keys:
-        validate_cache_key(key)
-    remote_cache_stats_start()
-    ret = get_cache_backend(cache_name).get_many(keys)
-    remote_cache_stats_finish()
-    return {
-        key.removeprefix(KEY_PREFIX): value
-        for key, value in ret.items()
-        if not isinstance(value, _CacheFillSentinel)
-    }
+        op = buffer.lookup(key)
+        if op is None:
+            remaining.append(key)
+            continue
+        kind, val, _, _ = op
+        if kind == "set" and not isinstance(val, _CacheFillSentinel):
+            result[key] = val
+        # 'delete' or sentinel: treated as a miss; don't fall through to
+        # memcached, since the buffered op overrides what memcached holds.
+    if remaining:
+        final_keys = [KEY_PREFIX + key for key in remaining]
+        for fk in final_keys:
+            validate_cache_key(fk)
+        remote_cache_stats_start()
+        raw = get_cache_backend(cache_name).get_many(final_keys)
+        remote_cache_stats_finish()
+        for fk, val in raw.items():
+            if isinstance(val, _CacheFillSentinel):
+                continue
+            result[fk.removeprefix(KEY_PREFIX)] = val
+    return result
 
 
 def safe_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
@@ -345,24 +373,32 @@ def safe_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[
 
 
 def cache_set_many(
-    items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
+    items: dict[str, Any],
+    cache_name: str | None = None,
+    timeout: int | None = None,
 ) -> None:
     new_items = {}
     for key, item in items.items():
         new_key = KEY_PREFIX + key
         validate_cache_key(new_key)
         new_items[new_key] = item
-    items = new_items
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        for key, val in items.items():
+            buffer.record_set(key, val, timeout)
+        return
     remote_cache_stats_start()
     try:
-        get_cache_backend(cache_name).set_many(items, timeout=timeout)
+        get_cache_backend(cache_name).set_many(new_items, timeout=timeout)
     except MemcachedException as e:
         logger.exception(e)
     remote_cache_stats_finish()
 
 
 def safe_cache_set_many(
-    items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
+    items: dict[str, Any],
+    cache_name: str | None = None,
+    timeout: int | None = None,
 ) -> None:
     """Variant of cache_set_many that drops saving any keys that fail
     validation, rather than throwing an exception visible to the
@@ -387,6 +423,20 @@ def cache_delete(key: str, cache_name: str | None = None) -> None:
 
 
 def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> None:
+    items_list = list(items)
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # Defer the memcached delete to commit-time so that a rollback
+        # leaves memcached untouched.  Within this transaction, reads of
+        # the buffered key are forced to miss (see cache_get / cache_gets).
+        for key in items_list:
+            validate_cache_key(KEY_PREFIX + key)
+            buffer.record_delete(key)
+        return
+    _do_cache_delete_many(items_list, cache_name)
+
+
+def _do_cache_delete_many(items: list[str], cache_name: str | None) -> None:
     remote_cache_stats_start()
     keys = iter(e[0] + e[1] for e in product(get_all_cache_key_prefixes(), items))
     while True:
@@ -397,6 +447,50 @@ def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> No
             validate_cache_key(key, auto_prepend_prefix=False)
         get_cache_backend(cache_name).delete_many(batch)
     remote_cache_stats_finish()
+
+
+def _flush_buffered_ops(ops: dict[str, PendingOp]) -> None:
+    """Apply a committed-frame's merged ops to memcached.
+
+    Called by the cache_invalidation_buffer module's Atomic exit hook
+    when the outermost atomic block commits.  Sets and deletes go
+    out as pipelined batches; sets are split into:
+
+      * write-through (mc_cas_id == 0) -- flushed via unconditional
+        set_many, grouped by timeout.
+      * fills (mc_cas_id != 0) -- flushed via cas-conditional
+        cas_multi keyed on the captured memcached cas_id, grouped by
+        timeout.  cas failures (a concurrent invalidation landed on
+        the slot during this transaction) silently leave memcached
+        alone, preserving the other writer's intent.
+    """
+    deletes: list[str] = []
+    write_through_by_timeout: dict[int | None, dict[str, Any]] = {}
+    fills_by_timeout: dict[int | None, dict[str, tuple[Any, int]]] = {}
+    for key, (kind, val, timeout, mc_cas_id) in ops.items():
+        if kind == "delete":
+            deletes.append(key)
+            continue
+        assert kind == "set"
+        if isinstance(val, _CacheFillSentinel):
+            # A read-through fill claimed the slot via cache_add but
+            # the matching cache_cas never followed (e.g. the fetcher
+            # raised but an outer handler swallowed the exception and
+            # let the transaction commit anyway).  The sentinel is
+            # already in memcached -- don't re-cas it; let it expire
+            # on its short TTL so a future reader can refill normally.
+            continue
+        if mc_cas_id == 0:
+            write_through_by_timeout.setdefault(timeout, {})[key] = val
+        else:
+            fills_by_timeout.setdefault(timeout, {})[key] = (val, mc_cas_id)
+
+    if deletes:
+        _do_cache_delete_many(deletes, cache_name=None)
+    for timeout, items in write_through_by_timeout.items():
+        cache_set_many(items, timeout=timeout)
+    for timeout, items_with_cas in fills_by_timeout.items():
+        cache_cas_many(items_with_cas, timeout=timeout)
 
 
 def _get_cache_fill_sentinel() -> "_CacheFillSentinel":
@@ -515,6 +609,15 @@ def _backend_cas_multi(
 
 
 def cache_gets(key: str, cache_name: str | None = None) -> tuple[Any, int | None]:
+    op = get_buffer().lookup(key)
+    if op is not None:
+        kind, val, _, _ = op
+        if kind == "delete":
+            return None, None
+        # Buffered 'set' from cache_set: read-your-writes for this tx.
+        # cas_id is unused for buffered hits (cache_cas goes to memcached
+        # directly, see cache_add); return 0 as a placeholder.
+        return val, 0
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
 
@@ -532,9 +635,38 @@ def cache_add(
     On success returns (True, cas_id); on failure (key already present)
     returns (False, None).  The cas id can be passed to a later cache_cas()
     to write conditionally on the value still being ours.
+
+    Inside a transaction we still hit memcached -- cache_add writes the
+    sentinel directly so it claims the slot from other connections via
+    memcached's own CAS, and we capture memcached's cas_id for the
+    matching cache_cas to flush against at commit.  See
+    cache_invalidation_buffer for the full semantics.
     """
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
+
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        op = buffer.lookup(key)
+        if op is not None and op[0] == "set":
+            # Slot already claimed in this transaction (by an in-progress
+            # fill or a previous cache_set).  Refuse the add without
+            # touching memcached, the same way memcached's own add would.
+            return False, None
+        if op is not None and op[0] == "delete":
+            # The writer has buffered an invalidation but is now
+            # refilling the slot (e.g. a post_save cache_delete
+            # followed by a @cache_with_key-decorated lookup in the
+            # same transaction).  Drop the delete to memcached
+            # eagerly so cache_add finds the slot empty; record_set
+            # below will overwrite the buffered delete with the
+            # sentinel.  Trades buffered-rollback-safety for in-tx-
+            # fill correctness; over-invalidating on rollback is
+            # benign.
+            try:
+                get_cache_backend(cache_name).delete(final_key)
+            except MemcachedException as e:
+                logger.exception(e)
 
     remote_cache_stats_start()
     try:
@@ -543,6 +675,13 @@ def cache_add(
         logger.exception(e)
         added, cas_id = False, None
     remote_cache_stats_finish()
+    if added and buffer.in_transaction():
+        # Stash the captured memcached cas_id alongside the sentinel; the
+        # matching cache_cas updates this entry to the fetched value, and
+        # the commit-time flush issues a cas-conditional set keyed on
+        # mc_cas_id so we don't clobber a concurrent invalidation.
+        assert cas_id is not None
+        buffer.record_set(key, val, timeout, mc_cas_id=cas_id)
     return added, cas_id
 
 
@@ -556,6 +695,20 @@ def cache_cas(
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
 
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # CAS in the buffer: succeed iff the slot still holds the
+        # sentinel cache_add stashed under this mc_cas_id.  A buffered
+        # delete or a buffered cache_set would have overwritten the
+        # entry with mc_cas_id=0 and we'd correctly fail.  The cas
+        # only updates the buffer; memcached gets the value at commit
+        # via the cas-conditional flush keyed on the same mc_cas_id.
+        op = buffer.lookup(key)
+        if op is None or op[0] != "set" or op[3] != cas_id:
+            return False
+        buffer.record_set(key, val, timeout, mc_cas_id=cas_id)
+        return True
+
     remote_cache_stats_start()
     try:
         ok = _backend_cas(get_cache_backend(cache_name), final_key, val, cas_id, timeout)
@@ -568,14 +721,28 @@ def cache_cas(
 
 def cache_gets_many(keys: list[str], cache_name: str | None = None) -> dict[str, tuple[Any, int]]:
     """Pipelined gets_many returning (value, cas_id) for each present key."""
-    final_keys = [KEY_PREFIX + k for k in keys]
-    for fk in final_keys:
-        validate_cache_key(fk)
-
-    remote_cache_stats_start()
-    raw = _backend_gets_multi(get_cache_backend(cache_name), final_keys)
-    remote_cache_stats_finish()
-    return {fk.removeprefix(KEY_PREFIX): v for fk, v in raw.items()}
+    buffer = get_buffer()
+    result: dict[str, tuple[Any, int]] = {}
+    remaining: list[str] = []
+    for key in keys:
+        op = buffer.lookup(key)
+        if op is None:
+            remaining.append(key)
+            continue
+        kind, val, _, _ = op
+        if kind == "set":
+            result[key] = (val, 0)
+        # 'delete': skip; this transaction's view is "key absent".
+    if remaining:
+        final_keys = [KEY_PREFIX + k for k in remaining]
+        for fk in final_keys:
+            validate_cache_key(fk)
+        remote_cache_stats_start()
+        raw = _backend_gets_multi(get_cache_backend(cache_name), final_keys)
+        remote_cache_stats_finish()
+        for fk, v in raw.items():
+            result[fk.removeprefix(KEY_PREFIX)] = v
+    return result
 
 
 def cache_add_many(
@@ -583,21 +750,40 @@ def cache_add_many(
 ) -> dict[str, int]:
     """Pipelined add_many returning the new cas id for each successful add.
 
-    The cas ids can be passed back into cache_cas_many() to write
-    conditionally on the slots still being ours.
+    Like cache_add, the memcached add hits the server even inside a
+    transaction so the sentinel claims slots from other connections;
+    successful adds are also recorded in the buffer (with the captured
+    memcached cas_id) so the matching cache_cas_many can flush against
+    them at commit.
     """
     final_items = {KEY_PREFIX + k: v for k, v in items.items()}
     for fk in final_items:
         validate_cache_key(fk)
 
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # Drop keys whose slot is already buffered as a 'set' in this
+        # transaction, the same way cache_add would refuse them.
+        eligible_items = {
+            k: v for k, v in items.items() if (op := buffer.lookup(k)) is None or op[0] != "set"
+        }
+        eligible_final_items = {KEY_PREFIX + k: v for k, v in eligible_items.items()}
+    else:
+        eligible_items = items
+        eligible_final_items = final_items
+
     remote_cache_stats_start()
     try:
-        added = _backend_add_multi(get_cache_backend(cache_name), final_items, timeout)
+        added_raw = _backend_add_multi(get_cache_backend(cache_name), eligible_final_items, timeout)
     except MemcachedException as e:
         logger.exception(e)
-        added = {}
+        added_raw = {}
     remote_cache_stats_finish()
-    return {fk.removeprefix(KEY_PREFIX): cas for fk, cas in added.items()}
+    added = {fk.removeprefix(KEY_PREFIX): cas for fk, cas in added_raw.items()}
+    if buffer.in_transaction():
+        for k, cas_id in added.items():
+            buffer.record_set(k, eligible_items[k], timeout, mc_cas_id=cas_id)
+    return added
 
 
 def cache_cas_many(
@@ -610,14 +796,28 @@ def cache_cas_many(
     for fk in final_items:
         validate_cache_key(fk)
 
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # CAS in the buffer: per-key, succeed iff the slot still holds
+        # the sentinel cache_add_many stashed under this mc_cas_id.  See
+        # cache_cas for the single-key form.
+        committed: set[str] = set()
+        for key, (val, cas_id) in items_with_cas.items():
+            op = buffer.lookup(key)
+            if op is None or op[0] != "set" or op[3] != cas_id:
+                continue
+            buffer.record_set(key, val, timeout, mc_cas_id=cas_id)
+            committed.add(key)
+        return committed
+
     remote_cache_stats_start()
     try:
-        committed = _backend_cas_multi(get_cache_backend(cache_name), final_items, timeout)
+        committed_raw = _backend_cas_multi(get_cache_backend(cache_name), final_items, timeout)
     except MemcachedException as e:
         logger.exception(e)
-        committed = set()
+        committed_raw = set()
     remote_cache_stats_finish()
-    return {fk.removeprefix(KEY_PREFIX) for fk in committed}
+    return {fk.removeprefix(KEY_PREFIX) for fk in committed_raw}
 
 
 def read_through_cache(

@@ -6,10 +6,14 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.core.cache.backends.locmem import LocMemCache
 from typing_extensions import override
 
-# Per-cache-name dict of {key: cas_token}. Keyed the same way LocMemCache keys
-# its _caches global so that multiple backend instances sharing a name also
-# share cas tokens, consistent with a real memcached server.
+# Per-cache-name dict of {key: cas_token} and a per-cache-name monotonic
+# counter for issuing new tokens.  Keyed the same way LocMemCache keys
+# its _caches global so that multiple backend instances sharing a name --
+# including the per-thread instances Django's CacheHandler creates --
+# also share cas tokens and a single counter, consistent with a real
+# memcached server's globally-monotonic cas semantics.
 _cas_tokens: dict[str, dict[str, int]] = {}
+_cas_counters: dict[str, "itertools.count[int]"] = {}
 
 
 class CASCapableLocMemCache(LocMemCache):
@@ -28,7 +32,7 @@ class CASCapableLocMemCache(LocMemCache):
     def __init__(self, name: str, params: dict[str, Any]) -> None:
         super().__init__(name, params)
         self._cas_tokens = _cas_tokens.setdefault(name, {})
-        self._cas_counter = itertools.count(1)
+        self._cas_counter = _cas_counters.setdefault(name, itertools.count(1))
 
     # LocMemCache's _set / _delete / _cache / _lock / _has_expired / _expire_info
     # are private and not declared in django-stubs, so mypy can't see them. The

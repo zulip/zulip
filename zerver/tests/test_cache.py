@@ -1,4 +1,5 @@
 import threading
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 
@@ -6,10 +7,12 @@ import time_machine
 from bmemcached.exceptions import MemcachedException
 from django.conf import settings
 from django.core.cache import caches
+from django.db import transaction
 from django.db.models import QuerySet
 from typing_extensions import override
 
 from zerver.apps import flush_cache
+from zerver.lib import cache as cache_module
 from zerver.lib.cache import (
     _CACHE_FILL_SENTINEL,
     CACHE_FILL_SENTINEL_TIMEOUT,
@@ -18,6 +21,7 @@ from zerver.lib.cache import (
     _CacheFillSentinel,
     bulk_cached_fetch,
     cache_add,
+    cache_cas,
     cache_delete,
     cache_delete_many,
     cache_get,
@@ -758,3 +762,337 @@ class ReadThroughCacheTest(ZulipTestCase):
         # cache_gets exposes the raw value; cache_get filters sentinels.
         raw, _cas = cache_gets(self.key)
         self.assertIsInstance(raw, _CacheFillSentinel)
+
+
+class _ResultThread(threading.Thread):
+    """threading.Thread that re-raises target's exception in the caller
+    when join() is called.  Plain Thread silently swallows exceptions
+    into a stderr message, which lets test-thread assertion failures
+    masquerade as test passes (the failing test method's main-thread
+    assertions can succeed for unrelated reasons)."""
+
+    def __init__(self, target: Callable[[], None]) -> None:
+        super().__init__(target=target)
+        self._exc: BaseException | None = None
+
+    @override
+    def run(self) -> None:
+        try:
+            super().run()
+        except BaseException as e:  # nocoverage
+            self._exc = e
+
+    @override
+    def join(self, timeout: float | None = None) -> None:
+        super().join(timeout)
+        if self.is_alive():
+            raise AssertionError(f"thread {self.name} did not complete in {timeout}s")
+        if self._exc is not None:
+            raise self._exc  # nocoverage
+
+
+class TransactionCacheBufferTest(ZulipTestCase):
+    """Cache mutations inside an atomic block are buffered and applied
+    only at outermost commit; rollback discards them.  Within the
+    transaction, reads of buffered keys see the buffered state
+    (read-your-writes)."""
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.key = "TransactionCacheBufferTest:" + self.id().rsplit(".", 1)[-1]
+        cache_delete(self.key)
+
+    def _raw_memcached_get(self) -> object:
+        """Read the slot directly from memcached, bypassing the buffer."""
+        return caches["default"].get(cache_module.KEY_PREFIX + self.key)
+
+    def test_set_inside_transaction_is_buffered_until_commit(self) -> None:
+        with transaction.atomic(savepoint=True):
+            cache_set(self.key, "value")
+            # Buffered: visible to this thread via cache_get, NOT visible
+            # to a raw memcached read.  cache_set wraps with pickled_tupled,
+            # so the buffered (and stored) value is a 1-tuple.
+            self.assertEqual(cache_get(self.key), ("value",))
+            self.assertIsNone(self._raw_memcached_get())
+        # Committed: now in memcached.
+        self.assertEqual(cache_get(self.key), ("value",))
+        self.assertEqual(self._raw_memcached_get(), ("value",))
+
+    def test_delete_inside_transaction_is_buffered_until_commit(self) -> None:
+        cache_set(self.key, "value")
+        self.assertEqual(self._raw_memcached_get(), ("value",))
+        with transaction.atomic(savepoint=True):
+            cache_delete(self.key)
+            # Buffered: this thread sees a miss, but memcached still has it.
+            self.assertIsNone(cache_get(self.key))
+            self.assertEqual(self._raw_memcached_get(), ("value",))
+        # Committed: delete now flushed.
+        self.assertIsNone(self._raw_memcached_get())
+
+    def test_rollback_discards_buffered_set(self) -> None:
+        with self.assertRaises(RuntimeError), transaction.atomic(savepoint=True):
+            cache_set(self.key, "rolled-back")
+            raise RuntimeError("boom")
+        self.assertIsNone(self._raw_memcached_get())
+
+    def test_rollback_discards_buffered_delete(self) -> None:
+        cache_set(self.key, "preserved")
+        with self.assertRaises(RuntimeError), transaction.atomic(savepoint=True):
+            cache_delete(self.key)
+            raise RuntimeError("boom")
+        # Memcached untouched: the original value survives.
+        self.assertEqual(self._raw_memcached_get(), ("preserved",))
+
+    def test_savepoint_rollback_discards_inner_frame(self) -> None:
+        with transaction.atomic(savepoint=True):
+            cache_set(self.key, "outer")
+            with self.assertRaises(RuntimeError), transaction.atomic(savepoint=True):
+                cache_set(self.key, "inner")
+                raise RuntimeError("boom")
+            # Inner rolled back; outer's buffered set survives.
+            self.assertEqual(cache_get(self.key), ("outer",))
+        self.assertEqual(self._raw_memcached_get(), ("outer",))
+
+    def test_savepoint_commit_promotes_to_parent(self) -> None:
+        cache_set(self.key, "preserved")
+        with self.assertRaises(RuntimeError), transaction.atomic(savepoint=True):
+            with transaction.atomic(savepoint=True):
+                cache_delete(self.key)
+            # Inner committed; the delete is now in the outer frame.
+            self.assertIsNone(cache_get(self.key))
+            raise RuntimeError("boom")
+        # Outer rolled back: the (savepoint-merged) delete is discarded.
+        self.assertEqual(self._raw_memcached_get(), ("preserved",))
+
+    def test_set_then_delete_collapses_to_delete(self) -> None:
+        cache_set(self.key, "old")
+        with transaction.atomic(savepoint=True):
+            cache_set(self.key, "transient")
+            cache_delete(self.key)
+        self.assertIsNone(self._raw_memcached_get())
+
+    def test_delete_then_set_collapses_to_set(self) -> None:
+        cache_set(self.key, "old")
+        with transaction.atomic(savepoint=True):
+            cache_delete(self.key)
+            cache_set(self.key, "fresh")
+        self.assertEqual(self._raw_memcached_get(), ("fresh",))
+
+    def test_read_through_fill_inside_transaction(self) -> None:
+        """Read-through fill: cache_add writes the sentinel direct to
+        memcached (so other connections see "fill in progress" and bypass),
+        but the val landed by cache_cas is buffered until commit and only
+        then flushed via cas-conditional set."""
+        fetcher = Mock(return_value="filled")
+        with transaction.atomic(savepoint=True):
+            result = read_through_cache(self.key, fetcher)
+            self.assertEqual(result, "filled")
+            # Inside the tx: the sentinel from cache_add is in memcached;
+            # the fetched val is only in our buffer.
+            self.assertIsInstance(self._raw_memcached_get(), _CacheFillSentinel)
+            # Our own re-read sees the buffered val (read-your-writes).
+            # read_through_cache stores the cas-payload as a 1-tuple.
+            self.assertEqual(cache_get(self.key), ("filled",))
+        # On commit the cas-conditional flush replaces the sentinel.
+        self.assertEqual(self._raw_memcached_get(), ("filled",))
+
+    def test_writer_rollback_leaves_no_value_in_memcached(self) -> None:
+        """A writer that fills the cache from its own pre-commit DB
+        snapshot and then rolls back must not leave that value cached.
+        Only the short-TTL sentinel from cache_add can persist, and that
+        expires on its own."""
+        fetcher = Mock(return_value="from-rolled-back-tx")
+        with self.assertRaises(RuntimeError), transaction.atomic(savepoint=True):
+            read_through_cache(self.key, fetcher)
+            # The sentinel is in memcached but the val is only buffered.
+            self.assertIsInstance(self._raw_memcached_get(), _CacheFillSentinel)
+            raise RuntimeError("boom")
+        # The buffer was discarded at rollback; only the sentinel remains
+        # in memcached, so the writer's pre-commit val never lands.
+        self.assertIsInstance(self._raw_memcached_get(), _CacheFillSentinel)
+        # cache_get filters sentinels, so application code sees a miss
+        # and the next reader will refill from the (rolled-back) DB.
+        self.assertIsNone(cache_get(self.key))
+
+    def test_concurrent_invalidation_during_fill_fails_flush(self) -> None:
+        """If another connection invalidates the key between our cache_add
+        and our commit, our flush's cas-conditional set must fail -- the
+        buffer must NOT overwrite the other writer's invalidation."""
+        from django.db import connections
+
+        a_buffered = threading.Event()
+        b_invalidated = threading.Event()
+
+        def thread_a() -> None:
+            try:
+                with transaction.atomic(savepoint=True):
+                    read_through_cache(self.key, Mock(return_value="from-A"))
+                    a_buffered.set()
+                    b_invalidated.wait(timeout=5)
+                # On commit, the buffered cas-conditional set should fail
+                # because B's cache_delete bumped memcached's cas.
+            finally:
+                connections.close_all()
+
+        def thread_b() -> None:
+            try:
+                a_buffered.wait(timeout=5)
+                # Concurrent invalidation lands on the slot.
+                cache_delete(self.key)
+                b_invalidated.set()
+            finally:
+                connections.close_all()
+
+        ta = _ResultThread(target=thread_a)
+        tb = _ResultThread(target=thread_b)
+        ta.start()
+        tb.start()
+        ta.join(timeout=10)
+        tb.join(timeout=10)
+
+        # Thread B's delete won; thread A's flush did not overwrite it.
+        self.assertIsNone(self._raw_memcached_get())
+
+    def test_concurrent_fill_in_other_connection_is_preserved(self) -> None:
+        """When a transaction's read-through fill is in flight, a fresh
+        value written to memcached by another connection (e.g. a different
+        reader's mark-then-fill that got there first) must not be
+        overwritten.  This is what mark-then-fill's CAS guarantees;
+        buffering fills would defeat it."""
+        from django.db import connections
+
+        a_claimed = threading.Event()
+        b_committed = threading.Event()
+
+        def thread_a() -> None:
+            try:
+                with transaction.atomic(savepoint=True):
+                    # Manually walk the read_through_cache steps so we
+                    # can interleave thread B between add and cas.
+                    added, our_cas = cache_add(
+                        self.key, _CACHE_FILL_SENTINEL, CACHE_FILL_SENTINEL_TIMEOUT
+                    )
+                    self.assertTrue(added)
+                    assert our_cas is not None
+                    a_claimed.set()
+                    b_committed.wait(timeout=5)
+                    # The buffer cas succeeds (the buffer doesn't see B's
+                    # direct memcached write); the actual CAS is enforced
+                    # at commit-time flush against memcached's bumped
+                    # cas_id, which the assertEqual at the bottom of the
+                    # test verifies indirectly via B's value surviving.
+                    self.assertTrue(cache_cas(self.key, ("from-A-stale",), our_cas))
+            finally:
+                connections.close_all()
+
+        def thread_b() -> None:
+            try:
+                a_claimed.wait(timeout=5)
+                # B is not in a transaction, so cache_set goes direct.
+                cache_set(self.key, "from-B-fresh")
+                b_committed.set()
+            finally:
+                connections.close_all()
+
+        ta = _ResultThread(target=thread_a)
+        tb = _ResultThread(target=thread_b)
+        ta.start()
+        tb.start()
+        ta.join(timeout=10)
+        tb.join(timeout=10)
+
+        # Thread B's fresh value must survive: A's cas correctly failed and
+        # nothing buffered for self.key gets flushed at A's commit.
+        self.assertEqual(self._raw_memcached_get(), ("from-B-fresh",))
+
+    def test_writer_invalidate_after_fill_collapses_to_delete(self) -> None:
+        """The realistic writer path: a read-through fill happens early in a
+        transaction (e.g. an @cache_with_key access), then the writer mutates
+        the row and the post_save signal calls cache_delete.  The buffer's
+        last-wins-per-key must produce a delete on flush, not a set with the
+        pre-write value."""
+        cache_set(self.key, "before")
+        with transaction.atomic(savepoint=True):
+            # Simulate: a read-through fill writes into the cache.
+            cache_set(self.key, "filled-during-tx")
+            # Then a writer-side invalidation lands.
+            cache_delete(self.key)
+        # Memcached should reflect the final invalidation, not the fill.
+        self.assertIsNone(self._raw_memcached_get())
+
+    def test_inner_savepoint_false_rollback_does_not_flush_outer(self) -> None:
+        """An inner `atomic(savepoint=False)` whose body raises sets
+        `connection.needs_rollback`.  When the exception is caught between the
+        two `with` blocks, the outer `__exit__` is called with `exc_type=None`
+        but Django still rolls back the whole transaction.  The buffer must
+        treat that as a rollback and discard, not flush, the buffered ops."""
+        with transaction.atomic(savepoint=True):
+            cache_set(self.key, "should-not-survive")
+            try:
+                with transaction.atomic(savepoint=False):
+                    raise RuntimeError("inner failure")
+            except RuntimeError:
+                pass
+            # The outer atomic exits next with exc_type=None, but Django's
+            # connection.needs_rollback is True, so it will roll back.
+        self.assertIsNone(self._raw_memcached_get())
+
+    def test_thread_isolation(self) -> None:
+        """Each thread has its own buffer.  A buffered set in thread A must be
+        invisible to thread B until A's transaction commits."""
+        from django.db import connections
+
+        from zerver.lib.cache_invalidation_buffer import get_buffer
+
+        a_recorded = threading.Event()
+        b_observed = threading.Event()
+        b_observation: list[object] = []
+
+        def thread_a() -> None:
+            try:
+                # Drive the buffer directly to avoid opening a second DB
+                # connection from this worker (which would block teardown).
+                buf = get_buffer()
+                buf.enter_atomic()
+                buf.record_set(self.key, ("thread-a",), None)
+                a_recorded.set()
+                b_observed.wait(timeout=5)
+                buf.exit_atomic(committed=False)
+            finally:
+                connections.close_all()
+
+        def thread_b() -> None:
+            try:
+                a_recorded.wait(timeout=5)
+                b_observation.append(cache_get(self.key))
+                b_observation.append(self._raw_memcached_get())
+                b_observed.set()
+            finally:
+                connections.close_all()
+
+        ta = _ResultThread(target=thread_a)
+        tb = _ResultThread(target=thread_b)
+        ta.start()
+        tb.start()
+        ta.join(timeout=10)
+        tb.join(timeout=10)
+
+        # B's buffer is its own (empty) stack, so cache_get falls through to
+        # memcached, which has nothing -- A's buffered value is invisible.
+        self.assertEqual(b_observation, [None, None])
+
+    def test_stale_pending_ops_cleared_on_next_atomic_enter(self) -> None:
+        """If a previous transaction's ops were stashed and Django then
+        silently rolled back (so the on_commit drain never ran), the next
+        atomic must not flush those stale ops on its own commit."""
+        from zerver.lib.cache_invalidation_buffer import get_buffer
+
+        # Plant a stale stash directly to simulate the post-rollback state.
+        buf = get_buffer()
+        buf._pending_flush_ops = {self.key: ("set", ("stale-from-prior-tx",), None, 0)}
+
+        with transaction.atomic(savepoint=True):
+            cache_set(self.key, "fresh")
+        # The fresh value flushed; the stale-stash ops are gone, not merged.
+        self.assertEqual(self._raw_memcached_get(), ("fresh",))
