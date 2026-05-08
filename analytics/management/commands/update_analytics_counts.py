@@ -10,7 +10,13 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.lib.counts import ALL_COUNT_STATS, logger, process_count_stat
-from zerver.lib.management import ZulipBaseCommand, abort_cron_during_deploy, abort_unless_locked
+from zerver.lib.import_realm import update_installation_count_after_realm_import
+from zerver.lib.management import (
+    ZulipBaseCommand,
+    abort_cron_during_deploy,
+    abort_if_module_is_locked,
+    abort_unless_locked,
+)
 from zerver.lib.remote_server import send_server_data_to_push_bouncer, should_send_analytics_data
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
@@ -40,6 +46,7 @@ class Command(ZulipBaseCommand):
     @override
     @abort_cron_during_deploy
     @abort_unless_locked
+    @abort_if_module_is_locked(update_installation_count_after_realm_import)
     def handle(self, *args: Any, **options: Any) -> None:
         self.run_update_analytics_counts(options)
 

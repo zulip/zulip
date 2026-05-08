@@ -21,8 +21,14 @@ from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
-from analytics.lib.counts import ALL_COUNT_STATS, process_count_stat
-from analytics.models import FillState, RealmCount, StreamCount, UserCount
+from analytics.lib.counts import (
+    ALL_COUNT_STATS,
+    COUNT_STATS,
+    do_aggregate_into_installation_count,
+    process_count_stat,
+)
+from analytics.management.commands import update_analytics_counts
+from analytics.models import FillState, InstallationCount, RealmCount, StreamCount, UserCount
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import set_default_for_realm_permission_group_settings
 from zerver.actions.realm_settings import (
@@ -35,6 +41,7 @@ from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_stream_recipient_fields
 from zerver.lib.export import Field, Path, Record, TableName, date_fields_for_table
+from zerver.lib.management import abort_if_module_is_locked
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
@@ -2511,6 +2518,34 @@ def import_analytics_fillstate(data: ImportedTableData, realm: Realm) -> None:
         return
 
 
+@abort_if_module_is_locked(update_analytics_counts.Command.run_update_analytics_counts)
+def update_installation_count_after_realm_import(data: ImportedTableData, realm: Realm) -> None:
+    """
+    After importing a realm's RealmCount rows, recompute InstallationCount
+    for all time periods covered by the imported realm's data, by deleting
+    the stale rows and re-aggregating from scratch from all RealmCount rows.
+    """
+    fill_states = data["analytics_fillstate"]
+    if not fill_states:
+        return
+
+    min_end_time = min(row["end_time"] for row in fill_states)
+    max_end_time = max(row["end_time"] for row in fill_states)
+
+    with transaction.atomic(durable=True):
+        InstallationCount.objects.filter(
+            end_time__gte=min_end_time,
+            end_time__lte=max_end_time,
+        ).delete()
+
+        with connection.cursor() as cursor:
+            for stat in COUNT_STATS.values():
+                current = min_end_time
+                while current <= max_end_time:
+                    do_aggregate_into_installation_count(stat, current, realm, cursor)
+                    current += stat.time_increment
+
+
 def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: set[int]) -> None:
     analytics_filename = os.path.join(import_dir, "analytics.json")
     if not os.path.exists(analytics_filename):
@@ -2543,6 +2578,7 @@ def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: s
 
     fix_datetime_fields(data, "analytics_fillstate")
     import_analytics_fillstate(data, realm)
+    update_installation_count_after_realm_import(data, realm)
 
 
 def add_users_to_system_user_groups(
