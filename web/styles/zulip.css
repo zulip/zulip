@@ -1410,6 +1410,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     font-size: 1.5em;
     font-weight: 400;
     line-height: inherit;
+    margin: 10px 0;
     overflow-wrap: break-word;
 }
 
