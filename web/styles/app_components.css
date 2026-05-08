@@ -839,6 +839,8 @@ input.settings_text_input {
         & h1 {
             margin: 0;
             font-size: 1.1em;
+            font-weight: bold;
+            line-height: var(--header-line-height);
             text-transform: uppercase;
         }
 
