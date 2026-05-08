@@ -1618,6 +1618,7 @@ label.preferences-radio-choice-label {
         & h1 {
             text-align: center;
             font-size: 1.1em;
+            font-weight: bold;
             line-height: 1;
             text-transform: uppercase;
         }
