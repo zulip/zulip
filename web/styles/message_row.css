@@ -588,6 +588,17 @@
     /* Ensure square icons for better centering. */
     line-height: 1;
 
+    /* For long messages, move the hover action icons down to the
+       "Show more" row so users don't have to scroll back to the top
+       of the message to react, star, or open the menu. Row 3 and
+       column 3 line up with the controls column in every layout
+       variant (no-sender, with-sender, is-me-message). */
+    .messagebox-content:has(.message_content.could-be-condensed) & {
+        grid-row: 3;
+        grid-column: 3;
+        align-self: center;
+    }
+
     @container message-lists (width < $cq_sm_min) {
         /* This is intended to target the first message_controls child
            when there are 3 displayed. */
