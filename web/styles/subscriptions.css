@@ -439,11 +439,24 @@ h4.user_group_setting_subsection_title {
 }
 
 .group-assigned-permissions {
+    /* Section title <h3>s in .realm-group-permissions /
+       .channel-group-permissions / .user-group-permissions. Was
+       supplied by the universal h1-h4 reset in bootstrap.app.css;
+       set explicitly so these section titles survive that reset's
+       removal. font-weight is left at the user-agent default
+       (bold). */
+    .group-permissions-section > h3 {
+        font-size: 1.5313em; /* 24.5px at 16px em */
+        line-height: var(--header-line-height);
+        margin: 10px 0;
+    }
+
     .subsection-header {
         h3 {
             font-size: 1.5em;
             font-weight: normal;
             line-height: 1.5;
+            margin: 10px 0;
             display: inline;
         }
     }
