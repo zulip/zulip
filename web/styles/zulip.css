@@ -235,6 +235,11 @@ p.n-margin {
        the message column; the fixed sidebars paint over anything that
        spills past its edges. */
     margin-inline: 2px;
+
+    .zulip-icon-exclamation-circle {
+        /* Eyeballed to center the icon against the text. */
+        vertical-align: -0.15em;
+    }
 }
 
 .messages-logo-svg {
