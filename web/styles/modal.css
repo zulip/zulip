@@ -382,6 +382,7 @@
         font-weight: 600;
         /* 18px at 16px/1em */
         font-size: 1.125em;
+        line-height: var(--header-line-height);
     }
 
     #user-profile-groups-tab,
@@ -460,6 +461,7 @@
     margin: 0;
     font-weight: 600;
     font-size: 1.125em; /* 18px at 16px em */
+    line-height: var(--header-line-height);
 }
 
 #user-profile-modal .group-list-container,
