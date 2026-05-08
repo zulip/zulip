@@ -234,89 +234,85 @@ def do_delete_counts_at_hour(stat: CountStat, end_time: datetime) -> None:
 def do_aggregate_to_summary_table(
     stat: CountStat, end_time: datetime, realm: Realm | None = None
 ) -> None:
-    cursor = connection.cursor()
-
     # Aggregate into RealmCount
     output_table = stat.data_collector.output_table
     if realm is not None:
         realm_clause: Composable = SQL("AND zerver_realm.id = {}").format(Literal(realm.id))
     else:
         realm_clause = SQL("")
-
-    if stat.data_collector.depends_on_realm():
-        realmcount_query = SQL(
+    with connection.cursor() as cursor:
+        if stat.data_collector.depends_on_realm():
+            realmcount_query = SQL(
+                """
+                INSERT INTO analytics_realmcount
+                    (realm_id, value, property, subgroup, end_time)
+                SELECT
+                    zerver_realm.id, COALESCE(sum({output_table}.value), 0), %(property)s,
+                    {output_table}.subgroup, %(end_time)s
+                FROM zerver_realm
+                JOIN {output_table}
+                ON
+                    zerver_realm.id = {output_table}.realm_id
+                WHERE
+                    {output_table}.property = %(property)s AND
+                    {output_table}.end_time = %(end_time)s
+                    {realm_clause}
+                GROUP BY zerver_realm.id, {output_table}.subgroup
             """
-            INSERT INTO analytics_realmcount
-                (realm_id, value, property, subgroup, end_time)
-            SELECT
-                zerver_realm.id, COALESCE(sum({output_table}.value), 0), %(property)s,
-                {output_table}.subgroup, %(end_time)s
-            FROM zerver_realm
-            JOIN {output_table}
-            ON
-                zerver_realm.id = {output_table}.realm_id
-            WHERE
-                {output_table}.property = %(property)s AND
-                {output_table}.end_time = %(end_time)s
-                {realm_clause}
-            GROUP BY zerver_realm.id, {output_table}.subgroup
-        """
-        ).format(
-            output_table=Identifier(output_table._meta.db_table),
-            realm_clause=realm_clause,
-        )
-        start = time.time()
-        cursor.execute(
-            realmcount_query,
-            {
-                "property": stat.property,
-                "end_time": end_time,
-            },
-        )
-        end = time.time()
-        logger.info(
-            "%s RealmCount aggregation (%dms/%sr)",
-            stat.property,
-            (end - start) * 1000,
-            cursor.rowcount,
-        )
+            ).format(
+                output_table=Identifier(output_table._meta.db_table),
+                realm_clause=realm_clause,
+            )
+            start = time.time()
+            cursor.execute(
+                realmcount_query,
+                {
+                    "property": stat.property,
+                    "end_time": end_time,
+                },
+            )
+            end = time.time()
+            logger.info(
+                "%s RealmCount aggregation (%dms/%sr)",
+                stat.property,
+                (end - start) * 1000,
+                cursor.rowcount,
+            )
 
-    if realm is None:
-        # Aggregate into InstallationCount.  Only run if we just
-        # processed counts for all realms.
-        #
-        # TODO: Add support for updating installation data after
-        # changing an individual realm's values.
-        installationcount_query = SQL(
+        if realm is None:
+            # Aggregate into InstallationCount.  Only run if we just
+            # processed counts for all realms.
+            #
+            # TODO: Add support for updating installation data after
+            # changing an individual realm's values.
+            installationcount_query = SQL(
+                """
+                INSERT INTO analytics_installationcount
+                    (value, property, subgroup, end_time)
+                SELECT
+                    sum(value), %(property)s, analytics_realmcount.subgroup, %(end_time)s
+                FROM analytics_realmcount
+                WHERE
+                    property = %(property)s AND
+                    end_time = %(end_time)s
+                GROUP BY analytics_realmcount.subgroup
             """
-            INSERT INTO analytics_installationcount
-                (value, property, subgroup, end_time)
-            SELECT
-                sum(value), %(property)s, analytics_realmcount.subgroup, %(end_time)s
-            FROM analytics_realmcount
-            WHERE
-                property = %(property)s AND
-                end_time = %(end_time)s
-            GROUP BY analytics_realmcount.subgroup
-        """
-        )
-        start = time.time()
-        cursor.execute(
-            installationcount_query,
-            {
-                "property": stat.property,
-                "end_time": end_time,
-            },
-        )
-        end = time.time()
-        logger.info(
-            "%s InstallationCount aggregation (%dms/%sr)",
-            stat.property,
-            (end - start) * 1000,
-            cursor.rowcount,
-        )
-
-    cursor.close()
+            )
+            start = time.time()
+            cursor.execute(
+                installationcount_query,
+                {
+                    "property": stat.property,
+                    "end_time": end_time,
+                },
+            )
+            end = time.time()
+            logger.info(
+                "%s InstallationCount aggregation (%dms/%sr)",
+                stat.property,
+                (end - start) * 1000,
+                cursor.rowcount,
+            )
 
 
 ## Utility functions called from outside counts.py ##
