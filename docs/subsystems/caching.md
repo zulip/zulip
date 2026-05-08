@@ -187,6 +187,38 @@ But the overall benefit of this cache system is that almost all the
 code in Zulip just needs to modify Django model objects and call
 `.save()`, and the caching system will do the right thing.
 
+### Cache writes inside transactions
+
+Most code that changes data runs inside a database transaction
+(`transaction.atomic()`), and the cache needs to stay consistent with
+what the transaction eventually does:
+
+- If a cache key were deleted before the transaction committed,
+  another process could refill it with the old data from the database.
+- If the transaction rolled back, anything it had written to the cache
+  would describe data that was never committed.
+
+To avoid both problems, `zerver/lib/cache.py` holds back every cache
+write and delete made inside a transaction. They are applied to
+memcached once the outermost transaction commits, and thrown away if
+it rolls back. Code inside the transaction still sees its own cache
+writes and deletes.
+
+This has a few consequences to keep in mind when writing code that
+changes data:
+
+- Delete the affected cache keys, rather than writing the new value
+  with `cache_set`. Deletes are correct in any order, whereas writes
+  from two concurrent transactions can reach memcached in the opposite
+  order from their commits.
+- After a transaction deletes a cache key, each read of that key in
+  the same transaction goes to the database, and does not refill the
+  cache. The first read after the commit refills it. So avoid
+  repeatedly reading data that the transaction has just invalidated.
+
+The details are documented at the top of
+`zerver/lib/cache_invalidation_buffer.py`.
+
 ### Production deployments and database migrations
 
 When upgrading a Zulip server, it's important to avoid having one
