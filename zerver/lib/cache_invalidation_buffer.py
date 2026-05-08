@@ -70,17 +70,21 @@ commit-style but on_commit didn't fire.  In production, on_commit
 always fires and the safety net is a no-op.
 """
 
-import copy
+import pickle
 import threading
 from typing import Any
 
 from django.db import connection, transaction
 
 # Op tuple: (kind, value, timeout, mc_cas_id).  Kind is 'set' or 'delete'.
-# For 'delete' value and timeout are None.  mc_cas_id is the memcached
-# cas_id captured by cache_add for read-through fill entries; 0 for any
-# other entry (deletes, write-through cache_set).  The flush uses
-# mc_cas_id != 0 to decide between cas-conditional and unconditional
+# For 'delete' value and timeout are None.  For 'set' value is the
+# pickle of the original Python value -- we store bytes so the buffer's
+# snapshot is independent of caller references (matching memcached's
+# pickle-round-trip semantics) without paying for a deepcopy on every
+# record_set / lookup.  See record_set / lookup.  mc_cas_id is the
+# memcached cas_id captured by cache_add for read-through fill entries;
+# 0 for any other entry (deletes, write-through cache_set).  The flush
+# uses mc_cas_id != 0 to decide between cas-conditional and unconditional
 # memcached writes -- see _flush_buffered_ops.
 PendingOp = tuple[str, Any, int | None, int]
 
@@ -139,26 +143,22 @@ class CacheInvalidationBuffer:
         calls that overwrite a prior fill entry.  The flush uses it to
         decide between cas-conditional and unconditional memcached writes.
 
-        record_set deepcopies the value so the buffer holds an
-        independent snapshot at write time (matching memcached's
-        cache_set-time pickle); lookup also deepcopies on read so
-        callers can mutate returned values without polluting the
-        cache (matching memcached's read-side unpickle).  Both are
-        needed -- the pickle the flush does at commit captures the
-        buffer's *then-current* value, which would miss intermediate
-        mutations of either reference.
+        The value is pickled and stored as bytes so the buffer holds an
+        independent snapshot at write time, and lookup unpickles on
+        read -- matching memcached's pickle-round-trip semantics.
         """
         assert self._stack, "record_set called outside an atomic block"
-        self._stack[-1][key] = ("set", copy.deepcopy(value), timeout, mc_cas_id)
+        self._stack[-1][key] = ("set", pickle.dumps(value), timeout, mc_cas_id)
 
     def lookup(self, key: str) -> PendingOp | None:
-        """Most recent op on `key` across all open frames, or None.  See
-        record_set for why the 'set' value is deepcopied."""
+        """Most recent op on `key` across all open frames, or None.  For
+        'set' ops the stored bytes are unpickled to a fresh value (see
+        record_set)."""
         for frame in reversed(self._stack):
             if key in frame:
                 kind, val, timeout, mc_cas_id = frame[key]
                 if kind == "set":
-                    val = copy.deepcopy(val)
+                    val = pickle.loads(val)  # noqa: S301
                 return (kind, val, timeout, mc_cas_id)
         return None
 

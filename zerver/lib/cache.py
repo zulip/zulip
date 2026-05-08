@@ -2,6 +2,7 @@
 import hashlib
 import logging
 import os
+import pickle
 import re
 import secrets
 import sys
@@ -467,11 +468,18 @@ def _flush_buffered_ops(ops: dict[str, PendingOp]) -> None:
     deletes: list[str] = []
     write_through_by_timeout: dict[int | None, dict[str, Any]] = {}
     fills_by_timeout: dict[int | None, dict[str, tuple[Any, int]]] = {}
-    for key, (kind, val, timeout, mc_cas_id) in ops.items():
+    for key, (kind, val_bytes, timeout, mc_cas_id) in ops.items():
         if kind == "delete":
             deletes.append(key)
             continue
         assert kind == "set"
+        # The buffer stores 'set' values as pickled bytes (see
+        # cache_invalidation_buffer.record_set); unpickle here so we
+        # can detect the sentinel and so set_many sees a Python value.
+        # bmemcached's serialize() auto-pickles non-bytes values on
+        # the way out, so we cannot skip the re-pickle by passing
+        # raw bytes -- that would set the wrong flag for other readers.
+        val = pickle.loads(val_bytes)  # noqa: S301
         if isinstance(val, _CacheFillSentinel):
             # A read-through fill claimed the slot via cache_add but
             # the matching cache_cas never followed (e.g. the fetcher
