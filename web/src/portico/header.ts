@@ -3,6 +3,33 @@ import $ from "jquery";
 const EXTRA_SUBMENU_BOTTOM_PADDING = 16;
 
 $(() => {
+    // The closed mobile menu lands below the banner for free via
+    // top: auto in CSS. When the user opens the menu, we keep the
+    // banner visible above it: push the open panel down by the
+    // banner's actual rendered height so it survives the announcement
+    // wrapping onto multiple lines on narrow viewports. The observer
+    // is only attached while the menu is open, so the steady-state
+    // page pays nothing for it.
+    const banner = document.querySelector<HTMLElement>("#navbar-custom-message");
+    const mobile_menu = document.querySelector<HTMLDetailsElement>(".top-menu-mobile");
+    if (banner && mobile_menu) {
+        const update_banner_height = (): void => {
+            document.documentElement.style.setProperty(
+                "--announcement-banner-height",
+                `${banner.offsetHeight}px`,
+            );
+        };
+        const observer = new ResizeObserver(update_banner_height);
+        mobile_menu.addEventListener("toggle", () => {
+            if (mobile_menu.open) {
+                update_banner_height();
+                observer.observe(banner);
+            } else {
+                observer.disconnect();
+            }
+        });
+    }
+
     function on_tab_menu_selection_change(changed_element?: HTMLElement): void {
         // Pass event to open menu and if it is undefined, we close the menu.
         if (!changed_element) {
