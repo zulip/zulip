@@ -182,7 +182,7 @@ if FAKE_LDAP_MODE:
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPAuthBackend",)
 
 BILLING_ENABLED = True
-LANDING_PAGE_NAVBAR_MESSAGE: str | None = None
+LANDING_PAGE_NAVBAR_MESSAGE: str | None = "Our exciting announcement <a href='#'>here</a>"
 
 # Our run-dev proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django
