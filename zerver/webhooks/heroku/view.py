@@ -10,8 +10,8 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-ENTITY_CREATED_MESSAGE = "{actor} triggered a {entity}."
-ENTITY_UPDATED_MESSAGE = "The {entity} triggered by {actor} **{status}**."
+ENTITY_CREATED_MESSAGE = "{status_emoji} {actor} triggered a {entity}."
+ENTITY_UPDATED_MESSAGE = "{status_emoji} The {entity} triggered by {actor} **{status}**."
 ENTITY_VERSION = "{entity}(v{version})"
 
 # The events here are ignored not because they are noisy.
@@ -30,6 +30,13 @@ IGNORED_ENTITIES = [
     "sni-endpoint",
 ]
 
+STATUS_MAP = {
+    "succeeded": ":check:",
+    "failed": ":warning:",
+    "pending": ":time_ticking:",
+    "errored": ":rotating_light:",
+}
+
 
 def get_message(payload: WildValue, entity: str) -> tuple[str, str]:
     data = payload["data"]
@@ -45,13 +52,18 @@ def get_message(payload: WildValue, entity: str) -> tuple[str, str]:
         description = data["description"].tame(check_string)
         display_entity = f"{display_entity}: {description}"
 
+    status = data["status"].tame(check_string)
+    status_emoji = STATUS_MAP[status]
     action = payload["action"].tame(check_string)
 
     if action == "update":
-        status = data["status"].tame(check_string)
-        body = ENTITY_UPDATED_MESSAGE.format(entity=display_entity, actor=actor, status=status)
+        body = ENTITY_UPDATED_MESSAGE.format(
+            entity=display_entity, actor=actor, status=status, status_emoji=status_emoji
+        )
     else:
-        body = ENTITY_CREATED_MESSAGE.format(entity=display_entity, actor=actor)
+        body = ENTITY_CREATED_MESSAGE.format(
+            entity=display_entity, actor=actor, status_emoji=status_emoji
+        )
 
     return (app, body)
 
