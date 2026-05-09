@@ -981,28 +981,6 @@ label.label-title {
     margin-bottom: 20px;
 }
 
-#navbar-custom-message {
-    font-size: 1rem;
-    background: linear-gradient(
-        145deg,
-        hsl(191deg 56% 55%),
-        hsl(169deg 65% 42%)
-    );
-    color: hsl(0deg 0% 100%);
-    font-weight: 600;
-    text-align: center;
-    position: relative;
-    top: 0;
-    padding: 10px;
-    border-bottom: 1px solid hsl(177deg 52% 55%);
-    z-index: 5;
-
-    & a {
-        color: hsl(0deg 0% 100%);
-        text-decoration: underline;
-    }
-}
-
 .text-image-in-row {
     display: flex;
     justify-content: space-between;
