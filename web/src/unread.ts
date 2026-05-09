@@ -1148,9 +1148,10 @@ export function initialize(params: StateData["unread"]): void {
     unread_direct_message_counter.set_direct_message_groups(unread_msgs.huddles);
     unread_direct_message_counter.set_pms(unread_msgs.pms);
     unread_topic_counter.set_streams(unread_msgs.streams);
+    const direct_message_ids = new Set(unread_direct_message_counter.get_msg_ids());
     for (const message_id of unread_msgs.mentions) {
         unread_mentions_counter.add(message_id);
-        if (unread_direct_message_counter.get_msg_ids().includes(message_id)) {
+        if (direct_message_ids.has(message_id)) {
             direct_message_with_mention_count.add(message_id);
         }
     }
