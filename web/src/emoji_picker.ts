@@ -364,8 +364,9 @@ const generate_emoji_picker_content = function (include_frequently_used_category
         emojis_used = message_reaction_session.already_used_emojis();
     }
 
+    const used_emoji_set = new Set(emojis_used);
     for (const emoji_dict of emoji.emojis_by_name.values()) {
-        emoji_dict.has_reacted = emoji_dict.aliases.some((alias) => emojis_used.includes(alias));
+        emoji_dict.has_reacted = emoji_dict.aliases.some((alias) => used_emoji_set.has(alias));
     }
 
     let emoji_catalog = complete_emoji_catalog;
