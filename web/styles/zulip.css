@@ -2220,8 +2220,10 @@ body:not(.spectator-view) {
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
-        /* 200px/14px */
-        min-width: 14.285em;
+        /* We set a low min-width so that the dropdown can cinch
+           tightly to its content, but still has a baseline
+           presence. */
+        min-width: 8em;
 
         .dropdown-list {
             list-style: none;
@@ -2234,12 +2236,15 @@ body:not(.spectator-view) {
     }
 
     &.folder_id-dropdown-list-container {
-        width: calc(var(--modal-input-width) * 0.75);
+        width: max-content;
+        max-width: calc(var(--modal-input-width) * 0.85);
 
         /* Alignment adjustments on channel-folder selector. */
-        .dropdown-list-item-name:has(.dropdown-list-buttons) {
-            /* We hold the first row height to 28px at 16px/1em
-               for the sake of the buttons plus their padding. */
+        .dropdown-list-item-name {
+            /* We hold the row height to 28px at 16px/1em
+               for the sake of the buttons plus their padding.
+               This also ensures the "None" row matches the height
+               of rows with buttons (34px total with padding). */
             grid-template-rows: 1.75em minmax(0, auto);
             /* We also align everything to start, so that we can
                offset the text from the top to align it with the
@@ -2271,7 +2276,9 @@ body:not(.spectator-view) {
             "item-description" minmax(0, min-content)
             / minmax(0, 1fr);
         color: var(--color-dropdown-item);
-        padding: 3px 10px 3px 8px;
+        /* Padding is balanced to accommodate the scrollbar space
+           on the right while maintaining symmetry. */
+        padding: 3px 12px;
         font-weight: 400;
         white-space: normal;
         /* Keep the line-height stable, instead of using the
