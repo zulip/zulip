@@ -1,7 +1,7 @@
 <div class="draft-message-row overlay-message-row" data-draft-id="{{draft_id}}">
     <div class="draft-message-info-box overlay-message-info-box" tabindex="0">
         {{#if is_stream}}
-        <div class="message_header message_header_stream restore-overlay-message overlay-message-header">
+        <div class="message_header message_header_stream {{#unless is_sending_saving}}restore-overlay-message {{/unless}}overlay-message-header">
             <div class="message-header-contents" style="background: {{recipient_bar_color}};">
                 <div class="message_label_clickable stream_label">
                     <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
@@ -24,7 +24,7 @@
             </div>
         </div>
         {{else}}
-        <div class="message_header message_header_private_message restore-overlay-message overlay-message-header">
+        <div class="message_header message_header_private_message {{#unless is_sending_saving}}restore-overlay-message {{/unless}}overlay-message-header">
             <div class="message-header-contents">
                 <div class="message_label_clickable stream_label">
                     <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
@@ -47,6 +47,13 @@
                 <div class="messagebox-content">
                     <div class="message_top_line">
                         <div class="overlay_message_controls">
+                            {{#if is_sending_saving}}
+                            {{> ./components/icon_button intent="neutral" custom_classes="outbox-resend-message tippy-zulip-delayed-tooltip" icon="refresh-cw" data-tippy-content=(t "Resend message") aria-label=(t "Resend message") }}
+                            {{> ./components/icon_button intent="danger" custom_classes="outbox-cancel-message tippy-zulip-delayed-tooltip" icon="circle-x" data-tippy-content=(t "Cancel message") aria-label=(t "Cancel message") }}
+                            <div class="outbox-selection-tooltip">
+                                <i class="fa fa-square-o fa-lg outbox-selection-checkbox" aria-hidden="true"></i>
+                            </div>
+                            {{else}}
                             <span class="copy-button copy-overlay-message tippy-zulip-delayed-tooltip" data-draft-id="{{draft_id}}" data-tippy-content="{{t 'Copy draft' }}" aria-label="{{t 'Copy draft' }}" role="button">
                                 <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
                             </span>
@@ -54,9 +61,10 @@
                             <div class="draft-selection-tooltip">
                                 <i class="fa fa-square-o fa-lg draft-selection-checkbox" aria-hidden="true"></i>
                             </div>
+                            {{/if}}
                         </div>
                     </div>
-                    <div class="message_content rendered_markdown restore-overlay-message">{{rendered_markdown content}}</div>
+                    <div class="message_content rendered_markdown {{#unless is_sending_saving}}restore-overlay-message {{/unless}}">{{rendered_markdown content}}</div>
                 </div>
             </div>
         </div>

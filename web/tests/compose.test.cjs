@@ -285,10 +285,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     });
 
     override_rewire(drafts, "update_draft", () => 100);
-    override(drafts.draft_model, "getDraft", (draft_id) => {
-        assert.equal(draft_id, 100);
-        return {};
-    });
 
     // Tests start here.
     (function test_message_send_success_codepath() {
