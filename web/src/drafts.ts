@@ -209,6 +209,7 @@ export const draft_model = (function () {
         if (update_count) {
             set_count(Object.keys(drafts).length);
             update_compose_draft_count();
+            draft_update_listener?.();
         }
     }
 
@@ -262,6 +263,13 @@ export const draft_model = (function () {
         deleteDrafts,
     };
 })();
+
+// Single-slot listener; calling set_draft_update_listener overwrites it.
+let draft_update_listener: (() => void) | undefined;
+
+export function set_draft_update_listener(callback: (() => void) | undefined): void {
+    draft_update_listener = callback;
+}
 
 export let update_compose_draft_count = (): void => {
     const $count_container = $(".compose-drafts-count-container");
