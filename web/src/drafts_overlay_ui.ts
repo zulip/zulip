@@ -212,6 +212,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         const draft_id = messages_overlay_ui.get_focused_element_id(this) ?? draft_id_arrow.at(0);
         assert(draft_id !== undefined);
         if (current_tab === "outbox") {
+            messages_overlay_ui.focus_on_sibling_element(this);
             echo.resend_message_by_draft_id(draft_id);
         } else {
             restore_draft(draft_id);
@@ -543,6 +544,19 @@ function setup_event_handlers(): void {
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,
         });
+    });
+
+    $("#drafts_table .outbox-resend-message").on("click", function (e) {
+        e.stopPropagation();
+        const $row = $(this).closest(".overlay-message-row");
+        const draft_id = $row.attr("data-draft-id")!;
+        echo.resend_message_by_draft_id(draft_id);
+    });
+
+    $("#drafts_table .outbox-cancel-message").on("click", function (e) {
+        e.stopPropagation();
+        const $row = $(this).closest(".overlay-message-row");
+        cancel_outbox_messages($row);
     });
 }
 
