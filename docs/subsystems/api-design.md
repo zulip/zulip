@@ -194,7 +194,7 @@ in determining if a change is automatically compatible are:
   These changes are compatible because the web app is deployed with
   the server, and clients automatically reload into the new web app
   version soon after a server upgrade. Managing such changes typically
-  require at most require the Zulip Cloud team to split the web and
+  at most requires the Zulip Cloud team to split the web and
   server changes across two consecutive deployments, which does not
   justify permanent compatibility code.
 
