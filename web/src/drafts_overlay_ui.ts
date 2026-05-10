@@ -466,6 +466,7 @@ function render_widgets(
     }
     update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     update_bulk_delete_ui();
+    update_bulk_outbox_ui();
     // Re-runs on every render; cache hits avoid the network round trip.
     fetch_server_rendered_drafts([...narrow_drafts, ...other_drafts]);
 }
@@ -558,6 +559,12 @@ function setup_event_handlers(): void {
         const $row = $(this).closest(".overlay-message-row");
         cancel_outbox_messages($row);
     });
+
+    $("#drafts_table .outbox-selection-checkbox").on("click", (e) => {
+        const is_checked = is_checkbox_icon_checked($(e.target));
+        toggle_checkbox_icon_state($(e.target), !is_checked);
+        update_bulk_outbox_ui();
+    });
 }
 
 function setup_bulk_actions_handlers(): void {
@@ -579,6 +586,92 @@ function setup_bulk_actions_handlers(): void {
             .closest(".overlay-message-row");
         remove_drafts($selected_rows);
         update_bulk_delete_ui();
+    });
+
+    $(".select-outbox-button").on("click", (e) => {
+        e.preventDefault();
+        const $unchecked = $(".outbox-selection-checkbox").filter(function () {
+            return !is_checkbox_icon_checked($(this));
+        });
+        const check_all = $unchecked.length > 0;
+        $(".outbox-selection-checkbox").each(function () {
+            toggle_checkbox_icon_state($(this), check_all);
+        });
+        update_bulk_outbox_ui();
+    });
+
+    $(".resend-selected-outbox-button").on("click", function () {
+        const $btn = $(this);
+        if ($btn.is(":disabled")) {
+            return;
+        }
+        // Disable during the synchronous loop to suppress duplicate clicks.
+        $btn.prop("disabled", true);
+        // Collect ids first so DOM removals don't affect iteration.
+        const draft_ids: string[] = [];
+        $(".outbox-list")
+            .find(".outbox-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row")
+            .each(function () {
+                draft_ids.push($(this).attr("data-draft-id")!);
+            });
+        for (const draft_id of draft_ids) {
+            echo.resend_message_by_draft_id(draft_id);
+        }
+        // Re-enable so the user can retry if the resends fail. Successful
+        // resends remove their checkboxes on the next rerender.
+        update_bulk_outbox_ui();
+    });
+
+    $(".cancel-selected-outbox-button").on("click", () => {
+        const $selected_rows = $(".outbox-list")
+            .find(".outbox-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row");
+        cancel_outbox_messages($selected_rows);
+    });
+}
+
+function update_bulk_action_ui({
+    checkbox_selector,
+    select_button_selector,
+    action_button_selectors,
+}: {
+    checkbox_selector: string;
+    select_button_selector: string;
+    action_button_selectors: string[];
+}): void {
+    const $checkboxes = $(checkbox_selector);
+    const $checked = $checkboxes.filter(function () {
+        return is_checkbox_icon_checked($(this));
+    });
+    const $unchecked = $checkboxes.filter(function () {
+        return !is_checkbox_icon_checked($(this));
+    });
+    const $select_button = $(select_button_selector);
+    const $select_indicator = $(`${select_button_selector} .select-state-indicator`);
+    const $action_buttons = $(action_button_selectors.join(","));
+
+    if ($checked.length > 0) {
+        $action_buttons.prop("disabled", false);
+        toggle_checkbox_icon_state($select_indicator, $unchecked.length === 0);
+    } else if ($unchecked.length > 0) {
+        $select_button.show();
+        $action_buttons.show().prop("disabled", true);
+        toggle_checkbox_icon_state($select_indicator, false);
+    } else {
+        $select_button.hide();
+        $action_buttons.hide();
+    }
+}
+
+export function update_bulk_outbox_ui(): void {
+    update_bulk_action_ui({
+        checkbox_selector: ".outbox-selection-checkbox",
+        select_button_selector: ".select-outbox-button",
+        action_button_selectors: [
+            ".resend-selected-outbox-button",
+            ".cancel-selected-outbox-button",
+        ],
     });
 }
 
@@ -630,32 +723,11 @@ export function launch(): void {
 }
 
 export function update_bulk_delete_ui(): void {
-    const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
-        return !is_checkbox_icon_checked($(this));
+    update_bulk_action_ui({
+        checkbox_selector: ".draft-selection-checkbox",
+        select_button_selector: ".select-drafts-button",
+        action_button_selectors: [".delete-selected-drafts-button"],
     });
-    const $checked_checkboxes = $(".draft-selection-checkbox").filter(function () {
-        return is_checkbox_icon_checked($(this));
-    });
-    const $select_drafts_button = $(".select-drafts-button");
-    const $select_state_indicator = $(".select-drafts-button .select-state-indicator");
-    const $delete_selected_drafts_button = $(".delete-selected-drafts-button");
-
-    if ($checked_checkboxes.length > 0) {
-        $delete_selected_drafts_button.prop("disabled", false);
-        if ($unchecked_checkboxes.length === 0) {
-            toggle_checkbox_icon_state($select_state_indicator, true);
-        } else {
-            toggle_checkbox_icon_state($select_state_indicator, false);
-        }
-    } else {
-        if ($unchecked_checkboxes.length > 0) {
-            toggle_checkbox_icon_state($select_state_indicator, false);
-            $delete_selected_drafts_button.prop("disabled", true);
-        } else {
-            $select_drafts_button.hide();
-            $delete_selected_drafts_button.hide();
-        }
-    }
 }
 
 export function open_overlay(): void {

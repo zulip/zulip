@@ -897,6 +897,97 @@ test("outbox tab", ({override, mock_template}) => {
     assert.equal(initial_focus_id, "outbox_id");
 });
 
+function set_up_two_selected_outbox_rows() {
+    const $row_a = $.create("row a");
+    $row_a.attr("data-draft-id", "outbox_a");
+    const $row_b = $.create("row b");
+    $row_b.attr("data-draft-id", "outbox_b");
+
+    // Each "checked" checkbox stub returns its own row from closest().
+    const $checkbox_a = $.create("checkbox a");
+    $checkbox_a.set_closest_results(".overlay-message-row", $row_a);
+    const $checkbox_b = $.create("checkbox b");
+    $checkbox_b.set_closest_results(".overlay-message-row", $row_b);
+
+    const $outbox_list = $(".outbox-list");
+    $outbox_list.set_find_results(".outbox-selection-checkbox.fa-check-square", [
+        $checkbox_a,
+        $checkbox_b,
+    ]);
+}
+
+function launch_outbox_with_two_drafts({override, mock_template}) {
+    const ls = localstorage();
+    ls.set("drafts", {
+        outbox_a: {
+            stream_id,
+            topic: "t",
+            type: "stream",
+            content: "A",
+            updatedAt: mock_current_timestamp,
+            is_sending_saving: true,
+            drafts_version: 1,
+        },
+        outbox_b: {
+            stream_id,
+            topic: "t",
+            type: "stream",
+            content: "B",
+            updatedAt: mock_current_timestamp,
+            is_sending_saving: true,
+            drafts_version: 1,
+        },
+    });
+    clock.setSystemTime(mock_current_timestamp);
+
+    override(user_pill, "get_user_ids", () => []);
+    compose_state.set_message_type("private");
+    override(messages_overlay_ui, "set_initial_element", noop);
+    override(settings_data, "using_dark_theme", () => false);
+    override(echo, "get_local_echo_status_for_draft", () => "failed");
+
+    mock_template("draft_table_body.hbs", false, () => "<draft table stub>");
+
+    $.set_results(".drafts-list", []);
+    $.set_results(".drafts-tab-pane .overlay-message-row", []);
+    $.set_results(".outbox-tab-pane .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
+
+    drafts_overlay_ui.launch();
+}
+
+test("outbox bulk cancel batches all selected ids", ({override, mock_template}) => {
+    launch_outbox_with_two_drafts({override, mock_template});
+    set_up_two_selected_outbox_rows();
+
+    let abort_called_with;
+    override(echo, "abort_messages_by_draft_ids", (draft_ids) => {
+        abort_called_with = draft_ids;
+    });
+
+    $(".cancel-selected-outbox-button").trigger("click");
+
+    assert.deepEqual(abort_called_with, ["outbox_a", "outbox_b"]);
+});
+
+test("outbox bulk resend collects all selected ids", ({override, mock_template}) => {
+    launch_outbox_with_two_drafts({override, mock_template});
+    set_up_two_selected_outbox_rows();
+
+    // The resend handler reads :disabled to debounce; default to enabled.
+    $(".resend-selected-outbox-button").set_matches(":disabled", false);
+
+    const resend_calls = [];
+    override(echo, "resend_message_by_draft_id", (id) => {
+        resend_calls.push(id);
+    });
+
+    $(".resend-selected-outbox-button").trigger("click");
+
+    assert.deepEqual(resend_calls, ["outbox_a", "outbox_b"]);
+});
+
 test("filter_drafts", ({override, mock_template}) => {
     override(settings_data, "using_dark_theme", () => true);
     function feb12() {
