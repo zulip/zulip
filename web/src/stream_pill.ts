@@ -120,8 +120,8 @@ export function filter_taken_streams(
     items: StreamSubscription[],
     pill_widget: StreamPillWidget | CombinedPillContainer,
 ): StreamSubscription[] {
-    const taken_stream_ids = get_stream_ids(pill_widget);
-    items = items.filter((item) => !taken_stream_ids.includes(item.stream_id));
+    const taken_stream_ids = new Set(get_stream_ids(pill_widget));
+    items = items.filter((item) => !taken_stream_ids.has(item.stream_id));
     return items;
 }
 
