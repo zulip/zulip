@@ -141,12 +141,12 @@ function remove_drafts($draft_rows: JQuery): void {
         show_delete_banner();
     }
 
-    if ($("#drafts_table .overlay-message-row").length === 0) {
-        $("#drafts_table .no-drafts").show();
+    if ($(".drafts-tab-pane .overlay-message-row").length === 0) {
+        $(".no-drafts").show();
     }
     update_rendered_drafts(
-        $("#drafts-from-conversation .overlay-message-row").length > 0,
-        $("#other-drafts .overlay-message-row").length > 0,
+        $(".drafts-tab-pane #drafts-from-conversation .overlay-message-row").length > 0,
+        $(".drafts-tab-pane #other-drafts .overlay-message-row").length > 0,
     );
 }
 
@@ -330,8 +330,8 @@ function render_widgets(
         });
         $(".drafts-list").replaceWith($(rendered));
     }
-    if ($("#drafts_table .overlay-message-row").length > 0) {
-        $("#drafts_table .no-drafts").hide();
+    if ($(".drafts-tab-pane .overlay-message-row").length > 0) {
+        $(".no-drafts").hide();
         // Update possible dynamic elements.
         const $rendered_drafts = $drafts_table.find(
             ".message_content.rendered_markdown.restore-overlay-message",
