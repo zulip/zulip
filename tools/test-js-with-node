@@ -149,6 +149,7 @@ EXEMPT_FILES = make_set(
         "web/src/list_util.ts",
         "web/src/list_widget.ts",
         "web/src/loading.ts",
+        "web/src/loading_error.ts",
         "web/src/local_message.ts",
         "web/src/localstorage.ts",
         "web/src/message_actions_popover.ts",
