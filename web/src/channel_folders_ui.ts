@@ -191,11 +191,7 @@ export function handle_archiving_channel_folder(folder_id: number): void {
 
 function format_channel_item_html(stream: StreamSubscription): string {
     return render_channel_list_item({
-        name: stream.name,
-        stream_id: stream.stream_id,
-        stream_color: stream.color,
-        invite_only: stream.invite_only,
-        is_web_public: stream.is_web_public,
+        stream,
         can_manage_folder: settings_data.can_user_manage_folder(),
     });
 }
