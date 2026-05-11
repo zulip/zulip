@@ -895,6 +895,8 @@ $(() => {
                         const retry_delay_secs = util.get_retry_backoff_seconds(
                             xhr,
                             register_failures,
+                            false,
+                            true,
                         );
                         setTimeout(fetch_state_data, retry_delay_secs * 1000);
                         return;
