@@ -5,6 +5,7 @@
     font-size: inherit;
     font-weight: var(--font-weight-sidebar-heading);
     letter-spacing: var(--letter-spacing-sidebar-heading);
+    line-height: 20px;
     /* Override heading margin from Bootstrap. */
     margin: 0;
     /* Show an ellipsis on a heading when
