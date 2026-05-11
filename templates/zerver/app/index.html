@@ -77,6 +77,14 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
     align-items: center;
     visibility: hidden;
     }
+    body.app-loading-failed #app-loading-middle-content,
+    body.app-loading-failed #app-loading-bottom-content,
+    body.app-loading-failed .app {
+    display: none;
+    }
+    body.app-loading-failed #app-loading-error {
+    visibility: visible;
+    }
     :root.dark-theme #app-loading {
     background-color: hsl(0, 0%, 11%);
     color: hsl(236, 33%, 90%);

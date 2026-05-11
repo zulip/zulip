@@ -65,6 +65,7 @@ import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigatio
 import * as left_sidebar_tooltips from "./left_sidebar_tooltips.ts";
 import * as lightbox from "./lightbox.ts";
 import * as linkifiers from "./linkifiers.ts";
+import * as loading_error from "./loading_error.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
 import * as markdown_config from "./markdown_config.ts";
@@ -898,10 +899,7 @@ $(() => {
                         setTimeout(fetch_state_data, retry_delay_secs * 1000);
                         return;
                     }
-                    $("#app-loading-middle-content").hide();
-                    $("#app-loading-bottom-content").hide();
-                    $(".app").hide();
-                    $("#app-loading-error").css({visibility: "visible"});
+                    loading_error.show_loading_error();
                 },
             });
         }
