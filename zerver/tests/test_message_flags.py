@@ -2041,11 +2041,11 @@ class MessageAccessTests(ZulipTestCase):
         )
         self.assert_length(filtered_messages, 4)
 
-        # Test private message access for service bot
-        service_bot = self.example_user("outgoing_webhook_bot")
-        self.subscribe(service_bot, stream_name)
+        # Test private message access for message handling bot
+        message_handling_bot = self.example_user("outgoing_webhook_bot")
+        self.subscribe(message_handling_bot, stream_name)
         filtered_messages = self.assert_bulk_access(
-            service_bot,
+            message_handling_bot,
             more_message_ids,
             stream,
             bulk_access_messages_query_count=6,
@@ -2106,11 +2106,11 @@ class MessageAccessTests(ZulipTestCase):
         )
         self.assert_length(filtered_messages, 2)
 
-        # Test public message access for service bot
-        service_bot = self.example_user("outgoing_webhook_bot")
-        self.subscribe(service_bot, stream_name)
+        # Test public message access for message handling bot
+        message_handling_bot = self.example_user("outgoing_webhook_bot")
+        self.subscribe(message_handling_bot, stream_name)
         filtered_messages = self.assert_bulk_access(
-            service_bot,
+            message_handling_bot,
             message_ids,
             stream,
             bulk_access_messages_query_count=4,

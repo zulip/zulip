@@ -211,7 +211,7 @@ class RecipientInfoResult:
     um_eligible_user_ids: set[int]
     long_term_idle_user_ids: set[int]
     default_bot_user_ids: set[int]
-    service_bot_tuples: list[tuple[int, int]]
+    message_handling_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
     topic_participant_user_ids: set[int]
     sender_muted_stream: bool | None
@@ -538,10 +538,10 @@ def get_recipient_info(
         row["id"] for row in rows if row["is_bot"] and row["bot_type"] == UserProfile.DEFAULT_BOT
     }
 
-    service_bot_tuples = [
+    message_handling_bot_tuples = [
         (row["id"], row["bot_type"])
         for row in rows
-        if row["is_bot"] and row["bot_type"] in UserProfile.SERVICE_BOT_TYPES
+        if row["is_bot"] and row["bot_type"] in UserProfile.MESSAGE_HANDLING_BOT_TYPES
     ]
 
     # We also need the user IDs of all bots, to avoid trying to send push/email
@@ -569,7 +569,7 @@ def get_recipient_info(
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
         default_bot_user_ids=default_bot_user_ids,
-        service_bot_tuples=service_bot_tuples,
+        message_handling_bot_tuples=message_handling_bot_tuples,
         all_bot_user_ids=all_bot_user_ids,
         topic_participant_user_ids=topic_participant_user_ids,
         sender_muted_stream=sender_muted_stream,
@@ -577,9 +577,9 @@ def get_recipient_info(
     )
 
 
-def get_service_bot_events(
+def get_message_handling_bot_events(
     sender: UserProfile,
-    service_bot_tuples: list[tuple[int, int]],
+    message_handling_bot_tuples: list[tuple[int, int]],
     mentioned_user_ids: set[int],
     active_user_ids: set[int],
     recipient_type: int,
@@ -587,7 +587,7 @@ def get_service_bot_events(
     event_dict: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
     # Avoid infinite loops by preventing messages sent by bots from generating
-    # Service events.
+    # Message Handling events.
     if sender.is_bot:
         return event_dict
 
@@ -598,7 +598,7 @@ def get_service_bot_events(
             queue_name = "embedded_bots"
         else:
             logging.error(
-                "Unexpected bot_type for Service bot id=%s: %s",
+                "Unexpected bot_type for Message Handling bot id=%s: %s",
                 user_profile_id,
                 bot_type,
             )
@@ -606,7 +606,7 @@ def get_service_bot_events(
 
         is_stream = recipient_type == Recipient.STREAM
 
-        # Important note: service_bot_tuples may contain service bots
+        # Important note: message_handling_bot_tuples may contain message handling bots
         # who were not actually mentioned in the message (e.g. if
         # mention syntax for that bot appeared in a code block).
         # Thus, it is important to filter any users who aren't part of
@@ -635,7 +635,7 @@ def get_service_bot_events(
             }
         )
 
-    for user_profile_id, bot_type in service_bot_tuples:
+    for user_profile_id, bot_type in message_handling_bot_tuples:
         maybe_add_event(
             user_profile_id=user_profile_id,
             bot_type=bot_type,
@@ -776,7 +776,7 @@ def build_message_send_dict(
         um_eligible_user_ids=info.um_eligible_user_ids,
         long_term_idle_user_ids=info.long_term_idle_user_ids,
         default_bot_user_ids=info.default_bot_user_ids,
-        service_bot_tuples=info.service_bot_tuples,
+        message_handling_bot_tuples=info.message_handling_bot_tuples,
         all_bot_user_ids=info.all_bot_user_ids,
         push_device_registered_user_ids=info.push_device_registered_user_ids,
         topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
@@ -982,7 +982,7 @@ def do_send_messages(
 
     ums: list[UserMessageLite] = []
     for send_request in send_message_requests:
-        # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
+        # Message handling bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
         # they will be processed later.
         mentioned_user_ids = send_request.rendering_result.mentions_user_ids
 
@@ -1010,9 +1010,9 @@ def do_send_messages(
 
         ums.extend(user_messages)
 
-        send_request.service_queue_events = get_service_bot_events(
+        send_request.message_handling_queue_events = get_message_handling_bot_events(
             sender=send_request.message.sender,
-            service_bot_tuples=send_request.service_bot_tuples,
+            message_handling_bot_tuples=send_request.message_handling_bot_tuples,
             mentioned_user_ids=mentioned_user_ids,
             active_user_ids=send_request.active_user_ids,
             recipient_type=send_request.message.recipient.type,
@@ -1028,7 +1028,7 @@ def do_send_messages(
     # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
     #   and 'automatically_unmute_topics_in_muted_streams_policy' user settings.
     # * Notifying clients via send_event_on_commit
-    # * Triggering outgoing webhooks via the service event queue.
+    # * Triggering outgoing webhooks via the message handling event queue.
     # * Updating the `first_message_id` field for streams without any message history.
     # * Implementing the Welcome Bot reply hack
     # * Adding links to the embed_links queue for open graph processing.
@@ -1315,8 +1315,8 @@ def do_send_messages(
 
                 send_welcome_bot_response(send_request)
 
-        assert send_request.service_queue_events is not None
-        for queue_name, events in send_request.service_queue_events.items():
+        assert send_request.message_handling_queue_events is not None
+        for queue_name, events in send_request.message_handling_queue_events.items():
             for event in events:
                 queue_event_on_commit(
                     queue_name,

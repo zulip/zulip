@@ -10,7 +10,7 @@ const bot_data = zrequire("bot_data");
 
 const people = zrequire("people");
 
-// Bot types and service bot types can be found
+// Bot types and message handling bot types can be found
 // in zerver/models/users.py - UserProfile Class or
 // zever/openapi/zulip.yaml
 
