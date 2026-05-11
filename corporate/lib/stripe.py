@@ -1718,6 +1718,9 @@ class BillingSession(ABC):
             ).first()
             assert fixed_price_next_plan is not None
             fixed_price_next_plan.delete()
+
+            assert current_plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            do_change_plan_status(current_plan, CustomerPlan.ACTIVE)
             return "Fixed-price scheduled plan deleted"
         fixed_price_offer = CustomerPlanOffer.objects.filter(
             customer=customer, status=CustomerPlanOffer.CONFIGURED
