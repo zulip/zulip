@@ -1,5 +1,7 @@
 import * as z from "zod/mini";
 
+import {show_loading_error} from "./loading_error.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import {narrow_term_schema, state_data_schema} from "./state_data.ts";
 
 const t1 = performance.now();
@@ -133,7 +135,45 @@ function take_params(): string {
     return params;
 }
 
-export const page_params = page_params_schema.parse(JSON.parse(take_params()));
+const PAGE_PARAMS_RETRY_CAP = 5;
+
+function reload_with_deferred_state_data(): void {
+    const url = new URL(window.location.href);
+    const previous_retries = Number.parseInt(url.searchParams.get("page_params_retry") ?? "0", 10);
+    if (previous_retries >= PAGE_PARAMS_RETRY_CAP) {
+        clear_page_params_retry_from_url();
+        show_loading_error();
+        return;
+    }
+    url.searchParams.set("state_data", "deferred");
+    url.searchParams.set("page_params_retry", String(previous_retries + 1));
+    const backoff_ms =
+        get_retry_backoff_seconds(undefined, previous_retries + 1, false, true) * 1000;
+    setTimeout(() => {
+        window.location.replace(url.toString());
+    }, backoff_ms);
+}
+
+function clear_page_params_retry_from_url(): void {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("page_params_retry")) {
+        url.searchParams.delete("page_params_retry");
+        window.history.replaceState(window.history.state, "", url.toString());
+    }
+}
+
+function parse_page_params(): z.infer<typeof page_params_schema> {
+    try {
+        const params = page_params_schema.parse(JSON.parse(take_params()));
+        clear_page_params_retry_from_url();
+        return params;
+    } catch (error) {
+        reload_with_deferred_state_data();
+        throw error;
+    }
+}
+
+export const page_params = parse_page_params();
 
 const t2 = performance.now();
 export const page_params_parse_time = t2 - t1;
