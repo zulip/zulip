@@ -12,6 +12,4 @@ class kandra::profile::teleport inherits kandra::profile::base {
 
   # https://goteleport.com/docs/reference/deployment/networking/#ports-with-tls-routing
   kandra::firewall_allow { 'teleport_server_ui': port => 443 }
-  # Port 3025 is inward-facing, for other nodes to look up auth information
-  kandra::firewall_allow { 'teleport_server_auth': port => 3025 }
 }

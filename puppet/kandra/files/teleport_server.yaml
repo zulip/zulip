@@ -8,7 +8,7 @@ teleport:
 auth_service:
   enabled: "yes"
   proxy_listener_mode: multiplex
-  listen_addr: 0.0.0.0:3025
+  listen_addr: 127.0.0.1:3025
   cluster_name: teleport.zulipchat.net
   authentication:
     type: local
