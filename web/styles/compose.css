@@ -2057,6 +2057,13 @@ textarea.new_message_textarea {
            controls offscreen when previewing a very tall message. */
         height: 0;
         flex: 1;
+
+        /* Without this, .simplebar-wrapper has overflow: hidden and
+           height: 0, so Popper treats it as a zero-height clipping
+           ancestor and hides popovers anchored inside the preview. */
+        .simplebar-wrapper {
+            overflow: visible;
+        }
     }
 }
 
