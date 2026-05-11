@@ -2039,6 +2039,19 @@ To Do
         self.rm_tree(test_slack_unzipped_file)
 
         user_data_fixture = orjson.loads(self.fixture_data("user_data.json", type="slack_fixtures"))
+        # Mark a non-primary-owner, non-slackbot member as deleted in our copy
+        # of the fixture so that the import produces an inactive UserProfile.
+        deleted_slack_user_id = "U8VAHEVUY"
+        for member in user_data_fixture["members"]:
+            if member["id"] == deleted_slack_user_id:
+                self.assertFalse(member["is_primary_owner"])
+                self.assertFalse(member["is_bot"])
+                self.assertFalse(member["deleted"])
+                member["deleted"] = True
+                break
+        else:
+            raise AssertionError(f"Slack user {deleted_slack_user_id} not found in fixture")
+
         team_info_fixture = orjson.loads(self.fixture_data("team_info.json", type="slack_fixtures"))
         mock_get_slack_api_data.side_effect = [
             user_data_fixture["members"],
@@ -2106,6 +2119,8 @@ To Do
                 AuditLogEventType.REALM_PROPERTY_CHANGED,
                 AuditLogEventType.REALM_CREATED,
                 AuditLogEventType.REALM_IMPORTED,
+                AuditLogEventType.USER_CREATED,
+                AuditLogEventType.USER_DEACTIVATED,
                 AuditLogEventType.USER_GROUP_CREATED,
                 AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
@@ -2113,7 +2128,7 @@ To Do
             },
         )
 
-        self.assertEqual(Message.objects.filter(realm=realm).count(), 96)
+        self.assertEqual(Message.objects.filter(realm=realm).count(), 95)
 
         # All auth backends are enabled initially.
         self.assertTrue(all(realm.authentication_methods_dict().values()))
