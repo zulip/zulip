@@ -608,6 +608,16 @@ run_test("get_retry_backoff_seconds", () => {
     assert.ok(backoff >= 45);
     assert.ok(backoff <= 90);
 
+    // Slower backoff scale
+    // First retry should be between 2-4 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_500_error, 1, false, true);
+    assert.ok(backoff >= 2);
+    assert.ok(backoff <= 4);
+    // 100th retry should be between 45-90 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100, false, true);
+    assert.ok(backoff >= 45);
+    assert.ok(backoff <= 90);
+
     const xhr_rate_limit_error = {
         status: 429,
         responseJSON: {
