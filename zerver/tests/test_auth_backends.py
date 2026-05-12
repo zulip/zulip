@@ -4390,7 +4390,7 @@ class AppleAuthMixin:
     def generate_id_token(
         self, account_data_dict: dict[str, str], audience: str | None = None
     ) -> str:
-        payload = dict(email=account_data_dict["email"])
+        payload = dict(email=account_data_dict["email"], iss=AppleAuthBackend.ID_TOKEN_ISSUER)
 
         # This setup is important because python-social-auth decodes `id_token`
         # with `SOCIAL_AUTH_APPLE_CLIENT` as the `audience`

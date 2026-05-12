@@ -114,9 +114,13 @@ def move_rows(
         # Use base_model's db_table unless otherwise specified.
         src_db_table = base_model._meta.db_table
 
-    fields = [field for field in base_model._meta.fields if field not in EXCLUDE_FIELDS]
-    src_fields = [Identifier(src_db_table, field.column) for field in fields]
-    dst_fields = [Identifier(field.column) for field in fields]
+    fields = [
+        field.column
+        for field in base_model._meta.fields
+        if field not in EXCLUDE_FIELDS and field.column is not None
+    ]
+    src_fields = [Identifier(src_db_table, field) for field in fields]
+    dst_fields = [Identifier(field) for field in fields]
     with connection.cursor() as cursor:
         cursor.execute(
             raw_query.format(
