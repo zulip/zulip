@@ -30531,10 +30531,13 @@ components:
       description: |
         A list of user IDs (preferred) or Zulip API email
         addresses of the users to be subscribed to or unsubscribed
-        from the channels specified in the `subscriptions` parameter. If
-        not provided, then the requesting user/bot is subscribed.
+        from the channels specified in the `subscriptions` parameter.
 
-        **Changes**: The integer format is new in Zulip 3.0 (feature level 9).
+        If not provided, then the requesting user/bot will be
+        subscribed/unsubscribed from the specified channels.
+
+        **Changes**: Before Zulip 3.0 (feature level 9), only the
+        Zulip API email address string format was supported.
       oneOf:
         - type: array
           items:
@@ -30542,7 +30545,7 @@ components:
         - type: array
           items:
             type: integer
-      example: ["ZOE@zulip.com"]
+      example: [11]
     ReactionType:
       description: |
         A string indicating the type of emoji. Each emoji `reaction_type`
