@@ -11,4 +11,5 @@ class kandra::prometheus::rabbitmq {
     require => Service['rabbitmq-server'],
   }
   kandra::firewall_allow { 'rabbitmq': port => '15692' }
+  kandra::teleport::prometheus_app { 'rabbitmq': port => '15692' }
 }

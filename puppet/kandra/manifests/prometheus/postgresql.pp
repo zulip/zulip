@@ -67,6 +67,7 @@ class kandra::prometheus::postgresql {
   }
 
   kandra::firewall_allow { 'postgres_exporter': port => '9187' }
+  kandra::teleport::prometheus_app { 'postgres_exporter': port => '9187' }
   file { "${zulip::common::supervisor_conf_dir}/prometheus_postgres_exporter.conf":
     ensure  => file,
     require => [
