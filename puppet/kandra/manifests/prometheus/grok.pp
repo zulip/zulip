@@ -27,7 +27,6 @@ class kandra::prometheus::grok {
     notify  => Service[supervisor],
   }
 
-  kandra::firewall_allow { 'grok_exporter': port => '9144' }
   kandra::teleport::prometheus_app { 'grok_exporter': port => '9144' }
   file { "${zulip::common::supervisor_conf_dir}/prometheus_grok_exporter.conf":
     ensure  => file,

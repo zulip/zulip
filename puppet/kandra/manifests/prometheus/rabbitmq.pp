@@ -10,6 +10,5 @@ class kandra::prometheus::rabbitmq {
     unless  => 'grep -q rabbitmq_prometheus /etc/rabbitmq/enabled_plugins',
     require => Service['rabbitmq-server'],
   }
-  kandra::firewall_allow { 'rabbitmq': port => '15692' }
   kandra::teleport::prometheus_app { 'rabbitmq': port => '15692' }
 }
