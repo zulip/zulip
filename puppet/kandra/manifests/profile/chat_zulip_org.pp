@@ -9,7 +9,6 @@ class kandra::profile::chat_zulip_org inherits kandra::profile::base {
   include kandra::prometheus::postgresql
   kandra::teleport::prometheus_app { 'smokescreen': port => '4760' }
   kandra::teleport::prometheus_app { 'camo': port => '9292' }
-  kandra::firewall_allow { 'smokescreen_metrics': port => '4760' }
 
   kandra::firewall_allow { 'http': }
   kandra::firewall_allow { 'https': }

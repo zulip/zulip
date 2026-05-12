@@ -17,7 +17,6 @@ class kandra::prometheus::process {
     cleanup_after  => [Service[supervisor]],
   }
 
-  kandra::firewall_allow { 'process_exporter': port => '9256' }
   kandra::teleport::prometheus_app { 'process_exporter': port => '9256' }
   file { $conf:
     ensure  => file,
