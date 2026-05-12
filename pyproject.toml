@@ -28,10 +28,6 @@ prod = [
   # Needed for image processing and thumbnailing
   "pyvips",
 
-  # Needed for building complex DB queries
-  "sqlalchemy==1.4.*",
-  "greenlet",
-
   # Needed for S3 file uploads and other AWS tools
   "boto3",
 
@@ -300,7 +296,6 @@ dev = [
   "django-stubs",
   "google-re2-stubs",
   "lxml-stubs",
-  "SQLAlchemy[mypy]",
   "types-beautifulsoup4",
   "types-boto",
   "types-decorator",
