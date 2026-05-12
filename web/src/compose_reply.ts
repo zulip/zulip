@@ -13,7 +13,6 @@ import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
-import * as internal_url from "./internal_url.ts";
 import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -377,20 +376,14 @@ function generate_sender_only_quote_context(message: Message): string {
 function generate_channel_message_quote_context(message: Message): string {
     assert(message.type === "stream");
     const sender_mention = generate_sender_mention(message);
-    const topic_url = internal_url.by_stream_topic_url(
-        message.stream_id,
-        message.topic,
-        sub_store.maybe_get_stream_name,
-        message.id,
-    );
     const channel_name = sub_store.maybe_get_stream_name(message.stream_id)!;
-    const topic_link_text = topic_link_util.get_stream_topic_link_syntax(
+    const topic_link = topic_link_util.get_stream_topic_link_syntax(
         channel_name,
         message.topic,
-        true,
+        message.id.toString(),
     );
     // Final message looks like:
-    //     @_**Iago|5** [said](link to message) in [#channel > topic](topic URL):
+    //     @_**Iago|5** [said](link to message) in #**channel>topic**:
     //     ```quote
     //     message content
     //     ```
@@ -402,7 +395,7 @@ function generate_channel_message_quote_context(message: Message): string {
         {
             username: sender_mention,
             link_to_message: hash_util.by_conversation_and_time_url(message),
-            topic_link: topic_link_util.as_markdown_link_syntax(topic_link_text, topic_url),
+            topic_link,
         },
     );
 }
