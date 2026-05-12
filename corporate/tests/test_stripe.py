@@ -8802,6 +8802,114 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
     @responses.activate
     @mock_stripe()
+    def test_delete_scheduled_fixed_price_plan_on_complimentary_access_plan(
+        self, *mocks: Mock
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+
+        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+
+        # Create complimentary access plan for realm.
+        with time_machine.travel(self.now, tick=False):
+            start_date = timezone_now()
+            end_date = add_months(start_date, months=3)
+            remote_realm_billing_session.create_complimentary_access_plan(start_date, end_date)
+
+        customer = Customer.objects.get(remote_realm=self.remote_realm)
+        complimentary_access_plan = get_current_plan_by_customer(customer)
+        assert complimentary_access_plan is not None
+        self.assertEqual(complimentary_access_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(complimentary_access_plan.next_invoice_date, end_date)
+
+        # Upload data.
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.login("iago")
+
+        # Schedule a fixed-price business plan at current plan end_date.
+        self.assertFalse(CustomerPlanOffer.objects.exists())
+
+        # Configure required_plan_tier and fixed_price.
+        annual_fixed_price = 1200
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{self.remote_realm.id}",
+                "required_plan_tier": CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            },
+        )
+        self.assert_in_success_response(
+            ["Required plan tier for Zulip Dev set to Zulip Business."], result
+        )
+
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_realm_id": f"{self.remote_realm.id}", "fixed_price": annual_fixed_price},
+        )
+        self.assert_in_success_response(
+            ["Customer can now buy a fixed price Zulip Business plan."],
+            result,
+        )
+        fixed_price_plan_offer = CustomerPlanOffer.objects.get(customer=customer)
+        self.assertEqual(fixed_price_plan_offer.status, CustomerPlanOffer.CONFIGURED)
+        self.assertEqual(fixed_price_plan_offer.tier, CustomerPlanOffer.TIER_SELF_HOSTED_BUSINESS)
+
+        self.logout()
+        self.login("hamlet")
+
+        # Login.
+        self.execute_remote_billing_authentication_flow(hamlet)
+
+        # Schedule upgrade to business plan
+        with time_machine.travel(self.now, tick=False):
+            stripe_customer = self.add_card_and_upgrade(
+                remote_server_plan_start_date="billing_cycle_end_date", talk_to_stripe=False
+            )
+
+        zulip_realm_customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+        assert zulip_realm_customer is not None
+        realm_complimentary_access_plan = get_current_plan_by_customer(zulip_realm_customer)
+        assert realm_complimentary_access_plan is not None
+        self.assertEqual(realm_complimentary_access_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(
+            realm_complimentary_access_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
+        self.assertEqual(realm_complimentary_access_plan.next_invoice_date, end_date)
+
+        new_plan = self.billing_session.get_next_plan(realm_complimentary_access_plan)
+        assert new_plan is not None
+        self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(new_plan.status, CustomerPlan.NEVER_STARTED)
+        self.assertEqual(
+            new_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+        )
+        self.assertEqual(new_plan.next_invoice_date, end_date)
+        self.assertEqual(new_plan.billing_cycle_anchor, end_date)
+
+        support_request = SupportViewRequest(
+            support_type=SupportType.delete_fixed_price_next_plan,
+        )
+        with (
+            self.assertLogs("corporate.stripe", "INFO") as m,
+        ):
+            success_message = self.billing_session.process_support_view_request(support_request)
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {realm_complimentary_access_plan.id}, status: {CustomerPlan.ACTIVE}"
+            self.assertEqual(m.output[0], expected_log)
+        self.assertEqual(success_message, "Fixed-price scheduled plan deleted")
+
+        self.assertFalse(
+            CustomerPlan.objects.filter(
+                customer=zulip_realm_customer, status=CustomerPlan.NEVER_STARTED
+            ).exists()
+        )
+        realm_complimentary_access_plan.refresh_from_db()
+        self.assertEqual(realm_complimentary_access_plan.status, CustomerPlan.ACTIVE)
+
+    @responses.activate
+    @mock_stripe()
     def test_schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan(
         self, *mocks: Mock
     ) -> None:

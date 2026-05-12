@@ -1705,23 +1705,27 @@ class BillingSession(ABC):
         return f"Customer can now buy a fixed price {required_plan_tier_name} plan."
 
     def delete_fixed_price_plan(self) -> str:
-        # See configure_fixed_price_plan above for how these CustomerPlan
-        # and CustomerPlanOffer objects are created for fixed-price plans.
         customer = self.get_customer()
         assert customer is not None
-        current_plan = get_current_plan_by_customer(customer)
-        if current_plan is not None and self.check_plan_tier_is_billable(current_plan.tier):
-            fixed_price_next_plan = CustomerPlan.objects.filter(
-                customer=customer,
-                status=CustomerPlan.NEVER_STARTED,
-                fixed_price__isnull=False,
-            ).first()
-            assert fixed_price_next_plan is not None
-            fixed_price_next_plan.delete()
 
+        # A NEVER_STARTED fixed-price CustomerPlan can be scheduled on top of
+        # any current plan whose status is SWITCH_PLAN_TIER_AT_PLAN_END, which
+        # includes complimentary access plans whose tier is not billable.
+        fixed_price_next_plan = CustomerPlan.objects.filter(
+            customer=customer,
+            status=CustomerPlan.NEVER_STARTED,
+            fixed_price__isnull=False,
+        ).first()
+        if fixed_price_next_plan is not None:
+            current_plan = get_current_plan_by_customer(customer)
+            assert current_plan is not None
             assert current_plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            fixed_price_next_plan.delete()
             do_change_plan_status(current_plan, CustomerPlan.ACTIVE)
             return "Fixed-price scheduled plan deleted"
+
+        # Otherwise, we expect to have a configured CustomerPlanOffer for this
+        # customer.
         fixed_price_offer = CustomerPlanOffer.objects.filter(
             customer=customer, status=CustomerPlanOffer.CONFIGURED
         ).first()
