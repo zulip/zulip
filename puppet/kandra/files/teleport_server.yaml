@@ -21,7 +21,7 @@ auth_service:
 
 proxy_service:
   enabled: "yes"
-  web_listen_addr: 0.0.0.0:443
+  web_listen_addr: "[::]:443"
   public_addr: teleport.zulipchat.net:443
   acme:
     enabled: "yes"
