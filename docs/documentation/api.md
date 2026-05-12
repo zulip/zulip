@@ -2,7 +2,7 @@
 
 This document explains the system for documenting [Zulip's REST
 API](https://zulip.com/api/rest). See also the [API design
-documentation](../subsystems/api-design.md) which covers how to safely
+documentation](../processes/api-design.md) which covers how to safely
 make changes to the Zulip API.
 
 Zulip's API documentation is an essential resource both for users and

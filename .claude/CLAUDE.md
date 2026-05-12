@@ -553,7 +553,7 @@ Recommend pausing for discussion when:
 - Performance implications are unclear
 - The feature design isn't fully specified
 - The API or data model design isn't fully specified
-- An API change may not be compatible (See `docs/subsystems/api-design.md`).
+- An API change may not be compatible (See `docs/processes/api-design.md`).
 - Existing tests are failing for unclear reasons
 
 ## Task-Specific Approaches

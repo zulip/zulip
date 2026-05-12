@@ -16,7 +16,6 @@ sending-messages
 notifications
 queuing
 pointer
-api-design
 markdown
 caching
 performance
@@ -34,8 +33,6 @@ client
 logging
 typing-indicators
 django-upgrades
-release-checklist
-api-release-checklist
 input-pills
 unread_messages
 billing
