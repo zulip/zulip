@@ -17,6 +17,7 @@ class kandra::prometheus::node {
   }
 
   kandra::firewall_allow { 'node_exporter': port => '9100' }
+  kandra::teleport::prometheus_app { 'node_exporter': port => '9100' }
   file { "${zulip::common::supervisor_conf_dir}/prometheus_node_exporter.conf":
     ensure  => file,
     require => [

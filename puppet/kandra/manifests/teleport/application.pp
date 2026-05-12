@@ -5,6 +5,7 @@ define kandra::teleport::application (
   $port,
   $description = '',
   $order = '50',
+  $labels = {},
 ) {
   include kandra::teleport::application_top
   $app_data = [
@@ -14,7 +15,7 @@ define kandra::teleport::application (
       uri         => "http://localhost:${port}",
       labels      => {
         name => $name,
-      },
+      } + $labels,
     },
   ]
 
