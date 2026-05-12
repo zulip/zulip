@@ -907,8 +907,9 @@ test("quote_messages", ({disallow, override, override_rewire}) => {
     const url_encoded_topic_name = ".5Bzulip.2Fzulip.3Etopic.5D";
 
     const near_url = `http://zulip.zulipdev.com/#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/near/${selected_message.id}`;
-    const with_url = `#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/with/${selected_message.id}`;
-    const topic_link_syntax = `[#${channel_object.name} > ${html_entity_encoded_topic_name}](${with_url})`;
+    const fallback_stream_id = stream_data.get_stream_id(channel_object.name);
+    const fallback_url = `#narrow/channel/${fallback_stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/with/${selected_message.id}`;
+    const topic_link_syntax = `[#${channel_object.name} > ${html_entity_encoded_topic_name}](${fallback_url})`;
 
     const fence = "```";
     expected_replacement = `translated: @_**${selected_message.sender_full_name}|${selected_message.sender_id}** [said](${near_url}) in ${topic_link_syntax}:
