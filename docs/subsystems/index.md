@@ -5,6 +5,7 @@
 maxdepth: 3
 ---
 
+directory-structure
 dependencies
 settings
 html-css

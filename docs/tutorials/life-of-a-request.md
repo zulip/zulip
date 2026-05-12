@@ -57,7 +57,7 @@ There are various
 [urls.py](https://docs.djangoproject.com/en/5.0/topics/http/urls/)
 files throughout the server codebase, which are covered in more detail
 in
-[the directory structure doc](../overview/directory-structure.md).
+[the directory structure doc](../subsystems/directory-structure.md).
 
 The main Zulip Django app is `zerver`. The routes are found in
 `zproject/urls.py`.

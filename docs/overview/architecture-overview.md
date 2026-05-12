@@ -7,7 +7,7 @@ contains the Zulip backend (written in Python 3.x and Django), the
 web app (written in JavaScript and TypeScript) and our library of
 incoming webhook [integrations](https://zulip.com/integrations/)
 with other services and applications (see [the directory structure
-guide](directory-structure.md)).
+guide](../subsystems/directory-structure.md)).
 
 [Zulip Flutter](https://github.com/zulip/zulip-flutter) is the official
 mobile Zulip client supporting both iOS and Android, built with Flutter,
@@ -110,7 +110,7 @@ feed.
 For more details on the frontend, see our documentation on
 [translation](../translating/translating.md),
 [templates](../subsystems/html-css.md#html-templates),
-[directory structure](directory-structure.md), and
+[directory structure](../subsystems/directory-structure.md), and
 [the static asset pipeline](../subsystems/html-css.md#static-asset-pipeline).
 
 [jinja2]: http://jinja.pocoo.org/
