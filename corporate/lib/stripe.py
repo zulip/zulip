@@ -1730,6 +1730,18 @@ class BillingSession(ABC):
             customer=customer, status=CustomerPlanOffer.CONFIGURED
         ).first()
         assert fixed_price_offer is not None
+        if fixed_price_offer.sent_invoice_id is not None:
+            # Void the Stripe invoice and local Invoice object associated
+            # with this CustomerPlanOffer.
+            stripe_invoice = stripe.Invoice.retrieve(fixed_price_offer.sent_invoice_id)
+            if stripe_invoice.status == "open":
+                stripe.Invoice.void_invoice(fixed_price_offer.sent_invoice_id)
+            local_invoice = Invoice.objects.get(
+                customer=customer,
+                stripe_invoice_id=fixed_price_offer.sent_invoice_id,
+            )
+            local_invoice.status = Invoice.VOID
+            local_invoice.save(update_fields=["status"])
         fixed_price_offer.delete()
         return "Fixed-price plan offer deleted"
 

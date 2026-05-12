@@ -8909,6 +8909,65 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(realm_complimentary_access_plan.status, CustomerPlan.ACTIVE)
 
     @responses.activate
+    def test_delete_configured_fixed_price_plan_offer_with_sent_invoice(self) -> None:
+        self.login("iago")
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{self.remote_realm.id}",
+                "required_plan_tier": CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            },
+        )
+
+        annual_fixed_price = 1200
+        sent_invoice_id = "test_sent_invoice_id"
+        stripe_customer_id = "cus_123"
+        hamlet = self.example_user("hamlet")
+        mock_invoice = MagicMock()
+        mock_invoice.status = "open"
+        with (
+            patch(
+                "stripe.Customer.retrieve",
+                return_value=Mock(id=stripe_customer_id, email=hamlet.delivery_email),
+            ),
+            patch("stripe.Invoice.retrieve", return_value=mock_invoice),
+        ):
+            self.client_post(
+                "/activity/remote/support",
+                {
+                    "remote_realm_id": f"{self.remote_realm.id}",
+                    "fixed_price": annual_fixed_price,
+                    "sent_invoice_id": sent_invoice_id,
+                },
+            )
+
+        customer = Customer.objects.get(remote_realm=self.remote_realm)
+        fixed_price_plan_offer = CustomerPlanOffer.objects.get(customer=customer)
+        self.assertEqual(fixed_price_plan_offer.status, CustomerPlanOffer.CONFIGURED)
+        self.assertEqual(fixed_price_plan_offer.sent_invoice_id, sent_invoice_id)
+        local_invoice = Invoice.objects.get(stripe_invoice_id=sent_invoice_id)
+        self.assertEqual(local_invoice.status, Invoice.SENT)
+
+        with (
+            patch("stripe.Invoice.retrieve", return_value=mock_invoice),
+            patch("stripe.Invoice.void_invoice") as mock_void,
+        ):
+            support_request = SupportViewRequest(
+                support_type=SupportType.delete_fixed_price_next_plan,
+            )
+            success_message = self.billing_session.process_support_view_request(support_request)
+        self.assertEqual(success_message, "Fixed-price plan offer deleted")
+        mock_void.assert_called_once_with(sent_invoice_id)
+
+        self.assertFalse(CustomerPlanOffer.objects.exists())
+        local_invoice.refresh_from_db()
+        self.assertEqual(local_invoice.status, Invoice.VOID)
+
+    @responses.activate
     @mock_stripe()
     def test_schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan(
         self, *mocks: Mock
