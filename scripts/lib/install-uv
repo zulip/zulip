@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -eu
 
-version=0.11.7
+version=0.11.14
 arch="$(uname -m)"
 tarball="uv-$arch-unknown-linux-gnu.tar.gz"
 declare -A sha256=(
-    [aarch64]=f2ee1cde9aabb4c6e43bd3f341dadaf42189a54e001e521346dc31547310e284
-    [x86_64]=6681d691eb7f9c00ac6a3af54252f7ab29ae72f0c8f95bdc7f9d1401c23ea868
+    [aarch64]=c4958f729e216f1610632574ed927b8cf0af1bd02cb88cb30d948571727aee43
+    [x86_64]=f3b623eb0e6141a7053d571d59a0bdc341e0f238ea8f5f0b4815ddbec9a2a296
 )
 
 check_version() {
