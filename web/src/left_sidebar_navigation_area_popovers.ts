@@ -339,6 +339,7 @@ export function initialize(): void {
         {
             ...popover_menus.left_sidebar_tippy_options,
             onMount(instance) {
+                popover_menus.popover_instances.top_left_sidebar = instance;
                 const $popper = $(instance.popper);
 
                 $popper.one(
