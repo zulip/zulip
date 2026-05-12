@@ -143,14 +143,14 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime) -> None:
         .filter(sent_recent_digest=False)
     )
 
-    user_ids = target_users.order_by("id").values_list("id", flat=True)
+    user_ids = list(target_users.order_by("id").values_list("id", flat=True))
 
     # We process batches of 30.  We want a big enough batch
     # to amortize work, but not so big that a single item
     # from the queue takes too long to process.
     chunk_size = 30
     for i in range(0, len(user_ids), chunk_size):
-        chunk_user_ids = list(user_ids[i : i + chunk_size])
+        chunk_user_ids = user_ids[i : i + chunk_size]
         queue_digest_user_ids(chunk_user_ids, cutoff)
         logger.info(
             "Queuing user_ids for potential digest: %s",
