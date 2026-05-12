@@ -1,0 +1,18 @@
+[Unit]
+Description=tbot - Teleport Machine & Workload Identity Service
+After=network.target
+
+[Service]
+Type=simple
+User=teleport
+Group=teleport
+Restart=always
+RestartSec=5
+Environment="TELEPORT_ANONYMOUS_TELEMETRY=0"
+ExecStart=/usr/local/bin/tbot start -c /etc/tbot.yaml --pid-file=/var/lib/teleport/bot/pid
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/var/lib/teleport/bot/pid
+LimitNOFILE=524288
+
+[Install]
+WantedBy=multi-user.target
