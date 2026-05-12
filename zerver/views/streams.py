@@ -128,7 +128,7 @@ def bulk_principals_to_user_profiles(
     # principals are user emails.
     if isinstance(principals[0], str):
         return bulk_access_users_by_email(
-            principals,  # type: ignore[arg-type] # principals guaranteed to be list[str] only.
+            principals,
             acting_user=acting_user,
             allow_deactivated=False,
             allow_bots=True,
@@ -138,7 +138,7 @@ def bulk_principals_to_user_profiles(
     # principals are user ids.
     else:
         return bulk_access_users_by_id(
-            principals,  # type: ignore[arg-type] # principals guaranteed to be list[int] only.
+            principals,
             acting_user=acting_user,
             allow_deactivated=False,
             allow_bots=True,

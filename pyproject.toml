@@ -111,7 +111,7 @@ prod = [
 
   # Install Python Social Auth
   "social-auth-app-django",
-  "social-auth-core[azuread,saml]",
+  "social-auth-core[saml]",
   "python3-saml",
 
   # For encrypting a login token to the desktop app

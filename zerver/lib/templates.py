@@ -175,6 +175,7 @@ def render_markdown_path(
         with open(markdown_file_path) as fp:
             markdown_string = fp.read()
     else:
+        assert jinja.env.loader is not None
         markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
 
     if (

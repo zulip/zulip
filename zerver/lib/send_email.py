@@ -305,7 +305,7 @@ def send_immediate_email(
     log_email_config_errors()
 
     if dry_run:
-        print(mail.message().get_payload()[0])
+        print(mail.message().get_payload(0))
         return
 
     owns_connection = connection is None
