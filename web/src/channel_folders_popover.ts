@@ -176,8 +176,6 @@ export function initialize(): void {
         },
         {
             also_trigger_on_enter: true,
-            get_focus_return_element: (reference) =>
-                util.the($(reference).siblings(".stream-list-section-toggle")),
         },
     );
 
