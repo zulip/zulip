@@ -121,6 +121,14 @@ export class KlipyNetwork extends GifNetwork {
     }
 }
 
+// Klipy expects locale in xx_YY format (ISO 639-1 language code +
+// ISO 3166-1 country code, e.g. en_US), but user_settings.default_language
+// uses Django's xx-yy format (e.g. en-gb).
+function to_klipy_locale(language: string): string {
+    const locale = new Intl.Locale(language).maximize();
+    return `${locale.language}_${locale.region}`;
+}
+
 function get_base_payload(): KlipyPayload {
     return {
         key: realm.klipy_api_key,
@@ -128,7 +136,7 @@ function get_base_payload(): KlipyPayload {
         // We use the tinygif size for the picker UI, and the mediumgif size
         // for what gets actually uploaded.
         media_filter: "tinygif,mediumgif",
-        locale: user_settings.default_language,
+        locale: to_klipy_locale(user_settings.default_language),
         contentfilter: klipy_rating_map[get_rating()],
     };
 }
