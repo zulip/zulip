@@ -685,6 +685,9 @@
     --length-user-status-circle-popover-menu: 8px;
     --length-user-popover-menu-avatar: 64px;
 
+    /* Buttons */
+    --icon-button-padding: 0.375em;
+
     /* Overlay heights for streams modal */
     --overlay-container-height: 95vh;
     --overlay-container-max-height: 1000px;
