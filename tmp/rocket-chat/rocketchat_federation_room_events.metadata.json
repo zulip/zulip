@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"context.roomId":{"$numberInt":"1"}},"name":"context.roomId_1"}],"uuid":"aed7ce8f60734ea896ff5ccf2a8e8bd0","collectionName":"rocketchat_federation_room_events","type":"collection"}

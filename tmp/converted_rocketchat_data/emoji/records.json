@@ -1,0 +1,16 @@
+[
+  {
+    "path": "0/emoji/images/swimming.png",
+    "s3_path": "0/emoji/images/swimming.png",
+    "file_name": "swimming.png",
+    "realm_id": 0,
+    "name": "swimming"
+  },
+  {
+    "path": "0/emoji/images/swimming.png",
+    "s3_path": "0/emoji/images/swimming.png",
+    "file_name": "swimming.png",
+    "realm_id": 0,
+    "name": "swim-custom"
+  }
+]

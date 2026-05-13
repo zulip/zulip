@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"fcd59f9cf9c74e52823049eea6e34834","collectionName":"rocketchat_livechat_business_hours","type":"collection"}

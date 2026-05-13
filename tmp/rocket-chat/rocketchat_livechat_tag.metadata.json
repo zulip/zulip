@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"name":{"$numberInt":"1"}},"name":"name_1","unique":true}],"uuid":"8b3db41c363143ea9c7bcd6344935f17","collectionName":"rocketchat_livechat_tag","type":"collection"}

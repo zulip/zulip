@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"callId":{"$numberInt":"1"},"requestTimestamp":{"$numberInt":"-1"}},"name":"callId_1_requestTimestamp_-1"}],"uuid":"a86f322338cb466aaf1ab0b604965a23","collectionName":"rocketchat_media_call_negotiations","type":"collection"}

@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"createdAt":{"$numberInt":"1"}},"name":"createdAt_1","expireAfterSeconds":{"$numberInt":"86400"}}],"uuid":"19bd22bcc8784ace82c4f0ba3d52056d","collectionName":"rocketchat_email_message_history","type":"collection"}

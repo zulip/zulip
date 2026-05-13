@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"appId":{"$numberInt":"1"},"associations":{"$numberInt":"1"}},"name":"appId_1_associations_1"}],"uuid":"6b433655c7264689b489ace61f1496ca","collectionName":"rocketchat_apps_persistence","type":"collection"}

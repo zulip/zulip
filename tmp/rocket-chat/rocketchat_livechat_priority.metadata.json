@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"name":{"$numberInt":"1"}},"name":"name_1","unique":true,"partialFilterExpression":{"$and":[{"name":{"$exists":true}},{"name":{"$gt":""}}]}}],"uuid":"19e524f0b56f43e39076c5d3bc9f7053","collectionName":"rocketchat_livechat_priority","type":"collection"}

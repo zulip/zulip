@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"key":{"$numberInt":"1"}},"name":"key_1","unique":true},{"v":{"$numberInt":"2"},"key":{"values":{"$numberInt":"1"}},"name":"values_1"}],"uuid":"3d761518b469490f9abca172d7f2df4e","collectionName":"rocketchat_abac_attributes","type":"collection"}

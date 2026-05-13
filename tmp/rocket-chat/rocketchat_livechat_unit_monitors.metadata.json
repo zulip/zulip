@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"unitId":{"$numberInt":"1"}},"name":"unitId_1"},{"v":{"$numberInt":"2"},"key":{"monitorId":{"$numberInt":"1"}},"name":"monitorId_1"}],"uuid":"3f0187d4852743d89bbd1c81af4411ed","collectionName":"rocketchat_livechat_unit_monitors","type":"collection"}

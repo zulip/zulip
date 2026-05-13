@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"userId":{"$numberInt":"1"}},"name":"userId_1"}],"uuid":"fa71ce9f43f24ef2a8810063fb309e3c","collectionName":"rocketchat_webdav_accounts","type":"collection"}

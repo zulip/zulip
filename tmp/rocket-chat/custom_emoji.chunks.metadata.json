@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"files_id":{"$numberInt":"1"},"n":{"$numberInt":"1"}},"name":"files_id_1_n_1","background":true,"unique":true}],"uuid":"3c440ea8bec54b418b5ee59f61903452","collectionName":"custom_emoji.chunks","type":"collection"}

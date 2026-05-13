@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"files_id":{"$numberInt":"1"},"n":{"$numberInt":"1"}},"name":"files_id_1_n_1","background":true,"unique":true}],"uuid":"9b1920a645f04f79966c528deebc3c61","collectionName":"rocketchat_uploads.chunks","type":"collection"}

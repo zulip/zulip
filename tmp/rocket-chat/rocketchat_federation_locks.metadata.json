@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"roomId":{"$numberInt":"1"}},"name":"roomId_1","unique":true}],"uuid":"8690d026984e43f4841a2e5e0172e272","collectionName":"rocketchat_federation_locks","type":"collection"}
