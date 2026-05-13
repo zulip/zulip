@@ -21,6 +21,7 @@ import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
 import * as message_edit from "./message_edit.ts";
 import type {MessageList} from "./message_list.ts";
+import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
@@ -1716,6 +1717,8 @@ export class MessageListView {
         }
         this._post_process($rendered_msg);
         $row.replaceWith($rendered_msg);
+
+        message_list_hover.reapply_hover_on_row_replace($row, $rendered_msg, message_container.msg);
 
         // If this list not currently displayed, we don't need to select the message.
         if (was_selected && this.list === message_lists.current) {
