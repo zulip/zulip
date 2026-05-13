@@ -121,6 +121,77 @@ export class KlipyNetwork extends GifNetwork {
     }
 }
 
+// Klipy's `locale` parameter accepts only the BCP-47 codes from this
+// enum (see https://docs.klipy.com/migrate-from-tenor/search). Zulip's
+// language codes (Django's `to_language` output, e.g. "en-gb",
+// "zh-hans") don't all line up: Klipy uses uppercase region subtags,
+// has no bare "en"/"es"/"pt"/"zh", and lacks several languages Zulip
+// supports. We pass through codes Klipy already accepts, remap the
+// known mismatches, BCP-47-normalize the rest, and fall back to
+// "en-US" for anything Klipy can't serve so the GIF picker still
+// loads (matches the previous default for English-locale users).
+const KLIPY_SUPPORTED_LOCALES = new Set([
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en-GB",
+    "en-US",
+    "es-ES",
+    "es-419",
+    "fi",
+    "fr",
+    "he",
+    "hi",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ko",
+    "lt",
+    "nl",
+    "no",
+    "pl",
+    "pt-BR",
+    "ro",
+    "ru",
+    "sv-SE",
+    "th",
+    "tr",
+    "uk",
+    "vi",
+    "zh-CN",
+    "zh-TW",
+]);
+
+const ZULIP_TO_KLIPY_LOCALE: Record<string, string> = {
+    en: "en-US",
+    es: "es-ES",
+    pt: "pt-BR",
+    "pt-pt": "pt-BR",
+    sv: "sv-SE",
+    zh: "zh-CN",
+    "zh-hans": "zh-CN",
+    "zh-tw": "zh-TW",
+};
+
+function get_klipy_locale(): string {
+    const lang = user_settings.default_language;
+    const direct = ZULIP_TO_KLIPY_LOCALE[lang];
+    if (direct !== undefined) {
+        return direct;
+    }
+    const parts = lang.split("-");
+    if (parts.length === 1) {
+        return KLIPY_SUPPORTED_LOCALES.has(lang) ? lang : "en-US";
+    }
+    const normalized = parts[0] + "-" + parts.slice(1).join("-").toUpperCase();
+    return KLIPY_SUPPORTED_LOCALES.has(normalized) ? normalized : "en-US";
+}
+
 function get_base_payload(): KlipyPayload {
     return {
         key: realm.klipy_api_key,
@@ -128,7 +199,7 @@ function get_base_payload(): KlipyPayload {
         // We use the tinygif size for the picker UI, and the mediumgif size
         // for what gets actually uploaded.
         media_filter: "tinygif,mediumgif",
-        locale: user_settings.default_language,
+        locale: get_klipy_locale(),
         contentfilter: klipy_rating_map[get_rating()],
     };
 }
