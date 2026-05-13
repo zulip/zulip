@@ -24072,8 +24072,8 @@ paths:
                                 can_move_messages_out_of_channel_group: {}
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
-                                can_resolve_topics_group: {}
                                 can_subscribe_group: {}
+                                can_resolve_topics_group: {}
                                 can_create_topic_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
