@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
+  "packageManager": "pnpm@11.1.1+sha512.d1fdf5f73c617b64fa1a56a81c3c8dfe0e966e33a6010aa256b517ae77be21d93e05affc0de1a83b0e4f29d569f68b446ae8f068cd7247c0bb3df0fb4d7bdf9a",
   "type": "module",
   "dependencies": {
     "@babel/core": "^7.5.5",
@@ -113,7 +113,7 @@
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/gtag.js": "^0.0.20",
     "@types/is-url": "^1.2.32",
-    "@types/jquery": "^3.3.31",
+    "@types/jquery": "^4.0.0",
     "@types/jquery.validation": "^1.16.7",
     "@types/js-cookie": "^3.0.6",
     "@types/katex": "^0.16.0",
@@ -149,7 +149,7 @@
     "eslint-plugin-formatjs": "^6.1.2",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-mdx": "^3.6.2",
-    "eslint-plugin-no-jquery": "^3.0.2",
+    "eslint-plugin-no-jquery": "^4.0.0",
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-unicorn": "^64.0.0",
     "globals": "^17.0.0",
@@ -174,25 +174,6 @@
     "xvfb": "^0.4.0",
     "yaml": "^2.0.0-8",
     "zulip-js": "^2.0.8"
-  },
-  "pnpm": {
-    "minimumReleaseAge": 1440,
-    "overrides": {
-      "@types/eslint": "npm:eslint@^9.10.0",
-      "openapi-examples-validator>json-schema-ref-parser@^9": "npm:@apidevtools/json-schema-ref-parser@^15.3.3",
-      "source-map@^0.6": "npm:source-map-js@^1.2.1"
-    },
-    "patchedDependencies": {
-      "email-addresses": "patches/email-addresses.patch",
-      "handlebars": "patches/handlebars.patch",
-      "jquery-caret-plugin": "patches/jquery-caret-plugin.patch",
-      "simplebar": "patches/simplebar.patch",
-      "svgicons2svgfont": "patches/svgicons2svgfont.patch",
-      "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch",
-      "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch",
-      "autosize": "patches/autosize.patch",
-      "jdenticon": "patches/jdenticon.patch"
-    }
   },
   "nyc": {
     "exclude": [

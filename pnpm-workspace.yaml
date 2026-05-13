@@ -1,2 +1,31 @@
 packages:
   - starlight_help
+
+minimumReleaseAge: 1440
+
+overrides:
+  "@types/eslint": npm:eslint@^9.10.0
+  openapi-examples-validator>json-schema-ref-parser@^9: npm:@apidevtools/json-schema-ref-parser@^15.3.3
+  source-map@^0.6: npm:source-map-js@^1.2.1
+
+patchedDependencies:
+  "@types/jquery@4.0.0": patches/@types__jquery@4.0.0.patch # https://github.com/DefinitelyTyped/DefinitelyTyped/pull/74984
+  autosize: patches/autosize.patch
+  email-addresses: patches/email-addresses.patch # https://github.com/jackbearheart/email-addresses/pull/81
+  eslint-plugin-no-jquery: patches/eslint-plugin-no-jquery.patch # https://github.com/wikimedia/eslint-plugin-no-jquery/pull/363
+  handlebars: patches/handlebars.patch # https://github.com/handlebars-lang/handlebars.js/pull/2053
+  jdenticon: patches/jdenticon.patch # https://github.com/dmester/jdenticon/pull/56
+  jquery-caret-plugin: patches/jquery-caret-plugin.patch
+  svgicons2svgfont: patches/svgicons2svgfont.patch # https://github.com/nfroidure/svgicons2svgfont/pull/173
+  textarea-caret: patches/textarea-caret@3.1.0.patch
+  tippy.js: patches/tippy.js@6.3.7.patch # https://github.com/atomiks/tippyjs/pull/1166
+
+allowBuilds:
+  core-js: false
+  es5-ext: false
+  esbuild: false
+  puppeteer: false
+  sharp: false
+  sleep: false
+  ttf2woff2: false
+  vnu-jar: false
