@@ -424,7 +424,7 @@
     aspect-ratio: 1;
     font-size: var(--base-font-size-px);
     background-color: transparent; /* Override button default background color */
-    padding: 0.375em;
+    padding: var(--icon-button-padding);
     cursor: pointer;
     border: none;
     border-radius: 4px;

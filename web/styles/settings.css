@@ -469,7 +469,7 @@ select.settings_select {
     But here the buttons have bottom padding of 0.375em and thus there is
     already some extra space between this and the section below it, so we
     reduce the bottom margin by 0.375em. */
-    margin-bottom: 0.875em;
+    margin-bottom: calc(1.25em - var(--icon-button-padding));
 
     .modal-field-label {
         margin-bottom: 0;
