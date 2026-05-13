@@ -12,7 +12,7 @@ export const user_status_schema = z.intersection(
             reaction_type: z.enum(["zulip_extra_emoji", "realm_emoji", "unicode_emoji"]),
         }),
         z.object({
-            emoji_name: z.undefined(),
+            emoji_name: z.optional(z.never()),
         }),
     ]),
 );

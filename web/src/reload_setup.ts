@@ -25,7 +25,7 @@ const legacy_reload_vars_schema = z.intersection(
     }),
     z.union([
         z.object({
-            msg: z.optional(z.undefined()),
+            msg: z.optional(z.never()),
         }),
         z.intersection(
             z.object({
