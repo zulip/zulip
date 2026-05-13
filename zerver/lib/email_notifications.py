@@ -2,7 +2,9 @@
 
 import base64
 import logging
+import os
 import re
+import urllib.parse
 import zoneinfo
 from collections import defaultdict
 from dataclasses import dataclass
@@ -109,6 +111,20 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
         inline_image_containers = fragment.find_class("message_inline_image")
         for container in inline_image_containers:
             container.drop_tree()
+
+    # `![alt](url)` markdown produces a bare <img class="inline-image">.
+    # These images can't be displayed in the emails as the request
+    # from the mail server can't be authenticated.
+    # We replace each <img> with a link to the original upload.
+    for img in fragment.cssselect("img.inline-image"):
+        original_src = img.get("data-original-src")
+        assert original_src is not None
+        link_text = img.get("alt") or urllib.parse.unquote(os.path.basename(original_src))
+        new_a = e.A(link_text, href=original_src, target="_blank")
+        new_a.tail = img.tail
+        parent = img.getparent()
+        assert parent is not None
+        parent.replace(img, new_a)
 
     fragment.make_links_absolute(base_url)
 

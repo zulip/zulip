@@ -1692,6 +1692,60 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self.assertEqual(actual_output, expected_output)
 
+        # `![alt](url)` markdown renders as a bare <img class="inline-image">,
+        # not wrapped in a `message_inline_image` div. We synthesize a link
+        # from `data-original-src` for emails. Verify different cases:
+
+        # Message with only an uploaded image as content.
+        test_data = (
+            '<p><img alt="chart.png" class="inline-image"'
+            ' data-original-content-type="image/png" data-original-dimensions="1900x1062"'
+            ' data-original-src="/user_uploads/{realm_id}/43/K8YE1_LG9a4n_oILSgtpoCf0/chart.png"'
+            ' src="/user_uploads/thumbnail/{realm_id}/43/K8YE1_LG9a4n_oILSgtpoCf0/chart.png/840x560.webp"></p>'
+        )
+        test_data = test_data.format(realm_id=zulip_realm.id)
+        actual_output = convert(test_data)
+        expected_output = (
+            '<div><p><a href="http://example.com/user_uploads/{realm_id}/43/K8YE1_LG9a4n_oILSgtpoCf0/chart.png"'
+            ' target="_blank">chart.png</a></p></div>'
+        )
+        expected_output = expected_output.format(realm_id=zulip_realm.id)
+        self.assertEqual(actual_output, expected_output)
+
+        # Uploaded image with surrounding text.
+        test_data = (
+            "<p>Before <br>"
+            ' <img alt="logo.png" class="inline-image"'
+            ' data-original-content-type="image/png" data-original-dimensions="385x156"'
+            ' data-original-src="/user_uploads/{realm_id}/dd/5_wtVM7mYODx9_m5vXHoE92_/logo.png"'
+            ' src="/user_uploads/thumbnail/{realm_id}/dd/5_wtVM7mYODx9_m5vXHoE92_/logo.png/840x560.webp"><br>'
+            " after</p>"
+        )
+        test_data = test_data.format(realm_id=zulip_realm.id)
+        actual_output = convert(test_data)
+        expected_output = (
+            '<div><p>Before <br> <a href="http://example.com/user_uploads/{realm_id}/dd/5_wtVM7mYODx9_m5vXHoE92_/logo.png"'
+            ' target="_blank">logo.png</a><br> after</p></div>'
+        )
+        expected_output = expected_output.format(realm_id=zulip_realm.id)
+        self.assertEqual(actual_output, expected_output)
+
+        # Empty `alt` falls back to the URL-decoded basename of `data-original-src`.
+        test_data = (
+            '<p><img alt="" class="inline-image"'
+            ' data-original-content-type="image/png" data-original-dimensions="1900x1062"'
+            ' data-original-src="/user_uploads/{realm_id}/ab/cd/My%20Chart.png"'
+            ' src="/user_uploads/thumbnail/{realm_id}/ab/cd/My%20Chart.png/840x560.webp"></p>'
+        )
+        test_data = test_data.format(realm_id=zulip_realm.id)
+        actual_output = convert(test_data)
+        expected_output = (
+            '<div><p><a href="http://example.com/user_uploads/{realm_id}/ab/cd/My%20Chart.png"'
+            ' target="_blank">My Chart.png</a></p></div>'
+        )
+        expected_output = expected_output.format(realm_id=zulip_realm.id)
+        self.assertEqual(actual_output, expected_output)
+
     def test_spoilers_in_html_emails(self) -> None:
         test_data = '<div class="spoiler-block"><div class="spoiler-header">\n\n<p><a>header</a> text</p>\n</div><div class="spoiler-content" aria-hidden="true">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>'
         fragment = lxml.html.fromstring(test_data)
