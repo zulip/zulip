@@ -65,7 +65,7 @@
        right padding and the column to its left accounts for the
        space of modal close button icon width - right padding. */
     grid-template:
-        ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
+        ". modal-header-content modal-close-button ." 2.75em /* 44px at 16px/1em */
         ". modal-header-content .                  ." minmax(0, auto)
         ". modal-tab-switcher   modal-tab-switcher ." minmax(0, auto)
         / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
@@ -142,6 +142,10 @@
 .modal__close {
     grid-area: modal-close-button;
     align-self: center;
+    /* Offset the close button to the right so that the
+       X lines up with the other visual elements, but
+       the padded clickable area is maintained. */
+    margin-right: calc(var(--icon-button-padding) * -1);
 
     &:focus-visible {
         outline-offset: -2px !important;
