@@ -8,4 +8,4 @@ This directory contains scripts that:
   development-only scripts live in `tools/`).
 
 For more details, see
-https://zulip.readthedocs.io/en/latest/overview/directory-structure.html.
+https://zulip.readthedocs.io/en/latest/subsystems/directory-structure.html.
