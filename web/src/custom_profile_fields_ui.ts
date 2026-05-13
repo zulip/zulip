@@ -376,12 +376,15 @@ export function initialize_custom_date_type_fields(
         });
 
     $(element_id)
-        .find<HTMLInputElement>(".custom_user_field input.datepicker")
+        .find<HTMLInputElement>(".custom_user_field input.date-field-alt-input")
         .on("mouseenter", function () {
+            const $remove_date = $(this)
+                .closest(".settings-profile-user-field")
+                .find(".remove_date");
             if ($(this).val()!.length <= 0) {
-                $(this).parent().find(".remove_date").hide();
+                $remove_date.removeClass("visible");
             } else {
-                $(this).parent().find(".remove_date").show();
+                $remove_date.addClass("visible");
             }
         });
 
