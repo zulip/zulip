@@ -19,256 +19,6 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9091"]
 
-  - job_name: "node"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 9100
-        refresh_interval: 1m
-        filters:
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:9100"]
-        labels:
-          role: prod
-          instance: <%= @czo %>
-<% if @other_hosts -%>
-      - targets:
-<%   @other_hosts.each do |host| -%>
-        - <%= host %>:9100
-<%   end -%>
-<% end -%>
-    relabel_configs:
-      - source_labels: ["__address__"]
-        regex: "([^.]+).*"
-        target_label: "instance"
-      - source_labels: ["__address__"]
-        regex: "([^.-]+).*"
-        target_label: "role"
-
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-      - source_labels: ["__meta_ec2_tag_role"]
-        regex: "(.+)"
-        target_label: "role"
-
-  - job_name: "camo"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 9292
-        filters:
-          - name: "tag:role"
-            values: ["smokescreen"]
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:9292"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-
-  - job_name: "smokescreen"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 4760
-        filters:
-          - name: "tag:role"
-            values: ["smokescreen"]
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:4760"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-
-  - job_name: "access_logs"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 9144
-        filters:
-          - name: "tag:role"
-            values: ["prod_app_frontend", "staging_app_frontend"]
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:9144"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-      - source_labels: ["__meta_ec2_tag_role"]
-        regex: "(prod|staging)_app_frontend"
-        replacement: "${1}"
-        target_label: "deploy"
-
-  - job_name: "uwsgi"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 9238
-        filters:
-          - name: "tag:role"
-            values: ["prod_app_frontend", "staging_app_frontend"]
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:9238"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-      - source_labels: ["__meta_ec2_tag_role"]
-        regex: "(prod|staging)_app_frontend"
-        replacement: "${1}"
-        target_label: "deploy"
-
-  - job_name: "rabbitmq"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 15692
-        filters:
-          - name: "tag:role"
-            values: ["prod_app_frontend", "staging_app_frontend"]
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:15692"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    relabel_configs:
-      - target_label: __metrics_path__
-        replacement: "/metrics/per-object"
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-      - source_labels: ["__meta_ec2_tag_role"]
-        regex: "(prod|staging)_app_frontend"
-        replacement: "${1}"
-        target_label: "deploy"
-
-  - job_name: "tornado"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 9256
-        filters:
-          - name: "tag:role"
-            values: ["prod_app_frontend", "staging_app_frontend"]
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:9256"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-      - source_labels: ["__meta_ec2_tag_role"]
-        regex: "(prod|staging)_app_frontend"
-        replacement: "${1}"
-        target_label: "deploy"
-
-  - job_name: "redis"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 9121
-        filters:
-          - name: "tag:role"
-            values: ["redis"]
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:9121"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-
-  - job_name: "postgres"
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 9187
-        filters:
-          - name: "tag:role"
-            values: ["postgresql"]
-          - name: instance-state-name
-            values: ["running"]
-    static_configs:
-      - targets: ["<%= @czo %>:9187"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-
-  - job_name: "memcached"
-    static_configs:
-      - targets: ["<%= @czo %>:11212"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 11212
-        filters:
-          - name: "tag:role"
-            values: ["prod_app_frontend", "staging_app_frontend"]
-          - name: instance-state-name
-            values: ["running"]
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-      - source_labels: ["__meta_ec2_tag_role"]
-        regex: "(prod|staging)_app_frontend"
-        replacement: "${1}"
-        target_label: "deploy"
-
-  - job_name: "tusd"
-    static_configs:
-      - targets: ["<%= @czo %>:9900"]
-        labels:
-          deploy: prod
-          instance: <%= @czo %>
-    ec2_sd_configs:
-      - region: us-east-1
-        port: 9900
-        filters:
-          - name: "tag:role"
-            values: ["prod_app_frontend", "staging_app_frontend"]
-          - name: instance-state-name
-            values: ["running"]
-    relabel_configs:
-      - source_labels: ["__meta_ec2_tag_Name"]
-        regex: "(.+)"
-        target_label: "instance"
-      - source_labels: ["__meta_ec2_tag_role"]
-        regex: "(prod|staging)_app_frontend"
-        replacement: "${1}"
-        target_label: "deploy"
-
   - job_name: "wal-g"
     scrape_interval: 5m
     scrape_timeout: 20s
@@ -290,3 +40,118 @@ scrape_configs:
     scrape_timeout: 3s
     static_configs:
       - targets: ["localhost:9081"]
+
+  - job_name: "node"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=node_exporter"
+        refresh_interval: 1m
+    relabel_configs: &relabels
+      # This relabel config is reused across all teleport-sd scrape configs.  Because
+      # of https://github.com/prometheus/prometheus/issues/2347 (lack of <<: support),
+      # we include some exporter-specific rules in here, with a source_label/regex pair.
+      - source_labels: ["exporter"]
+        regex: rabbitmq
+        # Rabbitmq should use the heaver-weight but more useful per-object endpoint
+        target_label: __metrics_path__
+        replacement: "/metrics/per-object"
+      - source_labels: ["role"]
+        regex: "(prod|staging)_app_frontend"
+        # Prod and staging get a deploy=
+        replacement: "${1}"
+        target_label: "deploy"
+      - source_labels: ["role"]
+        regex: "chat"
+        # So does chat.zulip.org
+        replacement: "prod"
+        target_label: "deploy"
+      - source_labels: ["exporter"]
+        regex: "node_exporter"
+        # The historical node_exporter data does not like getting a surprise deploy=
+        # label, so strip it off
+        target_label: "deploy"
+        replacement: ""
+      - action: labeldrop
+        # Finally, strip Teleport-specific labels
+        regex: "type|exporter|name"
+
+  - job_name: "camo"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=camo"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "smokescreen"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=smokescreen"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "redis"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=redis_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "postgres"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=postgres_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "access_logs"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=grok_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "uwsgi"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=uwsgi_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "rabbitmq"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=rabbitmq"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "tornado"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=process_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "memcached"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=memcached_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "tusd"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=tusd"
+        refresh_interval: 1m
+    relabel_configs: *relabels
