@@ -196,7 +196,7 @@
     "Cache-Control": "no-cache, no-store",
     "Connection": "keep-alive",
     "Content-Length": "5502",
-    "Content-Security-Policy": "base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=kLfPfx2HhngGH4OXW3QNuWE1S2_gVK0u8e4llr0D2d7xwJ06Tpo8OdyAiKhx5i96CuFU9UP_LP1tKqhn",
+    "Content-Security-Policy": "base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=NORMALIZED",
     "Content-Type": "application/json",
     "Date": "NORMALIZED DATETIME",
     "Idempotency-Key": "00000000-0000-0000-0000-000000000000",
