@@ -74,7 +74,12 @@ function test_reply_label(expected_label) {
     );
 }
 
-run_test("reply_label", () => {
+run_test("reply_label", ({mock_template}) => {
+    mock_template(
+        "decorated_channel_name.hbs",
+        false,
+        (data) => `<span>${data.stream.name}</span>`,
+    );
     // Mocking up a test message list
     const filter = new Filter([]);
     const list = new MessageList({
@@ -165,10 +170,10 @@ run_test("reply_label", () => {
     );
 
     const expected_labels = [
-        "#first_stream &gt; first_topic",
-        "#first_stream &gt; second_topic",
-        "#second_stream &gt; third_topic",
-        "#second_stream &gt; second_topic",
+        `<span>first_stream</span> &gt; first_topic`,
+        `<span>first_stream</span> &gt; second_topic`,
+        `<span>second_stream</span> &gt; third_topic`,
+        `<span>second_stream</span> &gt; second_topic`,
         "Bob",
         "Bob, Zoe",
     ];
@@ -193,7 +198,7 @@ run_test("reply_label", () => {
     const label_html = $("#left_bar_compose_reply_button_big").html();
     assert.equal(
         label_html,
-        `translated: Message #second_stream &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span>`,
+        `translated: Message <span>second_stream</span> &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span>`,
     );
 });
 
@@ -204,9 +209,14 @@ run_test("empty_narrow", () => {
     assert.equal(label, "translated: Compose message");
 });
 
-run_test("test_non_message_list_input", () => {
+run_test("test_non_message_list_input", ({mock_template}) => {
     message_lists.current = undefined;
     recent_view_util.is_visible = () => true;
+    mock_template(
+        "decorated_channel_name.hbs",
+        false,
+        (data) => `<span>${data.stream.name}</span>`,
+    );
     const stream = make_stream({
         subscribed: true,
         name: "stream test",
@@ -219,7 +229,7 @@ run_test("test_non_message_list_input", () => {
         stream_id: stream.stream_id,
         topic: "topic test",
     });
-    test_reply_label("#stream test &gt; topic test");
+    test_reply_label(`<span>stream test</span> &gt; topic test`);
 
     // Direct message conversation with current user row.
     compose_closed_ui.update_recipient_text_for_reply_button({

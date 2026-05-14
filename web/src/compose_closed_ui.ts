@@ -14,12 +14,15 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 
 type RecipientLabel = {
     label_text: string;
     has_empty_string_topic?: boolean;
     stream_name?: string;
+    stream?: StreamSubscription;
+    topic_display_name?: string;
     is_dm_with_self?: boolean;
 };
 
@@ -31,6 +34,8 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
             label_text: "#" + stream.name + " > " + topic_display_name,
             has_empty_string_topic: topic === "",
             stream_name: stream.name,
+            stream,
+            topic_display_name,
         };
         return recipient_label;
     }
@@ -248,6 +253,8 @@ export function update_recipient_text_for_reply_button(
         const rendered_recipient_label = render_reply_recipient_label({
             has_empty_string_topic: recipient_label.has_empty_string_topic,
             channel_name: recipient_label.stream_name,
+            stream: recipient_label.stream,
+            topic_display_name: recipient_label.topic_display_name,
             is_dm_with_self: recipient_label.is_dm_with_self,
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
