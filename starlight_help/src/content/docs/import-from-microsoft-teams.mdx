@@ -118,22 +118,8 @@ token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-clien
      details about these tokens and the endpoints that the import tool calls.
   1. Click the **Grant admin consent for `your organization`** button in the **API
      permissions** menu to grant admin consent to all scopes.
-  1. Take note of the application's `redirect_uri`, `tenant_id`, `client_id`, and
+  1. Take note of the application's `tenant_id`, `client_id`, and
      `client_secret`.
-  1. To gain administrator permission, make the following HTTP request using
-     the details from your Microsoft Entra ID application:
-     ```bash "<client_id>" "<tenant_id>" "<redirect_uri>"
-     https://login.microsoftonline.com/<tenant_id>/adminconsent?
-     client_id=<client_id>
-     &redirect_uri=<redirect_uri>
-     ```
-  1. You will be redirected to the Microsoft sign in page. Log in using a
-     **global administrator** account and approve all the application permissions
-     that you have requested. If successful, you will be redirected to your
-     application's `redirect_uri` with the following parameters:
-     ```bash "<redirect_uri>" "<tenant_id>"
-     GET <redirect_uri>?tenant=<tenant_id>&admin_consent=True
-     ```
   1. To get the access token, make the following request:
      ```bash "<redirect_uri>" "<tenant_id>" "<client_id>" "<client_secret>"
      curl --location --request POST 'https://login.microsoftonline.com/<tenant_id>/oauth2/v2.0/token' \
@@ -153,10 +139,6 @@ token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-clien
      ```
   1. Take note of the `access_token`.
 </Steps>
-
-<ZulipNote>
-  If the token expires and you need a new one, repeat step 14 above.
-</ZulipNote>
 
 #### Required token permissions
 
