@@ -199,7 +199,7 @@
     "Content-Security-Policy": "base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=kLfPfx2HhngGH4OXW3QNuWE1S2_gVK0u8e4llr0D2d7xwJ06Tpo8OdyAiKhx5i96CuFU9UP_LP1tKqhn",
     "Content-Type": "application/json",
     "Date": "NORMALIZED DATETIME",
-    "Idempotency-Key": "9272ba50-417b-4661-a94d-92c78efe84f0",
+    "Idempotency-Key": "00000000-0000-0000-0000-000000000000",
     "Original-Request": "req_NORMALIZED",
     "Request-Id": "req_NORMALIZED",
     "Server": "nginx",

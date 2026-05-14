@@ -246,9 +246,12 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
                 file_content = file_content.replace(match, normalized_values[pattern][match])
         file_content = re.sub(r'(?<="risk_score": )(\d+)', "0", file_content)
         file_content = re.sub(r'(?<="times_redeemed": )(\d+)', "0", file_content)
+        # Idempotency keys appear as a lowercase JSON field ("idempotency_key") and
+        # as a response-header field ("Idempotency-Key"). Stripe assigns a fresh
+        # uuid for both on every call.
         file_content = re.sub(
-            r'(?<="idempotency_key": )"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"',
-            '"00000000-0000-0000-0000-000000000000"',
+            r'(?<=")(idempotency_key|Idempotency-Key)": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"',
+            r'\1": "00000000-0000-0000-0000-000000000000"',
             file_content,
         )
         # Dates
