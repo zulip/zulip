@@ -4,7 +4,7 @@
         {{#*inline "z-link"~}}
             <a class="white-space-preserve-wrap" href="{{new_location_url}}">
                 {{~!-- squash whitespace --~}}
-                #{{new_stream_name}} &gt; <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{new_topic_display_name}}</span>
+                {{> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}} &gt; <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{new_topic_display_name}}</span>
                 {{~!-- squash whitespace --~}}
             </a>
         {{~/inline}}
