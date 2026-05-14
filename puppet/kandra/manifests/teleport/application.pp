@@ -11,7 +11,7 @@ define kandra::teleport::application (
     {
       name        => $name,
       description => $description,
-      uri         => "http://127.0.0.1:${port}",
+      uri         => "http://localhost:${port}",
       labels      => {
         name => $name,
       },
