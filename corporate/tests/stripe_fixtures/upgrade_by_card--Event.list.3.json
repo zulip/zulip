@@ -36,7 +36,7 @@
             "customer_reference": null,
             "order_reference": "in_1SVWqIDwzgQ85STg2r6fJo"
           },
-          "payment_method": "pm_NORMALIZED",
+          "payment_method": "upgrade_by_card--Customer.retrieve.2.json",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -134,7 +134,7 @@
           },
           "paid": true,
           "payment_intent": "upgrade_by_card--Event.list.3.json",
-          "payment_method": "pm_NORMALIZED",
+          "payment_method": "upgrade_by_card--Customer.retrieve.2.json",
           "payment_method_details": {
             "card": {
               "amount_authorized": 48000,
@@ -213,7 +213,7 @@
           "created": 1000000000,
           "currency": "usd",
           "id": "upgrade_by_card--Event.list.3.json",
-          "invoice": "in_NORMALIZED",
+          "invoice": "upgrade_by_card--Event.list.3.json",
           "is_default": true,
           "livemode": false,
           "object": "invoice_payment",
@@ -1038,7 +1038,7 @@
           "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_NORMALIZED",
+            "default_payment_method": "upgrade_by_card--Customer.retrieve.2.json",
             "footer": null,
             "rendering_options": null
           },

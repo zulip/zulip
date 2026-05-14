@@ -50,7 +50,7 @@
         "submit": null,
         "terms_of_service_acceptance": null
       },
-      "customer": "cus_NORMALIZED",
+      "customer": "upgrade_by_card--Customer.create.1.json",
       "customer_creation": null,
       "customer_details": {
         "address": null,
@@ -96,7 +96,7 @@
       },
       "recovered_from": null,
       "saved_payment_method_options": null,
-      "setup_intent": "seti_NORMALIZED",
+      "setup_intent": "upgrade_by_card--SetupIntent.list.1.json",
       "shipping_address_collection": null,
       "shipping_cost": null,
       "shipping_options": [],
