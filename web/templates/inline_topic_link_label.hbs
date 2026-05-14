@@ -1,13 +1,13 @@
 {{#if is_empty_string_topic}}
 <span class="stream-topic">
     {{~!-- squash whitespace --~}}
-    #{{channel_name}} &gt; <em class="empty-topic-display">{{t "general chat"}}</em>
+    {{> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}} &gt; <em class="empty-topic-display">{{t "general chat"}}</em>
     {{~!-- squash whitespace --~}}
 </span>
 {{~else}}
 <span class="stream-topic">
     {{~!-- squash whitespace --~}}
-    #{{channel_name}} &gt; {{topic_display_name}}
+    {{> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}} &gt; {{topic_display_name}}
     {{~!-- squash whitespace --~}}
 </span>
 {{~/if}}
