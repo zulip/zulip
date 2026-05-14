@@ -48,6 +48,11 @@ ReturnT = TypeVar("ReturnT")
 
 STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
 
+# Match Unix timestamps in the 1500000000..1999999999 range (approximately
+# 2017-07-14 through 2033-05-18) for Stripe "real-world" timestamps in
+# fixtures we generate for tests.
+FIXTURE_NORMALIZE_REAL_TIMESTAMP_RE = r": (1[5-9][0-9]{8})(?![0-9-])"
+
 
 def stripe_fixture_path(
     decorated_function_name: str, mocked_function_name: str, call_count: int
@@ -137,9 +142,7 @@ def delete_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         os.remove(fixture_file)
 
 
-def normalize_fixture_data(
-    decorated_function: CallableT, tested_timestamp_fields: Sequence[str] = []
-) -> None:  # nocoverage
+def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
     id_lengths = [
         ("test", 12),
@@ -201,14 +204,6 @@ def normalize_fixture_data(
             for prefix, length in id_lengths
         }
     )
-    # Normalizing across all timestamps still causes a lot of variance run to run, which is
-    # why we're doing something a bit more complicated
-    for i, timestamp_field in enumerate(tested_timestamp_fields):
-        # Don't use (..) notation, since the matched timestamp can easily appear in other fields
-        pattern_translations[rf'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'] = (
-            f'"{timestamp_field}": {1000000000 + i}'
-        )
-
     normalized_values: dict[str, dict[str, str]] = {pattern: {} for pattern in pattern_translations}
     for fixture_file in fixture_files_for_function(decorated_function):
         with open(fixture_file) as f:
@@ -234,8 +229,8 @@ def normalize_fixture_data(
         file_content = re.sub(r"[0-3]\d [A-Z][a-z]{2} 20[1-2]\d", "NORMALIZED DATE", file_content)
         # IP addresses
         file_content = re.sub(r'"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"', '"0.0.0.0"', file_content)
-        # All timestamps not in tested_timestamp_fields
-        file_content = re.sub(r": (1[5-9][0-9]{8})(?![0-9-])", ": 1000000000", file_content)
+        # Unix timestamps
+        file_content = re.sub(FIXTURE_NORMALIZE_REAL_TIMESTAMP_RE, ": 1000000000", file_content)
 
         with open(fixture_file, "w") as f:
             f.write(file_content)
@@ -287,7 +282,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
 
 
 def mock_stripe(
-    tested_timestamp_fields: Sequence[str] = [], generate: bool = settings.GENERATE_STRIPE_FIXTURES
+    generate: bool = settings.GENERATE_STRIPE_FIXTURES,
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     def _mock_stripe(decorated_function: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         generate_fixture = generate
@@ -312,7 +307,7 @@ def mock_stripe(
             if generate_fixture:  # nocoverage
                 delete_fixture_data(decorated_function)
                 val = decorated_function(*args, **kwargs)
-                normalize_fixture_data(decorated_function, tested_timestamp_fields)
+                normalize_fixture_data(decorated_function)
                 return val
             else:
                 return decorated_function(*args, **kwargs)
@@ -368,8 +363,9 @@ class StripeTestCase(ZulipTestCase):
         self.assertEqual(get_latest_seat_count(realm), 6)
         self.seat_count = 6
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
-        # Choosing dates with corresponding timestamps below 1500000000 so that they are
-        # not caught by our timestamp normalization regex in normalize_fixture_data
+
+        # Test dates are deliberately set in 2012 so their Unix timestamps
+        # stay below 1.5e9; see FIXTURE_NORMALIZE_REAL_TIMESTAMP_RE.
         self.now = datetime(2012, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
         self.next_month = datetime(2012, 2, 2, 3, 4, 5, tzinfo=timezone.utc)
         self.next_year = datetime(2013, 1, 2, 3, 4, 5, tzinfo=timezone.utc)

@@ -404,7 +404,7 @@ class StripeTest(StripeTestCase):
         ]:
             self.assert_in_response(substring, response)
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_upgrade_by_card(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -540,7 +540,7 @@ class StripeTest(StripeTestCase):
             response,
         )
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_card_attached_to_customer_but_payment_fails(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -553,7 +553,7 @@ class StripeTest(StripeTestCase):
         # use these cards for automatic payments.
         # TODO: Add a test case for it here.
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_upgrade_by_invoice(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -664,7 +664,7 @@ class StripeTest(StripeTestCase):
         ]:
             self.assert_in_response(substring, response)
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_free_trial_upgrade_by_card(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -884,7 +884,7 @@ class StripeTest(StripeTestCase):
         # Don't show price breakdown
         self.assert_not_in_success_response(["{self.seat_count} x"], response)
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_free_trial_upgrade_by_invoice(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -1078,7 +1078,7 @@ class StripeTest(StripeTestCase):
             billing_context.exception.error_description,
         )
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_free_trial_upgrade_by_invoice_with_additional_users_after_payment(
         self, *mocks: Mock
     ) -> None:
@@ -1414,7 +1414,7 @@ class StripeTest(StripeTestCase):
             realm.refresh_from_db()
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_upgrade_by_card_with_outdated_seat_count(self, *mocks: Mock) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -1809,7 +1809,7 @@ class StripeTest(StripeTestCase):
             },
         )
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_upgrade_license_counts(self, *mocks: Mock) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -1908,7 +1908,7 @@ class StripeTest(StripeTestCase):
         customer.save()
         check_success(False, self.seat_count - 1, {"license_management": "manual"})
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_upgrade_with_uncaught_exception(self, *mock_args: Any) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -1930,7 +1930,7 @@ class StripeTest(StripeTestCase):
             orjson.loads(response.content)["error_description"], "uncaught exception during upgrade"
         )
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_invoice_payment_succeeded_event_with_uncaught_exception(self, *mock_args: Any) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -2222,7 +2222,7 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/billing/")
         self.assertNotEqual("/sponsorship/", response["Location"])
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_redirect_for_billing_page_downgrade_at_free_trial_end(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
