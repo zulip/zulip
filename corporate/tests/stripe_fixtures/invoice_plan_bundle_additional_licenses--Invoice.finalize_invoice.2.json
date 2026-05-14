@@ -262,5 +262,5 @@
   "total_excluding_tax": 2285250,
   "total_pretax_credit_amounts": [],
   "total_taxes": [],
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }
