@@ -599,6 +599,7 @@ export function inform_if_topic_is_moved(
         narrow_url,
         orig_topic,
         old_stream: old_stream.name,
+        stream: old_stream,
         classname: compose_banner.CLASSNAMES.topic_is_moved,
         show_colored_icon: false,
         is_empty_string_topic,
