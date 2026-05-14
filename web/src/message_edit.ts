@@ -1630,7 +1630,13 @@ type ToastParams = {
 };
 
 function show_message_moved_toast(toast_params: ToastParams): void {
-    const new_stream_name = sub_store.maybe_get_stream_name(toast_params.new_stream_id);
+    const new_stream = sub_store.get(toast_params.new_stream_id);
+    if (new_stream === undefined) {
+        blueslip.error("Cannot find stream for message moved toast", {
+            stream_id: toast_params.new_stream_id,
+        });
+        return;
+    }
     const new_topic_display_name = util.get_final_topic_display_name(toast_params.new_topic_name);
     const is_empty_string_topic = toast_params.new_topic_name === "";
     const new_location_url = hash_util.by_stream_topic_url(
@@ -1640,7 +1646,7 @@ function show_message_moved_toast(toast_params: ToastParams): void {
     feedback_widget.show({
         populate($container) {
             const widget_body_html = render_message_moved_widget_body({
-                new_stream_name,
+                stream: new_stream,
                 new_topic_display_name,
                 new_location_url,
                 is_empty_string_topic,
