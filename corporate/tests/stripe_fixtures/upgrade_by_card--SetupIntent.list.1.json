@@ -6,7 +6,7 @@
       "cancellation_reason": null,
       "client_secret": "NORMALIZED",
       "created": 1000000000,
-      "customer": "cus_NORMALIZED",
+      "customer": "upgrade_by_card--Customer.create.1.json",
       "description": null,
       "excluded_payment_method_types": null,
       "flow_directions": null,

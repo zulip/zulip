@@ -242,7 +242,13 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
                         normalized_values[pattern][match] = fixture_file.split("/")[-1]
                     else:
                         normalized_values[pattern][match] = translation
-                file_content = file_content.replace(match, normalized_values[pattern][match])
+            # Stripe IDs leak across files: ``cus_XYZ`` is an ``"id"`` value in
+            # ``Customer.create`` and a ``"customer"`` value in every event
+            # referencing it. Sweep every mapping this pattern has accumulated so
+            # far, including ones registered while normalizing an earlier fixture,
+            # not just the matches ``findall`` returned for this file.
+            for original, normalized in normalized_values[pattern].items():
+                file_content = file_content.replace(original, normalized)
         file_content = re.sub(r'(?<="risk_score": )(\d+)', "0", file_content)
         file_content = re.sub(r'(?<="times_redeemed": )(\d+)', "0", file_content)
         file_content = re.sub(

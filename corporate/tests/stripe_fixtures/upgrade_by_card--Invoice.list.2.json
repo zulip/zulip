@@ -26,7 +26,7 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "upgrade_by_card--Customer.create.1.json",
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -68,7 +68,7 @@
             "object": "line_item",
             "parent": {
               "invoice_item_details": {
-                "invoice_item": "ii_NORMALIZED",
+                "invoice_item": "upgrade_by_card--Event.list.3.json",
                 "proration": false,
                 "proration_details": {
                   "credited_items": null

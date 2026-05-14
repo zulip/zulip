@@ -18,7 +18,7 @@
           "invoice_prefix": "NORMALIZED",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_NORMALIZED",
+            "default_payment_method": "upgrade_by_card--Customer.retrieve.2.json",
             "footer": null,
             "rendering_options": null
           },
