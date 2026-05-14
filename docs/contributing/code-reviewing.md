@@ -198,7 +198,7 @@ You should also go through any of the following checks that are applicable:
 
 ### Manual testing
 
-If the PR makes any frontend changes, you should make sure to play with the part
+If the PR makes any user-facing changes, make sure to play with the part
 of the app being changed to validate that things look and work as expected.
 While not all of the situations below will apply, here are some ideas for things
 that should be tested if they are applicable. Use the [development
@@ -207,6 +207,14 @@ environment][development-environment] to test any web app changes.
 This might seem like a long process, but you can go through it quite quickly
 once you get the hang of it. Trust us, it will save time and review round-trips
 down the line!
+
+Testing a PR is a great opportunity to discover pre-existing bugs or usability
+issues. Please verify that the issue you observed is pre-existing by replicating
+the behavior on `main`, and [report it](./reporting-bugs.md)!
+
+Describe the manual testing you did in the PR description (for your own work),
+or in a comment (as a reviewer), so that the next reviewer knows how thoroughly
+the changes were exercised, and can catch any testing gaps.
 
 **Visual appearance:**
 
@@ -224,9 +232,13 @@ down the line!
   UI elements?
 - Did the PR accidentally affect any other parts of the UI? E.g., if the PR
   modifies some CSS, look for other elements that may have been altered
-  unintentionally. Use `git grep` to see if the code you modified is being used
-  elsewhere.
+  unintentionally. Are you using a shared function or component? Use `git grep`
+  to see if the code you modified is being used elsewhere. Compare carefully
+  with the state in `main` to make sure you haven't introduced any incidental
+  changes.
 - Now check all of the above in the other theme (light/dark).
+- Now check all of the above at small and large [font
+  sizes](https://zulip.com/help/font-size).
 
 **Responsiveness and internationalization:**
 
@@ -237,13 +249,17 @@ down the line!
   try changing any new strings, or ones that are now displayed differently, to
   make them 1.5x longer, and check if anything breaks. What would happen if the
   strings were half as long as in English?
+- Are any [plurals and
+  lists](../translating/internationalization.md#plurals-and-lists)
+  internationalized correctly?
 
 **Strings (text):**
 If the PR adds or modifies strings, check the following:
 
 - Does the wording seem consistent with similar features (similar style, level
   of detail, etc.)?
-- If there is a number, are the `N = 1` and `N > 1` cases both handled properly?
+- Are strings appropriate in all situations (e.g., user vs. admin, other users
+  vs. yourself)?
 
 **Tooltips:**
 
@@ -258,7 +274,7 @@ on the PR.
 
 If relevant, be sure to check that:
 
-- Live updates are working as expected.
+- Live updates are working as expected, in all the places that should be updated.
 - Keyboard navigation, including tabbing to the interactive elements, is working
   as expected.
 
@@ -272,6 +288,8 @@ Some scenarios to consider:
   Test both channel messages and direct messages.
 - If the feature might require **elevated permissions**, check it out as a user who has
   permissions to use it and one who does not.
+- If the feature takes user input, check input edge cases (e.g., empty, invalid,
+  or very long).
 - Think about how the feature might **interact with other features**, and try out
   such scenarios. For example:
   - If the PR adds a banner, is it possible that it would be shown at the same
@@ -280,6 +298,10 @@ Some scenarios to consider:
     about what happens when a topic is resolved/unresolved?
   - If it's a message view feature, would anything go wrong if the message was
     collapsed or muted? If it was colored like an `@`-mention or a direct message?
+
+**Logged out view:** When appropriate, test as a logged out user. For example,
+was a new message menu item correctly added or skipped? If the item was skipped,
+did your changes introduce an extraneous separator in the menu?
 
 ## Review process and communication
 
