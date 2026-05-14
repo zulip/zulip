@@ -220,7 +220,7 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         # Don't use (..) notation, since the matched strings may be small integers that will also match
         # elsewhere in the file
         r'"realm_id": "[0-9]+"': '"realm_id": "1"',
-        r'"account_name": "[\w\s]+"': '"account_name": "NORMALIZED"',
+        r'"account_name": "[^"]+"': '"account_name": "NORMALIZED"',
     }
 
     # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
