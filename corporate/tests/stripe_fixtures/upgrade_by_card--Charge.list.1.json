@@ -86,7 +86,7 @@
           "network_token": {
             "used": false
           },
-          "network_transaction_id": "749857738210088",
+          "network_transaction_id": "000000000000000",
           "overcapture": {
             "maximum_amount_capturable": 48000,
             "status": "unavailable"

@@ -248,6 +248,11 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         file_content = re.sub(
             r'"authorization_code": "[0-9]+"', '"authorization_code": "000000"', file_content
         )
+        file_content = re.sub(
+            r'"network_transaction_id": "[0-9]+"',
+            '"network_transaction_id": "000000000000000"',
+            file_content,
+        )
         # Idempotency keys appear as a lowercase JSON field ("idempotency_key") and
         # as a response-header field ("Idempotency-Key"). Stripe assigns a fresh
         # uuid for both on every call.
