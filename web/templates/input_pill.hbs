@@ -21,7 +21,7 @@
                 {{> decorated_channel_name stream=stream }}
             {{else}}
                 {{#if is_combined_channel_topic}}
-                {{sign}}#{{combined_channel_name}} &gt;<span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}> {{topic_display_name}}</span>
+                {{sign}}{{> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}} &gt;<span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}> {{topic_display_name}}</span>
                 {{else}}
                 {{#if is_empty_string_topic}}
                 {{sign}}topic:{{#if topic_display_name}}<span class="empty-topic-display"> {{topic_display_name}}</span>{{/if}}
