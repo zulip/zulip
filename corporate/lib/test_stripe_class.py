@@ -260,6 +260,9 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
             r"\1client_secret\2NORMALIZED\3",
             file_content,
         )
+        # Stripe's CSP / Reporting headers carry a per-response random
+        # ``?q=<token>`` that's unrelated to anything we test.
+        file_content = re.sub(r"\?q=[\w-]+", "?q=NORMALIZED", file_content)
         # Dates
         file_content = re.sub(r'(?<="Date": )"(.* GMT)"', '"NORMALIZED DATETIME"', file_content)
         file_content = re.sub(r"[0-3]\d [A-Z][a-z]{2} 20[1-2]\d", "NORMALIZED DATE", file_content)
