@@ -1894,6 +1894,8 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(narrow, false), string);
     page_params.is_spectator = false;
 
+    const devel_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">devel</span></span>`;
+    const river_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">river</span></span>`;
     const devel_id = new_stream_id();
     make_sub("devel", devel_id);
 
@@ -1901,7 +1903,7 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "is", operand: "starred"},
     ];
-    string = "messages in #devel, starred messages";
+    string = `messages in ${devel_decorated}, starred messages`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     const river_id = new_stream_id();
@@ -1910,14 +1912,14 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: river_id.toString()},
         {operator: "is", operand: "unread"},
     ];
-    string = "messages in #river, unread messages";
+    string = `messages in ${river_decorated}, unread messages`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "JS"},
     ];
-    string = "messages in #devel > JS";
+    string = `messages in ${devel_decorated} > JS`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
@@ -1976,7 +1978,7 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "JS", negated: true},
     ];
-    string = "messages in #devel, exclude topic JS";
+    string = `messages in ${devel_decorated}, exclude topic JS`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
@@ -1990,28 +1992,28 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "is", operand: "starred", negated: true},
     ];
-    string = "messages in #devel, exclude starred messages";
+    string = `messages in ${devel_decorated}, exclude starred messages`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "channel", operand: devel_id.toString()},
         {operator: "has", operand: "image", negated: true},
     ];
-    string = "messages in #devel, exclude messages with images";
+    string = `messages in ${devel_decorated}, exclude messages with images`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "has", operand: "abc", negated: true},
         {operator: "channel", operand: devel_id.toString()},
     ];
-    string = "invalid abc operand for has operator, messages in #devel";
+    string = `invalid abc operand for has operator, messages in ${devel_decorated}`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "has", operand: "image", negated: true},
         {operator: "channel", operand: devel_id.toString()},
     ];
-    string = "exclude messages with images, messages in #devel";
+    string = `exclude messages with images, messages in ${devel_decorated}`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [];
@@ -2022,7 +2024,7 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "subject", operand: "JS", negated: true},
     ];
-    string = "messages in #devel, exclude topic JS";
+    string = `messages in ${devel_decorated}, exclude topic JS`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     // Empty string topic involved.
@@ -2031,8 +2033,7 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: ""},
     ];
-    string =
-        'messages in #devel > <span class="empty-topic-display">translated: general chat</span>';
+    string = `messages in ${devel_decorated} > <span class="empty-topic-display">translated: general chat</span>`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
