@@ -14,6 +14,7 @@ import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
 import type {NarrowCanonicalTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -49,6 +50,7 @@ type PillRenderData =
               description_html?: string;
               is_combined_channel_topic?: boolean;
               combined_channel_name?: string;
+              stream?: StreamSubscription;
           })
     | SearchUserPill;
 
@@ -166,11 +168,13 @@ function maybe_generate_combined_channel_topic_pill(
 
     const sign = search_pill.negated ? "-" : "";
     const channel_operand = search_terms[index - 1]!.operand;
-    const channel_name = stream_data.get_valid_sub_by_id_string(channel_operand).name;
+    const sub = stream_data.get_valid_sub_by_id_string(channel_operand);
+    const channel_name = sub.name;
     return {
         ...search_pill,
         sign,
         combined_channel_name: channel_name,
+        stream: sub,
         is_combined_channel_topic: true,
         topic_display_name: util.get_final_topic_display_name(search_pill.operand),
         is_empty_string_topic: search_pill.operand === "",
