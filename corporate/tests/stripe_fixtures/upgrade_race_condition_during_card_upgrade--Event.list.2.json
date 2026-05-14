@@ -156,7 +156,7 @@
           "total_excluding_tax": 48000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_paid": 0,
@@ -538,7 +538,7 @@
           "total_excluding_tax": 48000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_race_condition_during_card_upgrade--Event.list.2.json",
@@ -707,7 +707,7 @@
           "total_excluding_tax": 48000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "effective_at": null,
@@ -964,7 +964,7 @@
           "total_excluding_tax": 48000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_due": 0,
@@ -1151,7 +1151,7 @@
           "total_excluding_tax": 0,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_race_condition_during_card_upgrade--Event.list.2.json",

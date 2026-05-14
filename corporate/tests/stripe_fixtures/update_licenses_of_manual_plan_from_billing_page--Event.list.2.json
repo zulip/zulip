@@ -156,7 +156,7 @@
           "total_excluding_tax": 800000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
@@ -325,7 +325,7 @@
           "total_excluding_tax": 800000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_paid": 0,
@@ -503,7 +503,7 @@
           "total_excluding_tax": 800000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
@@ -672,7 +672,7 @@
           "total_excluding_tax": 800000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "automatically_finalizes_at": 1000000000,
@@ -930,7 +930,7 @@
           "total_excluding_tax": 800000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_due": 0,
@@ -1117,7 +1117,7 @@
           "total_excluding_tax": 0,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",

@@ -148,7 +148,7 @@
           "total_excluding_tax": 24000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "downgrade_realm_and_void_open_invoices--Event.list.1.json",

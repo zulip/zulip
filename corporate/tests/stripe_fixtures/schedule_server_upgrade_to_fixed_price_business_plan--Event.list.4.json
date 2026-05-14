@@ -195,7 +195,7 @@
           "total_excluding_tax": 51600,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.4.json",
