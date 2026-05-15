@@ -1010,7 +1010,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(customer_plan.status, CustomerPlan.FREE_TRIAL)
             self.assertEqual(customer_plan.next_invoice_date, free_trial_end_date)
 
-            [last_event] = iter(stripe.Event.list(limit=1))
+            cursor = self.pin_event_cursor()
             last_renewal_ledger = (
                 LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
             )
@@ -1023,7 +1023,7 @@ class StripeTest(StripeTestCase):
             # Customer pays the invoice
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event, "invoice.paid")
+            self.send_stripe_webhook_events(cursor, "invoice.paid")
 
             with time_machine.travel(self.now, tick=False):
                 response = self.client_get("/billing/")
@@ -1206,11 +1206,11 @@ class StripeTest(StripeTestCase):
             self.assertEqual(customer_plan.status, CustomerPlan.FREE_TRIAL)
             self.assertEqual(customer_plan.next_invoice_date, free_trial_end_date)
 
-            [last_event] = iter(stripe.Event.list(limit=1))
+            cursor = self.pin_event_cursor()
             # Customer pays the invoice
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event, "invoice.paid")
+            self.send_stripe_webhook_events(cursor, "invoice.paid")
 
             with time_machine.travel(self.now, tick=False):
                 response = self.client_get("/billing/")
@@ -1404,10 +1404,10 @@ class StripeTest(StripeTestCase):
             )
 
             # Customer decides to pay later
-            [last_event] = iter(stripe.Event.list(limit=1))
+            cursor = self.pin_event_cursor()
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event, "invoice.paid")
+            self.send_stripe_webhook_events(cursor, "invoice.paid")
 
             invoice_plans_as_needed(free_trial_end_date)
             CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)
@@ -1651,7 +1651,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(hamlet)
         self.add_card_to_customer_for_upgrade()
-        [stripe_event_before_upgrade] = iter(stripe.Event.list(limit=1))
+        cursor_before_upgrade = self.pin_event_cursor()
         hamlet_upgrade_page_response = self.client_get("/upgrade/")
         self.client_billing_post(
             "/billing/upgrade",
@@ -1690,7 +1690,7 @@ class StripeTest(StripeTestCase):
             )
 
         with self.assertLogs("corporate.stripe", "WARNING"):
-            self.send_stripe_webhook_events(stripe_event_before_upgrade)
+            self.send_stripe_webhook_events(cursor_before_upgrade)
 
         assert hamlet_invoice.id is not None
         self.assert_details_of_valid_invoice_payment_from_event_status_endpoint(
@@ -4439,6 +4439,26 @@ class StripeWebhookEndpointTest(ZulipTestCase):
                 content_type="application/json",
             )
             self.assertEqual(error_log.output, [f"ERROR:corporate.stripe:{expected_error_message}"])
+
+    def test_stripe_webhook_drops_unhandled_event_type(self) -> None:
+        # The polling loop when generating test fixtures filters down to
+        # HANDLED_STRIPE_EVENT_TYPES, so saved test fixtures never carry
+        # unhandled types, but Stripe will still POST other types in
+        # production. The webhook view must send a 200 response for
+        # those events without touching the database.
+        unhandled_event_data = {
+            "id": "stripe_event_id",
+            "api_version": STRIPE_API_VERSION,
+            "type": "invoice.updated",
+            "data": {"object": {"object": "invoice", "id": "stripe_invoice_id"}},
+        }
+        result = self.client_post(
+            "/stripe/webhook/",
+            unhandled_event_data,
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assert_length(Event.objects.all(), 0)
 
     def test_stripe_webhook_for_session_completed_event(self) -> None:
         # We don't process sessions for which we don't have a `Session` entry.
