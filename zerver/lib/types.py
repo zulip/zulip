@@ -118,6 +118,9 @@ class EditHistoryEvent(TypedDict, total=False):
     prev_content: str
     prev_rendered_content: str | None
     prev_rendered_content_version: int | None
+    # Set on content-edit entries when an administrator deletes their content.
+    revision_deleted_by: int
+    revision_deleted_at: int
 
 
 class FormattedEditHistoryEvent(TypedDict, total=False):
@@ -137,6 +140,9 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
     prev_rendered_content: str | None
     rendered_content: str | None
     content_html_diff: str
+    # Set on content-edit entries when an administrator deletes their content.
+    revision_deleted_by: int
+    revision_deleted_at: int
 
 
 class UserTopicDict(TypedDict, total=False):

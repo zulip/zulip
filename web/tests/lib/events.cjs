@@ -259,6 +259,15 @@ exports.fixtures = {
         type: "invites_changed",
     },
 
+    message_edit_history__delete: {
+        type: "message_edit_history",
+        op: "delete",
+        message_id: 1,
+        scope: "all_content_revisions",
+        user_id: 5,
+        timestamp: 1530129122,
+    },
+
     message_edit_typing__start: {
         type: "typing_edit_message",
         op: "start",

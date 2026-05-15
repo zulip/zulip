@@ -14,6 +14,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_user import do_create_user
+from zerver.actions.message_edit import check_update_message
 from zerver.actions.presence import update_user_presence
 from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_domains import do_add_realm_domain
@@ -124,6 +125,26 @@ def iago_message_id() -> dict[str, object]:
     return {
         "message_id": helpers.send_stream_message(iago, "Denmark"),
     }
+
+
+@openapi_param_value_generator(
+    ["/messages/{message_id}/edit_history/delete_content_revisions:post"]
+)
+def message_id_with_edit_history() -> dict[str, object]:
+    iago = helpers.example_user("iago")
+    helpers.subscribe(iago, "Denmark")
+    message_id = helpers.send_stream_message(iago, "Denmark", content="original content")
+    check_update_message(
+        iago,
+        message_id,
+        stream_id=None,
+        topic_name=None,
+        propagate_mode="change_one",
+        send_notification_to_old_thread=False,
+        send_notification_to_new_thread=False,
+        content="edited content",
+    )
+    return {"message_id": message_id}
 
 
 @openapi_param_value_generator(["/messages/{message_id}/reactions:delete"])

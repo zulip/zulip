@@ -1815,6 +1815,9 @@ def apply_event(
         # from scratch.  Definitely don't need to re-query everything,
         # but this case is likely rare enough that it's reasonable to do so.
         state["raw_recent_private_conversations"] = get_recent_private_conversations(user_profile)
+    elif event["type"] == "message_edit_history":
+        # The client fetches edit history on demand; no state to update here.
+        pass
     elif event["type"] == "reaction":
         # The client will get the message with the reactions directly
         pass
