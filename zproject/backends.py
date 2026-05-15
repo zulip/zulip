@@ -2367,12 +2367,10 @@ def social_auth_sync_user_attributes(
        so they'll only be synced during the user's next login, not during
        signup.
     """
-    # This is only supported for SAML right now, though the design
-    # is meant to be easy to extend this to other backends if desired.
     # Unlike LDAP or SCIM, this hook can only do syncing during the authentication
     # flow, as that's when the data is provided and we don't have a way to query
     # for it otherwise.
-    if backend.name != "saml":
+    if backend.name not in USER_ATTRIBUTE_SYNC_SUPPORTED_BACKENDS:
         assert not extra_attrs
         return None
 
@@ -4132,6 +4130,33 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         return None
 
     @override
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
+        def get_value(key: str) -> Any | None:
+            if key in response:
+                return response.get(key)
+            if self.id_token is not None:
+                return self.id_token.get(key)  # type: ignore[unreachable]  # Probably because our test setup feeds the data to response instead of the id_token.
+            return None
+
+        # Put together the "extra_attrs" field for user attribute sync later.
+        # custom claims are included as part of id_token.
+        subdomain = self.strategy.session_get("subdomain")
+        attrs_by_backend = settings.SOCIAL_AUTH_SYNC_ATTRS_DICT.get(subdomain, {})
+        attrs_config = attrs_by_backend.get(self.name, {})
+        extra_attrs = {}
+
+        if (groups_list := get_value("zulip_groups")) is not None:
+            extra_attrs["zulip_groups"] = groups_list
+        if role_claim_key := attrs_config.get("role"):
+            assert isinstance(role_claim_key, str)
+            extra_attrs[role_claim_key] = get_value(role_claim_key)
+
+        return {
+            **super().get_user_details(response),
+            "extra_attrs": extra_attrs,
+        }
+
+    @override
     def get_key_and_secret(self) -> tuple[str, str]:
         client_id = self.settings_dict.get("client_id", "")
         assert isinstance(client_id, str)
@@ -4450,6 +4475,9 @@ def get_external_method_dicts(realm: Realm | None = None) -> list[ExternalAuthMe
             result.extend(backend.dict_representation(realm))
 
     return result
+
+
+USER_ATTRIBUTE_SYNC_SUPPORTED_BACKENDS = [GenericOpenIdConnectBackend.name, SAMLAuthBackend.name]
 
 
 AUTH_BACKEND_NAME_MAP: dict[str, Any] = {

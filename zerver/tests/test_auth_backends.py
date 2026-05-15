@@ -4816,7 +4816,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         """
 
 
-class GenericOpenIdConnectTest(SocialAuthBase):
+class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTests):
     BACKEND_CLASS = GenericOpenIdConnectBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_TESTOIDC_SECRET"
@@ -4956,6 +4956,31 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             given_name=given_name,
             family_name=family_name,
         )
+
+    @override
+    def social_auth_test_wrapper(
+        self,
+        account_data_dict: dict[str, Any],
+        *,
+        subdomain: str,
+        is_signup: bool = False,
+        extra_attrs: dict[str, list[str]],
+        sync_attrs_config: dict[str, Any],
+        multiuse_object_key: str = "",
+    ) -> "TestHttpResponse":
+        settings_dict = dict(SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_config)
+        if is_signup:
+            settings_dict.update(TERMS_OF_SERVICE_VERSION=None)
+
+        with self.settings(**settings_dict):
+            return self.social_auth_test(
+                # Include custom claims as part of account_data_dict.
+                account_data_dict.update(**extra_attrs),
+                subdomain=subdomain,
+                is_signup=is_signup,
+                multiuse_object_key=multiuse_object_key,
+                extra_attributes=extra_attrs,
+            )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_auto_signup(self) -> None:
@@ -5213,6 +5238,48 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         comprehensive config_error pages.
         """
         return
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_social_auth_create_user_with_synced_role_only(self) -> None:
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+
+        sync_custom_attrs_dict = {
+            "zulip": {
+                "oidc": {
+                    "role": "zulip_role",
+                }
+            }
+        }
+
+        # Inclue a custom claim with matching claim key as the the one configured in
+        # SOCIAL_AUTH_SAML_ENABLED_IDPS.
+        account_data_dict = self.get_account_data_dict(email=email, name=name, zulip_role="owner")
+
+        with (
+            self.settings(
+                SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
+            ),
+            self.assertLogs(self.logger_string, level="INFO") as mock_logger,
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain=subdomain,
+                is_signup=True,
+            )
+            self.stage_two_of_registration(
+                result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+            )
+
+        user_profile = get_user_by_delivery_email(email, realm)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_OWNER)
+        self.assertEqual(
+            mock_logger.output[0],
+            self.logger_output("Returning role owner for user creation", type="info"),
+        )
 
 
 class GitHubAuthBackendTest(SocialAuthBase):
