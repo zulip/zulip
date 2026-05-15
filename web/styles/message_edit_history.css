@@ -12,6 +12,12 @@
     }
 
     .message_edit_history_content {
+        .message_edit_history_deleted_notice {
+            color: var(--color-text-item);
+            font-style: italic;
+            font-weight: 300;
+        }
+
         .highlight_text_inserted {
             color: var(--color-message-edit-history-text-inserted);
             background-color: var(

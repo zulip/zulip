@@ -43,6 +43,7 @@ mock_esm("../src/compose_validate", {
     validate_and_update_send_button_status: noop,
     warn_if_guest_in_dm_recipient: noop,
 });
+const message_edit_history = mock_esm("../src/message_edit_history");
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
@@ -1576,6 +1577,15 @@ run_test("delete_message", ({override}) => {
     assert_same(args.opts.max_removed_msg_id, 1337);
 });
 
+run_test("message_edit_history", ({override}) => {
+    const event = event_fixtures.message_edit_history__delete;
+    const stub = make_stub();
+    override(message_edit_history, "handle_message_edit_history_delete_event", stub.f);
+    dispatch(event);
+    const args = stub.get_args("message_id");
+    assert_same(args.message_id, event.message_id);
+});
+
 run_test("delete_message_private", ({override}) => {
     const user4 = make_user({user_id: 4, email: "user4@example.com", full_name: "User 4"});
     people.add_active_user(user4);
@@ -1729,6 +1739,8 @@ run_test("server_event_dispatch_op_errors", () => {
     });
     blueslip.expect("error", "Unexpected event type user_group/other");
     server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
+    blueslip.expect("error", "Unexpected op for message_edit_history event");
+    server_events_dispatch.dispatch_normal_event({type: "message_edit_history", op: "other"});
 });
 
 run_test("realm_user_settings_defaults", ({override}) => {
