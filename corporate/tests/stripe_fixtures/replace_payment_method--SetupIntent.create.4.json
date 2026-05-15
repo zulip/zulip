@@ -4,7 +4,7 @@
   "cancellation_reason": null,
   "client_secret": "NORMALIZED",
   "created": 1000000000,
-  "customer": "cus_NORMALIZED",
+  "customer": "cus_UNRECORDED",
   "description": null,
   "excluded_payment_method_types": null,
   "flow_directions": null,

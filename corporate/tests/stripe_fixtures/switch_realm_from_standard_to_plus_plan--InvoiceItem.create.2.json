@@ -1,7 +1,7 @@
 {
   "amount": 120000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "cus_UNRECORDED",
   "date": 1000000000,
   "description": "Zulip Cloud Plus - renewal",
   "discountable": false,
