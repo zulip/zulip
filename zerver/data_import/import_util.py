@@ -625,8 +625,7 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[s
         avatar_url += size_url_suffix
 
     response = request_file_stream(avatar_url)
-    with open(image_path, "wb") as image_file:
-        shutil.copyfileobj(response.raw, image_file)
+    write_response_file_stream_to_path(response, image_path)
     shutil.copy(image_path, original_image_path)
 
 
@@ -721,6 +720,18 @@ def request_file_stream(
     return response
 
 
+WRITE_RESPONSE_FILE_STREAM_CHUNK_SIZE = 64 * 1024
+
+
+def write_response_file_stream_to_path(
+    response: requests.Response,
+    file_path: str,
+    chunk_size: int = WRITE_RESPONSE_FILE_STREAM_CHUNK_SIZE,
+) -> None:
+    with open(file_path, "wb") as file_destination:
+        file_destination.writelines(response.iter_content(chunk_size=chunk_size))
+
+
 def download_and_export_upload_file(
     output_dir: str, upload_file_request: UploadFileRequest
 ) -> None:
@@ -734,8 +745,7 @@ def download_and_export_upload_file(
     )
 
     os.makedirs(os.path.dirname(file_output_path), exist_ok=True)
-    with open(file_output_path, "wb") as upload_file:
-        shutil.copyfileobj(response.raw, upload_file)
+    write_response_file_stream_to_path(response, file_output_path)
 
 
 def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
@@ -786,8 +796,7 @@ def get_emojis(
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
-    with open(upload_emoji_path, "wb") as emoji_file:
-        shutil.copyfileobj(response.raw, emoji_file)
+    write_response_file_stream_to_path(response, upload_emoji_path)
 
     return GetEmojiResult(path_id=emoji_path, filename=emoji_file_name)
 

@@ -47,6 +47,7 @@ from zerver.data_import.import_util import (
     process_emojis,
     request_file_stream,
     validate_user_emails_for_import,
+    write_response_file_stream_to_path,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
@@ -1508,14 +1509,13 @@ def fetch_team_icons(
         return []
 
     response = request_file_stream(icon_url)
-    response_raw = response.raw
 
     realm_id = zerver_realm["id"]
     os.makedirs(os.path.join(output_dir, str(realm_id)), exist_ok=True)
 
     original_icon_output_path = os.path.join(output_dir, str(realm_id), "icon.original")
-    with open(original_icon_output_path, "wb") as output_file:
-        shutil.copyfileobj(response_raw, output_file)
+    write_response_file_stream_to_path(response, original_icon_output_path)
+
     records.append(
         {
             "realm_id": realm_id,
