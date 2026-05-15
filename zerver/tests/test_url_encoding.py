@@ -8,6 +8,7 @@ from zerver.lib.url_encoding import (
     encode_hash_component,
     encode_user_full_name_and_id,
     encode_user_ids,
+    near_stream_message_url,
     stream_message_url,
 )
 from zerver.models.realms import get_realm
@@ -82,3 +83,13 @@ class URLEncodeTest(ZulipTestCase):
         )
         expected_relative_channel_message_url = f"#narrow/channel/{encode_channel(channel.id, channel.name)}/topic/{encode_hash_component(topic)}/with/{channel_message_id}"
         self.assertEqual(relative_channel_message_url, expected_relative_channel_message_url)
+
+        near_url = near_stream_message_url(
+            realm=realm,
+            message_id=channel_message_id,
+            display_recipient=channel.name,
+            stream_id=channel.id,
+            topic_name=topic,
+        )
+        expected_near_url = f"{realm.url}/#narrow/channel/{encode_channel(channel.id, channel.name)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
+        self.assertEqual(near_url, expected_near_url)
