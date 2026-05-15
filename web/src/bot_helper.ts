@@ -3,6 +3,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_confirm_regenerate_bot_api_key from "../templates/confirm_dialog/confirm_regenerate_bot_api_key.hbs";
 import render_bot_api_key_details from "../templates/settings/bot_api_key_details.hbs";
 
 import * as banners from "./banners.ts";
@@ -12,6 +13,7 @@ import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import {realm} from "./state_data.ts";
@@ -189,25 +191,39 @@ export function initialize_bot_click_handlers(): void {
             10,
         );
         const $row = $(e.currentTarget).closest(".input-group");
+        const bot = bot_data.get(bot_id);
+        assert(bot !== undefined);
 
-        void channel.post({
-            url: `/json/bots/${encodeURIComponent(bot_id)}/api_key/regenerate`,
-            success(data) {
-                const parsed_data = z
-                    .object({
-                        api_key: z.string(),
-                    })
-                    .parse(data);
+        const modal_content_html = render_confirm_regenerate_bot_api_key({});
 
-                $row.find(".api-key").val(parsed_data.api_key);
-                $row.closest(".bot-api-key-container").attr("data-api-key", parsed_data.api_key);
-                $row.find(".bot-modal-api-key-error").hide();
-            },
-            error(xhr) {
-                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-                if (parsed.success && parsed.data.msg) {
-                    $row.find(".bot-modal-api-key-error").text(parsed.data.msg).show();
-                }
+        confirm_dialog.launch({
+            modal_title_html: $t_html(
+                {defaultMessage: "Generate new API key for {bot_name}?"},
+                {bot_name: bot.full_name},
+            ),
+            modal_content_html,
+            loading_spinner: true,
+            on_click() {
+                dialog_widget.submit_api_request(
+                    channel.post,
+                    `/json/bots/${encodeURIComponent(bot_id)}/api_key/regenerate`,
+                    {},
+                    {
+                        success_continuation(data) {
+                            const parsed_data = z
+                                .object({
+                                    api_key: z.string(),
+                                })
+                                .parse(data);
+
+                            $row.find(".api-key").val(parsed_data.api_key);
+                            $row
+                                .closest(".bot-api-key-container")
+                                .attr("data-api-key", parsed_data.api_key);
+                            $row.find(".bot-modal-api-key-error").hide();
+                        },
+                    },
+                );
             },
         });
     });
