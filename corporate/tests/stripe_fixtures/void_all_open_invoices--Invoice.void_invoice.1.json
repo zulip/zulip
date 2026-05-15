@@ -24,7 +24,7 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_NORMALIZED",
+  "customer": "cus_UNRECORDED",
   "customer_address": null,
   "customer_email": "iago@zulip.com",
   "customer_name": null,

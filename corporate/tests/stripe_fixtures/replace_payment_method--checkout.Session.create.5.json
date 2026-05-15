@@ -48,7 +48,7 @@
     "submit": null,
     "terms_of_service_acceptance": null
   },
-  "customer": "cus_NORMALIZED",
+  "customer": "cus_UNRECORDED",
   "customer_creation": null,
   "customer_details": {
     "address": null,

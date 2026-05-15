@@ -1,7 +1,7 @@
 {
   "amount": 7255,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "cus_UNRECORDED",
   "date": 1000000000,
   "description": "Additional Zulip Cloud Standard license",
   "discountable": false,
