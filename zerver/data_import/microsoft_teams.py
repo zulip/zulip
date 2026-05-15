@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-import shutil
 from collections import defaultdict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -37,6 +36,7 @@ from zerver.data_import.import_util import (
     make_subscriber_map,
     request_file_stream,
     validate_user_emails_for_import,
+    write_response_file_stream_to_path,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
@@ -461,8 +461,7 @@ def download_and_export_microsoft_teams_upload_file(
     )
 
     os.makedirs(os.path.dirname(file_output_path), exist_ok=True)
-    with open(file_output_path, "wb") as upload_file:
-        shutil.copyfileobj(response.raw, upload_file)
+    write_response_file_stream_to_path(response, file_output_path)
 
     raw_content_type = response.headers.get("Content-Type")
     assert raw_content_type is not None
