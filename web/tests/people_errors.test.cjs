@@ -11,6 +11,9 @@ const blueslip = require("./lib/zblueslip.cjs");
 const reload_state = mock_esm("../src/reload_state", {
     is_in_progress: () => false,
 });
+const server_events_state = mock_esm("../src/server_events_state", {
+    has_received_first_events_response: () => true,
+});
 const settings_data = mock_esm("../src/settings_data");
 
 const people = zrequire("people");
@@ -34,8 +37,15 @@ run_test("report_late_add", ({override}) => {
     blueslip.expect("error", "Added user late");
     people.report_late_add(55, "foo@example.com");
 
+    // Before the first /json/events poll has returned, the people
+    // store may legitimately lack users created after the /register
+    // snapshot, so we demote the error to a log.
+    override(server_events_state, "has_received_first_events_response", () => false);
+    blueslip.expect("log", "Added user late", 2);
+    people.report_late_add(55, "foo@example.com");
+    override(server_events_state, "has_received_first_events_response", () => true);
+
     override(settings_data, "user_can_access_all_other_users", () => false);
-    blueslip.expect("log", "Added user late");
     override(reload_state, "is_in_progress", () => true);
     people.report_late_add(55, "foo@example.com");
 
