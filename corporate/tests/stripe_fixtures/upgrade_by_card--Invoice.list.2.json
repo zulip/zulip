@@ -45,7 +45,7 @@
       "footer": null,
       "from_invoice": null,
       "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-      "id": "upgrade_by_card--Event.list.3.json",
+      "id": "upgrade_by_card--Event.list.1.json",
       "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
@@ -61,14 +61,14 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "upgrade_by_card--Event.list.3.json",
-            "invoice": "upgrade_by_card--Event.list.3.json",
+            "id": "upgrade_by_card--Event.list.1.json",
+            "invoice": "upgrade_by_card--Event.list.1.json",
             "livemode": false,
             "metadata": {},
             "object": "line_item",
             "parent": {
               "invoice_item_details": {
-                "invoice_item": "upgrade_by_card--Event.list.3.json",
+                "invoice_item": "upgrade_by_card--Event.list.1.json",
                 "proration": false,
                 "proration_details": {
                   "credited_items": null
@@ -98,7 +98,7 @@
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/upgrade_by_card--Event.list.3.json/lines"
+        "url": "/v1/invoices/upgrade_by_card--Event.list.1.json/lines"
       },
       "livemode": false,
       "metadata": {
