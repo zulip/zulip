@@ -265,6 +265,15 @@ class MessageEvent(BaseEvent):
     message: MessageFieldForMessageEvent
 
 
+class MessageEditHistoryDeleteEvent(BaseEvent):
+    type: Literal["message_edit_history"]
+    op: Literal["delete"]
+    message_id: int
+    scope: Literal["all_content_revisions"]
+    user_id: int
+    timestamp: int
+
+
 class MutedTopicsEvent(BaseEvent):
     type: Literal["muted_topics"]
     muted_topics: list[list[str | int]]
