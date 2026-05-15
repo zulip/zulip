@@ -16,14 +16,23 @@ preparing a new release.
     Weblate](https://hosted.weblate.org/projects/zulip/#announcement)
     inviting translators to translate new strings.
   - Merge draft updates to the [changelog](../overview/changelog.md)
-    with changes since the last release. While doing so, take notes on
-    things that might need follow-up work or documentation before we
-    can happily advertise them in a release blog post.
+    with changes since the last release.
+  - Use updating the changelog and drafting the release blog post as review
+    passes to identify:
+    - Projects that require follow-up work.
+    - Documentation that needs to be updated.
+  - Update /features and other pages (e.g., /for/business) with major new
+    features, and important changes to existing features.
+  - Draft newsletter.
+  - Draft email and social media announcements.
 - Create a burn-down list of issues that need to be fixed before we can
   release, and make sure all of them are being worked on.
 - Draft the release blog post (a.k.a. the release notes) in Paper. In
   it, list the important changes in the release, from most to least
-  notable.
+  notable (or organized by category for major releases).
+- Collect a list of folks who would like to be mentioned in the blog
+  post for their non-code contributions during the release cycle. See
+  [CZO thread for previous releases][non-code-contributions-topic].
 
 ### Final release preparation
 
@@ -79,6 +88,7 @@ preparing a new release.
   - Message in [#announce](https://chat.zulip.org/#narrow/channel/1-announce)
   - Post from [@zulip.bsky.social](https://bsky.app/profile/zulip.bsky.social).
   - Toot from [fosstodon.org/@zulip](https://fosstodon.org/@zulip)
+  - Post from [Kandra Labs LinkedIn](https://linkedin.com/company/zulip-by-kandra-labs/)
 
 ### Post-release
 
@@ -105,7 +115,8 @@ preparing a new release.
     - Build a docker image: `cd tools/ci && docker build --pull . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bookworm --build-arg=VERSION=7.0 --tag=zulip/ci:bookworm-7.0 && docker push zulip/ci:bookworm-7.0`
     - Add a new line to the `production_upgrade` matrix in
       `.github/workflows/production-suite.yml`.
-  - Update /history page in `templates/corporate/history.md`.
+  - Update /history page in `templates/corporate/history.md`, adding the release
+    and any other major news from the release cycle.
   - Inspect all `TODO/compatibility` comments for whether we can
     remove any backwards-compatibility code following this release.
   - Review possible improvements to API bindings to better match the
@@ -123,3 +134,5 @@ preparing a new release.
     needed here.)
   - Delete the prerelease branch (e.g., `7.0-beta3-branch`); it's now
     an ancestor of `main` and thus unnecessary.
+
+[non-code-contributions-topic]: https://chat.zulip.org/#narrow/channel/1-announce/topic/recognition.20for.20non-code.20contributions/with/2443350
