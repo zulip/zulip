@@ -762,7 +762,7 @@ def get_emojis(
     Raises `BadImageError` when the content-type is not guessable, or
     not in both `THUMBNAIL_ACCEPT_IMAGE_TYPES` and `INLINE_MIME_TYPES`.
     """
-    response = _data_import_session.get(emoji_url, stream=True)
+    response = request_file_stream(emoji_url)
     content_type_raw = response.headers.get("Content-Type")
     if content_type_raw is None:
         logging.warning(
@@ -785,7 +785,6 @@ def get_emojis(
     )
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
-    response = request_file_stream(emoji_url)
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
     with open(upload_emoji_path, "wb") as emoji_file:
         shutil.copyfileobj(response.raw, emoji_file)
