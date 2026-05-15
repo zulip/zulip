@@ -4987,7 +4987,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         """
 
 
-class GenericOpenIdConnectTest(SocialAuthBase):
+class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
     BACKEND_CLASS = GenericOpenIdConnectBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_TESTOIDC_SECRET"
@@ -5127,6 +5127,38 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             given_name=given_name,
             family_name=family_name,
         )
+
+    @override
+    def social_auth_test_wrapper(
+        self,
+        account_data_dict: dict[str, Any],
+        *,
+        subdomain: str,
+        is_signup: bool = False,
+        extra_attrs: dict[str, Any],
+        sync_attrs_config: dict[str, Any],
+        multiuse_object_key: str = "",
+    ) -> "TestHttpResponse":
+        # Include custom claims in account_data_dict.
+        account_data_dict.update(**extra_attrs)
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+
+        if oidc_sync_attrs_dict := sync_attrs_config.get(subdomain, {}).get("oidc"):
+            idps_dict["testoidc"]["extra_attrs"] = self.derive_extra_attrs_from_config(
+                oidc_sync_attrs_dict
+            )
+
+        with self.settings(
+            SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_dict,
+            SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_config,
+        ):
+            return self.social_auth_test(
+                account_data_dict,
+                subdomain=subdomain,
+                is_signup=is_signup,
+                multiuse_object_key=multiuse_object_key,
+                extra_attributes=extra_attrs,
+            )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_auto_signup(self) -> None:
