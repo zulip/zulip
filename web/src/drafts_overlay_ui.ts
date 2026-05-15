@@ -24,6 +24,7 @@ import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
@@ -229,30 +230,39 @@ function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[
     return sorted_formatted_drafts;
 }
 
-function get_header_for_narrow_drafts(): string {
+type NarrowDraftsHeaderContext = {
+    is_dm_with_self?: boolean;
+    dm_recipient_string?: string;
+    stream?: StreamSubscription | undefined;
+    channel_name_fallback?: string | undefined;
+    topic?: string | undefined;
+};
+
+function get_header_context_for_narrow_drafts(): NarrowDraftsHeaderContext {
     const {stream_name, topic, private_recipient_ids} = drafts.current_recipient_data();
     if (private_recipient_ids && private_recipient_ids.length > 0) {
         if (private_recipient_ids.length === 1) {
             const user = people.get_by_user_id(private_recipient_ids[0]!);
             if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
-                return $t({defaultMessage: "Drafts from conversation with yourself"});
+                return {is_dm_with_self: true};
             }
         }
-        return $t(
-            {defaultMessage: "Drafts from conversation with {recipient}"},
-            {
-                recipient: people.user_ids_to_full_names_string(private_recipient_ids),
-            },
-        );
+        return {
+            dm_recipient_string: people.user_ids_to_full_names_string(private_recipient_ids),
+        };
     }
-    const recipient = topic ? `#${stream_name} > ${topic}` : `#${stream_name}`;
-    return $t({defaultMessage: "Drafts from {recipient}"}, {recipient});
+    const stream = stream_name ? stream_data.get_sub_by_name(stream_name) : undefined;
+    return {
+        stream,
+        channel_name_fallback: stream_name,
+        topic,
+    };
 }
 
 function get_formatted_drafts_data(): {
     narrow_drafts: FormattedDraft[];
     other_drafts: FormattedDraft[];
-    narrow_drafts_header: string;
+    narrow_drafts_header: NarrowDraftsHeaderContext;
 } {
     const all_drafts = drafts.draft_model.get();
     const narrow_drafts_raw = drafts.filter_drafts_by_compose_box_and_recipient(all_drafts);
@@ -262,7 +272,7 @@ function get_formatted_drafts_data(): {
     );
     const narrow_drafts = format_drafts(narrow_drafts_raw);
     const other_drafts = format_drafts(other_drafts_raw);
-    const narrow_drafts_header = get_header_for_narrow_drafts();
+    const narrow_drafts_header = get_header_context_for_narrow_drafts();
     return {narrow_drafts, other_drafts, narrow_drafts_header};
 }
 
@@ -300,7 +310,7 @@ function fetch_server_rendered_drafts(formatted_drafts: FormattedDraft[]): void 
 function render_widgets(
     narrow_drafts: FormattedDraft[],
     other_drafts: FormattedDraft[],
-    narrow_drafts_header: string,
+    narrow_drafts_header: NarrowDraftsHeaderContext,
 ): void {
     const $drafts_table = $("#drafts_table");
     if ($(".drafts-list").length === 0) {
