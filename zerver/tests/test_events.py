@@ -62,6 +62,7 @@ from zerver.actions.invites import (
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import (
     build_message_edit_request,
+    do_delete_message_edit_history,
     do_update_embedded_data,
     do_update_message,
 )
@@ -190,6 +191,7 @@ from zerver.lib.event_schema import (
     check_invites_changed,
     check_legacy_presence,
     check_message,
+    check_message_edit_history_delete,
     check_modern_presence,
     check_muted_topics,
     check_muted_users,
@@ -1321,6 +1323,20 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(state_change_expected=False) as events:
             do_add_reaction(self.user_profile, message, "tada", "1f389", "unicode_emoji")
         check_reaction_add("events[0]", events[0])
+
+    def test_delete_message_edit_history_event(self) -> None:
+        sender = self.example_user("hamlet")
+        message_id = self.send_stream_message(sender, "Verona", "original")
+        message = Message.objects.get(id=message_id)
+        self.login("hamlet")
+        self.client_patch(
+            f"/json/messages/{message_id}",
+            {"content": "edited"},
+        )
+        message.refresh_from_db()
+        with self.verify_action(state_change_expected=False) as events:
+            do_delete_message_edit_history(message, self.user_profile)
+        check_message_edit_history_delete("events[0]", events[0])
 
     def test_heartbeat_event(self) -> None:
         with self.verify_action(state_change_expected=False) as events:
