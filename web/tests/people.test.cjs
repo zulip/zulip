@@ -18,6 +18,9 @@ const message_user_ids = mock_esm("../src/message_user_ids");
 const settings_data = mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
+mock_esm("../src/server_events_state", {
+    has_received_first_events_response: () => true,
+});
 const channel = mock_esm("../src/channel");
 
 let additional_calls_before_set_timeout = noop;

@@ -12,6 +12,7 @@ import * as message_user_ids from "./message_user_ids.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as reload_state from "./reload_state.ts";
+import * as server_events_state from "./server_events_state.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {CurrentUser, StateData, profile_datum_schema} from "./state_data.ts";
@@ -1536,9 +1537,17 @@ export function report_late_add(user_id: number, email: string): void {
     // we will fetch messages from the server that were sent by users
     // who don't exist in our users data set. This can happen because
     // we're in the middle of a reload (and thus stopped our event
-    // queue polling) or because we are a spectator and never had an
-    // event queue in the first place.
-    if (reload_state.is_in_progress() || page_params.is_spectator) {
+    // queue polling), because we are a spectator and never had an
+    // event queue in the first place, or because the first
+    // /json/events poll for this page's queue hasn't yet returned —
+    // in which case the message fetch may reference users created
+    // after the /register snapshot, and the corresponding
+    // realm_user/add event simply hasn't been delivered yet.
+    if (
+        reload_state.is_in_progress() ||
+        page_params.is_spectator ||
+        !server_events_state.has_received_first_events_response()
+    ) {
         blueslip.log("Added user late", {user_id, email});
     } else if (!settings_data.user_can_access_all_other_users()) {
         blueslip.log("Message was sent by an inaccessible user", {user_id});
