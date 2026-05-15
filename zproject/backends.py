@@ -16,7 +16,7 @@ import binascii
 import json
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Generator
+from collections.abc import Callable, Generator, Iterable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from email.headerregistry import Address
@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast
 import ldap
 import magic
 import orjson
+import requests
 from decorator import decorator
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends, logout
@@ -73,6 +74,7 @@ from social_core.strategy import HttpResponseProtocol
 from social_django.strategy import DjangoStrategy
 from social_django.utils import load_backend, load_strategy
 from typing_extensions import override
+from urllib3 import Retry
 from zxcvbn import zxcvbn
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
@@ -93,12 +95,15 @@ from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mime_types import bare_content_type
 from zerver.lib.mobile_auth_otp import is_valid_otp
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.rate_limiter import RateLimitedObject, client_is_exempt_from_rate_limiting
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
 from zerver.lib.request import RequestNotes
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import check_user_group_name, get_role_based_system_groups_dict
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
@@ -138,6 +143,44 @@ if TYPE_CHECKING:
 redis_client = get_redis_client()
 
 EMAIL_WITH_ENCODED_DISCORD_ID = "{discord_user_id}@discordexport.zulip.com"
+
+_auth_session = OutgoingSession(
+    role="auth",
+    timeout=30,
+    max_retries=Retry(total=2, backoff_factor=1, status_forcelist=[500, 502, 503, 504]),
+)
+
+
+def request_file_stream(
+    url: str,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, Any] | None = None,
+    **kwargs: Any,
+) -> requests.Response:
+    if "stream" not in kwargs:
+        kwargs.update(stream=True)
+
+    response = _auth_session.get(
+        url,
+        params=params,
+        headers=headers,
+        **kwargs,
+    )
+
+    return response
+
+
+def handle_file_request_errors(
+    response: requests.Reponse, provider_name: str, logger: logging.Logger
+) -> None:
+    if response.status_code != requests.codes.ok:
+        logger.info(
+            "Failed to fetch user avatar from '%s'.\n HTTP error: %s, Response: %s",
+            provider_name,
+            response.status_code,
+            response.text,
+        )
+        return None
 
 
 def all_default_backend_names() -> list[str]:
@@ -2242,9 +2285,16 @@ def ensure_missing_groups(
 
 
 @dataclass
+class SocialAuthUserAvatarInfo:
+    file_stream: Iterable[binascii.Incomplete]
+    content_type: str
+
+
+@dataclass
 class SocialAuthSyncNewUserInfo:
     role: int | None
     group_memberships_sync_map: dict[str, bool]
+    avatar_info: SocialAuthUserAvatarInfo
 
 
 @dataclass
@@ -2352,6 +2402,7 @@ def social_auth_sync_user_attributes(
     full_name: str | None,
     extra_attrs: dict[str, Any],
     backend: Any,
+    access_token: str,
 ) -> SocialAuthSyncNewUserInfo | None:
     """
     Syncs user attributes based on the SOCIAL_AUTH_SYNC_ATTRS_DICT setting.
@@ -2366,6 +2417,7 @@ def social_auth_sync_user_attributes(
     3. Syncing custom attributes. This isn't supported for user creation,
        so they'll only be synced during the user's next login, not during
        signup.
+    4. Syncing user avatar.
     """
     # Unlike LDAP or SCIM, this hook can only do syncing during the authentication
     # flow, as that's when the data is provided and we don't have a way to query
@@ -2385,9 +2437,23 @@ def social_auth_sync_user_attributes(
     group_sync_config = process_social_auth_group_sync_info(
         backend, realm, user_profile, attrs_config, extra_attrs
     )
+
+    # Currently the only user attribute sync supported for OICD is avatar,
+    # the avatar sync support is also exclusive for OICD.
+    #
+    # TODO: backend.get_user_avatar_from_provider is extendable for other
+    #       providers, so potentially all other providers could also use this
+    #       code path.
+
     should_sync_user_attrs = extra_attrs and profile_field_name_to_attr_name
     should_sync_full_name = (attrs_config.get("full_name", False) is True) and full_name
-    if not (should_sync_user_attrs or should_sync_full_name or group_sync_config is not None):
+    should_sync_avatar = profile_field_name_to_attr_name.get("avatar", False)
+    if not (
+        should_sync_user_attrs
+        or should_sync_avatar
+        or should_sync_full_name
+        or group_sync_config is not None
+    ):
         return None
 
     user_id = None
@@ -2483,6 +2549,20 @@ def social_auth_sync_user_attributes(
             logger=backend.logger,
             create_missing_groups=True,
         )
+
+    if should_sync_avatar:
+        if not (avatar_info := backend.get_user_avatar_from_provider(access_token=access_token)):
+            return None
+
+        from io import BytesIO
+
+        from zerver.actions.user_settings import do_change_avatar_fields
+        from zerver.lib.upload import upload_avatar_image
+
+        upload_avatar_image(
+            BytesIO(avatar_info.file_stream), user_profile, content_type=avatar_info.content_type
+        )
+        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=None)
 
     return None
 
@@ -2754,7 +2834,7 @@ def social_auth_finish(
 
     extra_attrs = return_data.get("extra_attrs", {})
     social_auth_sync_new_user_info = social_auth_sync_user_attributes(
-        realm, user_profile, full_name, extra_attrs, backend
+        realm, user_profile, full_name, extra_attrs, backend, response["access_token"]
     )
 
     if user_profile:
@@ -2983,6 +3063,15 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
                 signup_url=reverse("signup-social", args=(cls.name,)),
             )
         ]
+
+    def get_user_avatar_from_provider(self, access_token: str) -> SocialAuthUserAvatarInfo:
+        """
+        Downloads user avatar provided by IdP, only call this after we've
+        authenticated the user to avoid unecessary network calls.
+
+        Implement in subclass
+        """
+        return None
 
 
 @external_auth_method
@@ -4361,6 +4450,43 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         result = self.settings_dict.get("auto_signup", False)
         assert isinstance(result, bool)
         return result
+
+    @override
+    def get_user_avatar_from_provider(self, access_token: str) -> SocialAuthUserAvatarInfo:
+        if not (avatar_url := self.id_token.get("picture")):
+            return None
+
+        match self.idp_name:
+            case "entra":
+                # For Entra ID, the picture claim contains the endpoint to get
+                # the current user's avatar.
+                # "picture": "https://graph.microsoft.com/v1.0/me/photo/$value",
+                #
+                # https://learn.microsoft.com/en-us/entra/identity-platform/userinfo
+                response = request_file_stream(
+                    avatar_url,
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+            case _:
+                response = request_file_stream(
+                    avatar_url,
+                )
+
+        handle_file_request_errors(response, self.idp_name, self.logger)
+
+        content_type_raw = response.headers.get("Content-Type")
+        content_type = bare_content_type(content_type_raw)
+        if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+            self.logger.info(
+                "User avatar file is not an image file. Content type: %s", content_type
+            )
+            return None
+        return SocialAuthUserAvatarInfo(
+            # Don't commit the file into memory yet since the sign up path might
+            # not immidiately use it.
+            file_stream=response.iter_content(chunk_size=128),
+            content_type=content_type,
+        )
 
 
 def validate_otp_params(
