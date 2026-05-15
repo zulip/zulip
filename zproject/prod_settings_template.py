@@ -444,6 +444,11 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, Any] = {
         ## default, Zulip asks the user whether they want to create an
         ## account or try to log in again using another method.
         # "auto_signup": False,
+        ## List of additional claims to fetch from the id_token or response
+        ## from the UserInfo endpoint.
+        ## These attributes will be available for synchronizing user
+        ## profile fields in SOCIAL_AUTH_SYNC_ATTRS_DICT.
+        # "extra_attrs": ["title", "mobilePhone", "zulip_role"],
     },
     ## Example: Microsoft Entra ID (AzureAD) OIDC configuration.
     ## This is the recommended approach for Entra ID SSO on self-hosted servers.
@@ -573,9 +578,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "emailAddress": ZULIP_ADMINISTRATOR,
 }
 
-## Note: Any additional SAML attributes that'll be used here must be
-## listed in the "extra_attrs" field in the SOCIAL_AUTH_SAML_ENABLED_IDPS
-## configuration for your IdP.
+## Note: Any additional attributes used here must be listed in the "extra_attrs"
+## field in SOCIAL_AUTH_SAML_ENABLED_IDPS (SAML) or SOCIAL_AUTH_OIDC_ENABLED_IDPS (OIDC).
+## Sync for other backends is not currently supported.
 # SOCIAL_AUTH_SYNC_ATTRS_DICT = {
 #     "example_org": {
 #         "saml": {
