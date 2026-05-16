@@ -6789,7 +6789,11 @@ class TestSupportBillingHelpers(StripeTestCase):
             plan_modification="upgrade_plan_tier",
             new_plan_tier=CustomerPlan.TIER_CLOUD_PLUS,
         )
-        success_message = billing_session.process_support_view_request(support_request)
+        # Freeze time so the prorated credit (computed inside
+        # ``change_plan_tier`` from ``timezone_now()``) doesn't drift
+        # between fixture regenerations.
+        with time_machine.travel(self.now, tick=False):
+            success_message = billing_session.process_support_view_request(support_request)
         self.assertEqual(success_message, "zulip upgraded to Zulip Cloud Plus")
         customer.refresh_from_db()
         new_plan = get_current_plan_by_customer(customer)

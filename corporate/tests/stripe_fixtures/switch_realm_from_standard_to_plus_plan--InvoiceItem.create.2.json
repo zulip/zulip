@@ -14,8 +14,8 @@
   "object": "invoiceitem",
   "parent": null,
   "period": {
-    "end": 1000000000,
-    "start": 1000000000
+    "end": 1357095845,
+    "start": 1325473445
   },
   "pricing": {
     "price_details": {

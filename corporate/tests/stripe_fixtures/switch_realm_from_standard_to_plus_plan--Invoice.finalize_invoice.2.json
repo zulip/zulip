@@ -77,8 +77,8 @@
           "type": "invoice_item_details"
         },
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "pretax_credit_amounts": [],
         "pricing": {
