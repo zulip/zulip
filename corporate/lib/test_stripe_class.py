@@ -215,7 +215,9 @@ def delete_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         os.remove(fixture_file)
 
 
-def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
+def normalize_fixture_data(
+    decorated_function: CallableT, zulip_realm_uuid: str
+) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
     id_lengths = [
         ("test", 12),
@@ -350,6 +352,13 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         file_content = re.sub(r"[0-3]\d [A-Z][a-z]{2} 20[1-2]\d", "NORMALIZED DATE", file_content)
         # IP addresses
         file_content = re.sub(r'"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"', '"0.0.0.0"', file_content)
+        # ``Realm.uuid`` is a per-provision uuid, and ends up in self-hosted
+        # billing URLs and customer metadata/descriptions. Re-provisioning the
+        # test database rotates that uuid, so we replace it with a placeholder.
+        file_content = file_content.replace(
+            zulip_realm_uuid, "00000000-0000-0000-0000-000000000000"
+        )
+        file_content = file_content.replace(zulip_realm_uuid[:12], "00000000-000")
         # Unix timestamps
         file_content = re.sub(FIXTURE_NORMALIZE_REAL_TIMESTAMP_RE, ": 1000000000", file_content)
 
@@ -452,8 +461,11 @@ def mock_stripe(
         def wrapped(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             if generate_fixture:  # nocoverage
                 delete_fixture_data(decorated_function)
+                # Captured before the test runs so that tests that hit a
+                # BillingError can still normalize test fixture data.
+                zulip_realm_uuid = str(get_realm("zulip").uuid)
                 val = decorated_function(*args, **kwargs)
-                normalize_fixture_data(decorated_function)
+                normalize_fixture_data(decorated_function, zulip_realm_uuid)
                 return val
             else:
                 return decorated_function(*args, **kwargs)
