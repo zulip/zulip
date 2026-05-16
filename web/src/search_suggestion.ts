@@ -172,6 +172,41 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
 
 export type Suggestion = string;
 
+// Operators whose operand identifies a person. When the user types a
+// space inside one (e.g. `sender:Ted Smith`), the typeahead merges the
+// trailing `search:` token into the preceding operator so the multi-word
+// name can be matched.
+const PERSON_OPS: ReadonlySet<NarrowCanonicalOperator> = new Set([
+    "sender",
+    "dm",
+    "dm-including",
+    "mentions",
+]);
+
+// If `text_search_terms` ends in `<operator>:<word1> search:<word2>` where
+// `operator` is in `supported_ops`, return the combined `<operator>:<word1>
+// <word2>` term. The caller uses this to replace the two trailing terms
+// with the merged one, so the multi-word operand can be matched.
+function compute_multi_word_merged_term(
+    text_search_terms: NarrowCanonicalTermSuggestion[],
+    supported_ops: ReadonlySet<NarrowCanonicalOperator>,
+): NarrowCanonicalTermSuggestion | undefined {
+    if (text_search_terms.length < 2) {
+        return undefined;
+    }
+    const last = text_search_terms.at(-1)!;
+    const prev = text_search_terms.at(-2)!;
+    if (last.operator !== "search" || !supported_ops.has(prev.operator)) {
+        return undefined;
+    }
+    return {
+        operator: prev.operator,
+        operand: prev.operand + " " + last.operand,
+        raw_operand: prev.raw_operand + " " + last.raw_operand,
+        negated: prev.negated,
+    };
+}
+
 export let max_num_of_search_results = MAX_ITEMS;
 export function rewire_max_num_of_search_results(value: typeof max_num_of_search_results): void {
     max_num_of_search_results = value;
@@ -1151,25 +1186,13 @@ export let get_suggestions = function (
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including", "mentions"];
-
-    // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
-    // and the second last operator in search_terms is one out of person_suggestion_ops.
-    // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
-    // and second last is {operator: 'sender', operand: 'Ted'....}. The search operator
-    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm'....}.
-    if (
-        text_search_terms.length > 1 &&
-        last.operator === "search" &&
-        person_suggestion_ops.includes(text_search_terms.at(-2)!.operator)
-    ) {
-        const person_op = text_search_terms.at(-2)!;
-        last = {
-            operator: person_op.operator,
-            operand: person_op.operand + " " + last.operand,
-            raw_operand: person_op.raw_operand + " " + last.raw_operand,
-            negated: person_op.negated,
-        };
+    // Handle spaces inside the operand of a person operator. For e.g.
+    // `sender:Ted sm` (parsed as `sender:Ted` + `search:sm`), we merge
+    // the two trailing terms into a single `sender:"Ted sm"` term so
+    // the multi-word name can match users like "Ted Smith".
+    const merged_person_term = compute_multi_word_merged_term(text_search_terms, PERSON_OPS);
+    if (merged_person_term !== undefined) {
+        last = merged_person_term;
         text_search_terms.splice(-2);
         text_search_terms.push(last);
         all_search_terms = [...pill_search_terms, ...text_search_terms];
