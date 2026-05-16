@@ -331,6 +331,10 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         # Stripe's CSP / Reporting headers carry a per-response random
         # ``?q=<token>`` that's unrelated to anything we test.
         file_content = re.sub(r"\?q=[\w-]+", "?q=NORMALIZED", file_content)
+        # Stripe's ``Report-To`` response header carries an embedded
+        # JSON document as a string value. The value has no test
+        # relevance, so collapse it to a placeholder.
+        file_content = re.sub(r'(?<="Report-To": )".*"', '"NORMALIZED"', file_content)
         # The ``webhooks_delivered_at`` field is null or a Unix timestamp,
         # depending on when Stripe finishes delivering webhooks. We handle
         # this race in fixture generation by normalizing on null.

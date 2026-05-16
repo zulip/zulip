@@ -16,7 +16,7 @@
     "Date": "NORMALIZED DATETIME",
     "Idempotency-Key": "00000000-0000-0000-0000-000000000000",
     "Original-Request": "req_NORMALIZED",
-    "Report-To": "{\"group\":\"csp\",\"max_age\":8640,\"endpoints\":[{\"url\":\"https://q.stripe.com/csp-report-v2?q=NORMALIZED&t=1\"}],\"include_subdomains\":true}",
+    "Report-To": "NORMALIZED",
     "Reporting-Endpoints": "csp=\"https://q.stripe.com/csp-report-v2?q=NORMALIZED&t=1\"",
     "Request-Id": "req_NORMALIZED",
     "Server": "nginx",
