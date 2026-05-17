@@ -78,6 +78,7 @@ import * as util from "./util.ts";
 export type CustomProfileFieldData = {
     id: number;
     name: string;
+    rendered_name: string;
     is_user_field: boolean;
     is_link: boolean;
     is_external_account: boolean;
@@ -476,6 +477,7 @@ export function get_custom_profile_field_data(
     const profile_field: CustomProfileFieldData = {
         id: field.id,
         name: field.name,
+        rendered_name: field.rendered_name,
         is_user_field: false,
         is_link: field_type === field_types.URL.id,
         is_external_account: field_type === field_types.EXTERNAL_ACCOUNT.id,
