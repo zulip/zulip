@@ -4,23 +4,71 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_string
+from zerver.lib.validator import WildValue, check_bool, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
+
+ADMIN_ROLE_UPDATED_TEMPLATE = "{name} is {phrase} an admin."
+
+ADMIN_AWAY_MODE_UPDATED_TEMPLATE = "{name} is {away_status}{reason}."
+
+ADMIN_LOGIN_LOGOUT_TEMPLATE = "{name} {phrase}."
+
+
+def get_admin_name(payload: WildValue) -> str:
+    return payload["data"]["item"]["name"].tame(check_string)
 
 
 def get_topic_name(event_category: str, payload: WildValue) -> str:
     match event_category:
         case "ping":
             return "Intercom"
+        case "admin":
+            if payload["topic"].tame(check_string) == "admin.activity_log_event.created":
+                return "Admin"
+            return f"Admin: {get_admin_name(payload)}"
         case _:  # nocoverage
             raise UnsupportedWebhookEventTypeError(payload["topic"].tame(check_string))
 
 
 def get_ping_message(payload: WildValue) -> str:
     return get_setup_webhook_message("Intercom")
+
+
+def get_admin_activity_log_event_created_message(payload: WildValue) -> str:
+    return payload["data"]["item"]["activity_description"].tame(check_string)
+
+
+def get_admin_role_updated_message(phrase: str, payload: WildValue) -> str:
+    return ADMIN_ROLE_UPDATED_TEMPLATE.format(name=get_admin_name(payload), phrase=phrase)
+
+
+def get_admin_login_logout_message(phrase: str, payload: WildValue) -> str:
+    return ADMIN_LOGIN_LOGOUT_TEMPLATE.format(name=get_admin_name(payload), phrase=phrase)
+
+
+def get_admin_away_mode_updated_message(payload: WildValue) -> str:
+    admin_name = get_admin_name(payload)
+    away_mode_enabled = payload["data"]["item"]["away_mode_enabled"].tame(check_bool)
+
+    if away_mode_enabled:
+        away_status = "away"
+        reason_value = payload["data"]["item"]["away_status_reason"].tame(check_string)
+
+        # Strip trailing period if exists,
+        # since reason will be wrapped inside parentheses.
+        reason_value = reason_value.removesuffix(".")
+        reason = f" ({reason_value})" if reason_value else ""
+    else:
+        away_status = "now available"
+        reason = ""
+
+    return ADMIN_AWAY_MODE_UPDATED_TEMPLATE.format(
+        name=admin_name, away_status=away_status, reason=reason
+    )
 
 
 IGNORED_EVENTS = [
@@ -45,7 +93,15 @@ IGNORED_EVENTS = [
 ]
 
 
-EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {"ping": get_ping_message}
+EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
+    "ping": get_ping_message,
+    "admin.activity_log_event.created": get_admin_activity_log_event_created_message,
+    "admin.away_mode_updated": get_admin_away_mode_updated_message,
+    "admin.added_to_workspace": partial(get_admin_role_updated_message, "now"),
+    "admin.removed_from_workspace": partial(get_admin_role_updated_message, "no longer"),
+    "admin.logged_in": partial(get_admin_login_logout_message, "logged in"),
+    "admin.logged_out": partial(get_admin_login_logout_message, "logged out"),
+}
 
 ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
 
