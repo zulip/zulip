@@ -36,8 +36,9 @@ from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_stream_recipient_fields
 from zerver.lib.export import Field, Path, Record, TableName, date_fields_for_table
-from zerver.lib.markdown import markdown_convert
+from zerver.lib.markdown import markdown_convert, render_inline_markdown
 from zerver.lib.markdown import version as markdown_version
+from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import get_last_message_id
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.mime_types import guess_type
@@ -2009,6 +2010,17 @@ def do_import_realm(
     re_map_foreign_keys(data, "zerver_customprofilefield", "realm", related_table="realm")
     update_model_ids(CustomProfileField, data, related_table="customprofilefield")
     bulk_import_model(data, CustomProfileField)
+
+    custom_profile_fields = list(CustomProfileField.objects.filter(realm=realm))
+    if custom_profile_fields:
+        all_field_text = "\n".join(f"{field.name}\n{field.hint}" for field in custom_profile_fields)
+        mention_data = MentionData(MentionBackend(realm.id), all_field_text, None)
+        for field in custom_profile_fields:
+            field.rendered_name = render_inline_markdown(field.name, realm, mention_data)
+            field.rendered_hint = render_inline_markdown(field.hint, realm, mention_data)
+        CustomProfileField.objects.bulk_update(
+            custom_profile_fields, ["rendered_name", "rendered_hint"]
+        )
 
     re_map_foreign_keys(
         data, "zerver_customprofilefieldvalue", "user_profile", related_table="user_profile"
