@@ -5,9 +5,9 @@
         "type": "notification_event_data",
         "item": {
             "type": "admin",
-            "id": 1234568,
-            "name": "John Doe",
-            "email": "john.doe@example.com",
+            "id": 1234567,
+            "name": "Bo Williams",
+            "email": "bwilliams@example.com",
             "job_title": null,
             "away_mode_enabled": false,
             "away_mode_reassign": false,
