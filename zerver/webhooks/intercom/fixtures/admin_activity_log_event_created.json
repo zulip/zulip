@@ -9,7 +9,7 @@
             "performed_by": {
                 "type": "admin",
                 "id": "1234567",
-                "email": "admin@example.com",
+                "email": "bwilliams@example.com",
                 "ip": "192.0.2.1"
             },
             "metadata": {
@@ -17,7 +17,7 @@
             },
             "created_at": 1768016203,
             "activity_type": "ai_inbox_translation_setting_change",
-            "activity_description": "John Doe disabled the AI inbox translation settings."
+            "activity_description": "Bo Williams disabled the AI inbox translation settings."
         }
     },
     "links": {},
