@@ -235,6 +235,19 @@ export function set_focus(opts: ComposeTriggeredOptions): void {
     if (window.getSelection()!.toString() === "" || opts.trigger !== "message click") {
         const focus_area = get_focus_area(opts);
         $(focus_area).trigger("focus");
+
+        // On mobile, the virtual keyboard shrinks the viewport when it
+        // appears, which can hide the compose box behind it. We wait
+        // for the keyboard animation to finish (~300ms) and then scroll
+        // the focused element into view so it is always visible.
+        if (util.is_mobile()) {
+            setTimeout(() => {
+                document.querySelector<HTMLElement>(focus_area)?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                });
+            }, 300);
+        }
     }
 }
 
