@@ -1,13 +1,14 @@
 {
   "amount": 5000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "replace_payment_method--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": null,
   "discountable": true,
   "discounts": [],
   "id": "replace_payment_method--InvoiceItem.create.2.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "replace_payment_method--Invoice.create.2.json",
   "livemode": false,
   "metadata": {},
   "object": "invoiceitem",
@@ -26,6 +27,7 @@
   },
   "proration": false,
   "quantity": 1,
+  "quantity_decimal": "1",
   "tax_rates": [],
   "test_clock": null
 }

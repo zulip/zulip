@@ -6,7 +6,8 @@
       "cancellation_reason": null,
       "client_secret": "NORMALIZED",
       "created": 1000000000,
-      "customer": "cus_NORMALIZED",
+      "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+      "customer_account": null,
       "description": null,
       "excluded_payment_method_types": null,
       "flow_directions": null,
@@ -14,6 +15,9 @@
       "last_setup_error": null,
       "latest_attempt": null,
       "livemode": false,
+      "managed_payments": {
+        "enabled": false
+      },
       "mandate": null,
       "metadata": {},
       "next_action": null,

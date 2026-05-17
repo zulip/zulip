@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_NORMALIZED",
+  "customer": "switch_realm_from_standard_to_plus_plan--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -84,7 +85,7 @@
   },
   "shipping_cost": null,
   "shipping_details": null,
-  "starting_balance": -400,
+  "starting_balance": -48000,
   "statement_descriptor": "Zulip Cloud Plus",
   "status": "draft",
   "status_transitions": {

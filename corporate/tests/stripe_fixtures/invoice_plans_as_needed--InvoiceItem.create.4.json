@@ -1,13 +1,14 @@
 {
   "amount": 1635,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "invoice_plans_as_needed--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Additional Zulip Basic license",
   "discountable": false,
   "discounts": [],
   "id": "invoice_plans_as_needed--InvoiceItem.create.4.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "invoice_plans_as_needed--Invoice.create.2.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 1635,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 5,
+  "quantity_decimal": "5",
   "tax_rates": [],
   "test_clock": null
 }

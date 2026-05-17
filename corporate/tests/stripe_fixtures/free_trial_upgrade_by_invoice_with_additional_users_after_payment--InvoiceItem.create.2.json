@@ -1,13 +1,14 @@
 {
   "amount": 16000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Additional Zulip Cloud Standard license",
   "discountable": false,
   "discounts": [],
   "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--InvoiceItem.create.2.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Invoice.create.2.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 16000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 2,
+  "quantity_decimal": "2",
   "tax_rates": [],
   "test_clock": null
 }

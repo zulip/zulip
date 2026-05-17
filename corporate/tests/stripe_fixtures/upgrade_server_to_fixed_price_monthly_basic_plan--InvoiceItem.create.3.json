@@ -1,13 +1,14 @@
 {
   "amount": 10000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "upgrade_server_to_fixed_price_monthly_basic_plan--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Basic - renewal",
   "discountable": false,
   "discounts": [],
   "id": "upgrade_server_to_fixed_price_monthly_basic_plan--InvoiceItem.create.3.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "upgrade_server_to_fixed_price_monthly_basic_plan--Invoice.create.3.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 10000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 1,
+  "quantity_decimal": "1",
   "tax_rates": [],
   "test_clock": null
 }

@@ -25,6 +25,7 @@
   "currency": "usd",
   "custom_fields": null,
   "customer": "upgrade_by_card--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,

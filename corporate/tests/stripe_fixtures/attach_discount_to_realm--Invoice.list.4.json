@@ -26,7 +26,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_UNRECORDED",
+      "customer": "attach_discount_to_realm--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -45,7 +46,7 @@
       "footer": null,
       "from_invoice": null,
       "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-      "id": "attach_discount_to_realm--Event.list.6.json",
+      "id": "attach_discount_to_realm--Event.list.2.json",
       "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
@@ -61,8 +62,8 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "attach_discount_to_realm--Event.list.6.json",
-            "invoice": "attach_discount_to_realm--Event.list.6.json",
+            "id": "attach_discount_to_realm--Event.list.2.json",
+            "invoice": "attach_discount_to_realm--Event.list.2.json",
             "livemode": false,
             "metadata": {},
             "object": "line_item",
@@ -75,6 +76,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -92,13 +94,15 @@
               "unit_amount_decimal": "6000"
             },
             "quantity": 6,
+            "quantity_decimal": "6",
+            "subtotal": 36000,
             "taxes": []
           }
         ],
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/attach_discount_to_realm--Event.list.6.json/lines"
+        "url": "/v1/invoices/attach_discount_to_realm--Event.list.2.json/lines"
       },
       "livemode": false,
       "metadata": {
@@ -180,7 +184,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_UNRECORDED",
+      "customer": "attach_discount_to_realm--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -199,7 +204,7 @@
       "footer": null,
       "from_invoice": null,
       "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-      "id": "attach_discount_to_realm--Event.list.2.json",
+      "id": "attach_discount_to_realm--Event.list.1.json",
       "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
@@ -215,8 +220,8 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "attach_discount_to_realm--Event.list.2.json",
-            "invoice": "attach_discount_to_realm--Event.list.2.json",
+            "id": "attach_discount_to_realm--Event.list.1.json",
+            "invoice": "attach_discount_to_realm--Event.list.1.json",
             "livemode": false,
             "metadata": {},
             "object": "line_item",
@@ -229,6 +234,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -246,13 +252,15 @@
               "unit_amount_decimal": "1200"
             },
             "quantity": 6,
+            "quantity_decimal": "6",
+            "subtotal": 7200,
             "taxes": []
           }
         ],
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/attach_discount_to_realm--Event.list.2.json/lines"
+        "url": "/v1/invoices/attach_discount_to_realm--Event.list.1.json/lines"
       },
       "livemode": false,
       "metadata": {

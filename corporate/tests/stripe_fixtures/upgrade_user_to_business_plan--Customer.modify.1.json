@@ -3,9 +3,10 @@
   "balance": 0,
   "created": 1000000000,
   "currency": null,
+  "customer_account": null,
   "default_source": null,
   "delinquent": false,
-  "description": "zulip.testserver 696c2d4f-86b",
+  "description": "zulip.testserver 00000000-000",
   "discount": null,
   "email": "hamlet@zulip.com",
   "id": "upgrade_user_to_business_plan--Customer.create.1.json",
@@ -19,7 +20,7 @@
   "livemode": false,
   "metadata": {
     "remote_realm_host": "zulip.testserver",
-    "remote_realm_uuid": "696c2d4f-86ba-44c0-9137-8d2908ba59b6"
+    "remote_realm_uuid": "00000000-0000-0000-0000-000000000000"
   },
   "name": null,
   "next_invoice_sequence": 1,

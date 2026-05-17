@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_UNRECORDED",
+  "customer": "change_plan_tier_from_standard_to_plus--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "king@lear.org",
   "customer_name": null,
@@ -73,6 +74,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -90,6 +92,8 @@
           "unit_amount_decimal": "1200"
         },
         "quantity": 10,
+        "quantity_decimal": "10",
+        "subtotal": 12000,
         "taxes": []
       }
     ],

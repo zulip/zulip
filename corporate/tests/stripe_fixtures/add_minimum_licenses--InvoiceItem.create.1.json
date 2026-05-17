@@ -1,13 +1,14 @@
 {
   "amount": 100000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "add_minimum_licenses--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "add_minimum_licenses--Event.list.2.json",
-  "invoice": "in_NORMALIZED",
+  "id": "add_minimum_licenses--InvoiceItem.create.1.json",
+  "invoice": "add_minimum_licenses--Event.list.1.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 100000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 25,
+  "quantity_decimal": "25",
   "tax_rates": [],
   "test_clock": null
 }

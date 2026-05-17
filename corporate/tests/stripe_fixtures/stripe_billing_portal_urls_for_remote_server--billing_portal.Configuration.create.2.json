@@ -43,6 +43,7 @@
       "enabled": false
     },
     "subscription_update": {
+      "billing_cycle_anchor": "unchanged",
       "default_allowed_updates": [],
       "enabled": false,
       "proration_behavior": "none",

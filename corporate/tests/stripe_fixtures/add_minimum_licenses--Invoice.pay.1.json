@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_UNRECORDED",
+  "customer": "add_minimum_licenses--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -43,7 +44,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-  "id": "add_minimum_licenses--Event.list.2.json",
+  "id": "add_minimum_licenses--Event.list.1.json",
   "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
   "issuer": {
     "type": "self"
@@ -59,8 +60,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "add_minimum_licenses--Event.list.2.json",
-        "invoice": "add_minimum_licenses--Event.list.2.json",
+        "id": "add_minimum_licenses--Event.list.1.json",
+        "invoice": "add_minimum_licenses--Event.list.1.json",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
@@ -73,6 +74,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -90,13 +92,15 @@
           "unit_amount_decimal": "4000"
         },
         "quantity": 25,
+        "quantity_decimal": "25",
+        "subtotal": 100000,
         "taxes": []
       }
     ],
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/add_minimum_licenses--Event.list.2.json/lines"
+    "url": "/v1/invoices/add_minimum_licenses--Event.list.1.json/lines"
   },
   "livemode": false,
   "metadata": {

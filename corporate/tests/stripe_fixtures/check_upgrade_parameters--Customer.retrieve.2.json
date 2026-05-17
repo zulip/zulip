@@ -63,6 +63,7 @@
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
+      "shared_payment_granted_token": null,
       "type": "card"
     },
     "footer": null,

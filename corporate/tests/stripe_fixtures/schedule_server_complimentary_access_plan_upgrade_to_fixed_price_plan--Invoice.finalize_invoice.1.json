@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_UNRECORDED",
+  "customer": "schedule_server_complimentary_access_plan_upgrade_to_fixed_price_plan--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -73,6 +74,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -90,6 +92,8 @@
           "unit_amount_decimal": "120000"
         },
         "quantity": 1,
+        "quantity_decimal": "1",
+        "subtotal": 120000,
         "taxes": []
       }
     ],

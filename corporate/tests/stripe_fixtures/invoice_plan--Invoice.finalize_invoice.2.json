@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_UNRECORDED",
+  "customer": "invoice_plan--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -73,6 +74,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -90,6 +92,8 @@
           "unit_amount_decimal": "7255"
         },
         "quantity": 1,
+        "quantity_decimal": "1",
+        "subtotal": 7255,
         "taxes": []
       },
       {
@@ -113,6 +117,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -130,6 +135,8 @@
           "unit_amount_decimal": "5814"
         },
         "quantity": 3,
+        "quantity_decimal": "3",
+        "subtotal": 17442,
         "taxes": []
       },
       {
@@ -153,6 +160,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -170,6 +178,8 @@
           "unit_amount_decimal": "8000"
         },
         "quantity": 7,
+        "quantity_decimal": "7",
+        "subtotal": 56000,
         "taxes": []
       }
     ],

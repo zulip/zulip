@@ -1,13 +1,14 @@
 {
   "amount": 48000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "upgrade_race_condition_during_card_upgrade--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "upgrade_race_condition_during_card_upgrade--Event.list.2.json",
-  "invoice": "in_NORMALIZED",
+  "id": "upgrade_race_condition_during_card_upgrade--InvoiceItem.create.1.json",
+  "invoice": "upgrade_race_condition_during_card_upgrade--Event.list.1.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 48000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 6,
+  "quantity_decimal": "6",
   "tax_rates": [],
   "test_clock": null
 }

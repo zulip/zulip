@@ -1,13 +1,14 @@
 {
   "amount": 40000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
-  "invoice": "in_NORMALIZED",
+  "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--InvoiceItem.create.1.json",
+  "invoice": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.1.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 40000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 5,
+  "quantity_decimal": "5",
   "tax_rates": [],
   "test_clock": null
 }
