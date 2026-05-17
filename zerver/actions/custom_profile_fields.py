@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 
+import lxml.html
 import orjson
 from django.db import transaction
 from django.utils.translation import gettext as _
@@ -7,7 +8,7 @@ from django.utils.translation import gettext as _
 from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
-from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.mention import MentionData, silent_mention_syntax_for_user
 from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
 from zerver.lib.users import get_user_ids_who_can_access_user
@@ -15,6 +16,38 @@ from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, Us
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
+
+
+def render_custom_profile_fields(
+    text: str,
+    realm: Realm,
+    mention_data: MentionData | None = None,
+) -> str:
+    """Render markdown for a custom profile field name or hint."""
+    if not text:
+        return ""
+
+    from zerver.lib.markdown import markdown_convert
+
+    rendered = markdown_convert(
+        text,
+        message_realm=realm,
+        mention_data=mention_data,
+        no_previews=True,
+    ).rendered_content
+
+    tree = lxml.html.fragment_fromstring(rendered, create_parent="div")
+    allowed_tags = {"p", "strong", "em", "del", "code", "a"}
+    for element in list(tree.iterdescendants()):
+        is_internal_link = element.tag == "a" and element.get("class") is not None
+        if element.tag not in allowed_tags or is_internal_link:
+            element.drop_tag()
+
+    if not tree.text_content().strip():
+        return ""
+
+    serialized = lxml.html.tostring(tree, encoding="unicode")
+    return serialized[len("<div>") : -len("</div>")]
 
 
 def notify_realm_custom_profile_fields(realm: Realm) -> None:
@@ -44,6 +77,8 @@ def try_add_realm_default_custom_profile_field(
         editable_by_user=editable_by_user,
         use_for_user_matching=use_for_user_matching,
     )
+    custom_profile_field.rendered_name = render_custom_profile_fields(str(field_data.name), realm)
+    custom_profile_field.rendered_hint = render_custom_profile_fields(field_data.hint, realm)
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
     custom_profile_field.save(update_fields=["order"])
@@ -79,6 +114,8 @@ def try_add_realm_custom_profile_field(
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
 
+    custom_profile_field.rendered_name = render_custom_profile_fields(name, realm)
+    custom_profile_field.rendered_hint = render_custom_profile_fields(hint, realm)
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
     custom_profile_field.save(update_fields=["order"])
@@ -144,8 +181,10 @@ def try_update_realm_custom_profile_field(
 ) -> None:
     if name is not None:
         field.name = name
+        field.rendered_name = render_custom_profile_fields(name, realm)
     if hint is not None:
         field.hint = hint
+        field.rendered_hint = render_custom_profile_fields(hint, realm)
     if required is not None:
         field.required = required
     if editable_by_user is not None:

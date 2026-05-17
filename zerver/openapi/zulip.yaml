@@ -27890,6 +27890,30 @@ components:
           description: |
             The help text to be displayed for the custom profile field in user-facing
             settings UI for configuring custom profile fields.
+        rendered_name:
+          type: string
+          description: |
+            The name of the custom profile field rendered as HTML. Only
+            inline formatting is rendered (bold, italic, code, links,
+            strikethrough). Entity references such as user mentions,
+            channel links, and timestamps are stripped to plain text.
+
+            Will be an empty string for fields created before Markdown
+            support was added, until those fields are next updated.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-a7bf25).
+        rendered_hint:
+          type: string
+          description: |
+            The help text of the custom profile field rendered as HTML. Only
+            inline formatting is rendered (bold, italic, code, links,
+            strikethrough). Entity references such as user mentions,
+            channel links, and timestamps are stripped to plain text.
+
+            Will be an empty string for fields created before Markdown
+            support was added, until those fields are next updated.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-a7bf25).
         field_data:
           type: string
           description: |
@@ -27954,6 +27978,8 @@ components:
         - order
         - name
         - hint
+        - rendered_name
+        - rendered_hint
         - required
         - editable_by_user
     OnboardingStep:
