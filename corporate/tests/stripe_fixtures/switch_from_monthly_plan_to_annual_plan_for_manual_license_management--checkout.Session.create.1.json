@@ -17,14 +17,14 @@
     "background_color": "#dbedff",
     "border_style": "rounded",
     "button_color": "#3e6bfe",
-    "display_name": "Violet Beam",
+    "display_name": "Kandra Labs, Inc.",
     "font_family": "source_sans_pro",
     "icon": {
-      "file": "file_1RxpnoDwzgQ85STgf3bBl5KY",
+      "file": "file_1Ie3GsDEQaroqDjsoIwaNg4m",
       "type": "file"
     },
     "logo": {
-      "file": "file_1RxpnoDwzgQ85STgvEm4ntJu",
+      "file": "file_1Ie3JBDEQaroqDjsr9btWcky",
       "type": "file"
     }
   },
@@ -48,7 +48,8 @@
     "submit": null,
     "terms_of_service_acceptance": null
   },
-  "customer": "cus_NORMALIZED",
+  "customer": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--Customer.create.1.json",
+  "customer_account": null,
   "customer_creation": null,
   "customer_details": {
     "address": null,
@@ -64,10 +65,12 @@
   "discounts": null,
   "expires_at": 1000000000,
   "id": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--checkout.Session.create.1.json",
+  "integration_identifier": null,
   "invoice": null,
   "invoice_creation": null,
   "livemode": false,
   "locale": null,
+  "managed_payments": null,
   "metadata": {
     "type": "card_update",
     "user_id": "10"
@@ -94,7 +97,7 @@
   },
   "recovered_from": null,
   "saved_payment_method_options": null,
-  "setup_intent": "seti_NORMALIZED",
+  "setup_intent": "switch_from_monthly_plan_to_annual_plan_for_manual_license_management--SetupIntent.list.1.json",
   "shipping_address_collection": null,
   "shipping_cost": null,
   "shipping_options": [],

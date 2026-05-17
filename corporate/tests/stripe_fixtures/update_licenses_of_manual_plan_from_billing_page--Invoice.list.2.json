@@ -26,7 +26,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_UNRECORDED",
+      "customer": "update_licenses_of_manual_plan_from_billing_page--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -75,6 +76,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -92,6 +94,8 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 120,
+            "quantity_decimal": "120",
+            "subtotal": 960000,
             "taxes": []
           }
         ],
@@ -172,7 +176,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_UNRECORDED",
+      "customer": "update_licenses_of_manual_plan_from_billing_page--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -221,6 +226,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -238,6 +244,8 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 150,
+            "quantity_decimal": "150",
+            "subtotal": 1200000,
             "taxes": []
           }
         ],
@@ -318,7 +326,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_UNRECORDED",
+      "customer": "update_licenses_of_manual_plan_from_billing_page--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -367,6 +376,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -384,6 +394,8 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 50,
+            "quantity_decimal": "50",
+            "subtotal": 400000,
             "taxes": []
           }
         ],
@@ -464,7 +476,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_UNRECORDED",
+      "customer": "update_licenses_of_manual_plan_from_billing_page--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -483,7 +496,7 @@
       "footer": null,
       "from_invoice": null,
       "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-      "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
+      "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.1.json",
       "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
@@ -499,8 +512,8 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
-            "invoice": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
+            "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.1.json",
+            "invoice": "update_licenses_of_manual_plan_from_billing_page--Event.list.1.json",
             "livemode": false,
             "metadata": {},
             "object": "line_item",
@@ -513,6 +526,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -530,13 +544,15 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 100,
+            "quantity_decimal": "100",
+            "subtotal": 800000,
             "taxes": []
           }
         ],
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/update_licenses_of_manual_plan_from_billing_page--Event.list.2.json/lines"
+        "url": "/v1/invoices/update_licenses_of_manual_plan_from_billing_page--Event.list.1.json/lines"
       },
       "livemode": false,
       "metadata": {

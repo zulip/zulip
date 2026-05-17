@@ -1,13 +1,14 @@
 {
   "amount": 152000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "free_trial_upgrade_by_card--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard - renewal",
   "discountable": false,
   "discounts": [],
   "id": "free_trial_upgrade_by_card--InvoiceItem.create.3.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "free_trial_upgrade_by_card--Invoice.create.3.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 152000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 19,
+  "quantity_decimal": "19",
   "tax_rates": [],
   "test_clock": null
 }

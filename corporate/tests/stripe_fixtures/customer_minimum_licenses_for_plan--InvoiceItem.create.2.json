@@ -1,13 +1,14 @@
 {
   "amount": 72000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "customer_minimum_licenses_for_plan--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Plus - renewal",
   "discountable": false,
   "discounts": [],
   "id": "customer_minimum_licenses_for_plan--InvoiceItem.create.2.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "customer_minimum_licenses_for_plan--Invoice.create.2.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 72000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 6,
+  "quantity_decimal": "6",
   "tax_rates": [],
   "test_clock": null
 }

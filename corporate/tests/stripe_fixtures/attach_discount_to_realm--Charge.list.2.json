@@ -66,6 +66,7 @@
             "cvc_check": "pass"
           },
           "country": "US",
+          "ds_transaction_id": null,
           "exp_month": 1,
           "exp_year": 9999,
           "extended_authorization": {
@@ -178,6 +179,7 @@
             "cvc_check": "pass"
           },
           "country": "US",
+          "ds_transaction_id": null,
           "exp_month": 1,
           "exp_year": 9999,
           "extended_authorization": {

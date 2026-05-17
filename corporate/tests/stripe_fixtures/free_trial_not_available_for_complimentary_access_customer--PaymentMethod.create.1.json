@@ -43,9 +43,11 @@
   },
   "created": 1000000000,
   "customer": null,
+  "customer_account": null,
   "id": "free_trial_not_available_for_complimentary_access_customer--Customer.retrieve.1.json",
   "livemode": false,
   "metadata": {},
   "object": "payment_method",
+  "shared_payment_granted_token": null,
   "type": "card"
 }

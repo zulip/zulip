@@ -1,13 +1,14 @@
 {
   "amount": 984000,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "fixed_price_plans--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "fixed_price_plans--Event.list.2.json",
-  "invoice": "in_NORMALIZED",
+  "id": "fixed_price_plans--InvoiceItem.create.1.json",
+  "invoice": "fixed_price_plans--Event.list.1.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 984000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 123,
+  "quantity_decimal": "123",
   "tax_rates": [],
   "test_clock": null
 }

@@ -2,11 +2,12 @@
   "amount": 48000,
   "currency": "usd",
   "customer": "upgrade_by_card--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "upgrade_by_card--Event.list.1.json",
+  "id": "upgrade_by_card--InvoiceItem.create.1.json",
   "invoice": "upgrade_by_card--Event.list.1.json",
   "livemode": false,
   "metadata": {},
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 6,
+  "quantity_decimal": "6",
   "tax_rates": [],
   "test_clock": null
 }

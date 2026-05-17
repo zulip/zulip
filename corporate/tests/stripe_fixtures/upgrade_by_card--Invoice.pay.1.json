@@ -25,6 +25,7 @@
   "currency": "usd",
   "custom_fields": null,
   "customer": "upgrade_by_card--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -66,13 +67,14 @@
         "object": "line_item",
         "parent": {
           "invoice_item_details": {
-            "invoice_item": "upgrade_by_card--Event.list.1.json",
+            "invoice_item": "ii_NORMALIZED",
             "proration": false,
             "proration_details": {
               "credited_items": null
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -90,6 +92,8 @@
           "unit_amount_decimal": "8000"
         },
         "quantity": 6,
+        "quantity_decimal": "6",
+        "subtotal": 48000,
         "taxes": []
       }
     ],

@@ -1,13 +1,14 @@
 {
   "amount": 7255,
   "currency": "usd",
-  "customer": "cus_UNRECORDED",
+  "customer": "invoice_plan--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Additional Zulip Cloud Standard license",
   "discountable": false,
   "discounts": [],
   "id": "invoice_plan--InvoiceItem.create.4.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "invoice_plan--Invoice.create.2.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 7255,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 1,
+  "quantity_decimal": "1",
   "tax_rates": [],
   "test_clock": null
 }
