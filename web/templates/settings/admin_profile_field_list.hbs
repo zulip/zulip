@@ -7,18 +7,10 @@
             <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         </span>
         {{/if}}
-        {{#if rendered_name}}
-            <span class="profile_field_name rendered_markdown">{{rendered_markdown rendered_name}}</span>
-        {{else}}
-            <span class="profile_field_name">{{name}}</span>
-        {{/if}}
+        <span class="profile_field_name rendered_markdown">{{rendered_markdown rendered_name}}</span>
     </td>
     <td class="profile_field_hint">
-        {{#if rendered_hint}}
-            <span class="profile_field_hint rendered_markdown">{{rendered_markdown rendered_hint}}</span>
-        {{else}}
-            <span class="profile_field_hint">{{hint}}</span>
-        {{/if}}
+        <span class="profile_field_hint rendered_markdown">{{rendered_markdown rendered_hint}}</span>
     </td>
     <td>
         <span class="profile_field_type">{{type}}</span>

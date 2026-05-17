@@ -81,7 +81,7 @@ import * as settings_streams from "./settings_streams.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user, custom_profile_field_schema, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_events from "./stream_events.ts";
 import * as stream_list from "./stream_list.ts";
@@ -162,7 +162,9 @@ export function dispatch_normal_event(event) {
             break;
 
         case "custom_profile_fields":
-            realm.custom_profile_fields = event.fields;
+            realm.custom_profile_fields = event.fields.map((field) =>
+                custom_profile_field_schema.parse(field),
+            );
             settings_profile_fields.populate_profile_fields(realm.custom_profile_fields);
             settings_account.add_custom_profile_fields_to_settings();
             navbar_alerts.maybe_toggle_empty_required_profile_fields_banner();

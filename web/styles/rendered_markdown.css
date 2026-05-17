@@ -1154,3 +1154,10 @@ a:not(.icon-button) {
     margin: calc(var(--markdown-interelement-space-px) / 2) 0;
     padding: calc(var(--message-box-link-focus-ring-block-padding) / 2) 0;
 }
+
+.profile_field_name.rendered_markdown p,
+.profile_field_hint.rendered_markdown p,
+.settings-profile-user-field-hint.rendered_markdown p,
+.custom_user_field .rendered_markdown p {
+    display: inline;
+}

@@ -409,7 +409,10 @@ run_test("custom profile fields", ({override}) => {
     override(settings_account, "add_custom_profile_fields_to_settings", noop);
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
     dispatch(event);
-    assert_same(realm.custom_profile_fields, event.fields);
+    assert_same(realm.custom_profile_fields, [
+        {...event.fields[0], rendered_name: "teams", rendered_hint: ""},
+        {...event.fields[1], rendered_name: "hobbies", rendered_hint: ""},
+    ]);
 });
 
 run_test("default_streams", ({override}) => {
