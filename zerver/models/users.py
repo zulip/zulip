@@ -769,6 +769,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
                     "hint": field_data["hint"],
                     "field_data": field_data["field_data"],
                     "order": field_data["order"],
+                    "required": field_data["required"],
+                    "editable_by_user": field_data["editable_by_user"],
                     "value": value,
                     "rendered_value": rendered_value,
                 }
