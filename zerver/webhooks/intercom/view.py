@@ -11,10 +11,16 @@ from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_web
 from zerver.models import UserProfile
 
 
-def get_ping_message(payload: WildValue) -> tuple[str, str]:
-    body = get_setup_webhook_message("Intercom")
-    topic_name = "Intercom"
-    return (topic_name, body)
+def get_topic_name(event_category: str, payload: WildValue) -> str:
+    match event_category:
+        case "ping":
+            return "Intercom"
+        case _:  # nocoverage
+            raise UnsupportedWebhookEventTypeError(payload["topic"].tame(check_string))
+
+
+def get_ping_message(payload: WildValue) -> str:
+    return get_setup_webhook_message("Intercom")
 
 
 IGNORED_EVENTS = [
@@ -39,9 +45,7 @@ IGNORED_EVENTS = [
 ]
 
 
-EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
-    "ping": get_ping_message
-}
+EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {"ping": get_ping_message}
 
 ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
 
@@ -65,7 +69,8 @@ def api_intercom_webhook(
     handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
         raise UnsupportedWebhookEventTypeError(event_type)
-    topic_name, body = handler(payload)
+    body = handler(payload)
+    topic_name = get_topic_name(event_category, payload)
 
     check_send_webhook_message(request, user_profile, topic_name, body, event_type)
     return json_success(request)
