@@ -588,9 +588,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "user_id": hamlet.id,
             "user_uuid": str(hamlet.uuid),
             "realm_uuid": str(hamlet.realm.uuid),
-            "gcm_payload": {},
-            "apns_payload": {},
-            "gcm_options": {},
         }
         with (
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
@@ -656,7 +653,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "user_id": hamlet.id,
             "user_uuid": str(hamlet.uuid),
             "realm_uuid": str(hamlet.realm.uuid),
-            "gcm_payload": {"event": "remove", "zulip_message_ids": many_ids},
+            "gcm_payload": {
+                "realm_url": hamlet.realm.url,
+                "realm_name": hamlet.realm.name,
+                "user_id": hamlet.id,
+                "event": "remove",
+                "zulip_message_ids": many_ids,
+            },
             "apns_payload": {
                 "badge": 0,
                 "custom": {"zulip": {"event": "remove", "zulip_message_ids": many_ids}},
@@ -724,7 +727,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
         android_push.assert_called_once_with(
             user_identity,
             uuid_android_tokens,
-            {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
+            {
+                "realm_url": hamlet.realm.url,
+                "realm_name": hamlet.realm.name,
+                "user_id": hamlet.id,
+                "event": "remove",
+                "zulip_message_ids": ",".join(str(i) for i in range(50, 250)),
+            },
             {},
             remote=server,
         )
@@ -785,6 +794,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             },
         }
         old_gcm_payload = {
+            "realm_url": hamlet.realm.url,
+            "realm_name": hamlet.realm.name,
             "user_id": othello.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
@@ -794,7 +805,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "server": settings.EXTERNAL_HOST,
             "realm_id": hamlet.realm.id,
             "realm_uri": hamlet.realm.url,
-            "realm_url": hamlet.realm.url,
             "sender_id": hamlet.id,
             "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
