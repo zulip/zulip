@@ -11,24 +11,22 @@
             "job_title": null,
             "away_mode_enabled": true,
             "away_mode_reassign": false,
-            "away_status_reason": "",
+            "away_status_reason": "😜 On a vacation.",
             "has_inbox_seat": true,
-            "team_ids": [
-                9680998
-            ],
+            "team_ids": [],
             "avatar": {
                 "type": "avatar",
-                "image_url": "https://static.intercomassets.com/assets/default-avatars/admins/128-da5b0f4e5162b0f45cba5a162df89b82eaddb92c5f5ae86e18629c8656aa3365.png"
+                "image_url": "https://static.intercomassets.com/assets/default-avatars/admins/128-1144dd9ea347ba3cf95984b8e18862a6551783fe7dda24c0d0628d3009c8eaf9.png"
             }
         }
     },
     "links": {},
-    "id": "notif_ca8a37c8-c6b7-4a5c-89bf-1491a6e53131",
+    "id": "notif_856f62ab-4b23-4dc3-86c5-349022690e88",
     "topic": "admin.away_mode_updated",
     "delivery_status": "pending",
     "delivery_attempts": 1,
     "delivered_at": 0,
-    "first_sent_at": 1768016828,
-    "created_at": 1768016828,
+    "first_sent_at": 1778944597,
+    "created_at": 1778944597,
     "self": null
 }
