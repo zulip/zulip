@@ -763,12 +763,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             field_data = field.as_dict()
             data.append(
                 {
-                    "id": field_data["id"],
-                    "name": field_data["name"],
-                    "type": field_data["type"],
-                    "hint": field_data["hint"],
-                    "field_data": field_data["field_data"],
-                    "order": field_data["order"],
+                    **field_data,
                     "value": value,
                     "rendered_value": rendered_value,
                 }
