@@ -7,6 +7,7 @@ const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
 const loading = mock_esm("../src/loading");
+const rendered_markdown = mock_esm("../src/rendered_markdown");
 
 const SHORT_TEXT_ID = 1;
 
@@ -72,6 +73,7 @@ function test_populate(opts, template_data) {
 
         override(realm, "custom_profile_field_types", custom_profile_field_types);
         override(current_user, "is_admin", opts.is_admin);
+        override(rendered_markdown, "update_elements", noop);
 
         loading.destroy_indicator = noop;
 
@@ -98,7 +100,9 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             type: SHORT_TEXT_ID,
             id: 10,
             name: "favorite color",
+            rendered_name: "<p>favorite color</p>",
             hint: "blue?",
+            rendered_hint: "<p>blue?</p>",
             field_data: "",
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
@@ -108,7 +112,9 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             type: DROPDOWN_ID,
             id: 30,
             name: "meal",
+            rendered_name: "<p>meal</p>",
             hint: "lunch",
+            rendered_hint: "<p>lunch</p>",
             field_data: JSON.stringify({
                 0: {
                     text: "lunch",
@@ -127,7 +133,9 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             type: EXTERNAL_ACCOUNT_ID,
             id: 20,
             name: "github profile",
+            rendered_name: "<p>github profile</p>",
             hint: "username only",
+            rendered_hint: "<p>username only</p>",
             field_data: JSON.stringify({
                 subtype: "github",
             }),
@@ -139,7 +147,9 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             type: EXTERNAL_ACCOUNT_ID,
             id: 21,
             name: "zulip profile",
+            rendered_name: "<p>zulip profile</p>",
             hint: "username only",
+            rendered_hint: "<p>username only</p>",
             field_data: JSON.stringify({
                 subtype: "custom",
                 url_pattern: "https://chat.zulip.com/%(username)s",
@@ -154,7 +164,9 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             profile_field: {
                 id: 10,
                 name: "favorite color",
+                rendered_name: "<p>favorite color</p>",
                 hint: "blue?",
+                rendered_hint: "<p>blue?</p>",
                 type: SHORT_TEXT_NAME,
                 choices: [],
                 is_select_field: false,
@@ -170,7 +182,9 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             profile_field: {
                 id: 30,
                 name: "meal",
+                rendered_name: "<p>meal</p>",
                 hint: "lunch",
+                rendered_hint: "<p>lunch</p>",
                 type: DROPDOWN_NAME,
                 choices: [
                     {order: "0", value: "0", text: "lunch"},
@@ -189,7 +203,9 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             profile_field: {
                 id: 20,
                 name: "github profile",
+                rendered_name: "<p>github profile</p>",
                 hint: "username only",
+                rendered_hint: "<p>username only</p>",
                 type: EXTERNAL_ACCOUNT_NAME,
                 choices: [],
                 is_select_field: false,
@@ -205,7 +221,9 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             profile_field: {
                 id: 21,
                 name: "zulip profile",
+                rendered_name: "<p>zulip profile</p>",
                 hint: "username only",
+                rendered_hint: "<p>username only</p>",
                 type: EXTERNAL_ACCOUNT_NAME,
                 choices: [],
                 is_select_field: false,
