@@ -144,8 +144,10 @@ def try_update_realm_custom_profile_field(
 ) -> None:
     if name is not None:
         field.name = name
+        field.rendered_name = None
     if hint is not None:
         field.hint = hint
+        field.rendered_hint = None
     if required is not None:
         field.required = required
     if editable_by_user is not None:

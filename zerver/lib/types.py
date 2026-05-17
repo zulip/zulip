@@ -24,8 +24,10 @@ ProfileDataElementValue: TypeAlias = str | list[int]
 class ProfileDataElementBase(TypedDict):
     id: int
     name: str
+    rendered_name: str
     type: int
     hint: str
+    rendered_hint: str
     required: bool
     editable_by_user: bool
     field_data: str
