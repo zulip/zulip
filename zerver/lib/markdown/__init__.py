@@ -1619,9 +1619,7 @@ class TabToSpacePreprocessor(markdown.preprocessors.Preprocessor):
                 in_code_fence = any(fence.is_code for fence in open_fences)
 
             if not in_code_fence:
-                line = self.LEADING_TABS_RE.sub(
-                    lambda m: "  " * len(m.group()), line
-                )
+                line = self.LEADING_TABS_RE.sub(lambda m: "  " * len(m.group()), line)
             result.append(line)
         return result
 
