@@ -1276,7 +1276,7 @@ export function save_organization_settings(
 ): void {
     const $subsection_parent = $save_button.closest(".settings-subsection-parent");
     const $save_button_container = $subsection_parent.find(".save-button-controls");
-    const $failed_alert_elem = $subsection_parent.find(".subsection-failed-status p");
+    const $failed_alert_elem = $subsection_parent.find(".alert-notification");
     settings_components.change_save_button_state($save_button_container, "saving");
     channel.patch({
         url: patch_url,

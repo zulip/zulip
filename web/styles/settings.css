@@ -1802,13 +1802,6 @@ label.preferences-radio-choice-label {
     }
 }
 
-.subsection-failed-status p {
-    background-color: hsl(0deg 43% 91%);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin: 0 0 0 5px;
-}
-
 #muted_topics_table {
     width: 90%;
     margin: 0 auto;
@@ -2019,10 +2012,6 @@ label.preferences-radio-choice-label {
     .user-avatar-section,
     .realm-icon-section {
         display: block;
-    }
-
-    .subsection-failed-status p {
-        margin: 5px 0 0;
     }
 }
 

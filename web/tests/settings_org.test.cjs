@@ -74,10 +74,7 @@ function createSaveButtons(subsection) {
     const $stub_save_button = $(".save-button");
     const $stub_discard_button = $(".discard-button");
     const $stub_save_button_text = $(".action-button-label");
-    $stub_save_button_header.set_find_results(
-        ".subsection-failed-status p",
-        $("<failed-status-stub>"),
-    );
+    $stub_save_button_header.set_find_results(".alert-notification", $("<failed-status-stub>"));
     $stub_save_button.set_closest_results(".settings-subsection-parent", $stub_save_button_header);
     $save_button_controls.set_parent($stub_save_button_header);
     $save_button_controls.set_find_results(".save-button", $stub_save_button);
