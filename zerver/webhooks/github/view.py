@@ -1078,8 +1078,16 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
             branch="wiki pages",
         )
     elif event == "ping":
-        if not payload.get("repository"):
+        if "repository" in payload:
+            return get_repository_name(payload)
+        if "organization" in payload:
             return get_organization_name(payload)
+        # GitHub Sponsors webhook pings include neither "repository" nor
+        # "organization"; group them under the topic SPONSORS_EVENT_TYPES use.
+        hook_type = payload["hook"]["type"].tame(check_string)
+        if hook_type == "SponsorsListing":
+            return "sponsors"
+        raise UnsupportedWebhookEventTypeError(f"ping:{hook_type}")
     elif event == "check_run":
         return f"{get_repository_name(payload)} / checks"
     elif event.startswith("discussion"):
