@@ -14,7 +14,7 @@ end
 
 -%>
 [program:smokescreen]
-command=<%= @bin %> --listen-ip <%= @listen_address %> --expose-prometheus-metrics --prometheus-port 4760<%= acl %>
+command=<%= @bin %> --listen-ip <%= @listen_address %> --expose-prometheus-metrics --prometheus-listen-ip 127.0.0.1 --prometheus-port 4760<%= acl %>
 priority=15
 autostart=true
 autorestart=true

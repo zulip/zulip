@@ -393,6 +393,6 @@ class MemcachedCollector(Collector):
 
 if __name__ == "__main__":
     REGISTRY.register(MemcachedCollector())
-    start_http_server(11212)
+    start_http_server(11212, addr="127.0.0.1")
     while True:
         time.sleep(60)
