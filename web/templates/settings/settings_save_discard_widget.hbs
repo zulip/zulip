@@ -9,6 +9,4 @@
     <div class="inline-block subsection-failed-status"><p class="hide"></p></div>
 </div>
 {{/if}}
-{{#if show_saving_indicator}}
-<div class="alert-notification {{section_name}}-status"></div>
-{{/if}}
+<div class="alert-notification {{#if section_name}}{{section_name}}-status{{/if}}"></div>
