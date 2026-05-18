@@ -1,5 +1,5 @@
 [program:prometheus_process_exporter]
-command=<%= @bin %> -config.path <%= @conf %> -recheck-with-time-limit 1m
+command=<%= @bin %> -config.path <%= @conf %> -recheck-with-time-limit 1m -web.listen-address 127.0.0.1:9256
 priority=10
 autostart=true
 autorestart=true
