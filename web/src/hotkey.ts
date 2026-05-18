@@ -670,7 +670,11 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
         const $draft_overlay = $("#draft_overlay");
-        if ($draft_overlay.find("a:focus, button:focus, input:focus").length > 0) {
+        if (
+            $draft_overlay.find(
+                "a:focus, button:focus, input:focus, [role='button']:focus, [role='checkbox']:focus",
+            ).length > 0
+        ) {
             return false;
         }
         drafts_overlay_ui.handle_keyboard_events("enter");
