@@ -1295,9 +1295,9 @@ export function save_organization_settings(
             settings_components.resize_textareas_in_subsection($subsection_parent);
         },
         error(xhr) {
-            settings_components.change_save_button_state($save_button_container, "failed");
-            $save_button.hide();
-            ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, $failed_alert_elem);
+            settings_components.change_save_button_state($save_button_container, "failed", () => {
+                ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, $failed_alert_elem);
+            });
         },
     });
 }
