@@ -1420,8 +1420,8 @@ class MattermostV1110ImportTest(MattermostImportTestBase):
         self.assertEqual(mattermost_data["team"][0]["name"], "ad-1")
         self.assert_length(mattermost_data["channel"], 5)
         self.assert_length(mattermost_data["user"], 20)
-        self.assert_length(mattermost_data["emoji"], 0)
-        self.assert_length(mattermost_data["post"]["channel_post"], 50)
+        self.assert_length(mattermost_data["emoji"], 1)
+        self.assert_length(mattermost_data["post"]["channel_post"], 51)
         self.assert_length(mattermost_data["post"]["direct_post"], 50)
         self.assert_length(mattermost_data["direct_channel"], 79)
         self.assert_length(mattermost_data["role"], 23)
@@ -1479,6 +1479,23 @@ class MattermostV1110ImportTest(MattermostImportTestBase):
 
         with self.subTest("test attachments"):
             self.assert_attachments(conversion_result.imported_realm, expected_count=3)
+            # There's a post that references a missing attachment file, the importer
+            # should continue processing the message but skip processing the missing
+            # attachment file. Missing custom emoji files should also be treated the
+            # same.
+            self.assertListEqual(
+                [
+                    "INFO:root:Generating data for ad-1",
+                    "INFO:root:Starting to process emoticons",
+                    "INFO:root:Emoji file no found: 'data/bogus/emoji.png'; continuing.",
+                    "INFO:root:Done processing emoticons",
+                    "INFO:root:Message attachment file not found: '20260123/bogus/path/to/file.txt'; continuing.",
+                    "INFO:root:Processed messages up to 63 / 63",
+                    "INFO:root:Processed messages up to 60 / 60",
+                    "INFO:root:Exporting migration status",
+                ],
+                conversion_result.log_output,
+            )
 
 
 class MattermostCombinedTeamsImportTest(MattermostImportTestBase):
