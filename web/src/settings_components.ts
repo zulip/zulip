@@ -1307,7 +1307,7 @@ function switching_to_private(properties_elements: HTMLElement[]): boolean {
 }
 
 export function save_discard_realm_settings_widget_status_handler($subsection: JQuery): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
@@ -1323,7 +1323,7 @@ export function save_discard_stream_settings_widget_status_handler(
     $subsection: JQuery,
     sub: StreamSubscription | undefined,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     let show_change_process_button = false;
@@ -1373,7 +1373,7 @@ export function save_discard_group_widget_status_handler(
     $subsection: JQuery,
     group: UserGroup,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
@@ -1387,7 +1387,7 @@ export function save_discard_group_widget_status_handler(
 export function save_discard_default_realm_settings_widget_status_handler(
     $subsection: JQuery,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>

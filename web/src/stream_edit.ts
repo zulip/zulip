@@ -491,7 +491,7 @@ export function show_settings_for(node: HTMLElement): void {
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
-    $("#subscription_overlay .stream_email_address_error").hide();
+    $("#subscription_overlay .channel-general-settings-status").hide();
     $("#id_topics_policy").val(sub.topics_policy);
 
     $edit_container.addClass("show");
@@ -824,7 +824,7 @@ export function initialize(): void {
                     ui_report.error(
                         $t_html({defaultMessage: "Failed"}),
                         xhr,
-                        $(".stream_email_address_error"),
+                        $(".channel-general-settings-status"),
                     );
                 },
             });

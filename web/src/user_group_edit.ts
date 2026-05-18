@@ -634,7 +634,7 @@ function update_membership_status_text(group: UserGroup): void {
 }
 
 function save_discard_widget_handler_for_permissions_panel($subsection: JQuery): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = settings_components.get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) => !$(elem).prop("checked"));
