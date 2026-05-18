@@ -267,6 +267,9 @@ def validate_and_resolve_relative_path(
     if os.path.commonpath([safe_base_dir, safe_resolved_path]) != safe_base_dir:
         raise AssertionError(f"Invalid path outside import dir: {path}")
 
+    if not os.path.isfile(safe_resolved_path):
+        raise FileNotFoundError(f"{field_name_for_error} not found: {path}")
+
     return path, safe_resolved_path
 
 

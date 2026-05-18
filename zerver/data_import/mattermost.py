@@ -437,12 +437,17 @@ def process_message_attachments(
     for attachment in attachments:
         attachment_path = attachment["path"]
         data_base_dir = os.path.join(mattermost_data_dir, "data")
-        _, attachment_safe_full_path = validate_and_resolve_relative_path(
-            attachment_path,
-            base_dir=data_base_dir,
-            safe_base_dir=os.path.realpath(data_base_dir),
-            field_name_for_error="path",
-        )
+
+        try:
+            _, attachment_safe_full_path = validate_and_resolve_relative_path(
+                attachment_path,
+                base_dir=data_base_dir,
+                safe_base_dir=os.path.realpath(data_base_dir),
+                field_name_for_error="path",
+            )
+        except FileNotFoundError:
+            logging.info("Message attachment file not found: '%s'; continuing.", attachment_path)
+            continue
 
         file_name = attachment_path.split("/")[-1]
         file_ext = f".{file_name.split('.')[-1]}"
@@ -843,14 +848,19 @@ def write_emoticon_data(
     emoji_folder = os.path.join(output_dir, "emoji")
     os.makedirs(emoji_folder, exist_ok=True)
 
-    def process(data: ZerverFieldsT) -> ZerverFieldsT:
+    def process(data: ZerverFieldsT) -> ZerverFieldsT | None:
         source_sub_path = data["path"]
-        _, safe_source_path = validate_and_resolve_relative_path(
-            source_sub_path,
-            base_dir=data_dir,
-            safe_base_dir=os.path.realpath(data_dir),
-            field_name_for_error="path",
-        )
+
+        try:
+            _, safe_source_path = validate_and_resolve_relative_path(
+                source_sub_path,
+                base_dir=data_dir,
+                safe_base_dir=os.path.realpath(data_dir),
+                field_name_for_error="path",
+            )
+        except FileNotFoundError:
+            logging.info("Emoji file no found: '%s'; continuing.", source_sub_path)
+            return None
 
         target_fn = sanitize_name(data["name"])
         target_sub_path = RealmEmoji.PATH_ID_TEMPLATE.format(
@@ -873,7 +883,8 @@ def write_emoticon_data(
             name=data["name"],
         )
 
-    emoji_records = list(map(process, flat_data))
+    emoji_records = [record for data in flat_data if (record := process(data))]
+
     create_converted_data_files(emoji_records, output_dir, "/emoji/records.json")
 
     realmemoji = [
