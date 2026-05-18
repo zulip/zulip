@@ -204,10 +204,17 @@ function test_change_save_button_state() {
         assert.equal($save_button_text.text(), "translated: Saved");
     }
     {
-        settings_components.change_save_button_state($save_button_controls, "failed");
-        assert.equal($save_button_controls.visible(), true);
-        assert.equal($save_button.attr("data-status"), "failed");
-        assert.equal($save_button_text.text(), "translated: Save changes");
+        let error_callback_called = false;
+        function error_callback() {
+            error_callback_called = true;
+        }
+        settings_components.change_save_button_state(
+            $save_button_controls,
+            "failed",
+            error_callback,
+        );
+        assert.equal($save_button_controls.visible(), false);
+        assert.equal(error_callback_called, true);
     }
 }
 

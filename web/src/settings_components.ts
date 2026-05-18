@@ -568,7 +568,11 @@ export function get_dropdown_list_widget_setting_value($input_elem: JQuery): num
     return setting_value;
 }
 
-export function change_save_button_state($element: JQuery, state: string): void {
+export function change_save_button_state(
+    $element: JQuery,
+    state: string,
+    error_callback?: () => void,
+): void {
     function show_hide_element(
         $element: JQuery,
         show: boolean,
@@ -606,6 +610,14 @@ export function change_save_button_state($element: JQuery, state: string): void 
         return;
     }
 
+    if (state === "failed") {
+        assert(error_callback !== undefined);
+        show_hide_element($element, false, 0, () => {
+            error_callback();
+        });
+        return;
+    }
+
     if (state === "succeeded" && $save_button.attr("data-status") === "unsaved") {
         // We don't show the "saved" state if the save button is in the "unsaved"
         // state, as that would indicate that user has made some other changes
@@ -636,10 +648,6 @@ export function change_save_button_state($element: JQuery, state: string): void 
 
             $element.find(".discard-button").hide();
             buttons.show_button_loading_indicator($save_button);
-            break;
-        case "failed":
-            data_status = "failed";
-            is_show = true;
             break;
         case "succeeded":
             button_text = $t({defaultMessage: "Saved"});
