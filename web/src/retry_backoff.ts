@@ -3,7 +3,7 @@ import * as z from "zod/mini";
 export let get_retry_backoff_seconds = (
     xhr: JQuery.jqXHR<unknown> | undefined,
     attempts: number,
-    tighter_backoff = false,
+    faster_backoff = false,
 ): number => {
     // We need to respect the server's rate-limiting headers, but beyond
     // that, we also want to avoid contributing to a thundering herd if
@@ -12,7 +12,7 @@ export let get_retry_backoff_seconds = (
     // We do the maximum of the retry-after header and an exponential
     // backoff.
     let backoff_scale: number;
-    if (tighter_backoff) {
+    if (faster_backoff) {
         // Starts at 1-2s and ends at 16-32s after enough failures.
         backoff_scale = Math.min(2 ** attempts, 32);
     } else {
