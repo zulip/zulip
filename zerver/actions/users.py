@@ -880,7 +880,7 @@ def get_service_dicts_for_bots(
     embedded_bot_ids = [
         bot_dict["id"] for bot_dict in bot_dicts if bot_dict["bot_type"] == UserProfile.EMBEDDED_BOT
     ]
-    embedded_bot_configs = get_bot_configs(embedded_bot_ids)
+    bot_configs = get_bot_configs(embedded_bot_ids)
 
     service_dicts_by_uid: dict[int, list[dict[str, Any]]] = {}
     for bot_dict in bot_dicts:
@@ -888,6 +888,7 @@ def get_service_dicts_for_bots(
         bot_type = bot_dict["bot_type"]
         services = bot_services_by_uid[bot_profile_id]
         service_dicts: list[dict[str, Any]] = []
+        bot_config = bot_configs.get(bot_profile_id, {})
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
             service_dicts = [
                 {
@@ -897,8 +898,7 @@ def get_service_dicts_for_bots(
                 }
                 for service in services
             ]
-        elif bot_type == UserProfile.EMBEDDED_BOT and bot_profile_id in embedded_bot_configs:
-            bot_config = embedded_bot_configs[bot_profile_id]
+        elif bot_type == UserProfile.EMBEDDED_BOT and bot_config:
             service_dicts = [
                 {
                     "config_data": bot_config,
