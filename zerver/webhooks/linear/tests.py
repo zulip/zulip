@@ -79,3 +79,12 @@ class LinearHookTests(WebhookTestCase):
             content_type="application/json",
         )
         self.assert_json_success(result)
+
+    def test_comment_on_document(self) -> None:
+        payload = self.get_body("comment_on_document")
+        result = self.client_post(
+            self.url,
+            payload,
+            content_type="application/json",
+        )
+        self.assert_json_success(result)
