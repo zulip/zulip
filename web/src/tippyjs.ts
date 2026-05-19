@@ -90,7 +90,24 @@ tippy.default.setDefaultProps({
     // with appending it to `body` which has side effect of tooltips
     // sticking around due to browser not communicating to tippy that
     // the element has been removed without having a Mutation Observer.
-    appendTo: "parent",
+    //
+    // Append to reference.parentElement (equivalent to tippy's "parent"
+    // shorthand), or document.body if the reference has been detached,
+    // since tippy crashes on a null parent when show() fires after the
+    // reference is removed mid-delay.
+    appendTo: (reference) => reference.parentElement ?? document.body,
+    // If the reference was removed from the DOM during the show delay,
+    // destroy the instance instead of mounting a tooltip with no
+    // anchor. Per-instance `onShow` overrides this default, so the
+    // `appendTo` fallback above also exists as a backstop for those
+    // call sites.
+    onShow(instance) {
+        if (!instance.reference.isConnected) {
+            instance.destroy();
+            return false;
+        }
+        return undefined;
+    },
     // To add a text tooltip, override this by setting data-tippy-content.
     // To add an HTML tooltip, set data-tooltip-template-id to the id of a <template>.
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
