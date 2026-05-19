@@ -1,0 +1,34 @@
+{
+    "action": "create",
+    "actor": {
+        "id": "e825c109-f691-4716-a85f-b68a2626531c",
+        "name": "Dhruv Shetty",
+        "email": "dhruvshetty2203@gmail.com",
+        "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
+        "type": "user"
+    },
+    "createdAt": "2026-05-19T13:08:19.956Z",
+    "data": {
+        "id": "e3ff103c-53ac-4267-bdfc-cd05f7e49dc7",
+        "createdAt": "2026-05-19T13:08:19.956Z",
+        "updatedAt": "2026-05-19T13:08:19.927Z",
+        "body": "This is an comment on a Document",
+        "documentContentId": "49567929-242f-43b6-a7bf-193744e4279a",
+        "userId": "e825c109-f691-4716-a85f-b68a2626531c",
+        "quotedText": "This is an comment",
+        "reactionData": [],
+        "isArtificialAgentSessionRoot": false,
+        "botActor": null,
+        "user": {
+            "id": "e825c109-f691-4716-a85f-b68a2626531c",
+            "name": "Dhruv Shetty",
+            "email": "dhruvshetty2203@gmail.com",
+            "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203"
+        }
+    },
+    "url": "https://linear.app/zulipdhruv/document/hello-ddb80e78e24b#comment-e3ff103c",
+    "type": "Comment",
+    "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
+    "webhookTimestamp": 1779196118345,
+    "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
+}
