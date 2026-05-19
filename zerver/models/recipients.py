@@ -61,7 +61,7 @@ class Recipient(models.Model):
             return str(get_display_recipient(self))
 
 
-def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
+def get_direct_message_group_sorted_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
     from zerver.models import Subscription
 
     assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
@@ -73,6 +73,16 @@ def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscri
         .order_by("user_profile_id")
         .values_list("user_profile_id", flat=True)
     )
+
+
+def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
+    from zerver.models import Subscription
+
+    assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+
+    return Subscription.objects.filter(
+        recipient=recipient,
+    ).values_list("user_profile_id", flat=True)
 
 
 def bulk_get_direct_message_group_user_ids(recipient_ids: list[int]) -> dict[int, set[int]]:
