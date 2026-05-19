@@ -884,19 +884,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     const bot_type = bot.bot_type.toString();
     const services = bot_data.get_services(bot.user_id);
-    let service:
-        | {
-              config_data: Record<string, string>;
-              service_name: string;
-          }
-        | {
-              base_url: string;
-              interface: number;
-              token: string;
-          };
-    if (services?.[0] !== undefined) {
-        service = services[0];
-    }
+    const service = services?.[0];
     edit_bot_post_render();
     original_values = get_current_values($("#bot-edit-form"));
     $("#bot-edit-form").on("input", "input, select, button", (e) => {
@@ -1063,6 +1051,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            assert(service !== undefined && "interface" in service);
             $("#service_data").append(
                 $(
                     render_settings_edit_outgoing_webhook_service({
@@ -1070,7 +1059,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                     }),
                 ),
             );
-            assert(service && "interface" in service);
             $("#edit_service_interface").val(service.interface);
         }
         if (bot_type === EMBEDDED_BOT_TYPE) {
