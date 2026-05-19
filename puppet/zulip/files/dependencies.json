@@ -1,0 +1,344 @@
+{
+    "go-camo": {
+        "version": "2.7.3",
+        "goversion": "1260",
+        "sha256": {
+            "amd64": "d1071300b6692d194a439cb4e380ff95e1f4d894e2318bf47aaec077722370b7",
+            "aarch64": "22afef25d43cb0cb44dac100ec5602846bd66de0d9d3a3c6fc2c98eae82e6639"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "cactus/go-camo",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/cactus/go-camo/releases/download/v{version}/go-camo-{version}.go{goversion}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "SHA256"
+            }
+        }
+    },
+    "golang": {
+        "version": "1.26.0",
+        "sha256": {
+            "amd64": "aac1b08a0fb0c4e0a7c1555beb7b59180b05dfc5a3d62e40e9de90cd42f88235",
+            "aarch64": "bd03b743eb6eb4193ea3c3fd3956546bf0e3ca5b7076c8226334afe6b75704cd"
+        },
+        "_updater": {
+            "provider": "golang",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            }
+        }
+    },
+    "smokescreen-src": {
+        "version": "464b1115f802cbd91ffee555a41e71546646d396",
+        "sha256": "800d455bbdd23df0587b72e05e9bb51ce80d0f5816bd1b7070c2c26f4340cfca",
+        "_updater": {
+            "provider": "github_commit",
+            "repo": "stripe/smokescreen",
+            "branch": "master",
+            "archive_url": "https://github.com/stripe/smokescreen/archive/{version}.tar.gz"
+        }
+    },
+    "tusd": {
+        "version": "2.9.1",
+        "sha256": {
+            "amd64": "140066be543e40493abd1fda1d1e33ab7fa0e8b9a61d247130f6777e64bf28f6",
+            "aarch64": "c9c46eba6e46b8062f863af6a5423f6f72b5157939d967087cd9b6d7c6bd19cf"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "tus/tusd",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/tus/tusd/releases/download/v{version}/tusd_linux_{arch}.tar.gz",
+            "checksum": {
+                "kind": "sidecar",
+                "suffix": ".sha256"
+            }
+        }
+    },
+    "wal-g": {
+        "version": "3.0.8",
+        "sha256": {
+            "amd64": "b0df1b484035eb5f131db7bbd303d1a460391848fdcce34ba1e0a564cca493e9",
+            "aarch64": "048b5033c34c1487dc1fccc0572db030e323230984ccc093e80e4e4081c797d1"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "wal-g/wal-g",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "aarch64"
+            },
+            "asset_url": "https://github.com/wal-g/wal-g/releases/download/v{version}/wal-g-pg-22.04-{arch}.tar.gz",
+            "checksum": {
+                "kind": "sidecar",
+                "suffix": ".sha256"
+            }
+        }
+    },
+    "aws_signing_helper": {
+        "version": "1.7.3",
+        "sha256": {
+            "amd64": "ef609ae021e86a2778b63dc80f4280033fcb1450bddb8b234b4ccd30f917ed21",
+            "aarch64": "7aaf8b3a4ceac464931dec27bcfd58e4facc93fb48402381e3f96bb45de5a356"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "aws/rolesanywhere-credential-helper",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "X86_64",
+                "aarch64": "Aarch64"
+            },
+            "asset_url": "https://rolesanywhere.amazonaws.com/releases/{version}/{arch}/Linux/Amzn2023/aws_signing_helper",
+            "checksum": {
+                "kind": "sidecar",
+                "suffix": ".sha256"
+            }
+        }
+    },
+    "sentry-cli": {
+        "version": "2.58.4",
+        "sha256": {
+            "amd64": "a4932b4315b192b3d037678a16eb2a5a8731609f671fc4008e643b85c3c74cb6",
+            "aarch64": "672cb986b0c5d84ef724f39b3aa189be802bceb8bc7dc8c5776a0ca90fcf41bd"
+        },
+        "_updater": {
+            "provider": "sentry_cli",
+            "app": "sentry-cli",
+            "arch_map": {
+                "amd64": "x86_64",
+                "aarch64": "aarch64"
+            },
+            "asset_name_template": "sentry-cli-Linux-{arch}"
+        }
+    },
+    "grafana": {
+        "version": "12.3.3",
+        "sha256": {
+            "amd64": "d69b850d02903bcfe27289661c5b0b1b9a67d0bf0c42d344d55d0e63e62a7bda",
+            "aarch64": "a2a50f6a63c89c59914b604482500de2648d12ee266d8eac8886815710482614"
+        },
+        "_updater": {
+            "provider": "grafana",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://dl.grafana.com/oss/release/grafana-{version}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "sidecar",
+                "suffix": ".sha256"
+            }
+        }
+    },
+    "grok_exporter": {
+        "version": "1.0.0.RC5",
+        "sha256": {
+            "amd64": "b8771a6d7ca8447c222548d6cb8b2f8ee058b55bfd1801c2f6eb739534df5ded"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "fstab/grok_exporter",
+            "tag_strip_prefix": "v",
+            "allow_prereleases": true,
+            "arch_map": {
+                "amd64": "amd64"
+            },
+            "asset_url": "https://github.com/fstab/grok_exporter/releases/download/v{version}/grok_exporter-{version}.linux-{arch}.zip",
+            "checksum": {
+                "kind": "compute"
+            }
+        }
+    },
+    "node_exporter": {
+        "version": "1.10.2",
+        "sha256": {
+            "amd64": "c46e5b6f53948477ff3a19d97c58307394a29fe64a01905646f026ddc32cb65b",
+            "aarch64": "de69ec8341c8068b7c8e4cfe3eb85065d24d984a3b33007f575d307d13eb89a6"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "prometheus/node_exporter",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/prometheus/node_exporter/releases/download/v{version}/node_exporter-{version}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "sha256sums.txt"
+            }
+        }
+    },
+    "postgres_exporter": {
+        "version": "0.19.0",
+        "sha256": {
+            "amd64": "11033f9016d0c5a5b91742d17aa37490b170f055ec1bb0d7d69509d223952ed0",
+            "aarch64": "8a2f55b1a00694758ea4bfd96a8bb814c1b279cf9d233a24fecd28a9e87c6280"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "prometheus-community/postgres_exporter",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/prometheus-community/postgres_exporter/releases/download/v{version}/postgres_exporter-{version}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "sha256sums.txt"
+            }
+        }
+    },
+    "postgres_exporter-src": {
+        "version": "86a2b77aa522f57a136d04ffa33f0e46713d1925",
+        "sha256": "03b3a4e794b6c01e911c3f7f4d77a2889d6946e2245f8d12d14844c29554a884",
+        "_updater": {
+            "provider": "github_commit",
+            "repo": "alexmv/postgres_exporter",
+            "branch": "cleanup/gitlab-exporter-usr-idx",
+            "archive_url": "https://github.com/alexmv/postgres_exporter/archive/{version}.tar.gz"
+        }
+    },
+    "process_exporter": {
+        "version": "0.8.7",
+        "sha256": {
+            "amd64": "6d274cca5e94c6a25e55ec05762a472561859ce0a05b984aaedb67dd857ceee2",
+            "aarch64": "4a2502f290323e57eeeb070fc10e64047ad0cd838ae5a1b347868f75667b5ab0"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "ncabatoff/process-exporter",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/ncabatoff/process-exporter/releases/download/v{version}/process-exporter-{version}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "checksums.txt"
+            }
+        }
+    },
+    "prometheus": {
+        "version": "3.9.1",
+        "sha256": {
+            "amd64": "86a6999dd6aacbd994acde93c77cfa314d4be1c8e7b7c58f444355c77b32c584",
+            "aarch64": "4e7f291e527d8aca912a995c183128388c9e048065aff84f74f5a55c9bef3793"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "prometheus/prometheus",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/prometheus/prometheus/releases/download/v{version}/prometheus-{version}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "sha256sums.txt"
+            }
+        }
+    },
+    "pushgateway": {
+        "version": "1.11.2",
+        "sha256": {
+            "amd64": "2ec72315e150dda071fdeef09360780a386a67e5207ebaa53bb18f2f1a3b89cf",
+            "aarch64": "b3fb835dbb0a29b1d6f9cd7ae3568a5615e59b96f8787965248cea67163d4db1"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "prometheus/pushgateway",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/prometheus/pushgateway/releases/download/v{version}/pushgateway-{version}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "sha256sums.txt"
+            }
+        }
+    },
+    "redis_exporter": {
+        "version": "1.81.0",
+        "sha256": {
+            "amd64": "d2f4740fa81e1a274ca99677783f3fe1544f6022fed997d4cd632d01a8eff1bb",
+            "aarch64": "038d0d2d8f044075cc97acd323c16a8c3628f08ef7d186601fedaa38b71aad8f"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "oliver006/redis_exporter",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/oliver006/redis_exporter/releases/download/v{version}/redis_exporter-v{version}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "sha256sums.txt"
+            }
+        }
+    },
+    "uwsgi_exporter": {
+        "version": "1.3.0",
+        "sha256": {
+            "amd64": "f83411b508676237bbd1b791c1bdc043a68bf914c7e48e005e2e295255f9245f",
+            "aarch64": "ab7c9298d2fe5c5f58e3fe7c905929e93979d2b3b11c75eb8ba6ccc7a547238c"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "timonwong/uwsgi_exporter",
+            "tag_strip_prefix": "v",
+            "arch_map": {
+                "amd64": "amd64",
+                "aarch64": "arm64"
+            },
+            "asset_url": "https://github.com/timonwong/uwsgi_exporter/releases/download/v{version}/uwsgi_exporter-{version}.linux-{arch}.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "sha256sums.txt"
+            }
+        }
+    },
+    "vector": {
+        "version": "0.53.0",
+        "sha256": {
+            "amd64": "5460f93310eb59cc9e7ee7717a179f1bf2ff8fbc046b7e3eb625159a5e8714bb",
+            "aarch64": "2722dec4f5c358793caeb86b4f4febd047b37a2d688af181e8264a764ecd28e5"
+        },
+        "_updater": {
+            "provider": "github_release",
+            "repo": "vectordotdev/vector",
+            "tag_strip_prefix": "v",
+            "tag_pattern": "^v\\d+\\.\\d+\\.\\d+$",
+            "arch_map": {
+                "amd64": "x86_64",
+                "aarch64": "aarch64"
+            },
+            "asset_url": "https://github.com/vectordotdev/vector/releases/download/v{version}/vector-{version}-{arch}-unknown-linux-gnu.tar.gz",
+            "checksum": {
+                "kind": "release_file",
+                "name": "vector-{version}-SHA256SUMS"
+            }
+        }
+    }
+}

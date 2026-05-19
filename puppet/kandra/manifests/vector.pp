@@ -13,7 +13,7 @@ class kandra::vector {
 
   zulip::external_dep { 'vector':
     version        => $version,
-    url            => "https://packages.timber.io/vector/${version}/vector-${version}-${arch}-unknown-linux-gnu.tar.gz",
+    url            => "https://github.com/vectordotdev/vector/releases/download/v${version}/vector-${version}-${arch}-unknown-linux-gnu.tar.gz",
     tarball_prefix => "vector-${arch}-unknown-linux-gnu",
     bin            => [$bin],
     cleanup_after  => [Service[supervisor]],
