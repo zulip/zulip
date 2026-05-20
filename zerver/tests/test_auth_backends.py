@@ -2307,6 +2307,161 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
             ],
         )
 
+    def test_social_auth_profile_field_sync(self) -> None:
+        birthday_field = CustomProfileField.objects.get(
+            realm=self.user_profile.realm, name="Birthday"
+        )
+        old_birthday_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=birthday_field
+        ).value
+
+        sync_custom_attrs_dict = {
+            "zulip": {
+                self.BACKEND_CLASS.name: {
+                    "custom__phone_number": "mobilePhone",
+                    "role": "zulip_role",
+                }
+            }
+        }
+
+        # Before we procee, verify the role, which is supposed to get synced, is like
+        # we expect.
+        self.assertEqual(self.user_profile.role, UserProfile.ROLE_MEMBER)
+
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        result = self.social_auth_test_wrapper(
+            account_data_dict,
+            subdomain="zulip",
+            extra_attrs=dict(mobilePhone="123412341234", birthday="2021-01-01", zulip_role="owner"),
+            sync_attrs_config=sync_custom_attrs_dict,
+        )
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(data["full_name"], self.name)
+        self.assertEqual(data["subdomain"], "zulip")
+        self.assertEqual(result.status_code, 302)
+
+        phone_field = CustomProfileField.objects.get(
+            realm=self.user_profile.realm, name="Phone number"
+        )
+        phone_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=phone_field
+        ).value
+        self.assertEqual(phone_field_value, "123412341234")
+
+        # Verify the Birthday field doesn't get synced - because it isn't configured for syncing.
+        new_birthday_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=birthday_field
+        ).value
+        self.assertEqual(new_birthday_field_value, old_birthday_field_value)
+
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
+
+        # Now test with an invalid role value.
+        with (
+            self.assertLogs(self.logger_string, level="WARNING") as m,
+        ):
+            result = self.social_auth_test_wrapper(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attrs=dict(zulip_role="wrongrole"),
+                sync_attrs_config=sync_custom_attrs_dict,
+            )
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    f"Ignoring unsupported role value wrongrole for user {self.user_profile.id} in SOCIAL_AUTH_SYNC_ATTRS_DICT",
+                    type="warning",
+                )
+            ],
+        )
+
+        # Verify empty attribute is handled.
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        result = self.social_auth_test_wrapper(
+            account_data_dict,
+            subdomain="zulip",
+            extra_attrs=dict(mobilePhone="", zulip_role=""),
+            sync_attrs_config=sync_custom_attrs_dict,
+        )
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
+        phone_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=phone_field
+        ).value
+        self.assertEqual(phone_field_value, "123412341234")
+
+        # Verify with none of these attributes sent at all.
+        result = self.social_auth_test_wrapper(
+            account_data_dict,
+            subdomain="zulip",
+            extra_attrs=dict(),
+            sync_attrs_config=sync_custom_attrs_dict,
+        )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
+        phone_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=phone_field
+        ).value
+        self.assertEqual(phone_field_value, "123412341234")
+
+        # Disable syncing of role in SOCIAL_AUTH_SYNC_ATTRS_DICT, while keeping
+        # role in extra_attrs. This edge case means the attribute will be read from the
+        # data provided by the IdP, but won't be used for anything.
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        result = self.social_auth_test_wrapper(
+            account_data_dict,
+            subdomain="zulip",
+            extra_attrs=dict(zulip_role=["guest"]),
+            sync_attrs_config={},
+        )
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
+
+        # Verify that values for text fields are truncated if they're too long.
+        long_value = "x" * 60
+        expected_value = "x" * 49 + "…"
+        with (
+            self.assertLogs(self.logger_string, level="WARNING") as m,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test_wrapper(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attrs=dict(mobilePhone=long_value),
+                sync_attrs_config=sync_custom_attrs_dict,
+            )
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertIn(
+            self.logger_output(
+                f"Truncated value for custom profile field phone_number of user {self.user_profile.id} to 50 characters.",
+                type="warning",
+            ),
+            m.output,
+        )
+        phone_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=phone_field
+        ).value
+        self.assertEqual(phone_field_value, expected_value)
+
 
 class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
     BACKEND_CLASS = SAMLAuthBackend
@@ -3606,182 +3761,6 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
                 )
             ],
         )
-
-    def test_social_auth_profile_field_sync(self) -> None:
-        birthday_field = CustomProfileField.objects.get(
-            realm=self.user_profile.realm, name="Birthday"
-        )
-        old_birthday_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=self.user_profile, field=birthday_field
-        ).value
-
-        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
-        idps_dict["test_idp"]["extra_attrs"] = ["mobilePhone", "zulip_role"]
-
-        sync_custom_attrs_dict = {
-            "zulip": {
-                "saml": {
-                    "custom__phone_number": "mobilePhone",
-                    "role": "zulip_role",
-                }
-            }
-        }
-
-        # Before we procee, verify the role, which is supposed to get synced, is like
-        # we expect.
-        self.assertEqual(self.user_profile.role, UserProfile.ROLE_MEMBER)
-
-        with self.settings(
-            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-            SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                extra_attributes=dict(
-                    mobilePhone=["123412341234"], birthday=["2021-01-01"], zulip_role=["owner"]
-                ),
-            )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.assertEqual(data["full_name"], self.name)
-        self.assertEqual(data["subdomain"], "zulip")
-        self.assertEqual(result.status_code, 302)
-
-        phone_field = CustomProfileField.objects.get(
-            realm=self.user_profile.realm, name="Phone number"
-        )
-        phone_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=self.user_profile, field=phone_field
-        ).value
-        self.assertEqual(phone_field_value, "123412341234")
-
-        # Verify the Birthday field doesn't get synced - because it isn't configured for syncing.
-        new_birthday_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=self.user_profile, field=birthday_field
-        ).value
-        self.assertEqual(new_birthday_field_value, old_birthday_field_value)
-
-        self.user_profile.refresh_from_db()
-        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
-
-        # Now test with an invalid role value.
-        with (
-            self.settings(
-                SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-                SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-            ),
-            self.assertLogs(self.logger_string, level="WARNING") as m,
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                extra_attributes=dict(zulip_role=["wrongrole"]),
-            )
-
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.user_profile.refresh_from_db()
-        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
-        self.assertEqual(
-            m.output,
-            [
-                self.logger_output(
-                    f"Ignoring unsupported role value wrongrole for user {self.user_profile.id} in SOCIAL_AUTH_SYNC_ATTRS_DICT",
-                    type="warning",
-                )
-            ],
-        )
-
-        # Verify empty attribute is handled.
-        with self.settings(
-            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-            SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                extra_attributes=dict(mobilePhone=[""], zulip_role=[""]),
-            )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.user_profile.refresh_from_db()
-        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
-        phone_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=self.user_profile, field=phone_field
-        ).value
-        self.assertEqual(phone_field_value, "123412341234")
-
-        # Verify with none of these attributes sent at all.
-        with self.settings(
-            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-            SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                extra_attributes=dict(),
-            )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.user_profile.refresh_from_db()
-        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
-        phone_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=self.user_profile, field=phone_field
-        ).value
-        self.assertEqual(phone_field_value, "123412341234")
-
-        # Disable syncing of role in SOCIAL_AUTH_SYNC_ATTRS_DICT, while keeping
-        # role in extra_attrs. This edge case means the attribute will be read from the
-        # data provided by the IdP, but won't be used for anything.
-        with self.settings(
-            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-            SOCIAL_AUTH_SYNC_ATTRS_DICT={},
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                extra_attributes=dict(zulip_role=["guest"]),
-            )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.user_profile.refresh_from_db()
-        self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
-
-        # Verify that values for text fields are truncated if they're too long.
-        long_value = "x" * 60
-        expected_value = "x" * 49 + "…"
-        with (
-            self.settings(
-                SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-                SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-            ),
-            self.assertLogs(self.logger_string, level="WARNING") as m,
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                extra_attributes=dict(mobilePhone=[long_value]),
-            )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.assertIn(
-            self.logger_output(
-                f"Truncated value for custom profile field phone_number of user {self.user_profile.id} to 50 characters.",
-                type="warning",
-            ),
-            m.output,
-        )
-        phone_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=self.user_profile, field=phone_field
-        ).value
-        self.assertEqual(phone_field_value, expected_value)
 
     def test_social_auth_group_sync(self) -> None:
         realm = get_realm("zulip")
