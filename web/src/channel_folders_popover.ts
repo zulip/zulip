@@ -238,11 +238,11 @@ export function initialize(): void {
                     assert(instance.reference instanceof HTMLElement);
                     ui_util.show_left_sidebar_menu_icon(instance.reference);
                     $popper.one("click", "#folder_popover_view_channels", () => {
-                        let section = "all";
+                        let left_side_tab = "all";
                         if (current_user.is_guest) {
-                            section = "subscribed";
+                            left_side_tab = "subscribed";
                         }
-                        stream_settings_ui.launch(section, undefined, undefined, folder_id);
+                        stream_settings_ui.launch(undefined, left_side_tab, undefined, folder_id);
                     });
                     $popper.one("click", "#folder_popover_manage_folder", () => {
                         channel_folders_ui.handle_editing_channel_folder(folder_id);
