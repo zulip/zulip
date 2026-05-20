@@ -1658,6 +1658,19 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(plan_offer.fixed_price, 36000)
         self.assertIsNone(plan_offer.sent_invoice_id)
 
+        # Trying to schedule a second fixed-price plan renewal fails.
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{lear_realm.id}", "fixed_price": 500}
+        )
+        self.assert_in_success_response(
+            ["Customer already has a configured fixed-price plan offer."],
+            result,
+        )
+        customer.refresh_from_db()
+        plan_offer = get_configured_fixed_price_plan_offer(customer, customer.required_plan_tier)
+        assert plan_offer is not None
+        self.assertEqual(plan_offer.fixed_price, 36000)
+
         # Test deleting the fixed-price plan offer via support.
         result = self.client_post(
             "/activity/support",
@@ -1815,6 +1828,19 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(next_plan.billing_cycle_anchor, plan.end_date)
         self.assertEqual(next_plan.charge_automatically, plan.charge_automatically)
         self.assertTrue(next_plan.automanage_licenses)
+
+        # Trying to schedule a second fixed-price plan renewal fails.
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{lear_realm.id}", "fixed_price": 500}
+        )
+        self.assert_in_success_response(
+            ["Customer already has a fixed-price plan renewal scheduled."],
+            result,
+        )
+        plan.refresh_from_db()
+        next_plan = billing_session.get_next_plan(plan)
+        assert next_plan is not None
+        self.assertEqual(next_plan.fixed_price, 36000)
 
         # Test deleting the fixed-price next plan via support.
         with (
