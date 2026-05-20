@@ -6,7 +6,8 @@ class kandra::profile::teleport inherits kandra::profile::base {
     group  => 'root',
     mode   => '0644',
     source => 'puppet:///modules/kandra/teleport_server.yaml',
-    notify => Service['teleport_server'],
+    before => Kandra::Teleport::Part['server'],
+    notify => Exec['reload teleport_server'],
   }
   file { '/var/lib/teleport-server':
     ensure => directory,
