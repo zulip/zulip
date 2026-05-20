@@ -248,6 +248,7 @@ def get_recipient_info(
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
+    dm_involved_user_ids: set[int] | None = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: set[int] = set()
     stream_email_user_ids: set[int] = set()
@@ -426,7 +427,15 @@ def get_recipient_info(
             )
 
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        message_to_user_id_set = set(get_direct_message_group_user_ids(recipient))
+        if dm_involved_user_ids is not None:
+            # For production path when sending a direct message
+            # passing through check_message. This avoids an extra db query.
+            message_to_user_id_set = dm_involved_user_ids
+        else:
+            # Other paths like:
+            # Message edit via update_message_content.
+            # Tests that bypass check_message.
+            message_to_user_id_set = set(get_direct_message_group_user_ids(recipient))
 
     else:
         raise ValueError("Bad recipient type")
@@ -657,6 +666,7 @@ def build_message_send_dict(
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
     no_previews: bool = False,
+    dm_involved_user_ids: set[int] | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -690,6 +700,7 @@ def build_message_send_dict(
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
+        dm_involved_user_ids=dm_involved_user_ids,
     )
 
     # Render our message_dicts.
@@ -1623,7 +1634,11 @@ def validate_stream_id_with_pm_notification(
 
 
 def check_can_send_direct_message(
-    realm: Realm, sender: UserProfile, recipient_users: Sequence[UserProfile], recipient: Recipient
+    realm: Realm,
+    sender: UserProfile,
+    recipient_users: Sequence[UserProfile],
+    recipient: Recipient,
+    dm_involved_user_ids: set[int],
 ) -> None:
     if sender.is_bot:
         return
@@ -1643,8 +1658,7 @@ def check_can_send_direct_message(
             )
             raise DirectMessagePermissionError(is_nobody_group)
     else:
-        user_ids = {recipient_user.id for recipient_user in recipient_users} | {sender.id}
-        if not is_any_user_in_group(realm.direct_message_permission_group_id, user_ids):
+        if not is_any_user_in_group(realm.direct_message_permission_group_id, dm_involved_user_ids):
             raise DirectMessagePermissionError(is_nobody_group=False)
 
     if realm.direct_message_initiator_group_id in system_groups_name_dict:
@@ -1768,6 +1782,10 @@ def check_message(
     if realm is None:
         realm = sender.realm
 
+    # IDs of the DM sender and recipient users, deduplicated.
+    # None for stream message.
+    dm_involved_user_ids: set[int] | None = None
+
     recipients_for_user_creation_events = None
     if addressee.is_stream():
         topic_name = addressee.topic_name()
@@ -1841,6 +1859,8 @@ def check_message(
             "JabberMirror",
         ]
 
+        dm_involved_user_ids = {user.id for user in recipient_users} | {sender.id}
+
         check_sender_can_access_recipients(realm, sender, recipient_users)
 
         recipients_for_user_creation_events = get_recipients_for_user_creation_events(
@@ -1859,7 +1879,9 @@ def check_message(
             assert isinstance(e.messages[0], str)
             raise JsonableError(e.messages[0])
 
-        check_can_send_direct_message(realm, sender, recipient_users, recipient)
+        check_can_send_direct_message(
+            realm, sender, recipient_users, recipient, dm_involved_user_ids
+        )
     else:
         # This is defensive code--Addressee already validates
         # the message type.
@@ -1916,6 +1938,7 @@ def check_message(
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
         no_previews=no_previews,
+        dm_involved_user_ids=dm_involved_user_ids,
     )
 
     if (
