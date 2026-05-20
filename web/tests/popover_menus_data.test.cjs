@@ -431,3 +431,37 @@ run_test("get_scroll_to_date_suggestions - single date in the past", () => {
     const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
     assert.equal(result.length, 1);
 });
+
+run_test("get_scroll_to_date_suggestions - excludes the clicked date", () => {
+    const messages = [
+        make_message(1, date_timestamp("2025-01-10")),
+        make_message(2, date_timestamp("2025-02-15")),
+        make_message(3, date_timestamp("2025-03-20")),
+    ];
+    const result = popover_menus_data.get_scroll_to_date_suggestions(
+        messages,
+        date_timestamp("2025-02-15"),
+    );
+    assert.equal(result.length, 2);
+    const dates = result.map((date) => date.iso_date_string.slice(0, 10));
+    assert.ok(!dates.includes("2025-02-15"));
+});
+
+run_test("get_scroll_to_date_suggestions - clicked slot is replaced not dropped", () => {
+    const messages = make_messages_from_date_counts(FOUR_MESSAGE_BURSTS);
+    const clicked_date = "2025-02-12";
+
+    const baseline = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    const baseline_dates = baseline.map((s) => s.iso_date_string.slice(0, 10));
+    // The clicked date must be one the slicer would otherwise
+    // pick, or this test proves nothing.
+    assert.ok(baseline_dates.includes(clicked_date));
+
+    const filtered = popover_menus_data.get_scroll_to_date_suggestions(
+        messages,
+        date_timestamp(clicked_date),
+    );
+    const filtered_dates = filtered.map((date) => date.iso_date_string.slice(0, 10));
+    assert.equal(filtered.length, baseline.length);
+    assert.ok(!filtered_dates.includes(clicked_date));
+});
