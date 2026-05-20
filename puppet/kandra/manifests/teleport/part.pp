@@ -20,4 +20,13 @@ define kandra::teleport::part() {
     enable  => true,
     require => [Service['supervisor'], Service['teleport'], Exec['reload systemd']],
   }
+
+  # Notify this from YAML config changes (rather than the service)
+  # to get a SIGHUP-based graceful restart -- Teleport forks a new
+  # daemon and drains the old -- instead of a hard stop+start.
+  exec { "reload teleport_${part}":
+    command     => "/bin/systemctl reload teleport_${part}",
+    refreshonly => true,
+    require     => Service["teleport_${part}"],
+  }
 }

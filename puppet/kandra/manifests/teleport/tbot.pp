@@ -9,7 +9,8 @@ class kandra::teleport::tbot {
     group  => 'root',
     mode   => '0644',
     source => 'puppet:///modules/kandra/tbot.yaml',
-    notify => Service['tbot'],
+    before => Service['tbot'],
+    notify => Exec['reload tbot'],
   }
 
   file { '/etc/systemd/system/tbot.service':
@@ -36,5 +37,12 @@ class kandra::teleport::tbot {
     ensure  => running,
     enable  => true,
     require => [Service['teleport'], Exec['reload systemd']],
+  }
+
+  # See the equivalent in kandra::teleport::part.
+  exec { 'reload tbot':
+    command     => '/bin/systemctl reload tbot',
+    refreshonly => true,
+    require     => Service['tbot'],
   }
 }
