@@ -727,12 +727,6 @@ li,
     line-height: inherit;
 }
 
-.bootstrap-btn {
-    font-size: inherit;
-    height: auto;
-    line-height: 100%;
-}
-
 /* Classes which style copy buttons */
 .copy_button_base {
     outline-color: hsl(0deg 0% 73%);
