@@ -2009,7 +2009,93 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(created_user.role, UserProfile.ROLE_MEMBER)
 
 
-class SAMLAuthBackendTest(SocialAuthBase):
+class SocialAuthBaseWithSyncAttrTests(SocialAuthBase):
+    @abstractmethod
+    def social_auth_test_wrapper(
+        self,
+        account_data_dict: dict[str, Any],
+        *,
+        subdomain: str,
+        is_signup: bool = False,
+        extra_attrs: dict[str, list[str]],
+        sync_attrs_config: dict[str, Any],
+        multiuse_object_key: str = "",
+    ) -> "TestHttpResponse":
+        """
+        Run social_auth_test with provider-specific settings applied.
+
+        Implementations must:
+          1. Apply SOCIAL_AUTH_SYNC_ATTRS_DICT (via make_sync_attrs_dict) using
+             self.settings() internally so the context is active during the call.
+          2. Apply any provider-specific IDP configuration (e.g. SAML extra_attrs).
+          3. Call self.social_auth_test() and return the result.
+
+        Callers wrap this in assertLogs if they need to capture log output.
+        """
+        raise NotImplementedError
+
+    def test_social_auth_full_name_sync(self) -> None:
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"full_name": True}}}
+        new_name = "Updated Name"
+
+        account_data_dict = self.get_account_data_dict(email=self.email, name=new_name)
+        with self.assertLogs(self.logger_string, level="INFO"):
+            result = self.social_auth_test_wrapper(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.full_name, new_name)
+
+        # Without full_name sync configured, the name should not be updated.
+        account_data_dict = self.get_account_data_dict(email=self.email, name="Another Name")
+        result = self.social_auth_test_wrapper(
+            account_data_dict,
+            subdomain="zulip",
+            extra_attrs={},
+            sync_attrs_config={},
+        )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.full_name, new_name)
+
+        # Name with invalid characters should be rejected with a warning.
+        account_data_dict = self.get_account_data_dict(email=self.email, name="Invalid* Name")
+        with (
+            self.assertLogs(self.logger_string, level="WARNING") as m,
+        ):
+            result = self.social_auth_test_wrapper(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+            )
+        # Logging in succeeds.
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        # The name doesn't get synced however, and we log a warning.
+        self.assertEqual(self.user_profile.full_name, new_name)
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    f"Failed to sync full_name for user {self.user_profile.id}: Invalid characters in name!",
+                    type="warning",
+                )
+            ],
+        )
+
+
+class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTests):
     BACKEND_CLASS = SAMLAuthBackend
     LOGIN_URL = "/accounts/login/social/saml/test_idp"
     SIGNUP_URL = "/accounts/register/social/saml/test_idp"
@@ -2093,6 +2179,48 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post(self.AUTH_FINISH_URL, post_params, **headers)
 
         return result
+
+    @staticmethod
+    def _saml_declared_attrs(sync_attrs_config: dict[str, Any]) -> list[str]:
+        """
+        Derive the SAML extra_attrs list from the sync config.
+        """
+        declared = []
+        for key, value in sync_attrs_config.items():
+            if key == "groups":
+                continue
+            if isinstance(value, str):
+                declared.append(value)
+        return declared
+
+    @override
+    def social_auth_test_wrapper(
+        self,
+        account_data_dict: dict[str, Any],
+        *,
+        subdomain: str,
+        is_signup: bool = False,
+        extra_attrs: dict[str, list[str]],
+        sync_attrs_config: dict[str, Any],
+        multiuse_object_key: str = "",
+    ) -> "TestHttpResponse":
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        # SAML requires explicitly declaring which non-standard attributes the
+        # backend should read out of the assertion.
+        if sam_sync_attrs_dict := sync_attrs_config.get(subdomain, {}).get("saml"):
+            idps_dict["test_idp"]["extra_attrs"] = self._saml_declared_attrs(sam_sync_attrs_dict)
+
+        with self.settings(
+            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
+            SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_config,
+        ):
+            return self.social_auth_test(
+                account_data_dict,
+                subdomain=subdomain,
+                is_signup=is_signup,
+                multiuse_object_key=multiuse_object_key,
+                extra_attributes=extra_attrs,
+            )
 
     def generate_saml_response(
         self,
@@ -3448,63 +3576,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
             user_profile=self.user_profile, field=phone_field
         ).value
         self.assertEqual(phone_field_value, expected_value)
-
-    def test_social_auth_full_name_sync(self) -> None:
-        sync_attrs_dict = {"zulip": {"saml": {"full_name": True}}}
-        new_name = "Updated Name"
-
-        with self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_dict):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=new_name)
-            with self.assertLogs(self.logger_string, level="INFO"):
-                result = self.social_auth_test(
-                    account_data_dict,
-                    subdomain="zulip",
-                )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.assertEqual(result.status_code, 302)
-        self.user_profile.refresh_from_db()
-        self.assertEqual(self.user_profile.full_name, new_name)
-
-        # Without full_name sync configured, the name should not be updated.
-        with self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT={}):
-            account_data_dict = self.get_account_data_dict(email=self.email, name="Another Name")
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-            )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.assertEqual(result.status_code, 302)
-        self.user_profile.refresh_from_db()
-        self.assertEqual(self.user_profile.full_name, new_name)
-
-        # Name with invalid characters should be rejected with a warning.
-        with (
-            self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_dict),
-            self.assertLogs(self.logger_string, level="WARNING") as m,
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name="Invalid* Name")
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-            )
-        # Logging in succeeds.
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.assertEqual(result.status_code, 302)
-        self.user_profile.refresh_from_db()
-        # The name doesn't get synced however, and we log a warning.
-        self.assertEqual(self.user_profile.full_name, new_name)
-        self.assertEqual(
-            m.output,
-            [
-                self.logger_output(
-                    f"Failed to sync full_name for user {self.user_profile.id}: Invalid characters in name!",
-                    type="warning",
-                )
-            ],
-        )
 
     def test_social_auth_group_sync(self) -> None:
         realm = get_realm("zulip")
