@@ -1834,17 +1834,17 @@ def check_message(
             raise TopicsNotAllowedError(empty_topic_display_name)
 
     elif addressee.is_private():
-        user_profiles = addressee.user_profiles()
+        recipient_users = addressee.user_profiles()
         mirror_message = client.name in [
             "irc_mirror",
             "jabber_mirror",
             "JabberMirror",
         ]
 
-        check_sender_can_access_recipients(realm, sender, user_profiles)
+        check_sender_can_access_recipients(realm, sender, recipient_users)
 
         recipients_for_user_creation_events = get_recipients_for_user_creation_events(
-            realm, sender, user_profiles
+            realm, sender, recipient_users
         )
 
         # API super-users who set the `forged` flag are allowed to
@@ -1853,13 +1853,13 @@ def check_message(
         forwarded_mirror_message = mirror_message and not forged
         try:
             recipient = recipient_for_user_profiles(
-                user_profiles, forwarded_mirror_message, forwarder_user_profile, sender
+                recipient_users, forwarded_mirror_message, forwarder_user_profile, sender
             )
         except ValidationError as e:
             assert isinstance(e.messages[0], str)
             raise JsonableError(e.messages[0])
 
-        check_can_send_direct_message(realm, sender, user_profiles, recipient)
+        check_can_send_direct_message(realm, sender, recipient_users, recipient)
     else:
         # This is defensive code--Addressee already validates
         # the message type.
