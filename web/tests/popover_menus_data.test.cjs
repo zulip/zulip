@@ -338,6 +338,43 @@ function date_timestamp(date_string) {
     return new Date(date_string + "T12:00:00").getTime() / 1000;
 }
 
+function make_messages_from_date_counts(date_counts) {
+    const messages = [];
+    let id = 1;
+    for (const {date, count} of date_counts) {
+        for (let i = 0; i < count; i += 1) {
+            messages.push(make_message(id, date_timestamp(date)));
+            id += 1;
+        }
+    }
+    return messages;
+}
+
+// Simulate a conversation with bursts separated by gaps.
+// Burst 1: Jan 5-7 (9 messages)
+// Gap: 20 days
+// Burst 2: Jan 27-28 (8 messages)
+// Gap: 15 days
+// Burst 3: Feb 12-14 (10 messages)
+// Gap: 25 days
+// Burst 4: Mar 11-12 (8 messages)
+const FOUR_MESSAGE_BURSTS = [
+    // Burst 1
+    {date: "2025-01-05", count: 3},
+    {date: "2025-01-06", count: 3},
+    {date: "2025-01-07", count: 3},
+    // Burst 2
+    {date: "2025-01-27", count: 4},
+    {date: "2025-01-28", count: 4},
+    // Burst 3
+    {date: "2025-02-12", count: 4},
+    {date: "2025-02-13", count: 3},
+    {date: "2025-02-14", count: 3},
+    // Burst 4
+    {date: "2025-03-11", count: 4},
+    {date: "2025-03-12", count: 4},
+];
+
 run_test("get_scroll_to_date_suggestions - empty messages", () => {
     const result = popover_menus_data.get_scroll_to_date_suggestions([]);
     assert.deepEqual(result, []);
@@ -367,38 +404,7 @@ run_test("get_scroll_to_date_suggestions - few unique dates", () => {
 });
 
 run_test("get_scroll_to_date_suggestions - many dates with gaps", () => {
-    // Simulate a conversation with bursts separated by gaps.
-    // Burst 1: Jan 5-7 (9 messages)
-    // Gap: 20 days
-    // Burst 2: Jan 27-28 (8 messages)
-    // Gap: 15 days
-    // Burst 3: Feb 12-14 (10 messages)
-    // Gap: 25 days
-    // Burst 4: Mar 11-12 (8 messages)
-    const messages = [];
-    let id = 1;
-    // 4 bursts of conversation separated by multi-week gaps.
-    for (const [count, date] of [
-        // Burst 1
-        [3, "2025-01-05"],
-        [3, "2025-01-06"],
-        [3, "2025-01-07"],
-        // Burst 2
-        [4, "2025-01-27"],
-        [4, "2025-01-28"],
-        // Burst 3
-        [4, "2025-02-12"],
-        [3, "2025-02-13"],
-        [3, "2025-02-14"],
-        // Burst 4
-        [4, "2025-03-11"],
-        [4, "2025-03-12"],
-    ]) {
-        for (let i = 0; i < count; i += 1) {
-            messages.push(make_message(id, date_timestamp(date)));
-            id += 1;
-        }
-    }
+    const messages = make_messages_from_date_counts(FOUR_MESSAGE_BURSTS);
 
     const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
     // We have 10 unique dates across 4 bursts; expect 3-4 suggestions.
