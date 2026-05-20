@@ -21,22 +21,20 @@ def get_recipient_from_user_profiles(
     forged: bool = False,
 ) -> Recipient:
     # Avoid mutating the passed in list of recipient_profiles.
-    recipient_profiles_map = {user_profile.id: user_profile for user_profile in recipient_profiles}
+    recipient_user_ids = {user_profile.id for user_profile in recipient_profiles}
 
     forger = forwarder_user_profile
     impersonating = forger is not None and forger.id != sender.id
-    if impersonating and not (
-        forged or (forger is not None and forger.id in recipient_profiles_map)
-    ):
+    if impersonating and not (forged or (forger is not None and forger.id in recipient_user_ids)):
         # Impersonating another user as the sender requires the
         # can_forge_sender permission, and is only allowed within a
         # conversation the forger belongs to, or when the `forged` flag
         # is set.
         raise ValidationError(_("User not authorized for this query"))
 
-    # Make sure the sender is included in the group direct messages.
-    recipient_profiles_map[sender.id] = sender
-    user_ids = list(recipient_profiles_map)
+    # Make sure the sender is included in the group direct message.
+    recipient_user_ids.add(sender.id)
+    user_ids = list(recipient_user_ids)
 
     if create:
         direct_message_group = get_or_create_direct_message_group(user_ids)
