@@ -26,8 +26,8 @@ from scripts.lib.zulip_tools import (
     get_config,
     get_config_file,
     parse_version_from,
-    start_arg_parser,
     su_to_zulip,
+    upgrade_script_arg_parser,
 )
 
 assert_running_as_root()
@@ -41,35 +41,10 @@ logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-3: %(message)s", lev
 # make sure we have appropriate file permissions
 os.umask(0o22)
 
-restart_parser = start_arg_parser(action="restart", add_help=False)
-
-parser = argparse.ArgumentParser(parents=[restart_parser])
+parser = argparse.ArgumentParser(parents=[upgrade_script_arg_parser()])
 parser.add_argument("deploy_path", metavar="deploy_path", help="Path to deployment directory")
 parser.add_argument(
-    "--skip-restart",
-    action="store_true",
-    help="Configure, but do not restart into, the new version; aborts if any system-wide changes would happen.",
-)
-parser.add_argument("--skip-puppet", action="store_true", help="Skip doing puppet/apt upgrades.")
-parser.add_argument("--skip-migrations", action="store_true", help="Skip doing migrations.")
-parser.add_argument(
-    "--skip-downgrade-check",
-    action="store_true",
-    help="Skip the safety check to prevent database downgrades.",
-)
-parser.add_argument(
     "--from-git", action="store_true", help="Upgrading from git, so run update-prod-static."
-)
-parser.add_argument(
-    "--ignore-static-assets",
-    action="store_true",
-    help="Do not attempt to copy/manage static assets.",
-)
-parser.add_argument(
-    "--skip-purge-old-deployments", action="store_true", help="Skip purging old deployments."
-)
-parser.add_argument(
-    "--audit-fts-indexes", action="store_true", help="Audit and fix full text search indexes."
 )
 args = parser.parse_args()
 
