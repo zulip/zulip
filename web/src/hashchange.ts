@@ -331,7 +331,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
                 stream_settings_ui.change_state(
                     "new",
                     undefined,
-                    "",
+                    undefined,
                     Number.parseInt(folder_id, 10),
                 );
                 return;
@@ -427,7 +427,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base === "channels") {
         if (hash_parser.get_current_nth_hash_section(1) === "folders") {
             const folder_id = hash_parser.get_current_nth_hash_section(2);
-            stream_settings_ui.launch("new", undefined, "", Number.parseInt(folder_id, 10));
+            stream_settings_ui.launch("new", undefined, undefined, Number.parseInt(folder_id, 10));
             return;
         }
 
