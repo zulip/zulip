@@ -16,10 +16,6 @@
     overflow-wrap: break-word;
 }
 
-.subscription_settings .bootstrap-btn {
-    border-radius: 2px;
-}
-
 .stream-email {
     display: flex;
     justify-content: space-between;
