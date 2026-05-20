@@ -1646,7 +1646,7 @@ def prepare_linkifier_pattern(source: str) -> str:
     # We use an extended definition of 'whitespace' which is
     # equivalent to \p{White_Space} -- since \s in re2 only matches
     # ASCII spaces, and re2 does not support \p{White_Space}.
-    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
+    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
 # We use maxsize of 10000. We need to prevent against admins
