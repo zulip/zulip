@@ -479,7 +479,11 @@ export function initialize(): void {
                 popover_menus.on_show_prep(instance);
                 assert(message_lists.current !== undefined);
                 const messages = message_lists.current.all_messages();
-                const suggested_dates = popover_menus_data.get_scroll_to_date_suggestions(messages);
+                const clicked_message = message_lists.current.get(message_id)!;
+                const suggested_dates = popover_menus_data.get_scroll_to_date_suggestions(
+                    messages,
+                    clicked_message.timestamp,
+                );
                 instance.setContent(parse_html(render_scroll_to_time_popover({suggested_dates})));
             },
             onMount(instance) {
