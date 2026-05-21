@@ -25,6 +25,12 @@ async function user_row(page: Page, name: string): Promise<string> {
     return `.user_row[data-user-id="${CSS.escape(user_id.toString())}"]`;
 }
 
+async function navigate_to_deactivated_users_tab(page: Page): Promise<void> {
+    const deactivated_tab = ".tab-container .ind-tab[data-tab-key='deactivated']";
+    await page.waitForSelector(deactivated_tab, {visible: true});
+    await page.click(deactivated_tab);
+}
+
 async function test_reactivation_confirmation_modal(page: Page, fullname: string): Promise<void> {
     await common.wait_for_micromodal_to_open(page);
 
@@ -67,28 +73,29 @@ async function test_deactivate_user(page: Page): Promise<void> {
 }
 
 async function test_reactivate_user(page: Page): Promise<void> {
-    let cordelia_user_row = await user_row(page, common.fullname.cordelia);
-    await page.waitForSelector(cordelia_user_row + ".deactivated_user");
-    await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-plus", {visible: true});
-    await page.click(cordelia_user_row + " .reactivate");
+    await navigate_to_deactivated_users_tab(page);
+
+    const cordelia_user_row = await user_row(page, common.fullname.cordelia);
+    await page.waitForSelector(
+        "#admin_deactivated_users_table " + cordelia_user_row + " .zulip-icon-user-plus",
+        {visible: true},
+    );
+    await page.click("#admin_deactivated_users_table " + cordelia_user_row + " .reactivate");
 
     await test_reactivation_confirmation_modal(page, common.fullname.cordelia);
 
-    await page.waitForSelector(cordelia_user_row + ":not(.deactivated_user)", {visible: true});
-    cordelia_user_row = await user_row(page, common.fullname.cordelia);
-    await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-x", {visible: true});
+    // After reactivation, user moves back to the active tab.
+    const active_tab = ".tab-container .ind-tab[data-tab-key='active']";
+    await page.click(active_tab);
+    await page.waitForSelector("#admin_users_table " + cordelia_user_row + " .zulip-icon-user-x", {
+        visible: true,
+    });
 }
 
 async function test_deactivated_users_section(page: Page): Promise<void> {
     const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await test_deactivate_user(page);
-
-    // "Deactivated users" section doesn't render just deactivated users until reloaded.
-    await page.reload();
-    await page.waitForSelector("#admin-user-list.show", {visible: true});
-    const deactivated_users_section = ".tab-container .ind-tab[data-tab-key='deactivated']";
-    await page.waitForSelector(deactivated_users_section, {visible: true});
-    await page.click(deactivated_users_section);
+    await navigate_to_deactivated_users_tab(page);
 
     // Instead of waiting for reactivate button using the `waitForSelector` function,
     // we wait until the input is focused because the `waitForSelector` function
@@ -102,10 +109,10 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
 
     await test_reactivation_confirmation_modal(page, common.fullname.cordelia);
 
-    await page.waitForSelector(
-        "#admin_deactivated_users_table " + cordelia_user_row + " button:not(.reactivate)",
-        {visible: true},
-    );
+    // After reactivation the user is removed from the deactivated list immediately.
+    await page.waitForSelector("#admin_deactivated_users_table " + cordelia_user_row, {
+        hidden: true,
+    });
 }
 
 async function test_bot_deactivation_and_reactivation(page: Page): Promise<void> {

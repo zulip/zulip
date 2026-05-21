@@ -2859,11 +2859,11 @@ class DeactivateActionsTest(ZulipTestCase):
         self.assertFalse(bot.is_active)
 
         self.assertEqual(user.full_name, "Deleted user")
-        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_INACCESSIBLE)
         self.assertGreater(user.avatar_version, 0)
 
         self.assertEqual(bot.full_name, "Deactivated bot")
-        self.assertEqual(bot.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(bot.avatar_source, UserProfile.AVATAR_FROM_INACCESSIBLE)
         self.assertGreater(bot.avatar_version, 0)
 
 

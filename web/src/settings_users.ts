@@ -142,6 +142,8 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
         if (deactivated_users_role_dropdown) {
             deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
         }
+        redraw_active_users_list();
+        redraw_deactivated_users_list();
         const user = people.get_by_user_id(user_id);
         if (user.is_imported_stub) {
             should_redraw_imported_users_list = true;
@@ -184,6 +186,8 @@ export function update_view_on_reactivate(user_id: number, is_bot: boolean): voi
         if (deactivated_users_role_dropdown) {
             deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
         }
+        redraw_active_users_list();
+        redraw_deactivated_users_list();
         const user = people.get_by_user_id(user_id);
         if (user.is_imported_stub) {
             should_redraw_imported_users_list = true;
