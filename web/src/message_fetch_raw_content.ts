@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import * as channel from "./channel.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_store from "./message_store.ts";
-import {the} from "./util.ts";
 
 export function get_raw_content_for_messages(info: {
     message_ids: number[];
@@ -67,14 +66,26 @@ export function get_raw_content_for_single_message(info: {
     timeout_ms?: number;
 }): void {
     const {message_id, on_success, on_error, timeout_ms} = info;
-    get_raw_content_for_messages({
-        message_ids: [message_id],
-        timeout_ms,
-        on_success(raw_content_arr) {
-            on_success(the(raw_content_arr));
+    const message = message_store.get(message_id);
+    assert(message !== undefined);
+    if (message.raw_content) {
+        on_success(message.raw_content);
+        return;
+    }
+
+    // The single-message endpoint handles messages that the user has
+    // access to, but are not in the user's message history, e.g.,
+    // private channel messages with shared history sent prior to the
+    // user being subscribed to the channel.
+    channel.get({
+        url: "/json/messages/" + message_id,
+        data: {allow_empty_topic_name: true, apply_markdown: false},
+        success(raw_data) {
+            const data = message_store.single_message_content_schema.parse(raw_data);
+            message_store.maybe_update_raw_content(message_id, data.message.content);
+            on_success(data.message.content);
         },
-        on_error() {
-            on_error();
-        },
+        timeout: timeout_ms,
+        error: on_error,
     });
 }
