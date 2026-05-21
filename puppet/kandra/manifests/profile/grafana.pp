@@ -42,7 +42,6 @@ class kandra::profile::grafana inherits kandra::profile::base {
   }
 
   kandra::teleport::application { 'monitoring': port => '3000' }
-  kandra::firewall_allow { 'grafana': port => '3000' }
   file { "${zulip::common::supervisor_conf_dir}/grafana.conf":
     ensure  => file,
     require => [
