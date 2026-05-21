@@ -46,6 +46,7 @@ def restore_backup(tarball_file: IO[bytes], keep_settings: bool, keep_zulipconf:
         [
             "tar",
             "--directory=/etc/zulip",
+            "--keep-directory-symlink",
             *excludes,
             "--strip-components=2",
             "-xz",
@@ -86,7 +87,10 @@ def restore_backup(tarball_file: IO[bytes], keep_settings: bool, keep_zulipconf:
 
         os.mkdir(os.path.join(tmp, "zulip-backup"))
         tarball_file.seek(0, 0)
-        run(["tar", "-C", tmp, *transform_args, "-xPz"], stdin=tarball_file)
+        run(
+            ["tar", "-C", tmp, "--keep-directory-symlink", *transform_args, "-xPz"],
+            stdin=tarball_file,
+        )
 
         # Now, extract the database backup, destroy the old
         # database, and create a new, empty database.
