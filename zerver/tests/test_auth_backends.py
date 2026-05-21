@@ -2889,6 +2889,82 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
             '{"newtestgroup": true, "testgroup1": true, "testgroup2": false}. Final groups set: [\'newtestgroup\', \'testgroup1\']',
         )
 
+    def test_social_auth_create_user_from_multiuse_invite_role_and_group_sync(self) -> None:
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        desdemona = self.example_user("desdemona")
+        realm = get_realm("zulip")
+
+        testgroup1 = create_user_group_in_database("testgroup1", [], realm, acting_user=desdemona)
+        testgroup2 = create_user_group_in_database("testgroup2", [], realm, acting_user=desdemona)
+
+        sync_custom_attrs_dict = {
+            "zulip": {
+                self.BACKEND_CLASS.name: {
+                    "role": "zulip_role",
+                    "groups": ["testgroup1", ("samlgroup2", "testgroup2")],
+                }
+            }
+        }
+
+        invite = MultiuseInvite.objects.create(
+            realm=realm,
+            referred_by=desdemona,
+            # Set a role on the invite to verify that it gets ignored in favor
+            # of the role implied by the zulip_role attribute.
+            invited_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+        invite.groups.set([testgroup1, testgroup2])
+        create_confirmation_link(invite, Confirmation.MULTIUSE_INVITE)
+        multiuse_confirmation = Confirmation.objects.all().last()
+        assert multiuse_confirmation is not None
+        multiuse_object_key = multiuse_confirmation.confirmation_key
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        result = self.social_auth_test_with_sync_attrs(
+            account_data_dict,
+            subdomain="zulip",
+            is_signup=True,
+            multiuse_object_key=multiuse_object_key,
+            extra_attrs=dict(
+                zulip_role="member",
+                zulip_groups=["testgroup1"],
+            ),
+            sync_attrs_config=sync_custom_attrs_dict,
+        )
+        with (
+            self.settings(TERMS_OF_SERVICE_VERSION=None),
+            self.assertLogs("zulip.ldap", level="INFO") as mock_ldap_logger,
+        ):
+            self.stage_two_of_registration(
+                result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+            )
+        user_profile = get_user_by_delivery_email(email, realm)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+        self.assertTrue(
+            is_user_in_group(
+                testgroup1.id,
+                user_profile,
+                direct_member_only=True,
+            )
+        )
+        self.assertFalse(
+            is_user_in_group(
+                testgroup2.id,
+                user_profile,
+                direct_member_only=True,
+            )
+        )
+
+        prereg_user = PreregistrationUser.objects.last()
+        assert prereg_user is not None
+        self.assertEqual(
+            f"INFO:zulip.ldap:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
+            '{"testgroup1": true, "testgroup2": false}. Final groups set: [\'testgroup1\']',
+            mock_ldap_logger.output[0],
+        )
+
 
 class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
     BACKEND_CLASS = SAMLAuthBackend
@@ -4187,88 +4263,6 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
                     "info",
                 )
             ],
-        )
-
-    @override_settings(TERMS_OF_SERVICE_VERSION=None)
-    def test_social_auth_create_user_from_multiuse_invite_role_and_group_sync(self) -> None:
-        email = "newuser@zulip.com"
-        name = "Full Name"
-        subdomain = "zulip"
-        desdemona = self.example_user("desdemona")
-        realm = get_realm("zulip")
-
-        account_data_dict = self.get_account_data_dict(email=email, name=name)
-        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
-        idps_dict["test_idp"]["extra_attrs"] = ["zulip_role"]
-
-        testgroup1 = create_user_group_in_database("testgroup1", [], realm, acting_user=desdemona)
-        testgroup2 = create_user_group_in_database("testgroup2", [], realm, acting_user=desdemona)
-
-        sync_custom_attrs_dict = {
-            "zulip": {
-                "saml": {
-                    "role": "zulip_role",
-                    "groups": ["testgroup1", ("samlgroup2", "testgroup2")],
-                }
-            }
-        }
-
-        invite = MultiuseInvite.objects.create(
-            realm=realm,
-            referred_by=desdemona,
-            # Set a role on the invite to verify that it gets ignored in favor
-            # of the role implied by the zulip_role attribute.
-            invited_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
-        invite.groups.set([testgroup1, testgroup2])
-        create_confirmation_link(invite, Confirmation.MULTIUSE_INVITE)
-        multiuse_confirmation = Confirmation.objects.all().last()
-        assert multiuse_confirmation is not None
-        multiuse_object_key = multiuse_confirmation.confirmation_key
-        account_data_dict = self.get_account_data_dict(email=email, name=name)
-        with (
-            self.settings(
-                SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-                SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-            ),
-        ):
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                is_signup=True,
-                multiuse_object_key=multiuse_object_key,
-                extra_attributes=dict(
-                    zulip_role=["member"],
-                    zulip_groups=["testgroup1"],
-                ),
-            )
-        with self.assertLogs("zulip.ldap", level="INFO") as mock_logger:
-            self.stage_two_of_registration(
-                result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
-            )
-        user_profile = get_user_by_delivery_email(email, realm)
-        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
-        self.assertTrue(
-            is_user_in_group(
-                testgroup1.id,
-                user_profile,
-                direct_member_only=True,
-            )
-        )
-        self.assertFalse(
-            is_user_in_group(
-                testgroup2.id,
-                user_profile,
-                direct_member_only=True,
-            )
-        )
-
-        prereg_user = PreregistrationUser.objects.last()
-        assert prereg_user is not None
-        self.assertEqual(
-            f"INFO:zulip.ldap:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
-            '{"testgroup1": true, "testgroup2": false}. Final groups set: [\'testgroup1\']',
-            mock_logger.output[0],
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
