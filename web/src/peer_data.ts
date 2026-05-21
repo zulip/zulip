@@ -217,7 +217,7 @@ export async function is_subscriber_subset(
     const sub2_promise = get_full_subscriber_set(stream_id2, false);
     const sub1_set = await sub1_promise;
     const sub2_set = await sub2_promise;
-    // This happens if we encountered an error feteching subscribers.
+    // This happens if we encountered an error fetching subscribers.
     if (sub1_set === null || sub2_set === null) {
         return null;
     }
