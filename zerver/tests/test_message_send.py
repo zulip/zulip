@@ -2839,7 +2839,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         # and get_recipients_for_user_creation_events.
 
         # Limited guest sends a DM to themself.
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(25):
             self.send_personal_message(polonius, polonius)
 
         # Limited guest sends a DM to another accessible user.
