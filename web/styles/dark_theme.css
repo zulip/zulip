@@ -20,7 +20,7 @@
     }
 
     .enter_sends_choices {
-        color:var(--color-text-default);
+        color: var(--color-text-default);
 
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
