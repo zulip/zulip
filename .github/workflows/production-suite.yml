@@ -271,6 +271,9 @@ jobs:
           - docker_image: zulip/ci:trixie-11.0
             name: 11.0 Version Upgrade
             os: trixie
+          - docker_image: zulip/ci:resolute-12.0
+            name: 12.0 Version Upgrade
+            os: resolute
 
     name: ${{ matrix.name  }}
     container:
