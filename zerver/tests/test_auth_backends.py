@@ -3010,6 +3010,55 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
             self.logger_output("Returning role owner for user creation", type="info"),
         )
 
+    def test_social_auth_sync_field_not_existing(self) -> None:
+        sync_custom_attrs_dict = {
+            "zulip": {
+                self.BACKEND_CLASS.name: {
+                    "custom__title": "title",
+                    "custom__phone_number": "mobilePhone",
+                    "wrongfield": "wrongfield",
+                }
+            }
+        }
+        self.assertFalse(
+            CustomProfileField.objects.filter(
+                realm=self.user_profile.realm, name__iexact="title"
+            ).exists()
+        )
+
+        with self.assertLogs(self.logger_string, level="WARNING") as m:
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test_with_sync_attrs(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attrs=dict(
+                    mobilePhone="123412341234", title="some title", birthday="2021-01-01"
+                ),
+                sync_attrs_config=sync_custom_attrs_dict,
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(data["full_name"], self.name)
+        self.assertEqual(data["subdomain"], "zulip")
+        self.assertEqual(result.status_code, 302)
+
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    "Ignoring unsupported UserProfile field wrongfield in SOCIAL_AUTH_SYNC_ATTRS_DICT",
+                    "warning",
+                ),
+                self.logger_output(
+                    (
+                        "Exception while syncing custom profile fields for user"
+                        f" {self.user_profile.id}: Custom profile field with name title not found."
+                    ),
+                    "warning",
+                ),
+            ],
+        )
+
 
 class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
     BACKEND_CLASS = SAMLAuthBackend
@@ -4307,61 +4356,6 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
                     ),
                     "info",
                 )
-            ],
-        )
-
-    def test_social_auth_sync_field_not_existing(self) -> None:
-        sync_custom_attrs_dict = {
-            "zulip": {
-                "saml": {
-                    "custom__title": "title",
-                    "custom__phone_number": "mobilePhone",
-                    "wrongfield": "wrongfield",
-                }
-            }
-        }
-        self.assertFalse(
-            CustomProfileField.objects.filter(
-                realm=self.user_profile.realm, name__iexact="title"
-            ).exists()
-        )
-
-        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
-        idps_dict["test_idp"]["extra_attrs"] = ["mobilePhone", "title"]
-
-        with self.settings(
-            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-            SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            with self.assertLogs(self.logger_string, level="WARNING") as m:
-                result = self.social_auth_test(
-                    account_data_dict,
-                    subdomain="zulip",
-                    extra_attributes=dict(
-                        mobilePhone=["123412341234"], title=["some title"], birthday=["2021-01-01"]
-                    ),
-                )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.assertEqual(data["full_name"], self.name)
-        self.assertEqual(data["subdomain"], "zulip")
-        self.assertEqual(result.status_code, 302)
-
-        self.assertEqual(
-            m.output,
-            [
-                self.logger_output(
-                    "Ignoring unsupported UserProfile field wrongfield in SOCIAL_AUTH_SYNC_ATTRS_DICT",
-                    "warning",
-                ),
-                self.logger_output(
-                    (
-                        "Exception while syncing custom profile fields for user"
-                        f" {self.user_profile.id}: Custom profile field with name title not found."
-                    ),
-                    "warning",
-                ),
             ],
         )
 
