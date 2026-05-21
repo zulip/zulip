@@ -172,11 +172,11 @@ run_test("get_raw_content_for_single_message", ({override}) => {
     assert.equal(success_call_args, msg_1.raw_content);
 
     // Case: The network request succeeds.
+    let channel_get_args;
     override(channel, "get", (args) => {
+        channel_get_args = args;
         args.success({
-            messages: [
-                {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content"},
-            ],
+            message: {content_type: "text/x-markdown", content: "Fetched markdown content"},
         });
     });
 
@@ -188,10 +188,37 @@ run_test("get_raw_content_for_single_message", ({override}) => {
         },
     });
     assert.ok(success_called);
+    // Uses the single-message endpoint, not the batch endpoint, so that
+    // messages from unsubscribed channels can be fetched.
+    assert.equal(channel_get_args.url, "/json/messages/2");
     assert.equal(success_call_args, "Fetched markdown content");
     assert.equal(success_call_args, msg_2.raw_content);
 
+    // Case: Message from an unsubscribed channel. The fetch should
+    // succeed, but raw_content should not be cached.
+    success_called = false;
+    override(channel, "get", (args) => {
+        channel_get_args = args;
+        args.success({
+            message: {content_type: "text/x-markdown", content: "Unsubscribed content"},
+        });
+    });
+
+    message_fetch_raw_content.get_raw_content_for_single_message({
+        message_id: 3,
+        on_success(args) {
+            success_called = true;
+            success_call_args = args;
+        },
+    });
+    assert.ok(success_called);
+    assert.equal(channel_get_args.url, "/json/messages/3");
+    assert.equal(success_call_args, "Unsubscribed content");
+    // raw_content is not cached for messages from unsubscribed channels.
+    assert.equal(msg_3.raw_content, undefined);
+
     // Case: The network request fails/times out.
+    error_called = false;
     override(channel, "get", (args) => {
         args.error();
     });
