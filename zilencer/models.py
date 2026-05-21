@@ -181,7 +181,7 @@ class RemoteRealm(models.Model):
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
     )
 
-    # The fields below are analogical to RemoteZulipServer fields.
+    # The fields below are analogous to RemoteZulipServer fields.
 
     last_updated = models.DateTimeField("last updated", auto_now=True)
     last_request_datetime = models.DateTimeField(null=True)
