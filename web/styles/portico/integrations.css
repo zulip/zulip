@@ -14,6 +14,10 @@ html:has(.portico-landing.integrations) {
 
 .portico-landing.integrations {
     --color-integrations-category-text: hsl(223deg 6% 35%);
+    /* Card-style border used for `.integration-lozenge` tiles on the
+       catalog and `.eligible_realm` rows on /communities. */
+    --color-integrations-card-border: hsl(0deg 0% 88%);
+    --color-integrations-card-border-hover: hsl(0deg 0% 73%);
 
     color: hsl(0deg 0% 27%);
     font-weight: normal;
@@ -443,7 +447,7 @@ html:has(.portico-landing.integrations) {
         padding: 0 4px;
         margin: 7px 5px;
         border-radius: 5px;
-        border: 1px solid hsl(0deg 0% 88%);
+        border: 1px solid var(--color-integrations-card-border);
         background-color: hsl(0deg 0% 100%);
         color: var(--color-integrations-category-text);
         text-align: center;
@@ -455,7 +459,7 @@ html:has(.portico-landing.integrations) {
         }
 
         &:hover {
-            border-color: hsl(0deg 0% 73%);
+            border-color: var(--color-integrations-card-border-hover);
         }
 
         .integration-secondary-line-text {
@@ -843,11 +847,18 @@ html:has(.portico-landing.integrations) {
             display: flex;
             margin-bottom: 20px;
             padding: 5px 10px;
-            border: 1px solid transparent;
+            border: 1px solid var(--color-integrations-card-border);
             border-radius: 4px;
+            transition: border-color 0.3s ease;
+            background-color: hsl(0deg 0% 100%);
+            /* The card itself is an <a>, which would otherwise inherit
+               the underline from `.portico-landing a:not(.button)` in
+               marketing_page.css and visibly underline the name and
+               description text inside it. */
+            text-decoration: none;
 
             &:hover {
-                border: 1px solid hsl(0deg 0% 73%);
+                border-color: var(--color-integrations-card-border-hover);
             }
 
             .eligible_realm_logo {
