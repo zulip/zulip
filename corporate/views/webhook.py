@@ -27,10 +27,13 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
         stripe_webhook_endpoint_secret and not settings.TEST_SUITE
     ):  # nocoverage: We can't verify the signature in test suite since we fetch the events
         # from Stripe events API and manually post to the webhook endpoint.
+        stripe_signature = request.headers.get("Stripe-Signature")
+        if stripe_signature is None:
+            return HttpResponse(status=400)
         try:
             stripe_event = stripe.Webhook.construct_event(
                 request.body,
-                request.headers["Stripe-Signature"],
+                stripe_signature,
                 stripe_webhook_endpoint_secret,
             )
         except ValueError:
