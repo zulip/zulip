@@ -753,13 +753,13 @@ def check_can_access_user(
     if not user_access_restricted_in_realm(target_user, realm):
         return True
 
+    if user_profile is not None and target_user.id == user_profile.id:
+        return True
+
     if check_user_can_access_all_users(user_profile):
         return True
 
     assert user_profile is not None
-
-    if target_user.id == user_profile.id:
-        return True
 
     # These include Subscription objects for streams as well as group DMs.
     subscribed_recipient_ids = Subscription.objects.filter(

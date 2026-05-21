@@ -3801,9 +3801,8 @@ class GetProfileTest(ZulipTestCase):
             polonius.realm, "can_access_all_users_group", members_group, acting_user=None
         )
 
-        # TODO: When guest is limited, there is an extra query.
-        # Optimize this so that no extra query executes.
-        with self.assert_database_query_count(2):
+        # When guest is limited, query count should not increase.
+        with self.assert_database_query_count(1):
             self.assertTrue(check_can_access_user(polonius, polonius))
 
     def test_get_users_involved_in_dms_excludes_deactivated_users(self) -> None:
