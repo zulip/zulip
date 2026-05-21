@@ -37,8 +37,27 @@ const social = {
     stream_id: 2,
 };
 
+const private_shared = {
+    subscribed: true,
+    invite_only: true,
+    history_public_to_subscribers: true,
+    color: "green",
+    name: "private-shared",
+    stream_id: 3,
+};
+
 stream_data.add_sub_for_tests(denmark);
 stream_data.add_sub_for_tests(social);
+stream_data.add_sub_for_tests(private_shared);
+
+function reset_raw_content(message_ids) {
+    for (const message_id of message_ids) {
+        const message = message_store.get(message_id);
+        if (message) {
+            delete message.raw_content;
+        }
+    }
+}
 
 run_test("get_raw_content_for_messages", ({override}) => {
     const msg_1 = {
@@ -46,6 +65,7 @@ run_test("get_raw_content_for_messages", ({override}) => {
         raw_content: "Already hydrated content",
         type: "stream",
         stream_id: denmark.stream_id,
+        content: "<p>HTML content</p>",
     };
     const msg_2 = {
         id: 2,
@@ -111,7 +131,128 @@ run_test("get_raw_content_for_messages", ({override}) => {
     assert.ok(success_called, "Should call on_success after successfully hydrating");
     assert.deepEqual(success_call_args, [msg_1.raw_content, msg_2.raw_content]);
 
-    // Case: Network error during hydration
+    // Case: Batch endpoint omits a message from an unsubscribed
+    // public channel. The channels:public retry should pick it up.
+    success_called = false;
+    error_called = false;
+
+    let channel_get_call_count = 0;
+    override(channel, "get", (args) => {
+        channel_get_call_count += 1;
+        if (channel_get_call_count === 1) {
+            // First batch (no narrow) returns msg_2 but not msg_3.
+            assert.equal(args.data.narrow, undefined);
+            args.success({
+                messages: [
+                    {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content"},
+                ],
+            });
+        } else {
+            // Second batch with channels:public returns msg_3.
+            assert.deepEqual(JSON.parse(args.data.narrow), [
+                {operator: "channels", operand: "public"},
+            ]);
+            assert.equal(args.data.message_ids, JSON.stringify([3]));
+            args.success({
+                messages: [
+                    {id: 3, content_type: "text/x-markdown", content: "Unsubscribed content"},
+                ],
+            });
+        }
+    });
+
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids: [1, 2, 3],
+        on_success(args) {
+            success_called = true;
+            success_call_args = args;
+        },
+        /* istanbul ignore next */
+        on_error() {
+            error_called = true;
+        },
+    });
+
+    assert.ok(success_called);
+    assert.equal(error_called, false);
+    assert.equal(channel_get_call_count, 2, "First batch + channels:public retry");
+    assert.deepEqual(success_call_args, [
+        "Already hydrated content",
+        "Fetched markdown content",
+        "Unsubscribed content",
+    ]);
+    // raw_content is not cached for messages from unsubscribed channels.
+    assert.equal(msg_3.raw_content, undefined);
+
+    // Case: Both batch calls miss a message (e.g. pre-subscription
+    // message in a private channel with shared history). The
+    // single-message endpoint should be used as a final fallback.
+    const msg_4 = {
+        id: 4,
+        content: "<p>Private shared history</p>",
+        type: "stream",
+        stream_id: private_shared.stream_id,
+    };
+
+    reset_raw_content([1, 2, 3, 4]);
+    add_messages_to_message_store([msg_1, msg_2, msg_3, msg_4]);
+    success_called = false;
+    error_called = false;
+    channel_get_call_count = 0;
+
+    override(channel, "get", (args) => {
+        channel_get_call_count += 1;
+        if (args.url === "/json/messages" && args.data.narrow === undefined) {
+            // First batch returns msg_1, msg_2 only.
+            args.success({
+                messages: [
+                    {id: 1, content_type: "text/x-markdown", content: "Fetched markdown content 1"},
+                    {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content 2"},
+                ],
+            });
+        } else if (args.url === "/json/messages") {
+            // channels:public retry returns msg_3 but not msg_4
+            // (private channel).
+            args.success({
+                messages: [
+                    {id: 3, content_type: "text/x-markdown", content: "Unsubscribed content"},
+                ],
+            });
+        } else {
+            // Individual fallback for msg_4.
+            assert.equal(args.url, "/json/messages/4");
+            args.success({
+                message: {
+                    content_type: "text/x-markdown",
+                    content: "Private shared history content",
+                },
+            });
+        }
+    });
+
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids: [1, 2, 3, 4],
+        on_success(args) {
+            success_called = true;
+            success_call_args = args;
+        },
+        /* istanbul ignore next */
+        on_error() {
+            error_called = true;
+        },
+    });
+
+    assert.ok(success_called);
+    assert.equal(error_called, false);
+    assert.equal(channel_get_call_count, 3, "Two batch calls + one individual fallback");
+    assert.deepEqual(success_call_args, [
+        "Fetched markdown content 1",
+        "Fetched markdown content 2",
+        "Unsubscribed content",
+        "Private shared history content",
+    ]);
+
+    // Case: Network error during hydration (first batch call fails).
     success_called = false;
     error_called = false;
 
@@ -132,6 +273,38 @@ run_test("get_raw_content_for_messages", ({override}) => {
 
     assert.equal(success_called, false);
     assert.ok(error_called, "Should call on_error if the network request fails");
+
+    // Case: Individual fallback call fails.
+    success_called = false;
+    error_called = false;
+
+    channel_get_call_count = 0;
+    override(channel, "get", (args) => {
+        channel_get_call_count += 1;
+        if (args.url === "/json/messages") {
+            // Both batch calls return nothing.
+            args.success({messages: []});
+        } else {
+            args.error();
+        }
+    });
+
+    reset_raw_content([2]);
+    add_messages_to_message_store([msg_1, msg_2, msg_3]);
+
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids: [1, 2, 3],
+        /* istanbul ignore next */
+        on_success() {
+            success_called = true;
+        },
+        on_error() {
+            error_called = true;
+        },
+    });
+
+    assert.equal(success_called, false);
+    assert.ok(error_called, "Should call on_error if a fallback request fails");
 });
 
 run_test("get_raw_content_for_single_message", ({override}) => {
