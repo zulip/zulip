@@ -2965,6 +2965,51 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
             mock_ldap_logger.output[0],
         )
 
+    def test_social_auth_create_user_with_synced_role_only(self) -> None:
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+
+        sync_custom_attrs_dict = {
+            "zulip": {
+                self.BACKEND_CLASS.name: {
+                    "role": "zulip_role",
+                }
+            }
+        }
+
+        with (
+            self.assertLogs(self.logger_string, level="INFO") as mock_logger,
+        ):
+            account_data_dict = self.get_account_data_dict(email=email, name=name)
+            result = self.social_auth_test_with_sync_attrs(
+                account_data_dict,
+                subdomain="zulip",
+                is_signup=True,
+                extra_attrs=dict(
+                    zulip_role="owner",
+                    # Groups won't get synced, despite being passed - group sync
+                    # is not configured.
+                    zulip_groups=["samlgroup1"],
+                ),
+                sync_attrs_config=sync_custom_attrs_dict,
+            )
+
+        with (
+            self.settings(TERMS_OF_SERVICE_VERSION=None),
+        ):
+            self.stage_two_of_registration(
+                result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+            )
+
+        user_profile = get_user_by_delivery_email(email, realm)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_OWNER)
+        self.assertEqual(
+            mock_logger.output[0],
+            self.logger_output("Returning role owner for user creation", type="info"),
+        )
+
 
 class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
     BACKEND_CLASS = SAMLAuthBackend
@@ -4263,54 +4308,6 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
                     "info",
                 )
             ],
-        )
-
-    @override_settings(TERMS_OF_SERVICE_VERSION=None)
-    def test_social_auth_create_user_with_synced_role_only(self) -> None:
-        email = "newuser@zulip.com"
-        name = "Full Name"
-        subdomain = "zulip"
-        realm = get_realm("zulip")
-
-        account_data_dict = self.get_account_data_dict(email=email, name=name)
-
-        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
-        idps_dict["test_idp"]["extra_attrs"] = ["zulip_role"]
-        sync_custom_attrs_dict = {
-            "zulip": {
-                "saml": {
-                    "role": "zulip_role",
-                }
-            }
-        }
-
-        with (
-            self.settings(
-                SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
-                SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-            ),
-            self.assertLogs(self.logger_string, level="INFO") as mock_logger,
-        ):
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                is_signup=True,
-                extra_attributes=dict(
-                    zulip_role=["owner"],
-                    # Groups won't get synced, despite being passed - group sync
-                    # is not configured.
-                    zulip_groups=["samlgroup1"],
-                ),
-            )
-            self.stage_two_of_registration(
-                result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
-            )
-
-        user_profile = get_user_by_delivery_email(email, realm)
-        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_OWNER)
-        self.assertEqual(
-            mock_logger.output[0],
-            self.logger_output("Returning role owner for user creation", type="info"),
         )
 
     def test_social_auth_sync_field_not_existing(self) -> None:
