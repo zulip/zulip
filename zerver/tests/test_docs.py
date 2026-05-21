@@ -551,6 +551,19 @@ class DocPageTest(ZulipTestCase):
         og_title = '<meta property="og:title" content="Zulip integrations" />'
         self._test(url, [og_title, og_description, get_canonical_url(url)])
 
+    def test_integration_search_placeholder(self) -> None:
+        result = self.client_get("/integrations/")
+        self.assert_in_success_response(['placeholder="Search integrations"'], result)
+
+        result = self.client_get("/integrations/category/communication")
+        self.assert_in_success_response(['placeholder="Search communication integrations"'], result)
+
+        result = self.client_get("/integrations/category/bots")
+        self.assert_in_success_response(['placeholder="Search interactive bots"'], result)
+
+        result = self.client_get("/integrations/category/meta-integration")
+        self.assert_in_success_response(['placeholder="Search integration frameworks"'], result)
+
     def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:

@@ -11,6 +11,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.template import loader
 from django.template.response import TemplateResponse
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 from lxml import html
 from lxml.etree import Element, SubElement, XPath, _Element
@@ -34,6 +35,8 @@ from zerver.lib.templates import render_markdown_path
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import Realm
 from zerver.openapi.openapi import get_endpoint_from_operationid, get_openapi_summary
+
+STANDALONE_INTEGRATION_CATEGORY_PLACEHOLDER_SLUGS = {"bots", "meta-integration"}
 
 
 @dataclass
@@ -403,6 +406,17 @@ def get_visible_integrations_for_category(category_slug: str) -> list[Integratio
     return [integration for integration in enabled if category in integration.categories]
 
 
+def get_integration_search_placeholder(category_slug: str) -> str:
+    if category_slug == "all":
+        return _("Search integrations")
+
+    category_name = str(CATEGORIES[category_slug]).lower()
+    if category_slug in STANDALONE_INTEGRATION_CATEGORY_PLACEHOLDER_SLUGS:
+        return _("Search {category_name}").format(category_name=category_name)
+
+    return _("Search {category_name} integrations").format(category_name=category_name)
+
+
 def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -> dict[str, Any]:
     enabled_integrations_count = sum(v.is_enabled_in_catalog() for v in INTEGRATIONS.values())
     # Subtract 1 so saying "Over X integrations" is correct. Then,
@@ -413,6 +427,7 @@ def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -
     context.update(
         {
             "categories_dict": OrderedDict(sorted(CATEGORIES.items())),
+            "integration_search_placeholder": get_integration_search_placeholder(category_slug),
             "integrations_count_display": integrations_count_display,
             "selected_category_slug": category_slug,
             "visible_integrations": get_visible_integrations_for_category(category_slug),
