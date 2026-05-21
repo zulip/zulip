@@ -54,7 +54,7 @@ class kandra::vector {
       type = "internal_metrics"
     [sinks.prometheus_exporter]
       type = "prometheus_exporter"
-      address = "0.0.0.0:9081"
+      address = "127.0.0.1:9081"
       flush_period_secs = 120
       suppress_timestamp = true
       buckets = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]

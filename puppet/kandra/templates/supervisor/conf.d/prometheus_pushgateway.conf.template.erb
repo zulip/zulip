@@ -1,5 +1,5 @@
 [program:prometheus_pushgateway]
-command=<%= @bin %>
+command=<%= @bin %> --web.listen-address=127.0.0.1:9091
 priority=10
 autostart=true
 autorestart=true
