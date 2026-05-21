@@ -2677,6 +2677,108 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
             )
         )
 
+    def test_social_auth_group_sync_sync_all_groups_mode(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        testgroup1 = create_user_group_in_database("testgroup1", [], realm, acting_user=hamlet)
+        testgroup2 = create_user_group_in_database("testgroup2", [], realm, acting_user=hamlet)
+
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+        # Sanity assert. We'll use this group name to verify that groups get created on demand by group sync.
+        assert not NamedUserGroup.objects.filter(
+            name="newtestgroup", realm_for_sharding=realm
+        ).exists()
+
+        sync_custom_attrs_dict = {
+            "zulip": {
+                self.BACKEND_CLASS.name: {
+                    "role": "zulip_role",
+                    # This config syntax enables the "sync all groups" mode.
+                    "groups": "*",
+                }
+            }
+        }
+
+        with (
+            self.assertLogs(self.logger_string) as mock_log,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test_with_sync_attrs(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attrs=dict(
+                    zulip_groups=[
+                        "testgroup1",
+                        "testgroup2",
+                        "newtestgroup",
+                        # Not a valid group name. We will want to verify it gets logged and ignored.
+                        "@@@@",
+                    ]
+                ),
+                sync_attrs_config=sync_custom_attrs_dict,
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+
+        self.assertTrue(
+            is_user_in_group(
+                testgroup1.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        self.assertTrue(
+            is_user_in_group(
+                testgroup2.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        self.assertFalse(
+            is_user_in_group(
+                hamletcharacters_group.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+
+        # newtestgroup exists now. It was created because the zulip_groups attribute implied the user should
+        # be a member of the group.
+        new_test_group = NamedUserGroup.objects.get(name="newtestgroup", realm_for_sharding=realm)
+        self.assertTrue(
+            is_user_in_group(
+                new_test_group.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+
+        # Verify the expected log line revealing the internal details of the incoming groups -> Zulip groups translation.
+        self.assertIn(
+            self.logger_output(
+                f"social_auth_sync_user_attributes:<user:{hamlet.id}>: received group names: ['@@@@', 'newtestgroup', 'testgroup1', 'testgroup2']|intended Zulip groups: ['@@@@', 'newtestgroup', 'testgroup1', 'testgroup2']. group mapping used: {{'hamletcharacters': 'hamletcharacters', 'testgroup1': 'testgroup1', 'testgroup2': 'testgroup2', 'newtestgroup': 'newtestgroup', '@@@@': '@@@@'}}",
+                type="info",
+            ),
+            mock_log.output,
+        )
+        self.assertIn(
+            self.logger_output(
+                f"User {hamlet.id} should be added to groups ['@@@@', 'newtestgroup'], but they don't exist. Creating them first.",
+                type="info",
+            ),
+            mock_log.output,
+        )
+        self.assertIn(
+            self.logger_output(
+                "ensure_missing_groups: received invalid groups names: ['@@@@']",
+                type="warning",
+            ),
+            mock_log.output,
+        )
+
 
 class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
     BACKEND_CLASS = SAMLAuthBackend
@@ -3975,110 +4077,6 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
                     "info",
                 )
             ],
-        )
-
-    def test_social_auth_group_sync_sync_all_groups_mode(self) -> None:
-        realm = get_realm("zulip")
-        hamlet = self.example_user("hamlet")
-        testgroup1 = create_user_group_in_database("testgroup1", [], realm, acting_user=hamlet)
-        testgroup2 = create_user_group_in_database("testgroup2", [], realm, acting_user=hamlet)
-
-        hamletcharacters_group = NamedUserGroup.objects.get(
-            name="hamletcharacters", realm_for_sharding=realm
-        )
-        # Sanity assert. We'll use this group name to verify that groups get created on demand by group sync.
-        assert not NamedUserGroup.objects.filter(
-            name="newtestgroup", realm_for_sharding=realm
-        ).exists()
-
-        sync_custom_attrs_dict = {
-            "zulip": {
-                "saml": {
-                    "role": "zulip_role",
-                    # This config syntax enables the "sync all groups" mode.
-                    "groups": "*",
-                }
-            }
-        }
-
-        with (
-            self.settings(
-                SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
-            ),
-            self.assertLogs(self.logger_string) as mock_log,
-        ):
-            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-            result = self.social_auth_test(
-                account_data_dict,
-                subdomain="zulip",
-                extra_attributes=dict(
-                    zulip_groups=[
-                        "testgroup1",
-                        "testgroup2",
-                        "newtestgroup",
-                        # Not a valid group name. We will want to verify it gets logged and ignored.
-                        "@@@@",
-                    ]
-                ),
-            )
-        data = load_subdomain_token(result)
-        self.assertEqual(data["email"], self.email)
-        self.assertEqual(result.status_code, 302)
-
-        self.assertTrue(
-            is_user_in_group(
-                testgroup1.id,
-                hamlet,
-                direct_member_only=True,
-            )
-        )
-        self.assertTrue(
-            is_user_in_group(
-                testgroup2.id,
-                hamlet,
-                direct_member_only=True,
-            )
-        )
-        self.assertFalse(
-            is_user_in_group(
-                hamletcharacters_group.id,
-                hamlet,
-                direct_member_only=True,
-            )
-        )
-
-        # newtestgroup exists now. It was created because the zulip_groups attribute implied the user should
-        # be a member of the group.
-        new_test_group = NamedUserGroup.objects.get(name="newtestgroup", realm_for_sharding=realm)
-        self.assertTrue(
-            is_user_in_group(
-                new_test_group.id,
-                hamlet,
-                direct_member_only=True,
-            )
-        )
-
-        # Verify the expected log line revealing the internal details of the incoming groups -> Zulip groups translation.
-        self.assertIn(
-            self.logger_output(
-                f"social_auth_sync_user_attributes:<user:{hamlet.id}>: received group names: ['@@@@', 'newtestgroup', 'testgroup1', 'testgroup2']|intended Zulip groups: ['@@@@', 'newtestgroup', 'testgroup1', 'testgroup2']. group mapping used: {{'hamletcharacters': 'hamletcharacters', 'testgroup1': 'testgroup1', 'testgroup2': 'testgroup2', 'newtestgroup': 'newtestgroup', '@@@@': '@@@@'}}",
-                type="info",
-            ),
-            mock_log.output,
-        )
-        self.assertIn(
-            self.logger_output(
-                f"User {hamlet.id} should be added to groups ['@@@@', 'newtestgroup'], but they don't exist. Creating them first.",
-                type="info",
-            ),
-            mock_log.output,
-        )
-        self.assertIn(
-            self.logger_output(
-                "ensure_missing_groups: received invalid groups names: ['@@@@']",
-                type="warning",
-            ),
-            mock_log.output,
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
