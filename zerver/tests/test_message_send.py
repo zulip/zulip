@@ -2838,7 +2838,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         # inside check_sender_can_access_recipients.
 
         # Limited guest sends a DM to themself.
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(25):
             self.send_personal_message(polonius, polonius)
 
         # Limited guest sends a DM to another accessible user.
