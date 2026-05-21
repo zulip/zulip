@@ -2859,11 +2859,20 @@ class DeactivateActionsTest(ZulipTestCase):
         self.assertFalse(bot.is_active)
 
         self.assertEqual(user.full_name, "Deleted user")
-        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_SYSTEM)
         self.assertGreater(user.avatar_version, 0)
 
+        # The avatar URLs now point to the static unknown-user avatar,
+        # with the medium request served by the medium-sized variant.
+        user_avatar = avatar_url(user)
+        assert user_avatar is not None
+        self.assertTrue(user_avatar.endswith("images/unknown-user-avatar.png"))
+        user_avatar_medium = avatar_url(user, medium=True)
+        assert user_avatar_medium is not None
+        self.assertTrue(user_avatar_medium.endswith("images/unknown-user-avatar-medium.png"))
+
         self.assertEqual(bot.full_name, "Deactivated bot")
-        self.assertEqual(bot.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(bot.avatar_source, UserProfile.AVATAR_FROM_SYSTEM)
         self.assertGreater(bot.avatar_version, 0)
 
 
