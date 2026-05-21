@@ -7,7 +7,8 @@
 #   docker push zulip/ci:bookworm-7.0
 
 ARG BASE_IMAGE
-FROM $BASE_IMAGE
+# See tools/ci/Dockerfile for why we pin to linux/amd64.
+FROM --platform=linux/amd64 $BASE_IMAGE
 
 # Download the release tarball, start rabbitmq server and install the server
 ARG VERSION
