@@ -2834,17 +2834,13 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         polonius = self.example_user("polonius")
 
-        # TODO: Optimize the following 2 cases. Refine the logic and reduce
-        # query count inside check_sender_can_access_recipients
-        # and get_recipients_for_user_creation_events.
-
         # Limited guest sends a DM to themself.
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(22):
             self.send_personal_message(polonius, polonius)
 
         # Limited guest sends a DM to another accessible user.
         hamlet = self.example_user("hamlet")
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(25):
             self.send_personal_message(polonius, hamlet)
 
     def test_direct_message_group_from_limited_guest_performance(self) -> None:
@@ -2890,10 +2886,8 @@ class PersonalMessageSendTest(ZulipTestCase):
         with self.assert_database_query_count(32):
             self.send_group_direct_message(polonius, recipients)
 
-        # Send message in an existing DirectMessageGroup.
-        # TODO: Query count could be reduced by checking
-        # if a DirectMessageGroup already exists for the participants.
-        with self.assert_database_query_count(27):
+        # Send a message in an existing DirectMessageGroup.
+        with self.assert_database_query_count(23):
             self.send_group_direct_message(polonius, recipients)
 
     def test_direct_message_initiator_group_setting(self) -> None:

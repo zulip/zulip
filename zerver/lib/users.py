@@ -776,6 +776,44 @@ def check_can_access_user(
     ).exists()
 
 
+def has_inaccessible_users(target_user_ids: list[int], acting_user: UserProfile) -> bool:
+    """
+    This is logically the same as get_inaccessible_user_ids BUT only
+    checks for the existence of any inaccessible users.
+
+    It's cheaper than get_inaccessible_user_ids and executes 1 query less for
+    the case acting_user is limited, i.e., check_user_can_access_all_users is False.
+
+    Inaccessible users: users that don't share any Recipient object with
+    the "limited" acting_user.
+    """
+
+    if len(target_user_ids) == 1 and target_user_ids[0] == acting_user.id:
+        return False
+
+    if check_user_can_access_all_users(acting_user):
+        return False
+
+    # All users can access all the bots, so we just exclude them.
+    target_human_users = UserProfile.objects.filter(id__in=target_user_ids, is_bot=False)
+
+    acting_user_subscribed_recipient_ids = Subscription.objects.filter(
+        user_profile=acting_user,
+        active=True,
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+    ).values_list("recipient_id", flat=True)
+
+    # Fetch accessible users then exclude them so only
+    # inaccessible users remain, finally we check for their existence.
+    return target_human_users.exclude(
+        id__in=target_human_users.filter(
+            subscription__recipient_id__in=acting_user_subscribed_recipient_ids,
+            subscription__active=True,
+            subscription__is_user_active=True,
+        ).values_list("id", flat=True)
+    ).exists()
+
+
 def get_inaccessible_user_ids(
     target_user_ids: list[int], acting_user: UserProfile | None
 ) -> set[int]:
