@@ -420,7 +420,9 @@ class S3Test(ZulipTestCase):
         medium_path_id = path_id + "-medium.png"
 
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_avatar_image(image_file, user_profile, future=False)
+            zerver.lib.upload.upload_avatar_image(
+                image_file, user_profile, content_type="image/png", future=False
+            )
         user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
         user_profile.save()
         test_image_data = read_test_image_file("img.png")
@@ -506,7 +508,9 @@ class S3Test(ZulipTestCase):
         medium_file_path = base_file_path + "-medium.png"
 
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_avatar_image(image_file, user_profile, future=False)
+            zerver.lib.upload.upload_avatar_image(
+                image_file, user_profile, content_type="image/png", future=False
+            )
         user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
         user_profile.save()
 

@@ -432,12 +432,10 @@ def write_jdenticon_avatars(
 def upload_avatar_image(
     user_file: IO[bytes],
     user_profile: UserProfile,
-    content_type: str | None = None,
+    content_type: str,
     backend: ZulipUploadBackend | None = None,
     future: bool = True,
 ) -> None:
-    if content_type is None:
-        content_type = guess_type(user_file.name)[0]
     if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         raise BadImageError(_("Invalid image format"))
     file_path = user_avatar_path(user_profile, future=future)

@@ -66,7 +66,7 @@ from zerver.lib.typed_endpoint_validators import (
     parse_enum_from_string_value,
     timezone_validator,
 )
-from zerver.lib.upload import upload_avatar_image
+from zerver.lib.upload import get_file_info, upload_avatar_image
 from zerver.lib.user_groups import (
     get_recursive_group_members_union_for_groups,
     user_group_ids_to_user_groups,
@@ -563,7 +563,8 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
                 max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
             )
         )
-    upload_avatar_image(user_file, user_profile, content_type=user_file.content_type)
+    _filename, content_type = get_file_info(user_file)
+    upload_avatar_image(user_file, user_profile, content_type=content_type)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)
 
