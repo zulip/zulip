@@ -60,6 +60,16 @@ class ChannelMetadata:
 
 AddedChannelsT: TypeAlias = dict[str, ChannelMetadata]
 
+MATTERMOST_HTML_TAG_PATTERN = re.compile(r"</?[A-Za-z][A-Za-z0-9:-]*(?:\s[^<>]*)?/?>")
+
+
+def convert_mattermost_message_content(content: str) -> str:
+    if MATTERMOST_HTML_TAG_PATTERN.search(content):
+        content = convert_html_to_text(content)
+    if content:
+        return content.rstrip("\n") + "\n\n"
+    return content
+
 
 def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
     # set correct realm details
@@ -542,9 +552,11 @@ def process_raw_message_batch(
         )
 
         try:
-            content = convert_html_to_text(content)
+            content = convert_mattermost_message_content(content)
         except Exception:  # nocoverage
-            logging.warning("Error converting HTML to text for message: '%s'; continuing", content)
+            logging.warning(
+                "Error converting Mattermost message content: '%s'; continuing", content
+            )
             logging.warning(str(raw_message))
 
         date_sent = raw_message["date_sent"]

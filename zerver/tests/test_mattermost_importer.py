@@ -18,11 +18,13 @@ from zerver.data_import.import_util import SubscriberHandler, UploadRecordData, 
 from zerver.data_import.mattermost import (
     COMPILED_CHANNEL_ID_FORMAT,
     DEFAULT_SINGLE_TEAM_OBJECT,
+    ChannelMetadata,
     backfill_user_data_from_posts,
     build_reactions,
     check_user_in_team,
     convert_channel_data,
     convert_direct_message_group_data,
+    convert_mattermost_message_content,
     convert_user_data,
     create_username_to_user_mapping,
     do_convert_data,
@@ -30,6 +32,7 @@ from zerver.data_import.mattermost import (
     make_realm,
     mattermost_data_file_to_dict,
     process_message_attachments,
+    process_raw_message_batch,
     process_user,
     reset_mirror_dummy_users,
     write_emoticon_data,
@@ -1073,6 +1076,54 @@ class MatterMostImporter(MattermostImportTestBase):
         self.assert_length(self.get_set(total_reactions, "id"), 4)
         self.assert_length(self.get_set(total_reactions, "message"), 1)
 
+    def test_process_raw_message_batch_preserves_markdown_list_linebreaks(self) -> None:
+        user_id_mapper = IdMapper[str]()
+        sender_id = user_id_mapper.get("adminuser")
+        output_dir = self.make_import_output_dir("mattermost")
+        realm_id = 39351
+        message_content = "- bullet 1\n- bullet 2\n- bullet 3\n- bullet 4"
+
+        process_raw_message_batch(
+            realm_id=realm_id,
+            raw_messages=[
+                {
+                    "sender_id": sender_id,
+                    "content": message_content,
+                    "date_sent": 1777035429,
+                    "reactions": [],
+                    "channel_name": "off-topic",
+                }
+            ],
+            subscriber_map={},
+            user_id_mapper=user_id_mapper,
+            user_handler=UserHandler(),
+            added_channels={"off-topic": ChannelMetadata(1, 2)},
+            subscriber_handler=SubscriberHandler[frozenset[str]](),
+            is_pm_data=False,
+            output_dir=output_dir,
+            zerver_realmemoji=[],
+            total_reactions=[],
+            uploads_list=[],
+            zerver_attachment=[],
+            mattermost_data_dir=self.fixture_file_name("", "mattermost_fixtures"),
+        )
+
+        message_files = [
+            file_name for file_name in os.listdir(output_dir) if file_name.startswith("messages-")
+        ]
+        self.assert_length(message_files, 1)
+        messages = self.read_file(output_dir, message_files[0])
+        self.assertEqual(messages["zerver_message"][0]["content"], f"{message_content}\n\n")
+
+    def test_convert_mattermost_message_content_normalizes_html_content(self) -> None:
+        with patch(
+            "zerver.data_import.mattermost.convert_html_to_text", return_value="**bold**\n"
+        ) as convert_html_to_text:
+            content = convert_mattermost_message_content("<b>bold</b>")
+
+        convert_html_to_text.assert_called_once_with("<b>bold</b>")
+        self.assertEqual(content, "**bold**\n\n")
+
     def test_do_convert_data(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
@@ -1090,7 +1141,7 @@ class MatterMostImporter(MattermostImportTestBase):
                 *(
                     [
                         # Check error log when trying to process a message with faulty HTML.
-                        "WARNING:root:Error converting HTML to text for message: 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>'; continuing",
+                        "WARNING:root:Error converting Mattermost message content: 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>'; continuing",
                         "WARNING:root:{'sender_id': 2, 'content': 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                     ]
                     if sys.version_info < (3, 13)
@@ -1327,7 +1378,7 @@ class MatterMostImporter(MattermostImportTestBase):
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
                 *(
                     [
-                        "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
+                        "WARNING:root:Error converting Mattermost message content: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
                         "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                     ]
                     if sys.version_info < (3, 13)
@@ -1358,7 +1409,7 @@ class MatterMostImporter(MattermostImportTestBase):
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
                 *(
                     [
-                        "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
+                        "WARNING:root:Error converting Mattermost message content: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
                         "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                     ]
                     if sys.version_info < (3, 13)
