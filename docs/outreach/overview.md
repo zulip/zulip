@@ -40,7 +40,7 @@ post](https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/)!
 ## Outreach program experience
 
 Zulip has been a [GSoC](https://summerofcode.withgoogle.com/) mentoring
-organization since 2016, and we accept 12-20 GSoC participants each summer. We
+organization since 2016, and we accept 10-20 GSoC participants each summer. We
 have also mentored several interns through the
 [Outreachy](https://www.outreachy.org/) program, and hundreds of Google Code-In
 participants.
