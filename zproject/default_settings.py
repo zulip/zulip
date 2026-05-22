@@ -424,6 +424,12 @@ DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
 #    one or a handful of realms, though they might on an installation
 #    like Zulip Cloud or to work around a problem on another server.
 
+# Set to True by the docker-zulip Helm chart via SETTING_RUNNING_IN_HELM, so that
+# error messages can recommend Helm-specific knobs (e.g. setting LOADBALANCER_IPS
+# via `zulip.environment.LOADBALANCER_IPS` in values) instead of bare env vars
+# the operator has no direct way to set under Helm.
+RUNNING_IN_HELM = False
+
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 NAGIOS_SEND_BOT = "nagios-send-bot@zulip.com"
