@@ -264,8 +264,12 @@
         line-height: 1;
     }
 
+    .tab-switcher {
+        margin: 2px;
+    }
+
     .tabcontent {
-        margin: 1px 5px 0;
+        margin: 1px 2.5px 0 1.5px;
     }
 
     #profile-tab {
