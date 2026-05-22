@@ -205,7 +205,7 @@ class ExportFile(ZulipTestCase):
         )
 
         with get_test_image_file("img.png") as img_file:
-            upload_avatar_image(img_file, user_profile, future=False)
+            upload_avatar_image(img_file, user_profile, content_type="image/png", future=False)
 
         user_profile.avatar_source = "U"
         user_profile.save()

@@ -96,7 +96,7 @@ def create_integration_bot(integration: Integration, bot_name: str | None = None
         bot_avatar_path = static_path(bot_avatar_path)
         if os.path.isfile(bot_avatar_path):
             with open(bot_avatar_path, "rb") as f:
-                upload_avatar_image(f, bot)
+                upload_avatar_image(f, bot, content_type="image/png")
                 do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_USER, acting_user=owner)
         else:
             raise ValueError(f"Bot avatar file {bot_avatar_path} does not exist.")
