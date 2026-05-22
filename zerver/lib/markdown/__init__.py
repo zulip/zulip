@@ -794,6 +794,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def dropbox_media(self, url: str) -> DropboxMediaInfo | None:
+        if not self.zmd.image_preview_enabled:
+            return None
         parsed_url = urlsplit(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
             # See https://www.dropboxforum.com/discussions/101001012/shared-link--scl-to-s/689070/replies/695266
