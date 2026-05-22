@@ -1,3 +1,4 @@
+import os
 from collections.abc import Iterable
 from datetime import timedelta
 from email.headerregistry import Address
@@ -49,6 +50,7 @@ from zerver.lib.stream_subscription import get_user_subscribed_streams
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    avatar_disk_path,
     get_subscription,
     get_test_image_file,
     get_user_sent_message_ids,
@@ -4082,6 +4084,30 @@ class DeleteUserTest(ZulipTestCase):
         do_delete_user(hamlet, acting_user=None)
 
         self.assertFalse(CustomProfileFieldValue.objects.filter(user_profile=hamlet).exists())
+
+    def test_do_delete_user_scrubs_avatar_images(self) -> None:
+        self.login("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            self.client_post("/json/users/me/avatar", {"file": image_file})
+
+        hamlet = self.example_user("hamlet")
+        avatar_path = avatar_disk_path(hamlet)
+        avatar_original_path = avatar_disk_path(hamlet, original=True)
+        avatar_medium_path = avatar_disk_path(hamlet, medium=True)
+
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertTrue(os.path.isfile(avatar_path))
+        self.assertTrue(os.path.isfile(avatar_original_path))
+        self.assertTrue(os.path.isfile(avatar_medium_path))
+
+        do_delete_user(hamlet, acting_user=None)
+
+        self.assertFalse(os.path.isfile(avatar_path))
+        self.assertFalse(os.path.isfile(avatar_original_path))
+        self.assertFalse(os.path.isfile(avatar_medium_path))
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
 
 class FakeEmailDomainTest(ZulipTestCase):
