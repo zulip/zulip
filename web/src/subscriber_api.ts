@@ -50,11 +50,20 @@ export function remove_user_id_from_stream(
     success: (data: unknown) => void,
     failure: (xhr: JQuery.jqXHR<unknown>) => void,
 ): void {
+    remove_user_ids_from_stream([user_id], sub, success, failure);
+}
+
+export function remove_user_ids_from_stream(
+    user_ids: number[],
+    sub: StreamSubscription,
+    success: (data: unknown) => void,
+    failure: (xhr: JQuery.jqXHR<unknown>) => void,
+): void {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
     void channel.del({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([stream_name]), principals: JSON.stringify([user_id])},
+        data: {subscriptions: JSON.stringify([stream_name]), principals: JSON.stringify(user_ids)},
         success,
         error: failure,
     });
