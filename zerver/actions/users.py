@@ -52,6 +52,7 @@ from zerver.lib.event_types import (
 )
 from zerver.lib.internal_event_types import InternalStreamCreateEvent
 from zerver.lib.invites import revoke_invites_generated_by_user
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
@@ -80,10 +81,16 @@ from zerver.lib.users import (
 )
 from zerver.lib.workplace_users import check_any_group_used_for_workplace_users_group
 from zerver.models import (
+    AlertWord,
     CustomProfileFieldValue,
+    Device,
     Draft,
+    EmailChangeStatus,
     GroupGroupMembership,
+    MutedUser,
     NamedUserGroup,
+    NavigationView,
+    PushDeviceToken,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -93,6 +100,8 @@ from zerver.models import (
     UserGroup,
     UserGroupMembership,
     UserProfile,
+    UserStatus,
+    UserTopic,
 )
 from zerver.models.bots import get_bot_services
 from zerver.models.messages import UserMessage
@@ -224,9 +233,27 @@ def do_delete_user_core(
             (ScheduledMessage, "sender"),
             (Draft, "user_profile"),
             (CustomProfileFieldValue, "user_profile"),
+            (UserStatus, "user_profile"),
+            (AlertWord, "user_profile"),
+            (PushDeviceToken, "user"),
+            (Device, "user"),
+            (EmailChangeStatus, "user_profile"),
+            (MutedUser, "user_profile"),
+            (NavigationView, "user"),
+            (UserTopic, "user_profile"),
         ]
         for table, field_name in fks_to_delete:
             table.objects.filter(**{field_name: user_profile}).delete()
+        # The loop above deletes this server's PushDeviceToken rows, but
+        # on servers using the push notifications bouncer the
+        # registrations also live on the bouncer and must be unregistered
+        # there. This is safe to defer past the deletion because uuid is
+        # excluded from overwrite_data above, so the bouncer can still
+        # identify the user.
+        queue_event_on_commit(
+            "deferred_work",
+            {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id},
+        )
         # There's also a many-to-many relationship between UserProfile and ScheduledEmail,
         # which would require separate handling from foreign keys. But the clearing out
         # of this data is handled by do_deactivate_user already, so we don't need to do

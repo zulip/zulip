@@ -76,11 +76,17 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
+    AlertWord,
     CustomProfileField,
     CustomProfileFieldValue,
+    Device,
+    EmailChangeStatus,
     Message,
+    MutedUser,
+    NavigationView,
     OnboardingStep,
     PreregistrationUser,
+    PushDeviceToken,
     RealmAuditLog,
     RealmDomain,
     RealmUserDefault,
@@ -90,6 +96,7 @@ from zerver.models import (
     Subscription,
     UserGroupMembership,
     UserProfile,
+    UserStatus,
     UserTopic,
 )
 from zerver.models.clients import get_client
@@ -4288,6 +4295,61 @@ class DeleteUserTest(ZulipTestCase):
 
         hamlet.refresh_from_db()
         self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
+    def test_do_delete_user_scrubs_user_sensitive_data_tables(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+        test_client = get_client("test")
+        stream = get_stream("Denmark", realm)
+
+        UserStatus.objects.create(
+            user_profile=hamlet,
+            client=test_client,
+            timestamp=timezone_now(),
+            status_text="On vacation",
+        )
+        AlertWord.objects.create(realm=realm, user_profile=hamlet, word="urgent")
+        PushDeviceToken.objects.create(
+            user=hamlet,
+            kind=PushDeviceToken.APNS,
+            token="apns-token-test-deadbeef",
+        )
+        Device.objects.create(user=hamlet)
+        EmailChangeStatus.objects.create(
+            realm=realm,
+            user_profile=hamlet,
+            new_email="newhamlet@zulip.com",
+            old_email=hamlet.delivery_email,
+        )
+        MutedUser.objects.create(user_profile=hamlet, muted_user=cordelia)
+        NavigationView.objects.create(user=hamlet, fragment="narrow/is/starred", is_pinned=True)
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            "secret topic",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+
+        self.assertTrue(UserStatus.objects.filter(user_profile=hamlet).exists())
+        self.assertTrue(AlertWord.objects.filter(user_profile=hamlet).exists())
+        self.assertTrue(PushDeviceToken.objects.filter(user=hamlet).exists())
+        self.assertTrue(Device.objects.filter(user=hamlet).exists())
+        self.assertTrue(EmailChangeStatus.objects.filter(user_profile=hamlet).exists())
+        self.assertTrue(MutedUser.objects.filter(user_profile=hamlet).exists())
+        self.assertTrue(NavigationView.objects.filter(user=hamlet).exists())
+        self.assertTrue(UserTopic.objects.filter(user_profile=hamlet).exists())
+
+        do_delete_user(hamlet, acting_user=None)
+
+        self.assertFalse(UserStatus.objects.filter(user_profile=hamlet).exists())
+        self.assertFalse(AlertWord.objects.filter(user_profile=hamlet).exists())
+        self.assertFalse(PushDeviceToken.objects.filter(user=hamlet).exists())
+        self.assertFalse(Device.objects.filter(user=hamlet).exists())
+        self.assertFalse(EmailChangeStatus.objects.filter(user_profile=hamlet).exists())
+        self.assertFalse(MutedUser.objects.filter(user_profile=hamlet).exists())
+        self.assertFalse(NavigationView.objects.filter(user=hamlet).exists())
+        self.assertFalse(UserTopic.objects.filter(user_profile=hamlet).exists())
 
 
 class FakeEmailDomainTest(ZulipTestCase):
