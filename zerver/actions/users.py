@@ -63,10 +63,14 @@ from zerver.lib.users import (
     user_access_restricted_in_realm,
 )
 from zerver.models import (
+    AlertWord,
     CustomProfileFieldValue,
+    Device,
     Draft,
+    EmailChangeStatus,
     GroupGroupMembership,
     NamedUserGroup,
+    PushDeviceToken,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -76,6 +80,7 @@ from zerver.models import (
     UserGroup,
     UserGroupMembership,
     UserProfile,
+    UserStatus,
 )
 from zerver.models.bots import get_bot_services
 from zerver.models.messages import UserMessage
@@ -209,6 +214,11 @@ def do_delete_user_core(
             (ScheduledMessage, "sender"),
             (Draft, "user_profile"),
             (CustomProfileFieldValue, "user_profile"),
+            (UserStatus, "user_profile"),
+            (AlertWord, "user_profile"),
+            (PushDeviceToken, "user"),
+            (Device, "user"),
+            (EmailChangeStatus, "user_profile"),
         ]
         for table, field_name in fks_to_delete:
             table.objects.filter(**{field_name: user_profile}).delete()
