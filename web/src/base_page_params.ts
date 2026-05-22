@@ -137,13 +137,13 @@ function take_params(): string {
 
 const PAGE_PARAMS_RETRY_CAP = 5;
 
-function reload_with_deferred_state_data(): void {
+function reload_with_deferred_state_data(): boolean {
     const url = new URL(window.location.href);
     const previous_retries = Number.parseInt(url.searchParams.get("page_params_retry") ?? "0", 10);
     if (previous_retries >= PAGE_PARAMS_RETRY_CAP) {
         clear_page_params_retry_from_url();
         show_loading_error();
-        return;
+        return false;
     }
     url.searchParams.set("state_data", "deferred");
     url.searchParams.set("page_params_retry", String(previous_retries + 1));
@@ -152,6 +152,7 @@ function reload_with_deferred_state_data(): void {
     setTimeout(() => {
         window.location.replace(url.toString());
     }, backoff_ms);
+    return true;
 }
 
 function clear_page_params_retry_from_url(): void {
@@ -168,7 +169,12 @@ function parse_page_params(): z.infer<typeof page_params_schema> {
         clear_page_params_retry_from_url();
         return params;
     } catch (error) {
-        reload_with_deferred_state_data();
+        if (reload_with_deferred_state_data()) {
+            // Halt module loading without logging to Sentry; the
+            // user self-heals on the scheduled reload. The matching
+            // entry in sentry.ts's ignoreErrors keeps this quiet.
+            throw new Error("page_params parse failed; reload scheduled");
+        }
         throw error;
     }
 }

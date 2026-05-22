@@ -108,6 +108,10 @@ if (
         ignoreErrors: [
             // https://github.com/tus/tus-js-client/issues/808
             "ERR_UPLOAD_TERMINATION_REJECTED",
+            // base_page_params.ts schedules a deferred-shell reload
+            // on parse failure; only the terminal post-cap throw
+            // should reach Sentry, not each self-healing retry.
+            "page_params parse failed; reload scheduled",
         ],
     });
 } else {
