@@ -34,7 +34,10 @@ def check_required_settings(
         ):
             continue
 
-        if settings.RUNNING_IN_DOCKER:
+        if settings.RUNNING_IN_HELM:
+            settings_location = "your Helm values"
+            setting_display_name = "zulip.environment.SETTING_" + setting_name
+        elif settings.RUNNING_IN_DOCKER:
             settings_location = "your Docker environment configuration"
             setting_display_name = "SETTING_" + setting_name
         else:

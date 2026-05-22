@@ -65,6 +65,23 @@ class TestChecks(ZulipTestCase):
             ZULIP_ADMINISTRATOR=None,
         )
 
+    @override_settings(RUNNING_IN_DOCKER=True, RUNNING_IN_HELM=True)
+    def test_checks_required_setting_helm(self) -> None:
+        self.assert_check_with_error(
+            "(zulip.E001) You must set zulip.environment.SETTING_ZULIP_ADMINISTRATOR in your Helm values",
+            ZULIP_ADMINISTRATOR="zulip-admin@example.com",
+        )
+
+        self.assert_check_with_error(
+            "(zulip.E001) You must set zulip.environment.SETTING_ZULIP_ADMINISTRATOR in your Helm values",
+            ZULIP_ADMINISTRATOR="",
+        )
+
+        self.assert_check_with_error(
+            "(zulip.E001) You must set zulip.environment.SETTING_ZULIP_ADMINISTRATOR in your Helm values",
+            ZULIP_ADMINISTRATOR=None,
+        )
+
     @override_settings(DEVELOPMENT=False, PRODUCTION=True, EXTERNAL_URI_SCHEME="https://")
     def test_checks_external_host_domain(self) -> None:
         message_re = r"\(zulip\.E002\) EXTERNAL_HOST \(\S+\) does not contain a domain part"
