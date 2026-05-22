@@ -313,7 +313,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/history/", ["Zulip released as open source!"])
         # Test the i18n version of one of these pages.
         self._test("/en/history/", ["Zulip released as open source!"])
-        self._test("/values/", ["designed our company"])
+        self._test("/values/", ["Zulip project values"])
         self._test("/hello/", ["remote and flexible work"])
         self._test("/communities/", ["Open communities directory"])
         self._test("/development-community/", ["Zulip development community"])
