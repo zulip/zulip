@@ -1262,6 +1262,25 @@ class MarkdownEmbedsTest(ZulipTestCase):
             '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>',
         )
 
+    def test_inline_dropbox_no_previews(self) -> None:
+        # When previews are disabled (e.g., for channel descriptions),
+        # dropbox_media should not invoke fetch_open_graph_image, since
+        # network calls in that context can time out and abort rendering.
+        # Use a non-image/non-video file link so that, without the fix,
+        # dropbox_media would reach the fetch_open_graph_image call.
+        url = "https://www.dropbox.com/scl/fi/8xq0p2m4n6k8j1h3g5f7d/quarterly-report.pdf?dl=0"
+        with mock.patch(
+            "zerver.lib.markdown.fetch_open_graph_image"
+        ) as mock_fetch_open_graph_image:
+            converted = markdown_convert(
+                url, message_realm=get_realm("zulip"), no_previews=True
+            ).rendered_content
+        mock_fetch_open_graph_image.assert_not_called()
+        self.assertEqual(
+            converted,
+            f'<p><a href="{url}">{url}</a></p>',
+        )
+
     def test_inline_github_preview(self) -> None:
         # Test github URL translation
         url = "https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png"
