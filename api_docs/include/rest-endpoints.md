@@ -123,6 +123,8 @@
 * [Regenerate your API key](/api/regenerate-api-key)
 * [Get a bot's API key](/api/get-bot-api-key)
 * [Regenerate a bot's API key](/api/regenerate-bot-api-key)
+* [Upload a profile picture](/api/upload-avatar)
+* [Delete a profile picture](/api/delete-avatar)
 
 ## Invitations
 
