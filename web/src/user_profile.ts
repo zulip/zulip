@@ -282,7 +282,7 @@ function get_fetched_user_unsub_streams(user_id: number): dropdown_widget.Option
             unique_id: stream.stream_id,
             stream,
         }))
-        .toSorted((a, b) => compare_by_name(a.stream, b.stream));
+        .toSorted((a, b) => util.compare_stream_by_archived_then_name(a.stream, b.stream));
 }
 
 function format_user_stream_list_item_html(stream: StreamSubscription, user: User): string {

@@ -146,6 +146,20 @@ export function make_strcmp(): (x: string, y: string) => number {
 
 export const strcmp = make_strcmp();
 
+type StreamInfo = {
+    name: string;
+    is_archived: boolean;
+};
+
+export function compare_stream_by_archived_then_name(a: StreamInfo, b: StreamInfo): number {
+    // We show non-archived streams first
+    if (a.is_archived !== b.is_archived) {
+        return Number(a.is_archived) - Number(b.is_archived);
+    }
+
+    return strcmp(a.name, b.name);
+}
+
 export const array_compare = function util_array_compare<T>(a: T[], b: T[]): boolean {
     if (a.length !== b.length) {
         return false;

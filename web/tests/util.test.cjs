@@ -127,6 +127,45 @@ run_test("dumb_strcmp", ({override}) => {
     assert.equal(strcmp("z", "y"), 1);
 });
 
+run_test("compare_stream_by_archived_then_name", () => {
+    const make_archived_stream = (name) => ({name, is_archived: true});
+    const make_non_archived_stream = (name) => ({name, is_archived: false});
+
+    let streams = [
+        make_non_archived_stream("beta"),
+        make_archived_stream("zeta"),
+        make_non_archived_stream("delta"),
+        make_archived_stream("alpha"),
+        make_non_archived_stream("alpha"),
+        make_archived_stream("beta"),
+    ];
+
+    const sorted_streams = streams.toSorted((a, b) =>
+        util.compare_stream_by_archived_then_name(a, b),
+    );
+
+    // archived streams are placed at the end after sorting.
+    assert.deepEqual(sorted_streams, [
+        make_non_archived_stream("alpha"),
+        make_non_archived_stream("beta"),
+        make_non_archived_stream("delta"),
+        make_archived_stream("alpha"),
+        make_archived_stream("beta"),
+        make_archived_stream("zeta"),
+    ]);
+
+    // Intl.Collator sorts "ä" near "a", placing "ärger" before "zeta".
+    streams = [make_non_archived_stream("zeta"), make_non_archived_stream("ärger")];
+
+    const sorted_locale_aware = streams.toSorted((a, b) =>
+        util.compare_stream_by_archived_then_name(a, b),
+    );
+    assert.deepEqual(sorted_locale_aware, [
+        make_non_archived_stream("ärger"),
+        make_non_archived_stream("zeta"),
+    ]);
+});
+
 run_test("get_edit_event_orig_topic", () => {
     assert.equal(util.get_edit_event_orig_topic({orig_subject: "lunch"}), "lunch");
 });
