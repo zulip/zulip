@@ -1668,6 +1668,32 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertFalse(os.path.isfile(avatar_original_path_id))
         self.assertFalse(os.path.isfile(avatar_medium_path_id))
 
+    def test_avatar_empty_content_type(self) -> None:
+        """
+        An avatar upload with an empty content type should succeed by
+        guessing the type from the filename.
+        """
+        self.login("hamlet")
+        with get_test_image_file("img.png") as fp:
+            uploaded_file = SimpleUploadedFile("img.png", fp.read(), content_type="")
+        result = self.client_post("/json/users/me/avatar", {"file": uploaded_file})
+        response_dict = self.assert_json_success(result)
+        self.assertIn("avatar_url", response_dict)
+
+        # With no filename extension to guess from, the upload is rejected.
+        with get_test_image_file("img.png") as fp:
+            uploaded_file = SimpleUploadedFile("img", fp.read(), content_type="")
+        result = self.client_post("/json/users/me/avatar", {"file": uploaded_file})
+        self.assert_json_error(result, "Invalid image format")
+
+        # A non-empty content type is used as-is, not overridden by the guess.
+        with get_test_image_file("img.png") as fp:
+            uploaded_file = SimpleUploadedFile(
+                "img.png", fp.read(), content_type="application/octet-stream"
+            )
+        result = self.client_post("/json/users/me/avatar", {"file": uploaded_file})
+        self.assert_json_error(result, "Invalid image format")
+
     def test_invalid_avatars(self) -> None:
         """
         A PUT request to /json/users/me/avatar with an invalid file should fail.
