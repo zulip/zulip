@@ -1,7 +1,7 @@
 [project]
 name = "zulip-server"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 [dependency-groups]
 prod = [
@@ -214,9 +214,6 @@ prod = [
   # Internationalization
   "pyicu",
 
-  # Backport datetime.fromisoformat fixes to Python < 3.11
-  "backports-datetime-fromisoformat; python_version < '3.11'",
-
   # Used to parse User-Agent string for OS & browser names
   "ua-parser[regex]>=1.0.2",
 ]
@@ -423,7 +420,6 @@ plugins = [
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*", # https://github.com/WojciechMula/pyahocorasick/issues/214
-    "backports.datetime_fromisoformat.*",
     "bitfield.*",
     "bmemcached.*",
     "bsonstream.*",

@@ -42,13 +42,13 @@ jobs:
   production_build:
     # This job builds a release tarball from the current commit, which
     # will be used for all of the following install/upgrade tests.
-    name: Ubuntu 22.04 production build
+    name: Ubuntu 24.04 production build
     runs-on: ubuntu-latest
 
     # Docker images are built from 'tools/ci/Dockerfile'; the comments at
     # the top explain how to build and upload these images.
-    # Ubuntu 22.04 ships with Python 3.10.12.
-    container: zulip/ci:jammy
+    # Ubuntu 24.04 ships with Python 3.12.3.
+    container: zulip/ci:noble
 
     steps:
       - name: Add required permissions
@@ -79,21 +79,21 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /__w/.pnpm-store
-          key: v1-pnpm-store-jammy-${{ hashFiles('pnpm-lock.yaml') }}
+          key: v1-pnpm-store-noble-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore uv cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/uv
-          key: uv-jammy-${{ hashFiles('uv.lock') }}
-          restore-keys: uv-jammy-
+          key: uv-noble-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-noble-
 
       - name: Restore emoji cache
         uses: actions/cache@v4
         with:
           path: /srv/zulip-emoji-cache
-          key: v1-emoji-jammy-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
-          restore-keys: v1-emoji-jammy
+          key: v1-emoji-noble-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          restore-keys: v1-emoji-noble
 
       - name: Build production tarball
         run: ./tools/ci/production-build
@@ -141,13 +141,8 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:jammy
-            name: Ubuntu 22.04 production install and PostgreSQL upgrade with pgroonga
-            os: jammy
-            extra-args: ""
-
           - docker_image: zulip/ci:noble
-            name: Ubuntu 24.04 production install
+            name: Ubuntu 24.04 production install and PostgreSQL upgrade with pgroonga
             os: noble
             extra-args: ""
 
@@ -156,15 +151,10 @@ jobs:
             os: resolute
             extra-args: ""
 
-          - docker_image: zulip/ci:bookworm
-            name: Debian 12 production install with custom db name and user
-            os: bookworm
-            extra-args: --test-custom-db
-
           - docker_image: zulip/ci:trixie
-            name: Debian 13 production install
+            name: Debian 13 production install with custom db name and user
             os: trixie
-            extra-args: ""
+            extra-args: --test-custom-db
 
     name: ${{ matrix.name  }}
     container:
@@ -208,19 +198,19 @@ jobs:
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Install pgroonga
-        if: ${{ matrix.os == 'jammy' }}
+        if: ${{ matrix.os == 'noble' }}
         run: sudo /tmp/production-pgroonga
 
       - name: Verify install after installing pgroonga
-        if: ${{ matrix.os == 'jammy' }}
+        if: ${{ matrix.os == 'noble' }}
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Upgrade postgresql
-        if: ${{ matrix.os == 'jammy' }}
+        if: ${{ matrix.os == 'noble' }}
         run: sudo /tmp/production-upgrade-pg
 
       - name: Verify install after upgrading postgresql
-        if: ${{ matrix.os == 'jammy' }}
+        if: ${{ matrix.os == 'noble' }}
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Generate failure report string
@@ -253,9 +243,6 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile.prod'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:bookworm-8.0
-            name: 8.0 Version Upgrade
-            os: bookworm
           - docker_image: zulip/ci:noble-9.0
             name: 9.0 Version Upgrade
             os: noble

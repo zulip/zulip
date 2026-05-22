@@ -345,9 +345,7 @@ if ! "$ZULIP_PATH/scripts/lib/supported-os"; then
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
- - Debian 12
  - Debian 13
- - Ubuntu 22.04 LTS
  - Ubuntu 24.04 LTS
  - Ubuntu 26.04 LTS
 EOF

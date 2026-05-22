@@ -1,2 +1,0 @@
-deb [signed-by=/etc/apt/keyrings/ksplice.asc] http://www.ksplice.com/apt jammy ksplice
-deb-src [signed-by=/etc/apt/keyrings/ksplice.asc] http://www.ksplice.com/apt jammy ksplice

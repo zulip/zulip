@@ -111,7 +111,7 @@ grep -vi -e '^content-length:' -e '^date:' -e '^expires:' -e '^set-cookie:' /tmp
 nginx_version="$(nginx -v 2>&1)"
 nginx_version="${nginx_version#nginx version: }"
 case "$os_id $os_version_id" in
-    'ubuntu 22.04' | 'ubuntu 24.04')
+    'ubuntu 24.04')
         ;;
     *)
         nginx_version="${nginx_version% (*)}"

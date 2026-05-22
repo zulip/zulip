@@ -91,8 +91,8 @@ class zulip::common {
     'wal-g' => {
       'version' => '3.0.8',
       'sha256'  => {
-        'amd64'   => 'b0df1b484035eb5f131db7bbd303d1a460391848fdcce34ba1e0a564cca493e9',  # wal-g-pg-22.04-amd64.tar.gz
-        'aarch64' => '048b5033c34c1487dc1fccc0572db030e323230984ccc093e80e4e4081c797d1',  # wal-g-pg-22.04-aarch64.tar.gz
+        'amd64'   => 'ce382535fb3a59f07fd3ae02e96a039764ac490de49abfb3564fec36d65fafbc',  # wal-g-pg-24.04-amd64.tar.gz
+        'aarch64' => '6789fcaecef1b3e0bfdf9d494460fa301f9c9afcf055d25ecc73a769d87dc156',  # wal-g-pg-24.04-aarch64.tar.gz
       },
     },
 

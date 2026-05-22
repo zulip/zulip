@@ -4,10 +4,8 @@ To run a Zulip server, you will need:
 
 - A dedicated machine or VM
 - A supported OS:
-  - Ubuntu 22.04
   - Ubuntu 24.04
   - Ubuntu 26.04
-  - Debian 12
   - Debian 13
 - A supported CPU architecture:
   - x86-64
@@ -39,10 +37,9 @@ on issues you'll encounter](install-existing-server.md).
 
 #### Operating system
 
-Ubuntu 22.04, Ubuntu 24.04, Ubuntu 26.04, Debian 12, and Debian 13
-are supported for running Zulip in production. You can also
-run Zulip on other platforms that support Docker using
-[our Docker image](docker.md).
+Ubuntu 24.04, Ubuntu 26.04, and Debian 13 are supported for running
+Zulip in production. You can also run Zulip on other platforms that
+support Docker using [our Docker image](docker.md).
 
 We recommend installing on the newest supported OS release you're
 comfortable with, to save a bit of future work [upgrading the

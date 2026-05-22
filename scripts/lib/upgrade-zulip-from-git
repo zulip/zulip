@@ -111,9 +111,7 @@ try:
             text=True,
         ).splitlines()
 
-        # We can't use `git worktree list --porcelain -z` here because
-        # Ubuntu 22.04 only has git 2.34.1, and -z was
-        # introduced in 2.36
+        # TODO: Switch to `git worktree list --porcelain -z`.
         worktree_data = subprocess.check_output(
             ["git", "worktree", "list", "--porcelain"],
             preexec_fn=su_to_zulip,

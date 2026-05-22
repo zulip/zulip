@@ -74,12 +74,8 @@ except OSError:
 distro_info = platform.freedesktop_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
-if vendor == "debian" and os_version == "12":  # bookworm
-    POSTGRESQL_VERSION = "15"
-elif vendor == "debian" and os_version == "13":  # trixie
+if vendor == "debian" and os_version == "13":  # trixie
     POSTGRESQL_VERSION = "17"
-elif vendor == "ubuntu" and os_version == "22.04":  # jammy
-    POSTGRESQL_VERSION = "14"
 elif vendor == "ubuntu" and os_version == "24.04":  # noble
     POSTGRESQL_VERSION = "16"
 elif vendor == "ubuntu" and os_version == "26.04":  # resolute
@@ -119,13 +115,10 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "redis-server",
     "hunspell-en-us",
     "puppet-lint",
-    (
-        "openjdk-17-jre-headless"
-        if vendor == "ubuntu" and os_version == "22.04"
-        else "default-jre-headless"
-    ),  # Required by vnu-jar
+    "default-jre-headless",  # Required by vnu-jar
     # Puppeteer dependencies from here
     "fonts-freefont-ttf",
+    "libasound2t64",
     "libatk-bridge2.0-0",
     "libgbm1",
     "libgtk-3-0",
@@ -144,6 +137,7 @@ COMMON_YUM_DEPENDENCIES = [
     "nmap-ncat",
     "ccache",  # Required to build pgroonga from source.
     # Puppeteer dependencies from here
+    "alsa-lib",
     "at-spi2-atk",
     "GConf2",
     "gtk3",

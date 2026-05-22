@@ -389,7 +389,7 @@ below do not apply.
 :::
 
 When you upgrade the operating system on which Zulip is installed
-(e.g., Ubuntu 22.04 to Ubuntu 24.04), you need to take some additional
+(e.g., Ubuntu 24.04 to Ubuntu 26.04), you need to take some additional
 steps to update your Zulip installation, documented below.
 
 The steps are largely the same for the various OS upgrades aside from
@@ -547,8 +547,9 @@ confirm everything is working correctly.
    reboot
    ```
 
-You should now be able to navigate to your Zulip server's URL and
-confirm everything is working correctly.
+7. [Upgrade from Ubuntu 22.04 to
+   24.04](#upgrading-from-ubuntu-2204-jammy-to-2404-noble), so that
+   you are running a supported operating system.
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
 
@@ -616,8 +617,8 @@ confirm everything is working correctly.
    ```
 
 8. [Upgrade from Ubuntu 20.04 to
-   22.04](#upgrading-from-ubuntu-2004-focal-to-2204-jammy), so that
-   you are running a supported operating system.
+   22.04](#upgrading-from-ubuntu-2004-focal-to-2204-jammy), the next
+   in chain of upgrades leading to a supported operating system.
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
@@ -793,6 +794,9 @@ confirm everything is working correctly.
 
 6. As an additional step, you can also [upgrade the PostgreSQL version](#upgrading-postgresql).
 
+7. [Upgrade from Debian 12 to 13](#upgrading-from-debian-12-to-13), so
+   that you are running a supported operating system.
+
 ### Upgrading from Debian 10 to 11
 
 1. Upgrade your server to the latest `5.x` release. You can only
@@ -851,7 +855,8 @@ confirm everything is working correctly.
 7. As an additional step, you can also [upgrade the PostgreSQL version](#upgrading-postgresql).
 
 8. [Upgrade from Debian 11 to 12](#upgrading-from-debian-11-to-12),
-   so that you are running a supported operating system.
+   the next in chain of upgrades leading to a supported operating
+   system.
 
 ### Upgrading from Debian 9 to 10
 

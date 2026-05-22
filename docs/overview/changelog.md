@@ -15,7 +15,12 @@ _Unreleased_
 
 ### Upgrade notes for 13.0
 
-- None yet.
+- Dropped support for Ubuntu 22.04 and Debian 12. Installations
+  currently running Ubuntu 22.04 should [upgrade to Ubuntu
+  24.04](../production/upgrade.md#upgrading-from-ubuntu-2204-jammy-to-2404-noble),
+  and those running Debian 12 should [upgrade to Debian
+  13](../production/upgrade.md#upgrading-from-debian-12-to-13),
+  before upgrading to Zulip 13.x.
 
 ## Zulip Server 12.x series
 
