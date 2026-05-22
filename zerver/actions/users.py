@@ -59,6 +59,7 @@ from zerver.lib.users import (
     user_access_restricted_in_realm,
 )
 from zerver.models import (
+    CustomProfileFieldValue,
     Draft,
     GroupGroupMembership,
     NamedUserGroup,
@@ -196,6 +197,7 @@ def do_delete_user_core(
             (SavedSnippet, "user_profile"),
             (ScheduledMessage, "sender"),
             (Draft, "user_profile"),
+            (CustomProfileFieldValue, "user_profile"),
         ]
         for table, field_name in fks_to_delete:
             table.objects.filter(**{field_name: user_profile}).delete()

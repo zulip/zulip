@@ -56,7 +56,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
-from zerver.lib.types import Invitee
+from zerver.lib.types import Invitee, ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -4057,6 +4057,21 @@ class DeleteUserTest(ZulipTestCase):
             Message.objects.filter(realm_id=realm.id, sender_id=hamlet_user_id).count(),
             original_messages_from_hamlet_count,
         )
+
+    def test_do_delete_user_scrubs_custom_profile_field_values(self) -> None:
+        hamlet = self.example_user("hamlet")
+        phone_field = CustomProfileField.objects.get(name="Phone number", realm=hamlet.realm)
+        data: list[ProfileDataElementUpdateDict] = [
+            {"id": phone_field.id, "value": "555-test-1234"},
+        ]
+        self.set_user_custom_profile_data(hamlet, data)
+        self.assertTrue(
+            CustomProfileFieldValue.objects.filter(user_profile=hamlet, field=phone_field).exists()
+        )
+
+        do_delete_user(hamlet, acting_user=None)
+
+        self.assertFalse(CustomProfileFieldValue.objects.filter(user_profile=hamlet).exists())
 
 
 class FakeEmailDomainTest(ZulipTestCase):
