@@ -705,6 +705,7 @@
     /* User profile modal */
     --user-profile-modal-height: 75dvh;
     --user-profile-modal-body-margin-bottom: 20px;
+    --user-profile-avatar-size: 180px;
     /* Dropdown list item */
     --dropdown-list-item-label-icon-gap: 0.3125em; /* 5px at 16px/em */
 

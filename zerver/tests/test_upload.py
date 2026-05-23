@@ -1263,6 +1263,63 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/users/me/avatar", {"f1": fp1})
         self.assert_json_error(result, "Avatar changes are disabled in this organization.")
 
+    def test_admin_can_change_user_avatar(self) -> None:
+        hamlet = self.example_user("hamlet")
+        do_set_realm_property(hamlet.realm, "avatar_changes_disabled", True, acting_user=None)
+
+        self.login("iago")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post(
+                f"/json/users/{hamlet.id}/avatar",
+                {"file": image_file},
+                intentionally_undocumented=True,
+            )
+        response_dict = self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertEqual(hamlet.avatar_version, 2)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
+        self.assertEqual(response_dict["avatar_url_medium"], avatar_url(hamlet, medium=True))
+
+    def test_non_admin_cannot_change_user_avatar(self) -> None:
+        cordelia = self.example_user("cordelia")
+
+        self.login("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post(
+                f"/json/users/{cordelia.id}/avatar",
+                {"file": image_file},
+                intentionally_undocumented=True,
+            )
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_admin_can_delete_user_avatar(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        self.login("iago")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post(
+                f"/json/users/{hamlet.id}/avatar",
+                {"file": image_file},
+                intentionally_undocumented=True,
+            )
+        self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        result = self.client_delete(
+            f"/json/users/{hamlet.id}/avatar", intentionally_undocumented=True
+        )
+        response_dict = self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, hamlet.realm.default_avatar_source)
+        self.assertEqual(hamlet.avatar_version, 3)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
+        self.assertEqual(response_dict["avatar_url_medium"], avatar_url(hamlet, medium=True))
+
     correct_files = [
         ("img.png", "png_resized.png"),
         ("img.jpg", None),  # jpeg resizing is platform-dependent

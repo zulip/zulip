@@ -1760,6 +1760,15 @@ label.preferences-radio-choice-label {
 }
 
 #edit-user-form {
+    .manage-user-standard-fields {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .top {
+        margin-bottom: 1.25em; /* match .input-group spacing */
+    }
+
     .person_picker {
         /* Subtract (1px border and 2px of padding) on each side */
         width: calc(var(--modal-input-width) - 6px);
