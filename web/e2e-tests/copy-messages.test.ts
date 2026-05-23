@@ -125,9 +125,57 @@ async function test_copying_messages_from_several_topics(page: Page): Promise<vo
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
+async function test_timestamp_clipboard_has_datetime(page: Page): Promise<void> {
+    // Verify that copying a rendered timestamp injects <span data-datetime> into the
+    // selection HTML so Chrome's clipboard serializer cannot silently drop the datetime.
+    const copied_html = await page.evaluate(() => {
+        const time_el = document.querySelector<HTMLElement>(
+            '.message-list time[datetime="2026-05-23T17:30:00Z"]',
+        );
+        if (!time_el) {
+            return null;
+        }
+        const range = document.createRange();
+        range.selectNodeContents(time_el);
+        window.getSelection()!.removeAllRanges();
+        window.getSelection()!.addRange(range);
+
+        // Dispatch copy: copy_handler runs improve_time_selection_range, which
+        // injects <span data-datetime> into the DOM and expands the range to
+        // cover the full <time>. For a single-message selection copy_handler
+        // returns false (browser handles clipboard natively), so the DataTransfer
+        // stays empty — but the selection range now contains the mutated DOM.
+        document.dispatchEvent(
+            new ClipboardEvent("copy", {
+                bubbles: true,
+                cancelable: true,
+                clipboardData: new DataTransfer(),
+            }),
+        );
+
+        // Serialize the mutated, expanded selection: this is what Chrome writes
+        // to the clipboard. Even when Chrome strips <time>, <span data-datetime>
+        // survives as a plain span and the paste handler can recover <time:ISO>.
+        const div = document.createElement("div");
+        div.append(window.getSelection()!.getRangeAt(0).cloneContents());
+        return div.innerHTML;
+    });
+
+    assert.ok(
+        copied_html?.includes('data-datetime="2026-05-23T17:30:00Z"'),
+        `Expected data-datetime="2026-05-23T17:30:00Z" in clipboard HTML, got: ${copied_html}`,
+    );
+}
+
 async function copy_paste_test(page: Page): Promise<void> {
     await common.log_in(page);
     await common.send_multiple_messages(page, [
+        {
+            stream_name: "Verona",
+            topic: "copy-paste-topic #0",
+            content: "<time:2026-05-23T17:30:00Z>",
+        },
+
         {stream_name: "Verona", topic: "copy-paste-topic #1", content: "copy paste test A"},
 
         {stream_name: "Verona", topic: "copy-paste-topic #1", content: "copy paste test B"},
@@ -146,6 +194,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [
+        ["Verona > copy-paste-topic #0", ["Sat, May 23, 2026, 5:30 PM"]],
         ["Verona > copy-paste-topic #1", ["copy paste test A", "copy paste test B"]],
         [
             "Verona > copy-paste-topic #2",
@@ -163,6 +212,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_last_from_prev_all_from_next(page);
     await test_copying_all_from_prev_first_from_next(page);
     await test_copying_messages_from_several_topics(page);
+    await test_timestamp_clipboard_has_datetime(page);
 }
 
 await common.run_test(copy_paste_test);

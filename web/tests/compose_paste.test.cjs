@@ -570,6 +570,24 @@ run_test("paste_handler_converter", () => {
         '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="Content-Style-Type" content="text/css"><title></title><meta name="Generator" content="Cocoa HTML Writer"><meta name="CocoaVersion" content="2575.4"><style type="text/css">p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.0px Menlo; color: #000000}span.s1 {font-variant-ligatures: no-common-ligatures}</style></head><body><p class="p1"><span class="s1">insertions</span></p></body></html>';
     assert.equal(compose_paste.paste_handler_converter(input), "insertions");
 
+    // Zulip timestamp followed by text.
+    input =
+        '<meta charset=\'utf-8\'><time datetime="2026-05-29T16:30:00Z" style="background: rgba(0, 0, 0, 0.2); border-radius: 3px; box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 0px 1px; white-space: nowrap; margin: 0px 2px; font-size: 0.95em; color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif;"><span class="timestamp-content-wrapper" style="font-size: 1.0526em; padding: 0px 0.2em; display: inline-flex; align-items: baseline; gap: 3px;"><span></span>May 29, 2026, 10:00 PM</span></time><span style="color: rgb(222, 222, 222); display: inline !important; float: none;"><span> </span>good better<span> </span></span>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "<time:2026-05-29T16:30:00Z> good better",
+    );
+
+    // Chrome-stripped timestamp: Chrome's clipboard serializer removes the <time>
+    // wrapper, leaving only the clock icon <i> and the <span data-datetime> fallback.
+    input =
+        '<meta charset=\'utf-8\'><br class="Apple-interchange-newline"><i class="zulip-icon zulip-icon-clock markdown-timestamp-icon" style="text-transform: none; font-size: 15.9995px; line-height: 15.9995px; text-decoration-line: inherit; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline-block; speak: none; font-family: zulip-icons !important; font-style: normal !important; font-weight: 400; font-variant-ligatures: normal; font-variant-caps: normal; font-variant-numeric: normal !important; font-variant-east-asian: normal !important; font-variant-alternates: normal !important; font-variant-position: normal !important; font-variant-emoji: normal !important; align-self: center; color: rgb(222, 222, 222); letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; background-color: rgba(0, 0, 0, 0.2);"></i><span data-datetime="2026-05-23T17:30:00Z" style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 15.9995px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; background-color: rgba(0, 0, 0, 0.2); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Sat, May 23, 2026, 11:00 PM</span>';
+    assert.equal(compose_paste.paste_handler_converter(input), "<time:2026-05-23T17:30:00Z>");
+
+    // Non-Zulip <time datetime> elements, should not be converted.
+    input = "<meta charset='utf-8'><time datetime=\"2024-06-01T09:00:00Z\">June 1, 2024</time>";
+    assert.equal(compose_paste.paste_handler_converter(input), "June 1, 2024");
+
     // Math block tests
 
     /*
