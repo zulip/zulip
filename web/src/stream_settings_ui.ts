@@ -1152,10 +1152,10 @@ export function change_state(
     // Right panel: empty.
     if (right_panel === undefined) {
         assert(left_side_tab !== undefined);
-        // For viewing all streams in a particular folder. Must run
-        // before toggler.goto so the left-panel redraw it triggers
-        // picks up the new folder filter.
-        if (left_side_tab === "all" && folder_id !== undefined) {
+        // Filter the left list to a particular folder. Must run before
+        // toggler.goto so the left-panel redraw it triggers picks up
+        // the new folder filter.
+        if (folder_id !== undefined) {
             stream_settings_components.set_folder_filter_dropdown_value(folder_id);
         }
         toggler.goto(left_side_tab);
