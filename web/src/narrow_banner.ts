@@ -571,6 +571,12 @@ export function show_empty_narrow_message(current_filter: Filter): void {
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
 }
 
+export function show_error_narrow_message(error_message: string): void {
+    $(".empty_feed_notice_main").empty();
+    const rendered_narrow_banner = narrow_error({title: error_message});
+    $(".empty_feed_notice_main").html(rendered_narrow_banner);
+}
+
 export function hide_empty_narrow_message(): void {
     $(".empty_feed_notice_main").empty();
 }
