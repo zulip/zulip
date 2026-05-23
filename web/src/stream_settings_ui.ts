@@ -809,7 +809,7 @@ export function switch_stream_tab(tab_name: string): void {
     */
 
     switch (tab_name) {
-        case "all-streams": {
+        case "all": {
             stream_ui_updates.set_show_subscribed(false);
             stream_ui_updates.set_show_available(false);
             break;
@@ -986,7 +986,7 @@ function setup_page(callback: () => void): void {
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
                 {label: $t({defaultMessage: "Available"}), key: "available"},
-                {label: $t({defaultMessage: "All"}), key: "all-streams"},
+                {label: $t({defaultMessage: "All"}), key: "all"},
             ],
             callback(_value, key) {
                 switch_stream_tab(key);
@@ -996,7 +996,7 @@ function setup_page(callback: () => void): void {
         const $toggler_elem = toggler.get();
         $("#channels_overlay_container .list-toggler-container").prepend($toggler_elem);
         if (current_user.is_guest) {
-            toggler.disable_tab("all-streams");
+            toggler.disable_tab("all");
             toggler.disable_tab("available");
         }
     }
@@ -1138,7 +1138,7 @@ export function change_state(
         if (folder_id !== undefined) {
             stream_settings_components.set_folder_filter_dropdown_value(folder_id);
         }
-        toggler.goto("all-streams");
+        toggler.goto("all");
         stream_edit.empty_right_panel();
         return;
     }
@@ -1157,7 +1157,7 @@ export function change_state(
         stream_edit_toggler.set_select_tab(right_side_tab);
 
         if (left_side_tab === undefined) {
-            left_side_tab = "all-streams";
+            left_side_tab = "all";
             if (stream_data.is_subscribed(stream_id)) {
                 left_side_tab = "subscribed";
             }
@@ -1289,7 +1289,7 @@ export function toggle_view(event: string): void {
                     toggler.goto("available");
                     break;
                 case "available":
-                    toggler.goto("all-streams");
+                    toggler.goto("all");
                     break;
             }
             break;
@@ -1298,7 +1298,7 @@ export function toggle_view(event: string): void {
                 case "available":
                     toggler.goto("subscribed");
                     break;
-                case "all-streams":
+                case "all":
                     toggler.goto("available");
                     break;
             }

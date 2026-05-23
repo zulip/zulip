@@ -426,10 +426,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "[data-tab-key='available'].disabled",
-            "[data-tab-key='all-streams'].disabled",
-        ].join(","),
+        target: ["[data-tab-key='available'].disabled", "[data-tab-key='all'].disabled"].join(","),
         content: $t({
             defaultMessage: "You can only view channels that you are subscribed to.",
         }),

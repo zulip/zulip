@@ -435,7 +435,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         const right_side_tab = hash_parser.get_current_nth_hash_section(3);
 
         if (is_somebody_else_profile_open()) {
-            stream_settings_ui.launch(section, "all-streams", right_side_tab);
+            stream_settings_ui.launch(section, "all", right_side_tab);
             return;
         }
 
