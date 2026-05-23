@@ -3,7 +3,7 @@ import type {ElementHandle, Page} from "puppeteer";
 import * as common from "./lib/common.ts";
 
 async function test_subscription_button(page: Page): Promise<void> {
-    const all_stream_selector = "[data-tab-key='all-streams']";
+    const all_stream_selector = "[data-tab-key='all']";
     await page.waitForSelector(all_stream_selector, {visible: true});
     await page.click(all_stream_selector);
     const stream_selector = "[data-stream-name='Venice']";

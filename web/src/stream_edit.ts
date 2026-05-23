@@ -84,7 +84,7 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
         return;
     }
     switch (tab_key_value) {
-        case "all-streams": {
+        case "all": {
             browser_history.update("#channels/all");
             break;
         }
