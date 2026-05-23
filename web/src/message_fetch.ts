@@ -479,7 +479,12 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                     !opts.msg_list.is_combined_feed_view &&
                     opts.msg_list.visibly_empty()
                 ) {
-                    narrow_banner.show_empty_narrow_message(opts.msg_list.data.filter);
+                    const parsed_error = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                    if (parsed_error.success) {
+                        narrow_banner.show_error_narrow_message(parsed_error.data.msg);
+                    } else {
+                        narrow_banner.show_empty_narrow_message(opts.msg_list.data.filter);
+                    }
                 }
 
                 // TODO: This should probably do something explicit with
