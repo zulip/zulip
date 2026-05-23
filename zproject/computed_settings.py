@@ -5,7 +5,7 @@ import sys
 import time
 from copy import deepcopy
 from typing import Any, Final, Literal
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 from scripts.lib.zulip_tools import get_tornado_ports
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
@@ -42,6 +42,7 @@ from .configured_settings import (
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
     IS_DEV_DROPLET,
+    JITSI_SERVER_URL,
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
@@ -1305,5 +1306,16 @@ SCIM_SERVICE_PROVIDER = {
 
 # Which API key to use will be determined based on TOPIC_SUMMARIZATION_MODEL.
 TOPIC_SUMMARIZATION_API_KEY = get_secret("topic_summarization_api_key", None)
+
+########################################################################
+# JITSI VIDEO CALL SETTINGS
+########################################################################
+
+# Servers that configured JITSI_SERVER_URL as a bare hostname (e.g.
+# "jitsi.example.com") before the URL was parsed on the frontend will fail
+# to load in Zulip 12.0+.  Silently prepend "https://" so those existing
+# deployments keep working without any admin action required.
+if JITSI_SERVER_URL is not None and not urlsplit(JITSI_SERVER_URL).scheme:
+    JITSI_SERVER_URL = "https://" + JITSI_SERVER_URL
 
 PARTIAL_USERS = bool(os.environ.get("PARTIAL_USERS"))
