@@ -2145,6 +2145,17 @@ To Do
                 url_private="https://example.com/banana.zip",
                 title="banana",
             ),
+            # A Slack-hosted non-image after the image guards against
+            # has_image getting reassigned to False.
+            dict(
+                url_private="https://files.slack.com/notes.pdf",
+                title="Notes",
+                name="notes.pdf",
+                mimetype="application/pdf",
+                timestamp=9999,
+                created=8888,
+                size=1000,
+            ),
         ]
         message = dict(
             user=alice_id,
@@ -2174,12 +2185,15 @@ To Do
             uploads_list=uploads_list,
             do_download_and_export_upload_file=lambda request: None,
         )
-        self.assert_length(zerver_attachment, 1)
-        self.assert_length(uploads_list, 1)
+        self.assert_length(zerver_attachment, 2)
+        self.assert_length(uploads_list, 2)
 
         image_path = zerver_attachment[0]["path_id"]
+        pdf_path = zerver_attachment[1]["path_id"]
         expected_content = (
-            f"[Apple](/user_uploads/{image_path})\n[banana](https://example.com/banana.zip)"
+            f"[Apple](/user_uploads/{image_path})\n"
+            f"[banana](https://example.com/banana.zip)\n"
+            f"[Notes](/user_uploads/{pdf_path})"
         )
         self.assertEqual(info["content"], expected_content)
 
