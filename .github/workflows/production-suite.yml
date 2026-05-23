@@ -253,6 +253,12 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile.prod'; the comments at
           # the top explain how to build and upload these images.
+          - docker_image: zulip/ci:jammy-6.0
+            name: 6.0 Version Upgrade
+            os: jammy
+          - docker_image: zulip/ci:bookworm-7.0
+            name: 7.0 Version Upgrade
+            os: bookworm
           - docker_image: zulip/ci:bookworm-8.0
             name: 8.0 Version Upgrade
             os: bookworm
