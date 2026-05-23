@@ -1219,7 +1219,7 @@ def process_message_files(
             # For attachments with Slack download link
             has_attachment = True
             has_link = True
-            has_image = "image" in fileinfo["mimetype"]
+            has_image = has_image or "image" in fileinfo["mimetype"]
 
             attachment_data = get_attachment_path_and_content(
                 link_name=fileinfo["title"], filename=fileinfo["name"], realm_id=realm_id
