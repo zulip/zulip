@@ -28,9 +28,6 @@ img {
   vertical-align: middle;
   border: 0;
 }
-button {
-  -webkit-appearance: button;
-}
 p {
   margin: 0 0 10px;
 }
@@ -78,28 +75,6 @@ hr {
   border: 0;
   border-top: 1px solid #eeeeee;
   border-bottom: 1px solid #ffffff;
-}
-form {
-  margin: 0 0 20px;
-}
-label {
-  display: block;
-  margin-bottom: 5px;
-}
-input[disabled],
-input[readonly] {
-  cursor: not-allowed;
-  background-color: #eeeeee;
-}
-input:focus:invalid {
-  color: #b94a48;
-  border-color: #ee5f5b;
-}
-input:focus:invalid:focus {
-  border-color: #e9322d;
-  -webkit-box-shadow: 0 0 6px #f8b9b7;
-  -moz-box-shadow: 0 0 6px #f8b9b7;
-  box-shadow: 0 0 6px #f8b9b7;
 }
 
 /* Bootstrap alert CSS rules that have not been replaced with our own
