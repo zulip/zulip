@@ -83,6 +83,10 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         topic_name = customer_id
     body = None
 
+    def charge_object_type(charge_id: str) -> str:
+        # Legacy ACH-style charges report object_type "charge" but use a "py_" id prefix.
+        return "payment" if charge_id.startswith("py_") else "charge"
+
     def update_string(blacklist: Sequence[str] = []) -> str:
         assert "previous_attributes" in payload["data"]
         previous_attributes = set(payload["data"]["previous_attributes"].keys()).difference(
@@ -100,7 +104,10 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
 
     def default_body(update_blacklist: Sequence[str] = []) -> str:
         body = "{resource} {verbed}".format(
-            resource=linkified_id(object_["id"].tame(check_string)), verbed=event.replace("_", " ")
+            resource=linkified_id(
+                object_["id"].tame(check_string), object_["object"].tame(check_string)
+            ),
+            verbed=event.replace("_", " "),
         )
         if event == "updated":
             return body + update_string(blacklist=update_blacklist)
@@ -126,8 +133,10 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         if resource == "charge":
             if not topic_name:  # only in legacy fixtures
                 topic_name = "charges"
+            object_id = object_["id"].tame(check_string)
+            charge_type = charge_object_type(object_id)
             body = "{resource} for {amount} {verbed}".format(
-                resource=linkified_id(object_["id"].tame(check_string)),
+                resource=linkified_id(object_id, charge_type),
                 amount=amount_string(
                     object_["amount"].tame(check_int), object_["currency"].tame(check_string)
                 ),
@@ -142,9 +151,15 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
             )
         if resource == "refund":
             topic_name = "refunds"
+            charge_id = object_["charge"].tame(check_string)
+            charge_type = charge_object_type(charge_id)
             body = "A {resource} for a {charge} of {amount} was updated.".format(
-                resource=linkified_id(object_["id"].tame(check_string), lower=True),
-                charge=linkified_id(object_["charge"].tame(check_string), lower=True),
+                resource=linkified_id(
+                    object_["id"].tame(check_string),
+                    object_["object"].tame(check_string),
+                    lower=True,
+                ),
+                charge=linkified_id(charge_id, charge_type, lower=True),
                 amount=amount_string(
                     object_["amount"].tame(check_int), object_["currency"].tame(check_string)
                 ),
@@ -314,44 +329,42 @@ def amount_string(amount: int, currency: str) -> str:
     return decimal_amount + f" {currency.upper()}"
 
 
-def linkified_id(object_id: str, lower: bool = False) -> str:
+def linkified_id(object_id: str, object_type: str, lower: bool = False) -> str:
     names_and_urls: dict[str, tuple[str, str | None]] = {
         # Core resources
-        "ch": ("Charge", "charges"),
-        "cus": ("Customer", "customers"),
-        "dp": ("Dispute", "disputes"),
-        "du": ("Dispute", "disputes"),
+        "charge": ("Charge", "charges"),
+        "customer": ("Customer", "customers"),
+        "dispute": ("Dispute", "disputes"),
         "file": ("File", "files"),
-        "link": ("File link", "file_links"),
-        "pi": ("Payment intent", "payment_intents"),
-        "po": ("Payout", "payouts"),
-        "prod": ("Product", "products"),
-        "re": ("Refund", "refunds"),
-        "tok": ("Token", "tokens"),
+        "file_link": ("File link", "file_links"),
+        "payment_intent": ("Payment intent", "payment_intents"),
+        "payout": ("Payout", "payouts"),
+        "product": ("Product", "products"),
+        "refund": ("Refund", "refunds"),
+        "token": ("Token", "tokens"),
         # Payment methods
         # payment methods have URL prefixes like /customers/cus_id/sources
-        "ba": ("Bank account", None),
+        "bank_account": ("Bank account", None),
         "card": ("Card", None),
-        "src": ("Source", None),
+        "source": ("Source", None),
         # Billing
         # coupons have a configurable id, but the URL prefix is /coupons
         # discounts don't have a URL, I think
-        "in": ("Invoice", "invoices"),
-        "ii": ("Invoice item", "invoiceitems"),
+        "invoice": ("Invoice", "invoices"),
+        "invoiceitem": ("Invoice item", "invoiceitems"),
         # products are covered in core resources
         # plans have a configurable id, though by default they are created with this pattern
         # 'plan': ('Plan', 'plans'),
-        "sub": ("Subscription", "subscriptions"),
-        "si": ("Subscription item", "subscription_items"),
+        "subscription": ("Subscription", "subscriptions"),
+        "subscription_item": ("Subscription item", "subscription_items"),
         # I think usage records have URL prefixes like /subscription_items/si_id/usage_record_summaries
-        "mbur": ("Usage record", None),
+        "usage_record": ("Usage record", None),
         # Undocumented :|
-        "py": ("Payment", "payments"),
-        "pyr": ("Refund", "refunds"),  # Pseudo refunds. Not fully tested.
+        "payment": ("Payment", "payments"),
         # Connect, Fraud, Orders, etc not implemented
     }
-    name, url_prefix = names_and_urls[object_id.split("_", 1)[0]]
-    if lower:  # nocoverage
+    name, url_prefix = names_and_urls[object_type]
+    if lower:
         name = name.lower()
     if url_prefix is None:  # nocoverage
         return name
