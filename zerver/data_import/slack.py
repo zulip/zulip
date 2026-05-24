@@ -47,6 +47,7 @@ from zerver.data_import.import_util import (
     process_avatars,
     process_emojis,
     request_file_stream,
+    scrub_missing_upload_records_after_download,
     validate_user_emails_for_import,
 )
 from zerver.data_import.sequencer import NEXT_ID
@@ -1697,6 +1698,16 @@ def do_convert_directory(
             convert_slack_threads,
             do_download_and_export_upload_file,
         )
+
+    # Attachment and upload records are built before the download runs,
+    # so records for files whose download failed will be invalid.
+    # This filters out such records after the download process has
+    # completed.
+    scrubbed_data = scrub_missing_upload_records_after_download(
+        output_dir, zerver_attachment, uploads_list
+    )
+    zerver_attachment = scrubbed_data.zerver_attachments
+    uploads_list = scrubbed_data.upload_records
 
     # Move zerver_reactions to realm.json file
     realm["zerver_reaction"] = reactions

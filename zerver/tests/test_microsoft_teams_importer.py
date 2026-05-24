@@ -11,6 +11,7 @@ from functools import wraps
 from typing import Any, Concatenate, TypeAlias
 from urllib.parse import parse_qs, urlsplit
 
+import orjson
 import responses
 from django.utils.timezone import now as timezone_now
 from requests import PreparedRequest
@@ -226,6 +227,12 @@ def mock_microsoft_graph_api_calls(
                 "microsoft_graph_api_response_fixtures",
             ),
         )
+        # Add one failed download to test scrub_uploads_records_after_download.
+        responses.add(
+            responses.GET,
+            "https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755003422344/hostedContents/aWQ9eF8wLXd1cy1kMi1iNGM5NjhiYmNhMDU1OWViYWFkMzdiMGUzMzBmMzY5MSx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kMi1iNGM5NjhiYmNhMDU1OWViYWFkMzdiMGUzMzBmMzY5MS92aWV3cy9pbWdv/$value",
+            status=400,
+        )
         responses.add(
             responses.GET,
             re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
@@ -265,13 +272,36 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         fixture_file_path = self.fixture_file_name(fixture_folder, "microsoft_teams_fixtures")
         if not os.path.isdir(fixture_file_path):
             raise AssertionError(f"Fixture file not found: {fixture_file_path}")
-        with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
+        with self.assertLogs(level="INFO") as log, self.settings(EXTERNAL_HOST="zulip.example.com"):
             do_convert_directory(
                 fixture_file_path,
                 self.converted_file_output_dir,
                 "MICROSOFT_GRAPH_API_TOKEN",
                 processes=1,
             )
+        with self.subTest("no records for failed downloads"):
+            self.assertIn("INFO:root:HTTP error: 400, Response: ", log.output)
+            uploads_records_path = os.path.join(
+                self.converted_file_output_dir, "uploads", "records.json"
+            )
+            with open(uploads_records_path, "rb") as f:
+                upload_records = orjson.loads(f.read())
+
+            for record in upload_records:
+                file_path = os.path.join(self.converted_file_output_dir, "uploads", record["path"])
+                self.assertTrue(os.path.isfile(file_path))
+
+            attachment_records_path = os.path.join(
+                self.converted_file_output_dir, "attachment.json"
+            )
+            with open(attachment_records_path, "rb") as f:
+                attachment_records = orjson.loads(f.read())
+
+            for record in attachment_records["zerver_attachment"]:
+                file_path = os.path.join(
+                    self.converted_file_output_dir, "uploads", record["path_id"]
+                )
+                self.assertTrue(os.path.isfile(file_path))
 
     def import_microsoft_teams_export_fixture(self, fixture_folder: str) -> None:
         self.convert_microsoft_teams_export_fixture(fixture_folder)
