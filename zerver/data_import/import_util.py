@@ -583,6 +583,12 @@ class AttachmentRecordData:
     size: int
 
 
+@dataclass
+class ScrubbedRecords:
+    zerver_attachments: list[AttachmentRecordData]
+    upload_records: list[UploadRecordData]
+
+
 def build_attachment(
     realm_id: int,
     message_ids: set[int],
@@ -1006,3 +1012,26 @@ class ImportedBotEmail:
 
         cls.assigned_email[bot_id] = email
         return email
+
+
+def scrub_missing_upload_records_after_download(
+    output_dir: str,
+    zerver_attachments: list[AttachmentRecordData],
+    upload_records: list[UploadRecordData],
+) -> ScrubbedRecords:
+    """
+    This filters out any orphaned records in zerver_attachment and upload_record
+    due to failed parallel download.
+    """
+    return ScrubbedRecords(
+        zerver_attachments=[
+            attachment_record
+            for attachment_record in zerver_attachments
+            if os.path.isfile(os.path.join(output_dir, "uploads", attachment_record.path_id))
+        ],
+        upload_records=[
+            upload_record
+            for upload_record in upload_records
+            if os.path.isfile(os.path.join(output_dir, "uploads", upload_record.path))
+        ],
+    )

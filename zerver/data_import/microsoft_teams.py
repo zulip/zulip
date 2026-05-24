@@ -35,6 +35,7 @@ from zerver.data_import.import_util import (
     get_data_file,
     make_subscriber_map,
     request_file_stream,
+    scrub_missing_upload_records_after_download,
     validate_user_emails_for_import,
     write_response_file_stream_to_path,
 )
@@ -795,6 +796,15 @@ def convert_messages(
                 f"/messages-{dump_file_id:06}.json",
             )
             dump_file_id += 1
+
+    scrubbed_data = scrub_missing_upload_records_after_download(
+        output_dir,
+        # Attachment record data is built inside download workers only
+        # on successful downloads, so there should be no stale records.
+        zerver_attachments=[],
+        upload_records=total_accumulated_upload_records,
+    )
+    total_accumulated_upload_records = scrubbed_data.upload_records
 
     def fix_attachment_id(attachment: AttachmentRecordData) -> AttachmentRecordData:
         attachment.id = NEXT_ID("attachment")
