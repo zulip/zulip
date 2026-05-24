@@ -17,6 +17,7 @@ from django.utils.text import slugify
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    AttachmentRecordData,
     ImportedBotEmail,
     SubscriberHandler,
     UploadRecordData,
@@ -425,7 +426,7 @@ def process_message_attachments(
     realm_id: int,
     message_id: int,
     user_id: int,
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
     uploads_list: list[UploadRecordData],
     mattermost_data_dir: str,
     output_dir: str,
@@ -511,7 +512,7 @@ def process_raw_message_batch(
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
     uploads_list: list[UploadRecordData],
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
     mattermost_data_dir: str,
 ) -> None:
     def fix_mentions(content: str, mention_user_ids: set[int]) -> str:
@@ -652,7 +653,7 @@ def process_posts(
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
     uploads_list: list[UploadRecordData],
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
     mattermost_data_dir: str,
 ) -> None:
     post_data_list = []
@@ -774,7 +775,7 @@ def write_message_data(
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
     uploads_list: list[UploadRecordData],
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
     mattermost_data_dir: str,
 ) -> None:
     if num_teams == 1:
@@ -1223,7 +1224,7 @@ def do_convert_data(
 
         total_reactions: list[dict[str, Any]] = []
         uploads_list: list[UploadRecordData] = []
-        zerver_attachment: list[ZerverFieldsT] = []
+        zerver_attachment: list[AttachmentRecordData] = []
 
         write_message_data(
             num_teams=len(mattermost_data["team"]),

@@ -14,7 +14,12 @@ import orjson
 from django.db.models import Q
 from django_stubs_ext import QuerySetAny
 
-from zerver.data_import.import_util import SubscriberHandler, UploadRecordData, ZerverFieldsT
+from zerver.data_import.import_util import (
+    AttachmentRecordData,
+    SubscriberHandler,
+    UploadRecordData,
+    ZerverFieldsT,
+)
 from zerver.data_import.mattermost import (
     COMPILED_CHANNEL_ID_FORMAT,
     DEFAULT_SINGLE_TEAM_OBJECT,
@@ -870,7 +875,7 @@ class MatterMostImporter(MattermostImportTestBase):
             team_name=team_name,
         )
 
-        zerver_attachments: list[ZerverFieldsT] = []
+        zerver_attachments: list[AttachmentRecordData] = []
         uploads_list: list[UploadRecordData] = []
 
         process_message_attachments(
@@ -885,13 +890,13 @@ class MatterMostImporter(MattermostImportTestBase):
         )
 
         self.assert_length(zerver_attachments, 1)
-        self.assertEqual(zerver_attachments[0]["file_name"], "harry-ron.jpg")
-        self.assertEqual(zerver_attachments[0]["owner"], 2)
+        self.assertEqual(zerver_attachments[0].file_name, "harry-ron.jpg")
+        self.assertEqual(zerver_attachments[0].owner, 2)
         self.assertEqual(
-            user_handler.get_user(zerver_attachments[0]["owner"])["email"], "ron@zulip.com"
+            user_handler.get_user(zerver_attachments[0].owner)["email"], "ron@zulip.com"
         )
         # TODO: Assert this for False after fixing the file permissions in direct messages
-        self.assertTrue(zerver_attachments[0]["is_realm_public"])
+        self.assertTrue(zerver_attachments[0].is_realm_public)
 
         self.assert_length(uploads_list, 1)
         self.assertEqual(uploads_list[0].user_profile_id, 2)
@@ -900,7 +905,7 @@ class MatterMostImporter(MattermostImportTestBase):
             mattermost_data["post"]["direct_post"][0]["attachments"][0]["path"],
             "mattermost_fixtures/direct_channel/data",
         )
-        attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0]["path_id"])
+        attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0].path_id)
         self.assertTrue(os.path.exists(attachment_out_path))
         self.assertTrue(filecmp.cmp(attachment_path, attachment_out_path))
 

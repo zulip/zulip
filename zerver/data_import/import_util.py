@@ -574,6 +574,7 @@ class AttachmentRecordData:
     file_name: str
     id: int
     is_realm_public: bool
+    is_web_public: bool
     messages: list[int]
     owner: int
     path_id: str
@@ -588,7 +589,7 @@ def build_attachment(
     user_id: int,
     fileinfo: ZerverFieldsT,
     s3_path: str,
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
 ) -> None:
     """
     This function should be passed a 'fileinfo' dictionary, which contains
@@ -611,7 +612,7 @@ def build_attachment(
     attachment_dict["messages"] = list(message_ids)
     attachment_dict["realm"] = realm_id
 
-    zerver_attachment.append(attachment_dict)
+    zerver_attachment.append(AttachmentRecordData(**attachment_dict))
 
 
 def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[str]) -> None:
