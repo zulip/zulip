@@ -6,6 +6,7 @@ from unittest import mock
 import orjson
 
 from zerver.data_import.import_util import (
+    AttachmentRecordData,
     SubscriberHandler,
     UploadRecordData,
     ZerverFieldsT,
@@ -771,7 +772,7 @@ class RocketChatImporter(ZulipTestCase):
             user_id_mapper=user_id_mapper,
         )
 
-        zerver_attachments: list[ZerverFieldsT] = []
+        zerver_attachments: list[AttachmentRecordData] = []
         uploads_list: list[UploadRecordData] = []
 
         attachment_mock = mock.MagicMock()
@@ -812,18 +813,18 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         self.assert_length(zerver_attachments, 1)
-        self.assertEqual(zerver_attachments[0]["file_name"], "harry-ron.jpg")
-        self.assertEqual(zerver_attachments[0]["owner"], 3)
+        self.assertEqual(zerver_attachments[0].file_name, "harry-ron.jpg")
+        self.assertEqual(zerver_attachments[0].owner, 3)
         self.assertEqual(
-            user_handler.get_user(zerver_attachments[0]["owner"])["email"], "harrypotter@email.com"
+            user_handler.get_user(zerver_attachments[0].owner)["email"], "harrypotter@email.com"
         )
         # TODO: Assert this for False after fixing the file permissions in direct messages
-        self.assertTrue(zerver_attachments[0]["is_realm_public"])
+        self.assertTrue(zerver_attachments[0].is_realm_public)
 
         self.assert_length(uploads_list, 1)
         self.assertEqual(uploads_list[0].user_profile_id, 3)
 
-        attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0]["path_id"])
+        attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0].path_id)
         self.assertTrue(os.path.exists(attachment_out_path))
         self.assertTrue(os.path.isfile(attachment_out_path))
 
@@ -918,7 +919,7 @@ class RocketChatImporter(ZulipTestCase):
 
         output_dir = self.make_import_output_dir("mattermost")
 
-        zerver_attachments: list[ZerverFieldsT] = []
+        zerver_attachments: list[AttachmentRecordData] = []
         uploads_list: list[UploadRecordData] = []
 
         attachment_mock = mock.MagicMock()

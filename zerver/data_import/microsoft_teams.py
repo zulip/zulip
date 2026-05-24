@@ -483,6 +483,7 @@ def download_and_export_microsoft_teams_upload_file(
             realm=args.realm_id,
             scheduled_messages=[],
             size=os.path.getsize(file_output_path),
+            is_web_public=False,
         )
     )
 

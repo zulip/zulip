@@ -20,6 +20,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    AttachmentRecordData,
     ImportedBotEmail,
     UploadFileRequest,
     UploadRecordData,
@@ -786,7 +787,7 @@ def convert_slack_workspace_messages(
     convert_slack_threads: bool,
     do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
-) -> tuple[list[ZerverFieldsT], list[UploadRecordData], list[ZerverFieldsT]]:
+) -> tuple[list[ZerverFieldsT], list[UploadRecordData], list[AttachmentRecordData]]:
     """
     Returns:
     1. reactions, which is a list of the reactions
@@ -808,7 +809,7 @@ def convert_slack_workspace_messages(
     logging.info("######### IMPORTING MESSAGES STARTED #########\n")
 
     total_reactions: list[ZerverFieldsT] = []
-    total_attachments: list[ZerverFieldsT] = []
+    total_attachments: list[AttachmentRecordData] = []
     total_uploads: list[UploadRecordData] = []
 
     dump_file_id = 1
@@ -994,7 +995,7 @@ def get_zulip_thread_topic_name(
 class MessageConversionResult:
     zerver_message: list[ZerverFieldsT]
     zerver_usermessage: list[ZerverFieldsT]
-    zerver_attachment: list[ZerverFieldsT]
+    zerver_attachment: list[AttachmentRecordData]
     uploads_list: list[UploadRecordData]
     reaction_list: list[ZerverFieldsT]
 
@@ -1016,7 +1017,7 @@ def channel_message_to_zerver_message(
     zerver_message = []
     zerver_usermessage: list[ZerverFieldsT] = []
     uploads_list: list[UploadRecordData] = []
-    zerver_attachment: list[ZerverFieldsT] = []
+    zerver_attachment: list[AttachmentRecordData] = []
     reaction_list: list[ZerverFieldsT] = []
 
     total_user_messages = 0
@@ -1180,7 +1181,7 @@ def process_message_files(
     slack_user_id: str,
     users: list[ZerverFieldsT],
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
     uploads_list: list[UploadRecordData],
     do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
 ) -> dict[str, Any]:

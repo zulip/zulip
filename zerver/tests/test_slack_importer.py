@@ -24,6 +24,7 @@ from zerver.actions.create_realm import do_create_realm, get_email_address_visib
 from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
 from zerver.data_import.import_util import (
+    AttachmentRecordData,
     UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
@@ -1420,10 +1421,10 @@ class SlackImporter(ZulipTestCase):
         )
 
         self.assert_length(attachment, 1)
-        self.assertEqual(attachment[0]["file_name"], "apple.png")
-        self.assertEqual(attachment[0]["is_realm_public"], True)
-        self.assertEqual(attachment[0]["is_web_public"], False)
-        self.assertEqual(attachment[0]["content_type"], "image/png")
+        self.assertEqual(attachment[0].file_name, "apple.png")
+        self.assertEqual(attachment[0].is_realm_public, True)
+        self.assertEqual(attachment[0].is_web_public, False)
+        self.assertEqual(attachment[0].content_type, "image/png")
 
         self.assertEqual(zerver_message[9]["has_image"], True)
         self.assertEqual(zerver_message[9]["has_attachment"], True)
@@ -1946,7 +1947,7 @@ To Do
         realm: dict[str, Any] = {"zerver_subscription": []}
         user_list: list[dict[str, Any]] = []
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
-        attachments: list[dict[str, Any]] = []
+        attachments: list[AttachmentRecordData] = []
         uploads: list[UploadRecordData] = []
 
         zerver_usermessage = [{"id": 3}, {"id": 5}, {"id": 6}, {"id": 9}]
@@ -2170,7 +2171,7 @@ To Do
             "alice": alice_id,
         }
 
-        zerver_attachment: list[dict[str, Any]] = []
+        zerver_attachment: list[AttachmentRecordData] = []
         uploads_list: list[UploadRecordData] = []
 
         info = process_message_files(
@@ -2188,8 +2189,8 @@ To Do
         self.assert_length(zerver_attachment, 2)
         self.assert_length(uploads_list, 2)
 
-        image_path = zerver_attachment[0]["path_id"]
-        pdf_path = zerver_attachment[1]["path_id"]
+        image_path = zerver_attachment[0].path_id
+        pdf_path = zerver_attachment[1].path_id
         expected_content = (
             f"[Apple](/user_uploads/{image_path})\n"
             f"[banana](https://example.com/banana.zip)\n"
