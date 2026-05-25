@@ -1,0 +1,25 @@
+{
+  "receiver": "webhook",
+  "status": "firing",
+  "alerts": [
+    {
+      "labels": {
+        "alertname": "TestAlert",
+        "instance": "Grafana",
+        "_dummy": ""
+      },
+      "annotations": {
+        "summary": "Notification test",
+        "_dummy": ""
+      },
+      "startsAt": "2026-05-27 15:36:00.112013015 +0000 UTC m=+8560.285724134",
+      "endsAt": "0001-01-01 00:00:00 +0000 UTC",
+      "generatorURL": "",
+      "fingerprint": "57c6d9296de2ad39",
+      "silenceURL": "https://grafana-alertmanager-prod-ap-south-1.grafana.net/alertmanager/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTestAlert&matcher=instance%3DGrafana",
+      "dashboardURL": "",
+      "panelURL": "",
+      "valueString": "[ metric='foo' labels={instance=bar} value=10 ]"
+    }
+  ]
+}
