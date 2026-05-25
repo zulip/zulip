@@ -50,13 +50,17 @@ def validate_field_name_and_hint(name: str, hint: str) -> None:
         raise JsonableError(error.message)
 
 
-def validate_custom_field_data(field_type: int, field_data: ProfileFieldData) -> None:
+def validate_custom_field_data(
+    field_type: int,
+    field_data: ProfileFieldData,
+    existing_field_data: ProfileFieldData | None = None,
+) -> None:
     try:
         if field_type == CustomProfileField.DROPDOWN:
             # Choice type field must have at least have one choice
             if len(field_data) < 1:
                 raise JsonableError(_("Field must have at least one choice."))
-            validate_custom_profile_field_choices(field_data)
+            validate_custom_profile_field_choices(field_data, existing_field_data)
         elif field_type == CustomProfileField.EXTERNAL_ACCOUNT:
             validate_external_account_field_data(field_data)
     except ValidationError as error:
@@ -98,9 +102,10 @@ def validate_custom_profile_field(
     field_data: ProfileFieldData,
     display_in_profile_summary: bool,
     use_for_user_matching: bool,
+    existing_field_data: ProfileFieldData | None = None,
 ) -> None:
     # Validate field data
-    validate_custom_field_data(field_type, field_data)
+    validate_custom_field_data(field_type, field_data, existing_field_data)
 
     if not is_default_external_field(field_type, field_data):
         # If field is default external field then we will fetch all data
@@ -129,13 +134,17 @@ def validate_custom_profile_field_update(
         name = field.name
     if hint is None:
         hint = field.hint
+    # Stored choices; the length limit applies only to new or changed options.
+    existing_field_data: ProfileFieldData = {}
+    if field.field_data != "":
+        existing_field_data = orjson.loads(field.field_data)
     if field_data is None:
         if field.field_data == "":
             # We're passing this just for validation, sinec the function won't
             # accept a string. This won't change the actual value.
             field_data = {}
         else:
-            field_data = orjson.loads(field.field_data)
+            field_data = existing_field_data
     if display_in_profile_summary is None:
         display_in_profile_summary = field.display_in_profile_summary
     if use_for_user_matching is None:
@@ -143,7 +152,13 @@ def validate_custom_profile_field_update(
 
     assert field_data is not None
     validate_custom_profile_field(
-        name, hint, field.field_type, field_data, display_in_profile_summary, use_for_user_matching
+        name,
+        hint,
+        field.field_type,
+        field_data,
+        display_in_profile_summary,
+        use_for_user_matching,
+        existing_field_data,
     )
 
 

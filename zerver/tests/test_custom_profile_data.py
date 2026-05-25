@@ -172,6 +172,15 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
+                "0": {"text": "x" * 51, "order": "1"},
+                "1": {"text": "Java", "order": "2"},
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
+
+        data["field_data"] = orjson.dumps(
+            {
                 "0": {"text": "Python", "order": "1"},
                 "1": {"text": "Java", "order": "2"},
             }
@@ -1052,6 +1061,75 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertTrue(
             CustomProfileFieldValue.objects.filter(field_id=field.id, value="1").exists()
         )
+
+    def test_update_field_with_long_existing_choice(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        long_text = "x" * 60
+        # Create directly, bypassing the view's length check, to seed a field
+        # with an option longer than the limit.
+        field = try_add_realm_custom_profile_field(
+            realm,
+            "Legacy dropdown",
+            CustomProfileField.DROPDOWN,
+            field_data={
+                "0": {"text": long_text, "order": "1"},
+                "1": {"text": "Short", "order": "2"},
+            },
+        )
+
+        # Renaming without resending choices succeeds.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}", {"name": "Renamed dropdown"}
+        )
+        self.assert_json_success(result)
+
+        # Reordering an unchanged long option succeeds.
+        reordered = {
+            "0": {"text": long_text, "order": "2"},
+            "1": {"text": "Short", "order": "1"},
+        }
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            {"field_data": orjson.dumps(reordered).decode()},
+        )
+        self.assert_json_success(result)
+
+        # Adding a new under-limit option alongside the long one succeeds.
+        with_new_short = {
+            "0": {"text": long_text, "order": "1"},
+            "1": {"text": "Short", "order": "2"},
+            "2": {"text": "Also short", "order": "3"},
+        }
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            {"field_data": orjson.dumps(with_new_short).decode()},
+        )
+        self.assert_json_success(result)
+
+        # A new over-limit option is rejected.
+        with_new_long = {
+            "0": {"text": long_text, "order": "1"},
+            "1": {"text": "Short", "order": "2"},
+            "2": {"text": "y" * 51, "order": "3"},
+        }
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            {"field_data": orjson.dumps(with_new_long).decode()},
+        )
+        self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
+
+        # Editing the long option to a new over-limit value is rejected.
+        changed_long = {
+            "0": {"text": "z" * 51, "order": "1"},
+            "1": {"text": "Short", "order": "2"},
+        }
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            {"field_data": orjson.dumps(changed_long).decode()},
+        )
+        self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
 
     def test_default_external_account_type_field(self) -> None:
         self.login("iago")
