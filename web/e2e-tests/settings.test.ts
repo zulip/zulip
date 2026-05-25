@@ -77,6 +77,12 @@ async function test_change_password(page: Page): Promise<void> {
     await page.type("#old_password", test_credentials.default_user.password);
     test_credentials.default_user.password = "new_password";
     await page.type("#new_password", test_credentials.default_user.password);
+
+    // The password strength checker (zxcvbn) is imported asynchronously,
+    // and submitting before it loads makes the handler bail out with an
+    // internal error, leaving the modal open. The strength bar is hidden
+    // until the module finishes loading, so wait for it to become visible.
+    await page.waitForSelector("#pw_strength .bar", {visible: true});
     await page.click(change_password_button_selector);
 
     // On success the change password modal gets closed.
