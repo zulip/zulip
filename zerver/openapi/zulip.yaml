@@ -17018,7 +17018,7 @@ paths:
                               "deleted_timestamp": null,
                               "export_type": "public",
                               "export_time": 1722243168.134179,
-                              "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-p6yuxc45.tar.gz",
+                              "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-example-2024-07-29-10-12-48-p6yuxc45.tar.gz",
                               "id": 323,
                               "failed_timestamp": null,
                               "pending": false,

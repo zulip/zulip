@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.realm_settings import do_deactivate_realm
-from zerver.lib.export import export_realm_wrapper
+from zerver.lib.export import export_realm_wrapper, export_tarball_prefix
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import RealmExport
 
@@ -132,7 +132,7 @@ class Command(ZulipBaseCommand):
             raise CommandError(f"The realm {realm.string_id} is already deactivated.  Aborting...")
 
         if output_dir is None:
-            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
+            output_dir = tempfile.mkdtemp(prefix=export_tarball_prefix(realm))
         else:
             output_dir = os.path.realpath(os.path.expanduser(output_dir))
             if os.path.exists(output_dir):

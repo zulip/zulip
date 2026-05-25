@@ -7,7 +7,7 @@ from typing import Any
 from django.core.management.base import CommandError
 from typing_extensions import override
 
-from zerver.lib.export import do_export_user
+from zerver.lib.export import do_export_user, export_tarball_prefix
 from zerver.lib.management import ZulipBaseCommand
 
 
@@ -35,7 +35,7 @@ class Command(ZulipBaseCommand):
 
         output_dir = options["output_dir"]
         if output_dir is None:
-            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
+            output_dir = tempfile.mkdtemp(prefix=export_tarball_prefix(user_profile.realm))
         else:
             output_dir = os.path.abspath(output_dir)
             if os.path.exists(output_dir) and os.listdir(output_dir):

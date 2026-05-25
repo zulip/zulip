@@ -345,7 +345,7 @@ cd /home/zulip/deployments/current
 the default organization hosted at the Zulip server's root domain.)
 
 This will generate a compressed archive with a name like
-`/tmp/zulip-export-zcmpxfm6.tar.gz`. The archive contains several JSON
+`/tmp/zulip-export-2026-05-25-09-30-45-zcmpxfm6.tar.gz`. The archive contains several JSON
 files (containing the Zulip organization's data) as well as an archive
 of all the organization's uploaded files.
 
@@ -412,9 +412,9 @@ of all the organization's uploaded files.
 
    ```bash
    cd ~
-   tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
+   tar -xf /path/to/export/file/zulip-export-2026-05-25-09-30-45-zcmpxfm6.tar.gz
    cd /home/zulip/deployments/current
-   ./manage.py import '' ~/zulip-export-zcmpxfm6
+   ./manage.py import '' ~/zulip-export-2026-05-25-09-30-45-zcmpxfm6
    ./scripts/start-server
    ```
 
@@ -433,7 +433,7 @@ root domain. Replace the last two lines above with the following, after replacin
 `<subdomain>` with the desired subdomain.
 
 ```bash
-./manage.py import <subdomain> ~/zulip-export-zcmpxfm6
+./manage.py import <subdomain> ~/zulip-export-2026-05-25-09-30-45-zcmpxfm6
 ./scripts/start-server
 ```
 
