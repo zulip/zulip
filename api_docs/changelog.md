@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 505**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): For requests with
+  `"propagate_mode": "change_all"` from users who are not administrators
+  or moderators, the `"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"` error
+  response is now also returned when the target message itself is past
+  the time limit, as long as at least one message in the topic is within
+  the limit.
+
 **Feature level 504**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):

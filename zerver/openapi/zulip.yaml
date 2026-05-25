@@ -10787,7 +10787,7 @@ paths:
                           of a topic that they have access to, without this error or any confirmation
                           dialog.
 
-                          **Changes**: Before Zulip 13.0 (feature level ZF-a6120e), this error
+                          **Changes**: Before Zulip 13.0 (feature level 505), this error
                           response was only returned when the request's target message was
                           itself within the time limit. As of this feature level, it is also
                           returned when the target message is past the limit but at least one
