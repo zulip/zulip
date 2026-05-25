@@ -2538,3 +2538,8 @@ label.preferences-radio-choice-label {
         }
     }
 }
+
+.profile-field-choices .choice-row input.modal_text_input:disabled {
+    opacity: var(--opacity-disabled-profile-field-choice-input);
+    color: var(--color-text-default);
+}
