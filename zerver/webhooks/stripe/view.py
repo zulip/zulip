@@ -329,7 +329,7 @@ def amount_string(amount: int, currency: str) -> str:
     return decimal_amount + f" {currency.upper()}"
 
 
-def linkified_id(object_id: str, object_type: str, lower: bool = False) -> str:
+def linkified_id(object_id: str | None, object_type: str, lower: bool = False) -> str:
     names_and_urls: dict[str, tuple[str, str | None]] = {
         # Core resources
         "charge": ("Charge", "charges"),
@@ -366,7 +366,7 @@ def linkified_id(object_id: str, object_type: str, lower: bool = False) -> str:
     name, url_prefix = names_and_urls[object_type]
     if lower:
         name = name.lower()
-    if url_prefix is None:  # nocoverage
+    if url_prefix is None or object_id is None:  # nocoverage
         return name
     return f"[{name}](https://dashboard.stripe.com/{url_prefix}/{object_id})"
 
