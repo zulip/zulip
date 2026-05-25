@@ -456,6 +456,7 @@
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
     --opacity-readonly-modal-input: 0.5;
+    --opacity-disabled-profile-field-choice-input: 0.7;
 
     /*
     Message box elements and values.
@@ -3161,6 +3162,9 @@
 
     /* Settings table colors */
     --color-background-notification-table-thead: hsl(0deg 0% 0% / 20%);
+
+    /* Custom profile field choice editor */
+    --opacity-disabled-profile-field-choice-input: 0.5;
 
     /* Reaction container colors */
     --font-weight-message-reaction: 550;
