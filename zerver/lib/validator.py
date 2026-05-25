@@ -390,7 +390,7 @@ def validate_select_field_data(field_data: ProfileFieldData) -> dict[str, dict[s
     """
     validator = check_dict_only(
         [
-            ("text", check_required_string),
+            ("text", check_short_string),
             ("order", check_required_string),
         ]
     )
