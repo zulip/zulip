@@ -269,11 +269,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             exit_search({keep_search_narrow_open: false});
         },
         tabIsEnter: true,
-        openInputFieldOnInput(): void {
-            if ($(".navbar-search.expanded").length === 0) {
-                open_search_bar_and_close_narrow_description();
-            }
-        },
         // This is here so that we can close the search bar
         // when a user opens it and immediately changes their
         // mind and clicks away.
