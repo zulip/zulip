@@ -210,7 +210,8 @@
     }
 
     .stream-expanded {
-        .channel-new-topic-button {
+        .channel-new-topic-button,
+        .channel-search-topics-button {
             display: flex;
         }
 
@@ -1974,6 +1975,7 @@ li.active-sub-filter {
     /* We won't know in advance how many controls a given
        row has, but this allows grid to generate as many
        as needed, sized to a shared icon width. */
+    grid-auto-flow: column;
     grid-auto-columns: var(--left-sidebar-header-icon-width);
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     place-content: stretch stretch;
@@ -2076,7 +2078,8 @@ li.active-sub-filter {
     }
 }
 
-.channel-new-topic-button {
+.channel-new-topic-button,
+.channel-search-topics-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
     display: none;

@@ -1339,6 +1339,16 @@ export function initialize({
         }
     });
 
+    $("#stream_filters").on("click", ".channel-search-topics-button", (e) => {
+        on_show_more_topics(e);
+    });
+
+    $("#stream_filters").on("keydown", ".channel-search-topics-button", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            on_show_more_topics(e);
+        }
+    });
+
     $("body").on("click", ".zoom-in-topics .left-sidebar-modal-close-area", (e) => {
         zoom_out();
         browser_history.update_current_history_state_data({show_more_topics: false});

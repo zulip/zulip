@@ -139,7 +139,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".stream-list-section-container .add-stream-tooltip, .left-sidebar-controls .channel-new-topic-button",
+        target: ".stream-list-section-container .add-stream-tooltip, .left-sidebar-controls .channel-new-topic-button, .left-sidebar-controls .channel-search-topics-button",
         appendTo: () => document.body,
     });
 
