@@ -37,6 +37,7 @@ from psycopg2 import sql
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
+from scripts.lib.zulip_tools import TIMESTAMP_FORMAT
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.display_recipient import get_display_recipient
@@ -331,6 +332,11 @@ ANALYTICS_TABLES = {
     "analytics_streamcount",
     "analytics_usercount",
 }
+
+
+def export_tarball_prefix(realm: Realm) -> str:
+    string_id_segment = f"{realm.string_id}-" if realm.string_id else ""
+    return f"zulip-export-{string_id_segment}{timezone_now().strftime(TIMESTAMP_FORMAT)}-"
 
 
 @functools.cache

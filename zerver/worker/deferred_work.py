@@ -15,7 +15,7 @@ from zerver.actions.message_flags import do_mark_stream_messages_as_read
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_export import notify_realm_export
 from zerver.actions.realm_settings import scrub_deactivated_realm
-from zerver.lib.export import export_realm_wrapper
+from zerver.lib.export import export_realm_wrapper, export_tarball_prefix
 from zerver.lib.push_notifications import clear_push_device_tokens
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import (
@@ -80,9 +80,9 @@ class DeferredWorker(QueueProcessingWorker):
 
                 retry_event(self.queue_name, event, failure_processor)
         elif event["type"] == "realm_export":
-            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
             user_profile = get_user_profile_by_id(event["user_profile_id"])
             realm = user_profile.realm
+            output_dir = tempfile.mkdtemp(prefix=export_tarball_prefix(realm))
             export_event = None
 
             if "realm_export_id" in event:
