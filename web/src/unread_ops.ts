@@ -827,6 +827,13 @@ export function mark_all_as_read(modal_id?: string): void {
     bulk_update_read_flags_for_narrow(all_unread_messages_narrow, "add", {}, modal_id);
 }
 
+export function mark_narrow_as_read(filter: Filter): void {
+    bulk_update_read_flags_for_narrow(
+        [{operator: "is", operand: "unread", negated: false}, ...filter.terms()],
+        "add",
+    );
+}
+
 export function mark_muted_topic_messages_as_read(modal_id?: string): void {
     bulk_update_read_flags_for_narrow(
         [

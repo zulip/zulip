@@ -423,7 +423,7 @@ function initialize_unread_ui() {
     );
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
-    unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
+    unread_ui.initialize({mark_narrow_as_read: unread_ops.mark_narrow_as_read});
 }
 
 export async function initialize_everything(state_data) {

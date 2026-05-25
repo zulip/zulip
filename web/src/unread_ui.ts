@@ -5,8 +5,8 @@ import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark
 import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.hbs";
 import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.hbs";
 
+import type {Filter} from "./filter.ts";
 import * as message_lists from "./message_lists.ts";
-import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config.ts";
 import * as unread from "./unread.ts";
@@ -104,23 +104,19 @@ export function update_unread_counts(skip_animations = false): void {
 }
 
 export function initialize({
-    notify_server_messages_read,
+    mark_narrow_as_read,
 }: {
-    notify_server_messages_read: (unread_messages: Message[]) => void;
+    mark_narrow_as_read: (filter: Filter) => void;
 }): void {
     const skip_animations = true;
     update_unread_counts(skip_animations);
     $("body").on("click", "#mark_view_read", () => {
         assert(message_lists.current !== undefined);
-        // Mark all messages in the current view as read.
-        //
-        // BUG: This logic only supports marking messages visible in
-        // the present view as read; we need a server API to mark
-        // every message matching the current search as read.
-        const unread_messages = message_lists.current
-            .all_messages()
-            .filter((message) => message.unread);
-        notify_server_messages_read(unread_messages);
+        // Mark all messages matching the current narrow as read on
+        // the server, so that unreads outside the locally fetched
+        // range (e.g., older DM conversations in the DM feed) are
+        // also marked as read.
+        mark_narrow_as_read(message_lists.current.data.filter);
         // New messages received may be marked as read based on narrow type.
         message_lists.current.resume_reading();
 
