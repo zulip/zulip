@@ -385,10 +385,14 @@ def check_external_account_url_pattern(var_name: str, val: object) -> str:
 
 def validate_custom_profile_field_choices(
     field_data: ProfileFieldData,
+    existing_choices: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, dict[str, str]]:
     """
     This function is used to validate the data sent to the server while
     creating/editing choices of the choice field in Organization settings.
+
+    The text length limit applies only to new or changed options, so existing
+    fields with longer options stay editable.
     """
     validator = check_dict_only(
         [
@@ -396,6 +400,9 @@ def validate_custom_profile_field_choices(
             ("order", check_required_string),
         ]
     )
+
+    if existing_choices is None:
+        existing_choices = {}
 
     # To create an array of texts of each option
     distinct_field_names: set[str] = set()
@@ -406,6 +413,10 @@ def validate_custom_profile_field_choices(
 
         valid_value = validator("field_data", value)
         assert value is valid_value  # To justify the unchecked cast below
+
+        existing_choice = existing_choices.get(key)
+        if existing_choice is None or existing_choice["text"] != valid_value["text"]:
+            check_short_string('field_data["text"]', valid_value["text"])
 
         distinct_field_names.add(valid_value["text"])
 
