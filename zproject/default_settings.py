@@ -133,6 +133,11 @@ VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
 VIDEO_WEBEX_API_URL: str = "https://webexapis.com/v1/"
 VIDEO_WEBEX_CLIENT_ID = get_secret("video_webex_client_id", development_only=True)
 VIDEO_WEBEX_CLIENT_SECRET = get_secret("video_webex_client_secret")
+VIDEO_GOOGLE_MEET_OAUTH_URL: str = "https://accounts.google.com/o/oauth2/v2/auth"
+VIDEO_GOOGLE_MEET_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
+VIDEO_GOOGLE_MEET_API_URL: str = "https://meet.googleapis.com/v2/spaces"
+VIDEO_GOOGLE_MEET_CLIENT_ID = get_secret("video_google_meet_client_id", development_only=True)
+VIDEO_GOOGLE_MEET_CLIENT_SECRET = get_secret("video_google_meet_client_secret")
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""
