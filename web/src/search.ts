@@ -229,9 +229,12 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             return get_search_bar_text() !== "";
         },
         hideAfterSelect(): boolean {
+            // Keep the typeahead open when only a bare operator was selected
+            // (e.g. "channel:") so the user can continue typing the operand.
+            // Hide it once a complete term with a non-empty operand is in place.
             const search_bar_text = get_search_bar_text();
             const text_terms = Filter.parse(search_bar_text);
-            return text_terms.at(-1)?.operator === "search";
+            return text_terms.at(-1)?.operand !== "";
         },
         matcher(_query: string) {
             return () => true;
