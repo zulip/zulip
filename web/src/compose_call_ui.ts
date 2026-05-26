@@ -95,10 +95,13 @@ export function generate_and_insert_audio_or_video_call_link(
                     parsed.success &&
                     parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
                 ) {
-                    if (oauth_call_provider === "webex") {
-                        current_user.has_webex_token = false;
-                    } else {
-                        current_user.has_zoom_token = false;
+                    switch (oauth_call_provider) {
+                        case "webex":
+                            current_user.has_webex_token = false;
+                            break;
+                        case "zoom":
+                            current_user.has_zoom_token = false;
+                            break;
                     }
                 }
                 if (
