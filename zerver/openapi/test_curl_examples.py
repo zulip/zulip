@@ -38,6 +38,7 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     # Video call endpoints that need the third-party call provider
     # to be configured to test the curl example for the endpoint.
     "create-constructor-groups-video-call",
+    "create-google-meet-video-call",
     "create-nextcloud-talk-video-call",
     "create-webex-video-call",
 }

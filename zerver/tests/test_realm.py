@@ -1383,6 +1383,24 @@ class RealmTest(ZulipTestCase):
             webex_provider_id,
         )
 
+        google_meet_provider_id = Realm.VIDEO_CHAT_PROVIDERS["google_meet"]["id"]
+        req = {"video_chat_provider": f"{google_meet_provider_id}"}
+
+        with self.settings(VIDEO_GOOGLE_MEET_CLIENT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {google_meet_provider_id}")
+
+        with self.settings(VIDEO_GOOGLE_MEET_CLIENT_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {google_meet_provider_id}")
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        self.assertEqual(
+            get_realm("zulip").video_chat_provider,
+            google_meet_provider_id,
+        )
+
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
         self.login("desdemona")
 

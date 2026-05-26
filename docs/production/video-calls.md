@@ -240,3 +240,54 @@ Webex organizations, a personal room meeting is created in Webex.
 This enables Webex support in your Zulip server. Finally, [configure Webex
 as the video call provider](https://zulip.com/help/configure-call-provider)
 in the Zulip organization where you want to use it.
+
+## Google Meet
+
+To use the [Google Meet](https://meet.google.com/) integration on a
+self-hosted Zulip installation, you'll need to create a Google Cloud
+OAuth 2.0 client with access to the Google Meet REST API.
+
+### Create a Google Cloud OAuth 2.0 client
+
+1. Visit the [Google Cloud Console](https://console.cloud.google.com/) and
+   create or select a project.
+
+1. Enable the **Google Meet API** for your project under **APIs & Services >
+   Library**.
+
+1. If you're using a new Google Cloud project, configure the **OAuth
+   consent screen** under **APIs & Services > OAuth consent screen**:
+
+   - Choose **External** as the audience type (or **Internal** if you are
+     using a Google Workspace organization and want to restrict access to
+     users within your organization).
+   - Fill in the **App name**, **User support email**, and
+     **Developer contact information**.
+   - If creating an app for use outside of your Google Workspace
+     organization, click **Data Access > Add or Remove Scopes** and add
+     the `https://www.googleapis.com/auth/meetings.space.created` scope.
+
+1. Under **APIs & Services > Credentials**, click **Create Credentials** and
+   select **OAuth client ID**.
+
+   - Choose **Web application** as the application type.
+
+   - Under **Authorized redirect URIs**, add
+     `https://zulip.example.com/calls/google_meet/complete`, replacing
+     `zulip.example.com` with your Zulip organization's URL.
+   - Note the **Client ID** and **Client Secret** shown after creation.
+
+### Configure your Zulip server
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `video_google_meet_client_secret`
+   to your OAuth client's "Client Secret".
+
+1. In `/etc/zulip/settings.py`, set `VIDEO_GOOGLE_MEET_CLIENT_ID` to your
+   OAuth client's "Client ID".
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+This enables Google Meet support in your Zulip server. Finally,
+[configure Google Meet as the video call provider](https://zulip.com/help/configure-call-provider)
+in the Zulip organization where you want to use it.

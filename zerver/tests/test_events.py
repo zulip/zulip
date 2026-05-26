@@ -184,6 +184,7 @@ from zerver.lib.event_schema import (
     check_draft_add,
     check_draft_remove,
     check_draft_update,
+    check_has_google_meet_token,
     check_has_webex_token,
     check_has_zoom_token,
     check_heartbeat,
@@ -4436,6 +4437,17 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             do_set_video_call_provider_token(self.user_profile, "webex", None)
         check_has_webex_token("events[0]", events[0], value=False)
+
+    def test_has_google_meet_token(self) -> None:
+        with self.verify_action() as events:
+            do_set_video_call_provider_token(
+                self.user_profile, "google_meet", {"access_token": "token"}
+            )
+        check_has_google_meet_token("events[0]", events[0], value=True)
+
+        with self.verify_action() as events:
+            do_set_video_call_provider_token(self.user_profile, "google_meet", None)
+        check_has_google_meet_token("events[0]", events[0], value=False)
 
     def test_restart_event(self) -> None:
         with self.verify_action(num_events=1, state_change_expected=False):
