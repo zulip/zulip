@@ -187,6 +187,7 @@ class ConstructorGroupsService:
 
 class OAuthVideoCallProvider(ABC):
     provider_name: str = NotImplemented
+    provider_slug: str = NotImplemented
     client_id: str | None = NotImplemented
     client_secret: str | None = NotImplemented
     authorization_scope: str | None = NotImplemented
@@ -213,9 +214,7 @@ class OAuthVideoCallProvider(ABC):
         return OAuth2Session(
             self.client_id,
             scope=self.authorization_scope,
-            redirect_uri=urljoin(
-                settings.ROOT_DOMAIN_URI, f"/calls/{self.provider_name.lower()}/complete"
-            ),
+            redirect_uri=urljoin(settings.ROOT_DOMAIN_URI, f"/calls/{self.provider_slug}/complete"),
             auto_refresh_url=self.auto_refresh_url,
             auto_refresh_kwargs={
                 "client_id": self.client_id,
@@ -308,6 +307,7 @@ class OAuthVideoCallProvider(ABC):
 
 class WebexOAuthProvider(OAuthVideoCallProvider):
     provider_name = "Webex"
+    provider_slug = "webex"
     token_key_name = "webex"
 
     def __init__(self) -> None:
@@ -356,6 +356,7 @@ class WebexOAuthProvider(OAuthVideoCallProvider):
 
 class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
     provider_name = "Zoom"
+    provider_slug = "zoom"
     authorization_scope = None
     token_key_name = "zoom"
 
