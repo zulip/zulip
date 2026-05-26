@@ -281,6 +281,7 @@ def render_block(block: WildValue) -> str:
         "contact_card",
         "file",
         "table",
+        "video",
         # The "actions" block is used to format literal in-message clickable
         # buttons and similar elements, which Zulip currently doesn't support.
         # https://docs.slack.dev/reference/block-kit/blocks/actions-block
