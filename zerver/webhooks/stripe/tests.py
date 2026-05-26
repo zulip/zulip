@@ -9,7 +9,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class StripeHookTests(WebhookTestCase):
     def test_charge_dispute_closed(self) -> None:
         expected_topic_name = "disputes"
-        expected_message = "[Dispute](https://dashboard.stripe.com/disputes/dp_00000000000000) closed. Current status: won."
+        expected_message = "[Dispute](https://dashboard.stripe.com/payments/ch_00000000000000) closed. Current status: won."
         self.check_webhook(
             "charge_dispute_closed",
             expected_topic_name,
@@ -19,7 +19,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_charge_dispute_created(self) -> None:
         expected_topic_name = "disputes"
-        expected_message = "[Dispute](https://dashboard.stripe.com/disputes/dp_00000000000000) created. Current status: needs response."
+        expected_message = "[Dispute](https://dashboard.stripe.com/payments/ch_00000000000000) created. Current status: needs response."
         self.check_webhook(
             "charge_dispute_created",
             expected_topic_name,
@@ -41,13 +41,13 @@ class StripeHookTests(WebhookTestCase):
             message=msg,
             channel_name=self.channel_name,
             topic_name="disputes",
-            content="[Dispute](https://dashboard.stripe.com/disputes/pdp_00000000000000) created. Current status: needs response.",
+            content="[Dispute](https://dashboard.stripe.com/payments/ch_00000000000000) created. Current status: needs response.",
         )
 
     def test_charge_failed(self) -> None:
         expected_topic_name = "charges"
         expected_message = (
-            "[Charge](https://dashboard.stripe.com/charges/ch_00000000000000) for 1.00 AUD failed"
+            "[Charge](https://dashboard.stripe.com/payments/ch_00000000000000) for 1.00 AUD failed"
         )
         self.check_webhook(
             "charge_failed",
@@ -59,7 +59,7 @@ class StripeHookTests(WebhookTestCase):
     # Credit card charge
     def test_charge_succeeded__card(self) -> None:
         expected_topic_name = "cus_00000000000000"
-        expected_message = "[Charge](https://dashboard.stripe.com/charges/ch_000000000000000000000000) for 1.00 AUD succeeded"
+        expected_message = "[Charge](https://dashboard.stripe.com/payments/ch_000000000000000000000000) for 1.00 AUD succeeded"
         self.check_webhook(
             "charge_succeeded__card",
             expected_topic_name,
@@ -229,9 +229,19 @@ Amount due: 0.00 INR
 
     def test_invoiceitem_created(self) -> None:
         expected_topic_name = "cus_00000000000000"
-        expected_message = "[Invoice item](https://dashboard.stripe.com/invoiceitems/ii_00000000000000) created for 10.00 CAD"
+        expected_message = "Invoice item created for 10.00 CAD"
         self.check_webhook(
             "invoiceitem_created",
+            expected_topic_name,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_invoiceitem_created_with_intent(self) -> None:
+        expected_topic_name = "cus_UZ11RVzkmLf6Cf"
+        expected_message = "[Invoice item](https://dashboard.stripe.com/invoices/in_1TceefJEe0yY0QKrKgc29TeP) created for $121.00"
+        self.check_webhook(
+            "invoiceitem_created_with_invoice",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -249,12 +259,12 @@ Amount due: 0.00 INR
 
     def test_refund_event(self) -> None:
         expected_topic_name = "refunds"
-        expected_message = "A [refund](https://dashboard.stripe.com/refunds/re_1Gib6ZHLwdCOCoR7VrzCnXlj) for a [charge](https://dashboard.stripe.com/charges/ch_1Gib61HLwdCOCoR71rnkccye) of 300000.00 INR was updated."
+        expected_message = "A refund for a [charge](https://dashboard.stripe.com/payments/ch_1Gib61HLwdCOCoR71rnkccye) of 300000.00 INR was updated."
         self.check_webhook("refund_event", expected_topic_name, expected_message)
 
     def test_pseudo_refund_event(self) -> None:
         expected_topic_name = "refunds"
-        expected_message = "A [refund](https://dashboard.stripe.com/refunds/pyr_abcde12345ABCDF) for a [payment](https://dashboard.stripe.com/payments/py_abcde12345ABCDG) of 12.34 EUR was updated."
+        expected_message = "A refund for a [payment](https://dashboard.stripe.com/payments/py_abcde12345ABCDG) of 12.34 EUR was updated."
         self.check_webhook("pseudo_refund_event", expected_topic_name, expected_message)
 
     @patch("zerver.webhooks.stripe.view.check_send_webhook_message")

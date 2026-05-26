@@ -103,10 +103,18 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         )
 
     def default_body(update_blacklist: Sequence[str] = []) -> str:
+        object_type = object_["object"].tame(check_string)
+        object_id: str | None
+        match object_type:
+            case "dispute":
+                object_id = object_["charge"].tame(check_string)
+            case "invoiceitem":
+                # Older `invoiceitem.created` event has invoice field as null.
+                object_id = object_["invoice"].tame(check_none_or(check_string))
+            case _:
+                object_id = object_["id"].tame(check_string)
         body = "{resource} {verbed}".format(
-            resource=linkified_id(
-                object_["id"].tame(check_string), object_["object"].tame(check_string)
-            ),
+            resource=linkified_id(object_id, object_type),
             verbed=event.replace("_", " "),
         )
         if event == "updated":
@@ -151,14 +159,11 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
             )
         if resource == "refund":
             topic_name = "refunds"
+            # Refunds have no dedicated dashboard URL, so we link to the parent charge.
             charge_id = object_["charge"].tame(check_string)
             charge_type = charge_object_type(charge_id)
             body = "A {resource} for a {charge} of {amount} was updated.".format(
-                resource=linkified_id(
-                    object_["id"].tame(check_string),
-                    object_["object"].tame(check_string),
-                    lower=True,
-                ),
+                resource=object_["object"].tame(check_string),
                 charge=linkified_id(charge_id, charge_type, lower=True),
                 amount=amount_string(
                     object_["amount"].tame(check_int), object_["currency"].tame(check_string)
@@ -332,32 +337,47 @@ def amount_string(amount: int, currency: str) -> str:
 def linkified_id(object_id: str | None, object_type: str, lower: bool = False) -> str:
     names_and_urls: dict[str, tuple[str, str | None]] = {
         # Core resources
-        "charge": ("Charge", "charges"),
+        # `charge` no longer has a dedicated `/charges/<id>` page and modern
+        # Stripe surfaces charges under their parent payment intent at
+        # `/payments/<payment_intent_id>`. Older payloads omit
+        # `payment_intent`, but `/payments/<charge_id>` redirects correctly
+        # to the charge's parent payment intent page.
+        "charge": ("Charge", "payments"),
         "customer": ("Customer", "customers"),
-        "dispute": ("Dispute", "disputes"),
+        # dispute doesn't have a dedicated URL,
+        # but can be visualized in the parent payment's page.
+        "dispute": ("Dispute", "payments"),
         "file": ("File", "files"),
         "file_link": ("File link", "file_links"),
         "payment_intent": ("Payment intent", "payment_intents"),
         "payout": ("Payout", "payouts"),
         "product": ("Product", "products"),
-        "refund": ("Refund", "refunds"),
+        # refund doesn't have a dedicated URL,
+        # but can be visualized in the parent payment's page.
+        # The current refund events path does not use this object
+        # as they already reference the parent charge,
+        # not removing it from here for potential future use.
+        "refund": ("Refund", "payments"),
         "token": ("Token", "tokens"),
         # Payment methods
         # payment methods have URL prefixes like /customers/cus_id/sources
         "bank_account": ("Bank account", None),
         "card": ("Card", None),
+        # source object is deprecated but still functional (https://docs.stripe.com/api/sources).
         "source": ("Source", None),
         # Billing
         # coupons have a configurable id, but the URL prefix is /coupons
         # discounts don't have a URL, I think
         "invoice": ("Invoice", "invoices"),
-        "invoiceitem": ("Invoice item", "invoiceitems"),
+        # invoice items don't have a dedicated URL,
+        # but are visualized in the parent invoice's page.
+        "invoiceitem": ("Invoice item", "invoices"),
         # products are covered in core resources
         # plans have a configurable id, though by default they are created with this pattern
         # 'plan': ('Plan', 'plans'),
         "subscription": ("Subscription", "subscriptions"),
         "subscription_item": ("Subscription item", "subscription_items"),
-        # I think usage records have URL prefixes like /subscription_items/si_id/usage_record_summaries
+        # Legacy usage-based billing API, no flat dashboard URL (https://docs.stripe.com/api/usage_records?api-version=2024-10-28.acacia).
         "usage_record": ("Usage record", None),
         # Undocumented :|
         "payment": ("Payment", "payments"),
@@ -366,7 +386,7 @@ def linkified_id(object_id: str | None, object_type: str, lower: bool = False) -
     name, url_prefix = names_and_urls[object_type]
     if lower:
         name = name.lower()
-    if url_prefix is None or object_id is None:  # nocoverage
+    if url_prefix is None or object_id is None:
         return name
     return f"[{name}](https://dashboard.stripe.com/{url_prefix}/{object_id})"
 
