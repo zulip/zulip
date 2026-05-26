@@ -222,6 +222,13 @@ export function dispatch_normal_event(event) {
             break;
         }
 
+        case "has_google_meet_token":
+            current_user.has_google_meet_token = event.value;
+            if (event.value) {
+                compose_call_session_manager.run_and_clear_callbacks_for_provider("google_meet");
+            }
+            break;
+
         case "has_webex_token":
             current_user.has_webex_token = event.value;
             if (event.value) {

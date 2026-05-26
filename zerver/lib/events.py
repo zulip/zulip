@@ -941,6 +941,9 @@ def fetch_initial_state_data(
         state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
 
     if want("video_calls"):
+        state["has_google_meet_token"] = (
+            settings_user.third_party_api_state.get("google_meet") is not None
+        )
         state["has_webex_token"] = settings_user.third_party_api_state.get("webex") is not None
         state["has_zoom_token"] = settings_user.third_party_api_state.get("zoom") is not None
 
@@ -2026,6 +2029,8 @@ def apply_event(
             state["channel_folders"].sort(key=lambda folder: folder["order"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
+    elif event["type"] == "has_google_meet_token":
+        state["has_google_meet_token"] = event["value"]
     elif event["type"] == "has_webex_token":
         state["has_webex_token"] = event["value"]
     elif event["type"] == "has_zoom_token":
