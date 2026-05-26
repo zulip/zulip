@@ -373,6 +373,35 @@ class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
         return json_success(request, data={"url": response.json()["join_url"]})
 
 
+class GoogleMeetOAuthProvider(OAuthVideoCallProvider):
+    provider_name = "Google Meet"
+    provider_slug = "google_meet"
+    token_key_name = "google_meet"
+
+    def __init__(self) -> None:
+        self.client_id = settings.VIDEO_GOOGLE_MEET_CLIENT_ID
+        self.client_secret = settings.VIDEO_GOOGLE_MEET_CLIENT_SECRET
+        self.authorization_url = settings.VIDEO_GOOGLE_MEET_OAUTH_URL
+        self.token_url = settings.VIDEO_GOOGLE_MEET_TOKEN_URL
+        self.auto_refresh_url = settings.VIDEO_GOOGLE_MEET_TOKEN_URL
+        # https://developers.google.com/workspace/meet/api/reference/rest/v2/spaces/create
+        self.create_meeting_url = settings.VIDEO_GOOGLE_MEET_API_URL
+        self.authorization_scope = "https://www.googleapis.com/auth/meetings.space.created"
+
+    @override
+    def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
+        return json_success(request, data={"url": response.json()["meetingUri"]})
+
+    @override
+    def register_user(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
+        # access_type=offline makes Google issue a refresh token alongside
+        # the access token, so Zulip can create meeting links without
+        # requiring the user to re-authorize after the one-hour expiry.
+        # prompt=consent forces the authorization screen each time, ensuring
+        # a fresh refresh token is issued even if Google cached prior consent.
+        return super().register_user(request, access_type="offline", prompt="consent")
+
+
 @zulip_login_required
 @never_cache
 def register_zoom_user(request: HttpRequest) -> HttpResponse:
@@ -383,6 +412,12 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
 @never_cache
 def register_webex_user(request: HttpRequest) -> HttpResponse:
     return WebexOAuthProvider().register_user(request=request)
+
+
+@zulip_login_required
+@never_cache
+def register_google_meet_user(request: HttpRequest) -> HttpResponse:
+    return GoogleMeetOAuthProvider().register_user(request=request)
 
 
 class StateDictRealm(TypedDict):
@@ -443,6 +478,20 @@ def complete_webex_user(
     if get_subdomain(request) != state["realm"]:
         return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
     return WebexOAuthProvider().complete_user(request, code=code, sid=state["sid"])
+
+
+@never_cache
+@zulip_login_required
+@typed_endpoint
+def complete_google_meet_user(
+    request: HttpRequest,
+    *,
+    code: str,
+    state: Json[StateDictRealm],
+) -> HttpResponse:
+    if get_subdomain(request) != state["realm"]:
+        return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
+    return GoogleMeetOAuthProvider().complete_user(request, code=code, sid=state["sid"])
 
 
 @cache_with_key(zoom_server_access_token_cache_key, timeout=3600 - 240)
@@ -568,6 +617,11 @@ def make_webex_video_call(request: HttpRequest, user: UserProfile) -> HttpRespon
         )
 
     return WebexOAuthProvider().make_video_call(request, user, payload=payload)
+
+
+@typed_endpoint_without_parameters
+def make_google_meet_video_call(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    return GoogleMeetOAuthProvider().make_video_call(request, user)
 
 
 @csrf_exempt

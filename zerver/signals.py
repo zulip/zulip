@@ -107,3 +107,5 @@ def clear_call_tokens_on_logout(
             do_set_video_call_provider_token(user, "zoom", None)
         if user.third_party_api_state.get("webex") is not None:
             do_set_video_call_provider_token(user, "webex", None)
+        if user.third_party_api_state.get("google_meet") is not None:
+            do_set_video_call_provider_token(user, "google_meet", None)

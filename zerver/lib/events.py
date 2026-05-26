@@ -943,6 +943,9 @@ def fetch_initial_state_data(
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.third_party_api_state.get("zoom") is not None
         state["has_webex_token"] = settings_user.third_party_api_state.get("webex") is not None
+        state["has_google_meet_token"] = (
+            settings_user.third_party_api_state.get("google_meet") is not None
+        )
 
     if want("giphy"):
         # Normally, it would be a nasty security bug to send a
@@ -2030,6 +2033,8 @@ def apply_event(
         state["has_zoom_token"] = event["value"]
     elif event["type"] == "has_webex_token":
         state["has_webex_token"] = event["value"]
+    elif event["type"] == "has_google_meet_token":
+        state["has_google_meet_token"] = event["value"]
     elif event["type"] == "web_reload_client":
         # This is an unlikely race, where the queue was created with a
         # previous Tornado process, which restarted, and subsequently

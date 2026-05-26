@@ -229,6 +229,11 @@ class HasWebexTokenEvent(BaseEvent):
     value: bool
 
 
+class HasGoogleMeetTokenEvent(BaseEvent):
+    type: Literal["has_google_meet_token"]
+    value: bool
+
+
 class HeartbeatEvent(BaseEvent):
     type: Literal["heartbeat"]
 

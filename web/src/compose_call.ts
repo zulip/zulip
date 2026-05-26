@@ -1,6 +1,6 @@
 import {realm} from "./state_data.ts";
 
-export type OAuthCallProvider = "zoom" | "webex";
+export type OAuthCallProvider = "zoom" | "webex" | "google_meet";
 
 export function current_oauth_call_provider(): OAuthCallProvider | null {
     const available_providers = realm.realm_available_video_chat_providers;
@@ -11,6 +11,8 @@ export function current_oauth_call_provider(): OAuthCallProvider | null {
             return "zoom";
         case available_providers.webex?.id:
             return "webex";
+        case available_providers.google_meet?.id:
+            return "google_meet";
         default:
             return null;
     }
