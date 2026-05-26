@@ -5,16 +5,15 @@ export type OAuthCallProvider = "zoom" | "webex";
 export function current_oauth_call_provider(): OAuthCallProvider | null {
     const available_providers = realm.realm_available_video_chat_providers;
     const realm_provider = realm.realm_video_chat_provider;
-    if (
-        realm_provider === available_providers.zoom?.id ||
-        realm_provider === available_providers.zoom_server_to_server?.id
-    ) {
-        return "zoom";
+    switch (realm_provider) {
+        case available_providers.zoom?.id:
+        case available_providers.zoom_server_to_server?.id:
+            return "zoom";
+        case available_providers.webex?.id:
+            return "webex";
+        default:
+            return null;
     }
-    if (realm_provider === available_providers.webex?.id) {
-        return "webex";
-    }
-    return null;
 }
 
 export function get_jitsi_server_url(video_call_id?: string): URL | null {
