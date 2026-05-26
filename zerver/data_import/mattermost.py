@@ -33,6 +33,7 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_zerver_realm,
     convert_html_to_text,
+    convert_html_to_text_batch,
     create_converted_data_files,
     get_attachment_path_and_content,
     get_domain_name_for_import,
@@ -531,21 +532,39 @@ def process_raw_message_batch(
     mention_map: dict[int, set[int]] = {}
     zerver_message = []
 
+    prepared_messages: list[tuple[dict[str, Any], set[int], str]] = []
     for raw_message in raw_messages:
-        message_id = NEXT_ID("message")
         mention_user_ids = get_mentioned_user_ids(raw_message, user_id_mapper)
-        mention_map[message_id] = mention_user_ids
-
         content = fix_mentions(
             content=raw_message["content"],
             mention_user_ids=mention_user_ids,
         )
+        prepared_messages.append((raw_message, mention_user_ids, content))
 
-        try:
-            content = convert_html_to_text(content)
-        except Exception:  # nocoverage
-            logging.warning("Error converting HTML to text for message: '%s'; continuing", content)
-            logging.warning(str(raw_message))
+    raw_contents = [content for _, _, content in prepared_messages]
+    try:
+        converted_contents = convert_html_to_text_batch(raw_contents)
+    except Exception as e:
+        logging.warning(
+            "Batch HTML-to-text conversion failed with %s; falling back to per-message conversion.",
+            type(e).__name__,
+        )
+        converted_contents = []
+        for raw_message, _, content in prepared_messages:
+            try:
+                content = convert_html_to_text(content)
+            except Exception:  # nocoverage
+                logging.warning(
+                    "Error converting HTML to text for message: '%s'; continuing", content
+                )
+                logging.warning(str(raw_message))
+            converted_contents.append(content)
+
+    for (raw_message, mention_user_ids, _), content in zip(
+        prepared_messages, converted_contents, strict=True
+    ):
+        message_id = NEXT_ID("message")
+        mention_map[message_id] = mention_user_ids
 
         date_sent = raw_message["date_sent"]
         sender_user_id = raw_message["sender_id"]

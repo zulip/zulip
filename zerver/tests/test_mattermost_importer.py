@@ -1,6 +1,7 @@
 import filecmp
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -18,6 +19,7 @@ from zerver.data_import.import_util import SubscriberHandler, UploadRecordData, 
 from zerver.data_import.mattermost import (
     COMPILED_CHANNEL_ID_FORMAT,
     DEFAULT_SINGLE_TEAM_OBJECT,
+    ChannelMetadata,
     backfill_user_data_from_posts,
     build_reactions,
     check_user_in_team,
@@ -30,6 +32,7 @@ from zerver.data_import.mattermost import (
     make_realm,
     mattermost_data_file_to_dict,
     process_message_attachments,
+    process_raw_message_batch,
     process_user,
     reset_mirror_dummy_users,
     write_emoticon_data,
@@ -735,6 +738,148 @@ class MatterMostImporter(MattermostImportTestBase):
             {malfoy_id, pansy_id},
         )
 
+    def test_process_raw_message_batch_converts_html_in_one_subprocess(self) -> None:
+        output_dir = self.make_import_output_dir("mattermost")
+        raw_messages = [
+            {
+                "sender_id": 1,
+                "content": "<p>first</p>",
+                "date_sent": 1600000000,
+                "reactions": [],
+                "channel_name": "town-square",
+            },
+            {
+                "sender_id": 2,
+                "content": "<p>second</p>",
+                "date_sent": 1600000001,
+                "reactions": [],
+                "channel_name": "town-square",
+            },
+        ]
+
+        def fake_html2text(args: list[str], *, input: str, text: bool) -> str:
+            self.assertEqual(args, ["html2text", "--unicode-snob"])
+            self.assertTrue(text)
+            separator = re.search(r"ZULIP_HTML_TO_TEXT_BATCH_SEPARATOR_[A-Za-z0-9_-]+", input)
+            self.assertIsNotNone(separator)
+            assert separator is not None
+            return (
+                input.replace("<p>first</p>", "first")
+                .replace("<p>second</p>", "second")
+                .replace(f"<p>{separator.group(0)}</p>", separator.group(0))
+                + "\n\n"
+            )
+
+        with patch(
+            "zerver.data_import.import_util.subprocess.check_output",
+            side_effect=fake_html2text,
+        ) as mock_html2text:
+            process_raw_message_batch(
+                realm_id=1,
+                raw_messages=raw_messages,
+                subscriber_map={10: {1, 2}},
+                user_id_mapper=IdMapper[str](),
+                user_handler=UserHandler(),
+                added_channels={
+                    "town-square": ChannelMetadata(
+                        zulip_channel_id=1,
+                        zulip_recipient_id=10,
+                    ),
+                },
+                subscriber_handler=SubscriberHandler[frozenset[str]](),
+                is_pm_data=False,
+                output_dir=output_dir,
+                zerver_realmemoji=[],
+                total_reactions=[],
+                uploads_list=[],
+                zerver_attachment=[],
+                mattermost_data_dir=self.fixture_file_name("", "mattermost_fixtures"),
+            )
+
+        self.assertEqual(mock_html2text.call_count, 1)
+        message_files = [
+            filename for filename in os.listdir(output_dir) if filename.startswith("messages-")
+        ]
+        self.assert_length(message_files, 1)
+        messages = self.read_file(output_dir, message_files[0])["zerver_message"]
+        self.assertEqual(
+            [message["content"] for message in messages],
+            ["first\n\n", "second\n\n"],
+        )
+
+    def test_process_raw_message_batch_falls_back_after_batch_failure(self) -> None:
+        output_dir = self.make_import_output_dir("mattermost")
+        raw_messages = [
+            {
+                "sender_id": 1,
+                "content": "<p>first</p>",
+                "date_sent": 1600000000,
+                "reactions": [],
+                "channel_name": "town-square",
+            },
+            {
+                "sender_id": 2,
+                "content": "<p>second</p>",
+                "date_sent": 1600000001,
+                "reactions": [],
+                "channel_name": "town-square",
+            },
+        ]
+
+        def fake_convert_html_to_text(content: str) -> str:
+            return content.removeprefix("<p>").removesuffix("</p>") + "\n\n"
+
+        with (
+            patch(
+                "zerver.data_import.mattermost.convert_html_to_text_batch",
+                side_effect=ValueError("bad batch"),
+            ) as mock_batch_converter,
+            patch(
+                "zerver.data_import.mattermost.convert_html_to_text",
+                side_effect=fake_convert_html_to_text,
+            ) as mock_converter,
+            self.assertLogs(level="WARNING") as warn_log,
+        ):
+            process_raw_message_batch(
+                realm_id=1,
+                raw_messages=raw_messages,
+                subscriber_map={10: {1, 2}},
+                user_id_mapper=IdMapper[str](),
+                user_handler=UserHandler(),
+                added_channels={
+                    "town-square": ChannelMetadata(
+                        zulip_channel_id=1,
+                        zulip_recipient_id=10,
+                    ),
+                },
+                subscriber_handler=SubscriberHandler[frozenset[str]](),
+                is_pm_data=False,
+                output_dir=output_dir,
+                zerver_realmemoji=[],
+                total_reactions=[],
+                uploads_list=[],
+                zerver_attachment=[],
+                mattermost_data_dir=self.fixture_file_name("", "mattermost_fixtures"),
+            )
+
+        self.assertEqual(mock_batch_converter.call_count, 1)
+        self.assertEqual(mock_converter.call_count, 2)
+        self.assertEqual(
+            warn_log.output,
+            [
+                "WARNING:root:Batch HTML-to-text conversion failed with ValueError; falling back to per-message conversion."
+            ],
+        )
+        message_files = [
+            filename for filename in os.listdir(output_dir) if filename.startswith("messages-")
+        ]
+        self.assert_length(message_files, 1)
+        messages = self.read_file(output_dir, message_files[0])["zerver_message"]
+        self.assertEqual(
+            [message["content"] for message in messages],
+            ["first\n\n", "second\n\n"],
+        )
+
     def test_convert_direct_message_group_data(self) -> None:
         fixture_file_name = self.fixture_file_name(
             "export.json", "mattermost_fixtures/direct_channel"
@@ -1090,6 +1235,8 @@ class MatterMostImporter(MattermostImportTestBase):
                 *(
                     [
                         # Check error log when trying to process a message with faulty HTML.
+                        "WARNING:root:Batch HTML-to-text conversion failed with CalledProcessError; "
+                        "falling back to per-message conversion.",
                         "WARNING:root:Error converting HTML to text for message: 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>'; continuing",
                         "WARNING:root:{'sender_id': 2, 'content': 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                     ]
@@ -1327,6 +1474,8 @@ class MatterMostImporter(MattermostImportTestBase):
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
                 *(
                     [
+                        "WARNING:root:Batch HTML-to-text conversion failed with CalledProcessError; "
+                        "falling back to per-message conversion.",
                         "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
                         "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                     ]
@@ -1358,6 +1507,8 @@ class MatterMostImporter(MattermostImportTestBase):
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
                 *(
                     [
+                        "WARNING:root:Batch HTML-to-text conversion failed with CalledProcessError; "
+                        "falling back to per-message conversion.",
                         "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
                         "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                     ]

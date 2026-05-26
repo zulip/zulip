@@ -921,6 +921,29 @@ def convert_html_to_text(content: str) -> str:
     return subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
 
 
+def convert_html_to_text_batch(contents: list[str]) -> list[str]:
+    if len(contents) == 0:
+        return []
+
+    separator = f"ZULIP_HTML_TO_TEXT_BATCH_SEPARATOR_{secrets.token_urlsafe(18)}"
+    while any(separator in content for content in contents):
+        separator = f"ZULIP_HTML_TO_TEXT_BATCH_SEPARATOR_{secrets.token_urlsafe(18)}"
+
+    converted = subprocess.check_output(
+        ["html2text", "--unicode-snob"],
+        input=f"\n\n<p>{separator}</p>\n\n".join(contents),
+        text=True,
+    )
+    converted_parts = converted.split(separator)
+    if len(converted_parts) != len(contents):
+        raise ValueError("Unexpected html2text batch conversion output.")
+
+    return [
+        converted_content.removeprefix("\n\n") if index > 0 else converted_content
+        for index, converted_content in enumerate(converted_parts)
+    ]
+
+
 def get_data_file(path: str) -> Any:
     with open(path, "rb") as fp:
         data = orjson.loads(fp.read())
