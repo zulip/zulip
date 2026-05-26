@@ -204,6 +204,9 @@ VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 VIDEO_WEBEX_CLIENT_ID = "client_id"
 VIDEO_WEBEX_CLIENT_SECRET = "client_secret"
 
+VIDEO_GOOGLE_MEET_CLIENT_ID = "client_id"
+VIDEO_GOOGLE_MEET_CLIENT_SECRET = "client_secret"
+
 BIG_BLUE_BUTTON_SECRET = "123"
 BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 

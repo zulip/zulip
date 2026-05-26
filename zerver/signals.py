@@ -103,6 +103,8 @@ def clear_call_tokens_on_logout(
     from zerver.actions.video_calls import do_set_video_call_provider_token
 
     if user is not None:
+        if user.third_party_api_state.get("google_meet") is not None:
+            do_set_video_call_provider_token(user, "google_meet", None)
         if user.third_party_api_state.get("webex") is not None:
             do_set_video_call_provider_token(user, "webex", None)
         if user.third_party_api_state.get("zoom") is not None:
