@@ -687,6 +687,10 @@ class Realm(models.Model):
             "name": "Webex",
             "id": 8,
         },
+        "google_meet": {
+            "name": "Google Meet",
+            "id": 9,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -1132,6 +1136,11 @@ class Realm(models.Model):
                 continue
             if provider == "webex" and (
                 settings.VIDEO_WEBEX_CLIENT_ID is None or settings.VIDEO_WEBEX_CLIENT_SECRET is None
+            ):
+                continue
+            if provider == "google_meet" and (
+                settings.VIDEO_GOOGLE_MEET_CLIENT_ID is None
+                or settings.VIDEO_GOOGLE_MEET_CLIENT_SECRET is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]

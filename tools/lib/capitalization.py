@@ -43,6 +43,8 @@ IGNORED_PHRASES = [
     r"DMs",
     r"Slack",
     r"Google",
+    r"Google Meet",
+    r"Google Workspace",
     r"Terms of Service",
     r"TikTok",
     r"Tuesday",
