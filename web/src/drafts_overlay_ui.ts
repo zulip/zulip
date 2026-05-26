@@ -532,21 +532,6 @@ function setup_event_handlers(): void {
         update_bulk_delete_ui();
     });
 
-    new ClipboardJS("#drafts_table .overlay_message_controls .copy-overlay-message", {
-        text(trigger): string {
-            const draft_id = $(trigger).attr("data-draft-id")!;
-            const draft = drafts.draft_model.getDraft(draft_id);
-            if (!draft) {
-                return "";
-            }
-            return draft.content ?? "";
-        },
-    }).on("success", (e) => {
-        show_copied_confirmation(e.trigger, {
-            show_check_icon: true,
-        });
-    });
-
     $("#drafts_table .outbox-resend-message").on("click", function (e) {
         e.stopPropagation();
         const $row = $(this).closest(".overlay-message-row");
@@ -759,6 +744,21 @@ export function toggle_checkbox_icon_state($checkbox: JQuery, checked: boolean):
 }
 
 export function initialize(): void {
+    new ClipboardJS("#drafts_table .overlay_message_controls .copy-overlay-message", {
+        text(trigger): string {
+            const draft_id = $(trigger).attr("data-draft-id")!;
+            const draft = drafts.draft_model.getDraft(draft_id);
+            if (!draft) {
+                return "";
+            }
+            return draft.content ?? "";
+        },
+    }).on("success", (e) => {
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
+    });
+
     $("body").on("focus", "#drafts_table .overlay-message-info-box", function (this: HTMLElement) {
         messages_overlay_ui.activate_element(this, keyboard_handling_context);
     });
