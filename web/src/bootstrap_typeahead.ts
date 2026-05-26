@@ -704,6 +704,8 @@ export class Typeahead<ItemType extends string | object> {
                 this.blur(e);
             });
 
+        this.$container.on("click", this.click.bind(this));
+
         $(window).on("resize", this.resizeHandler.bind(this));
     }
 
@@ -888,11 +890,6 @@ export class Typeahead<ItemType extends string | object> {
                 // or if the focus is immediately back in the input field (likely
                 // when using compose formatting buttons).
                 this.hide();
-            } else if (this.shown) {
-                // refocus the input if the user clicked on the typeahead
-                // so that clicking elsewhere registers as a blur and hides
-                // the typeahead.
-                this.input_element.$element.trigger("focus");
             }
         }, 150);
     }
@@ -923,6 +920,14 @@ export class Typeahead<ItemType extends string | object> {
     click(e: JQuery.ClickEvent): void {
         e.stopPropagation();
         e.preventDefault();
+
+        if ($(e.target).closest("li.typeahead-item").length === 0) {
+            // refocus the input if the user clicked on the typeahead
+            // so that clicking elsewhere registers as a blur and hides
+            // the typeahead.
+            this.input_element.$element.trigger("focus");
+            return;
+        }
         // The original bootstrap code expected `mouseenter` to be called
         // to set the active element before `select()`.
         // Since select() selects the element with the active class, if
