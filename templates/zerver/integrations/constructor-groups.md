@@ -52,6 +52,7 @@ source video conferencing solution. You can configure Zulip to use
 - [Jitsi Meet integration](/integrations/jitsi)
 - [Zoom integration](/integrations/zoom)
 - [BigBlueButton integration](/integrations/big-blue-button)
+- [Google Meet integration](/integrations/google-meet)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
 - [Webex integration](/integrations/webex)
 
