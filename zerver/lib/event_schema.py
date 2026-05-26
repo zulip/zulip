@@ -35,6 +35,7 @@ from zerver.lib.event_types import (
     DraftsAddEvent,
     DraftsRemoveEvent,
     DraftsUpdateEvent,
+    HasGoogleMeetTokenEvent,
     HasWebexTokenEvent,
     HasZoomTokenEvent,
     HeartbeatEvent,
@@ -248,6 +249,7 @@ check_web_reload_client_event = make_checker(WebReloadClientEvent)
 
 _check_channel_folder_update = make_checker(ChannelFolderUpdateEvent)
 _check_delete_message = make_checker(DeleteMessageEvent)
+_check_has_google_meet_token = make_checker(HasGoogleMeetTokenEvent)
 _check_has_webex_token = make_checker(HasWebexTokenEvent)
 _check_has_zoom_token = make_checker(HasZoomTokenEvent)
 _check_legacy_presence = make_checker(LegacyPresenceEvent)
@@ -319,6 +321,15 @@ def check_delete_message(
         keys.add("message_ids")
 
     assert set(event.keys()) == keys
+
+
+def check_has_google_meet_token(
+    var_name: str,
+    event: dict[str, object],
+    value: bool,
+) -> None:
+    _check_has_google_meet_token(var_name, event)
+    assert event["value"] == value
 
 
 def check_has_webex_token(
