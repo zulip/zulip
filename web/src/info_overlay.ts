@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
@@ -25,6 +26,9 @@ import {user_settings} from "./user_settings.ts";
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 export let toggler: Toggle | undefined;
+
+const mock_sub = {stream_id: 0, name: $t({defaultMessage: "channel name"})};
+const mock_topic = $t({defaultMessage: "topic name"});
 
 function format_usage_html(...keys: string[]): string {
     return $t_html(
@@ -57,11 +61,11 @@ const markdown_help_rows = [
         usage_html: format_usage_html("Ctrl", "Shift", "L"),
     },
     {
-        markdown: `#**${$t({defaultMessage: "channel name"})}**`,
+        markdown: `#**${mock_sub.name}**`,
         effect_html: $t({defaultMessage: "(links to a channel)"}),
     },
     {
-        markdown: `#**${$t({defaultMessage: "channel name"})}>${$t({defaultMessage: "topic name"})}**`,
+        markdown: `#**${mock_sub.name}>${mock_topic}**`,
         effect_html: $t({defaultMessage: "(links to topic)"}),
     },
     {
@@ -217,7 +221,7 @@ export function set_up_toggler(): void {
             return "";
         },
         get_stream_by_name(stream_name) {
-            return {stream_id: 0, name: stream_name};
+            return {stream_id: mock_sub.stream_id, name: stream_name};
         },
     };
     for (const row of markdown_help_rows) {
@@ -227,6 +231,21 @@ export function set_up_toggler(): void {
                 ...markdown.render(row.markdown, helper_config),
             };
             const rendered_content = new DOMParser().parseFromString(message.content, "text/html");
+            for (const elt of rendered_content.querySelectorAll<HTMLElement>("a[data-stream-id]")) {
+                const $elt = $(elt);
+                if ($elt.is("a.stream")) {
+                    rendered_markdown.update_stream_link_element($elt, mock_sub);
+                } else {
+                    const href = $elt.attr("href");
+                    assert(href !== undefined);
+                    rendered_markdown.update_topic_or_message_link_element(
+                        $elt,
+                        mock_sub,
+                        mock_topic,
+                        href,
+                    );
+                }
+            }
             // We remove all attributes from stream links in the markdown content since
             // we just want to display a mock template.
             for (const elt of rendered_content.querySelectorAll("a[data-stream-id]")) {
