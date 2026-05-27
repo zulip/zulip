@@ -672,6 +672,9 @@
     /* Fills whole pill height. */
     --length-search-pill-image: var(--length-user-pill-height);
     --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
+    /* Right margin reserved next to .exit and .expand in input_pill.css.
+       Anything aligning to the exit button must include this margin. */
+    --length-input-pill-exit-margin: 2px;
     --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
     --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
