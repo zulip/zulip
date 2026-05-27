@@ -900,18 +900,11 @@
     }
 
     /* Focus ring drawn as a pseudo-element on the inner badge,
-       with `5px` of breathing room outside the badge and `5px`
-       corners on the ring so it visually matches the action
-       button and state-marker rings, which paint at 3px effective
-       (5px `border-radius` minus 2px `outline-offset`) but on
-       smaller (~26×26) wrappers. Using straight `5px` corners on
-       this larger (~26×28) ring keeps the perceived corner
-       roundness consistent with the inbox's other focus
-       indicators. A wrapper-sized outline (the previous
-       implementation) leaves a wide gap between the ring and
-       the badge fill that reads as a second concentric outline;
-       the deliberate 5px gap here reads as padding around a
-       single badge instead. */
+       with `5px` of breathing room outside the badge. A
+       wrapper-sized outline (the previous implementation) leaves a
+       wide gap between the ring and the badge fill that reads as a
+       second concentric outline; the deliberate 5px gap here reads
+       as padding around a single badge instead. */
     .unread-count-focus-outline {
         &:focus-visible {
             outline: none;
@@ -929,7 +922,9 @@
                     position: absolute;
                     inset: -0.3125em; /* -5px at 16px/1em */
                     border: var(--focus-ring-outline);
-                    border-radius: 0.3125em; /* 5px at 16px/1em */
+                    border-radius: var(
+                        --unread-count-focus-outline-radius-in-views
+                    );
                     pointer-events: none;
                 }
             }

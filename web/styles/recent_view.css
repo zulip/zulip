@@ -1048,7 +1048,7 @@
         position: absolute;
         inset: -0.3125em; /* -5px at 16px/1em */
         border: var(--focus-ring-outline);
-        border-radius: 0.3125em; /* 5px at 16px/1em */
+        border-radius: var(--unread-count-focus-outline-radius-in-views);
         pointer-events: none;
     }
 }
