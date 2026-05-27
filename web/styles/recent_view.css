@@ -341,7 +341,6 @@
         align-self: center;
         opacity: 1;
         outline: 0 solid var(--color-background-unread-counter);
-        transition: outline-width 0.1s ease;
 
         &:hover {
             outline-width: var(--focus-ring-width-in-views);
