@@ -12,7 +12,7 @@ import * as keydown_util from "./keydown_util.ts";
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
 export function place_caret_at_end(el: HTMLElement): void {
     el.focus();
-    if (el instanceof HTMLInputElement) {
+    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
         el.setSelectionRange(el.value.length, el.value.length);
     } else {
         const range = document.createRange();
