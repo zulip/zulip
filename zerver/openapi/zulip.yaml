@@ -17656,6 +17656,84 @@ paths:
                           An example JSON error response for when the user doesn't have permission
                           to subscribe other users to channels and `stream_ids` is not empty.
   /invites/{invite_id}:
+    get:
+      operationId: get-email-invite-details
+      summary: Get email invitation details
+      tags: ["invites"]
+      description: |
+        Fetch details for a single pending email
+        [invitation](/help/invite-new-users#send-email-invitations), including
+        the channels and groups the invitee will be subscribed to.
+
+        A user can only fetch details for [invitations that they can
+        manage](/help/invite-new-users#manage-pending-invitations).
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-d7fd0d).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the email invitation to fetch.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      invite:
+                        allOf:
+                          - $ref: "#/components/schemas/Invite"
+                          - type: object
+                            description: |
+                              An email invitation object with full details, including the
+                              channels and groups the invitee will be subscribed to upon
+                              accepting the invitation.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "invite":
+                          {
+                            "email": "example@zulip.com",
+                            "invited_by_user_id": 11,
+                            "invited": 1726339239,
+                            "expiry_date": 1727203239,
+                            "id": 1,
+                            "invited_as": 400,
+                            "is_multiuse": false,
+                            "notify_referrer_on_join": true,
+                            "welcome_message_custom_text": null,
+                            "stream_ids": [14, 3, 13, 10, 2],
+                            "group_ids": [],
+                          },
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for an invalid email invitation ID.
     delete:
       operationId: revoke-email-invite
       summary: Revoke an email invitation
@@ -17694,6 +17772,94 @@ paths:
                         description: |
                           A typical failed JSON response for an invalid email invitation ID:
   /invites/multiuse/{invite_id}:
+    get:
+      operationId: get-multiuse-invite-details
+      summary: Get reusable invitation link details
+      tags: ["invites"]
+      description: |
+        Fetch details for a single pending [reusable invitation
+        link](/help/invite-new-users#create-a-reusable-invitation-link),
+        including the channels and groups the invitee will be subscribed to.
+
+        A user can only fetch details for [invitations that they can
+        manage](/help/invite-new-users#manage-pending-invitations).
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-d7fd0d).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the reusable invitation link to fetch.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      invite:
+                        allOf:
+                          - $ref: "#/components/schemas/Invite"
+                          - type: object
+                            description: |
+                              A reusable invitation link object with full details, including the
+                              channels and groups the invitee will be subscribed to upon
+                              accepting the invitation.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "invite":
+                          {
+                            "link_url": "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
+                            "invited_by_user_id": 11,
+                            "invited": 1726339239,
+                            "expiry_date": 1727203239,
+                            "id": 1,
+                            "invited_as": 400,
+                            "is_multiuse": true,
+                            "welcome_message_custom_text": null,
+                            "stream_ids": [1, 2, 3, 13, 14],
+                            "group_ids": [],
+                          },
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for an invalid invitation link ID.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invitation has already been revoked",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the invitation link
+                          has already been revoked.
     delete:
       operationId: revoke-invite-link
       summary: Revoke a reusable invitation link
@@ -28304,6 +28470,38 @@ components:
           description: |
             A boolean specifying whether the [invitation](/help/invite-new-users) is a
             reusable invitation link or an email invitation.
+        stream_ids:
+          type: array
+          items:
+            type: integer
+          description: |
+            IDs of the channels the invitee will be subscribed to upon accepting
+            the invitation. Only present in responses from
+            [`GET /invites/{invite_id}`](/api/get-email-invite-details) and
+            [`GET /invites/multiuse/{invite_id}`](/api/get-multiuse-invite-details).
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-d7fd0d).
+        group_ids:
+          type: array
+          items:
+            type: integer
+          description: |
+            IDs of the [user groups](/api/get-user-groups) the invitee will be
+            added to upon accepting the invitation. Only present in responses from
+            [`GET /invites/{invite_id}`](/api/get-email-invite-details) and
+            [`GET /invites/multiuse/{invite_id}`](/api/get-multiuse-invite-details).
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-d7fd0d).
+        welcome_message_custom_text:
+          type: string
+          nullable: true
+          description: |
+            A custom welcome message included in the invitation email, or `null`
+            if no custom message was set. Only present in responses from
+            [`GET /invites/{invite_id}`](/api/get-email-invite-details) and
+            [`GET /invites/multiuse/{invite_id}`](/api/get-multiuse-invite-details).
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-d7fd0d).
     InviteExpirationParameter:
       description: |
         The number of minutes before the invitation will expire. If `null`, the
