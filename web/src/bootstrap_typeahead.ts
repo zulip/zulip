@@ -99,20 +99,13 @@
  *   Since it's in the right part of the DOM, we don't need to do
  *   the manual positioning in the show() function.
  *
- * 11. Add `openInputFieldOnKeyUp` option:
- *
- *   If the typeahead isn't shown yet, the `lookup` call in the keyup
- *   handler will open it. Here we make a callback to the input field
- *   before we open the lookahead in case it needs to make UI changes first
- *   (e.g. widening the search bar).
- *
- * 12. Add `closeInputFieldOnHide` option:
+ * 11. Add `closeInputFieldOnHide` option:
  *
  *   Some input fields like search have visual changes that need to happen
  *   when the typeahead hides. This callback function is called in `hide()`
  *   and allows those extra UI changes to happen.
  *
- *  13. Allow option to remove custom logic for tab keypresses:
+ *  12. Allow option to remove custom logic for tab keypresses:
  *
  *   Sometimes tab is treated similarly to the escape or enter key, with
  *   custom functionality, which also prevents propagation to default tab
@@ -120,15 +113,15 @@
  *   turned off so that tab only does one thing while focus is in the
  *   typeahead -- move focus to the next element.
  *
- * 14. Don't act on blurs that change focus within the `non_tippy_parent_element`:
+ * 13. Don't act on blurs that change focus within the `non_tippy_parent_element`:
  *
  *   This allows us to have things like a close button, and be able
  *   to move focus there without the typeahead closing.
  *
- * 15. To position typeaheads, we use Tippyjs except for typeaheads that are
+ * 14. To position typeaheads, we use Tippyjs except for typeaheads that are
  *    appended to a `non_tippy_parent_element`.
  *
- * 16. Add `requireHighlight` and `shouldHighlightFirstResult` options:
+ * 15. Add `requireHighlight` and `shouldHighlightFirstResult` options:
  *
  *   Allow none of the typeahead options to be highlighted, which lets
  *   the user remove highlight by going navigating (with the keyboard)
@@ -141,18 +134,18 @@
  *   `shouldHighlightFirstResult` relatedly lets us decide whether
  *   the first result should be highlighted when the typeahead opens.
  *
- * 17. Add `updateElementContent` option.
+ * 16. Add `updateElementContent` option.
  *
  *   This is useful for complicated typeaheads that have custom logic
  *   for setting their element's contents after an item is selected.
  *
- * 18. Add `hideAfterSelect` option, default true.
+ * 17. Add `hideAfterSelect` option, default true.
  *
  *   This is useful for custom situations where we want to trigger the
  *   typeahead to do a lookup after selecting an option, when the user
  *   is making multiple related selections in a row.
  *
- * 19. Add `hideOnEmptyAfterBackspace` option, default false.
+ * 18. Add `hideOnEmptyAfterBackspace` option, default false.
  *
  *   This allows us to prevent the typeahead menu from being displayed
  *   when a pill is deleted using the backspace key.
@@ -249,7 +242,6 @@ export class Typeahead<ItemType extends string | object> {
     select_on_escape_condition: () => boolean;
     // Used to clear tooltip instances attached to typeahead container.
     clear_typeahead_tooltip: (() => void) | undefined;
-    openInputFieldOnKeyUp: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
@@ -305,7 +297,6 @@ export class Typeahead<ItemType extends string | object> {
         this.stopAdvance = options.stopAdvance ?? false;
         this.select_on_escape_condition = options.select_on_escape_condition ?? (() => false);
         this.advanceKeys = options.advanceKeys ?? [];
-        this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
@@ -843,13 +834,6 @@ export class Typeahead<ItemType extends string | object> {
                 ) {
                     return;
                 }
-                if (this.openInputFieldOnKeyUp !== undefined && !this.shown) {
-                    // If the typeahead isn't shown yet, the `lookup` call will open it.
-                    // Here we make a callback to the input field before we open the
-                    // lookahead in case it needs to make UI changes first (e.g. widening
-                    // the search bar).
-                    this.openInputFieldOnKeyUp();
-                }
                 if (e.key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
@@ -967,7 +951,6 @@ type TypeaheadOptions<ItemType> = {
     matcher?: (query: string) => (item: ItemType) => boolean;
     on_escape?: () => void;
     clear_typeahead_tooltip?: () => void;
-    openInputFieldOnKeyUp?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
     non_tippy_parent_element?: string;
     sorter: (items: ItemType[], query: string) => ItemType[];
