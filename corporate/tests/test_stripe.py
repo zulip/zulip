@@ -1787,6 +1787,37 @@ class StripeTest(StripeTestCase):
             # No additional ledger entries are created.
             self.assertEqual(before_ledger_count, after_ledger_count)
 
+    def test_make_end_of_cycle_updates_errors_without_free_trial_invoice(self) -> None:
+        realm = get_realm("zulip")
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_123")
+        free_trial_end_date = self.now + timedelta(days=30)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            status=CustomerPlan.FREE_TRIAL,
+            # Billed by invoice rather than charged automatically.
+            charge_automatically=False,
+            billing_cycle_anchor=self.now,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            price_per_license=8000,
+            next_invoice_date=free_trial_end_date,
+        )
+        LicenseLedger.objects.create(
+            plan=plan,
+            is_renewal=True,
+            event_time=self.now,
+            licenses=10,
+            licenses_at_next_renewal=10,
+        )
+        # No Invoice object exists for the plan.
+        billing_session = RealmBillingSession(realm=realm)
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.make_end_of_cycle_updates_if_needed(plan, free_trial_end_date)
+        self.assertEqual(
+            f"Invoice-billed free trial has no invoice: {plan}.",
+            billing_context.exception.error_description,
+        )
+
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_free_trial_upgrade_by_invoice_with_additional_users_after_payment(
         self, *mocks: Mock
