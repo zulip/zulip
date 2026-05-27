@@ -162,6 +162,19 @@ Billing method: send invoice"""
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_customer_subscription_created_with_collection_method(self) -> None:
+        expected_topic_name = "cus_UZ11RVzkmLf6Cf"
+        expected_message = """\
+[Subscription](https://dashboard.stripe.com/subscriptions/sub_1TbGh3JEe0yY0QKrmHd5I4l8) created
+Plan: https://dashboard.stripe.com/plans/price_1TZtAjJEe0yY0QKr27Tj0mDA
+Quantity: 1
+Billing method: charge automatically"""
+        self.check_webhook(
+            "customer_subscription_created_with_collection_method",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_customer_subscription_created_no_nickname(self) -> None:
         expected_topic_name = "cus_00000000000000"
         expected_message = """\
@@ -188,6 +201,15 @@ Billing method: send invoice"""
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_customer_subscription_deleted_with_collection_method(self) -> None:
+        expected_topic_name = "cus_UZ11RVzkmLf6Cf"
+        expected_message = "[Subscription](https://dashboard.stripe.com/subscriptions/sub_1TbGh3JEe0yY0QKrmHd5I4l8) deleted"
+        self.check_webhook(
+            "customer_subscription_deleted_with_collection_method",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_customer_subscription_updated(self) -> None:
         expected_topic_name = "cus_00000000000000"
         expected_message = """\
@@ -206,6 +228,20 @@ Billing method: send invoice"""
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_customer_subscription_updated_with_collection_method(self) -> None:
+        expected_topic_name = "cus_UZ11RVzkmLf6Cf"
+        expected_message = """\
+[Subscription](https://dashboard.stripe.com/subscriptions/sub_1TZtDLJEe0yY0QKroHU9hRvx) updated
+* Billing cycle anchor is now <time:2026-05-27T08:53:52+00:00>
+* Status is now trialing
+* Trial end is now <time:2026-05-27T08:53:52+00:00>
+* Trial start is now <time:2026-05-26T08:54:07+00:00>"""
+        self.check_webhook(
+            "customer_subscription_updated_with_collection_method",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_customer_subscription_trial_will_end(self) -> None:
         expected_topic_name = "cus_00000000000000"
         expected_message = "[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) trial will end in 3 days"
@@ -217,6 +253,16 @@ Billing method: send invoice"""
                 expected_topic_name,
                 expected_message,
                 content_type="application/x-www-form-urlencoded",
+            )
+
+    def test_customer_subscription_trial_will_end_with_collection_method(self) -> None:
+        expected_topic_name = "cus_UZ11RVzkmLf6Cf"
+        expected_message = "[Subscription](https://dashboard.stripe.com/subscriptions/sub_1TZtDLJEe0yY0QKroHU9hRvx) trial will end in 3 days"
+        with mock.patch("time.time", return_value=1779872032 - 3 * 3600 * 24 + 100):
+            self.check_webhook(
+                "customer_subscription_trial_will_end_with_collection_method",
+                expected_topic_name,
+                expected_message,
             )
 
     def test_customer_updated__account_balance(self) -> None:

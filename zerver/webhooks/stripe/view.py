@@ -203,7 +203,9 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         if resource == "source":  # nocoverage
             body = default_body()
         if resource == "subscription":
-            body = default_body()
+            # `items` and `latest_invoice` appear in modern `previous_attributes`
+            # but render as noisy object dumps, so omit them from the update list.
+            body = default_body(update_blacklist=["items", "latest_invoice"])
             if event == "trial_will_end":
                 DAY = 60 * 60 * 24  # seconds in a day
                 # Basically always three: https://stripe.com/docs/api/python#event_types
@@ -224,10 +226,16 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
                         )
                 if object_["quantity"]:
                     body += "\nQuantity: {}".format(object_["quantity"].tame(check_int))
-                if "billing" in object_:  # nocoverage
-                    body += "\nBilling method: {}".format(
-                        object_["billing"].tame(check_string).replace("_", " ")
-                    )
+                # `billing` was renamed to `collection_method` but older payloads
+                # still send the former.
+                if "billing" in object_:
+                    billing_method = object_["billing"].tame(check_string)
+                elif "collection_method" in object_:
+                    billing_method = object_["collection_method"].tame(check_string)
+                else:  # nocoverage
+                    billing_method = None
+                if billing_method is not None:
+                    body += "\nBilling method: {}".format(billing_method.replace("_", " "))
     if category == "file":  # nocoverage
         topic_name = "files"
         body = default_body() + " ({purpose}). \nTitle: {title}".format(
