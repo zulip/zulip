@@ -210,21 +210,39 @@ export function update_on_recipient_change(): void {
     compose_validate.clear_topic_moved_info();
 }
 
+function current_compose_triggered_opts(
+    message_type: MessageType,
+    trigger: string,
+): ComposeTriggeredOptions {
+    if (message_type === "private") {
+        return {
+            message_type: "private",
+            trigger,
+            private_message_recipient_ids: compose_state.private_message_recipient_ids(),
+        };
+    }
+    return {
+        message_type: "stream",
+        trigger,
+        stream_id: compose_state.stream_id()!,
+        topic: compose_state.topic(),
+    };
+}
+
 function switch_message_type(message_type: MessageType): void {
     $("#compose-content .alert").hide();
 
     compose_state.set_message_type(message_type);
-
-    const opts = {
-        message_type,
-        trigger: "switch_message_type",
-        stream_id: compose_state.stream_id()!,
-        topic: compose_state.topic(),
-        private_message_recipient_ids: compose_state.private_message_recipient_ids(),
-    };
-    update_compose_for_message_type(opts);
+    update_compose_for_message_type(
+        current_compose_triggered_opts(message_type, "switch_message_type"),
+    );
     update_compose_area_placeholder_text();
-    compose_ui.set_focus(opts);
+    // Focus is intentionally not moved here. Callers that want to
+    // move focus after a message-type switch (e.g., the recipient
+    // dropdown click handler) are responsible for doing so; callers
+    // that fire on server events or during compose-box opening should
+    // not disturb focus, which is either already where it belongs or
+    // will be set by `show_compose_box`.
 }
 
 function update_recipient_label(stream_id?: number): void {
@@ -318,7 +336,15 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     compose_state.set_recipient_edited_manually(true);
     // Enable or disable topic input based on `topics_policy`.
     update_topic_displayed_text(compose_state.topic());
+    const prev_message_type = compose_state.get_message_type();
     on_compose_select_recipient_update();
+    const message_type = compose_state.get_message_type();
+    if (message_type !== undefined && prev_message_type !== message_type) {
+        // A message-type switch hides the field that was previously
+        // focused (topic for stream, DM input for private), so move
+        // focus into the first empty input of the new compose state.
+        compose_ui.set_focus(current_compose_triggered_opts(message_type, "switch_message_type"));
+    }
     compose_select_recipient_dropdown_widget.item_clicked = true;
     dropdown.hide();
     event.preventDefault();

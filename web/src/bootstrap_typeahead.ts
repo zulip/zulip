@@ -99,9 +99,9 @@
  *   Since it's in the right part of the DOM, we don't need to do
  *   the manual positioning in the show() function.
  *
- * 11. Add `openInputFieldOnKeyUp` option:
+ * 11. Add `openInputFieldOnInput` option:
  *
- *   If the typeahead isn't shown yet, the `lookup` call in the keyup
+ *   If the typeahead isn't shown yet, the `lookup` call in the input
  *   handler will open it. Here we make a callback to the input field
  *   before we open the lookahead in case it needs to make UI changes first
  *   (e.g. widening the search bar).
@@ -249,7 +249,7 @@ export class Typeahead<ItemType extends string | object> {
     select_on_escape_condition: () => boolean;
     // Used to clear tooltip instances attached to typeahead container.
     clear_typeahead_tooltip: (() => void) | undefined;
-    openInputFieldOnKeyUp: (() => void) | undefined;
+    openInputFieldOnInput: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
@@ -267,12 +267,17 @@ export class Typeahead<ItemType extends string | object> {
     // Used to determine whether the typeahead should be shown,
     // when the user clicks anywhere on the input element.
     showOnClick: boolean;
+    // Used to determine whether the typeahead should be shown,
+    // when the input element gains focus.
+    showOnFocus: boolean;
     // Used for custom situations where we want to hide the typeahead
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    // Offset applied to the typeahead placement.
+    positionOffset: [number, number];
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -305,7 +310,7 @@ export class Typeahead<ItemType extends string | object> {
         this.stopAdvance = options.stopAdvance ?? false;
         this.select_on_escape_condition = options.select_on_escape_condition ?? (() => false);
         this.advanceKeys = options.advanceKeys ?? [];
-        this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
+        this.openInputFieldOnInput = options.openInputFieldOnInput;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
@@ -315,9 +320,11 @@ export class Typeahead<ItemType extends string | object> {
         this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
         this.updateElementContent = options.updateElementContent ?? true;
         this.showOnClick = options.showOnClick ?? true;
+        this.showOnFocus = options.showOnFocus ?? false;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
+        this.positionOffset = options.positionOffset ?? [0, 0];
         this.listen();
     }
 
@@ -387,6 +394,7 @@ export class Typeahead<ItemType extends string | object> {
         this.mouse_moved_since_typeahead = false;
 
         const input_element = this.input_element;
+        const positionOffset = this.positionOffset;
         if (!this.non_tippy_parent_element) {
             this.instance = tippy.default(the(input_element.$element), {
                 // Lets typeahead take the width needed to fit the content
@@ -438,7 +446,10 @@ export class Typeahead<ItemType extends string | object> {
                         const scrollTop = input_element.$element.scrollTop() ?? 0;
 
                         if (placement === "top-start") {
-                            return [caret.left, -caret.top + scrollTop + gap];
+                            return [
+                                caret.left + positionOffset[0],
+                                -caret.top + scrollTop + gap + positionOffset[1],
+                            ];
                         }
 
                         // In bottom-start, the offset is calculated from bottom of the popper reference.
@@ -446,10 +457,13 @@ export class Typeahead<ItemType extends string | object> {
                             // Height of the reference is the input_element height.
                             const field_height = reference.height;
                             const distance = field_height - caret.top + scrollTop - caret.height;
-                            return [caret.left, -distance + gap];
+                            return [
+                                caret.left + positionOffset[0],
+                                -distance + gap + positionOffset[1],
+                            ];
                         }
                     }
-                    return [0, gap];
+                    return [positionOffset[0], gap + positionOffset[1]];
                 },
                 // We have event handlers to hide the typeahead, so we
                 // don't want tippy to hide it for us.
@@ -679,7 +693,9 @@ export class Typeahead<ItemType extends string | object> {
             .on("blur", this.blur.bind(this))
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
+            .on("input", this.input.bind(this))
             .on("click", this.element_click.bind(this))
+            .on("focus", this.element_focus.bind(this))
             .on("keydown", this.keydown.bind(this))
             .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
 
@@ -694,13 +710,15 @@ export class Typeahead<ItemType extends string | object> {
                 this.blur(e);
             });
 
+        this.$container.on("click", this.click.bind(this));
+
         $(window).on("resize", this.resizeHandler.bind(this));
     }
 
     unlisten(): void {
         this.hide();
         this.$container.remove();
-        const events = ["blur", "keydown", "keyup", "keypress", "click"];
+        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus", "input"];
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
@@ -728,7 +746,7 @@ export class Typeahead<ItemType extends string | object> {
 
         switch (e.key) {
             case "Tab":
-                if (!this.tabIsEnter) {
+                if (!this.tabIsEnter || e.shiftKey) {
                     return;
                 }
                 e.preventDefault();
@@ -763,6 +781,10 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
+        // Any key interaction should give keyboard priority over the
+        // mouse for selecting the currently highlighted typeahead item.
+        this.mouse_moved_since_typeahead = false;
+
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -785,20 +807,17 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keyup(e: JQuery.KeyUpEvent): void {
-        this.mouse_moved_since_typeahead = false;
-        // NOTE: Ideally we can ignore meta keyup calls here but
-        // it's better to just trigger the lookup call to update the list in case
-        // it did modify the query. For example, `Command + delete` on Mac
-        // doesn't trigger a keyup event but when `Command` is released, it
-        // triggers a keyup event which correctly updates the list.
+        // This handler only deals with navigation/selection keys. Query
+        // updates from typing are driven by the `input` event handler
+        // below, which fires only when the input's value actually
+        // changes -- so it naturally ignores stray keyups from keys
+        // whose keydown fired on a different element (e.g., the Tab or
+        // Shift keyup that lands here when focus moves into a typeahead
+        // input via keyboard navigation).
         switch (e.key) {
-            case "ArrowDown":
-            case "ArrowUp":
-                break;
-
             case "Tab":
                 // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
-                if (!this.tabIsEnter || !this.shown) {
+                if (!this.tabIsEnter || !this.shown || e.shiftKey) {
                     return;
                 }
 
@@ -835,31 +854,26 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             default:
-                // to stop typeahead from showing up momentarily
-                // when shift + tabbing to the topic field
-                if (
-                    e.key === "Shift" &&
-                    the(this.input_element.$element).id === "stream_message_recipient_topic"
-                ) {
-                    return;
-                }
-                if (this.openInputFieldOnKeyUp !== undefined && !this.shown) {
-                    // If the typeahead isn't shown yet, the `lookup` call will open it.
-                    // Here we make a callback to the input field before we open the
-                    // lookahead in case it needs to make UI changes first (e.g. widening
-                    // the search bar).
-                    this.openInputFieldOnKeyUp();
-                }
-                if (e.key === "Backspace") {
-                    this.lookup(this.hideOnEmptyAfterBackspace);
-                    return;
-                }
-                this.lookup(false);
+                return;
         }
 
         this.maybeStopAdvance(e);
 
         e.preventDefault();
+    }
+
+    input(e: JQuery.TriggeredEvent): void {
+        if (this.openInputFieldOnInput !== undefined && !this.shown) {
+            // If the typeahead isn't shown yet, the `lookup` call will open it.
+            // Here we make a callback to the input field before we open the
+            // lookahead in case it needs to make UI changes first (e.g. widening
+            // the search bar).
+            this.openInputFieldOnInput();
+        }
+        const input_event = e.originalEvent;
+        const is_backspace =
+            input_event instanceof InputEvent && input_event.inputType === "deleteContentBackward";
+        this.lookup(is_backspace ? this.hideOnEmptyAfterBackspace : false);
     }
 
     blur(e: JQuery.BlurEvent): void {
@@ -878,11 +892,6 @@ export class Typeahead<ItemType extends string | object> {
                 // or if the focus is immediately back in the input field (likely
                 // when using compose formatting buttons).
                 this.hide();
-            } else if (this.shown) {
-                // refocus the input if the user clicked on the typeahead
-                // so that clicking elsewhere registers as a blur and hides
-                // the typeahead.
-                this.input_element.$element.trigger("focus");
             }
         }, 150);
     }
@@ -910,9 +919,24 @@ export class Typeahead<ItemType extends string | object> {
         this.lookup(false);
     }
 
+    element_focus(): void {
+        if (!this.showOnFocus) {
+            return;
+        }
+        this.lookup(false);
+    }
+
     click(e: JQuery.ClickEvent): void {
         e.stopPropagation();
         e.preventDefault();
+
+        if ($(e.target).closest("li.typeahead-item").length === 0) {
+            // refocus the input if the user clicked on the typeahead
+            // so that clicking elsewhere registers as a blur and hides
+            // the typeahead.
+            this.input_element.$element.trigger("focus");
+            return;
+        }
         // The original bootstrap code expected `mouseenter` to be called
         // to set the active element before `select()`.
         // Since select() selects the element with the active class, if
@@ -967,7 +991,7 @@ type TypeaheadOptions<ItemType> = {
     matcher?: (query: string) => (item: ItemType) => boolean;
     on_escape?: () => void;
     clear_typeahead_tooltip?: () => void;
-    openInputFieldOnKeyUp?: () => void;
+    openInputFieldOnInput?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
     non_tippy_parent_element?: string;
     sorter: (items: ItemType[], query: string) => ItemType[];
@@ -985,6 +1009,8 @@ type TypeaheadOptions<ItemType> = {
     shouldHighlightFirstResult?: () => boolean;
     updateElementContent?: boolean;
     showOnClick?: boolean;
+    showOnFocus?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
+    positionOffset?: [number, number];
 };
