@@ -50,6 +50,7 @@ from corporate.lib.stripe import (
     UpdatePlanRequest,
     add_months,
     catch_stripe_errors,
+    check_remote_server_audit_log_data,
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
     customer_has_last_n_invoices_open,
@@ -7026,6 +7027,74 @@ class TestRemoteServerBillingSession(StripeTestCase):
     #     customer = billing_session.update_or_create_stripe_customer()
     #     assert customer.stripe_customer_id
     #     # Confirm audit log, etc.
+
+    def test_check_audit_log_data_for_free_trial_billed_by_invoice(self) -> None:
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=str(uuid.uuid4()),
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+            last_audit_log_update=timezone_now() - timedelta(days=5),
+        )
+        billing_session = RemoteServerBillingSession(remote_server)
+        customer = Customer.objects.create(
+            remote_server=remote_server, stripe_customer_id="cus_12345"
+        )
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            status=CustomerPlan.FREE_TRIAL,
+            # Billed by invoice rather than charged automatically.
+            charge_automatically=False,
+            billing_cycle_anchor=timezone_now() - timedelta(days=30),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+            price_per_license=350,
+            # Audit log data above is stale relative to this date.
+            next_invoice_date=timezone_now(),
+        )
+
+        from django.core.mail import outbox
+
+        # Unpaid free trial: notify Zulip support, and return true to
+        # not defer invoicing the plan so that it can be downgraded.
+        Invoice.objects.create(
+            customer=customer,
+            plan=plan,
+            stripe_invoice_id="stripe_invoice_id_unpaid",
+            status=Invoice.SENT,
+        )
+        self.assertTrue(check_remote_server_audit_log_data(remote_server, plan, billing_session))
+        plan.refresh_from_db()
+        self.assertTrue(plan.stale_audit_log_data_email_sent)
+        self.assert_length(outbox, 1)
+        message = outbox[-1]
+        self.assertEqual(message.to, ["sales@zulip.com"])
+        self.assertEqual(
+            message.subject,
+            f"Stale audit log data for {billing_session.billing_entity_display_name}'s plan",
+        )
+
+        plan.stale_audit_log_data_email_sent = False
+        plan.save(update_fields=["stale_audit_log_data_email_sent"])
+
+        # Paid free trial: notify Zulip support, and return false to
+        # defer invoicing the plan until audit log data is fresh.
+        Invoice.objects.create(
+            customer=customer,
+            plan=plan,
+            stripe_invoice_id="stripe_invoice_id_paid",
+            status=Invoice.PAID,
+        )
+        self.assertFalse(check_remote_server_audit_log_data(remote_server, plan, billing_session))
+        plan.refresh_from_db()
+        self.assertTrue(plan.stale_audit_log_data_email_sent)
+        self.assert_length(outbox, 2)
+        message = outbox[-1]
+        self.assertEqual(message.to, ["sales@zulip.com"])
+        self.assertEqual(
+            message.subject,
+            f"Stale audit log data for {billing_session.billing_entity_display_name}'s plan",
+        )
 
 
 class TestSupportBillingHelpers(StripeTestCase):

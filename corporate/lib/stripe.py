@@ -5922,9 +5922,13 @@ def check_remote_server_audit_log_data(
                 plan, billing_session, next_invoice_date, last_audit_log_update
             )
 
-        # We still process free trial plans so that we can directly downgrade them.
-        if plan.is_free_trial() and not plan.charge_automatically:  # nocoverage
-            return True
+        # Process free trial plans that are billed by invoice if the sent
+        # invoice has not been paid, so that they can be automatically
+        # downgraded.
+        if plan.is_free_trial() and not plan.charge_automatically:
+            last_sent_invoice = Invoice.objects.filter(plan=plan).order_by("-id").first()
+            if last_sent_invoice is None or last_sent_invoice.status != Invoice.PAID:
+                return True
 
         # We don't have current audit log data from the remote server,
         # so we don't have enough information to invoice the plan.
