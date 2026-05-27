@@ -341,13 +341,30 @@ Amount due: 0.00 INR
 
     def test_refund_event(self) -> None:
         expected_topic_name = "refunds"
-        expected_message = "A refund for a [charge](https://dashboard.stripe.com/payments/pi_1Gib60HLwdCOCoR7KJbTO3U7) of 300000.00 INR was updated."
+        expected_message = "A refund for a [charge](https://dashboard.stripe.com/payments/pi_1Gib60HLwdCOCoR7KJbTO3U7) of 300000.00 INR failed."
         self.check_webhook("refund_event", expected_topic_name, expected_message)
 
     def test_pseudo_refund_event(self) -> None:
         expected_topic_name = "refunds"
-        expected_message = "A refund for a [payment](https://dashboard.stripe.com/payments/pi_abcd1234ABCDH) of 12.34 EUR was updated."
+        expected_message = "A refund for a [payment](https://dashboard.stripe.com/payments/pi_abcd1234ABCDH) of 12.34 EUR succeeded."
         self.check_webhook("pseudo_refund_event", expected_topic_name, expected_message)
+
+    def test_refund_event_requires_action(self) -> None:
+        self.subscribe(self.test_user, self.channel_name)
+        payload = orjson.loads(self.get_body("refund_event"))
+        payload["data"]["object"]["status"] = "requires_action"
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            orjson.dumps(payload).decode(),
+            content_type="application/json",
+        )
+        self.assert_channel_message(
+            message=msg,
+            channel_name=self.channel_name,
+            topic_name="refunds",
+            content="A refund for a [charge](https://dashboard.stripe.com/payments/pi_1Gib60HLwdCOCoR7KJbTO3U7) of 300000.00 INR requires action.",
+        )
 
     @patch("zerver.webhooks.stripe.view.check_send_webhook_message")
     def test_account_updated_without_previous_attributes_ignore(

@@ -167,12 +167,15 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
             # Refunds have no dedicated dashboard URL, so we link to the parent charge.
             charge_id = object_["charge"].tame(check_string)
             charge_type = charge_object_type(charge_id)
-            body = "A {resource} for a {charge} of {amount} was updated.".format(
+            body = "A {resource} for a {charge} of {amount} {status}.".format(
                 resource=object_["object"].tame(check_string),
                 charge=linkified_id(get_payment_intent_id() or charge_id, charge_type, lower=True),
                 amount=amount_string(
                     object_["amount"].tame(check_int), object_["currency"].tame(check_string)
                 ),
+                # status is one of "pending", "succeeded", "failed",
+                # "canceled", or "requires_action".
+                status=object_["status"].tame(check_string).replace("_", " "),
             )
     if category == "checkout_beta":  # nocoverage
         # Not sure what this is
