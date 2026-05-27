@@ -947,6 +947,11 @@
     }
 }
 
+#inbox-view .inbox-container #inbox-pane #inbox-expand-all-button {
+    --color-outline-button-focus: var(--color-outline-focus);
+    --outline-offset-button-focus: var(--focus-ring-outline-offset-in-views);
+}
+
 #inbox-animation-extra-content-blocker {
     background: var(--color-background-inbox);
 }
