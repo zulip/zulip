@@ -152,7 +152,7 @@ run_test("generate_pill_html", () => {
             '        <span class="pill-value">\n' +
             '                <span class="decorated-channel-name-wrapper"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">Denmark</span></span>        </span></span>\n' +
             '    <div class="exit">\n' +
-            '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n' +
+            '        <i role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></i>\n' +
             "    </div>\n" +
             "</div>\n",
     );
