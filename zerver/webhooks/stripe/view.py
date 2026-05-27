@@ -87,6 +87,11 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         # Legacy ACH-style charges report object_type "charge" but use a "py_" id prefix.
         return "payment" if charge_id.startswith("py_") else "charge"
 
+    def get_payment_intent_id() -> str | None:
+        # Legacy payment related events don't have a `payment_intent` field in the payload
+        # or have it as null but newer ones do.
+        return object_.get("payment_intent").tame(check_none_or(check_string))
+
     def update_string(blacklist: Sequence[str] = []) -> str:
         assert "previous_attributes" in payload["data"]
         previous_attributes = set(payload["data"]["previous_attributes"].keys()).difference(
@@ -107,7 +112,7 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         object_id: str | None
         match object_type:
             case "dispute":
-                object_id = object_["charge"].tame(check_string)
+                object_id = get_payment_intent_id() or object_["charge"].tame(check_string)
             case "invoiceitem":
                 # Older `invoiceitem.created` event has invoice field as null.
                 object_id = object_["invoice"].tame(check_none_or(check_string))
@@ -144,7 +149,7 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
             object_id = object_["id"].tame(check_string)
             charge_type = charge_object_type(object_id)
             body = "{resource} for {amount} {verbed}".format(
-                resource=linkified_id(object_id, charge_type),
+                resource=linkified_id(get_payment_intent_id() or object_id, charge_type),
                 amount=amount_string(
                     object_["amount"].tame(check_int), object_["currency"].tame(check_string)
                 ),
@@ -164,7 +169,7 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
             charge_type = charge_object_type(charge_id)
             body = "A {resource} for a {charge} of {amount} was updated.".format(
                 resource=object_["object"].tame(check_string),
-                charge=linkified_id(charge_id, charge_type, lower=True),
+                charge=linkified_id(get_payment_intent_id() or charge_id, charge_type, lower=True),
                 amount=amount_string(
                     object_["amount"].tame(check_int), object_["currency"].tame(check_string)
                 ),

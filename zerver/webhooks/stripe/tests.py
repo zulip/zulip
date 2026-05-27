@@ -17,6 +17,15 @@ class StripeHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_charge_dispute_closed_with_pi(self) -> None:
+        expected_topic_name = "disputes"
+        expected_message = "[Dispute](https://dashboard.stripe.com/payments/pi_3TbG44JEe0yY0QKr0OnHpigY) closed. Current status: lost."
+        self.check_webhook(
+            "charge_dispute_closed_with_pi",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_charge_dispute_created(self) -> None:
         expected_topic_name = "disputes"
         expected_message = "[Dispute](https://dashboard.stripe.com/payments/ch_00000000000000) created. Current status: needs response."
@@ -44,6 +53,15 @@ class StripeHookTests(WebhookTestCase):
             content="[Dispute](https://dashboard.stripe.com/payments/ch_00000000000000) created. Current status: needs response.",
         )
 
+    def test_charge_dispute_created_with_pi(self) -> None:
+        expected_topic_name = "disputes"
+        expected_message = "[Dispute](https://dashboard.stripe.com/payments/pi_3TbG44JEe0yY0QKr0OnHpigY) created. Current status: needs response."
+        self.check_webhook(
+            "charge_dispute_created_with_pi",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_charge_failed(self) -> None:
         expected_topic_name = "charges"
         expected_message = (
@@ -54,6 +72,15 @@ class StripeHookTests(WebhookTestCase):
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_charge_failed_with_pi(self) -> None:
+        expected_topic_name = "charges"
+        expected_message = "[Charge](https://dashboard.stripe.com/payments/pi_3TbGfyJEe0yY0QKr0V9PBbP9) for $22.00 failed. Failure code: card_declined"
+        self.check_webhook(
+            "charge_failed_with_pi",
+            expected_topic_name,
+            expected_message,
         )
 
     # Credit card charge
@@ -76,6 +103,15 @@ class StripeHookTests(WebhookTestCase):
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_charge_succeeded_with_pi(self) -> None:
+        expected_topic_name = "charges"
+        expected_message = "[Charge](https://dashboard.stripe.com/payments/pi_3TbGBUJEe0yY0QKr1NhtlhQp) for $222.00 succeeded"
+        self.check_webhook(
+            "charge_succeeded_with_pi",
+            expected_topic_name,
+            expected_message,
         )
 
     def test_customer_created(self) -> None:
@@ -259,12 +295,12 @@ Amount due: 0.00 INR
 
     def test_refund_event(self) -> None:
         expected_topic_name = "refunds"
-        expected_message = "A refund for a [charge](https://dashboard.stripe.com/payments/ch_1Gib61HLwdCOCoR71rnkccye) of 300000.00 INR was updated."
+        expected_message = "A refund for a [charge](https://dashboard.stripe.com/payments/pi_1Gib60HLwdCOCoR7KJbTO3U7) of 300000.00 INR was updated."
         self.check_webhook("refund_event", expected_topic_name, expected_message)
 
     def test_pseudo_refund_event(self) -> None:
         expected_topic_name = "refunds"
-        expected_message = "A refund for a [payment](https://dashboard.stripe.com/payments/py_abcde12345ABCDG) of 12.34 EUR was updated."
+        expected_message = "A refund for a [payment](https://dashboard.stripe.com/payments/pi_abcd1234ABCDH) of 12.34 EUR was updated."
         self.check_webhook("pseudo_refund_event", expected_topic_name, expected_message)
 
     @patch("zerver.webhooks.stripe.view.check_send_webhook_message")
