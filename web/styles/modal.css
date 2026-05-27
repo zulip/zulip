@@ -241,21 +241,25 @@
 
 /* Modal-specific CSS belongs below this point. */
 
-#user-profile-modal {
-    .modal__container {
-        height: var(--user-profile-modal-height);
-    }
-
+#user-profile-modal,
+#invite-details-modal {
     .name {
         color: var(--color-user-profile-field-name);
         font-weight: 600;
-        margin-right: 10px;
+        /* 10px at 14px/1em */
+        margin-right: 0.7143em;
         overflow-wrap: break-word;
     }
 
     .value {
         vertical-align: top;
         overflow-wrap: anywhere;
+    }
+}
+
+#user-profile-modal {
+    .modal__container {
+        height: var(--user-profile-modal-height);
     }
 
     #exit-sign {
@@ -929,8 +933,11 @@
     box-shadow: var(--invalid-input-box-shadow);
 }
 
-.email_change_container .settings-field-hint {
+.settings-field-hint {
     color: var(--color-text-settings-field-hint);
+}
+
+.email_change_container .settings-field-hint {
     font-size: 0.9em;
 }
 
@@ -1264,3 +1271,24 @@ ul.modal-options-list {
 /* ==============================================================
  * END MODAL MARGIN OVERRIDES
  * ============================================================== */
+
+#invite-details-modal {
+    .invite-details-loading-indicator {
+        justify-self: center;
+    }
+
+    #invite-details-default-section {
+        .default-field {
+            /* 10px at 14px/1em */
+            margin-bottom: 0.7143em;
+        }
+    }
+
+    .invite-details-stream-list,
+    .invite-details-group-list {
+        /* Override browser default list styles. */
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+}
