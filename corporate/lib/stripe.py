@@ -2508,7 +2508,11 @@ class BillingSession(ABC):
                 # Check if user has already paid for the plan by invoice.
                 if not plan.charge_automatically:
                     last_sent_invoice = Invoice.objects.filter(plan=plan).order_by("-id").first()
-                    if last_sent_invoice and last_sent_invoice.status == Invoice.PAID:
+                    # An invoice-billed, free trial plan should have an invoice
+                    # created when it was created (see process_initial_upgrade).
+                    if last_sent_invoice is None:
+                        raise BillingError(f"Invoice-billed free trial has no invoice: {plan}.")
+                    if last_sent_invoice.status == Invoice.PAID:
                         # This will create invoice for any additional licenses that user has at the time of
                         # switching from free trial to paid plan since they already paid for the plan's this billing cycle.
                         is_renewal = False
