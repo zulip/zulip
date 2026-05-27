@@ -1,0 +1,40 @@
+<div class="micromodal" id="invite-details-modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="invite-details-modal-title">
+            <div class="modal__header">
+                <div class="modal__header-content">
+                    <h1 class="modal__title" id="invite-details-modal-title">{{t "Manage invitation"}}</h1>
+                </div>
+                {{> ../components/icon_button
+                  icon="close"
+                  intent="neutral"
+                  custom_classes="modal__close"
+                  aria-label=(t "Close modal")
+                  data-micromodal-close=true
+                  }}
+            </div>
+            <main class="modal__content" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                <div class="invite-details-loading-indicator"></div>
+                <div id="invite-details-content"></div>
+            </main>
+            <footer class="modal__footer">
+                <span id="invite-details-resend-btn" class="hide">
+                    {{> ../components/icon_button
+                      icon="send-dm"
+                      intent="neutral"
+                      custom_classes="resend tippy-zulip-delayed-tooltip"
+                      aria-label=(t "Resend")
+                      data-tippy-content=(t "Resend")
+                      }}
+                </span>
+                {{> ../components/icon_button
+                  icon="trash"
+                  intent="danger"
+                  custom_classes="revoke tippy-zulip-delayed-tooltip"
+                  aria-label=(t "Revoke")
+                  data-tippy-content=(t "Revoke")
+                  }}
+            </footer>
+        </div>
+    </div>
+</div>
