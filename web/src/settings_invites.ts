@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
+import render_view_invitation_modal from "../templates/settings/view_invitation_modal.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -12,12 +13,16 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import * as modals from "./modals.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 export const invite_schema = z.intersection(
@@ -51,6 +56,16 @@ type Invite = z.output<typeof invite_schema> & {
     notify_referrer_on_join?: boolean;
 };
 
+const invite_details_schema = z.intersection(
+    invite_schema,
+    z.object({
+        welcome_message_custom_text: z.nullable(z.string()),
+        stream_ids: z.array(z.number()),
+        group_ids: z.array(z.number()),
+    }),
+);
+type InviteDetails = z.output<typeof invite_details_schema>;
+
 const meta = {
     loaded: false,
 };
@@ -66,6 +81,128 @@ function failed_listing_invites(xhr: JQuery.jqXHR): void {
         xhr,
         $("#invites-field-status"),
     );
+}
+
+function get_invite_details({
+    $row,
+    invite_id,
+    is_multiuse,
+}: {
+    $row: JQuery;
+    invite_id: string;
+    is_multiuse: string;
+}): void {
+    const url =
+        is_multiuse === "true"
+            ? "/json/invites/multiuse/" + invite_id
+            : "/json/invites/" + invite_id;
+
+    void channel.get({
+        url,
+        timeout: 10 * 1000,
+        success(raw_data) {
+            const data = z.object({invite: invite_details_schema}).parse(raw_data);
+            open_invite_details_modal({$row, invite: data.invite});
+        },
+        error(xhr) {
+            ui_report.error(
+                $t_html({defaultMessage: "Error fetching invitation details."}),
+                xhr,
+                $("#invites-field-status"),
+            );
+        },
+    });
+}
+
+function open_invite_details_modal({$row, invite}: {$row: JQuery; invite: InviteDetails}): void {
+    const stream_ids = [...invite.stream_ids];
+    stream_settings_data.sort_for_stream_settings(stream_ids, "by-stream-name");
+    const streams = stream_ids
+        .map((id) => stream_data.get_sub_by_id(id))
+        .filter((s) => s !== undefined);
+    const group_names = invite.group_ids
+        .map((id) => user_groups.maybe_get_user_group_from_id(id))
+        .filter((g) => g !== undefined)
+        .map((g) => g.name);
+
+    const ctx = {
+        is_multiuse: invite.is_multiuse,
+        // For multiuse invites, show the link URL; for email invites, show the email.
+        email: invite.is_multiuse ? invite.link_url : invite.email,
+        invited_by_user_id: invite.invited_by_user_id,
+        invite_id: invite.id,
+        is_admin: current_user.is_admin,
+        referrer_name: people.get_full_name(invite.invited_by_user_id),
+        invited_as_text: settings_config.user_role_map.get(invite.invited_as),
+        invited_at: timerender.absolute_time(invite.invited * 1000),
+        expires_at:
+            invite.expiry_date !== null
+                ? timerender.absolute_time(invite.expiry_date * 1000)
+                : null,
+        streams,
+        has_streams: streams.length > 0,
+        welcome_message_custom_text: invite.welcome_message_custom_text,
+        group_names,
+        has_group_names: group_names.length > 0,
+    };
+
+    $("body").append($(render_view_invitation_modal(ctx)));
+    modals.open("invite-details-modal", {
+        autoremove: true,
+        on_show() {
+            const invite_id_str = invite.id.toString();
+            const is_multiuse_str = invite.is_multiuse.toString();
+
+            $("#invite-details-modal .revoke").on("click", () => {
+                modals.close("invite-details-modal");
+                const email = invite.is_multiuse ? "" : invite.email;
+                const referred_by = ctx.referrer_name;
+                const modal_content_html = render_settings_revoke_invite_modal({
+                    is_multiuse: invite.is_multiuse,
+                    email,
+                    referred_by,
+                });
+                confirm_dialog.launch({
+                    modal_title_html: invite.is_multiuse
+                        ? $t_html({defaultMessage: "Revoke invitation link"})
+                        : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
+                    modal_content_html,
+                    id: "revoke_invite_modal",
+                    is_compact: true,
+                    close_on_submit: false,
+                    loading_spinner: true,
+                    on_click() {
+                        do_revoke_invite({
+                            $row,
+                            invite_id: invite_id_str,
+                            is_multiuse: is_multiuse_str,
+                        });
+                    },
+                });
+                $(".dialog_submit_button").attr("data-invite-id", invite_id_str);
+                $(".dialog_submit_button").attr("data-is-multiuse", is_multiuse_str);
+            });
+
+            if (!invite.is_multiuse) {
+                $("#invite-details-modal .resend").on("click", () => {
+                    modals.close("invite-details-modal");
+                    const email = invite.email;
+                    const modal_content_html = render_settings_resend_invite_modal({email});
+                    confirm_dialog.launch({
+                        modal_title_html: $t_html({defaultMessage: "Resend invitation?"}),
+                        modal_content_html,
+                        id: "resend_invite_modal",
+                        close_on_submit: false,
+                        loading_spinner: true,
+                        on_click() {
+                            do_resend_invite({$row, invite_id: invite_id_str});
+                        },
+                    });
+                    $(".dialog_submit_button").attr("data-invite-id", invite_id_str);
+                });
+            }
+        },
+    });
 }
 
 function add_invited_as_text(invites: Invite[]): void {
@@ -321,6 +458,15 @@ export function on_load_success(
         });
 
         $(".dialog_submit_button").attr("data-invite-id", invite_id);
+    });
+
+    $(".admin_invites_table").on("click", ".view-invite-details", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const $row = $(this).closest(".invite_row");
+        const invite_id = $(this).closest("tr").attr("data-invite-id")!;
+        const is_multiuse = $(this).closest("tr").attr("data-is-multiuse")!;
+        get_invite_details({$row, invite_id, is_multiuse});
     });
 }
 

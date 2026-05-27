@@ -1264,3 +1264,38 @@ ul.modal-options-list {
 /* ==============================================================
  * END MODAL MARGIN OVERRIDES
  * ============================================================== */
+
+#invite-details-modal {
+    .name {
+        color: var(--color-user-profile-field-name);
+        font-weight: 600;
+        margin-right: 10px;
+        overflow-wrap: break-word;
+    }
+
+    .value {
+        vertical-align: top;
+        overflow-wrap: anywhere;
+    }
+
+    #invite-details-default-section {
+        .default-field {
+            margin-bottom: 10px;
+        }
+    }
+
+    .invite-details-stream-list,
+    .invite-details-group-list {
+        /* Override browser default list styles. */
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .invite-details-group-list li {
+        display: flex;
+        align-items: center;
+        /* 4px at 14px/1em */
+        gap: 0.2857em;
+    }
+}
