@@ -342,6 +342,14 @@
                 align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
                 line-height: 1.1;
+
+                .exit {
+                    /* Needed in Chrome to keep the X centered;
+                       Firefox renders correctly without it. */
+                    .pill-close-button::before {
+                        line-height: 1;
+                    }
+                }
             }
         }
     }
