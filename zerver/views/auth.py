@@ -668,13 +668,25 @@ def remote_user_jwt(request: HttpRequest, *, token: str = "") -> HttpResponse:
     )
 
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
+    # Marker so the login/logout audit log can identify this as a JWT
+    # login. login_or_register_remote_user copies this into request.session
+    # before do_login runs.
+    session_data = {"social_auth_backend": "jwt"}
     if user_profile is None:
         result = ExternalAuthResult(
-            data_dict={"email": email, "full_name": "", "subdomain": realm.subdomain}
+            data_dict={
+                "email": email,
+                "full_name": "",
+                "subdomain": realm.subdomain,
+                "params_to_store_in_authenticated_session": session_data,
+            }
         )
     else:
         assert isinstance(user_profile, UserProfile)
-        result = ExternalAuthResult(user_profile=user_profile)
+        result = ExternalAuthResult(
+            user_profile=user_profile,
+            data_dict={"params_to_store_in_authenticated_session": session_data},
+        )
 
     return login_or_register_remote_user(request, result)
 

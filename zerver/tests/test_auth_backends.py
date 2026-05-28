@@ -7417,9 +7417,11 @@ class TestJWTLogin(ZulipTestCase):
 
             user_profile = get_user_by_delivery_email(email, realm)
             data = {"token": web_token}
+            now = timezone_now()
             result = self.client_post("/accounts/login/jwt/", data)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
+            self.assert_login_audit_log_entry(user_profile, method="jwt", since=now)
 
     def test_login_failure_when_email_is_missing(self) -> None:
         payload: dict[str, str] = {}
