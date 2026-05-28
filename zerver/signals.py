@@ -72,7 +72,8 @@ def get_login_audit_log_extra_data(
        Django's session-based login, so the `social_auth_backend`
        session marker isn't populated for them.
     2. `request.session["social_auth_backend"]` — set by
-       `login_or_register_remote_user` for social/OIDC/SAML logins.
+       `login_or_register_remote_user` for social/OIDC/SAML logins,
+       and for REMOTE_USER SSO via plumbing in its view.
        Also set by `login_and_redirect` for email/LDAP registration.
     3. The Django authentication backend class name, mapped through
        `AUTH_BACKEND_AUDIT_LOG_METHOD` so the recorded slug matches

@@ -615,6 +615,10 @@ def remote_user_sso(
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
         redirect_to=next,
+        # Marker so the login/logout audit log can identify this as a
+        # REMOTE_USER SSO login. login_or_register_remote_user copies
+        # this into request.session before do_login runs.
+        params_to_store_in_authenticated_session={"social_auth_backend": "remote_user_sso"},
     )
     if realm:
         data_dict["subdomain"] = realm.subdomain
