@@ -29,7 +29,7 @@ type ChannelTopicEntry = {
     topic: string;
 };
 
-type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
+export type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
 const common_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
@@ -195,6 +195,62 @@ function filter_suggestions_by_criteria(
     );
 }
 
+function search_filter_from_term(term: NarrowCanonicalTerm): SearchFilter {
+    if (term.operator === "channels") {
+        if (
+            term.operand === "public" ||
+            term.operand === "web-public" ||
+            term.operand === "archived"
+        ) {
+            return `channels:${term.operand}` as SearchFilter;
+        }
+
+        return "channels";
+    }
+
+    if (term.operator === "is") {
+        if (term.operand === "resolved") {
+            return term.negated ? "-is:resolved" : "is:resolved";
+        }
+
+        if (
+            term.operand === "dm" ||
+            term.operand === "starred" ||
+            term.operand === "mentioned" ||
+            term.operand === "followed" ||
+            term.operand === "alerted" ||
+            term.operand === "unread" ||
+            term.operand === "muted"
+        ) {
+            return `is:${term.operand}` as SearchFilter;
+        }
+
+        return "is";
+    }
+
+    if (term.operator === "has") {
+        if (
+            term.operand === "link" ||
+            term.operand === "image" ||
+            term.operand === "attachment" ||
+            term.operand === "reaction"
+        ) {
+            return `has:${term.operand}` as SearchFilter;
+        }
+
+        return "has";
+    }
+
+    return term.operator;
+}
+
+export function is_search_term_compatible(
+    term: NarrowCanonicalTerm,
+    existing_terms: NarrowCanonicalTerm[],
+): boolean {
+    const search_filter = search_filter_from_term(term);
+    return !match_criteria(existing_terms, incompatible_patterns[search_filter]);
+}
 function check_validity(
     last_operator: NarrowCanonicalOperator,
     terms: NarrowCanonicalTerm[],

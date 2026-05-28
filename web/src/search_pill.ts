@@ -11,7 +11,11 @@ import * as input_pill from "./input_pill.ts";
 import type {InputPill, InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
-import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
+import {
+    type Suggestion,
+    is_search_term_compatible,
+    search_term_description_html,
+} from "./search_suggestion.ts";
 import type {NarrowCanonicalTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
@@ -38,6 +42,35 @@ export type SearchUserPillContext = {
 
 type SearchPill = ({type: "generic_operator"} & NarrowCanonicalTerm) | SearchUserPill;
 
+function search_pill_to_term(item: SearchPill): NarrowCanonicalTerm {
+    switch (item.operator) {
+        case "dm":
+        case "dm-including":
+            assert(item.type === "search_user");
+            return {
+                operator: item.operator,
+                operand: item.users.map((user) => user.user_id),
+                negated: item.negated,
+            };
+
+        case "sender":
+        case "mentions":
+            assert(item.type === "search_user");
+            return {
+                operator: item.operator,
+                operand: item.users[0]!.user_id,
+                negated: item.negated,
+            };
+
+        default:
+            return {
+                operator: item.operator,
+                operand: item.operand,
+                negated: item.negated,
+            };
+    }
+}
+
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
 type PillRenderData =
@@ -52,18 +85,27 @@ type PillRenderData =
           })
     | SearchUserPill;
 
-export function create_item_from_search_string(search_string: string): SearchPill | undefined {
+export function create_item_from_search_string(
+    search_string: string,
+    existing_items: SearchPill[] = [],
+): SearchPill | undefined {
     const search_term = util.the(Filter.parse(search_string));
     const potential_narrow_term = Filter.convert_suggestion_to_term(search_term);
 
-    if (potential_narrow_term) {
-        return {
-            type: "generic_operator",
-            ...potential_narrow_term,
-        };
+    if (potential_narrow_term === undefined) {
+        return undefined;
     }
 
-    return undefined;
+    const existing_terms = existing_items.map((item) => search_pill_to_term(item));
+
+    if (!is_search_term_compatible(potential_narrow_term, existing_terms)) {
+        return undefined;
+    }
+
+    return {
+        type: "generic_operator",
+        ...potential_narrow_term,
+    };
 }
 
 export function get_search_string_from_item(item: SearchPill): string {
@@ -466,6 +508,7 @@ export function set_search_bar_contents(
     const invalid_inputs = [];
     const search_operator_strings = [];
     const added_pills_as_input_strings = new Set(); // to prevent duplicating terms
+    const added_terms: NarrowCanonicalTerm[] = [];
 
     for (const term of search_terms) {
         const input = Filter.unparse([term]);
@@ -499,6 +542,11 @@ export function set_search_bar_contents(
             continue;
         }
 
+        if (!is_search_term_compatible(narrow_term, added_terms)) {
+            invalid_inputs.push(input);
+            continue;
+        }
+
         switch (term.operator) {
             case "dm":
             case "dm-including":
@@ -508,6 +556,7 @@ export function set_search_bar_contents(
                 const users = user_ids.map((user_id) => people.get_by_user_id(user_id));
                 append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
                 added_pills_as_input_strings.add(input);
+                added_terms.push(narrow_term);
                 break;
             }
             case "search":
@@ -517,6 +566,7 @@ export function set_search_bar_contents(
             default:
                 pill_widget.appendValue(input);
                 added_pills_as_input_strings.add(input);
+                added_terms.push(narrow_term);
                 break;
         }
     }
@@ -535,30 +585,5 @@ export function set_search_bar_contents(
 export function get_current_search_pill_terms(
     pill_widget: SearchPillWidget,
 ): NarrowCanonicalTerm[] {
-    return pill_widget.items().map((item) => {
-        switch (item.operator) {
-            case "dm":
-            case "dm-including":
-                assert(item.type === "search_user");
-                return {
-                    operator: item.operator,
-                    operand: item.users.map((user) => user.user_id),
-                    negated: item.negated,
-                };
-            case "sender":
-            case "mentions":
-                assert(item.type === "search_user");
-                return {
-                    operator: item.operator,
-                    operand: item.users[0]!.user_id,
-                    negated: item.negated,
-                };
-            default:
-                return {
-                    operator: item.operator,
-                    operand: item.operand,
-                    negated: item.negated,
-                };
-        }
-    });
+    return pill_widget.items().map((item) => search_pill_to_term(item));
 }

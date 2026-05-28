@@ -152,6 +152,52 @@ test("get_suggestions deduplication", () => {
     assert.deepEqual(suggestions, expected);
 });
 
+test("incompatible_search_terms", () => {
+    const channel_term = {
+        operator: "channel",
+        operand: "66",
+        negated: false,
+    };
+
+    const dm_term = {
+        operator: "dm",
+        operand: [bob.user_id],
+        negated: false,
+    };
+
+    const topic_term = {
+        operator: "topic",
+        operand: "test",
+        negated: false,
+    };
+
+    const is_dm_term = {
+        operator: "is",
+        operand: "dm",
+        negated: false,
+    };
+
+    const has_link_term = {
+        operator: "has",
+        operand: "link",
+        negated: false,
+    };
+
+    const is_starred_term = {
+        operator: "is",
+        operand: "starred",
+        negated: false,
+    };
+
+    assert.equal(search.is_search_term_compatible(channel_term, [dm_term]), false);
+    assert.equal(search.is_search_term_compatible(dm_term, [channel_term]), false);
+    assert.equal(search.is_search_term_compatible(topic_term, [dm_term]), false);
+    assert.equal(search.is_search_term_compatible(is_dm_term, [channel_term]), false);
+
+    assert.equal(search.is_search_term_compatible(has_link_term, [channel_term]), true);
+    assert.equal(search.is_search_term_compatible(is_starred_term, [dm_term]), true);
+});
+
 test("get_is_suggestions_for_spectator", () => {
     page_params.is_spectator = true;
 
