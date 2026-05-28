@@ -516,6 +516,9 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     hide(): this {
+        if (!this.shown) {
+            return this;
+        }
         this.shown = false;
         if (this.non_tippy_parent_element) {
             this.$container.hide();
