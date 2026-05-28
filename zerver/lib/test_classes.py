@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
@@ -104,6 +104,7 @@ from zerver.models import (
     PushDeviceToken,
     Reaction,
     Realm,
+    RealmAuditLog,
     RealmEmoji,
     Recipient,
     Stream,
@@ -115,6 +116,7 @@ from zerver.models import (
     UserStatus,
 )
 from zerver.models.clients import get_client
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
@@ -1537,6 +1539,29 @@ Output:
         Pass None to verify no user is logged in.
         """
         self.assertEqual(get_session_dict_user(self.client.session), user_id)
+
+    def assert_login_audit_log_entry(
+        self,
+        user: UserProfile,
+        *,
+        method: str,
+        since: datetime,
+    ) -> RealmAuditLog:
+        """Verify exactly one USER_LOGGED_IN audit row exists
+        for `user` with `extra_data["method"] == method`, written
+        after `since`. Returns the entry so callers can assert on
+        additional `extra_data` fields without re-querying.
+        """
+        audit_log_entries = list(
+            RealmAuditLog.objects.filter(
+                modified_user=user,
+                event_type=AuditLogEventType.USER_LOGGED_IN,
+                event_time__gte=since,
+            )
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].extra_data["method"], method)
+        return audit_log_entries[0]
 
     def assert_message_stream_name(self, message: Message, stream_name: str) -> None:
         self.assertEqual(message.recipient.type, Recipient.STREAM)
