@@ -399,7 +399,7 @@ def build_custom_emoji(
     zerver_realmemoji: list[ZerverFieldsT] = []
     emoji_records: list[ZerverFieldsT] = []
 
-    # Map emoji file_id to emoji file data
+            # Map emoji file_id to emoji file data and uploadDate
     emoji_file_data = defaultdict(list)
     object_id_to_filename = {}
             filename_to_upload_date: dict[str, Any] = {}
