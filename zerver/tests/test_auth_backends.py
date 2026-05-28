@@ -112,14 +112,20 @@ from zerver.models import (
     NamedUserGroup,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     RealmDomain,
     Stream,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups, UserGroupMembership
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.users import ExternalAuthID, PasswordTooWeakError, get_user_by_delivery_email
-from zerver.signals import JUST_CREATED_THRESHOLD
+from zerver.signals import (
+    JUST_CREATED_THRESHOLD,
+    do_create_login_audit_log_entry,
+    do_create_logout_audit_log_entry,
+)
 from zerver.views.auth import log_into_subdomain, maybe_send_to_registration
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
@@ -404,6 +410,32 @@ class AuthBackendTest(ZulipTestCase):
                 realm=get_realm("zulip"),
             )
         self.assertEqual(str(m.exception), "You need to reset your password.")
+
+    def test_login_via_form_records_audit_log(self) -> None:
+        # The other test_email_auth_backend* tests in this class call
+        # EmailAuthBackend().authenticate() directly and so don't fire
+        # the user_logged_in signal. This test exercises the full form
+        # login path to verify the resulting USER_LOGGED_IN audit row
+        # records method="email", along with the user-agent,
+        # IP, and parsed browser/OS fields from the request.
+        user = self.example_user("hamlet")
+        password = initial_password(user.delivery_email)
+        user_agent = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+        )
+        now = timezone_now()
+        result = self.client_post(
+            "/accounts/login/",
+            info={"username": user.delivery_email, "password": password},
+            HTTP_USER_AGENT=user_agent,
+        )
+        self.assertEqual(result.status_code, 302)
+        audit_entry = self.assert_login_audit_log_entry(user, method="email", since=now)
+        self.assertEqual(audit_entry.acting_user, user)
+        self.assertEqual(audit_entry.extra_data["user_agent"], user_agent)
+        self.assertEqual(audit_entry.extra_data["device_browser"], "Firefox")
+        self.assertEqual(audit_entry.extra_data["device_os"], "Windows")
+        self.assertEqual(audit_entry.extra_data["ip_address"], "127.0.0.1")
 
     def test_login_preview(self) -> None:
         # Test preview=true displays organization login page
@@ -1064,6 +1096,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
     def test_social_auth_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        now = timezone_now()
         with self.assertLogs(self.logger_string, level="INFO") as m:
             result = self.social_auth_test(
                 account_data_dict,
@@ -1085,6 +1118,16 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             f"INFO:{self.logger_string}:Authentication attempt from 127.0.0.1: subdomain=zulip;username=hamlet@zulip.com;outcome=success",
             m.output[0],
         )
+
+        # Follow the subdomain redirect to complete login, so that
+        # we can verify that RealmAuditLog entry is created with
+        # correct extra_data.
+        result = self.client_get(result["Location"])
+        self.assertEqual(result.status_code, 302)
+        self.assert_logged_in_user_id(self.user_profile.id)
+        login_method = self.client.session.get("social_auth_backend")
+        assert login_method is not None
+        self.assert_login_audit_log_entry(self.user_profile, method=login_method, since=now)
 
     def test_social_auth_custom_auth_decorator(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -1349,7 +1392,11 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             expect_choose_email_screen=False,
             desktop_flow_otp=desktop_flow_otp,
         )
+        now = timezone_now()
         self.verify_desktop_flow_end_page(result, self.email, desktop_flow_otp)
+
+        expected_method = "saml:test_idp" if self.backend.name == "saml" else self.backend.name
+        self.assert_login_audit_log_entry(self.user_profile, method=expected_method, since=now)
 
     def test_social_auth_session_fields_cleared_correctly(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
@@ -1508,12 +1555,17 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         subdomain = "zulip"
         realm = get_realm("zulip")
         account_data_dict = self.get_account_data_dict(email=email, name=name)
+        now = timezone_now()
         result = self.social_auth_test(
             account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
         )
         self.stage_two_of_registration(
             result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
         )
+
+        new_user = get_user_by_delivery_email(email, realm)
+        expected_method = "saml:test_idp" if self.backend.name == "saml" else self.backend.name
+        self.assert_login_audit_log_entry(new_user, method=expected_method, since=now)
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_mobile_registration(self) -> None:
@@ -1550,6 +1602,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         realm = get_realm("zulip")
         desktop_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=email, name=name)
+        now = timezone_now()
 
         result = self.social_auth_test(
             account_data_dict,
@@ -1568,6 +1621,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.BACKEND_CLASS.full_name_validated,
             desktop_flow_otp=desktop_flow_otp,
         )
+
+        new_user = get_user_by_delivery_email(email, realm)
+        expected_method = "saml:test_idp" if self.backend.name == "saml" else self.backend.name
+        self.assert_login_audit_log_entry(new_user, method=expected_method, since=now)
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_invitation_exists(self) -> None:
@@ -2208,6 +2265,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         session_index = self.client.session["saml_session_index"]
         self.assertNotEqual(session_index, None)
 
+        logout_time = timezone_now()
         result = self.client_post("/accounts/logout/")
         # A redirect to the IdP is returned.
         self.assertEqual(result.status_code, 302)
@@ -2250,6 +2308,16 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(result["Location"], "/accounts/login/")
         self.client_get(result["Location"])
         self.assert_logged_in_user_id(None)
+
+        audit_log_entries = list(
+            RealmAuditLog.objects.filter(
+                modified_user=hamlet,
+                event_type=AuditLogEventType.USER_LOGGED_OUT,
+                event_time__gte=logout_time,
+            )
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].extra_data["method"], "saml:test_idp")
 
     def test_saml_sp_initiated_logout_desktop_flow(self) -> None:
         desktop_flow_otp = "1234abcd" * 8
@@ -7632,6 +7700,26 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertEqual(user_profile.delivery_email, self.example_email("hamlet"))
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_login_via_form_records_audit_log(self) -> None:
+        # The other test_login_success* tests in this class call
+        # self.backend.authenticate() directly and so don't fire the
+        # user_logged_in signal. This test exercises the full form
+        # login path to verify the resulting USER_LOGGED_IN audit row
+        # records method="ldap".
+        with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
+            hamlet = self.example_user("hamlet")
+            now = timezone_now()
+            result = self.client_post(
+                "/accounts/login/",
+                info={
+                    "username": hamlet.delivery_email,
+                    "password": self.ldap_password("hamlet"),
+                },
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assert_login_audit_log_entry(hamlet, method="ldap", since=now)
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_login_success_with_username(self) -> None:
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
             user_profile = self.backend.authenticate(
@@ -9755,3 +9843,50 @@ class TestCustomAuthDecorator(ZulipTestCase):
             self.assert_json_error(result, "Forbidden header value")
             self.assertEqual(UserProfile.objects.latest("id").delivery_email, alice_email)
             self.assertEqual(call_count, 5)
+
+
+class TestLoginLogoutAuditLog(ZulipTestCase):
+    """
+    Verify USER_LOGGED_IN / USER_LOGGED_OUT entries are written to
+    RealmAuditLog via the user_logged_in / user_logged_out signals.
+    """
+
+    USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+
+    def test_logout_records_audit_log_entry(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        logout_time = timezone_now()
+        result = self.client_post("/accounts/logout/", HTTP_USER_AGENT=self.USER_AGENT)
+        self.assertEqual(result.status_code, 302)
+
+        # _auth_user_backend is still in the session when the
+        # user_logged_out signal fires; Django flushes the session
+        # only after the signal.
+        audit_log_entries = list(
+            RealmAuditLog.objects.filter(
+                modified_user=user,
+                event_type=AuditLogEventType.USER_LOGGED_OUT,
+                event_time__gte=logout_time,
+            )
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].extra_data["method"], "email")
+
+    def test_bot_is_skipped(self) -> None:
+        request = HttpRequest()
+        request.session = self.client.session
+        bot = self.example_user("default_bot")
+        do_create_login_audit_log_entry(bot, request)
+        self.assertFalse(
+            RealmAuditLog.objects.filter(
+                modified_user=bot, event_type=AuditLogEventType.USER_LOGGED_IN
+            ).exists()
+        )
+        do_create_logout_audit_log_entry(bot, request)
+        self.assertFalse(
+            RealmAuditLog.objects.filter(
+                modified_user=bot, event_type=AuditLogEventType.USER_LOGGED_OUT
+            ).exists()
+        )
