@@ -4,13 +4,16 @@ import assert from "minimalistic-assert";
 import * as hash_util from "./hash_util.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
-import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 
 function show_history_limit_notice(): void {
     $(".top-messages-logo").hide();
     $(".history-limited-box").show();
-    narrow_banner.hide_empty_narrow_message();
+    // The history-limit notice and the empty-narrow banner are mutually
+    // exclusive top-of-feed states; clear the latter when showing this.
+    // We do this inline rather than calling narrow_banner, which imports
+    // this module, to avoid an import cycle.
+    $(".empty_feed_notice_main").empty();
 }
 
 function hide_history_limit_notice(): void {
