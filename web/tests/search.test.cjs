@@ -34,6 +34,7 @@ set_global("getSelection", () => ({
 }));
 
 let typeahead_forced_open = false;
+let search_typeahead;
 
 const verona = make_stream({
     subscribed: true,
@@ -84,11 +85,16 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher("")(), true);
 
-        return {
+        search_typeahead = {
+            shown: false,
             lookup() {
                 typeahead_forced_open = true;
             },
+            hide() {
+                this.shown = false;
+            },
         };
+        return search_typeahead;
     });
 
     search.initialize({
@@ -311,6 +317,16 @@ run_test("initiate_search", ({override_rewire}) => {
     assert.ok(typeahead_forced_open);
     assert.ok(search_bar_opened);
     assert.equal($("#search_query").text(), "");
+});
+
+run_test("close_search", () => {
+    search_typeahead.shown = true;
+    $(".navbar-search").addClass("expanded");
+
+    search.close_search();
+
+    assert.equal(search_typeahead.shown, false);
+    assert.ok(!$(".navbar-search").hasClass("expanded"));
 });
 
 run_test("create_item_from_search_string with invalid string", () => {
