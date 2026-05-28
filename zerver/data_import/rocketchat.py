@@ -402,9 +402,11 @@ def build_custom_emoji(
     # Map emoji file_id to emoji file data
     emoji_file_data = defaultdict(list)
     object_id_to_filename = {}
+            filename_to_upload_date: dict[str, Any] = {}
     for emoji_file in custom_emoji_data["file"]:
         if isinstance(emoji_file["_id"], bson.objectid.ObjectId):  # nocoverage
             object_id_to_filename[str(emoji_file["_id"])] = emoji_file["filename"]
+                            filename_to_upload_date[emoji_file["filename"]] = emoji_file.get("uploadDate")  # nocoverage
     for emoji_chunk in sorted(custom_emoji_data["chunk"], key=lambda c: c["n"]):
         file_id = str(emoji_chunk["files_id"])
         emoji_file_data[object_id_to_filename.get(file_id, file_id)].append(emoji_chunk["data"])
@@ -441,6 +443,7 @@ def build_custom_emoji(
                 name=alias,
                 id=NEXT_ID("realmemoji"),
                 file_name=emoji_filename,
+                    date_created=filename_to_upload_date.get(emoji_filename),
             )
             zerver_realmemoji.append(realmemoji)
 
