@@ -3,6 +3,15 @@
 Zulip needs to be able to send email so it can confirm new users'
 email addresses and send notifications.
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-settings` for `SETTING_EMAIL_*`
+configuration and {doc}`docker:how-to/compose-secrets` for the
+`email_password` secret.
+
+:::
+
 ## How to configure
 
 1. Identify an outgoing email (SMTP) account where you can have Zulip
@@ -13,8 +22,14 @@ email addresses and send notifications.
    email (SMTP) settings". This includes the hostname and typically
    the port to reach your SMTP provider, and the username to log in to
    it. If your SMTP server does not require authentication, leave
-   `EMAIL_HOST_USER` empty. You'll also want to fill out the noreply
-   email section.
+   `EMAIL_HOST_USER` empty.
+
+   You'll also want to fill out the noreply email section, taking into
+   account the inline documentation for the proper values for those
+   settings, e.g., `NOREPLY_EMAIL_ADDRESS` and `TOKENIZED_NOREPLY_EMAIL_ADDRESS`.
+   Note that you can also configure `INSTALLATION_NAME` to customize the
+   email sender display name for notification emails from your Zulip
+   server.
 
 1. Put the password for the SMTP user account in
    `/etc/zulip/zulip-secrets.conf` by setting `email_password`. For

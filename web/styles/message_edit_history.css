@@ -11,18 +11,6 @@
         }
     }
 
-    .message-edit-history-list {
-        /*
-        styles are based on drafts-list
-        see web/styles/drafts.css
-        */
-        & h2 {
-            font-size: 1.1em;
-            line-height: normal;
-            margin-bottom: 5px;
-        }
-    }
-
     .message_edit_history_content {
         .highlight_text_inserted {
             color: var(--color-message-edit-history-text-inserted);

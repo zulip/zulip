@@ -15,11 +15,13 @@ import render_users_with_status_icons from "../templates/users_with_status_icons
 import * as animate from "./animate.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as compose_actions from "./compose_actions.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {Filter} from "./filter";
+import * as focus_outline_util from "./focus_outline_util.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
@@ -174,6 +176,12 @@ type ChannelFolderContext = {
     order: number;
 };
 
+type FolderStreamRowsContext = {
+    stream_key: string;
+    stream_row: StreamContext;
+    topic_rows: TopicContext[];
+};
+
 const channel_folder_context_properties: (keyof ChannelFolderContext)[] = [
     "header_id",
     "is_header_visible",
@@ -255,7 +263,7 @@ const RIGHT_NAVIGATION_KEYS = ["right_arrow", "vim_right"];
 let is_waiting_for_revive_current_focus = true;
 // Used to store the last scroll position of the inbox before
 // it is hidden to avoid scroll jumping when it is shown again.
-let last_scroll_offset: number | undefined;
+let last_scroll_offset = 0;
 
 function get_row_from_conversation_key(key: string): JQuery {
     return $(`#${CSS.escape(CONVERSATION_ID_PREFIX + key)}`);
@@ -420,7 +428,10 @@ export function hide(): void {
 }
 
 function get_topic_key(stream_id: number, topic: string): string {
-    return stream_id + ":" + topic;
+    // Topic names are case-preserving for display, but case insensitive
+    // otherwise. We convert the topic key to lowercase to ensure that
+    // topic keys with different casing are not treated differently.
+    return stream_id + ":" + topic.toLowerCase();
 }
 
 function get_stream_key(stream_id: number): string {
@@ -485,7 +496,7 @@ function format_dm(
     if (recipient_ids.length === 1 && recipient_ids[0] !== undefined) {
         const user_id = recipient_ids[0];
         const is_deactivated = !people.is_active_user_or_system_bot(user_id);
-        is_bot = people.get_by_user_id(user_id).is_bot;
+        is_bot = people.is_valid_bot_user(user_id);
         user_circle_class = is_bot
             ? false
             : buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
@@ -713,18 +724,21 @@ function format_topic(
 
     return {
         ...common_context,
-        is_hidden: filter_should_hide_stream_row({stream_id, topic}),
+        is_hidden: filter_should_hide_stream_row({stream_id, topic, require_subscribed: true}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
     };
 }
 
 function insert_stream(stream_key: string): void {
-    const channel_folder_id = streams_dict.get(stream_key)!.folder_id;
+    const stream_row = streams_dict.get(stream_key)!;
+    const channel_folder_id = stream_row.folder_id;
     const sorted_stream_keys = get_sorted_stream_keys(channel_folder_id);
     const stream_index = sorted_stream_keys.indexOf(stream_key);
+    const stream_topics_data = topics_dict.get(stream_key)!;
     const rendered_stream = render_inbox_stream_container({
-        topics_dict: new Map([[stream_key, topics_dict.get(stream_key)]]),
-        streams_dict,
+        stream_key,
+        stream_row,
+        topic_rows: [...stream_topics_data.values()],
     });
     const $channel_folder_header = $(`#${get_channel_folder_header_id(channel_folder_id)}`);
     if (stream_index === 0) {
@@ -826,6 +840,25 @@ function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> 
     }
 
     return sorted_topic_dict;
+}
+
+function get_folder_stream_rows(folder_id: number): FolderStreamRowsContext[] {
+    const stream_rows: FolderStreamRowsContext[] = [];
+    for (const stream_key of get_sorted_stream_keys(folder_id)) {
+        const stream_row = streams_dict.get(stream_key);
+        if (stream_row?.folder_id !== folder_id) {
+            continue;
+        }
+
+        const stream_topics_data = topics_dict.get(stream_key)!;
+        stream_rows.push({
+            stream_key,
+            stream_row,
+            topic_rows: [...stream_topics_data.values()],
+        });
+    }
+
+    return stream_rows;
 }
 
 function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
@@ -1199,7 +1232,14 @@ class InboxTopicListWidget extends topic_list.TopicListWidget {
 }
 
 function filter_topics_in_channel(channel_id: number, topics: string[]): string[] {
-    return topics.filter((topic) => !filter_should_hide_stream_row({stream_id: channel_id, topic}));
+    return topics.filter(
+        (topic) =>
+            !filter_should_hide_stream_row({
+                stream_id: channel_id,
+                topic,
+                require_subscribed: false,
+            }),
+    );
 }
 
 function render_channel_view(channel_id: number): void {
@@ -1216,6 +1256,7 @@ function render_channel_view(channel_id: number): void {
     channel_view_topic_widget = new InboxTopicListWidget(
         $("#inbox-list"),
         channel_id,
+        false,
         (topic_names: string[]) => filter_topics_in_channel(channel_id, topic_names),
     );
     channel_view_topic_widget.build();
@@ -1262,15 +1303,17 @@ export function complete_rerender(coming_from_other_views = false): void {
         } else {
             channel_view_topic_widget = undefined;
             const {has_visible_unreads, ...additional_context} = reset_data();
+            const folders_with_stream_rows = [...channel_folders_dict.values()].map((folder) => ({
+                ...folder,
+                stream_rows: get_folder_stream_rows(folder.id),
+            }));
             $("#inbox-pane").html(
                 render_inbox_view({
                     normal_view: true,
                     search_val: search_keyword,
                     INBOX_SEARCH_ID,
                     dms_dict,
-                    topics_dict,
-                    streams_dict,
-                    channel_folders_dict,
+                    folders_with_stream_rows,
                     show_channel_folder_toggle: channel_folders.user_has_folders(),
                     ...additional_context,
                 }),
@@ -1281,16 +1324,15 @@ export function complete_rerender(coming_from_other_views = false): void {
         }
 
         if (coming_from_other_views) {
-            if (last_scroll_offset !== undefined) {
-                // It is important to restore the scroll position as soon
-                // as the rendering is complete to avoid scroll jumping.
-                window.scrollTo(0, last_scroll_offset);
-            } else {
-                // If the focus is not on the inbox rows, the inbox view scrolls
-                // down when moving from other views to the inbox view. To avoid
-                // this, we scroll to top before restoring focus via revive_current_focus.
-                window.scrollTo(0, 0);
-            }
+            // Scrolling to last offset here
+            // is important to restore the scroll position as soon
+            // as the rendering is complete to avoid scroll jumping.
+            //
+            // This also avoids the bug where
+            // if the focus is not on the inbox rows, the inbox view scrolls
+            // down when moving from other views to the inbox view. To avoid
+            // this, we scroll to top before restoring focus via revive_current_focus.
+            window.scrollTo(0, last_scroll_offset);
         }
 
         revive_current_focus();
@@ -1342,12 +1384,14 @@ function filter_should_hide_dm_row({dm_key}: {dm_key: string}): boolean {
 function filter_should_hide_stream_row({
     stream_id,
     topic,
+    require_subscribed,
 }: {
     stream_id: number;
     topic: string;
+    require_subscribed: boolean;
 }): boolean {
     const sub = sub_store.get(stream_id);
-    if (!sub?.subscribed) {
+    if (!sub || (require_subscribed && !sub.subscribed)) {
         return true;
     }
 
@@ -1596,7 +1640,7 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
 }
 
 export function get_focused_row_message(): {message?: Message | undefined} & (
-    | {msg_type: "private"; private_message_recipient?: string}
+    | {msg_type: "private"; private_message_recipient_ids?: number[]}
     | {msg_type: "stream"; stream_id: number; topic?: string}
     | {msg_type?: never}
 ) {
@@ -1635,11 +1679,11 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
         assert(row_info !== undefined);
         const message = message_store.get(row_info.latest_msg_id);
         if (message === undefined) {
-            const recipients = people.user_ids_string_to_emails_string(row_info.user_ids_string);
-            assert(recipients !== undefined);
             return {
                 msg_type: "private",
-                private_message_recipient: recipients,
+                private_message_recipient_ids: people.user_ids_string_to_ids_array(
+                    row_info.user_ids_string,
+                ),
             };
         }
         return {message};
@@ -1819,11 +1863,11 @@ function page_down_navigation(): void {
 }
 
 export function change_focused_element(input_key: string): boolean {
-    const is_first_user_keypress = $("#inbox-view").hasClass("no-visible-focus-outlines");
-    if (is_first_user_keypress) {
-        // Start showing visible focus outlines.
-        $("#inbox-view").removeClass("no-visible-focus-outlines");
-    }
+    const is_first_user_keypress = focus_outline_util.maybe_show_focus_outlines(
+        $("#inbox-view"),
+        input_key,
+    );
+
     if (is_first_user_keypress && !is_navigated_to_search()) {
         // User has barely scrolled the page.
         if (window.scrollY < 30) {
@@ -1980,8 +2024,7 @@ function bulk_insert_channel_folders(channel_folders: Set<number>): void {
         if (channel_folders.has(folder_id)) {
             const $folder_row_html = render_inbox_folder_with_channels({
                 ...folder_context,
-                topics_dict,
-                streams_dict,
+                stream_rows: get_folder_stream_rows(folder_id),
             });
             if (index === 0) {
                 const $dm_container = $("#inbox-direct-messages-container");
@@ -2000,6 +2043,10 @@ function bulk_insert_channel_folders(channel_folders: Set<number>): void {
 }
 
 export function update(): void {
+    requestAnimationFrame(update_internal);
+}
+
+export function update_internal(): void {
     // Since inbox shows a vast amount of sorted data,
     // doing surgical updates for everything is hard.
     // So, we focus on updating commonly changed data
@@ -2201,7 +2248,7 @@ export function update(): void {
     // the update was triggered by user. This can mean `row_focus` can
     // be out of bounds, so we need to fix that.
     if (update_triggered_by_user) {
-        setTimeout(revive_current_focus, 0);
+        revive_current_focus();
         update_triggered_by_user = false;
     } else {
         if (row_focus >= get_all_rows().length) {
@@ -2311,9 +2358,13 @@ function move_focus_to_visible_area(): void {
     const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
     const inbox_center_x = (inbox_filters_props.left + inbox_filters_props.right) / 2;
     const inbox_center_y = (compose_top + inbox_filters_props.bottom) / 2;
-    const element_in_row = document.elementFromPoint(inbox_center_x, inbox_center_y);
-    if (!element_in_row) {
-        // The table is too short for there to be an topic row element
+    const element_in_row = views_util.find_element_at_point(
+        inbox_center_x,
+        inbox_center_y,
+        ".inbox-row, .inbox-header",
+    );
+    if (element_in_row === undefined) {
+        // The table is too short for there to be a row element
         // at the center of the table region; in that case, we just
         // select the last element.
         row_focus = $all_rows.length - 1;
@@ -2424,39 +2475,35 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         focus_clicked_list_element($elt);
     });
 
-    $("body").on("click", "#inbox-list .on_hover_dm_read", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const $elt = $(this);
-        col_focus = COLUMNS.UNREAD_COUNT;
-        focus_clicked_list_element($elt);
-        const user_ids_string = $elt.attr("data-user-ids-string");
-        if (user_ids_string) {
-            // direct message row
-            unread_ops.mark_pm_as_read(user_ids_string);
-        }
-    });
-
-    $("body").on("click", "#inbox-list .on_hover_topic_read", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const $elt = $(this);
-        col_focus = COLUMNS.UNREAD_COUNT;
-        focus_clicked_list_element($elt);
-        const user_ids_string = $elt.attr("data-user-ids-string");
-        if (user_ids_string) {
-            // direct message row
-            unread_ops.mark_pm_as_read(user_ids_string);
-            return;
-        }
-        const stream_id = Number($elt.attr("data-stream-id"));
-        const topic = $elt.attr("data-topic-name");
-        if (topic !== undefined) {
-            unread_ops.mark_topic_as_read(stream_id, topic);
-        } else {
-            unread_ops.mark_stream_as_read(stream_id);
-        }
-    });
+    // Bound to the row-tall wrapper so the full vertical area of the
+    // unread-count column acts as a "mark as read" click target. Data
+    // attributes live on the inner badge.
+    $("body").on(
+        "click",
+        "#inbox-list .unread-count-focus-outline",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const $badge = $(this).find(".unread_count");
+            if ($badge.length === 0) {
+                return;
+            }
+            col_focus = COLUMNS.UNREAD_COUNT;
+            focus_clicked_list_element($(this));
+            const user_ids_string = $badge.attr("data-user-ids-string");
+            if (user_ids_string) {
+                unread_ops.mark_pm_as_read(user_ids_string);
+                return;
+            }
+            const stream_id = Number($badge.attr("data-stream-id"));
+            const topic = $badge.attr("data-topic-name");
+            if (topic !== undefined) {
+                unread_ops.mark_topic_as_read(stream_id, topic);
+            } else {
+                unread_ops.mark_stream_as_read(stream_id);
+            }
+        },
+    );
 
     $("body").on("click", "#inbox-list .change_visibility_policy", function (this: HTMLElement) {
         const $elt = $(this);
@@ -2511,7 +2558,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         complete_rerender();
     });
 
-    $(document).on("compose_canceled.zulip", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         if (inbox_util.is_visible()) {
             revive_current_focus();
         }

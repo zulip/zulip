@@ -3,7 +3,7 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 
-require("@date-fns/tz"); // To prevent mockdate from interfering with it
+require("@date-fns/tz"); // To prevent @sinonjs/fake-timers from interfering with it
 require("css.escape");
 require("handlebars/runtime.js");
 const {JSDOM} = require("jsdom");
@@ -42,11 +42,6 @@ require("@babel/register")({
     root: path.resolve(__dirname, "../.."),
 });
 
-// Create a helper function to avoid sneaky delays in tests.
-function immediate(f) {
-    return () => f();
-}
-
 // Find the files we need to run.
 const files = process.argv.slice(2);
 assert.notEqual(files.length, 0, "No tests found");
@@ -79,8 +74,6 @@ const localStorage = {
 // Set up Handlebars
 handlebars.hook_require();
 
-const noop = function () {};
-
 require("../../src/templates.ts"); // register Zulip extensions
 
 async function run_one_module(file) {
@@ -109,12 +102,8 @@ process.exitCode = 1;
         namespace.set_global("window", window);
         namespace.set_global("location", dom.window.location);
         window.location.href = "http://zulip.zulipdev.com/#";
-        namespace.set_global("setTimeout", noop);
-        namespace.set_global("setInterval", noop);
         namespace.set_global("localStorage", localStorage);
         ls_container.clear();
-        _.throttle = immediate;
-        _.debounce = immediate;
         zpage_billing_params.reset();
         zpage_params.reset();
 

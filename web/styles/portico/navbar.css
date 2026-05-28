@@ -1,3 +1,60 @@
+:root {
+    /* Actual navbar height is determined by label padding
+       (16px top/bottom) and line-height (28px): 16 + 28 + 16 = 60px.
+       Keep this variable in sync with those values. */
+    --navbar-height: 60px;
+    --announcement-banner-background: hsl(216deg 90% 82%);
+    --announcement-banner-foreground: hsl(240deg 100% 5.9%);
+    --announcement-banner-border: hsl(240deg 100% 5.9% / 12%);
+    --announcement-banner-link-underline: hsl(240deg 100% 5.9% / 80%);
+}
+
+/* Suppress rubber-band overscroll on marketing pages: the banner is
+   sticky and in-flow while .top-menu is fixed, so during overscroll
+   above scroll: 0 the banner briefly drifts down with the document
+   while the navbar stays pinned, exposing a gap and visually
+   overlapping the navbar's top edge. */
+html {
+    overscroll-behavior-y: none;
+}
+
+/* Announcement banner above the marketing nav, shown when
+   LANDING_PAGE_NAVBAR_MESSAGE is configured. Lives in navbar.css
+   (loaded by every marketing-page bundle, including landing-page-hello)
+   so /hello renders it identically to /plans, /why-zulip, etc.
+
+   position: sticky keeps the banner in flow — so .top-menu's
+   `position: fixed; top: auto` still resolves to "just below this
+   banner" — while pinning the banner to the viewport top on scroll.
+   z-index 11 sits above .top-menu (z-index 10) so the two sit
+   flush during scroll without flicker. */
+#navbar-custom-message {
+    position: sticky;
+    top: 0;
+    z-index: 11;
+    padding: 10px;
+    text-align: center;
+    font-size: 1.125rem; /* 18px at 16px/1rem */
+    font-weight: 450;
+    letter-spacing: 0.01em;
+    background: var(--announcement-banner-background);
+    color: var(--announcement-banner-foreground);
+    border-bottom: 1px solid var(--announcement-banner-border);
+
+    & a {
+        color: var(--announcement-banner-foreground);
+        text-decoration: underline;
+        text-decoration-color: var(--announcement-banner-link-underline);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+        transition: text-decoration-color 0.2s;
+    }
+
+    & a:hover {
+        text-decoration-color: var(--announcement-banner-foreground);
+    }
+}
+
 details summary::-webkit-details-marker {
     /* Hide the default arrow on Safari. */
     display: none;
@@ -222,7 +279,7 @@ details summary::-webkit-details-marker {
     display: none;
     /* To account for scrollbar if any present. */
     right: 15px;
-    top: 60px;
+    top: var(--navbar-height);
     width: 44px;
     height: 44px;
     background-size: 32px;
@@ -248,7 +305,7 @@ details summary::-webkit-details-marker {
 
 .top-menu-submenu {
     position: absolute;
-    top: 60px;
+    top: var(--navbar-height);
     display: flex;
     gap: 16px;
     opacity: 0;
@@ -258,11 +315,40 @@ details summary::-webkit-details-marker {
 }
 
 #case-studies-submenu {
-    flex-wrap: wrap;
-    width: 1000px;
+    width: 100vw;
+    position: fixed;
+    left: 0;
+    justify-content: center;
 
-    @media (width <= 1100px) {
-        width: 600px;
+    @media (width <= 1300px) {
+        flex-wrap: wrap;
+        place-content: baseline flex-start;
+        height: calc(100vh - var(--navbar-height));
+        overflow-y: auto;
+        width: 100vw;
+        padding-left: 10px;
+    }
+
+    & > .top-menu-submenu-column:last-child {
+        /* Bottom padding provides space for the scroll fade
+           indicator so no content is obscured at end of scroll. */
+        padding-bottom: 50px;
+    }
+
+    /* Fade bottom edge to hint at scrollable content. */
+    mask-image: linear-gradient(
+        to bottom,
+        hsl(0deg 0% 0%) calc(100% - 50px),
+        transparent 100%
+    );
+}
+
+/* Prevent background scrolling when the case studies dropdown
+   covers the full viewport height on narrower desktop screens.
+   Lower bound excludes widths where the desktop navbar is hidden. */
+@media (width > 1100px) and (width <= 1300px) {
+    body:has(#top-menu-tab-case-studies:checked) {
+        overflow: hidden;
     }
 }
 
@@ -382,11 +468,15 @@ details summary::-webkit-details-marker {
     backdrop-filter: blur(10px);
     z-index: 20;
 
+    /* No `top` — defaults to auto, which resolves to the static
+       position (just below the sticky banner when one is present,
+       or at the viewport top otherwise). Same trick as .top-menu
+       above. The [open] state below pins to top: 0 so the expanded
+       panel covers the full viewport. */
     position: fixed;
-    top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: var(--navbar-height);
 
     overflow: auto;
     font-style: normal;
@@ -403,10 +493,23 @@ details summary::-webkit-details-marker {
 }
 
 .top-menu-mobile[open] {
+    top: 0;
     bottom: 0;
     height: 100%;
     background: hsl(240deg 100% 5.9% / 80%);
     backdrop-filter: blur(20px);
+}
+
+/* When a banner is present, keep it visible above the open menu by
+   pushing the panel down by the banner's actual rendered height.
+   --announcement-banner-height is set by header.ts only while the menu is open
+   (via a ResizeObserver scoped to that interval), so the offset
+   stays accurate when the announcement wraps onto multiple lines on
+   narrow viewports without paying for an observer the rest of the
+   time. The 42px fallback covers the first frame before JS runs. */
+:has(#navbar-custom-message) .top-menu-mobile[open] {
+    top: var(--announcement-banner-height, 42px);
+    height: calc(100% - var(--announcement-banner-height, 42px));
 }
 
 .top-menu-mobile-items-group-1,
@@ -532,7 +635,7 @@ details summary::-webkit-details-marker {
     z-index: 1;
     transition: 0.3s;
     transition-property: background, backdrop-filter;
-    height: 60px;
+    height: var(--navbar-height);
     overflow: hidden;
     display: flex;
     justify-content: space-between;

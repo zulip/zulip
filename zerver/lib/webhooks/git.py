@@ -2,6 +2,8 @@ import string
 from collections import defaultdict
 from typing import Any
 
+from zerver.lib.markdown.fenced_code import get_unused_fence
+
 TOPIC_WITH_BRANCH_TEMPLATE = "{repo} / {branch}"
 TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = "{repo} / {type} #{id} {title}"
 TOPIC_WITH_RELEASE_TEMPLATE = "{repo} / {tag} {title}"
@@ -59,7 +61,7 @@ PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITHOUT_REFERENCE = "{user_name} {action}
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
 
-CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
+CONTENT_MESSAGE_TEMPLATE = "\n{fence} quote\n{message}\n{fence}"
 
 COMMITS_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action} on [{sha}]({url})"
 
@@ -208,6 +210,7 @@ def get_pull_request_event_message(
     title: str | None = None,
     suffix: str | None = None,
     include_topic_reference: bool = True,
+    emoji: str | None = None,
 ) -> str:
     action_messages = {
         "approval": "added their approval for",
@@ -272,8 +275,12 @@ def get_pull_request_event_message(
     ):
         main_message = f"{main_message}{punctuation}"
 
+    if emoji:
+        main_message = f"{emoji} {main_message}"
+
     if message:
-        main_message += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=message)
+        fence = get_unused_fence(message)
+        main_message += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=message, fence=fence)
     return main_message.rstrip()
 
 
@@ -387,6 +394,7 @@ def get_commits_comment_action_message(
     if message:
         content += CONTENT_MESSAGE_TEMPLATE.format(
             message=message,
+            fence=get_unused_fence(message),
         )
 
     return content

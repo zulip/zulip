@@ -132,18 +132,20 @@ Django, TypeScript/JavaScript, and CSS.
   which are quite important, the visual design isn't perfect
   (especially for, e.g., `GET /events`), many templates could be deleted
   with a bit of framework effort, etc. See the [API docs area
-  label][api-docs-area] for some specific projects in the area; and
-  `git grep pending_endpoints` to find the list of endpoints that need
-  documentation and their priorities. Our goal for the summer is for
-  1-2 students to resolve all open issues related to the REST API
-  documentation. 175 or 350 hours; difficulty easy or medium. **Skills
-  required**: Python programming. Expertise with reading documentation
-  and English writing are valuable, and product thinking about the
-  experience of using third-party APIs is very helpful.
+  label][api-docs-area] for some specific projects in the area, and
+  [this api documentation discussion][czo-api-endpoints] for current
+  priorities on API endpoints to document (`git grep pending_endpoints`).
+  Our goal for the summer is for 1-2 students to resolve all open issues
+  related to the REST API documentation. 175 or 350 hours; difficulty
+  easy or medium. **Skills required**: Python programming. Expertise
+  with reading documentation and English writing are valuable, and
+  product thinking about the experience of using third-party APIs is
+  very helpful.
 
   Expert: Lauryn Menard
 
-[api-docs-area]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+documentation+%28api+and+integrations%29%22
+[api-docs-area]: https://github.com/zulip/zulip/issues?q=is%3Aopen%20is%3Aissue%20label%3A%22area%3A%20documentation%20(api)%22
+[czo-api-endpoints]: https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/Undocumented.20endpoint.20priorities/with/2397881
 
 - **Improve the UI and visual design** of the Zulip web app. We are working on a
   major redesign for the core surfaces of the Zulip web app -- see the [redesign

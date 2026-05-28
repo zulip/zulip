@@ -344,6 +344,12 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             // else fallthrough to default case
             break;
         }
+        case "channels": {
+            return {
+                title: $t({defaultMessage: "There are no messages here."}),
+                html: "",
+            };
+        }
         case "search": {
             // You are narrowed to empty search results.
             return empty_search_query_banner(current_filter);
@@ -379,9 +385,9 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 };
             }
             if (user_ids.length === 1) {
-                const recipient_user = people.get_by_user_id(user_ids[0]);
+                const user_id = user_ids[0];
                 // You have no direct messages with this person
-                if (people.is_my_user_id(recipient_user.user_id)) {
+                if (people.is_my_user_id(user_id)) {
                     return {
                         title: $t({
                             defaultMessage: "You haven't sent yourself any notes yet!",
@@ -393,13 +399,13 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     };
                 }
                 // If the recipient is deactivated, we cannot start the conversation.
-                if (!people.is_person_active(recipient_user.user_id)) {
+                if (!people.is_person_active(user_id)) {
                     return {
                         title: $t(
                             {
                                 defaultMessage: "You have no direct messages with {person}.",
                             },
-                            {person: recipient_user.full_name},
+                            {person: people.get_full_name(user_id)},
                         ),
                     };
                 }
@@ -408,7 +414,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                         {
                             defaultMessage: "You have no direct messages with {person} yet.",
                         },
-                        {person: recipient_user.full_name},
+                        {person: people.get_full_name(user_id)},
                     ),
                     html: $t_html(
                         {
@@ -520,6 +526,38 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                         defaultMessage: "You have no direct messages including {people} yet.",
                     },
                     {people: valid_people_in_dms.map((user) => user.full_name).join(", ")},
+                ),
+            };
+        }
+
+        case "mentions": {
+            const mentioned_user = people.maybe_get_user_by_id(first_term.operand, true);
+
+            if (!mentioned_user) {
+                return {
+                    title: $t({defaultMessage: "This user does not exist!"}),
+                };
+            }
+
+            // mentions:me is redirected to is:mentioned in Filter.parse(),
+            // so mentioned_user will never be the current user here.
+            return {
+                title: $t(
+                    {
+                        defaultMessage: "No messages in your message history mention {person} yet.",
+                    },
+                    {person: mentioned_user.full_name},
+                ),
+                title_html: $t_html(
+                    {
+                        defaultMessage:
+                            "No messages in <z-link>your message history</z-link> mention {person} yet.",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                        person: mentioned_user.full_name,
+                    },
                 ),
             };
         }

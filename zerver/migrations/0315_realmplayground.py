@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                         validators=[
                             django.core.validators.RegexValidator(
                                 message="Invalid characters in pygments language",
-                                regex="^[ a-zA-Z0-9_+-./#]*$",
+                                regex="^[a-zA-Z0-9_+-./#]+$",
                             )
                         ],
                     ),

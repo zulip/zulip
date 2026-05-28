@@ -48,6 +48,12 @@ jobs:
             os: noble
             include_documentation_tests: false
             include_frontend_tests: false
+          # Ubuntu 26.04 ships with Python 3.14.4.
+          - docker_image: zulip/ci:resolute
+            name: Ubuntu 26.04 (Python 3.14, backend)
+            os: resolute
+            include_documentation_tests: false
+            include_frontend_tests: false
           # Debian 13 ships with Python 3.13.5.
           - docker_image: zulip/ci:trixie
             name: Debian 13 (Python 3.13, backend)
@@ -152,8 +158,8 @@ jobs:
         run: |
           source tools/ci/activate-venv
           ./manage.py makemessages --locale en
-          PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
-          PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+          ./tools/check-capitalization --no-generate
+          ./tools/check-frontend-i18n --no-generate
 
       - name: Run astro check
         if: ${{ matrix.include_frontend_tests }}
@@ -192,7 +198,7 @@ jobs:
       - name: Run miscellaneous tests
         run: |
           source tools/ci/activate-venv
-          uv lock --check
+          env -u PYTHONDEVMODE -u PYTHONWARNINGS uv lock --check
 
           # ./tools/test-run-dev  # https://github.com/zulip/zulip/pull/14233
           #
@@ -270,3 +276,15 @@ jobs:
           topic: ${{ steps.failure_report_string.outputs.topic }}
           type: "stream"
           content: ${{ steps.failure_report_string.outputs.content }}
+
+  required-jobs:
+    name: "Required jobs"
+    if: always()
+    needs:
+      - tests
+    runs-on: ubuntu-slim
+    steps:
+      - name: "Check required jobs"
+        run: jq 'with_entries(.value |= .result | select(.value | IN("success", "skipped") | not)) | if . != {} then halt_error end' <<<"$NEEDS"
+        env:
+          NEEDS: ${{ toJSON(needs) }}

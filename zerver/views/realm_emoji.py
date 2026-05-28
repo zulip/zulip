@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
-from zerver.decorator import require_member_or_admin
+from zerver.decorator import require_human_non_guest_user
 from zerver.lib.emoji import check_remove_custom_emoji, check_valid_emoji_name, name_to_codepoint
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.response import json_success
@@ -22,7 +22,7 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     )
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def upload_emoji(
     request: HttpRequest, user_profile: UserProfile, *, emoji_name: PathOnly[str]

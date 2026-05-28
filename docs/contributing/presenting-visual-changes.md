@@ -54,7 +54,7 @@ can be seen on a still screenshot. See
 [below](#capturing-and-presenting-short-videos) for how to capture reviewable videos.
 
 For updates or changes to CSS class rules, it's a good practice
-to include the results of a [git-grep][git-grep] search for
+to include the results of a [`git grep`][git-grep] search for
 the class name(s) to confirm that you've tested and captured screenshots
 of all the impacted areas of the UI or Zulip documentation.
 
@@ -244,9 +244,11 @@ that modified some interactions on the compose box:
 It's worth noting here that [the full PR](https://github.com/zulip/zulip/pull/35969)
 included plenty of static screenshots in addition to the GIFs showing off interactivity.
 
-Finally, make sure a person watching your video can see where on the screen you're
-tapping or clicking. Use the "show touches" or "include the mouse pointer" feature
-if your screen-recording software supports it.
+Finally, make sure a person watching your video can see what you're typing, or where on
+the screen you're tapping or clicking. Use the "show touches" or "include the mouse
+pointer" feature if your screen-recording software supports it. To show keyboard
+interactions, e.g., using a [keyboard shortcut](https://zulip.com/help/keyboard-shortcuts),
+you can use a [keypress visualizer](#keypress-visualizers-by-platform) while recording.
 
 ## Presenting screenshots on your pull request
 
@@ -371,3 +373,18 @@ You can check out the following tools for capturing screenshots and videos/GIFs.
 
 - [Peek](https://github.com/phw/peek)
 - [SilentCast](https://github.com/colinkeenan/silentcast)
+
+### Keypress visualizers by platform
+
+#### macOS
+
+- [KeyCastr](https://github.com/keycastr/keycastr)
+
+#### Windows
+
+- [YetAnotherKeyDisplayer(YAKD)](https://github.com/Jagailo/YetAnotherKeyDisplayer)
+
+#### Linux
+
+- [hibiki](https://github.com/linuxmobile/hibiki), for X11.
+- [screenkey](https://gitlab.com/screenkey/screenkey), for Wayland.

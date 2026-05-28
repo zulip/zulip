@@ -96,11 +96,9 @@ export function set_up(): void {
     do_populate_channel_folders();
     meta.loaded = true;
 
-    $("#channel-folder-settings").on(
-        "click",
-        ".add-channel-folder-button",
-        channel_folders_ui.add_channel_folder,
-    );
+    $("#channel-folder-settings").on("click", ".add-channel-folder-button", () => {
+        channel_folders_ui.add_channel_folder();
+    });
     $("#channel-folder-settings").on("click", ".edit-channel-folder-button", (e) => {
         const folder_id = Number.parseInt(
             $(e.target).closest(".channel-folder-row").attr("data-channel-folder-id")!,

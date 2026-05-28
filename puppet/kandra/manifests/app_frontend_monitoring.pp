@@ -6,7 +6,8 @@ class kandra::app_frontend_monitoring {
   include kandra::prometheus::uwsgi
   include kandra::prometheus::process
   include kandra::prometheus::grok
-  kandra::firewall_allow { 'tusd': port => '9900' }
+  kandra::teleport::prometheus_app { 'tusd': port => '9900' }
+  kandra::teleport::prometheus_app { 'katex': port => '9700' }
 
   file { '/etc/cron.d/rabbitmq-monitoring':
     ensure => absent,

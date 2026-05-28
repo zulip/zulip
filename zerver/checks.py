@@ -34,9 +34,15 @@ def check_required_settings(
         ):
             continue
 
+        if settings.RUNNING_IN_DOCKER:
+            settings_location = "your Docker environment configuration"
+            setting_display_name = "SETTING_" + setting_name
+        else:
+            settings_location = "/etc/zulip/settings.py"
+            setting_display_name = setting_name
         errors.append(
             checks.Error(
-                f"You must set {setting_name} in /etc/zulip/settings.py",
+                f"You must set {setting_display_name} in {settings_location}",
                 obj=f"settings.{setting_name}",
                 id="zulip.E001",
             )
@@ -53,6 +59,17 @@ def check_external_host_setting(
         return []
 
     errors = []
+    scheme = settings.EXTERNAL_URI_SCHEME
+    if scheme != "https://" and not settings.DEVELOPMENT:
+        errors.append(
+            checks.Error(
+                "Zulip does not support a non-HTTPS external scheme in production",
+                obj="settings.EXTERNAL_URI_SCHEME",
+                hint="Do not override EXTERNAL_URI_SCHEME in production",
+                id="zulip.E004",
+            )
+        )
+
     hostname = settings.EXTERNAL_HOST
     if "." not in hostname and os.environ.get("ZULIP_TEST_SUITE") != "true" and settings.PRODUCTION:
         suggest = ".localdomain" if hostname == "localhost" else ".local"
@@ -129,3 +146,48 @@ def check_auth_settings(
                         )
                     )
     return errors
+
+
+def check_uploads_settings(
+    app_configs: Sequence[AppConfig] | None,
+    databases: Sequence[str] | None,
+    **kwargs: Any,
+) -> Iterable[checks.CheckMessage]:
+    uploads_dir = settings.LOCAL_UPLOADS_DIR
+    if uploads_dir is None:
+        errors = []
+        if settings.S3_AUTH_UPLOADS_BUCKET == "":
+            errors.append(
+                checks.Error(
+                    "Neither settings.LOCAL_UPLOADS_DIR nor settings.S3_AUTH_UPLOADS_BUCKET is set",
+                    obj="settings.S3_AUTH_UPLOADS_BUCKET",
+                    id="zulip.E005",
+                )
+            )
+        if settings.S3_AVATAR_BUCKET == "":
+            errors.append(
+                checks.Error(
+                    "Neither settings.LOCAL_UPLOADS_DIR nor settings.S3_AVATAR_BUCKET is set",
+                    obj="settings.S3_AVATAR_BUCKET",
+                    id="zulip.E005",
+                )
+            )
+        return errors
+
+    if not os.path.isdir(uploads_dir):
+        return [
+            checks.Error(
+                f"settings.LOCAL_UPLOADS_DIR ({uploads_dir}) does not exist",
+                obj="settings.LOCAL_UPLOADS_DIR",
+                id="zulip.E006",
+            )
+        ]
+    elif not os.access(uploads_dir, os.W_OK):
+        return [
+            checks.Error(
+                f"settings.LOCAL_UPLOADS_DIR ({uploads_dir}) is not writable",
+                obj="settings.LOCAL_UPLOADS_DIR",
+                id="zulip.E006",
+            )
+        ]
+    return []

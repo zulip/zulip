@@ -24,10 +24,11 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
+import {disconnect_toggle_class, observe_toggle_class} from "./sidebar_tooltip_helpers.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
-import {INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
+import {EXTRA_LONG_HOVER_DELAY, INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -301,6 +302,26 @@ export class BuddyList extends BuddyListConf {
                 });
             },
         );
+
+        tippy.delegate("body", {
+            target: ".section-toggle-tooltip-target",
+            onShow(instance) {
+                const $toggle = $(instance.reference);
+                observe_toggle_class(instance, () => {
+                    if ($toggle.hasClass("rotate-icon-down")) {
+                        instance.setContent($t({defaultMessage: "Collapse section"}));
+                    } else {
+                        instance.setContent($t({defaultMessage: "Expand section"}));
+                    }
+                });
+            },
+            delay: EXTRA_LONG_HOVER_DELAY,
+            appendTo: () => document.body,
+            onHidden(instance) {
+                disconnect_toggle_class(instance);
+                instance.destroy();
+            },
+        });
     }
 
     async non_participant_users_matching_view_count(): Promise<number | null> {
@@ -330,6 +351,36 @@ export class BuddyList extends BuddyListConf {
         return (
             this.render_data.total_human_subscribers_count - subscribed_human_participant_ids.length
         );
+    }
+
+    // Attach load handlers to avatar images so that the preload
+    // background is removed once the image finishes loading. Also
+    // handles already-cached images by checking img.complete.
+    //
+    // By selecting only .avatar-preload-background containers, we
+    // skip images that have already been processed, avoiding duplicate
+    // handlers when this is called repeatedly (e.g., on scroll).
+    clear_avatar_preload_backgrounds(): void {
+        $("#user-list .avatar-preload-background img").each(function (this: HTMLElement) {
+            const $img = $(this);
+            const $picture = $img.closest(".avatar-preload-background");
+            $img.on("load", () => {
+                $picture.removeClass("avatar-preload-background");
+            });
+            // If the image is already cached, remove the preload
+            // background immediately.
+            // This fixes avatar-preload-background from briefly showing
+            // when reloading page.
+            if (
+                this instanceof HTMLImageElement &&
+                this.complete &&
+                // naturalWidth > 0 guard ensures broken images keep
+                // the preload background as a placeholder.
+                this.naturalWidth > 0
+            ) {
+                $picture.removeClass("avatar-preload-background");
+            }
+        });
     }
 
     populate(opts: {all_user_ids: number[]}): void {
@@ -387,18 +438,6 @@ export class BuddyList extends BuddyListConf {
         background_task.run_async_function_without_await(
             this.update_empty_list_placeholders.bind(this),
         );
-
-        // `populate` always rerenders all user rows, so we need new load handlers.
-        // This logic only does something is a user has enabled the setting to
-        // view avatars in the buddy list, and otherwise the jQuery selector will
-        // always be the empty set.
-        $("#user-list .user-profile-picture img")
-            .off("load")
-            .on("load", function (this: HTMLElement) {
-                $(this)
-                    .closest(".user-profile-picture")
-                    .toggleClass("avatar-preload-background", false);
-            });
     }
 
     // We show "No matching users" if a section is empty during search.
@@ -1107,6 +1146,7 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.display_or_hide_sections();
+        this.clear_avatar_preload_backgrounds();
         background_task.run_async_function_without_await(
             this.update_empty_list_placeholders.bind(this),
         );
@@ -1119,11 +1159,12 @@ export class BuddyList extends BuddyListConf {
         }
 
         const all_participant_ids = this.render_data.get_all_participant_ids();
+        const existing_participant_ids = new Set(this.participants_section.user_ids);
         const users_to_remove = this.participants_section.user_ids.filter(
             (user_id) => !all_participant_ids.has(user_id),
         );
         const users_to_add = [...all_participant_ids].filter(
-            (user_id) => !this.participants_section.user_ids.includes(user_id),
+            (user_id) => !existing_participant_ids.has(user_id),
         );
 
         // We are just moving the users around since we still want to show the
@@ -1156,6 +1197,7 @@ export class BuddyList extends BuddyListConf {
             });
         }
         background_task.run_async_function_without_await(this.render_section_headers.bind(this));
+        this.clear_avatar_preload_backgrounds();
     }
 
     start_scroll_handler(): void {

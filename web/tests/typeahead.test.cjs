@@ -75,6 +75,44 @@ run_test("get_emoji_matcher: spaces equivalent to underscores", () => {
     assert_equivalent("traffic l");
 });
 
+run_test("query_matches_string_in_order", () => {
+    function assert_matches(query, source, split_char) {
+        const should_remove_diacritics = !typeahead.contains_diacritics(query);
+        assert.equal(
+            typeahead.query_matches_string_in_order(
+                query,
+                source,
+                split_char,
+                should_remove_diacritics,
+            ),
+            true,
+        );
+    }
+    function assert_no_match(query, source, split_char) {
+        const should_remove_diacritics = !typeahead.contains_diacritics(query);
+        assert.equal(
+            typeahead.query_matches_string_in_order(
+                query,
+                source,
+                split_char,
+                should_remove_diacritics,
+            ),
+            false,
+        );
+    }
+
+    // Query without diacritics should match source with diacritics.
+    assert_matches("jose mar", "José María", " ");
+    assert_matches("maria gon", "María González", " ");
+    assert_matches("jose", "José María", " ");
+
+    // Query with diacritics does diacritic-sensitive matching
+    assert_matches("josé", "José María", " ");
+    assert_no_match("josé", "Jose Maria", " ");
+    assert_matches("josé mar", "José María", " ");
+    assert_no_match("josé mar", "Jose Maria", " ");
+});
+
 run_test("triage", () => {
     const alice = {name: "alice"};
     const alicia = {name: "Alicia"};

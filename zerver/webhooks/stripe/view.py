@@ -27,8 +27,6 @@ ALL_EVENT_TYPES = [
     "charge.dispute.created",
     "charge.failed",
     "charge.succeeded",
-    "charge.succeeded",
-    "customer.created",
     "customer.created",
     "customer.deleted",
     "customer.discount.created",
@@ -41,7 +39,6 @@ ALL_EVENT_TYPES = [
     "invoice.updated",
     "invoice.payment_failed",
     "invoiceitem.created",
-    "charge.refund.updated",
     "charge.refund.updated",
 ]
 

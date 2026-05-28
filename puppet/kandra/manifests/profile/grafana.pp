@@ -12,7 +12,7 @@ class kandra::profile::grafana inherits kandra::profile::base {
   zulip::external_dep { 'grafana':
     version        => $version,
     url            => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${zulip::common::goarch}.tar.gz",
-    tarball_prefix => "grafana-v${version}",
+    tarball_prefix => "grafana-${version}",
     bin            => [$bin],
     cleanup_after  => [Service[supervisor]],
   }
@@ -42,7 +42,6 @@ class kandra::profile::grafana inherits kandra::profile::base {
   }
 
   kandra::teleport::application { 'monitoring': port => '3000' }
-  kandra::firewall_allow { 'grafana': port => '3000' }
   file { "${zulip::common::supervisor_conf_dir}/grafana.conf":
     ensure  => file,
     require => [

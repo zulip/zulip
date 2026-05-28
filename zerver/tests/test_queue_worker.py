@@ -509,9 +509,10 @@ class WorkerTest(ZulipTestCase):
                 "type": "register_push_device_to_bouncer",
                 "payload": {
                     "user_profile_id": 2,
-                    "push_account_id": 3,
+                    "device_id": 3,
                     "bouncer_public_key": "test-key",
                     "encrypted_push_registration": "test-encrypted",
+                    "token_id_base64": "hGsEWGmyyfI=",
                 },
             }
 
@@ -592,7 +593,7 @@ class WorkerTest(ZulipTestCase):
                 )
                 self.assertEqual(
                     warn_logs.output[2],
-                    "WARNING:zerver.worker.missedmessage_mobile_notifications:Maximum retries exceeded for trigger:(user_id=2, push_account_id=3) event:register_push_device_to_bouncer",
+                    "WARNING:zerver.worker.missedmessage_mobile_notifications:Maximum retries exceeded for device_id:3 event:register_push_device_to_bouncer",
                 )
 
     @patch("zerver.worker.email_mirror.mirror_email")

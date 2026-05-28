@@ -22,7 +22,7 @@ hostname "$HOSTNAME"
 sed -i "s/localhost$/localhost $HOSTNAME $SERVER/" /etc/hosts
 
 # Make sure root doesn't have a password
-passwd -d root
+passwd -l root
 
 # Allow root logins
 sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg

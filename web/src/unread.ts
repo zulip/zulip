@@ -283,6 +283,26 @@ class UnreadTopicCounter {
         this.reverse_lookup.delete(message_id);
     }
 
+    update_topic_name_case(stream_id: number, old_topic: string, new_topic: string): void {
+        const per_stream_bucketer = this.bucketer.get(stream_id);
+        if (per_stream_bucketer === undefined) {
+            return;
+        }
+
+        const topic_bucket = per_stream_bucketer.get(old_topic);
+        if (topic_bucket === undefined) {
+            return;
+        }
+
+        // Resetting with new_topic updates the display casing for
+        // topic_bucket.
+        per_stream_bucketer.set(new_topic, topic_bucket);
+
+        for (const message_id of topic_bucket) {
+            this.reverse_lookup.set(message_id, {stream_id, topic: new_topic});
+        }
+    }
+
     get_counts_per_topic(): UnreadTopicCounts {
         let stream_unread_messages = 0;
         const topic_counts_by_stream_id = new Map<
@@ -729,6 +749,14 @@ export function update_unread_topics(
     });
 }
 
+export function update_unread_topic_name_case(
+    stream_id: number,
+    old_topic: string,
+    new_topic: string,
+): void {
+    unread_topic_counter.update_topic_name_case(stream_id, old_topic, new_topic);
+}
+
 export function process_loaded_messages(
     messages: Message[],
     expect_no_new_unreads = false,
@@ -1120,9 +1148,10 @@ export function initialize(params: StateData["unread"]): void {
     unread_direct_message_counter.set_direct_message_groups(unread_msgs.huddles);
     unread_direct_message_counter.set_pms(unread_msgs.pms);
     unread_topic_counter.set_streams(unread_msgs.streams);
+    const direct_message_ids = new Set(unread_direct_message_counter.get_msg_ids());
     for (const message_id of unread_msgs.mentions) {
         unread_mentions_counter.add(message_id);
-        if (unread_direct_message_counter.get_msg_ids().includes(message_id)) {
+        if (direct_message_ids.has(message_id)) {
             direct_message_with_mention_count.add(message_id);
         }
     }

@@ -1,11 +1,11 @@
-import os
-import warnings
 from datetime import datetime, timezone
 from unittest import mock
 
 import orjson
 import time_machine
 from django.conf import settings
+from openai.resources.chat.completions import Completions
+from openai.types.chat import ChatCompletion
 from typing_extensions import override
 
 from analytics.models import UserCount
@@ -15,15 +15,8 @@ from zerver.models import NamedUserGroup
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 
-warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="pydantic")
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="litellm")
-# Avoid network query to fetch the model cost map.
-os.environ["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
-import litellm
-
 # Fixture file to store recorded responses
-LLM_FIXTURES_FILE = "zerver/tests/fixtures/litellm/summary.json"
+LLM_FIXTURES_FILE = "zerver/tests/fixtures/llm/summary.json"
 
 
 class MessagesSummaryTestCase(ZulipTestCase):
@@ -52,36 +45,42 @@ class MessagesSummaryTestCase(ZulipTestCase):
 
         self.mocked_time_patcher = time_machine.travel(not_last_day_of_any_month, tick=False)
         self.mocked_time_patcher.start()
-        if settings.GENERATE_LITELLM_FIXTURES:  # nocoverage
-            self.patcher = mock.patch("litellm.completion", wraps=litellm.completion)
+        if settings.GENERATE_LLM_FIXTURES:  # nocoverage
+            # Forward calls to the real `create` method via side_effect.
+            # autospec=True makes the patched mock honor the descriptor
+            # protocol so the action's `client.chat.completions.create(...)`
+            # call passes `self` (the action's own Completions instance).
+            self.patcher = mock.patch.object(
+                Completions, "create", autospec=True, side_effect=Completions.create
+            )
             self.mocked_completion = self.patcher.start()
 
     @override
     def tearDown(self) -> None:
         self.mocked_time_patcher.stop()
-        if settings.GENERATE_LITELLM_FIXTURES:  # nocoverage
+        if settings.GENERATE_LLM_FIXTURES:  # nocoverage
             self.patcher.stop()
         super().tearDown()
 
     def test_summarize_messages_in_topic(self) -> None:
         narrow = orjson.dumps([["channel", self.channel_name], ["topic", self.topic_name]]).decode()
 
-        if settings.GENERATE_LITELLM_FIXTURES:  # nocoverage
+        if settings.GENERATE_LLM_FIXTURES:  # nocoverage
             # NOTE: You need have proper credentials in zproject/dev-secrets.conf
-            # to generate the fixtures. (Tested using aws bedrock.)
+            # to generate the fixtures.
             # Trigger the API call to extract the arguments.
             self.client_get("/json/messages/summary", dict(narrow=narrow))
             call_args = self.mocked_completion.call_args
 
             # Once we have the arguments, call the original method and save its response.
-            response = self.mocked_completion(**call_args.kwargs).json()
+            response = self.mocked_completion(*call_args.args, **call_args.kwargs)
             with open(LLM_FIXTURES_FILE, "wb") as f:
                 fixture_data = {
                     # Only store model and messages.
                     # We don't want to store any secrets.
                     "model": call_args.kwargs["model"],
                     "messages": call_args.kwargs["messages"],
-                    "response": response,
+                    "response": response.model_dump(mode="json"),
                 }
                 f.write(orjson.dumps(fixture_data, option=orjson.OPT_INDENT_2) + b"\n")
             return
@@ -90,9 +89,11 @@ class MessagesSummaryTestCase(ZulipTestCase):
         with open(LLM_FIXTURES_FILE, "rb") as f:
             fixture_data = orjson.loads(f.read())
 
+        fake_response = ChatCompletion.model_validate(fixture_data["response"])
+
         # Block summary requests if budget set to 0.
         with self.settings(
-            TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+            TOPIC_SUMMARIZATION_MODEL="llama-3.3-70b-versatile",
             MAX_PER_USER_MONTHLY_AI_COST=0,
         ):
             response = self.client_get("/json/messages/summary")
@@ -102,7 +103,7 @@ class MessagesSummaryTestCase(ZulipTestCase):
         # requests occur, which would reflect a problem with how the
         # fixtures were set up.
         with self.settings(
-            TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+            TOPIC_SUMMARIZATION_MODEL="llama-3.3-70b-versatile",
             TOPIC_SUMMARIZATION_API_KEY="test",
         ):
             input_tokens = fixture_data["response"]["usage"]["prompt_tokens"]
@@ -115,7 +116,7 @@ class MessagesSummaryTestCase(ZulipTestCase):
                     property="ai_credit_usage::day", value=credits_used, user_id=self.user.id
                 ).exists()
             )
-            with mock.patch("litellm.completion", return_value=fixture_data["response"]):
+            with mock.patch.object(Completions, "create", return_value=fake_response):
                 payload = self.client_get("/json/messages/summary", dict(narrow=narrow))
                 self.assertEqual(payload.status_code, 200)
             # Check that we recorded this usage.
@@ -127,7 +128,7 @@ class MessagesSummaryTestCase(ZulipTestCase):
 
         # If we reached the credit usage limit, block summary requests.
         with self.settings(
-            TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+            TOPIC_SUMMARIZATION_MODEL="llama-3.3-70b-versatile",
             MAX_PER_USER_MONTHLY_AI_COST=credits_used / 1000000000,
         ):
             response = self.client_get("/json/messages/summary")
@@ -152,14 +153,16 @@ class MessagesSummaryTestCase(ZulipTestCase):
         with open(LLM_FIXTURES_FILE, "rb") as f:
             fixture_data = orjson.loads(f.read())
 
+        fake_response = ChatCompletion.model_validate(fixture_data["response"])
+
         def check_message_summary_permission(user: str, expect_fail: bool = False) -> None:
             self.login(user)
             with (
                 self.settings(
-                    TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+                    TOPIC_SUMMARIZATION_MODEL="llama-3.3-70b-versatile",
                     TOPIC_SUMMARIZATION_API_KEY="test",
                 ),
-                mock.patch("litellm.completion", return_value=fixture_data["response"]),
+                mock.patch.object(Completions, "create", return_value=fake_response),
             ):
                 result = self.client_get("/json/messages/summary", dict(narrow=narrow))
 

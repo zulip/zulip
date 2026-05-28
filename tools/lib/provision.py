@@ -23,7 +23,6 @@ from scripts.lib.zulip_tools import (
     WARNING,
     get_dev_uuid_var_path,
     os_families,
-    parse_os_release,
     run,
     run_as_root,
 )
@@ -72,7 +71,7 @@ except OSError:
     )
     sys.exit(1)
 
-distro_info = parse_os_release()
+distro_info = platform.freedesktop_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "12":  # bookworm
@@ -83,8 +82,10 @@ elif vendor == "ubuntu" and os_version == "22.04":  # jammy
     POSTGRESQL_VERSION = "14"
 elif vendor == "ubuntu" and os_version == "24.04":  # noble
     POSTGRESQL_VERSION = "16"
-elif vendor == "fedora" and os_version == "38":
-    POSTGRESQL_VERSION = "15"
+elif vendor == "ubuntu" and os_version == "26.04":  # resolute
+    POSTGRESQL_VERSION = "18"
+elif vendor == "fedora" and os_version in ("43", "44"):
+    POSTGRESQL_VERSION = "17"
 elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
@@ -118,7 +119,11 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "redis-server",
     "hunspell-en-us",
     "puppet-lint",
-    "default-jre-headless",  # Required by vnu-jar
+    (
+        "openjdk-17-jre-headless"
+        if vendor == "ubuntu" and os_version == "22.04"
+        else "default-jre-headless"
+    ),  # Required by vnu-jar
     # Puppeteer dependencies from here
     "fonts-freefont-ttf",
     "libatk-bridge2.0-0",
@@ -150,9 +155,8 @@ COMMON_YUM_DEPENDENCIES = [
     # Puppeteer dependencies end here.
 ]
 
-BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == "debian" and os_version == "13":
+if (vendor == "debian" and os_version == "13") or (vendor == "ubuntu" and os_version == "26.04"):
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -160,10 +164,10 @@ if vendor == "debian" and os_version == "13":
         *UBUNTU_COMMON_APT_DEPENDENCIES,
         f"postgresql-{POSTGRESQL_VERSION}",
         # Dependency for building PGroonga from source
+        "meson",
         f"postgresql-server-dev-{POSTGRESQL_VERSION}",
         "libgroonga-dev",
         "libmsgpack-dev",
-        "clang",
         *VENV_DEPENDENCIES,
     ]
 elif "debian" in os_families():
@@ -196,10 +200,22 @@ elif "fedora" in os_families():
         f"postgresql{POSTGRESQL_VERSION}",
         f"postgresql{POSTGRESQL_VERSION}-devel",
         # Needed to build PGroonga from source
+        "groonga-devel",
         "msgpack-devel",
+        # PGroonga compiles against <xxhash.h>; on systems where
+        # `xxhash-libs` is already pulled in transitively (e.g. by
+        # blosc2 / pyarrow) but `xxhash-devel` is not, meson detects
+        # libxxhash via pkg-config and skips its vendored fallback,
+        # so we have to provide the header ourselves.
+        "xxhash-devel",
+        "meson",
+        # Provides /usr/lib/rpm/redhat/redhat-hardened-cc1 and
+        # redhat-annobin-cc1 spec files referenced by the CFLAGS that
+        # PostgreSQL's pg_config exports; without it the PGroonga
+        # compile fails with "cannot read spec file".
+        "redhat-rpm-config",
         *VENV_DEPENDENCIES,
     ]
-    BUILD_GROONGA_FROM_SOURCE = True
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
@@ -229,8 +245,6 @@ def install_system_deps() -> None:
 
     # For some platforms, there aren't published PGroonga
     # packages available, so we build them from source.
-    if BUILD_GROONGA_FROM_SOURCE:
-        run_as_root(["./scripts/lib/build-groonga"])
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
 
@@ -360,11 +374,6 @@ def main(options: argparse.Namespace) -> NoReturn:
         with open("scripts/lib/setup-yum-repo", "rb") as fb:
             sha_sum.update(fb.read())
 
-    # hash the content of build-pgroonga if Groonga is built from source
-    if BUILD_GROONGA_FROM_SOURCE:
-        with open("scripts/lib/build-groonga", "rb") as fb:
-            sha_sum.update(fb.read())
-
     # hash the content of build-pgroonga if PGroonga is built from source
     if BUILD_PGROONGA_FROM_SOURCE:
         with open("scripts/lib/build-pgroonga", "rb") as fb:
@@ -429,7 +438,7 @@ def main(options: argparse.Namespace) -> NoReturn:
     # Install Python environment
     run_as_root([*proxy_env, "scripts/lib/install-uv"], sudo_args=["--preserve-env=PATH"])
     run(
-        [*proxy_env, "uv", "sync", "--frozen"],
+        [*proxy_env, "uv", "sync", "--frozen", "--no-managed-python"],
         env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},
     )
     # Clean old symlinks used before uv migration

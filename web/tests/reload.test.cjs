@@ -4,14 +4,26 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
+mock_esm("../src/popup_banners", {
+    open_reloading_application_banner: noop,
+});
 
 // override file-level function call in reload.ts
 window.addEventListener = noop;
 const reload = zrequire("reload");
+const reload_state = zrequire("reload_state");
 
-set_global("document", {});
+set_global("window", {
+    to_$: () => $("window-stub"),
+    location: {
+        href: "http://zulip.zulipdev.com/#",
+        reload: noop,
+        replace: noop,
+    },
+});
 
 run_test("old_metadata_string_is_stale", () => {
     assert.ok(reload.is_stale_refresh_token({reload_data: {hash: ""}}, Date.now()), true);
@@ -41,19 +53,7 @@ run_test("old_token_is_stale ", () => {
     );
 });
 
-run_test("reload", ({override}) => {
-    let idle_timeout_created = false;
-    let idle_timeout_canceled = false;
-    override(document, "to_$", () => ({
-        idle() {
-            idle_timeout_created = true;
-            return {
-                cancel() {
-                    idle_timeout_canceled = true;
-                },
-            };
-        },
-    }));
+run_test("reload", () => {
     channel.get = (opts) => {
         assert.equal(opts.url, "/compatibility");
         opts.success();
@@ -62,32 +62,30 @@ run_test("reload", ({override}) => {
     // No reload has been initiated so "maybe_reload_*" shouldn't
     // do anything
     reload.maybe_reset_pending_reload_timeout("compose_start");
-    assert.equal(idle_timeout_created, false);
-    assert.equal(idle_timeout_canceled, false);
     assert.equal(reload.reset_reload_timeout, undefined);
 
     reload.maybe_reset_pending_reload_timeout("compose_end");
-    assert.equal(idle_timeout_created, false);
-    assert.equal(idle_timeout_canceled, false);
     assert.equal(reload.reset_reload_timeout, undefined);
 
     // Initiate reload should create a new timeout and creates
     // reset_reload_timeout
     reload.initiate({});
-    assert.equal(idle_timeout_created, true);
-    assert.equal(idle_timeout_canceled, false);
     assert.equal(typeof reload.reset_reload_timeout, "function");
 
-    idle_timeout_created = false;
-
     reload.maybe_reset_pending_reload_timeout("compose_start");
-    assert.equal(idle_timeout_canceled, true);
-    assert.equal(idle_timeout_created, true);
-
-    idle_timeout_created = false;
-    idle_timeout_canceled = false;
 
     reload.maybe_reset_pending_reload_timeout("compose_end");
-    assert.equal(idle_timeout_canceled, true);
-    assert.equal(idle_timeout_created, true);
+});
+
+run_test("immediate_reload_skips_compatibility_check", () => {
+    reload_state.clear_for_testing();
+
+    // do_reload_app should run synchronously without the /compatibility
+    // check, so channel.get should not be called. Setting it to
+    // undefined ensures a clear error if it is called unexpectedly.
+    channel.get = undefined;
+
+    reload.initiate({immediate: true, save_compose: true});
+
+    assert.ok(reload_state.is_in_progress());
 });

@@ -1,10 +1,12 @@
 from unittest.mock import MagicMock, patch
 
+from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.validator import wrap_wild_value
 from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
 from zerver.webhooks.bitbucket.view import get_user_info
 
 TOPIC = "Repository name"
@@ -92,7 +94,7 @@ class BitbucketHookTests(WebhookTestCase):
         self.check_webhook("fork", TOPIC, expected_message)
 
     def test_commit_comment_created_event(self) -> None:
-        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/commits/32c4ea19aa3af10acd08e419e2c354941a365d74#comment-3354963) on [32c4ea19aa3](https://bitbucket.org/kolaszek/repository-name/commits/32c4ea19aa3af10acd08e419e2c354941a365d74):\n~~~ quote\nNice fix!\n~~~"
+        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/commits/32c4ea19aa3af10acd08e419e2c354941a365d74#comment-3354963) on [32c4ea19aa3](https://bitbucket.org/kolaszek/repository-name/commits/32c4ea19aa3af10acd08e419e2c354941a365d74):\n``` quote\nNice fix!\n```"
         self.check_webhook("commit_comment_created", TOPIC, expected_message)
 
     def test_commit_status_changed_event(self) -> None:
@@ -100,13 +102,13 @@ class BitbucketHookTests(WebhookTestCase):
         self.check_webhook("commit_status_changed", TOPIC, expected_message)
 
     def test_issue_created_event(self) -> None:
-        expected_message = "Tomasz created [issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n~~~ quote\nSuch a bug\n~~~"
+        expected_message = "Tomasz created [issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n``` quote\nSuch a bug\n```"
         self.check_webhook("issue_created", TOPIC_ISSUE_EVENTS, expected_message)
 
     def test_issue_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "Tomasz created [issue #1 Bug](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n~~~ quote\nSuch a bug\n~~~"
+        expected_message = "Tomasz created [issue #1 Bug](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n``` quote\nSuch a bug\n```"
         self.check_webhook("issue_created", expected_topic_name, expected_message)
 
     def test_issue_updated_event(self) -> None:
@@ -124,7 +126,7 @@ class BitbucketHookTests(WebhookTestCase):
         self.check_webhook("issue_commented", expected_topic_name, expected_message)
 
     def test_pull_request_created_event(self) -> None:
-        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n``` quote\ndescription\n```"
         self.check_webhook(
             "pull_request_created_or_updated",
             TOPIC_PR_EVENTS,
@@ -133,7 +135,7 @@ class BitbucketHookTests(WebhookTestCase):
         )
 
     def test_pull_request_created_without_reviewer_username_event(self) -> None:
-        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n``` quote\ndescription\n```"
         self.check_webhook(
             "pull_request_created_or_updated_without_username",
             TOPIC_PR_EVENTS,
@@ -144,7 +146,7 @@ class BitbucketHookTests(WebhookTestCase):
     def test_pull_request_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "Tomasz created [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz created [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n``` quote\ndescription\n```"
         self.check_webhook(
             "pull_request_created_or_updated",
             expected_topic_name,
@@ -153,7 +155,7 @@ class BitbucketHookTests(WebhookTestCase):
         )
 
     def test_pull_request_updated_event(self) -> None:
-        expected_message = "Tomasz updated [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz updated [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek):\n\n``` quote\ndescription\n```"
         self.check_webhook(
             "pull_request_created_or_updated",
             TOPIC_PR_EVENTS,
@@ -209,7 +211,7 @@ class BitbucketHookTests(WebhookTestCase):
         )
 
     def test_pull_request_comment_created_event(self) -> None:
-        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
+        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n``` quote\nComment1\n```"
         self.check_webhook(
             "pull_request_comment_action",
             TOPIC_PR_EVENTS,
@@ -220,7 +222,7 @@ class BitbucketHookTests(WebhookTestCase):
     def test_pull_request_comment_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
+        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n``` quote\nComment1\n```"
         self.check_webhook(
             "pull_request_comment_action",
             expected_topic_name,
@@ -229,7 +231,7 @@ class BitbucketHookTests(WebhookTestCase):
         )
 
     def test_pull_request_comment_updated_event(self) -> None:
-        expected_message = "Tomasz updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
+        expected_message = "Tomasz updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n``` quote\nComment1\n```"
         self.check_webhook(
             "pull_request_comment_action",
             TOPIC_PR_EVENTS,
@@ -240,7 +242,7 @@ class BitbucketHookTests(WebhookTestCase):
     def test_pull_request_comment_updated_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "Tomasz updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
+        expected_message = "Tomasz updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n``` quote\nComment1\n```"
         self.check_webhook(
             "pull_request_comment_action",
             expected_topic_name,
@@ -249,7 +251,7 @@ class BitbucketHookTests(WebhookTestCase):
         )
 
     def test_pull_request_comment_deleted_event(self) -> None:
-        expected_message = "Tomasz deleted a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
+        expected_message = "Tomasz deleted a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n``` quote\nComment1\n```"
         self.check_webhook(
             "pull_request_comment_action",
             TOPIC_PR_EVENTS,
@@ -442,16 +444,28 @@ class BitbucketHookTests(WebhookTestCase):
 
         self.assertEqual(get_user_info(request, wrap_wild_value("request", {})), "Unknown user")
 
-        dct = dict(
+        user = dict(
             nickname="alice",
             noisy_field="whatever",
             display_name="Alice Smith",
         )
 
-        self.assertEqual(get_user_info(request, wrap_wild_value("request", dct)), "Alice Smith")
-        del dct["display_name"]
+        self.assertEqual(get_user_info(request, wrap_wild_value("request", user)), "Alice Smith")
+        del user["display_name"]
 
-        self.assertEqual(get_user_info(request, wrap_wild_value("request", dct)), "alice")
-        del dct["nickname"]
+        self.assertEqual(get_user_info(request, wrap_wild_value("request", user)), "alice")
+        del user["nickname"]
 
-        self.assertEqual(get_user_info(request, wrap_wild_value("request", dct)), "Unknown user")
+        self.assertEqual(get_user_info(request, wrap_wild_value("request", user)), "Unknown user")
+
+    def test_push_event_message_silent_mention(self) -> None:
+        realm = get_realm("zulip")
+        atlassian_field = try_add_realm_default_custom_profile_field(realm, "atlassian")
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(
+            hamlet,
+            [{"id": atlassian_field.id, "value": "557058:c0b72ad0-1cb5-4018-9cdc-0cde8492c443"}],
+        )
+        commit_info = "* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"
+        expected_message = f"@_**{hamlet.full_name}|{hamlet.id}** [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n{commit_info}"
+        self.check_webhook("push", TOPIC_BRANCH_EVENTS, expected_message)

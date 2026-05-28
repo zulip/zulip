@@ -28,6 +28,7 @@ from zerver.lib.email_mirror import (
     create_missed_message_address,
     filter_footer,
     generate_missed_message_token,
+    get_message_part_by_type,
     get_missed_message_token_from_address,
     is_forwarded,
     is_missed_message_address,
@@ -45,15 +46,18 @@ from zerver.lib.email_mirror_helpers import (
     get_email_gateway_message_string_from_address,
 )
 from zerver.lib.email_mirror_server import ZulipMessageHandler, send_to_postmaster
-from zerver.lib.email_notifications import convert_html_to_markdown
+from zerver.lib.markdown.from_html import convert_html_to_markdown
+from zerver.lib.message import truncate_topic
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
 from zerver.models import Attachment, Recipient, Stream, UserProfile
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
 
@@ -306,24 +310,27 @@ class TestStreamEmailMessages(ZulipTestCase):
         email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
         stream_to_address = encode_email_address(stream.name, email_token)
 
-        incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages body")
+        for header_name, header_value in [
+            ("Delivered-To", stream_to_address),
+            ("Envelope-To", f"<{stream_to_address}>"),
+        ]:
+            with self.subTest(header_name):
+                incoming_valid_message = EmailMessage()
+                incoming_valid_message.set_content(f"{header_name} body")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
-        incoming_valid_message["From"] = self.example_email("hamlet")
-        # Simulate a mailing list
-        incoming_valid_message["To"] = "foo-mailinglist@example.com"
-        incoming_valid_message["Envelope-To"] = stream_to_address
-        incoming_valid_message["Reply-to"] = self.example_email("othello")
+                incoming_valid_message["Subject"] = f"{header_name} subject"
+                incoming_valid_message["From"] = self.example_email("hamlet")
+                incoming_valid_message["To"] = "foo-mailinglist@example.com"
+                incoming_valid_message["Reply-to"] = self.example_email("othello")
+                incoming_valid_message[header_name] = header_value
 
-        process_message(incoming_valid_message)
+                process_message(incoming_valid_message)
 
-        # Hamlet is subscribed to this stream so should see the email message from Othello.
-        message = most_recent_message(user_profile)
-
-        self.assertEqual(message.content, "TestStreamEmailMessages body")
-        self.assert_message_stream_name(message, stream.name)
-        self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
+                # Hamlet is subscribed to this stream so should see the email message from Othello.
+                message = most_recent_message(user_profile)
+                self.assertEqual(message.content, f"{header_name} body")
+                self.assert_message_stream_name(message, stream.name)
+                self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     def test_receive_stream_email_messages_blank_subject_success(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1289,12 +1296,13 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        user_profile = self.example_user("othello")
-        usermessage = most_recent_usermessage(user_profile)
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        usermessage = most_recent_usermessage(othello)
 
         # we don't want to send actual emails but we do need to create and store the
         # token for looking up who did reply.
-        mm_address = create_missed_message_address(user_profile, usermessage.message)
+        mm_address = create_missed_message_address(othello, usermessage.message)
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
@@ -1304,17 +1312,17 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(22):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
-        user_profile = self.example_user("hamlet")
-        message = most_recent_message(user_profile)
+        message = most_recent_message(hamlet)
 
+        direct_group_message = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
         self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("othello"))
-        self.assertEqual(message.recipient.type_id, user_profile.id)
-        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message.recipient.type_id, direct_group_message.id)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_receive_missed_group_direct_message_email_messages(self) -> None:
         # Build dummy messages for message notification email reply.
@@ -1820,6 +1828,59 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
             stripped = strip_from_subject(subject["original_subject"])
             self.assertEqual(stripped, subject["stripped_subject"])
 
+    def test_subject_added_for_every_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        stream = self.subscribe(hamlet, "Denmark")
+
+        long_subject = "S" * (MAX_TOPIC_NAME_LENGTH + 10)
+        email_body = "TestStreamEmailMessages body"
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        stream_to_address = encode_email_address(stream.name, email_token)
+        stream_to_address_with_sender = encode_email_address(
+            stream.name, email_token, show_sender=True
+        )
+
+        def get_incoming_valid_message(to: str, subject: str = long_subject) -> EmailMessage:
+            message = EmailMessage()
+            message.set_content(email_body)
+            message["Subject"] = subject
+            message["From"] = self.example_email("hamlet")
+            message["To"] = to
+            message["Reply-to"] = self.example_email("othello")
+            return message
+
+        process_message(get_incoming_valid_message(stream_to_address))
+        message = most_recent_message(hamlet)
+        self.assertEqual(truncate_topic(long_subject), message.topic_name())
+        self.assertEqual(
+            f"**Subject:** {long_subject}\n\n{email_body}",
+            message.content,
+        )
+
+        process_message(get_incoming_valid_message(stream_to_address_with_sender))
+        message = most_recent_message(hamlet)
+        self.assertEqual(truncate_topic(long_subject), message.topic_name())
+        self.assertEqual(
+            f"**From:** {hamlet.delivery_email}\n**Subject:** {long_subject}\n\n{email_body}",
+            message.content,
+        )
+
+        # Two different long subjects that truncate to the same topic name
+        # should each still show their full subject in the body.
+        subject_a = "S" * MAX_TOPIC_NAME_LENGTH + "AAAA"
+        subject_b = "S" * MAX_TOPIC_NAME_LENGTH + "BBBB"
+        self.assertEqual(truncate_topic(subject_a), truncate_topic(subject_b))
+
+        for full_subject in (subject_a, subject_b):
+            process_message(get_incoming_valid_message(stream_to_address, subject=full_subject))
+            message = most_recent_message(hamlet)
+            self.assertEqual(truncate_topic(full_subject), message.topic_name())
+            self.assertEqual(
+                f"**Subject:** {full_subject}\n\n{email_body}",
+                message.content,
+            )
+
 
 # If the Content-Type header didn't specify a charset, the text content
 # of the email used to not be properly found. Test that this is fixed:
@@ -1872,6 +1933,21 @@ class TestContentTypeInvalidCharset(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "Email fixture 1.txt body")
+
+    def test_israel_encoding_alias(self) -> None:
+        # in hebrew: shalom (שלום)
+        hebrew_text_bytes = b"\xf9\xec\xe5\xed"
+
+        message = EmailMessage()
+        message.set_payload(hebrew_text_bytes)
+
+        # testing exact string
+        message["Content-Type"] = 'text/plain; charset="iso-8859-8-i"'
+
+        # return the decoded string
+        decoded_body = get_message_part_by_type(message, "text/plain")
+
+        self.assertEqual(decoded_body, "שלום")
 
 
 class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):

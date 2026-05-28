@@ -3,6 +3,8 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -22,6 +24,8 @@ message_lists.current = {};
 message_lists.all_rendered_message_lists = () => [message_lists.current];
 
 const people = zrequire("people");
+const linkifiers = zrequire("linkifiers");
+const markdown = zrequire("markdown");
 const message_events = zrequire("message_events");
 const message_helper = zrequire("message_helper");
 const {set_realm} = zrequire("state_data");
@@ -36,19 +40,19 @@ set_realm(realm);
 
 initialize_user_settings({user_settings: {}});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 32,
     full_name: "Alice Patel",
-};
+});
 
 people.add_active_user(alice);
 
-const denmark = {
-    subscribed: false,
+const denmark = make_stream({
+    subscribed: true,
     name: "Denmark",
     stream_id: 101,
-};
+});
 stream_data.add_sub_for_tests(denmark);
 
 function test_helper(side_effects) {
@@ -108,10 +112,10 @@ run_test("update_messages", ({override, override_rewire}) => {
 
     message_lists.current.view = {};
 
-    let rendered_mgs;
+    let rendered_msgs;
 
     message_lists.current.view.rerender_messages = (msgs_to_rerender, message_content_edited) => {
-        rendered_mgs = msgs_to_rerender;
+        rendered_msgs = msgs_to_rerender;
         assert.equal(message_content_edited, true);
     };
 
@@ -142,7 +146,7 @@ run_test("update_messages", ({override, override_rewire}) => {
 
     helper.verify();
 
-    assert.deepEqual(rendered_mgs, [
+    assert.deepEqual(rendered_msgs, [
         {
             avatar_url: `/avatar/${alice.user_id}`,
             display_reply_to: undefined,
@@ -177,3 +181,70 @@ run_test("update_messages", ({override, override_rewire}) => {
         },
     ]);
 });
+
+run_test(
+    "update_messages case-only topic name change updates the topic name in UI",
+    ({override_rewire}) => {
+        override_rewire(message_events, "update_views_filtered_on_message_property", () => {}, {
+            unused: false,
+        });
+        linkifiers.initialize([]);
+        markdown.initialize({
+            get_linkifier_map: linkifiers.get_linkifier_map,
+        });
+
+        const old_topic = "main failing";
+        const new_topic = "MAIN failing";
+        const raw_message = {
+            id: 222,
+            display_recipient: denmark.name,
+            flags: [],
+            sender_id: alice.user_id,
+            stream_id: denmark.stream_id,
+            topic: old_topic,
+            topic_links: markdown.get_topic_links(old_topic),
+            type: "stream",
+            reactions: [],
+            submessages: [],
+            avatar_url: `/avatar/${alice.user_id}`,
+        };
+
+        const original_message = message_helper.process_new_message({
+            type: "server_message",
+            raw_message,
+        }).message;
+
+        message_lists.current.view = {};
+        let rendered_msgs;
+        message_lists.current.view.rerender_messages = (msgs_to_rerender) => {
+            rendered_msgs = msgs_to_rerender;
+        };
+        const new_topic_links = markdown.get_topic_links(new_topic);
+
+        const events = [
+            {
+                message_id: original_message.id,
+                message_ids: [original_message.id],
+                user_id: alice.user_id,
+                flags: [],
+                edit_timestamp: 1700000000,
+                stream_id: denmark.stream_id,
+                orig_subject: old_topic,
+                topic: new_topic,
+                topic_links: new_topic_links,
+                rendering_only: false,
+            },
+        ];
+
+        const $message_edit_history_modal = $.create("#message-edit-history");
+        $message_edit_history_modal.set_parents_result(".micromodal", $.create("micromodal"));
+
+        message_events.update_messages(events);
+
+        assert.equal(original_message.topic, new_topic);
+        assert.deepEqual(original_message.topic_links, new_topic_links);
+        const topic_names = stream_topic_history.get_recent_topic_names(denmark.stream_id);
+        assert.equal(topic_names[0], new_topic);
+        assert.deepEqual(rendered_msgs, [original_message]);
+    },
+);

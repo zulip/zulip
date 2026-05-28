@@ -11,6 +11,7 @@ import glob
 import os
 import pwd
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -134,11 +135,10 @@ def setup_shell_profile(shell_profile: str) -> None:
             "if [ -L /srv/zulip-py3-venv ]; then\n"  # For development environment downgrades
             "source /srv/zulip-py3-venv/bin/activate\n"  # Not indented so old versions recognize and avoid re-adding this
             "else\n"
-            f"source {os.path.join(VENV_PATH, 'bin', 'activate')}\n"
+            f"source {shlex.quote(os.path.join(VENV_PATH, 'bin', 'activate'))}\n"
             "fi\n"
         )
-    if os.path.exists("/srv/zulip"):
-        zulip_code += "cd /srv/zulip\n"
+    zulip_code += f"cd {shlex.quote(ZULIP_PATH)}\n"
     if zulip_code:
         zulip_code = f"\n# begin Zulip setup\n{zulip_code}# end Zulip setup\n"
 
@@ -323,6 +323,13 @@ def main(options: argparse.Namespace) -> int:
             TEST_DATABASE,
             destroy_leaked_test_databases,
         )
+
+        if os.environ.get("CODESPACES") == "true":
+            print("Starting background services explicitly for GitHub Codespaces...")
+            run_as_root(["service", "postgresql", "start"])
+            run_as_root(["service", "rabbitmq-server", "start"])
+            run_as_root(["service", "redis-server", "start"])
+            run_as_root(["service", "memcached", "start"])
 
         assert settings.RABBITMQ_PASSWORD is not None
         if options.is_force or need_to_run_configure_rabbitmq([settings.RABBITMQ_PASSWORD]):

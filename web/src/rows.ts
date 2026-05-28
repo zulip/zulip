@@ -74,6 +74,12 @@ export function visible_range(start_id: number, end_id: number): JQuery[] {
     return rows;
 }
 
+export function get_ids_in_range(start_id: number, end_id: number): number[] {
+    const rows = visible_range(start_id, end_id);
+    const ids = rows.map(($row) => id($row));
+    return ids;
+}
+
 export function is_overlay_row($row: JQuery): boolean {
     return $row.closest(".overlay-message-row").length > 0;
 }

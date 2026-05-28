@@ -23,7 +23,6 @@ from zerver.lib.html_to_text import get_content_description
 from zerver.lib.integrations import (
     CATEGORIES,
     INTEGRATIONS,
-    META_CATEGORY,
     HubotIntegration,
     IncomingWebhookIntegration,
     Integration,
@@ -283,12 +282,12 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_html = ""
         tree = html.fragment_fromstring(sidebar_html, create_parent=True)
         if not context.get("page_is_policy_center", False):
-            home_h1 = Element("h1")
-            home_link = SubElement(home_h1, "a")
+            home_h2 = Element("h2")
+            home_link = SubElement(home_h2, "a")
             home_link.attrib["class"] = "no-underline"
             home_link.attrib["href"] = context["doc_root"]
             home_link.text = context["doc_root_title"] + " home"
-            tree.insert(0, home_h1)
+            tree.insert(0, home_h2)
         url = context["doc_root"] + article
         # Remove ID attributes from sidebar headings so they don't conflict with index page headings
         headings = sidebar_headings(tree)
@@ -347,10 +346,7 @@ def add_integrations_open_graph_context(context: dict[str, Any], request: HttpRe
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        if path_name in META_CATEGORY:
-            context["PAGE_TITLE"] = f"{category} | Zulip integrations"
-        else:
-            context["PAGE_TITLE"] = f"{category} tools | Zulip integrations"
+        context["PAGE_TITLE"] = f"{category} | Zulip integrations"
         context["PAGE_DESCRIPTION"] = description
 
     elif path_name == "integrations":

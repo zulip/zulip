@@ -127,6 +127,23 @@ With over 100 reviews on Capterra, Zulip's 4.8 star rating beat out reviews for
 other team chat apps, earning Capterra's [Best Value
 badge](https://www.capterra.com/p/197945/Zulip/).
 
+Since then, Zulip has continued to provide a user-respecting
+[alternative](https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/) to
+team chat apps developed by mega-corporations.
+
+## The Zulip Foundation
+
+In 2026, we [announced the
+creation](https://blog.zulip.com/2026/05/15/announcing-zulip-foundation/) of a
+nonprofit, independent
+Zulip Foundation, which became the new steward of the Zulip project. Kandra
+Labs is now fully owned by the Zulip Foundation, and remains committed to being
+a trustworthy, transparent vendor for all our customers.
+
+The new structure provides stability, a renewed commitment to our
+[values](/values), and opportunities for charitable fundraising to support our
+mission.
+
 ## Press highlights
 
 - June 2025: Zulip's head of product is interviewed about how we’ve built a
@@ -206,6 +223,11 @@ badge](https://www.capterra.com/p/197945/Zulip/).
   [Podcast.__init__](https://www.pythonpodcast.com/about/).
 
 ## Major server releases and product announcements
+
+- April 2026: [Zulip Server 12.0
+  released](https://blog.zulip.com/2026/04/27/zulip-12-0-released/), with almost
+  5500 new commits. 160 people contributed commits to Zulip since the 11.0
+  release.
 
 - August 2025: [Zulip Server 11.0
   released](https://blog.zulip.com/2025/08/13/zulip-11-0-released/), with over
@@ -324,7 +346,7 @@ badge](https://www.capterra.com/p/197945/Zulip/).
   post](https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/)
   explains Zulip’s values-driven approach and why we ask for support.
 
-- Kandra Labs is supported by nearly $1M in <a
+- Kandra Labs has been supported by nearly $1M in <a
   href="https://seedfund.nsf.gov/">SBIR grants</a> from the US National Science
   Foundation.
 

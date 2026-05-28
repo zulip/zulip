@@ -283,7 +283,6 @@ export function set_up_toggler(): void {
     });
 
     for (const $modal of modals) {
-        scroll_util.get_scroll_element($modal).prop("tabindex", 0);
         keydown_util.handle({
             $elem: $modal,
             handlers: {

@@ -10,6 +10,7 @@ from unittest.result import TestResult
 
 import orjson
 from django.conf import settings
+from django.core.signals import setting_changed
 from django.db import ProgrammingError, connections
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -21,11 +22,24 @@ from scripts.lib.zulip_tools import (
     get_dev_uuid_var_path,
     get_or_create_dev_uuid_var_path,
 )
-from zerver.lib import test_helpers
+from zerver.lib import test_helpers, upload
 from zerver.lib.partial import partial
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_fixtures import BACKEND_DATABASE_TEMPLATE
 from zerver.lib.test_helpers import append_instrumentation_data, write_instrumentation_reports
+
+
+def _reset_upload_backend_on_settings_change(*, setting: str, **kwargs: object) -> None:
+    # The upload backend is lazy-initialized from settings.LOCAL_UPLOADS_DIR
+    # (and related settings) on first use.  A test that overrides those via
+    # override_settings() without @use_s3_backend would otherwise cache a
+    # backend that no longer matches the settings active for later tests
+    # in the same worker.
+    if setting in ("LOCAL_UPLOADS_DIR", "S3_AUTH_UPLOADS_BUCKET", "S3_AVATAR_BUCKET"):
+        upload._upload_backend = None
+
+
+setting_changed.connect(_reset_upload_backend_on_settings_change)
 
 # We need to pick an ID for this test-backend invocation, and store it
 # in this global so it can be used in init_worker; this is used to
@@ -249,14 +263,6 @@ def initialize_worker_path(worker_id: int) -> None:
     )
     settings.LOCAL_AVATARS_DIR = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
     settings.LOCAL_FILES_DIR = os.path.join(settings.LOCAL_UPLOADS_DIR, "files")
-
-    # Perform the import of upload_backend now, because the backend is
-    # chosen at import time; this prevents @use_s3_backend from
-    # effectively caching the backend
-    from zerver.lib.upload import upload_backend
-    from zerver.lib.upload.local import LocalUploadBackend
-
-    assert isinstance(upload_backend, LocalUploadBackend)
 
 
 class Runner(DiscoverRunner):

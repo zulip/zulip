@@ -10,6 +10,8 @@ const {
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -55,43 +57,43 @@ set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     user_id: 999,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-};
-const fred = {
+});
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-};
-const jill = {
+});
+const jill = make_user({
     email: "jill@zulip.com",
     user_id: 3,
     full_name: "Jill Hill",
-};
-const mark = {
+});
+const mark = make_user({
     email: "mark@zulip.com",
     user_id: 4,
     full_name: "Marky Mark",
-};
-const norbert = {
+});
+const norbert = make_user({
     email: "norbert@zulip.com",
     user_id: 5,
     full_name: "Norbert Oswald",
-};
+});
 
-const zoe = {
+const zoe = make_user({
     email: "zoe@example.com",
     user_id: 6,
     full_name: "Zoe Yang",
-};
+});
 
 people.add_active_user(alice, "server_events");
 people.add_active_user(fred, "server_events");
@@ -105,7 +107,11 @@ people.initialize_current_user(me.user_id);
 const $alice_stub = $.create("alice stub");
 const $fred_stub = $.create("fred stub");
 
-const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
+const rome_sub = make_stream({
+    name: "Rome",
+    subscribed: true,
+    stream_id: 1001,
+});
 function add_sub_and_set_as_current_narrow(sub) {
     stream_data.add_sub_for_tests(sub);
     const filter_terms = [{operator: "stream", operand: String(sub.stream_id)}];
@@ -424,29 +430,29 @@ test("insert_one_user_into_empty_list", ({override}) => {
 });
 
 test("insert_alice_then_fred", ({override}) => {
-    let $other_users_appended;
-    override(buddy_list.$other_users_list, "append", ($element) => {
-        $other_users_appended = $element;
+    let other_users_appended;
+    override(buddy_list.$other_users_list[0], "append", (element) => {
+        other_users_appended = element;
     });
     override(padded_widget, "update_padding", noop);
     override(buddy_list_presence, "update_indicators", noop);
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
-    assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    assert.ok(other_users_appended.innerHTML.includes('data-user-id="1"'));
+    assert.ok(other_users_appended.innerHTML.includes("user-circle-active"));
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
-    assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    assert.ok(other_users_appended.innerHTML.includes('data-user-id="2"'));
+    assert.ok(other_users_appended.innerHTML.includes("user-circle-active"));
 });
 
 test("insert_fred_then_alice_then_rename, both as users matching view", ({override}) => {
     add_sub_and_set_as_current_narrow(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id, fred.user_id]);
 
-    let $users_matching_view_appended;
-    override(buddy_list.$users_matching_view_list, "append", ($element) => {
-        $users_matching_view_appended = $element;
+    let users_matching_view_appended;
+    override(buddy_list.$users_matching_view_list[0], "append", (element) => {
+        users_matching_view_appended = element;
     });
     override(padded_widget, "update_padding", noop);
     override(buddy_list_presence, "update_indicators", noop);
@@ -454,22 +460,22 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({overri
     buddy_list_add_user_matching_view(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
-    assert.ok($users_matching_view_appended.selector.includes("user-circle-active"));
+    assert.ok(users_matching_view_appended.innerHTML.includes('data-user-id="2"'));
+    assert.ok(users_matching_view_appended.innerHTML.includes("user-circle-active"));
 
-    let $inserted;
-    $fred_stub.before = ($element) => {
-        $inserted = $element;
+    let inserted;
+    $fred_stub[0].before = (element) => {
+        inserted = element;
     };
 
     let fred_removed;
-    $fred_stub.remove = () => {
+    $fred_stub[0].remove = () => {
         fred_removed = true;
     };
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok($inserted.selector.includes('data-user-id="1"'));
-    assert.ok($inserted.selector.includes("user-circle-active"));
+    assert.ok(inserted.innerHTML.includes('data-user-id="1"'));
+    assert.ok(inserted.innerHTML.includes("user-circle-active"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -479,13 +485,13 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({overri
     };
     people.add_active_user(fred_with_new_name);
 
-    $alice_stub.before = ($element) => {
-        $inserted = $element;
+    $alice_stub[0].before = (element) => {
+        inserted = element;
     };
 
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
-    assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
+    assert.ok(users_matching_view_appended.innerHTML.includes('data-user-id="2"'));
 
     // restore old Fred data
     people.add_active_user(fred);
@@ -495,9 +501,9 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     add_sub_and_set_as_current_narrow(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, []);
 
-    let $other_users_appended;
-    override(buddy_list.$other_users_list, "append", ($element) => {
-        $other_users_appended = $element;
+    let other_users_appended;
+    override(buddy_list.$other_users_list[0], "append", (element) => {
+        other_users_appended = element;
     });
     override(padded_widget, "update_padding", noop);
     override(buddy_list_presence, "update_indicators", noop);
@@ -506,22 +512,22 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     buddy_list_add_other_user(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
-    assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    assert.ok(other_users_appended.innerHTML.includes('data-user-id="2"'));
+    assert.ok(other_users_appended.innerHTML.includes("user-circle-active"));
 
-    let $inserted;
-    $fred_stub.before = ($element) => {
-        $inserted = $element;
+    let inserted;
+    $fred_stub[0].before = (element) => {
+        inserted = element;
     };
 
     let fred_removed;
-    $fred_stub.remove = () => {
+    $fred_stub[0].remove = () => {
         fred_removed = true;
     };
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok($inserted.selector.includes('data-user-id="1"'));
-    assert.ok($inserted.selector.includes("user-circle-active"));
+    assert.ok(inserted.innerHTML.includes('data-user-id="1"'));
+    assert.ok(inserted.innerHTML.includes("user-circle-active"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -531,13 +537,13 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     };
     people.add_active_user(fred_with_new_name);
 
-    $alice_stub.before = ($element) => {
-        $inserted = $element;
+    $alice_stub[0].before = (element) => {
+        inserted = element;
     };
 
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
-    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
+    assert.ok(other_users_appended.innerHTML.includes('data-user-id="2"'));
 
     // restore old Fred data
     people.add_active_user(fred);

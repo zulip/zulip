@@ -1,5 +1,6 @@
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
+import * as thumbnail from "./thumbnail.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 
 export function rerender_messages_view(): void {
@@ -89,4 +90,9 @@ export function update_user_status_emoji(
 ): void {
     message_store.update_status_emoji_info(user_id, status_emoji_info);
     rerender_messages_view_for_user(user_id);
+}
+
+export function update_thumbnails(): void {
+    thumbnail.set_media_preview_size_css_variable();
+    rerender_messages_view();
 }

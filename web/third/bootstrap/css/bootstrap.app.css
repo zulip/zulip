@@ -34,34 +34,6 @@ button {
 p {
   margin: 0 0 10px;
 }
-h1,
-h2,
-h3,
-h4 {
-  margin: 10px 0;
-  font-family: inherit;
-  font-weight: bold;
-  line-height: 20px;
-  color: inherit;
-  text-rendering: optimizelegibility;
-}
-h1,
-h2,
-h3 {
-  line-height: var(--header-line-height);
-}
-h1 {
-  font-size: 38.5px;
-}
-h2 {
-  font-size: 31.5px;
-}
-h3 {
-  font-size: 24.5px;
-}
-h4 {
-  font-size: 17.5px;
-}
 ul,
 ol {
   padding: 0;

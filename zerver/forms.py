@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 import orjson
-from altcha import verify_solution
+from altcha.v1 import verify_solution
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, password_validation

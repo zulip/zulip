@@ -16,6 +16,7 @@ from zerver.lib.exceptions import (
     ChannelExistsError,
     IncompatibleParametersError,
     JsonableError,
+    MissingAuthenticationError,
     OrganizationOwnerRequiredError,
 )
 from zerver.lib.stream_subscription import (
@@ -1026,6 +1027,10 @@ def get_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     return Stream.objects.filter(realm=realm, invite_only=False, history_public_to_subscribers=True)
 
 
+def get_archived_streams_queryset(realm: Realm) -> QuerySet[Stream]:
+    return Stream.objects.filter(realm=realm, deactivated=True)
+
+
 def get_web_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     # This should match the include_web_public code path in do_get_streams.
     return Stream.objects.filter(
@@ -1072,6 +1077,9 @@ def access_stream_by_name(
 
 
 def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
+    if not realm.web_public_streams_enabled():
+        raise MissingAuthenticationError
+
     error = _("Invalid channel ID")
     try:
         stream = get_stream_by_id_in_realm(stream_id, realm)
@@ -1130,11 +1138,19 @@ def bulk_can_access_stream_metadata_user_ids(streams: list[Stream]) -> dict[int,
     result: dict[int, set[int]] = {}
     public_streams = []
     private_streams = []
+    web_public_streams = []
     for stream in streams:
-        if stream.is_public():
+        if stream.is_web_public:
+            web_public_streams.append(stream)
+        elif stream.is_public():
             public_streams.append(stream)
         else:
             private_streams.append(stream)
+
+    if len(web_public_streams) > 0:
+        active_user_id_set = set(active_user_ids(web_public_streams[0].realm_id))
+        for stream in web_public_streams:
+            result[stream.id] = active_user_id_set
 
     if len(public_streams) > 0:
         guest_subscriptions = get_guest_user_ids_for_streams(

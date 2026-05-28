@@ -90,7 +90,24 @@ tippy.default.setDefaultProps({
     // with appending it to `body` which has side effect of tooltips
     // sticking around due to browser not communicating to tippy that
     // the element has been removed without having a Mutation Observer.
-    appendTo: "parent",
+    //
+    // Append to reference.parentElement (equivalent to tippy's "parent"
+    // shorthand), or document.body if the reference has been detached,
+    // since tippy crashes on a null parent when show() fires after the
+    // reference is removed mid-delay.
+    appendTo: (reference) => reference.parentElement ?? document.body,
+    // If the reference was removed from the DOM during the show delay,
+    // destroy the instance instead of mounting a tooltip with no
+    // anchor. Per-instance `onShow` overrides this default, so the
+    // `appendTo` fallback above also exists as a backstop for those
+    // call sites.
+    onShow(instance) {
+        if (!instance.reference.isConnected) {
+            instance.destroy();
+            return false;
+        }
+        return undefined;
+    },
     // To add a text tooltip, override this by setting data-tippy-content.
     // To add an HTML tooltip, set data-tooltip-template-id to the id of a <template>.
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
@@ -191,7 +208,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name",
+        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name, #user_group_settings_title .selected-group-name",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "top",
@@ -307,7 +324,6 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "#scroll-to-bottom-button-clickable-area",
             ".spectator_narrow_login_button",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
@@ -319,6 +335,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
+            "#scroll-to-bottom-button-clickable-area",
             "#compose_close",
             ".expand-composebox-button",
             ".collapse-composebox-button",
@@ -426,10 +443,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "[data-tab-key='available'].disabled",
-            "[data-tab-key='all-streams'].disabled",
-        ].join(","),
+        target: ["[data-tab-key='available'].disabled", "[data-tab-key='all'].disabled"].join(","),
         content: $t({
             defaultMessage: "You can only view channels that you are subscribed to.",
         }),
@@ -556,18 +570,6 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#stream_creation_form .add_subscribers_disabled",
-        content: $t({
-            defaultMessage:
-                "You do not have permission to add other users to channels in this organization.",
-        }),
-        appendTo: () => document.body,
-        onHidden(instance) {
-            instance.destroy();
-        },
-    });
-
-    tippy.delegate("body", {
         target: ".add-users-button-wrapper",
         onShow(instance) {
             const $wrapper = $(instance.reference);
@@ -679,6 +681,7 @@ export function initialize(): void {
         target: [
             ".custom-profile-field-value",
             ".copy-custom-profile-field-link",
+            ".copy-custom-profile-field-long-text",
             "#popover-menu-copy-email",
             ".personal-menu-clear-status",
             ".user-card-clear-status-button",
@@ -1025,6 +1028,71 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".recent-view-channel-name",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            // Show channel name tooltip only if it's truncated.
+            if (instance.reference.scrollWidth > instance.reference.clientWidth) {
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#recent-view-content-tbody .on_hover_topic_read",
+        delay: LONG_HOVER_DELAY,
+        popperOptions: {
+            modifiers: [
+                {
+                    // We pick the placement explicitly per row in
+                    // onShow below, so disable Popper's automatic
+                    // flipping by providing no fallback placements.
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: [],
+                    },
+                },
+            ],
+        },
+        onShow(instance) {
+            // The first row's tooltip would overflow the top of the
+            // recent view, so we place it to the left instead. All
+            // other rows' tooltips are placed on top.
+            const is_first_row =
+                $(instance.reference).closest("#recent-view-content-tbody tr:first-child").length >
+                0;
+            instance.setProps({placement: is_first_row ? "left" : "top"});
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".recent-view-conversation-link",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+        onShow(instance) {
+            const name_element = instance.reference;
+            assert(name_element instanceof HTMLElement);
+            // Only show tooltip if the stream or group name is truncated.
+            // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
+            // for more details.
+            if (name_element.offsetWidth >= name_element.scrollWidth) {
+                return false;
+            }
+
+            return undefined;
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#recipient_box_clear_topic_button",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
@@ -1033,6 +1101,22 @@ export function initialize(): void {
             if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
                 content = $t({defaultMessage: "Clear topic"});
             }
+            instance.setContent(content);
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".two-tier-billing-disabled",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const content = $t(
+                {defaultMessage: "Contact {sales_email} to enable"},
+                {sales_email: "sales@zulip.com"},
+            );
             instance.setContent(content);
         },
         appendTo: () => document.body,

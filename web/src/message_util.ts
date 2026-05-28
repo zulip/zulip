@@ -1,11 +1,13 @@
-import {all_messages_data} from "./all_messages_data.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
+import {realm} from "./state_data.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
+import * as user_groups from "./user_groups.ts";
 
 type DirectMessagePermissionHints = {
     is_known_empty_conversation: boolean;
@@ -32,7 +34,7 @@ export function get_count_of_messages_in_topic_sent_after_current_message(
 }
 
 export function get_loaded_messages_in_topic(stream_id: number, topic: string): Message[] {
-    return all_messages_data
+    return recent_view_messages_data
         .all_messages_after_mute_filtering()
         .filter(
             (x) =>
@@ -43,14 +45,14 @@ export function get_loaded_messages_in_topic(stream_id: number, topic: string): 
 }
 
 export function get_messages_in_dm_conversations(user_ids_strings: Set<string>): Message[] {
-    return all_messages_data
+    return recent_view_messages_data
         .all_messages_after_mute_filtering()
         .filter((x) => x.type === "private" && user_ids_strings.has(x.to_user_ids));
 }
 
 export function get_max_message_id_in_stream(stream_id: number): number {
     let max_message_id = 0;
-    for (const msg of all_messages_data.all_messages_after_mute_filtering()) {
+    for (const msg of recent_view_messages_data.all_messages_after_mute_filtering()) {
         if (msg.type === "stream" && msg.stream_id === stream_id && msg.id > max_message_id) {
             max_message_id = msg.id;
         }
@@ -117,4 +119,79 @@ export function user_can_send_direct_message(user_ids_string: string): boolean {
             people.user_can_initiate_direct_message_thread(user_ids_string)) &&
         people.user_can_direct_message(user_ids_string)
     );
+}
+
+// Returns a per user permission check if required for DM message to occur.
+export function make_check_message_permission_for_dm_candidate(
+    recipient_ids: number[],
+): ((candidate_user_id: number) => boolean) | null {
+    const current_user_id = people.my_current_user_id();
+    const is_current_user_in_initiator_group = user_groups.is_user_in_setting_group(
+        realm.realm_direct_message_initiator_group,
+        current_user_id,
+    );
+    const is_current_user_in_permission_group = user_groups.is_user_in_setting_group(
+        realm.realm_direct_message_permission_group,
+        current_user_id,
+    );
+
+    // Current user is in both initiator and permission groups,
+    // so they can message anyone.
+    if (is_current_user_in_initiator_group && is_current_user_in_permission_group) {
+        return null;
+    }
+
+    const recipient_is_in_permission_group = recipient_ids.some(
+        (user_id) =>
+            !people.is_valid_bot_user(user_id) &&
+            user_id !== current_user_id &&
+            user_groups.is_user_in_setting_group(
+                realm.realm_direct_message_permission_group,
+                user_id,
+            ),
+    );
+
+    // Current user is in initiator group and at least one
+    // human recipient is in the permission group.
+    if (is_current_user_in_initiator_group && recipient_is_in_permission_group) {
+        return null;
+    }
+
+    const all_recipients_are_bots = recipient_ids.every(
+        (user_id) => people.is_valid_bot_user(user_id) || user_id === current_user_id,
+    );
+
+    const permission_group_user_ids = user_groups.get_user_ids_in_setting_group(
+        realm.realm_direct_message_permission_group,
+    );
+
+    return (candidate_user_id: number): boolean => {
+        // Include bots when all recipients are bots.
+        if (all_recipients_are_bots && people.is_valid_bot_user(candidate_user_id)) {
+            return true;
+        }
+
+        const is_candidate_in_permission_group = permission_group_user_ids.has(candidate_user_id);
+
+        // Current user can initiate and the candidate is in the permission group.
+        if (is_current_user_in_initiator_group && is_candidate_in_permission_group) {
+            return true;
+        }
+
+        // The remaining path allows the DM only if a past conversation
+        // exists AND at least one participant is in the permission group.
+        // If none of the three permission flags are true, no conversation
+        // history can unlock the DM, so skip the hints lookup.
+        if (
+            !is_current_user_in_permission_group &&
+            !recipient_is_in_permission_group &&
+            !is_candidate_in_permission_group
+        ) {
+            return false;
+        }
+
+        const conversation_user_ids_string = [...recipient_ids, candidate_user_id].join(",");
+        return !get_direct_message_permission_hints(conversation_user_ids_string)
+            .is_known_empty_conversation;
+    };
 }

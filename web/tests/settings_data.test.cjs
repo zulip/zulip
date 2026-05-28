@@ -702,3 +702,97 @@ run_test("can_user_manage_folder", ({override}) => {
     override(current_user, "is_admin", true);
     assert.equal(settings_data.can_user_manage_folder(), true);
 });
+
+run_test("two_tier_billing_enabled", ({override}) => {
+    const members = make_user_group({
+        name: "role:members",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const everyone = make_user_group({
+        name: "role:everyone",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    });
+
+    user_groups.initialize({realm_user_groups: [members, everyone]});
+
+    override(realm, "realm_workplace_users_group", members.id);
+    assert.equal(settings_data.two_tier_billing_enabled(), true);
+
+    override(realm, "realm_workplace_users_group", everyone.id);
+    assert.equal(settings_data.two_tier_billing_enabled(), false);
+
+    override(realm, "realm_workplace_users_group", {
+        direct_members: [1],
+        direct_subgroups: [members.id, everyone.id],
+    });
+    assert.equal(settings_data.two_tier_billing_enabled(), true);
+});
+
+run_test("user_has_permission_for_group_setting_internet_group", ({override}) => {
+    // We do not have any setting with allow_internet_group as true currently,
+    // but this test is needed for coverage.
+    const member_user_id = 3;
+
+    const internet_group = make_user_group({
+        description: "Everyone on the internet",
+        name: "role:internet",
+        id: 10,
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+
+    user_groups.initialize({realm_user_groups: [admins, members, internet_group]});
+
+    // When allow_internet_group is true and setting is the internet group,
+    // all users have permission — including spectators.
+    group_permission_settings.get_group_permission_setting_config = () => ({
+        allow_internet_group: true,
+        allow_everyone_group: true,
+    });
+
+    page_params.is_spectator = true;
+    assert.equal(
+        settings_data.user_has_permission_for_group_setting(
+            internet_group.id,
+            "can_create_public_channel_group",
+            "realm",
+        ),
+        true,
+    );
+
+    assert.equal(
+        settings_data.user_has_permission_for_group_setting(
+            members.id,
+            "can_create_public_channel_group",
+            "realm",
+        ),
+        false,
+    );
+
+    page_params.is_spectator = false;
+    override(current_user, "user_id", member_user_id);
+    assert.equal(
+        settings_data.user_has_permission_for_group_setting(
+            internet_group.id,
+            "can_create_public_channel_group",
+            "realm",
+        ),
+        true,
+    );
+
+    assert.equal(
+        settings_data.user_has_permission_for_group_setting(
+            members.id,
+            "can_create_public_channel_group",
+            "realm",
+        ),
+        true,
+    );
+});

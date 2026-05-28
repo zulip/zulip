@@ -76,12 +76,10 @@ export let update_dom_with_unread_counts = function (
     const $mentioned_li = $(".top_left_mentions");
     const $home_view_li = $(".selected-home-view");
     const $condensed_view_li = $(".top_left_condensed_unread_marker");
-    const $back_to_streams = $("#topics_header");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($condensed_view_li, counts.home_unread_messages);
-    ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
     if (!skip_animations) {
         animate_unread_changes($mentioned_li, counts.mentioned_message_count, last_mention_count);

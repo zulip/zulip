@@ -1,55 +1,40 @@
 # Writing help center articles
 
 Our goal is for Zulip to have complete, high-quality
-documentation about Zulip's features and how to perform certain tasks, such
+documentation about Zulip's features and key workflows, such
 as setting up an organization.
 
 There are two types of help center documents: articles about specific features,
-and a handful of longer guides. The feature articles serve a few different purposes:
+and a handful of longer guides. We aim to have comprehensive onboarding guides,
+plus a select handful of guides for administrators and power users. Our goal is
+to document all the features of the app and associated key workflows.
+
+The feature articles that make up the bulk of help center content serve many
+purposes:
+
+- Feature and workflow explanations for Zulip users and admins, including
+  specific instructions and tips on when the feature would be useful. For
+  complex settings (e.g., permissions), detailed explanations of how the feature
+  works.
 
 - Feature discovery, for someone browsing the help center, and looking at
   the set of articles and guides.
 
-- Public documentation of our feature set, for someone googling "can zulip do ..."
+- Public documentation of our feature set for search engine and LLM users.
 
 - Quick responses to support questions; if someone emails a Zulip admin
   asking "How do I change my name?", they can reply with a link to the doc.
 
-- Feature explanations for new Zulip users and admins, especially for
-  organization settings.
+- A reference to link to any time we mention the feature (e.g., in a Zulip
+  update, on the Zulip website, in a blog post, etc.), for anyone who'd like
+  more detail.
 
-The help center is built with [@astro/starlight](https://starlight.astro.build/).
-Starlight is a full-featured documentation theme built on top of the
-[Astro](https://astro.build/) framework. Astro is a web framework designed
-for content driven websites. The content for the help center articles are
-[MDX](https://mdxjs.com/) files, which live at `starlight_help/src/content/docs`
-in the [main Zulip server repository](https://github.com/zulip/zulip).
-Images are usually linked from `starlight_help/src/images`.
+- Reference links from the Zulip app (e.g., for complex settings).
 
-Zulip help center documentation is available under `/help/` on any Zulip server;
-(e.g., <https://zulip.com/help/> or `http://localhost:9991/help/` in
-the Zulip development environment). The help center documentation is not hosted
-on ReadTheDocs, since Zulip supports running a server completely disconnected
-from the Internet, and we'd like the documentation to be available in that
-environment.
+It's important to keep the docs up to date. We should update the help center as
+needed whenever a feature is added or changed.
 
-This means that you can contribute to the Zulip help center documentation
-by just adding to or editing the collection of MDX files under
-`starlight_help/src/content/docs`. If you have the Zulip development
-environment set up, you simply need to reload your browser on
-`http://localhost:9991/help/foo` to see the latest version of `foo.mdx`
-rendered.
-
-This system is designed to make writing and maintaining such documentation
-highly efficient. We link to the docs extensively from the landing pages and
-in-product, so it's important to keep the docs up to date.
-
-## Guide to writing help center articles
-
-Writing documentation is a different form of writing than most people have
-experience with.
-
-### Getting started
+## Getting started
 
 There are over 100 feature articles and longer guides in the
 [Zulip help center](https://zulip.com/help/), so make the most of
@@ -64,155 +49,190 @@ the current documentation as a resource and guide as you begin.
   [features and components](#mdx-features-and-custom-zulip-components)
   used to enhance the readability of the documentation.
 
-- Should the feature you're documenting be added or merged into an
-  existing article?
-
-  - If so, you can locate that article in `starlight_help/src/content/docs`
-    and start working on updating it with content about the new feature.
-
-  - If not, choose an existing article to use as a template for your
-    new article and make a list of which articles (or guides) would be
-    good to link to in your new feature documentation.
-
-Remember that real estate in the left sidebar is somewhat precious.
-Minor features should rarely get their own article, and should instead
-be merged into the existing help center documentation where appropriate.
-
-If you are unsure about how and where to document the feature, you
-can always ask in
+If you aren't sure how something should be documented, the
 [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation)
-on the [Zulip community server](https://zulip.com/development-community/).
+channel in the [Zulip development
+community](https://zulip.com/development-community/) is a great place to get
+help.
 
-### Updating an existing article
+## Structure of a feature article
 
-If the new feature you're documenting is a refinement on,
-or related to, a feature that already has a dedicated help center
-article, the information will be more useful and discoverable for
-users as an addition to the existing article.
+The general structure of a feature article is:
 
-Here are some things to keep in mind when expanding and updating
-existing help center articles:
+1. [Introduction](#introduction)
+1. One or more [sections with instructions](#instructions-section)
+1. [Related articles](#related-articles)
 
-- Maintain the format and [writing style](#writing-style) of the
-  current article.
+### Introduction
 
-- Review the [features and components](#mdx-features-and-custom-zulip-components)
-  available and pay attention to the ones already utilized in the
-  article.
+This is the part of the article that requires the most thought and understanding
+of context. It should generally (often in roughly this order):
 
-- Think about where inline links to other help center documentation
-  would be appropriate in the description of the feature. For example,
-  your new feature might relate to general Zulip features like
-  [keyboard shortcuts](https://zulip.com/help/keyboard-shortcuts)
-  or [topics](https://zulip.com/help/introduction-to-topics).
+1. Explain briefly **what the feature does** for the user (but not how to activate it).
+1. Give some **guidance** on when someone might want to use this feature, perhaps
+   with specific examples.
+1. **Explain more precisely** what the feature does, if there are important
+   points to note. Are there any details that the user may feel uncertainty
+   about that should be cleared up?
+1. Note any **limitations**, like organization permissions settings that could disable this feature.
+1. Briefly describe other features that are good **alternatives** for related workflows.
 
-- Make sure there is a **Related articles** section at the end
-  of the article that again links to any help center documentation
-  mentioned in the text or related to the feature.
+For example, the intro to the [article on moving messages to another
+topic](https://github.com/zulip/zulip/blob/8ddc7bee008f7e8d13cbe0b5ec4d1e1eb2333a9d/starlight_help/src/content/docs/move-content-to-another-topic.mdx?plain=1)
+follows this structure:
 
-If your updates to the existing article will change the name of the
-markdown file, then see section below on [redirecting an existing
-article](#redirecting-an-existing-article).
+1. **What the feature does**:
+   > Zulip makes it possible to move messages between topics.
+1. **Guidance**:
+   > This is useful for keeping messages organized when there is a digression,
+   > or the discussion shifts from the original topic.
+1. **Alternatives**:
+   > You can also [rename a topic](https://zulip.com/help/rename-a-topic).
+1. **Explain more precisely**:
+   > When messages are moved, Zulip's [permanent links to messages in
+   > context](https://zulip.com/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message)
+   > will automatically redirect to the new location of the message. [Muted
+   > topics](https://zulip.com/help/mute-a-topic) are automatically migrated when
+   > an entire topic is moved.
+1. **Limitations**:
+   > Organization administrators can
+   > [configure](https://zulip.com/help/restrict-moving-messages) who is allowed to move
+   > messages.
 
-Creating robust and informative help center articles with good links
-will allow users to navigate the help center much more effectively.
+You can see that the structure has some flexibility, but all the key points are
+succinctly covered.
 
-### Adding a new article
+To write a good introduction, you may need to reread the issue that was fixed
+and any user comments on the issue, and to skim any discussion around the
+feature for relevant context.
 
-To add a help center article, create a new file in
-`starlight_help/src/content/docs/`, and add a sidebar link to it in
-`starlight_help/astro.config.mjs`. Don't forget to `git add` your new
-file!
+### Instructions section
 
-If the feature you're documenting needs a new article, here are some
-things to keep in mind, in addition to the points made above for
-updating existing documentation:
+If the context for the feature is fully covered in the intro, a simple
+subsection heading plus instructions works well. As described in detail at the
+bottom of this article, be sure to use the standard help center
+components/macros. Refer to other parts of the article you're working on, or
+related articles (e.g., another setting in the same settings section).
 
-- Choose an existing article in the related section of the help
-  documentation, and copy the format, wording, style, etc. as closely
-  as you can.
+Be sure to include a **Mobile** instructions tab if the feature is supported on
+mobile. You can use a stub **Mobile** tab if we have an issue for it, but it's
+not yet implemented.
 
-- If the feature exists in other team chat products, check out their
-  documentation for inspiration.
+When there are multiple ways to access a feature that are worth noting, label
+tabs by the broad-level location of where the feature is accessed from (e.g.,
+"Left sidebar"). We always document how to get to a setting via the settings UI,
+even if there's a handy alternative. The most convenient method should be in the
+first tab.
 
-- Fewer words is better than more. Many Zulip users have English as a second
-  language.
+For a single set of desktop/web app instructions, use the "Desktop/Web" tab
+label. We generally add this tab label for user features even if there are no
+other tabs to add, but don't do so for admin features. The vast majority
+of settings aren't available on mobile, so admins can easily infer that we're
+referring to the desktop/web app.
 
-- Try to put yourself in the shoes of a new Zulip user. What would you want
-  to know?
+In longer articles, the introduction might not cover everything. In that case,
+we might add an introduction to an instructions section, with a similar
+structure to article intros. Some caveats and alternatives can appear after the
+instructions, but the most important content should precede them.
 
-- Remember to explain the purpose of the feature and give context as well
-  as instructions for how to use or enable it.
+Be sure to document any keyboard shortcuts (generally inside the instructions
+block).
 
-- The goal of user-facing documentation is not to be comprehensive. The goal
-  is to give the right bits of information for the intended audience.
+### Related articles
+
+What articles is the reader most likely to be interested in?
+
+- Articles already linked to above are good candidates, but often not all of
+  them will feel sufficiently relevant. For example, you don't need to link to
+  articles that were linked to earlier just as a reference on some view or part
+  of the UI that was mentioned.
+- Articles about features that support related workflows.
+- For a permission setting, the article that explains the feature (and conversely).
+- Articles that go deeper into the same part of the app.
+- For onboarding features, articles about features you might use around the same time.
+
+Consider the reader -- in the context of this article, are they an end user or
+an admin? Admin articles will primarily link to other admin articles, and
+end-user articles to other end-user articles.
+
+## What the help center _isn't_ for
 
 An anti-pattern is trying to make up for bad UX by adding help center
-documentation. It's worth remembering that for most articles, almost 100% of
+documentation. When writing documentation, try to pay attention to whether
+something feels hard to explain. It's a sign that there may be a product UX
+problem to fix here. Are there ways to change UI strings or workflows that would
+make the feature easier to document? That could be a good product direction to
+explore.
+
+It's worth remembering that for most articles, almost 100% of
 the users of the feature will never read the article. Instructions for
 filling out forms, interacting with UI widgets (e.g., typeaheads), interacting
 with modals, etc. should never go in the help center documentation.
 In such cases, you may be able to fix the problem by adding text in-app,
 where the user will see it as they are interacting with the feature.
 
-### Redirecting an existing article
+## Adding and updating articles
 
-From time to time, we might want to rename an article in the help
-center. This change will break incoming links, including links in
-published Zulip blog posts, links in other branches of the repository
-that haven't been rebased, and more importantly links from previous
-versions of Zulip.
+Should the feature you're documenting be added or merged into an existing
+article?
 
-To fix these broken links, you can easily add a URL redirect in:
-`starlight_help/astro.config.mjs`.
+Real estate in the left sidebar is somewhat precious.
+Minor features should rarely get their own article, and should instead
+be merged into the existing help center documentation where appropriate.
 
-For help center article, once you've renamed the file in your
-branch (e.g., `git mv path/to/foo.mdx path/to/bar.mdx`), go to
-`astro.config.mjs` and add a new line to the `redirects` property:
+If the new feature you're documenting is a refinement on,
+or related to, a feature that already has a dedicated help center
+article, the information will be more useful and discoverable for
+users as an addition to the existing article.
 
-```
-    // Redirects in astro are just directories with index.html inside
-    // them doing the redirect we define in the value. The base of
-    // /help/ will apply to the keys in the list below but we will
-    // have to prepend /help/ in the redirect URL.
-    redirects: {
-        "pm-mention-alert-notifications": "/help/dm-mention-alert-notifications",
-    ...
-```
+Permissions settings have a different target audience (administrators) than the
+feature they control, and thus often get their own article (with cross-links).
 
-Note that you will also need to add redirects when you're deleting
-a help center article and adding its content to an existing article
-as a section. In that case, the new URL will include the new section
-header:
+### Updating an existing article
 
-```
-"add-an-alert-word": "/help/dm-mention-alert-notifications#alert-words"
-```
+Here are some things to keep in mind when expanding and updating
+existing help center articles:
 
-You should still check for references to the old URL in your branch
-and replace those with the new URL (e.g., `git grep "/help/foo"`).
-One exception to this are links with the old URL that were included
-in the content of `zulip_update_announcements`, which can be found
-in `zerver/lib/zulip_update_announcements.py`. It's preferable to
-have the source code accurately reflect what was sent to users in
-those [Zulip update announcements][help-zulip-updates], so these
-should not be replaced with the new URL.
+- If you're repeating content, consider moving it to an /include file in a prep
+  commit, for maintainability.
+- While you're there, check for other updates: any new features the article
+  should link to? outdated writing patterns? icons we missed updating? mobile
+  instructions that need to be added? related articles you looked at that were
+  missing reference links to this one? etc.
 
-Updating section headers in existing help center articles does not
-require adding a URL redirect, but you will need to update any
-existing links to that article's section in your branch.
+If your updates to the existing article will change the name of the
+markdown file, then see section below on [redirecting an existing
+article](#redirecting-an-existing-article). We're generally OK with the URL
+being a bit off from the current article title, as long as it still makes sense
+given the current content.
 
-If you have the Zulip development environment set up, you can manually
-test your changes by loading the old URL in your browser (e.g.,
-`http://localhost:9991/help/foo`), and confirming that it redirects to
-the new url (e.g., `http://localhost:9991/help/bar`).
+### Adding a new article
 
-[help-zulip-updates]: https://zulip.com/help/configure-automated-notices#zulip-update-announcements
+It's often easiest to get started by choosing an existing article to use as a
+template for your new article (usually a similar feature in the same sidebar
+section). You can match its format, wording, style, etc. If
+you decide _not_ to follow its pattern, consider whether the article you're
+using as a template should itself be updated.
+
+Consider what articles (feature articles and guides) might need to link to the
+article you're adding (see [related articles tips](#related-articles)). For
+major new features, take a look at `/features` and other parts of the website
+(e.g, `/for/business`) for potential updates to make.
+
+If the feature exists in other team chat products, consider checking their
+documentation for inspiration (but each app has its own documentation style).
 
 ## Writing style
 
-Below are some general style and writing conventions that should be used
-as guidance when documenting Zulip's features.
+Aim for a clear, specific, and succinct writing style. Remember that a wide
+variety of users may be reading the article, including non-native English
+speakers.
+
+Avoid technical vocabulary and jargon wherever possible. It might be fine and
+unavoidable in, e.g., explanations of linkifier details. But strongly avoid it
+in, e.g., an introduction to a general user article. Remember that some terms
+that feel familiar to you as perhaps an engineer, and someone who
+specifically develops Zulip at that, may not be in common use.
 
 ### User interface
 
@@ -221,8 +241,15 @@ feature's name followed by the feature itself (e.g., **Settings** page,
 **Change password** button, **Email** field). No quotation marks should be
 used. Use **bold** for channel names, and quotation marks for topic names.
 
+It's important to use consistent terminology for each UI element — doing
+otherwise can be quite confusing to the reader. If you aren't quite sure what to
+call something, check by finding another article that you expect to mention the
+same part of the UI, or an analogous one.
+
 Keep in mind that the UI may change — don’t describe it in more detail than
-is needed. In particular:
+is needed. Beyond requiring more frequent updates, overly specific descriptions
+are hard to maintain because nobody is likely to realize that the help center
+needs to be updated when purely visual changes are made. In particular:
 
 - Do not specify what the default configuration is. This might change in the
   future, or may even be different for different types of organizations.
@@ -233,6 +260,10 @@ is needed. In particular:
   location.
 - Use screenshots only when it's very difficult to get your point across without
   them.
+
+We don't describe the UI just of the sake of describing it --- UI elements are
+mentioned in the service of helping the user figure out how to take the actions
+they need to take.
 
 ### Voice
 
@@ -290,6 +321,36 @@ relevant parts of the app. In addition, the screenshot should always
 come _after_ the text that describes it, never before.
 
 Images used in the help center can be found at `starlight_help/src/images`.
+
+## Viewing and updating help center articles
+
+The help center is built with [@astro/starlight](https://starlight.astro.build/).
+Starlight is a full-featured documentation theme built on top of the
+[Astro](https://astro.build/) framework. Astro is a web framework designed
+for content driven websites. The content for the help center articles are
+[MDX](https://mdxjs.com/) files, which live at `starlight_help/src/content/docs`
+in the [main Zulip server repository](https://github.com/zulip/zulip).
+Images are usually linked from `starlight_help/src/images`.
+
+Zulip help center documentation is available under `/help/` on any Zulip server;
+(e.g., <https://zulip.com/help/> or `http://localhost:9991/help/` in
+the Zulip development environment). The help center documentation is not hosted
+on ReadTheDocs, since Zulip supports running a server completely disconnected
+from the Internet, and we'd like the documentation to be available in that
+environment.
+
+This means that you can contribute to the Zulip help center documentation by
+just adding to or editing the collection of MDX files under
+`starlight_help/src/content/docs`. To add a help center article, create a new
+file in `starlight_help/src/content/docs/`, and add a sidebar link to it in
+`starlight_help/astro.config.mjs`.
+
+If you have the Zulip development environment set up, you simply need to reload
+your browser on `http://localhost:9991/help/foo` to see the latest version of
+`foo.mdx` rendered.
+
+This system is designed to make writing and maintaining such documentation
+highly efficient.
 
 ## MDX features and custom Zulip components
 
@@ -368,9 +429,9 @@ those headings will not be rendered in the "On this page" outline in the
 right sidebar.
 
 If it is necessary to have headers in the include file content, then the
-work around for having them rendered in the right sidebar is to insert the
+workaround for having them rendered in the right sidebar is to insert the
 same headers into any file where you are importing and using that include
-file. In example below, we add the two h3 headers from the include file so
+file. In the example below, we add the two h3 headers from the include file so
 that they are rendered in the right sidebar:
 
 ```
@@ -537,3 +598,56 @@ for settings and relative targets are currently implemented.
 
 You can find the code for any custom components used in the help center at:
 `starlight_help/src/components`.
+
+## Redirecting an existing article
+
+From time to time, we might want to rename an article in the help
+center. This change will break incoming links, including links in
+published Zulip blog posts, links in other branches of the repository
+that haven't been rebased, and more importantly links from previous
+versions of Zulip.
+
+To fix these broken links, you can easily add a URL redirect in:
+`starlight_help/astro.config.mjs`.
+
+For a help center article, once you've renamed the file in your
+branch (e.g., `git mv path/to/foo.mdx path/to/bar.mdx`), go to
+`astro.config.mjs` and add a new line to the `redirects` property:
+
+```
+    // Redirects in astro are just directories with index.html inside
+    // them doing the redirect we define in the value. The base of
+    // /help/ will apply to the keys in the list below but we will
+    // have to prepend /help/ in the redirect URL.
+    redirects: {
+        "pm-mention-alert-notifications": "/help/dm-mention-alert-notifications",
+    ...
+```
+
+Note that you will also need to add redirects when you're deleting
+a help center article and adding its content to an existing article
+as a section. In that case, the new URL will include the new section
+header:
+
+```
+"add-an-alert-word": "/help/dm-mention-alert-notifications#alert-words"
+```
+
+You should still check for references to the old URL in your branch
+and replace those with the new URL (e.g., `git grep "/help/foo"`).
+One exception to this are links with the old URL that were included
+in the content of `zulip_update_announcements`, which can be found
+in `zerver/lib/zulip_update_announcements.py`. It's preferable to
+have the source code accurately reflect what was sent to users in
+those [Zulip update announcements][help-zulip-updates], so these
+should not be replaced with the new URL.
+
+Updating section headers in existing help center articles does not
+require adding a URL redirect, but you will need to update any
+existing links to that article's section in your branch.
+
+You can manually test your changes in the dev environment by loading the old URL
+in your browser (e.g., `http://localhost:9991/help/foo`), and confirming that it
+redirects to the new URL (e.g., `http://localhost:9991/help/bar`).
+
+[help-zulip-updates]: https://zulip.com/help/configure-automated-notices#zulip-update-announcements

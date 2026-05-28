@@ -41,8 +41,10 @@ mentions (**@all**, **@everyone**, **@channel**) and **@topic** mentions
 separately from personal @-mentions.
 
 <ZulipTip>
-  These mentions don't trigger notifications in muted channels or topics,
-  unlike personal mentions.
+  These mentions don't trigger notifications in muted topics, unlike
+  personal mentions. In muted channels, they are suppressed by default,
+  but you can override this by [enabling](/help/channel-notifications#configure-notifications-for-a-single-channel)
+  wildcard mention notifications in the specific channels where you'd like to receive them.
 </ZulipTip>
 
 <FlattenedSteps>
@@ -59,9 +61,11 @@ mentions](/help/restrict-wildcard-mentions) in large channels.
 
 ## Alert words
 
-Zulip lets you to specify **alert words or phrases** that send you a desktop
-notification whenever the alert word is included in a message. Alert words are
-case-insensitive.
+Zulip lets you to specify case-insensitive **alert words or phrases** that send you a desktop
+notification whenever the alert word is included in a message. For example, you
+can set up an alert for the name of a product you're responsible for. Alerts for
+problematic words or phrases can help moderators respond quickly when there's an
+issue.
 
 <ZulipTip>
   Alert words in messages you receive while the alert is enabled will be highlighted.

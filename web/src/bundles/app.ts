@@ -2,7 +2,6 @@ import "./common.ts";
 
 // Import third party jQuery plugins
 import "jquery-caret-plugin/dist/jquery.caret";
-import "../../third/jquery-idle/jquery.idle.js";
 import "jquery-validation";
 
 // Import app JS
@@ -21,7 +20,6 @@ import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";
 import "../../third/bootstrap/css/bootstrap.app.css";
-import "../../third/bootstrap/css/bootstrap-btn.css";
 import "../../styles/typeahead.css";
 import "../../styles/app_variables.css";
 import "../../styles/tooltips.css";
@@ -51,6 +49,7 @@ import "../../styles/user_circles.css";
 import "../../styles/left_sidebar.css";
 import "../../styles/right_sidebar.css";
 import "../../styles/lightbox.css";
+import "../../styles/box_resize.css";
 import "../../styles/popovers.css";
 import "../../styles/recent_view.css";
 import "../../styles/typing_notifications.css";

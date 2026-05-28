@@ -1,12 +1,25 @@
 import autosize from "autosize";
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
+import {user_settings} from "./user_settings.ts";
+
+let recent_view_participants_rerender: (() => void) | null = null;
+let recent_view_participants_column_class_update: (() => void) | null = null;
+
+export function set_recent_view_participants_rerender(rerender_func: (() => void) | null): void {
+    recent_view_participants_rerender = rerender_func;
+}
+
+export function set_recent_view_participants_column_class_update(
+    update_func: (() => void) | null,
+): void {
+    recent_view_participants_column_class_update = update_func;
+}
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
@@ -144,45 +157,6 @@ export function resize_bottom_whitespace(): void {
     }
 }
 
-export function resize_stream_subscribers_list(): void {
-    // Calculates the height of the subscribers list in stream settings.
-    // This avoids the stream settings from overflowing the container and
-    // having a scroll bar.
-
-    if ($("#stream_settings").length === 0) {
-        // Don't run if stream settings (like $subscriptions_info below) is not open.
-        return;
-    }
-
-    const $subscriptions_info = $("#subscription_overlay .two-pane-settings-container .right");
-    const classes_above_subscribers_list = [
-        ".display-type", // = stream_settings_title
-        ".subscriber_list_settings_container .stream_settings_header",
-        ".subscription_settings .stream_setting_subsection_title",
-        ".subscription_settings .subscriber_list_settings",
-        ".subscription_settings .stream_setting_subsection_title",
-    ];
-    const $classes_above_subscribers_list = $subscriptions_info.find(
-        classes_above_subscribers_list.join(", "),
-    );
-    let total_height_of_classes_above_subscribers_list = 0;
-    $classes_above_subscribers_list.each(function () {
-        const outer_height = $(this).outerHeight(true);
-        assert(outer_height !== undefined);
-        total_height_of_classes_above_subscribers_list += outer_height;
-    });
-    const subscribers_list_header_height = 30;
-    const margin_between_tab_switcher_and_add_subscribers_title = 20;
-    const subscriptions_info_height = $subscriptions_info.height();
-    assert(subscriptions_info_height !== undefined);
-    const subscribers_list_height =
-        subscriptions_info_height -
-        total_height_of_classes_above_subscribers_list -
-        subscribers_list_header_height -
-        margin_between_tab_switcher_and_add_subscribers_title;
-    $(":root").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
-}
-
 export function resize_stream_filters_container(): void {
     resize_bottom_whitespace();
     $("#left_sidebar_scroll_container").css("max-height", get_stream_filters_max_height());
@@ -194,21 +168,37 @@ export function resize_sidebars(): void {
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
-export function update_recent_view(): void {
-    const $recent_view_filter_container = $("#recent_view_filter_buttons");
+export function update_recent_view(rerender_view_if_needed = false): void {
+    const $middle_column = $(".app .column-middle");
 
     // Update max avatars to prevent participant avatars from overflowing.
     // These numbers are just based on speculation.
-    const recent_view_filters_width = $recent_view_filter_container.outerWidth(true) ?? 0;
-    if (!recent_view_filters_width) {
+    const middle_column_width = $middle_column.outerWidth() ?? 0;
+    if (!middle_column_width) {
         return;
     }
-    const num_avatars_narrow_window = 2;
-    const num_avatars_max = 4;
-    if (recent_view_filters_width < media_breakpoints_num.md) {
-        $(":root").css("--recent-view-max-avatars", `${num_avatars_narrow_window}`);
-    } else {
+    const prev_num_avatars_max = Number($(":root").css("--recent-view-max-avatars"));
+    let num_avatars_max = 4;
+    const max_width_before_topic_ellipsis_overflows = 600;
+    if (
+        middle_column_width <
+        (max_width_before_topic_ellipsis_overflows * user_settings.web_font_size_px) / 16
+    ) {
+        num_avatars_max = 0;
+    } else if (
+        middle_column_width <
+        (media_breakpoints_num.md * user_settings.web_font_size_px) / 16
+    ) {
+        num_avatars_max = 2;
+    }
+
+    if (prev_num_avatars_max !== num_avatars_max) {
         $(":root").css("--recent-view-max-avatars", `${num_avatars_max}`);
+        recent_view_participants_column_class_update?.();
+
+        if (rerender_view_if_needed) {
+            recent_view_participants_rerender?.();
+        }
     }
 }
 
@@ -303,7 +293,6 @@ export function resize_page_components(): void {
     resize_navbar_alerts();
     resize_sidebars();
     resize_bottom_whitespace();
-    resize_stream_subscribers_list();
     resize_settings_overlay($("#groups_overlay_container"));
     resize_settings_overlay($("#channels_overlay_container"));
     resize_settings_creation_overlay($("#groups_overlay_container"));

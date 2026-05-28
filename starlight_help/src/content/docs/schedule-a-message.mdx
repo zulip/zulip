@@ -7,6 +7,8 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import ComposeBoxMenu from "../include/_ComposeBoxMenu.mdx";
+import EndComposing from "../include/_EndComposing.mdx";
 import GoToScheduledMessages from "../include/_GoToScheduledMessages.mdx";
 import StartComposing from "../include/_StartComposing.mdx";
 
@@ -27,8 +29,9 @@ schedule a message for next morning to avoid disturbing others. You can also
       <StartComposing />
 
       1. Write a message.
-      1. Click on the **ellipsis** (<MoreVerticalIcon />) next to the **Send**
-         (<SendIcon />) button.
+
+      <ComposeBoxMenu />
+
       1. Click **Schedule message**.
       1. Select one of the suggested scheduling options, or pick a custom time.
     </FlattenedSteps>
@@ -49,10 +52,11 @@ schedule a message for next morning to avoid disturbing others. You can also
 
       1. Click on the message you want to edit or reschedule.
       1. *(optional)* Edit the message.
-      1. Click the **ellipsis** (<MoreVerticalIcon />) next to the **Send**
-         (<SendIcon />) button.
-      1. Select the previously scheduled time, or click **Schedule message** to pick a
-         new time.
+
+      <ComposeBoxMenu />
+
+      1. Select the previously scheduled time, or click **Schedule message**
+         to pick a new time.
     </FlattenedSteps>
 
     <ZulipTip>
@@ -71,7 +75,8 @@ schedule a message for next morning to avoid disturbing others. You can also
 
       1. Click on the message you want to send now.
       1. *(optional)* Edit the message.
-      1. Click the **Send** (<SendIcon />) button.
+
+      <EndComposing />
     </FlattenedSteps>
 
     <KeyboardTip>
@@ -109,9 +114,8 @@ schedule a message for next morning to avoid disturbing others. You can also
 
     <ZulipTip>
       You can also view scheduled messages by clicking on the **ellipsis**
-      (<MoreVerticalIcon />) next to the **Send**
-      (<SendIcon />) button in the compose
-      box, and selecting **View scheduled messages**.
+      (<MoreVerticalIcon />) next to the **send** (<SendIcon />) button in
+      the compose box, and selecting **View scheduled messages**.
     </ZulipTip>
   </TabItem>
 </Tabs>

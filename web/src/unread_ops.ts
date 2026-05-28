@@ -4,7 +4,6 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import render_confirm_mark_messages_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
-import render_confirm_mark_as_unread_from_here from "../templates/confirm_dialog/confirm_mark_as_unread_from_here.hbs";
 import render_skipped_marking_unread from "../templates/skipped_marking_unread.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -435,41 +434,44 @@ export function mark_as_unread_from_here(message_id: number): void {
         }
 
         display_count = locally_available_message_count.toString();
-    } else if (locally_available_message_count < UNREAD_COUNT_STEP_SIZE) {
-        // TODO: This logic should have a case for where we're
-        // offline, and skip the prompt in interleaved views in that
-        // case.
-        display_count = locally_available_message_count.toString();
     } else {
-        // Otherwise, we round down to the nearest
-        // UNREAD_COUNT_STEP_SIZE and display as, e.g., `25+`.
-        const rounded_count =
-            Math.floor(locally_available_message_count / UNREAD_COUNT_STEP_SIZE) *
-            UNREAD_COUNT_STEP_SIZE;
-        display_count = `${rounded_count}+`;
+        // We don't have all the newest messages, so there are likely more
+        // available messages that will be marked as unread.
+        if (locally_available_message_count < UNREAD_COUNT_STEP_SIZE) {
+            display_count = `${locally_available_message_count.toString()}+`;
+        } else {
+            // Otherwise, we round down to the nearest
+            // UNREAD_COUNT_STEP_SIZE and display as, e.g., `25+`.
+            const rounded_count =
+                Math.floor(locally_available_message_count / UNREAD_COUNT_STEP_SIZE) *
+                UNREAD_COUNT_STEP_SIZE;
+            display_count = `${rounded_count}+`;
+        }
     }
 
-    const context = {
-        // If we don't know how many messages will be affected, but
-        // can't prove the number is more than 10, we avoid showing a
-        // count, since it just seems weird to say "3+ messages will
-        // be marked as read".
-        //
-        // It's not obvious this case is worth having special strings
-        // for, given how unlikely it is. A sample scenario is that
-        // we're be that we're near the fetched bottom of a /near/1
-        // search view where can_apply_locally is false, which will
-        // have triggered a request for the next batch of messages
-        // from the server, but that request has not returned. But it
-        // may happen more offline if the client is intermittantly
-        // offline.
-        show_message_count: locally_available_message_count >= MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND,
-        count: display_count,
-    };
+    // If we don't know how many messages will be affected, but
+    // can't prove the number is more than 10, we avoid showing a
+    // count, since it just seems weird to say "3+ messages will
+    // be marked as read".
+    //
+    // It's not obvious this case is worth having special strings
+    // for, given how unlikely it is. A sample scenario is that
+    // we're be that we're near the fetched bottom of a /near/1
+    // search view where can_apply_locally is false, which will
+    // have triggered a request for the next batch of messages
+    // from the server, but that request has not returned. But it
+    // may happen more offline if the client is intermittantly
+    // offline.
+    const show_message_count =
+        locally_available_message_count >= MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND;
 
     confirm_dialog.launch({
-        modal_title_html: $t_html({defaultMessage: "Mark messages as unread?"}),
-        modal_content_html: render_confirm_mark_as_unread_from_here(context),
+        modal_title_html: show_message_count
+            ? $t_html({defaultMessage: "Mark {display_count} messages as unread?"}, {display_count})
+            : $t_html({defaultMessage: "Mark messages as unread?"}),
+        modal_content_html: $t_html({
+            defaultMessage: "Messages in multiple conversations may be affected.",
+        }),
         is_compact: true,
         on_click() {
             if (prefer_local_ids) {

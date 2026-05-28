@@ -2,7 +2,7 @@ import os
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from itertools import chain, zip_longest
-from typing import Any, TypeAlias
+from typing import Any
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import HttpRequest, HttpResponseBase
@@ -14,7 +14,6 @@ from django_stubs_ext import StrPromise
 from typing_extensions import override
 
 from zerver.lib.storage import static_path
-from zerver.lib.validator import check_bool, check_string
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 from zerver.webhooks import fixtureless_integrations
 
@@ -31,23 +30,16 @@ list. For example, to add a new incoming webhook integration, declare a
 IncomingWebhookIntegration in the INCOMING_WEBHOOK_INTEGRATIONS list. All
 *_INTEGRATIONS lists are automatically aggregated into the INTEGRATIONS dict.
 
-To add a new integration category, add to either the CATEGORIES or
-META_CATEGORY dicts below. The META_CATEGORY dict is for categories
-that do not describe types of tools (e.g., bots or frameworks).
+To add a new integration category, add it to the CATEGORIES dict below.
 
 Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-OptionValidator: TypeAlias = Callable[[str, str], str | bool | None]
-
-META_CATEGORY: dict[str, StrPromise] = {
-    "meta-integration": gettext_lazy("Integration frameworks"),
-    "bots": gettext_lazy("Interactive bots"),
-}
 
 CATEGORIES: dict[str, StrPromise] = {
-    **META_CATEGORY,
+    "meta-integration": gettext_lazy("Integration frameworks"),
+    "bots": gettext_lazy("Interactive bots"),
     "video-calling": gettext_lazy("Video calling"),
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
@@ -79,13 +71,19 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "mastodon",
     "mercurial",
     "nagios",
-    "notion",
+    "notion_via_zapier",
     "openshift",
     "perforce",
     "puppet",
     "rss",
     "svn",
     "trac",
+    "errbot",
+    "github_detail",
+    "hubot",
+    "irc",
+    "matrix",
+    "xkcd",
 ]
 FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[fixtureless_integrations.ScreenshotContent]] = {
     key: [getattr(fixtureless_integrations, key.upper().replace("-", "_"))]
@@ -120,7 +118,7 @@ class FixturelessScreenshotConfigOptions:
 
 @dataclass
 class FixturelessScreenshotConfig:
-    message: str
+    message: str | list[fixtureless_integrations.MessageThread]
     topic: str
     channel: str | None = None
     image_name: str = "001.png"
@@ -216,7 +214,13 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name != "intercom"
+        return self.name not in (
+            # Integrations being incrementally added
+            "intercom",
+            "notion",
+            # Broken integrations awaiting fixes
+            "hubot",
+        )
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
         paths_to_check = [
@@ -434,7 +438,10 @@ class HubotIntegration(Integration):
         display_name: str | None = None,
         logo: str | None = None,
         git_url: str | None = None,
-        legacy: bool = False,
+        # Hide all integrations available via Hubot from the catalog until
+        # the Hubot integration (https://github.com/zulip/hubot-zulip)
+        # becomes functional again.
+        legacy: bool = True,
     ) -> None:
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
@@ -575,6 +582,10 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "codeship",
         ["continuous-integration", "deployment"],
         [WebhookScreenshotConfig("error_build.json")],
+        # TODO: Delete integration in 2027. Reached EOL Jan 2026.
+        # Compare payload format similarity with its replacement
+        # CloudBees Unify to consider conversion instead of deletion.
+        legacy=True,
     ),
     IncomingWebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
@@ -583,9 +594,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "dbt",
         ["deployment"],
         [WebhookScreenshotConfig("job_run_completed_errored.json")],
-        display_name="DBT",
+        display_name="dbt",
         url_options=[
-            WebhookUrlOption(name="access_url", label="DBT Access URL", validator=check_string)
+            WebhookUrlOption(name="access_url", label="dbt Access URL", input_type="text")
         ],
     ),
     IncomingWebhookIntegration(
@@ -655,7 +666,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             WebhookUrlOption(
                 name="include_repository_name",
                 label="Include repository name in the notifications",
-                validator=check_bool,
+                input_type="checkbox",
+            ),
+            WebhookUrlOption(
+                name="include_emoji_indicators",
+                label="Include emoji indicators in the notifications",
+                input_type="checkbox_enabled",
             ),
         ],
     ),
@@ -682,7 +698,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             WebhookUrlOption(
                 name="ignore_private_projects",
                 label="Exclude notifications from private projects",
-                validator=check_bool,
+                input_type="checkbox",
+            ),
+            WebhookUrlOption(
+                name="use_merge_request_title",
+                label="Include merge request titles in topics",
+                input_type="checkbox_enabled",
             ),
         ],
     ),
@@ -733,7 +754,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "jira",
         ["project-management"],
-        [WebhookScreenshotConfig("created_v1.json")],
+        [WebhookScreenshotConfig("issue_created_with_assignee.json")],
     ),
     IncomingWebhookIntegration(
         "jotform", ["productivity"], [WebhookScreenshotConfig("screenshot_response.multipart")]
@@ -769,6 +790,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("incident_activated_new_default_payload.json")],
         display_name="New Relic",
     ),
+    IncomingWebhookIntegration("notion", ["productivity", "project-management"]),
     IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
@@ -795,7 +817,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             WebhookUrlOption(
                 name="eu_region",
                 label="Use Opsgenie's European service region",
-                validator=check_bool,
+                input_type="checkbox",
             )
         ],
     ),
@@ -914,7 +936,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "travis",
         ["continuous-integration"],
-        [WebhookScreenshotConfig("build.json", payload_as_query_param=True)],
+        [WebhookScreenshotConfig("pull_request.json", payload_as_query_param=True)],
         display_name="Travis CI",
     ),
     IncomingWebhookIntegration(
@@ -965,13 +987,24 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     Integration(
         "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
+    Integration(
+        "constructor-groups", ["video-calling", "communication"], display_name="Constructor Groups"
+    ),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
+    Integration(
+        "nextcloud-talk",
+        ["video-calling", "communication"],
+        display_name="Nextcloud Talk",
+        logo="images/integrations/logos/nextcloud.svg",
+    ),
+    Integration("webex", ["video-calling", "communication"]),
     Integration("zoom", ["video-calling", "communication"]),
 ]
 
 EMBEDDED_INTEGRATIONS: list[Integration] = [
     Integration("email", ["communication"]),
     Integration("giphy", ["misc"], display_name="GIPHY"),
+    Integration("klipy", ["misc"], display_name="KLIPY"),
     Integration("tenor", ["misc"], display_name="Tenor"),
 ]
 
@@ -979,16 +1012,27 @@ ZAPIER_INTEGRATIONS: list[Integration] = [
     Integration("asana", ["project-management"]),
     # Can be used with RSS integration too
     Integration("mastodon", ["communication"]),
-    Integration("notion", ["productivity", "project-management"]),
+    Integration(
+        "notion_via_zapier",
+        ["productivity", "project-management"],
+        fixtureless_screenshot_config_options=[
+            FixturelessScreenshotConfigOptions(image_dir="notion")
+        ],
+        display_name="Notion",
+        logo="images/integrations/logos/notion.svg",
+        doc="zerver/integrations/notion.md",
+    ),
 ]
 
 PLUGIN_INTEGRATIONS: list[Integration] = [
+    Integration("atolio", ["productivity"], logo="images/integrations/logos/atolio.jpeg"),
     Integration("discourse", ["communication"]),
     Integration(
         "jenkins",
         ["continuous-integration"],
         [FixturelessScreenshotConfigOptions(image_name="004.png")],
     ),
+    Integration("n8n", ["meta-integration"], display_name="n8n"),
     Integration("nextcloud", ["productivity"]),
     Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
 ]
@@ -1075,7 +1119,6 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
     HubotIntegration("assembla", ["version-control", "project-management"]),
     HubotIntegration("bonusly", ["hr"]),
     HubotIntegration("chartbeat", ["marketing"]),
-    HubotIntegration("darksky", ["misc"], display_name="Dark Sky"),
     HubotIntegration("google-translate", ["misc"], display_name="Google Translate"),
     HubotIntegration(
         "instagram",
@@ -1119,33 +1162,24 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # so the screenshot config is commented out.
     {"beeminder"}
     # Disabled integrations that are in the process of being added or rewritten.
-    | {"intercom"}
+    | {"intercom", "notion"}
     # Integrations that call external API endpoints.
     | {"slack"}
-    # Integrations that require screenshots of message threads - support is yet to be added
-    | {
-        "errbot",
-        "github_detail",
-        "hubot",
-        "irc",
-        # Also requires a screenshot on the Matrix side of the bridge
-        "matrix",
-        "xkcd",
-    }
     | hubot_integration_names
 )
 
 # Add integrations that are not meant to have example screenshots here
 INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Integration frameworks
-    {"ifttt", "slack_incoming", "zapier"}
+    {"ifttt", "n8n", "slack_incoming", "zapier"}
     # Outgoing integrations
-    | {"email", "onyx"}
+    | {"atolio", "email", "onyx"}
     # Video call integrations
-    | {"big-blue-button", "jitsi", "zoom"}
+    | {"big-blue-button", "constructor-groups", "jitsi", "nextcloud-talk", "webex", "zoom"}
     | {
         # these integrations do not send messages
         "giphy",
+        "klipy",
         "nextcloud",
         "tenor",
         # the integration is planned to be removed

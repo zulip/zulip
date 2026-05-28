@@ -6,6 +6,7 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import DependsOnPermissions from "../include/_DependsOnPermissions.mdx";
 import MessageActions from "../include/_MessageActions.mdx";
 import MessageLongPressMenu from "../include/_MessageLongPressMenu.mdx";
 
@@ -23,14 +24,14 @@ edit the content of a message sent by another user.
 
 ## Edit a message
 
+<DependsOnPermissions />
+
 <Tabs>
   <TabItem label="Desktop/Web">
     <FlattenedSteps>
       <MessageActions />
 
-      1. Click the **pencil** (<EditIcon />) icon. If you do not see
-         the **pencil** (<EditIcon />) icon, you do not have
-         permission to edit this message.
+      1. Click the **pencil** (<EditIcon />) icon.
       1. Edit the content of the message.
       1. Click **Save**.
     </FlattenedSteps>
@@ -40,8 +41,7 @@ edit the content of a message sent by another user.
     <FlattenedSteps>
       <MessageLongPressMenu />
 
-      1. Tap **Edit message**. If you do not see the **Edit message** option, you do
-         not have permission to edit this message.
+      1. Tap **Edit message**.
       1. Edit the content of the message.
       1. Tap **Save**.
     </FlattenedSteps>

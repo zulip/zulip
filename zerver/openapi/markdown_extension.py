@@ -27,6 +27,7 @@ from zerver.openapi.openapi import (
     Parameter,
     check_additional_imports,
     check_requires_administrator,
+    check_requires_owner,
     generate_openapi_fixture,
     get_curl_include_exclude,
     get_openapi_description,
@@ -99,8 +100,8 @@ const config = { zuliprc: "zuliprc-admin" };
 
 """
 
-DEFAULT_AUTH_EMAIL = "BOT_EMAIL_ADDRESS"
-DEFAULT_AUTH_API_KEY = "BOT_API_KEY"
+DEFAULT_AUTH_EMAIL = "EMAIL_ADDRESS"
+DEFAULT_AUTH_API_KEY = "API_KEY"
 DEFAULT_EXAMPLE = {
     "integer": 1,
     "string": "demo",
@@ -264,6 +265,19 @@ cURL example."""
         return example_value
 
 
+INSECURE_OPERATIONS = [
+    "/dev_fetch_api_key:post",
+    "/fetch_api_key:post",
+    "/jwt/fetch_api_key:post",
+    "/dev_list_users:get",
+]
+
+
+def add_curl_auth_credentials_note(endpoint: str, method: str) -> bool:
+    operation = endpoint + ":" + method.lower()
+    return operation not in INSECURE_OPERATIONS
+
+
 def generate_curl_example(
     endpoint: str,
     method: str,
@@ -271,10 +285,12 @@ def generate_curl_example(
     exclude: list[str] | None = None,
     include: list[str] | None = None,
 ) -> list[str]:
-    lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
     operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     global_security = openapi_spec.openapi()["security"]
+
+    lines = []
+    lines.append("```curl")
 
     parameters = get_openapi_parameters(endpoint, method)
     operation_request_body = operation_entry.get("requestBody", None)
@@ -298,7 +314,6 @@ def generate_curl_example(
     curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method, api_url)]
     lines.append(shlex.join(curl_first_line_parts))
 
-    insecure_operations = ["/dev_fetch_api_key:post", "/fetch_api_key:post"]
     if operation_security is None:
         if global_security == [{"basicAuth": []}]:
             authentication_required = True
@@ -307,7 +322,7 @@ def generate_curl_example(
                 "Unhandled global securityScheme. Please update the code to handle this scheme."
             )
     elif operation_security == []:
-        if operation in insecure_operations:
+        if operation in INSECURE_OPERATIONS:
             authentication_required = False
         else:
             raise AssertionError(
@@ -364,6 +379,8 @@ def render_curl_example(
     kwargs: dict[str, Any] = {}
     kwargs["api_url"] = api_url
     rendered_example = []
+    if add_curl_auth_credentials_note(endpoint, method):
+        rendered_example += ["{!curl-auth-credentials.md!}\n\n"]
     for element in get_curl_include_exclude(endpoint, method):
         kwargs["include"] = None
         kwargs["exclude"] = None
@@ -511,6 +528,7 @@ class APIHeaderPreprocessor(BasePreprocessor):
         return [
             *("# " + line for line in raw_title.splitlines()),
             *(["{!api-admin-only.md!}"] if check_requires_administrator(path, method) else []),
+            *(["{!api-owner-only.md!}"] if check_requires_owner(path, method) else []),
             "",
             f"`{method.upper()} {self.api_url}/v1{path}`",
             "",

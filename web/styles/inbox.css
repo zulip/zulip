@@ -22,7 +22,7 @@
             transition: outline-width 0.1s ease;
 
             &:hover {
-                outline-width: 1.5px;
+                outline-width: var(--focus-ring-width-in-views);
             }
         }
 
@@ -77,8 +77,12 @@
             .inbox-focus-border {
                 display: flex;
                 min-height: 1.875em; /* 30px at 16px em */
-                border: 2px solid transparent;
-                border-radius: 3px;
+                /* Holds the horizontal layout that the removed
+                   `border: 2px solid transparent` was reserving;
+                   `.inbox-row`'s outline-based focus doesn't reserve
+                   space. Vertical padding omitted so the 30px icon
+                   wrappers fit in the 30px row height. */
+                padding-inline: 0.125em; /* 2px at 16px/1em */
                 box-sizing: border-box;
                 justify-content: space-between;
             }
@@ -152,7 +156,10 @@
                 }
 
                 .zulip-icon-chevron-down {
-                    padding: 0.3125em 0.25em; /* 5px 4px at 16px em */
+                    /* We are using very specific vertical padding here
+                     * to avoid the inbox row grid overflow. */
+                    padding: 0.125em 0.25em; /* 2px 4px at 16px em */
+                    vertical-align: top;
                     transform: rotate(180deg);
                 }
             }
@@ -214,11 +221,141 @@
             }
 
             .channel-visibility-policy-indicator,
-            .visibility-policy-indicator {
+            .visibility-policy-indicator,
+            .inbox-action-button {
                 display: flex;
                 align-items: center;
-                border-radius: 3px;
+                justify-content: center;
+                /* Row-tall, row-square click area so there's
+                   room for the focus ring around the inner icon
+                   without clipping against the row's right edge.
+                   Centering the icon (vs. anchoring to an edge)
+                   keeps the focus ring symmetric around it. */
+                width: 1.875em; /* 30px — matches row height */
+                height: 1.875em; /* 30px — matches row height */
+                /* Whole 30×30 hit area is clickable; the inner
+                   icon itself only spans ~16×16. Without this,
+                   mouse hovers at the top/bottom fall back to the
+                   default arrow cursor. */
+                cursor: pointer;
+
+                & > i,
+                & > .zulip-icon,
+                & > .recipient_bar_icon {
+                    /* Zero out per-icon padding; the outer button
+                       is the click area and the focus ring draws
+                       outside the icon via `outline-offset`.
+                       Overrides `.recipient_bar_icon`'s 6px side
+                       padding from message_header.css. */
+                    padding: 0;
+                    border-radius: 0.3125em; /* 5px at 16px/1em */
+                }
+            }
+
+            .channel-visibility-policy-indicator,
+            .visibility-policy-indicator {
                 margin-left: 3px;
+            }
+
+            /* Normalize the inner icon's opacity to 1 so the outer
+               wrapper is the single source of truth for opacity.
+               Overrides `.recipient_bar_icon`'s 0.2 idle / 0.4
+               hover from message_header.css for every marker
+               wrapper — follow, mute, unmute, and the inherit
+               (default) placeholder that becomes visible on row
+               hover. */
+            .channel-visibility-policy-indicator > .recipient_bar_icon,
+            .visibility-policy-indicator > .recipient_bar_icon {
+                opacity: 1;
+
+                /* Beat `.recipient_bar_icon:hover`'s !important. */
+                &:hover {
+                    opacity: 1 !important;
+                }
+            }
+
+            /* Explicit topic/channel state markers are secondary
+               information: visible at a glance, quieter than primary
+               content. 0.45 is the lowest opacity that meets WCAG
+               1.4.11's 3:1 non-text contrast against both the light
+               (~3.4:1) and dark (~3.9:1) inbox row backgrounds. */
+            .channel-visibility-policy-indicator,
+            .visibility-policy-indicator:not(
+                    .inbox-row-visibility-policy-inherit
+                ) {
+                opacity: 0.45;
+            }
+
+            /* Row-level interaction tiers for the icon-style wrapper
+               types: action menu, channel-level marker, topic-level
+               marker. The inherit subclass is reached via the
+               topic-level marker since `.inbox-row-visibility-policy-
+               inherit` is also a `.visibility-policy-indicator`. */
+            .inbox-row,
+            .inbox-header {
+                /* Mouse hover reveals/lifts wrappers to 0.45,
+                   matching the explicit-marker idle tier. */
+                &:hover {
+                    :is(
+                        .inbox-action-button,
+                        .channel-visibility-policy-indicator,
+                        .visibility-policy-indicator
+                    ) {
+                        opacity: 0.45;
+                    }
+                }
+
+                /* Keyboard selection alone (row focused but not
+                   mouse-hovered) reveals only the usually-hidden
+                   action buttons at a much quieter 0.2. Explicit
+                   state markers stay at their 0.45 idle — only the
+                   tertiary reveal needs this extra-quiet step. The
+                   `:not(:focus-visible)` exclusion ensures that when
+                   the button itself has keyboard focus (via arrow-
+                   right into the column), its own `:focus-visible`
+                   rule sets the direct-interaction tier instead. */
+                &:focus-within:not(:focus, :hover) {
+                    :is(
+                            .inbox-action-button,
+                            .inbox-row-visibility-policy-inherit
+                        ):not(:focus-visible) {
+                        opacity: 0.2;
+                    }
+                }
+
+                &:focus-visible:not(:hover) {
+                    :is(
+                        .inbox-action-button,
+                        .inbox-row-visibility-policy-inherit
+                    ) {
+                        opacity: 0.2;
+                    }
+                }
+
+                /* Direct hover on a wrapper lifts to 0.7. Compound
+                   selector beats the row-wide reveal on specificity. */
+                &:hover
+                    :is(
+                        .inbox-action-button,
+                        .channel-visibility-policy-indicator,
+                        .visibility-policy-indicator
+                    ):hover {
+                    opacity: 0.7;
+                }
+
+                /* Wrapper keyboard focus = full opacity so the focus
+                   ring renders at full blue saturation (WCAG 1.4.11
+                   3:1 contrast). The inner icon dims to 0.7
+                   separately via the rule under `&:focus-visible > i`
+                   above. */
+                &:focus-within
+                    :is(
+                        .inbox-action-button,
+                        .channel-visibility-policy-indicator,
+                        .visibility-policy-indicator
+                    ):focus-visible {
+                    opacity: 1;
+                }
             }
 
             .unread-count-focus-outline {
@@ -238,6 +375,19 @@
                    count from affecting overall row
                    size as test scales up. */
                 align-self: stretch;
+                /* Whole 30×stretched hit area is clickable; surface
+                   the same pointer cursor users had on the smaller
+                   badge before the click target was expanded. */
+                cursor: pointer;
+
+                /* Forward the badge's hover outline to the wrapper:
+                   the click handler now lives on the wrapper, so
+                   hovering anywhere in the wrapper (not just the
+                   small inner badge) should preview the click
+                   affordance. */
+                &:hover .unread_count {
+                    outline-width: var(--focus-ring-width-in-views);
+                }
             }
 
             .unread_mention_info {
@@ -274,15 +424,6 @@
             .inbox-left-part-wrapper {
                 display: flex;
                 width: 80%;
-            }
-
-            #inbox-direct-messages-container {
-                /* Since a direct message row can have span to multiple lines,
-                   having an underline focus will not work very well.
-                */
-                .inbox-row:focus-visible {
-                    box-shadow: inset 0 0 0 2px var(--color-outline-focus);
-                }
             }
 
             .inbox-left-part {
@@ -361,43 +502,40 @@
             }
         }
 
-        .inbox-row,
-        .inbox-header {
-            &:hover {
-                .inbox-row-visibility-policy-inherit,
-                .inbox-action-button {
-                    opacity: 1;
-                }
-            }
-        }
-
         .inbox-row-visibility-policy-inherit {
             opacity: 0;
+        }
 
-            &.visibility-policy-popover-visible {
-                opacity: 1;
-            }
+        /* Stickiness: while a marker or action button has its popover
+           open, keep it in the direct-interaction tier (0.7) so the
+           user can see which element the open menu belongs to.
+           Substring match on `*-popover-visible` covers every class
+           the popover JS toggles — `topic-popover-visible` (added by
+           `topic_popover.ts` and `stream_popover.ts` on
+           `.inbox-action-button`) and `visibility-policy-popover-visible`
+           (added by `user_topic_popover.ts` on the visibility-policy
+           wrappers) — without enumerating element/class combinations,
+           and stays correct if a future popover follows the same
+           naming convention. */
+        [class*="-popover-visible"] {
+            opacity: 0.7;
         }
 
         .inbox-action-button {
-            display: flex;
-            border-radius: 3px;
             outline: none;
             opacity: 0;
+            cursor: pointer;
 
             &.hide {
                 display: none;
             }
 
             & i {
-                padding: 0.3125em; /* 5px at 16px em */
-                opacity: 0.3;
-                color: var(--color-vdots-hover);
-
-                &:hover {
-                    opacity: 1;
-                    cursor: pointer;
-                }
+                /* Match the color used by `.recipient_bar_icon` on
+                   the state marker icons, so the 3-dots and the
+                   follow/mute/unmute markers render in the same hue
+                   as row-attention elevates both to visible. */
+                color: var(--color-message-header-icon-interactive);
             }
         }
     }
@@ -456,11 +594,11 @@
     .channel-folders-inbox-menu-icon {
         display: grid;
         /* width excluding left & right margin */
-        width: calc(var(--left-sidebar-vdots-width) - 3px);
+        width: calc(var(--left-sidebar-vdots-width) - 4px);
         cursor: pointer;
         place-items: center center;
         border-radius: 3px;
-        margin: 2px 2px 2px 1px;
+        margin: 2px;
         color: var(--color-vdots-visible);
 
         i.zulip-icon {
@@ -663,7 +801,8 @@
 
 .inbox-folder-components {
     border-radius: 5px;
-    border: 0.5px solid hsl(0deg 0% 0% / 13%);
+    border: var(--inbox-view-folder-component-border-width) solid
+        var(--color-border-inbox-folder-component);
     overflow: hidden;
 
     &:has(.inbox-row:not(.hidden_by_filters)),
@@ -709,67 +848,90 @@
     /* Only show focus outlines when user uses keyboard. */
     #inbox-filter_widget {
         &:focus-visible {
-            outline: 2px solid var(--color-outline-focus);
-        }
-    }
-
-    .inbox-header {
-        &:focus-visible {
-            .inbox-focus-border {
-                border-color: var(--color-outline-focus);
-            }
-
-            .collapsible-button > .zulip-icon {
-                opacity: 1;
-            }
-
-            .collapsible-button {
-                visibility: visible;
-            }
-        }
-    }
-
-    .inbox-row {
-        &:focus-visible {
-            .inbox-focus-border {
-                border: 2px solid var(--color-outline-focus);
-                border-radius: 3px;
-            }
-
-            outline: 0;
-            padding: 0;
-        }
-    }
-
-    .channel-visibility-policy-indicator,
-    .visibility-policy-indicator {
-        &:focus-visible {
-            outline: 2px solid var(--color-outline-focus);
-        }
-    }
-
-    .inbox-action-button {
-        &:focus-visible {
-            box-shadow: 0 0 0 2px var(--color-outline-focus);
-        }
-    }
-
-    .unread-count-focus-outline {
-        &:focus-visible {
-            outline: 2px solid var(--color-outline-focus);
+            outline: var(--focus-ring-outline);
         }
     }
 
     .inbox-row,
     .inbox-header {
-        /* Don't show the icons unless user is visibly focused
-            on the element or one of the elements within it. */
-        &:focus-within:not(:focus),
         &:focus-visible {
-            .channel-visibility-policy-indicator,
-            .inbox-row-visibility-policy-inherit,
-            .inbox-action-button {
-                opacity: 1;
+            /* Flush outline on the row itself instead of the old
+               2px inner-border on `.inbox-focus-border`; matches
+               `.recent-view-body-row`'s focus style, but inbox rows
+               are tighter (30px) so the outline sits at the row
+               edges instead of insetting 4px. */
+            outline: var(--focus-ring-outline);
+            outline-offset: var(--focus-ring-outline-offset-in-views);
+            border-radius: 0.3125em; /* 5px at 16px/1em */
+        }
+    }
+
+    .inbox-header:focus-visible {
+        .collapsible-button > .zulip-icon {
+            opacity: 1;
+        }
+
+        .collapsible-button {
+            visibility: visible;
+        }
+    }
+
+    /* Focus ring for the icon-style row actions. Outline lives on
+       the wrapper (at full opacity) so the ring renders at full
+       blue saturation and meets WCAG 1.4.11's 3:1 contrast
+       requirement for focus indicators. Negative outline-offset
+       pulls the 1.5px stroke inside the 30×30 wrapper bounds so it
+       doesn't clip against the row's overflow:hidden edge, giving
+       a 26×26 effective ring. The inner icon dims separately. */
+    .channel-visibility-policy-indicator,
+    .visibility-policy-indicator,
+    .inbox-action-button {
+        &:focus-visible {
+            outline: var(--focus-ring-outline);
+            outline-offset: -0.125em; /* -2px at 16px/1em */
+            border-radius: 0.3125em; /* 5px at 16px/1em */
+
+            > i,
+            > .zulip-icon,
+            > .recipient_bar_icon {
+                opacity: 0.7;
+            }
+        }
+    }
+
+    /* Focus ring drawn as a pseudo-element on the inner badge,
+       with `5px` of breathing room outside the badge and `5px`
+       corners on the ring so it visually matches the action
+       button and state-marker rings, which paint at 3px effective
+       (5px `border-radius` minus 2px `outline-offset`) but on
+       smaller (~26×26) wrappers. Using straight `5px` corners on
+       this larger (~26×28) ring keeps the perceived corner
+       roundness consistent with the inbox's other focus
+       indicators. A wrapper-sized outline (the previous
+       implementation) leaves a wide gap between the ring and
+       the badge fill that reads as a second concentric outline;
+       the deliberate 5px gap here reads as padding around a
+       single badge instead. */
+    .unread-count-focus-outline {
+        &:focus-visible {
+            outline: none;
+
+            .unread_count {
+                position: relative;
+
+                /* Suppress the inner `.normal-count` `inset`
+                   `box-shadow` so it doesn't sit as a second,
+                   narrower outline inside the focus ring. */
+                box-shadow: none;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    inset: -0.3125em; /* -5px at 16px/1em */
+                    border: var(--focus-ring-outline);
+                    border-radius: 0.3125em; /* 5px at 16px/1em */
+                    pointer-events: none;
+                }
             }
         }
     }

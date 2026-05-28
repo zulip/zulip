@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -20,27 +22,27 @@ const {initialize_user_settings} = zrequire("user_settings");
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-};
+});
 
-const anybody = {
+const anybody = make_user({
     email: "anybody@example.com",
     user_id: 999,
     full_name: "Any Body",
-};
+});
 people.add_active_user(me);
 people.add_active_user(anybody);
 people.initialize_current_user(me.user_id);
 
-const social = {
+const social = make_stream({
     stream_id: 200,
     name: "social",
     subscribed: true,
     is_muted: false,
-};
+});
 stream_data.add_sub_for_tests(social);
 
 function assert_zero_counts(counts) {
@@ -94,7 +96,7 @@ test("changing_topics", () => {
     let count = unread.num_unread_for_topic(social.stream_id, "lunch");
     assert.equal(count, 0);
 
-    const stream_id = 100;
+    const stream_id = social.stream_id;
     const wrong_stream_id = 110;
 
     const message = {
@@ -180,6 +182,11 @@ test("changing_topics", () => {
     assert.equal(count, 1);
     assert.ok(unread.topic_has_any_unread(stream_id, "snack"));
     assert.ok(!unread.topic_has_any_unread(wrong_stream_id, "snack"));
+
+    unread.update_unread_topic_name_case(stream_id, "snack", "SnaCK");
+    const topic_counts = unread.get_unread_topics().topic_counts.get(stream_id);
+    assert.ok(topic_counts.has("SnaCK"));
+    assert.ok(!topic_counts.has("snack"));
 
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.
@@ -486,18 +493,18 @@ test("private_messages", () => {
 });
 
 test("private_messages", () => {
-    const alice = {
+    const alice = make_user({
         email: "alice@example.com",
         user_id: 101,
         full_name: "Alice",
-    };
+    });
     people.add_active_user(alice);
 
-    const bob = {
+    const bob = make_user({
         email: "bob@example.com",
         user_id: 102,
         full_name: "Bob",
-    };
+    });
     people.add_active_user(bob);
 
     assert.equal(unread.num_unread_for_user_ids_string(alice.user_id.toString()), 0);

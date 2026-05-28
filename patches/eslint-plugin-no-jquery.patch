@@ -1,0 +1,14 @@
+diff --git a/src/rules/no-sizzle.js b/src/rules/no-sizzle.js
+index 119279005a9df84f2e3705252e14d29246ce1651..938251937a73248122f5eb6d7c184c757a98c69e 100644
+--- a/src/rules/no-sizzle.js
++++ b/src/rules/no-sizzle.js
+@@ -27,8 +27,7 @@ module.exports = {
+ 			}
+ 		],
+ 		defaultOptions: [
+-			{ allowPositional: false },
+-			{ allowOther: false }
++			{ allowPositional: false, allowOther: false }
+ 		]
+ 	},
+ 

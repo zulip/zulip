@@ -3,10 +3,9 @@
 const assert = require("node:assert/strict");
 
 const _ = require("lodash");
-const MockDate = require("mockdate");
 
 const {make_realm} = require("./lib/example_realm.cjs");
-const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {clock, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const blueslip = zrequire("blueslip");
@@ -126,6 +125,45 @@ run_test("dumb_strcmp", ({override}) => {
     assert.equal(strcmp("a", "b"), -1);
     assert.equal(strcmp("c", "c"), 0);
     assert.equal(strcmp("z", "y"), 1);
+});
+
+run_test("compare_stream_by_archived_then_name", () => {
+    const make_archived_stream = (name) => ({name, is_archived: true});
+    const make_non_archived_stream = (name) => ({name, is_archived: false});
+
+    let streams = [
+        make_non_archived_stream("beta"),
+        make_archived_stream("zeta"),
+        make_non_archived_stream("delta"),
+        make_archived_stream("alpha"),
+        make_non_archived_stream("alpha"),
+        make_archived_stream("beta"),
+    ];
+
+    const sorted_streams = streams.toSorted((a, b) =>
+        util.compare_stream_by_archived_then_name(a, b),
+    );
+
+    // archived streams are placed at the end after sorting.
+    assert.deepEqual(sorted_streams, [
+        make_non_archived_stream("alpha"),
+        make_non_archived_stream("beta"),
+        make_non_archived_stream("delta"),
+        make_archived_stream("alpha"),
+        make_archived_stream("beta"),
+        make_archived_stream("zeta"),
+    ]);
+
+    // Intl.Collator sorts "ä" near "a", placing "ärger" before "zeta".
+    streams = [make_non_archived_stream("zeta"), make_non_archived_stream("ärger")];
+
+    const sorted_locale_aware = streams.toSorted((a, b) =>
+        util.compare_stream_by_archived_then_name(a, b),
+    );
+    assert.deepEqual(sorted_locale_aware, [
+        make_non_archived_stream("ärger"),
+        make_non_archived_stream("zeta"),
+    ]);
 });
 
 run_test("get_edit_event_orig_topic", () => {
@@ -408,18 +446,18 @@ run_test("get_remaining_time", () => {
     // Set a random start time
     const start_time = new Date(1000).getTime();
     // Set current time to 400ms ahead of the start time
-    MockDate.set(start_time + 400);
+    clock.setSystemTime(start_time + 400);
     const duration = 500;
     let expected_remaining_time = 100;
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
     // When current time is greater than start time + duration
     // Set current time to 100ms after the start time + duration
-    MockDate.set(start_time + duration + 100);
+    clock.setSystemTime(start_time + duration + 100);
     expected_remaining_time = 0;
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
-    MockDate.reset();
+    clock.reset();
 });
 
 run_test("get_custom_time_in_minutes", () => {

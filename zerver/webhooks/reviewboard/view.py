@@ -37,7 +37,7 @@ REVIEW_REQUEST_DETAILS = """
 ``` quote
 **Description**: {description}
 **Status**: {status}
-**Target people**: {target_people}
+{targets}
 {extra_info}
 ```
 """
@@ -56,19 +56,28 @@ BRANCH_TEMPLATE = "**Branch**: {branch_name}"
 fixture_to_headers = default_fixture_to_headers("HTTP_X_REVIEWBOARD_EVENT")
 
 
-def get_target_people_string(payload: WildValue) -> str:
+def joined_list(targets: WildValue) -> str:
+    if len(targets) == 1:
+        return "**{title}**".format(title=targets[0]["title"].tame(check_string))
+    else:
+        output = ""
+        for elem in list(targets)[:-1]:
+            output += "**{title}**, ".format(title=elem["title"].tame(check_string))
+        output += "and **{title}**".format(title=targets[-1]["title"].tame(check_string))
+        return output
+
+
+def get_targets_string(payload: WildValue) -> str:
     result = ""
     target_people = payload["review_request"]["target_people"]
-    if len(target_people) == 1:
-        result = "**{title}**".format(title=target_people[0]["title"].tame(check_string))
-    else:
-        for target_index in range(len(target_people) - 1):
-            result += "**{title}**, ".format(
-                title=target_people[target_index]["title"].tame(check_string)
-            )
-        result += "and **{title}**".format(title=target_people[-1]["title"].tame(check_string))
+    if target_people:
+        result += f"**Target people**: {joined_list(target_people)}\n"
 
-    return result
+    target_groups = payload["review_request"]["target_groups"]
+    if target_groups:
+        result += f"**Target groups**: {joined_list(target_groups)}\n"
+
+    return result.strip()
 
 
 def get_review_published_body(payload: WildValue) -> str:
@@ -106,7 +115,7 @@ def get_review_request_published_body(payload: WildValue) -> str:
         "user_name": payload["review_request"]["links"]["submitter"]["title"].tame(check_string),
         "description": payload["review_request"]["description"].tame(check_string),
         "status": payload["review_request"]["status"].tame(check_string),
-        "target_people": get_target_people_string(payload),
+        "targets": get_targets_string(payload),
         "extra_info": "",
     }
 
@@ -127,7 +136,7 @@ def get_review_request_reopened_body(payload: WildValue) -> str:
         "user_name": payload["reopened_by"]["username"].tame(check_string),
         "description": payload["review_request"]["description"].tame(check_string),
         "status": payload["review_request"]["status"].tame(check_string),
-        "target_people": get_target_people_string(payload),
+        "targets": get_targets_string(payload),
         "extra_info": "",
     }
 
@@ -148,7 +157,7 @@ def get_review_request_closed_body(payload: WildValue) -> str:
         "user_name": payload["closed_by"]["username"].tame(check_string),
         "description": payload["review_request"]["description"].tame(check_string),
         "status": payload["review_request"]["status"].tame(check_string),
-        "target_people": get_target_people_string(payload),
+        "targets": get_targets_string(payload),
         "extra_info": "**Close type**: {}".format(payload["close_type"].tame(check_string)),
     }
 

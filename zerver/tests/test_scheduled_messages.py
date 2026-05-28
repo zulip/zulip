@@ -7,7 +7,7 @@ from unittest import mock
 
 import orjson
 import time_machine
-from django.test import override_settings
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.scheduled_messages import (
@@ -21,6 +21,7 @@ from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
 from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.users import get_system_bot
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -164,13 +165,16 @@ class ScheduledMessageTest(ZulipTestCase):
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream_id)
         self.assert_scheduled_message_delivered(scheduled_message, recipient)
 
-    def test_successful_deliver_direct_scheduled_message_to_other(self) -> None:
+    def test_successful_deliver_direct_scheduled_message_to_other(
+        self,
+    ) -> None:
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message())
 
         content = "Test message"
         scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
+        sender = self.example_user("hamlet")
         othello = self.example_user("othello")
         response = self.do_schedule_message(
             "direct", [othello.id], f"{content} 3", scheduled_delivery_timestamp
@@ -178,7 +182,10 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_success(response)
         scheduled_message = self.last_scheduled_message()
 
-        self.assert_scheduled_message_delivered(scheduled_message, recipient=othello.recipient)
+        direct_message_group = get_or_create_direct_message_group(id_list=[sender.id, othello.id])
+        self.assert_scheduled_message_delivered(
+            scheduled_message, recipient=direct_message_group.recipient
+        )
 
         # Check error is sent if an edit happens after the scheduled
         # message is successfully sent.
@@ -194,73 +201,7 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(updated_response, "Scheduled message was already sent")
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_successful_deliver_personal_scheduled_message_using_direct_message_group(self) -> None:
-        # No scheduled message
-        self.assertFalse(try_deliver_one_scheduled_message())
-
-        content = "Test message"
-        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
-        scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
-        sender = self.example_user("hamlet")
-        othello = self.example_user("othello")
-
-        # Create a direct message group for the sender and othello.
-        direct_message_group = get_or_create_direct_message_group(id_list=[sender.id, othello.id])
-
-        response = self.do_schedule_message(
-            "direct", [othello.id], f"{content} 4", scheduled_delivery_timestamp
-        )
-        self.assert_json_success(response)
-        scheduled_message = self.last_scheduled_message()
-
-        # mock current time to be greater than the scheduled time.
-        more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + timedelta(minutes=1)
-
-        with (
-            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
-            self.assertLogs(level="INFO") as logs,
-        ):
-            result = try_deliver_one_scheduled_message()
-            self.assertTrue(result)
-            self.assertEqual(
-                logs.output,
-                [
-                    f"INFO:root:Sending scheduled message {scheduled_message.id} with date {scheduled_message.scheduled_timestamp} (sender: {scheduled_message.sender_id})"
-                ],
-            )
-            scheduled_message.refresh_from_db()
-            assert isinstance(scheduled_message.delivered_message_id, int)
-            self.assertEqual(scheduled_message.delivered, True)
-            self.assertEqual(scheduled_message.failed, False)
-            delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
-            self.assertEqual(delivered_message.content, scheduled_message.content)
-            self.assertEqual(delivered_message.recipient, direct_message_group.recipient)
-            self.assertEqual(delivered_message.rendered_content, scheduled_message.rendered_content)
-            self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
-            sender_user_message = UserMessage.objects.get(
-                message_id=scheduled_message.delivered_message_id, user_profile_id=sender.id
-            )
-            self.assertTrue(sender_user_message.flags.read)
-
-    def test_successful_deliver_direct_scheduled_message_to_self(self) -> None:
-        # No scheduled message
-        self.assertFalse(try_deliver_one_scheduled_message())
-
-        content = "Test message to self"
-        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
-        scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
-        sender = self.example_user("hamlet")
-        response = self.do_schedule_message(
-            "direct", [sender.id], content, scheduled_delivery_timestamp
-        )
-        self.assert_json_success(response)
-        scheduled_message = self.last_scheduled_message()
-
-        self.assert_scheduled_message_delivered(scheduled_message, recipient=sender.recipient)
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_successful_deliver_direct_scheduled_message_to_self_using_direct_message_group(
+    def test_successful_deliver_direct_scheduled_message_to_self(
         self,
     ) -> None:
         # No scheduled message
@@ -319,7 +260,7 @@ class ScheduledMessageTest(ZulipTestCase):
         # the failed scheduled message.
         realm = scheduled_message.realm
         msg = most_recent_message(scheduled_message.sender)
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, msg.recipient.DIRECT_MESSAGE_GROUP)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         self.assertIn(expected_failure_message, msg.content)
 
@@ -378,9 +319,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message_after_deactivation.content, message_before_deactivation.content)
         self.assertNotIn(expected_failure_message, message_after_deactivation.content)
 
-    def test_failed_to_deliver_scheduled_message_unknown_exception(
-        self,
-    ) -> None:
+    def test_failed_to_deliver_scheduled_message_unknown_exception(self) -> None:
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -415,9 +354,50 @@ class ScheduledMessageTest(ZulipTestCase):
         # the failed scheduled message.
         realm = scheduled_message.realm
         msg = most_recent_message(scheduled_message.sender)
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, msg.recipient.DIRECT_MESSAGE_GROUP)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         self.assertIn("Internal server error", msg.content)
+
+    def test_failed_to_deliver_scheduled_message_from_system_bot(self) -> None:
+        # Cross-realm system bots have no human reading their DMs, so
+        # they should not receive a failure notification -- doing so
+        # would leave a stray notification-bot <-> system-bot
+        # DirectMessageGroup attached to no realm.
+        self.create_scheduled_message()
+        scheduled_message = self.last_scheduled_message()
+        realm = scheduled_message.realm
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, realm.id)
+        scheduled_message.sender = welcome_bot
+        scheduled_message.save(update_fields=["sender"])
+
+        more_than_scheduled_delivery_datetime = scheduled_message.scheduled_timestamp + timedelta(
+            minutes=1
+        )
+        with (
+            mock.patch(
+                "zerver.actions.scheduled_messages.send_scheduled_message",
+                side_effect=Exception(),
+            ),
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO"),
+        ):
+            self.assertTrue(try_deliver_one_scheduled_message())
+        scheduled_message.refresh_from_db()
+        self.assertTrue(scheduled_message.failed)
+
+        # No notification-bot -> welcome-bot message should have been
+        # sent.  internal_prep_private_message lands such a message in
+        # the sender's realm (the system bot realm) when the recipient
+        # is a cross-realm bot, so scope the check there.
+        notification_bot = self.notification_bot(realm)
+        notify_group = get_or_create_direct_message_group(
+            id_list=[welcome_bot.id, notification_bot.id]
+        )
+        self.assertFalse(
+            Message.objects.filter(
+                realm=notification_bot.realm, recipient=notify_group.recipient
+            ).exists()
+        )
 
     def test_editing_failed_send_scheduled_message(self) -> None:
         expected_failure_message = "Message could not be sent at the scheduled time."
@@ -534,7 +514,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
         self.assertNotEqual(scheduled_message.recipient.type, Recipient.STREAM)
-        self.assertEqual(scheduled_message.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(scheduled_message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
         scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
         self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 

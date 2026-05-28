@@ -95,7 +95,10 @@ export function rewire_render_typeahead_item(value: typeof render_typeahead_item
 
 export let render_person = (
     person: UserPillData | UserOrMentionPillData,
-    query?: string,
+    opts?: {
+        query: string;
+        should_remove_diacritics: boolean;
+    },
 ): string => {
     if (person.type === "broadcast") {
         return render_typeahead_item({
@@ -117,13 +120,15 @@ export let render_person = (
 
     // Show the email or a matched custom profile field in the secondary text.
     // If both the email and a custom profile field match the query, show both.
-    let secondary_text = person.user.delivery_email;
+    const user_email = person.user.delivery_email;
+    let secondary_text = user_email;
 
-    if (query) {
+    if (opts) {
         const email_matches = typeahead.query_matches_string_in_order(
-            query,
-            secondary_text ?? "",
+            opts.query,
+            user_email ?? "",
             "",
+            opts.should_remove_diacritics,
         );
         let matched_custom_field;
 
@@ -134,17 +139,26 @@ export let render_person = (
 
             const value = people.get_custom_profile_data(person.user.user_id, field.id)?.value;
 
-            if (typeahead.query_matches_string_in_order(query, value ?? "", "")) {
+            if (
+                typeahead.query_matches_string_in_order(
+                    opts.query,
+                    value ?? "",
+                    "",
+                    opts.should_remove_diacritics,
+                )
+            ) {
                 matched_custom_field = value;
                 break;
             }
         }
 
         // if both email and custom field matches, show both.
-        if (email_matches && matched_custom_field) {
-            secondary_text = `${secondary_text}, ${matched_custom_field}`;
-        } else if (matched_custom_field) {
-            secondary_text = matched_custom_field;
+        if (matched_custom_field) {
+            if (user_email !== null && email_matches) {
+                secondary_text = `${user_email}, ${matched_custom_field}`;
+            } else {
+                secondary_text = matched_custom_field;
+            }
         }
     }
     const typeahead_arguments = {
@@ -190,13 +204,16 @@ export function rewire_render_user_group(value: typeof render_user_group): void 
 
 export function render_person_or_user_group(
     item: UserGroupPillData | UserPillData | UserOrMentionPillData,
-    query?: string,
+    opts?: {
+        query: string;
+        should_remove_diacritics: boolean;
+    },
 ): string {
     if (item.type === "user_group") {
         return render_user_group(item);
     }
 
-    return render_person(item, query);
+    return render_person(item, opts);
 }
 
 export let render_stream = (stream: StreamData): string =>
@@ -707,6 +724,14 @@ export function compare_group_setting_options(
     assert(option_a.type === "user");
     assert(option_b.type === "user");
 
+    if (option_a.user.is_bot && !option_b.user.is_bot) {
+        return 1;
+    }
+
+    if (!option_a.user.is_bot && option_b.user.is_bot) {
+        return -1;
+    }
+
     if (target_group !== undefined) {
         if (
             !target_group.members.has(option_a.user.user_id) &&
@@ -1031,7 +1056,7 @@ function compare_by_user_group_name(group_a: UserGroup, group_b: UserGroup): num
     return util.strcmp(group_a.name, group_b.name);
 }
 
-export let sort_streams = (matches: StreamPillData[], query: string): StreamPillData[] => {
+export let sort_streams = <T extends StreamSubscription>(matches: T[], query: string): T[] => {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
         query,
@@ -1071,11 +1096,10 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
 export function query_matches_person_name(
     query: string,
     person: UserPillData,
-    should_remove_diacritics?: boolean,
+    should_remove_diacritics: boolean,
     match_prefix?: boolean,
 ): boolean {
     query = query.toLowerCase();
-    should_remove_diacritics ??= people.should_remove_diacritics_for_query(query);
 
     const full_name = people.maybe_remove_diacritics_from_name(
         person.user,
@@ -1093,13 +1117,18 @@ export function query_matches_person_name(
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
-    should_remove_diacritics?: boolean,
+    should_remove_diacritics: boolean,
     match_prefix?: boolean,
     allow_custom_profile_field_matching = false,
 ): boolean {
     if (
         person.type === "broadcast" &&
-        typeahead.query_matches_string_in_order(query, person.user.full_name, " ")
+        typeahead.query_matches_string_in_order(
+            query,
+            person.user.full_name,
+            " ",
+            should_remove_diacritics,
+        )
     ) {
         return true;
     }
@@ -1115,7 +1144,14 @@ export function query_matches_person(
                 if (field.use_for_user_matching) {
                     const field_value =
                         people.get_custom_profile_data(person.user.user_id, field.id)?.value ?? "";
-                    if (typeahead.query_matches_string_in_order(query, field_value, " ")) {
+                    if (
+                        typeahead.query_matches_string_in_order(
+                            query,
+                            field_value,
+                            " ",
+                            should_remove_diacritics,
+                        )
+                    ) {
                         return true;
                     }
                 }
@@ -1127,28 +1163,44 @@ export function query_matches_person(
                 query,
                 people.get_visible_email(person.user),
                 " ",
+                should_remove_diacritics,
             );
         }
     }
     return false;
 }
 
-export function query_matches_stream_name(query: string, stream: StreamPillData): boolean {
-    return typeahead.query_matches_string_in_order(query, stream.name, " ");
+export function query_matches_stream_name(
+    query: string,
+    stream: StreamPillData,
+    should_remove_diacritics: boolean,
+): boolean {
+    return typeahead.query_matches_string_in_order(
+        query,
+        stream.name,
+        " ",
+        should_remove_diacritics,
+    );
 }
 
-export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {
+export function query_matches_group_name(
+    query: string,
+    user_group: UserGroupPillData,
+    should_remove_diacritics: boolean,
+): boolean {
     if (user_group.name === "role:members") {
         return (
             typeahead.query_matches_string_in_order(
                 query,
                 user_groups.get_display_group_name(user_group.name),
                 "",
+                should_remove_diacritics,
             ) ||
             typeahead.query_matches_string_in_order(
                 query,
                 settings_config.alternate_members_group_typeahead_matching_name,
                 "",
+                should_remove_diacritics,
             )
         );
     }
@@ -1156,5 +1208,6 @@ export function query_matches_group_name(query: string, user_group: UserGroupPil
         query,
         user_groups.get_display_group_name(user_group.name),
         "",
+        should_remove_diacritics,
     );
 }

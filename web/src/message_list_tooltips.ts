@@ -63,6 +63,28 @@ function message_list_tooltip(target: string, props: Partial<tippy.Props> = {}):
                 return false;
             }
 
+            // Flip tooltip when the reference is partially clipped
+            // by a scroll container (compose preview) or the sticky
+            // recipient header (message feed).
+            if (instance.props.placement === "top") {
+                const ref_rect = instance.reference.getBoundingClientRect();
+                let clipping_top: number | undefined;
+
+                const preview_area = instance.reference.closest(".preview_message_area");
+                if (preview_area) {
+                    clipping_top = preview_area.getBoundingClientRect().top;
+                } else {
+                    const sticky_header = document.querySelector(".sticky_header");
+                    if (sticky_header) {
+                        clipping_top = sticky_header.getBoundingClientRect().bottom;
+                    }
+                }
+
+                if (clipping_top !== undefined && ref_rect.top < clipping_top) {
+                    instance.setProps({placement: "bottom"});
+                }
+            }
+
             if (onShow !== undefined && onShow(instance) === false) {
                 // Only return false if `onShow` returns false. We don't want to hide
                 // tooltip if `onShow` returns `undefined`.
@@ -368,7 +390,11 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".media-image-element", {
+    // Disable tooltip in compose box and message edit preview. Scrolling over a
+    // large image caused the tooltip to go out of its container and made it look
+    // like it was floating in the app. Since the tooltip was not that useful for
+    // this case, we chose to remove it instead.
+    message_list_tooltip(".media-image-element:not(.preview_content *)", {
         // Add a short delay so the user can mouseover several inline images without
         // tooltips showing and hiding rapidly
         delay: [300, 20],
@@ -439,10 +465,9 @@ export function initialize(): void {
             }
             let edited_time_string = "";
             let moved_time_string = "";
-            if (message_container.edited) {
-                // We know the message has been edited, so we either have a timestamp
-                // from the server or from a local edit.
-                assert(message_container.last_edit_timestamp !== undefined);
+            if (message_container.edited && message_container.last_edit_timestamp !== undefined) {
+                // Poll widget edits are not server-processed text edits, so
+                // there may be no timestamp when only widget edits are present.
                 edited_time_string = get_time_string(message_container.last_edit_timestamp);
             }
             if (message_container.moved) {
@@ -451,9 +476,13 @@ export function initialize(): void {
                 assert(message_container.last_moved_timestamp !== undefined);
                 moved_time_string = get_time_string(message_container.last_moved_timestamp);
             }
+            // We only show the edit history if there are server-tracked text edits or moves.
+            // Widget-only edits (which have no standard server edit history) will have
+            // `last_edit_timestamp` as undefined and `moved` as false.
             const edit_history_access =
+                (message_container.last_edit_timestamp !== undefined || message_container.moved) &&
                 realm.realm_message_edit_history_visibility_policy ===
-                message_edit_history_visibility_policy_values.always.code;
+                    message_edit_history_visibility_policy_values.always.code;
             const message_moved_and_move_history_access =
                 realm.realm_message_edit_history_visibility_policy ===
                     message_edit_history_visibility_policy_values.moves_only.code &&
@@ -463,6 +492,7 @@ export function initialize(): void {
                     render_message_edit_notice_tooltip({
                         moved: message_container.moved,
                         edited: message_container.edited,
+                        widget_edited: message_container.widget_edited,
                         edited_time_string,
                         moved_time_string,
                         edit_history_access,

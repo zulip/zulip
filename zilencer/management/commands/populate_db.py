@@ -123,6 +123,7 @@ def clear_database() -> None:
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
     if default_cache["BACKEND"] == "zerver.lib.singleton_bmemcached.SingletonBMemcached":
+        assert isinstance(default_cache["OPTIONS"], dict)
         memcached_client = bmemcached.Client(
             (default_cache["LOCATION"],),
             **default_cache["OPTIONS"],
@@ -201,6 +202,7 @@ def create_alert_words(realm_id: int) -> None:
         realm_id=realm_id,
         is_bot=False,
         is_active=True,
+        is_imported_stub=False,
     ).values_list("id", flat=True)
 
     alert_words = [
@@ -550,7 +552,7 @@ class Command(ZulipBaseCommand):
                 u.timezone = new_time_zone
                 u.save(update_fields=["timezone"])
 
-            # Note: Hamlet keeps default time zone of "".
+            # Note: Hamlet and Imported User keep default time zone of "".
             assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
             assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
             assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")
@@ -594,6 +596,16 @@ class Command(ZulipBaseCommand):
 
             polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
+
+            zulip_imported_users = [
+                ("Imported User", "imported-user@zulip.com"),
+            ]
+            create_users(
+                zulip_realm,
+                zulip_imported_users,
+                is_imported_stub=True,
+                tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+            )
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -720,6 +732,7 @@ class Command(ZulipBaseCommand):
                         zulip_sandbox_channel_name,
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
+                    "imported-user@zulip.com": ["Denmark"],
                 }
 
                 for profile in profiles:
@@ -748,9 +761,7 @@ class Command(ZulipBaseCommand):
             event_time = timezone_now()
             all_subscription_logs: list[RealmAuditLog] = []
 
-            i = 0
-            for profile, recipient in subscriptions_list:
-                i += 1
+            for i, (profile, recipient) in enumerate(subscriptions_list, 1):
                 color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
                 s = Subscription(
                     recipient=recipient,
@@ -785,7 +796,7 @@ class Command(ZulipBaseCommand):
             biography = try_add_realm_custom_profile_field(
                 zulip_realm,
                 "Biography",
-                CustomProfileField.LONG_TEXT,
+                CustomProfileField.PARAGRAPH,
                 hint="What are you known for?",
             )
             favorite_food = try_add_realm_custom_profile_field(
@@ -799,7 +810,7 @@ class Command(ZulipBaseCommand):
                 "1": {"text": "Emacs", "order": "2"},
             }
             favorite_editor = try_add_realm_custom_profile_field(
-                zulip_realm, "Favorite editor", CustomProfileField.SELECT, field_data=field_data
+                zulip_realm, "Favorite editor", CustomProfileField.DROPDOWN, field_data=field_data
             )
             birthday = try_add_realm_custom_profile_field(
                 zulip_realm, "Birthday", CustomProfileField.DATE
@@ -958,6 +969,12 @@ class Command(ZulipBaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
+                if user.is_imported_stub:
+                    # We do not create a UserPresence object for imported stub
+                    # users with the current time as the last active time, as
+                    # it would mislead clients about the last active date for
+                    # an imported stub user who hasn't logged in yet.
+                    continue
                 date = timezone_now()
                 UserPresence.objects.get_or_create(
                     user_profile=user,
@@ -1297,7 +1314,14 @@ def generate_and_send_messages(
     message_batch_size = options["batch_size"]
     num_messages = 0
     random_max = 1000000
-    recipients: dict[int, tuple[int, int, dict[str, Any]]] = {}
+    # Local message type discriminators for populate_db's random
+    # message generation.  These are NOT Recipient.type values — all
+    # DMs use Recipient.DIRECT_MESSAGE_GROUP in the database.
+    MSG_TYPE_GROUP_DM = "group_dm"
+    MSG_TYPE_1_TO_1_DM = "1_to_1_dm"
+    MSG_TYPE_STREAM = "stream"
+
+    recipients: dict[int, tuple[str, int, dict[str, Any]]] = {}
     messages: list[Message] = []
     while num_messages < tot_messages:
         saved_data: dict[str, Any] = {}
@@ -1312,17 +1336,17 @@ def generate_and_send_messages(
             and random.randint(1, random_max) * 100.0 / random_max < options["stickiness"]
         ):
             # Use an old recipient
-            recipient_type, recipient_id, saved_data = recipients[num_messages - 1]
-            if recipient_type == Recipient.PERSONAL:
+            msg_type, recipient_id, saved_data = recipients[num_messages - 1]
+            if msg_type == MSG_TYPE_1_TO_1_DM:
                 personals_pair = list(saved_data["personals_pair"])
                 random.shuffle(personals_pair)
-            elif recipient_type == Recipient.STREAM:
+            elif msg_type == MSG_TYPE_STREAM:
                 message.subject = saved_data["subject"]
                 message.recipient = get_recipient_by_id(recipient_id)
-            elif recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
+            elif msg_type == MSG_TYPE_GROUP_DM:
                 message.recipient = get_recipient_by_id(recipient_id)
         elif randkey <= random_max * options["percent_direct_message_groups"] / 100.0:
-            recipient_type = Recipient.DIRECT_MESSAGE_GROUP
+            msg_type = MSG_TYPE_GROUP_DM
             message.recipient = get_recipient_by_id(random.choice(recipient_direct_message_groups))
         elif (
             randkey
@@ -1330,25 +1354,25 @@ def generate_and_send_messages(
             * (options["percent_direct_message_groups"] + options["percent_personals"])
             / 100.0
         ):
-            recipient_type = Recipient.PERSONAL
+            msg_type = MSG_TYPE_1_TO_1_DM
             personals_pair = list(random.choice(personals_pairs))
             random.shuffle(personals_pair)
         elif randkey <= random_max * 1.0:
-            recipient_type = Recipient.STREAM
+            msg_type = MSG_TYPE_STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
-        if recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
+        if msg_type == MSG_TYPE_GROUP_DM:
             sender_id = random.choice(direct_message_group_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
             message.subject = Message.DM_TOPIC
-        elif recipient_type == Recipient.PERSONAL:
-            message.recipient = Recipient.objects.get(
-                type=Recipient.PERSONAL, type_id=personals_pair[0]
-            )
+        elif msg_type == MSG_TYPE_1_TO_1_DM:
+            direct_message_group = get_or_create_direct_message_group(personals_pair)
+            assert direct_message_group.recipient is not None
+            message.recipient = direct_message_group.recipient
             message.sender = get_user_profile_by_id(personals_pair[1])
             message.subject = Message.DM_TOPIC
             saved_data["personals_pair"] = personals_pair
-        elif recipient_type == Recipient.STREAM:
+        elif msg_type == MSG_TYPE_STREAM:
             # Pick a random subscriber to the stream
             message.sender = random.choice(
                 list(Subscription.objects.filter(recipient=message.recipient))
@@ -1356,13 +1380,13 @@ def generate_and_send_messages(
             message.subject = random.choice(possible_topic_names[message.recipient.id])
             saved_data["subject"] = message.subject
 
-        message.is_channel_message = recipient_type == Recipient.STREAM
+        message.is_channel_message = msg_type == MSG_TYPE_STREAM
         message.date_sent = choose_date_sent(
             num_messages, tot_messages, options["oldest_message_days"], options["threads"]
         )
         messages.append(message)
 
-        recipients[num_messages] = (recipient_type, message.recipient.id, saved_data)
+        recipients[num_messages] = (msg_type, message.recipient.id, saved_data)
         num_messages += 1
 
         if (num_messages % message_batch_size) == 0:
@@ -1454,14 +1478,14 @@ def choose_date_sent(
     # (2) there are some >24hr gaps between adjacent messages, and
     # (3) a decent bulk of messages in the last day so you see adjacent messages with the same date.
     # So we distribute 80% of messages starting from oldest_message_days days ago, over a period
-    # of the first min(oldest_message_days-2, 1) of those days. Then, distributes remaining messages
+    # of the first max(oldest_message_days-2, 1) of those days. Then, distributes remaining messages
     # over the past 24 hours.
     amount_in_first_chunk = int(tot_messages * 0.8)
     amount_in_second_chunk = tot_messages - amount_in_first_chunk
 
     if num_messages < amount_in_first_chunk:
         spoofed_date = timezone_now() - timedelta(days=oldest_message_days)
-        num_days_for_first_chunk = min(oldest_message_days - 2, 1)
+        num_days_for_first_chunk = max(oldest_message_days - 2, 1)
         interval_size = num_days_for_first_chunk * 24 * 60 * 60 / amount_in_first_chunk
         lower_bound = interval_size * num_messages
         upper_bound = interval_size * (num_messages + 1)

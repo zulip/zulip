@@ -167,7 +167,7 @@
                 vertical-align: top;
                 padding: 3px 6.5px 3px 7.5px;
                 margin-right: 5px;
-                background-color: hsl(170deg 48% 54%);
+                background-color: var(--color-link);
                 color: hsl(0deg 0% 100%);
                 border-radius: 100%;
                 font-size: 0.9em;
@@ -272,25 +272,6 @@
         &.inline {
             height: 1.4em;
             box-shadow: none;
-        }
-
-        &.emoji-small {
-            width: 20px;
-            box-shadow: none;
-            border: none;
-            vertical-align: sub;
-        }
-
-        &.emoji-big {
-            width: 25px;
-            box-shadow: none;
-            border: none;
-        }
-
-        &.help-center-icon {
-            width: 24px;
-            box-shadow: none;
-            border: none;
         }
     }
 
@@ -479,7 +460,7 @@
                 cursor: pointer;
 
                 &.active {
-                    color: hsl(176deg 46% 41%);
+                    color: var(--color-link);
                     margin-bottom: -1px;
 
                     border: 1px solid hsl(0deg 0% 87%);
@@ -507,8 +488,24 @@
             border-radius: 0 6px 6px;
         }
 
+        /* A "no-tabs" section is a degenerate zero-tabs wrapper that
+           just holds flowing markdown content. The border and radius
+           on `.blocks` exist to visually group a tab bar with the
+           content below it, which is meaningless when there's no tab
+           bar — it just draws a random frame around a subset of the
+           content. Drop the frame in that case.
+
+           Reset padding to 0 and use `margin-block` instead so that
+           the top/bottom margins collapse with adjacent paragraphs,
+           the first list item's margin, etc. — that gives a natural,
+           single breathing-room gap of ~20 px instead of stacking
+           the preceding paragraph's 10 px margin on top of the
+           block's own space. */
         &.no-tabs .blocks {
-            border-radius: 6px;
+            padding: 0;
+            margin-block: 20px;
+            border: 0;
+            border-radius: 0;
         }
 
         &.no-tabs .blocks > .tab-content,
@@ -528,5 +525,72 @@
             line-height: 1.25;
             margin-bottom: 0;
         }
+    }
+}
+
+/* Shared element-level styling for pages that render markdown as
+   content documentation: /help and /api pages (under `.help .markdown`)
+   and integration doc pages (under `.integration-instructions`).
+   Keeping these rules in one place lets both the help bundle and the
+   integrations bundle depend on a single source of truth — markdown.css
+   is already loaded by both. Marketing pages (which also load this
+   file but don't match either selector) are intentionally unaffected,
+   because their layouts rely on different defaults for lists,
+   paragraph margins, and so on. */
+.help .markdown,
+.integration-instructions {
+    & p {
+        margin: 0 0 10px;
+    }
+
+    & p:empty {
+        margin: 0;
+    }
+
+    & h1 {
+        margin-top: 15px;
+    }
+
+    & h4 {
+        margin: 15px 0 5px;
+    }
+
+    & hr {
+        margin: 20px 0;
+        border: 0;
+        border-top: 1px solid hsl(0deg 0% 93%);
+    }
+
+    /* Reset the browser-default left padding on lists so numbered
+       items and bullets align with surrounding paragraphs. */
+    & ul,
+    & ol {
+        padding: 0;
+    }
+
+    /* Fenced code blocks: light gray card with a subtle border and
+       rounded corners. The 15px vertical margins give surrounding
+       paragraphs visible breathing room around the code card, which
+       a tighter 10px bottom margin (and 0 top) was not providing.
+       The explicit font-size matches the `pre code` rule in .markdown
+       above and ensures code blocks render at the same size whether
+       the codehilite wraps content in <code> or not (some integration
+       pages generate bare <pre> without a <code> child). */
+    & pre {
+        padding: 9.5px;
+        margin: 15px 0;
+        font-family: "Source Code Pro", monospace;
+        font-size: 14px;
+        color: hsl(0deg 0% 0%);
+        word-break: break-all;
+        line-height: 20px;
+        background-color: hsl(0deg 0% 96%);
+        border: 1px solid hsl(0deg 0% 0% / 15%);
+        border-radius: 4px;
+    }
+
+    /* Inline `<code>` inside a link inherits the link color. */
+    & a code {
+        color: var(--color-link);
     }
 }

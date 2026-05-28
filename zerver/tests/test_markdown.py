@@ -1,5 +1,6 @@
 import os
 import re
+from dataclasses import dataclass
 from html import escape
 from textwrap import dedent
 from typing import Any
@@ -30,7 +31,7 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
-from zerver.lib.emoji import codepoint_to_name, get_emoji_url
+from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import JsonableError, MarkdownRenderingError
 from zerver.lib.markdown import (
@@ -49,6 +50,7 @@ from zerver.lib.markdown import (
     url_to_a,
 )
 from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
     FullNameInfo,
@@ -66,7 +68,7 @@ from zerver.lib.streams import user_has_content_access, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.upload import upload_message_attachment
+from zerver.lib.upload import get_emoji_url, upload_message_attachment
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
@@ -640,6 +642,8 @@ class MarkdownFixtureTest(ZulipTestCase):
         def replaced(payload: str, url: str, phrase: str = "") -> str:
             if url[:4] == "http":
                 href = url
+            elif "://" in url:
+                href = url
             elif "@" in url:
                 href = "mailto:" + url
             else:
@@ -762,6 +766,54 @@ class MarkdownLinkTest(ZulipTestCase):
             '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>',
         )
 
+    def test_mentions_formatted_with_link(self) -> None:
+        # Make sure the inline link processor is takes priority over the mention processors
+        # and don't double-process mentions with a link.
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+
+        @dataclass
+        class MentionFixture:
+            name: str
+            mention_syntax: str
+            expected_html_class: str
+
+        mention_fixtures = [
+            MentionFixture(
+                name="channel_mention",
+                mention_syntax="#**Denmark**",
+                expected_html_class="stream",
+            ),
+            MentionFixture(
+                name="channel_topic_mention",
+                mention_syntax="#**Denmark>topic**",
+                expected_html_class="stream-topic",
+            ),
+            MentionFixture(
+                name="channel_topic_message_mention",
+                mention_syntax="#**Denmark>topic>@123**",
+                expected_html_class="message-link",
+            ),
+        ]
+
+        for fixture in mention_fixtures:
+            with self.subTest(fixture.name):
+                # Make sure the mention syntax is valid first.
+                self.assertIn(
+                    fixture.expected_html_class,
+                    render_message_markdown(msg, fixture.mention_syntax).rendered_content,
+                )
+                link = "https://chat.zulip.org"
+                mention_with_link = f"[{fixture.mention_syntax}]({link})"
+                self.assertEqual(
+                    render_message_markdown(msg, mention_with_link).rendered_content,
+                    f'<p><a href="{link}">{escape(fixture.mention_syntax)}</a></p>',
+                )
+
 
 class MarkdownEmbedsTest(ZulipTestCase):
     def assert_message_content_is(
@@ -828,29 +880,6 @@ class MarkdownEmbedsTest(ZulipTestCase):
         self.assertEqual(
             converted,
             f"""<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="{get_camo_url("https://i.ytimg.com/vi/nOJgD4fcZhI/mqdefault.jpg")}"></a></div>""",
-        )
-
-    def test_inline_image(self) -> None:
-        image_url = "https://www.google.com/images/srpr/logo4w.png"
-        msg = f"The Google logo looks like this: ![Google logo]({image_url}) and..."
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            f"""<p>The Google logo looks like this: <img alt="Google logo" data-original-src="{image_url}" src="{get_camo_url(image_url)}"> and...</p>""",
-        )
-
-        msg = '![foo](/url "the title")'
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            '<p><img alt="foo" data-original-src="/url" src="/url" title="the title"></p>',
-        )
-
-        msg = "![](/url)"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            '<p><img alt="" data-original-src="/url" src="/url"></p>',
         )
 
     def test_inline_image_preview(self) -> None:
@@ -1178,6 +1207,19 @@ class MarkdownEmbedsTest(ZulipTestCase):
 <div class="message_inline_image message_inline_video"><a href="https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0&amp;raw=1"><video preload="metadata" src="https://external-content.zulipcdn.net/external_content/eca04355025c60f40334c9a03d220c3298d4df47/68747470733a2f2f7777772e64726f70626f782e636f6d2f73636c2f66692f78387a3031726f6471316e367067797a6e74316b682f53616d706c65566964656f5f31323830783732305f316d622e6d70343f726c6b65793d6669696273676e753036746d7330343176667a666f706d6f732673743d6b6a746b6561386826646c3d30267261773d31"></video></a></div>""",
         )
 
+    def test_inline_mov_video(self) -> None:
+        msg = "Check out: https://example.com/video.mov"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p>Check out: <a href="https://example.com/video.mov">https://example.com/video.mov</a></p>\n'
+            '<div class="message_inline_image message_inline_video">'
+            '<a href="https://example.com/video.mov">'
+            '<video preload="metadata" '
+            'src="https://external-content.zulipcdn.net/external_content/63ae0235541edb2aaebc4f2e6cd63c6f0c1447ed/68747470733a2f2f6578616d706c652e636f6d2f766964656f2e6d6f76">'
+            "</video></a></div>",
+        )
+
     def test_inline_dropbox_preview(self) -> None:
         # Test photo album previews
         msg = "https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5"
@@ -1218,6 +1260,25 @@ class MarkdownEmbedsTest(ZulipTestCase):
         self.assertEqual(
             converted,
             '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>',
+        )
+
+    def test_inline_dropbox_no_previews(self) -> None:
+        # When previews are disabled (e.g., for channel descriptions),
+        # dropbox_media should not invoke fetch_open_graph_image, since
+        # network calls in that context can time out and abort rendering.
+        # Use a non-image/non-video file link so that, without the fix,
+        # dropbox_media would reach the fetch_open_graph_image call.
+        url = "https://www.dropbox.com/scl/fi/8xq0p2m4n6k8j1h3g5f7d/quarterly-report.pdf?dl=0"
+        with mock.patch(
+            "zerver.lib.markdown.fetch_open_graph_image"
+        ) as mock_fetch_open_graph_image:
+            converted = markdown_convert(
+                url, message_realm=get_realm("zulip"), no_previews=True
+            ).rendered_content
+        mock_fetch_open_graph_image.assert_not_called()
+        self.assertEqual(
+            converted,
+            f'<p><a href="{url}">{url}</a></p>',
         )
 
     def test_inline_github_preview(self) -> None:
@@ -1302,7 +1363,9 @@ class MarkdownEmojiTest(ZulipTestCase):
     def test_realm_emoji(self) -> None:
         def emoji_img(name: str, file_name: str, realm_id: int) -> str:
             return '<img alt="{}" class="emoji" src="{}" title="{}">'.format(
-                name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " ")
+                name,
+                get_emoji_url(file_name, realm_id),
+                name[1:-1].replace("_", " "),
             )
 
         realm = get_realm("zulip")
@@ -1911,13 +1974,28 @@ class MarkdownLinkifierTest(ZulipTestCase):
         ):
             self.assertEqual(linkifiers_for_realm(realm.id), [])
 
-        linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_template="whatever")
+        linkifier = RealmFilter(
+            realm=realm,
+            pattern=r"whatever",
+            url_template="whatever",
+            example_input="whatever",
+            reverse_template="whatever",
+        )
         linkifier.save()
 
         # cache gets properly invalidated by virtue of our save
         self.assertEqual(
             linkifiers_for_realm(realm.id),
-            [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+            [
+                {
+                    "id": linkifier.id,
+                    "pattern": "whatever",
+                    "url_template": "whatever",
+                    "example_input": "whatever",
+                    "reverse_template": "whatever",
+                    "alternative_url_templates": [],
+                }
+            ],
         )
 
         # And the in-process cache works again.
@@ -1927,7 +2005,16 @@ class MarkdownLinkifierTest(ZulipTestCase):
         ):
             self.assertEqual(
                 linkifiers_for_realm(realm.id),
-                [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+                [
+                    {
+                        "id": linkifier.id,
+                        "pattern": "whatever",
+                        "url_template": "whatever",
+                        "example_input": "whatever",
+                        "reverse_template": "whatever",
+                        "alternative_url_templates": [],
+                    }
+                ],
             )
 
 
@@ -2417,7 +2504,33 @@ class MarkdownMentionTest(ZulipTestCase):
                 f"<p>{unicode_character}@<strong>King Hamlet</strong></p>",
             )
 
-    def test_mention_silent(self) -> None:
+    def test_mention_get_user_ids(self) -> None:
+        # possible_mentions() does NOT differentiate between silent and
+        # non-silent mentions, unlike possible_user_group_mentions().
+        # So we explicitly test that behaviour of possible_mentions(),
+        # when mentioning users, ensuring their Ids are fetched.
+        # This also tests the case where different mention types were used in the same
+        # message.
+        realm = get_realm("zulip")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        # Mix 4 different types of mentions:
+        # non-silent mention by name, silent mention by name, non-silent mention by ID, silent mention by ID.
+        content = f"@**{aaron.full_name}**, @_**{hamlet.full_name}**, @**|{cordelia.id}**, @_**|{othello.id}**"
+
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+
+        # user_ids of all the mentioned users, by different mention types,
+        # should be captured in mention_data.get_user_ids().
+        self.assertEqual(
+            mention_data.get_user_ids(), {aaron.id, hamlet.id, cordelia.id, othello.id}
+        )
+
+    def test_render_silent_mention_user(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
         msg = Message(
@@ -2631,8 +2744,14 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
-            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234** @**all**",
-            {"King Hamlet", f"|{aaron.id}", "Cordelia, Lear's daughter", "Foo van Barson|1234"},
+            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234**, @_**othello** @**all**",
+            {
+                "King Hamlet",
+                f"|{aaron.id}",
+                "Cordelia, Lear's daughter",
+                "Foo van Barson|1234",
+                "othello",
+            },
             False,
             True,
         )
@@ -2641,22 +2760,26 @@ class MarkdownMentionTest(ZulipTestCase):
         sender_user_profile = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
             realm=sender_user_profile.realm,
         )
 
-        content = "@**King Hamlet** and @**Cordelia, Lear's daughter**, check this out"
+        content = (
+            "@**King Hamlet**, @**Cordelia, Lear's daughter**, and @_**aaron**, check this out"
+        )
 
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
             "<p>"
             '<span class="user-mention" '
-            f'data-user-id="{hamlet.id}">@King Hamlet</span> and '
+            f'data-user-id="{hamlet.id}">@King Hamlet</span>, '
             '<span class="user-mention" '
-            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, '
+            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, and '
+            f'<span class="user-mention silent" data-user-id="{aaron.id}">aaron</span>, '
             "check this out</p>",
         )
         self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id, cordelia.id})
@@ -3722,7 +3845,7 @@ class MarkdownErrorTests(ZulipTestCase):
         markdown_input = [
             "``` curl",
             "curl {{ api_url }}/v1/register",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
+            "    -u EMAIL_ADDRESS:API_KEY",
             '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"',
             "```",
         ]
@@ -3736,14 +3859,14 @@ class MarkdownErrorTests(ZulipTestCase):
         markdown_input = [
             "``` curl",
             "curl {{ api_url }}/v1/register",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
+            "    -u EMAIL_ADDRESS:API_KEY",
             '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"',
             "```",
         ]
         expected = [
             "",
             "**curl:curl {{ api_url }}/v1/register",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
+            "    -u EMAIL_ADDRESS:API_KEY",
             '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"**',
             "",
             "",
@@ -3751,3 +3874,29 @@ class MarkdownErrorTests(ZulipTestCase):
 
         result = processor.run(markdown_input)
         self.assertEqual(result, expected)
+
+    def test_fenced_code_with_pygments_exception(self) -> None:
+        """Fallback to plain code when Pygments raises an exception."""
+        with (
+            self.assertLogs(level="ERROR") as log,
+            mock.patch("zerver.lib.markdown.fenced_code.CodeHilite.hilite") as mocked_hilite,
+        ):
+            mocked_hilite.side_effect = Exception("pygments crashed")
+
+            markdown_text = "```python\nprint('pygments fallback test')\n```"
+            rendered_html = markdown_convert(
+                markdown_text,
+                self.example_user("hamlet"),
+            ).rendered_content
+
+        self.assertIn("<pre", rendered_html)
+        self.assertIn("print('pygments fallback test')", rendered_html)
+        mocked_hilite.assert_called()
+        self.assertIn("Failed to highlight fenced code block", log.output[0])
+
+
+class TestHtmlToMarkdown(ZulipTestCase):
+    def test_unicode(self) -> None:
+        self.assertEqual(
+            convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
+        )

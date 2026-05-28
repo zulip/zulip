@@ -77,6 +77,9 @@ class LinkifierDict(TypedDict):
     pattern: str
     url_template: str
     id: int
+    example_input: str | None
+    reverse_template: str | None
+    alternative_url_templates: list[str]
 
 
 class Unset:
@@ -407,6 +410,7 @@ class RawUserDict(TypedDict):
     long_term_idle: bool
     email_address_visibility: int
     is_imported_stub: bool
+    is_deleted: bool
 
 
 class RemoteRealmDictValue(TypedDict):
@@ -427,6 +431,7 @@ class StreamMessageEditRequest:
     is_topic_edited: bool
     is_stream_edited: bool
     is_message_moved: bool
+    is_nontrivial_move: bool
     topic_resolved: bool
     topic_unresolved: bool
     content: str
@@ -443,3 +448,9 @@ class DirectMessageEditRequest:
     content: str
     orig_content: str
     is_content_edited: bool
+
+
+@dataclass(frozen=True)
+class Invitee:
+    email: str
+    full_name: str = ""

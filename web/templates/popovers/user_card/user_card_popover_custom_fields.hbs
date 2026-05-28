@@ -1,4 +1,5 @@
 {{#each profile_fields}}
+    {{#unless this.is_long_text}}
     <li role="none" class="popover-menu-list-item text-item custom_user_field" data-type="{{this.type}}" data-field-id="{{this.id}}">
         {{#if this.is_link}}
             <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link" data-tippy-content="{{this.name}}" tabindex="0">
@@ -27,4 +28,19 @@
             </div>
         {{/if}}
     </li>
+    {{/unless}}
+{{/each}}
+{{!-- Long text custom profile fields are rendered after all other custom profile fields --}}
+{{#each profile_fields}}
+    {{#if this.is_long_text}}
+    <li role="none" class="popover-menu-list-item link-item custom_user_field" data-type="{{this.type}}" data-field-id="{{this.id}}">
+        <div class="popover-menu-link view_full_user_profile" tabindex="0">
+            <i class="popover-menu-icon zulip-icon zulip-icon-id-card" aria-hidden="true"></i>
+            <span class="popover-menu-label">{{this.name}}</span>
+            <span role="menuitem" tabindex="0" class="copy-button copy-custom-profile-field-long-text" aria-label="{{t 'Copy'}}" data-tippy-content="{{t 'Copy'}}" data-clipboard-text="{{this.value}}">
+                <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
+            </span>
+        </div>
+    </li>
+    {{/if}}
 {{/each}}

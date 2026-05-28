@@ -13,16 +13,16 @@ run_test("add_custom_emoji_post_render", () => {
     let build_widget_stub = false;
     upload_widget.build_widget = (
         get_file_input,
-        file_name_field,
-        input_error,
-        clear_button,
-        upload_button,
+        $file_name_field,
+        $input_error,
+        $clear_button,
+        $upload_button,
     ) => {
-        assert.deepEqual(get_file_input(), $("#emoji_file_input"));
-        assert.deepEqual(file_name_field, $("#emoji-file-name"));
-        assert.deepEqual(input_error, $("#emoji_file_input_error"));
-        assert.deepEqual(clear_button, $("#emoji_image_clear_button"));
-        assert.deepEqual(upload_button, $("#emoji_upload_button"));
+        assert.equal(get_file_input()[0], $("#emoji_file_input")[0]);
+        assert.equal($file_name_field[0], $("#emoji-file-name")[0]);
+        assert.equal($input_error[0], $("#emoji_file_input_error")[0]);
+        assert.equal($clear_button[0], $("#emoji_image_clear_button")[0]);
+        assert.equal($upload_button[0], $("#emoji_upload_button")[0]);
         build_widget_stub = true;
     };
     settings_emoji.add_custom_emoji_post_render();

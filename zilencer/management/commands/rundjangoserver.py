@@ -2,14 +2,13 @@ from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
 
-from dateutil.tz import tzlocal
 from django.core.management.commands.runserver import Command as DjangoCommand
 from typing_extensions import override
 
 
 def output_styler(style_func: Callable[[str], str]) -> Callable[[str], str]:
     # Might fail to suppress the date line around midnight, but, whatever.
-    date_prefix = datetime.now(tzlocal()).strftime("%B %d, %Y - ")
+    date_prefix = datetime.now().astimezone().strftime("%B %d, %Y - ")
 
     @wraps(style_func)
     def _wrapped_style_func(message: str) -> str:

@@ -18,6 +18,7 @@ match cache["BACKEND"]:
     case "django.core.cache.backends.locmem.LocMemCache":
         pass
     case "zerver.lib.singleton_bmemcached.SingletonBMemcached":
+        assert isinstance(cache["OPTIONS"], dict)
         client = bmemcached.Client((cache["LOCATION"],), **cache["OPTIONS"])
         try:
             client.flush_all()

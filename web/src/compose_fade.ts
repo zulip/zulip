@@ -3,13 +3,12 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as compose_fade_helper from "./compose_fade_helper.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import type {MessageGroup} from "./message_list_view.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
-import * as people from "./people.ts";
 import * as rows from "./rows.ts";
-import * as util from "./util.ts";
 
 let normal_display = false;
 
@@ -32,15 +31,9 @@ export function set_focused_recipient(msg_type?: "private" | "stream"): void {
             };
         }
     } else if (msg_type === "private") {
-        // Normalize the recipient list so it matches the one used when
-        // adding the message (see message_helper.process_new_message()).
-        const reply_to = util.normalize_recipients(
-            compose_state.private_message_recipient_emails(),
-        );
-        const to_user_ids = people.reply_to_to_user_ids_string(reply_to);
+        const to_user_ids = compose_pm_pill.get_user_ids_string();
         focused_recipient = {
             type: msg_type,
-            reply_to,
             to_user_ids,
         };
     }
@@ -85,7 +78,7 @@ function fade_messages(): void {
             if (
                 message_lists.current !== expected_msg_list ||
                 !compose_state.composing() ||
-                compose_state.private_message_recipient_emails() !== expected_recipient
+                compose_pm_pill.get_user_ids_string() !== expected_recipient
             ) {
                 return;
             }
@@ -103,7 +96,7 @@ function fade_messages(): void {
         },
         0,
         message_lists.current,
-        compose_state.private_message_recipient_emails(),
+        compose_pm_pill.get_user_ids_string(),
     );
 }
 

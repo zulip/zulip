@@ -615,7 +615,7 @@ class UserPresenceTests(ZulipTestCase):
 
         # Ensure date_joined was used as the fallback.
         self.assertEqual(
-            result_dict["presence"]["website"]["timestamp"],
+            result_dict["presence"]["active_timestamp"],
             datetime_to_timestamp(othello.date_joined),
         )
 
@@ -735,21 +735,32 @@ class SingleUserPresenceTests(ZulipTestCase):
             result = self.client_get(f"/json/users/{othello.id}/presence")
         self.assert_json_error(result, "Insufficient permission")
 
+        expected_keys = {"active_timestamp", "idle_timestamp", "website", "aggregated"}
+
         result = self.client_get(f"/json/users/{othello.id}/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"].keys()), expected_keys)
+        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
+        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        self.assertIsInstance(result_dict["server_timestamp"], float)
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
         # Then, we check everything works
         self.login("hamlet")
         result = self.client_get("/json/users/othello@zulip.com/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"].keys()), expected_keys)
+        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
+        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        self.assertIsInstance(result_dict["server_timestamp"], float)
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
         result = self.client_get(f"/json/users/{othello.id}/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"].keys()), expected_keys)
+        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
+        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        self.assertIsInstance(result_dict["server_timestamp"], float)
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
     def test_ping_only(self) -> None:
@@ -875,7 +886,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         user = self.example_user("othello")
         self.login_user(user)
         validate_time = timezone_now()
-        result_dict = self._send_presence_for_aggregated_tests(user, "idle", validate_time)
+        self._send_presence_for_aggregated_tests(user, "idle", validate_time)
 
         with time_machine.travel(
             (validate_time + timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1)),

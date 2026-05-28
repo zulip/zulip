@@ -162,6 +162,12 @@ class RealmTopicsPolicyEnum(Enum):
     disable_empty_topic = 3
 
 
+class RealmMediaPreviewSizeEnum(IntEnum):
+    SMALL = 100
+    MEDIUM = 150
+    LARGE = 200
+
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -179,6 +185,8 @@ class Realm(models.Model):
     # User-visible display name and description used on e.g. the organization homepage
     name = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description = models.TextField(default="")
+    rendered_description = models.TextField(null=True, default=None)
+    rendered_description_version = models.IntegerField(null=True, default=None)
 
     # A short, identifier-like name for the organization.  Used in subdomains;
     # e.g. on a server at example.com, an org with string_id `foo` is reached
@@ -223,6 +231,10 @@ class Realm(models.Model):
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview = models.BooleanField(default=True)
     inline_url_embed_preview = models.BooleanField(default=False)
+
+    media_preview_size = models.PositiveSmallIntegerField(
+        default=RealmMediaPreviewSizeEnum.SMALL.value
+    )
 
     # Whether digest emails are enabled for the organization.
     digest_emails_enabled = models.BooleanField(default=False)
@@ -656,6 +668,18 @@ class Realm(models.Model):
             "name": "Zoom",
             "id": 5,
         },
+        "constructor_groups": {
+            "name": "Constructor Groups",
+            "id": 6,
+        },
+        "nextcloud_talk": {
+            "name": "Nextcloud Talk",
+            "id": 7,
+        },
+        "webex": {
+            "name": "Webex",
+            "id": 8,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -668,12 +692,13 @@ class Realm(models.Model):
     # Please access this via get_gif_rating_policy_options.
     GIF_RATING_POLICY_OPTIONS = {
         "disabled": {
-            "name": gettext_lazy("GIF integration disabled"),
+            "name": gettext_lazy("Disabled"),
             "id": 0,
         },
         # Source:
         # 1. https://developers.giphy.com/docs/optional-settings/#rating
         # 2. https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
+        # 3. https://docs.klipy.com/migrate-from-tenor/content-filtering
         "g": {
             "name": gettext_lazy("Allow GIFs rated G (General audience)"),
             "id": 1,
@@ -709,6 +734,11 @@ class Realm(models.Model):
     # Whether to notify client when a DM has a guest recipient.
     enable_guest_user_dm_warning = models.BooleanField(default=True)
 
+    # UserGroup whose users will be considered as workplace users for billing.
+    workplace_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Avatar source for new users
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_JDENTICON = "J"
@@ -717,7 +747,7 @@ class Realm(models.Model):
         (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
     )
     default_avatar_source = models.CharField(
-        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+        default=AVATAR_FROM_JDENTICON, choices=AVATAR_SOURCES, max_length=1
     )
 
     # Define the types of the various automatically managed properties
@@ -738,6 +768,7 @@ class Realm(models.Model):
         enable_read_receipts=bool,
         enable_spectator_access=bool,
         gif_rating_policy=int,
+        media_preview_size=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
@@ -891,6 +922,11 @@ class Realm(models.Model):
             default_group_name=SystemGroups.EVERYONE,
         ),
         direct_message_permission_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+        ),
+        workplace_users_group=GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
@@ -1075,6 +1111,22 @@ class Realm(models.Model):
                 or settings.VIDEO_ZOOM_CLIENT_SECRET is None
             ):
                 continue
+            if provider == "constructor_groups" and (
+                settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is None
+                or settings.CONSTRUCTOR_GROUPS_SECRET_KEY is None
+                or settings.CONSTRUCTOR_GROUPS_URL is None
+            ):
+                continue
+            if provider == "nextcloud_talk" and (
+                settings.NEXTCLOUD_SERVER is None
+                or settings.NEXTCLOUD_TALK_USERNAME is None
+                or settings.NEXTCLOUD_TALK_PASSWORD is None
+            ):
+                continue
+            if provider == "webex" and (
+                settings.VIDEO_WEBEX_CLIENT_ID is None or settings.VIDEO_WEBEX_CLIENT_SECRET is None
+            ):
+                continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]
         return enabled_video_chat_providers
 
@@ -1152,9 +1204,10 @@ class Realm(models.Model):
         lambda realm: get_realm_used_upload_space_cache_key(realm.id), timeout=3600 * 24 * 7
     )
     def currently_used_upload_space_bytes(realm) -> int:  # noqa: N805
-        from analytics.models import RealmCount, installation_epoch
+        from analytics.models import RealmCount
         from zerver.models import Attachment
 
+        attachments = Attachment.objects.filter(realm=realm)
         try:
             latest_count_stat = RealmCount.objects.filter(
                 realm=realm,
@@ -1162,17 +1215,11 @@ class Realm(models.Model):
                 subgroup=None,
             ).latest("end_time")
             last_recorded_used_space = latest_count_stat.value
-            last_recorded_date = latest_count_stat.end_time
+            attachments = attachments.filter(create_time__gte=latest_count_stat.end_time)
         except RealmCount.DoesNotExist:
             last_recorded_used_space = 0
-            last_recorded_date = installation_epoch()
 
-        newly_used_space = Attachment.objects.filter(
-            realm=realm, create_time__gte=last_recorded_date
-        ).aggregate(Sum("size"))["size__sum"]
-
-        if newly_used_space is None:
-            return last_recorded_used_space
+        newly_used_space = attachments.aggregate(Sum("size", default=0))["size__sum"]
         return last_recorded_used_space + newly_used_space
 
     def ensure_not_on_limited_plan(self) -> None:

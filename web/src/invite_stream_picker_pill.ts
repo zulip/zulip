@@ -16,13 +16,11 @@ function create_item_from_stream_name(
 ): StreamPill | undefined {
     const stream_prefix_required = false;
     const get_allowed_streams = stream_data.get_invite_stream_data;
-    const show_stream_sub_count = false;
     return stream_pill.create_item_from_stream_name(
         stream_name,
         current_items,
         stream_prefix_required,
         get_allowed_streams,
-        show_stream_sub_count,
     );
 }
 
@@ -40,7 +38,7 @@ export function add_default_stream_pills(pill_widget: stream_pill.StreamPillWidg
     for (const stream_id of default_stream_ids) {
         const sub = stream_data.get_sub_by_id(stream_id);
         if (sub) {
-            stream_pill.append_stream(sub, pill_widget, false);
+            stream_pill.append_stream(sub, pill_widget);
         }
     }
 }

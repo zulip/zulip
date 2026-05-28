@@ -54,8 +54,8 @@ if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
 if "GENERATE_STRIPE_FIXTURES" in os.environ:
     GENERATE_STRIPE_FIXTURES = True
 
-if "GENERATE_LITELLM_FIXTURES" in os.environ:
-    GENERATE_LITELLM_FIXTURES = True
+if "GENERATE_LLM_FIXTURES" in os.environ:
+    GENERATE_LLM_FIXTURES = True
 
 if "BAN_CONSOLE_OUTPUT" in os.environ:
     BAN_CONSOLE_OUTPUT = True
@@ -179,6 +179,8 @@ SOCIAL_AUTH_APPLE_AUDIENCE = [SOCIAL_AUTH_APPLE_APP_ID, SOCIAL_AUTH_APPLE_SERVIC
 SOCIAL_AUTH_APPLE_KEY = "KEYISKEY"
 SOCIAL_AUTH_APPLE_TEAM = "TEAMSTRING"
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
+SOCIAL_AUTH_DISCORD_KEY = "key"
+SOCIAL_AUTH_DISCORD_SECRET = "secret"
 
 
 SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {
@@ -199,8 +201,19 @@ VIDEO_ZOOM_OAUTH_URL = "https://zoom.example.com"
 VIDEO_ZOOM_CLIENT_ID = "client_id"
 VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 
+VIDEO_WEBEX_CLIENT_ID = "client_id"
+VIDEO_WEBEX_CLIENT_SECRET = "client_secret"
+
 BIG_BLUE_BUTTON_SECRET = "123"
 BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
+
+CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
+CONSTRUCTOR_GROUPS_ACCESS_KEY = "test-access-key"
+CONSTRUCTOR_GROUPS_SECRET_KEY = "test-secret-key"
+
+NEXTCLOUD_SERVER = "https://nextcloud.example.com"
+NEXTCLOUD_TALK_USERNAME = "username"
+NEXTCLOUD_TALK_PASSWORD = "password"
 
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
@@ -275,6 +288,7 @@ RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {
     "email_change_by_user": [],
     "password_reset_form_by_email": [],
     "sends_email_by_remote_server": [],
+    "transfer_remote_server_registration_endpoint_by_ip": [],
 }
 
 CLOUD_FREE_TRIAL_DAYS: int | None = None

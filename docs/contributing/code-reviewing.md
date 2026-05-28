@@ -22,7 +22,7 @@ accessible to all Zulip contributors.
 
 One of the best ways to improve the quality of your own work as a software
 engineer is to do a code review of your own work before submitting it to others for
-review. We thus strongly encourage you to get into the habit of reviewing you
+review. We thus strongly encourage you to get into the habit of reviewing your
 own code. You can often find things you missed by taking a step back to look
 over your work before asking others to do so, and this guide will walk you
 through the process. Catching mistakes yourself will help your PRs be merged
@@ -302,7 +302,7 @@ also some additional ways to ask for a code review:
   out to a wider group of potential reviewers.
 
 Please be patient and mindful of the fact that it isn't always possible to
-provide a quick reply. Going though the [review process](#how-to-review-code)
+provide a quick reply. Going through the [review process](#how-to-review-code)
 described above for your own PR will make your code easier and faster to review,
 which makes it much more likely that it will be reviewed quickly and require
 fewer review cycles.

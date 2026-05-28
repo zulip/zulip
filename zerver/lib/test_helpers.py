@@ -37,7 +37,7 @@ from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, Query, TimeTrackingCursor
 from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
+from zerver.lib.rate_limiter import RateLimitedIPAddr
 from zerver.lib.request import RequestNotes
 from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.lib.upload.s3 import S3UploadBackend
@@ -628,11 +628,7 @@ def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
         backend = S3UploadBackend()
-        with (
-            mock.patch("zerver.worker.thumbnail.upload_backend", backend),
-            mock.patch("zerver.lib.upload.upload_backend", backend),
-            mock.patch("zerver.views.tusd.upload_backend", backend),
-        ):
+        with mock.patch("zerver.lib.upload._upload_backend", backend):
             return method(*args, **kwargs)
 
     return new_method
@@ -677,7 +673,6 @@ def use_db_models(
         RealmEmoji = apps.get_model("zerver", "RealmEmoji")
         RealmFilter = apps.get_model("zerver", "RealmFilter")
         Recipient = apps.get_model("zerver", "Recipient")
-        Recipient.PERSONAL = 1
         Recipient.STREAM = 2
         Recipient.DIRECT_MESSAGE_GROUP = 3
         ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
@@ -808,11 +803,14 @@ def ratelimit_rule(
     """Temporarily add a rate-limiting rule to the rate limiter"""
     RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
 
-    domain_rules = rules.get(domain, []).copy()
+    domain_rules = settings.RATE_LIMITING_RULES.get(domain, []).copy()
     domain_rules.append((range_seconds, num_requests))
     domain_rules.sort(key=lambda x: x[0])
 
-    with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
+    with (
+        patch.dict(settings.RATE_LIMITING_RULES, {domain: domain_rules}),
+        override_settings(RATE_LIMITING=True),
+    ):
         yield
 
 

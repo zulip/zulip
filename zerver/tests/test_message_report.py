@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import time_machine
 from django.conf import settings
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_stubs_ext import QuerySetAny
 from typing_extensions import Any, override
@@ -12,7 +11,7 @@ from zerver.actions.streams import do_set_stream_property
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import truncate_content
+from zerver.lib.message import get_user_mentions_for_display, truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_global_time
@@ -167,10 +166,10 @@ class ReportMessageTest(ZulipTestCase):
         reported_dm_date_sent = datetime_to_global_time(reported_dm.date_sent)
 
         if reported_user != reporting_user:
-            message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} at {reported_dm_date_sent}."
+            message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} at {reported_dm_date_sent}."
         else:
             dm_recipient_mention = silent_mention_syntax_for_user(dm_recipient)
-            message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {dm_recipient_mention} at {reported_dm_date_sent}."
+            message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {dm_recipient_mention} at {reported_dm_date_sent}."
 
         direct_message_link = pm_message_url(
             realm,
@@ -203,18 +202,14 @@ class ReportMessageTest(ZulipTestCase):
         reported_user_mention = silent_mention_syntax_for_user(reported_user)
         reported_gdm_date_sent = datetime_to_global_time(reported_gdm.date_sent)
 
-        recipient_list = sorted(
+        list_of_direct_message_recipients = get_user_mentions_for_display(
             [
-                silent_mention_syntax_for_user(user)
+                user
                 for user in get_display_recipient(reported_gdm.recipient)
                 if user["id"] is not reported_user.id
             ]
         )
-        last_recipient_user = recipient_list.pop()
-        recipient_users: str = ", ".join(recipient_list)
-        if len(recipient_list) > 1:
-            recipient_users += ","
-        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_users} and {last_recipient_user} at {reported_gdm_date_sent}."
+        message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {list_of_direct_message_recipients} at {reported_gdm_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
@@ -382,40 +377,6 @@ class ReportMessageTest(ZulipTestCase):
         self.assertIn(expected_message_link_syntax, report.content)
 
     @time_machine.travel(MOCKED_DATE_SENT, tick=False)
-    def test_dm_report(self) -> None:
-        # Send a DM to be reported
-        dm_recipient = self.hamlet
-        reported_dm_id = self.send_personal_message(
-            self.reported_user,
-            dm_recipient,
-            content="I dip fries in ice cream",
-        )
-        reported_dm = self.get_last_message()
-        assert reported_dm.id == reported_dm_id
-        reporting_user = self.example_user("hamlet")
-        report_type = "harassment"
-        description = "this is crime against food"
-
-        result = self.report_message(reporting_user, reported_dm_id, report_type, description)
-        self.assert_json_success(result)
-        reports = self.get_submitted_moderation_requests()
-        assert reports.count() == 1
-        self.check_direct_message_report_details(
-            dm_recipient=dm_recipient,
-            report_description=description,
-            report_type=report_type,
-            reported_dm=reported_dm,
-            reported_user=self.reported_user,
-            reporting_user=reporting_user,
-            submitted_report=reports.last(),
-        )
-
-        # User can't report DM they're not a part of.
-        ZOE = self.example_user("ZOE")
-        result = self.report_message(ZOE, reported_dm_id, report_type, description)
-        self.assert_json_error(result, msg="Invalid message(s)")
-
-    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     def test_dm_to_oneself(self) -> None:
         dm_recipient = self.reported_user
         reported_dm_id = self.send_personal_message(
@@ -476,8 +437,7 @@ class ReportMessageTest(ZulipTestCase):
         )
 
     @time_machine.travel(MOCKED_DATE_SENT, tick=False)
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_personal_message_report_using_direct_message_group(self) -> None:
+    def test_personal_message_report(self) -> None:
         dm_recipient = self.hamlet
         direct_message_group = get_or_create_direct_message_group(
             id_list=[dm_recipient.id, self.reported_user.id],
@@ -508,6 +468,11 @@ class ReportMessageTest(ZulipTestCase):
             reporting_user=reporting_user,
             submitted_report=reports.last(),
         )
+
+        # User can't report DM they're not a part of.
+        ZOE = self.example_user("ZOE")
+        result = self.report_message(ZOE, reported_dm_id, report_type, description)
+        self.assert_json_error(result, msg="Invalid message(s)")
 
     def test_gdm_report(self) -> None:
         # Send a group DM to be reported

@@ -407,7 +407,7 @@ export function analyze_selection(selection: Selection): {
 }
 
 function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
-    if ($endc.attr("id") === "bottom_whitespace" || $endc.attr("id") === "compose_close") {
+    if ($endc.attr("id") === "bottom_whitespace" || $endc.closest("#compose").length > 0) {
         // If the selection ends in the bottom whitespace, we should
         // act as though the selection ends on the final message.
         // This handles the issue that Chrome seems to like selecting

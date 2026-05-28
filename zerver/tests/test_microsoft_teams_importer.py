@@ -1,8 +1,12 @@
 import json
 import math
 import os
+import re
+import shutil
+import tempfile
 from collections import defaultdict
 from collections.abc import Callable
+from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Concatenate, TypeAlias
 from urllib.parse import parse_qs, urlsplit
@@ -12,8 +16,9 @@ from django.utils.timezone import now as timezone_now
 from requests import PreparedRequest
 from typing_extensions import ParamSpec
 
-from zerver.data_import.import_util import get_data_file
+from zerver.data_import.import_util import AttachmentRecordData, convert_html_to_text, get_data_file
 from zerver.data_import.microsoft_teams import (
+    HOSTED_CONTENT_GRAPH_API_URL_REGEX,
     MICROSOFT_GRAPH_API_URL,
     ChannelMetadata,
     MicrosoftTeamsFieldsT,
@@ -22,20 +27,24 @@ from zerver.data_import.microsoft_teams import (
     ODataQueryParameter,
     convert_users,
     do_convert_directory,
+    download_and_export_microsoft_teams_upload_file,
     get_batched_export_message_data,
     get_microsoft_graph_api_data,
     get_microsoft_teams_sender_id_from_message,
     get_timestamp_from_message,
     get_user_roles,
     is_microsoft_teams_event_message,
+    process_hosted_content_attachments,
 )
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.import_realm import do_import_realm
+from zerver.lib.partial import partial
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import read_test_image_file
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES
 from zerver.lib.topic import messages_for_topic
-from zerver.models.messages import Message
-from zerver.models.realms import get_realm
-from zerver.models.recipients import Recipient
+from zerver.models.messages import Attachment, Message
+from zerver.models.realms import Realm, get_realm
 from zerver.models.streams import Stream, Subscription
 from zerver.models.users import UserProfile, get_system_bot
 from zerver.tests.test_import_export import make_export_output_dir
@@ -217,9 +226,29 @@ def mock_microsoft_graph_api_calls(
                 "microsoft_graph_api_response_fixtures",
             ),
         )
+        responses.add(
+            responses.GET,
+            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
         test_func(self, *args, **kwargs)
 
     return _wrapped
+
+
+def get_channel_subscriber_emails(realm: Realm, channel: str | Stream) -> set[str]:
+    if isinstance(channel, str):
+        imported_channel = Stream.objects.get(
+            name=channel,
+            realm=realm,
+        )
+    else:
+        imported_channel = channel  # nocoverage
+    subscriptions = Subscription.objects.filter(recipient=imported_channel.recipient)
+    users = {sub.user_profile.email for sub in subscriptions}
+    return users
 
 
 class MicrosoftTeamsImportTestCase(ZulipTestCase):
@@ -232,25 +261,16 @@ class MicrosoftTeamsImportTestCase(ZulipTestCase):
 
 
 class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
-    def get_imported_channel_subscriber_emails(self, channel: str | Stream) -> set[str]:
-        if isinstance(channel, str):
-            imported_channel = Stream.objects.get(
-                name=channel,
-                realm=get_realm(self.test_realm_subdomain),
-            )
-        else:
-            imported_channel = channel  # nocoverage
-        subscriptions = Subscription.objects.filter(recipient=imported_channel.recipient)
-        users = {sub.user_profile.email for sub in subscriptions}
-        return users
-
     def convert_microsoft_teams_export_fixture(self, fixture_folder: str) -> None:
         fixture_file_path = self.fixture_file_name(fixture_folder, "microsoft_teams_fixtures")
         if not os.path.isdir(fixture_file_path):
             raise AssertionError(f"Fixture file not found: {fixture_file_path}")
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             do_convert_directory(
-                fixture_file_path, self.converted_file_output_dir, "MICROSOFT_GRAPH_API_TOKEN"
+                fixture_file_path,
+                self.converted_file_output_dir,
+                "MICROSOFT_GRAPH_API_TOKEN",
+                processes=1,
             )
 
     def import_microsoft_teams_export_fixture(self, fixture_folder: str) -> None:
@@ -330,8 +350,8 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
             self.assertEqual(channel.invite_only, raw_team_data["Visibility"] == "private")
 
             # Teams subscription are imported correctly.
-            imported_channel_subscriber_emails = self.get_imported_channel_subscriber_emails(
-                channel_name
+            imported_channel_subscriber_emails = get_channel_subscriber_emails(
+                get_realm(self.test_realm_subdomain), channel_name
             )
             raw_subscription_list = get_exported_team_subscription_list(
                 EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
@@ -445,6 +465,35 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
                 len(messages_in_a_microsoft_team_channel), len(imported_messages_in_a_zulip_topic)
             )
 
+        imported_attachments = Attachment.objects.filter(realm=test_realm)
+        self.assertTrue(imported_attachments.exists())
+        message_ids_with_attachment = set()
+        for attachment in imported_attachments:
+            for message_with_attachment in Message.objects.filter(
+                realm=test_realm, attachment=attachment
+            ):
+                self.assertTrue(message_with_attachment.has_attachment)
+                self.assertEqual(
+                    message_with_attachment.has_image,
+                    attachment.content_type in THUMBNAIL_ACCEPT_IMAGE_TYPES,
+                )
+                assert isinstance(message_with_attachment.rendered_content, str)
+                self.assertIn(
+                    f"/user_uploads/{attachment.path_id}", message_with_attachment.rendered_content
+                )
+                message_ids_with_attachment.add(message_with_attachment.id)
+
+        # Make sure no weird message conversion with wrong has_attachment
+        # and has_image property.
+        self.assertSetEqual(
+            message_ids_with_attachment,
+            set(
+                Message.objects.filter(
+                    realm=test_realm, has_attachment=True, has_image=True
+                ).values_list("id", flat=True)
+            ),
+        )
+
 
 class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
     def convert_users_handler(
@@ -529,7 +578,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 microsoft_teams_user_role_data=microsoft_teams_user_role_data
             )
         self.assertIn(
-            "INFO:root:Converted realm has no owners!",
+            "WARNING:root:Converted realm has no owners!",
             info_logs.output,
         )
 
@@ -540,30 +589,6 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             "Could not find email address for Microsoft Teams user {'BusinessPhones': [], 'JobTitle': None, 'Mail': None, 'MobilePhone': None, 'OfficeLocation': None, 'PreferredLanguage': None, 'UserPrincipalName': None, 'Id': '5dbe468a-1e96-4aaa-856d-cdf825081e11', 'UserId': None, 'DisplayName': 'zoe', 'UserName': None, 'PhoneNumber': None, 'Location': None, 'InterpretedUserType': None, 'DirectoryStatus': None, 'AudioConferencing': None, 'PhoneSystems': None, 'CallingPlan': None, 'AssignedPlans': None, 'OnlineDialinConferencingPolicy': None, 'FeatureTypes': None, 'State': None, 'City': None, 'Surname': None, 'GivenName': 'zoe'}",
             str(e.exception),
         )
-
-    def test_at_least_one_recipient_per_user(self) -> None:
-        """
-        Make sure each user at least has a recipient field. This makes sure the
-        the onboarding messages, runs smoothly even for users without any
-        personal messages.
-        """
-        realm: dict[str, Any] = {}
-        realm["zerver_stream"] = []
-        realm["zerver_defaultstream"] = []
-        realm["zerver_recipient"] = []
-        realm["zerver_subscription"] = []
-        with self.assertLogs(level="INFO"):
-            microsoft_teams_user_id_to_zulip_user_id = self.convert_users_handler(
-                realm=realm, microsoft_teams_user_role_data=MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA
-            )
-
-        self.assert_length(
-            realm["zerver_recipient"], len(self.get_exported_microsoft_teams_user_data())
-        )
-        zulip_user_ids = set(microsoft_teams_user_id_to_zulip_user_id.values())
-        for recipient in realm["zerver_recipient"]:
-            self.assertTrue(recipient["type_id"] in zulip_user_ids)
-            self.assertTrue(recipient["type"] == Recipient.PERSONAL)
 
     @responses.activate
     def test_failed_get_microsoft_graph_api_data(self) -> None:
@@ -679,3 +704,186 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                     self.assertGreaterEqual(messages_left, len(batched_messages))
                 message_batches += 1
             self.assertTrue(message_batches == expected_batch_amount)
+
+    @responses.activate
+    def test_process_hosted_content_attachments(self) -> None:
+        responses.add(
+            responses.GET,
+            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
+
+        @dataclass
+        class MessageFixture:
+            content: str
+            hosted_content_count: int
+            test_name: str
+            is_direct_message_type: bool
+            teams_message_id: str = "T"
+            zulip_message_id: int = 0
+            zulip_user_id: int = 0
+
+        message_fixtures: list[MessageFixture] = [
+            # This is actual decoded content from a message in messages_1d513e46-d8cd-41db-b84f-381fe5730794.json
+            # The original message was just some text followed by an image.
+            MessageFixture(
+                content=convert_html_to_text(
+                    """
+                    <ul>
+                        <li>dashes are ok</li>
+                        <li>asterisks are ok</li>
+                    </ul>
+                    <p>+ Pluses are not counted as bullet point</p>
+                    <p>&nbsp;</p>
+                    <p>Rendered:</p>
+                    <p>
+                        <img
+                         src="https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value"
+                         width="1189"
+                         height="208"
+                         alt="image"
+                         itemid="0-wus-d6-3d6dbcb8048aa88f1c1cd57faab3c4ad">
+                    </p>
+                    """
+                ),
+                hosted_content_count=1,
+                is_direct_message_type=False,
+                test_name="text and an image",
+            ),
+            # Unprocessed converted html
+            MessageFixture(
+                content="Normal text and an ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)",
+                hosted_content_count=1,
+                is_direct_message_type=False,
+                test_name="text and an image 2",
+            ),
+            MessageFixture(
+                content=(
+                    "First ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)"
+                    "Second ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/ABC/$value)"
+                    "Third ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/DEF/$value)"
+                ),
+                hosted_content_count=3,
+                is_direct_message_type=False,
+                test_name="multiple images",
+            ),
+            # This is actual decoded content from a message in messages_002145f2-eaba-4962-997d-6d841a9f50af.json
+            # The original message was just two custom emojis, nothing else. convert_html_to_text doesn't know
+            # how to process MS Teams-specific tags such as <customemoji>, so this will be converted to empty
+            # string.
+            MessageFixture(
+                content=convert_html_to_text(
+                    """
+                    <p>
+                        <span>
+                            <customemoji
+                             id="MC13dXMtZDEtZWMzY2I4NmY3MmM5YzBjNGJlMjE2Zjk3MTM1MDZkNTQ="
+                             alt="notif-bot"
+                             source="https://graph.microsoft.com/v1.0/teams/002145f2-eaba-4962-997d-6d841a9f50af/channels/19:9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1@thread.tacv2/messages/1759320958611/hostedContents/aWQ9LHR5cGU9MSx1cmw9aHR0cHM6Ly91cy1wcm9kLmFzeW5jZ3cudGVhbXMubWljcm9zb2Z0LmNvbS92MS9vYmplY3RzLzAtd3VzLWQxLWVjM2NiODZmNzJjOWMwYzRiZTIxNmY5NzEzNTA2ZDU0L3ZpZXdzL2ltZ3QyX2FuaW0=/$value">
+                            </customemoji>
+                        </span>
+                        <span>
+                            <customemoji
+                             id="MC13dXMtZDItMWNmOWZmOGQ2OTFiOGM5ZjExYzhhM2ZhMzJiMzFlMDU="
+                             alt="zlp-logo"
+                             source="https://graph.microsoft.com/v1.0/teams/002145f2-eaba-4962-997d-6d841a9f50af/channels/19:9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1@thread.tacv2/messages/1759320958611/hostedContents/aWQ9LHR5cGU9MSx1cmw9aHR0cHM6Ly91cy1wcm9kLmFzeW5jZ3cudGVhbXMubWljcm9zb2Z0LmNvbS92MS9vYmplY3RzLzAtd3VzLWQyLTFjZjlmZjhkNjkxYjhjOWYxMWM4YTNmYTMyYjMxZTA1L3ZpZXdzL2ltZ3QyX2FuaW0=/$value">
+                            </customemoji>
+                        </span>
+                    </p>
+                    """
+                ),
+                hosted_content_count=0,
+                is_direct_message_type=False,
+                test_name="two custom emojis",
+            ),
+            MessageFixture(
+                content="Normal message",
+                hosted_content_count=0,
+                is_direct_message_type=False,
+                test_name="text only",
+            ),
+            MessageFixture(
+                content="MS Sharepoint attachment URL ![image](https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/wp12245700.jpg)",
+                hosted_content_count=0,
+                is_direct_message_type=False,
+                test_name="text and other URL",
+            ),
+            MessageFixture(
+                content=(
+                    "List all hosted content ![invalid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/hostedContents)"
+                    "Get a hosted content ![valid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/messages/BAR/hostedContents/QUX/$value)"
+                ),
+                hosted_content_count=1,
+                is_direct_message_type=False,
+                test_name="invalid get hosted content URL and a valid one",
+            ),
+            MessageFixture(
+                content=(
+                    "DM ![image](https://graph.microsoft.com/v1.0/chats/{chat-id}/messages/{message-id}/hostedContents/{hosted-content-id}/$value)"
+                ),
+                hosted_content_count=0,
+                is_direct_message_type=True,
+                test_name="DM hosted content",
+            ),
+        ]
+        output_dir = tempfile.mkdtemp()
+        realm_id = 0
+        try:
+            for id_count, fixture in enumerate(message_fixtures, 1):
+                # Increment the fixture IDs to make them unique.
+                fixture.teams_message_id += str(id_count)
+                fixture.zulip_message_id += id_count
+                # Multiply by 10 to help verify that we're computing each
+                # object ID correctly for this code path.
+                fixture.zulip_user_id += id_count * 10
+
+                total_attachment_records: list[AttachmentRecordData] = []
+                do_download_and_export_upload_file = partial(
+                    download_and_export_microsoft_teams_upload_file,
+                    total_attachment_records,
+                    output_dir,
+                )
+                with self.subTest(fixture.test_name):
+                    attachment_result = process_hosted_content_attachments(
+                        content=fixture.content,
+                        do_download_and_export_upload_file=do_download_and_export_upload_file,
+                        is_direct_message_type=fixture.is_direct_message_type,
+                        microsoft_graph_api_token="MICROSOFT_GRAPH_API_TOKEN",
+                        realm_id=realm_id,
+                        teams_message_id=fixture.teams_message_id,
+                        zulip_message_id=fixture.zulip_message_id,
+                        zulip_user_id=fixture.zulip_user_id,
+                    )
+
+                    self.assert_length(
+                        attachment_result.upload_records, fixture.hosted_content_count
+                    )
+                    self.assert_length(total_attachment_records, fixture.hosted_content_count)
+
+                    for upload_record in attachment_result.upload_records:
+                        self.assertEqual(upload_record.realm_id, realm_id)
+                        self.assertEqual(upload_record.user_profile_id, fixture.zulip_user_id)
+                        self.assertRegex(
+                            upload_record.path, rf"^{realm_id}/.*/.*/{fixture.teams_message_id}$"
+                        )
+                        upload_file = os.path.join(output_dir, "uploads", upload_record.path)
+                        self.assertTrue(os.path.exists(upload_file))
+                        self.assertIn(
+                            os.path.join("/user_uploads", upload_record.path),
+                            attachment_result.updated_content,
+                        )
+
+                    for attachment_record in total_attachment_records:
+                        self.assertEqual(attachment_record.realm, realm_id)
+                        self.assertListEqual(attachment_record.messages, [fixture.zulip_message_id])
+                        self.assertEqual(attachment_record.owner, fixture.zulip_user_id)
+                        self.assertEqual(attachment_record.content_type, "image/png")
+                        self.assertEqual(attachment_record.file_name, fixture.teams_message_id)
+                        self.assertRegex(
+                            attachment_record.path_id,
+                            rf"^{realm_id}/.*/.*/{fixture.teams_message_id}$",
+                        )
+        finally:
+            shutil.rmtree(output_dir)

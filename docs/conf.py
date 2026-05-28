@@ -16,6 +16,7 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 # General configuration
 
 extensions = [
+    "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
     "myst_parser",
     "sphinx_rtd_theme",
@@ -37,6 +38,11 @@ pygments_style = "sphinx"
 
 autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 2
+
+intersphinx_mapping = {
+    "docker": ("https://zulip.readthedocs.io/projects/docker/en/latest/", None),
+}
+intersphinx_disabled_reftypes = ["*"]
 
 # Options for Markdown parser
 

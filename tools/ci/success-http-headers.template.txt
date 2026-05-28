@@ -4,7 +4,7 @@ content-type: application/json
 vary: Accept-Encoding
 vary: Accept-Language, Cookie
 content-language: en
-strict-transport-security: max-age=15768000
+strict-transport-security: max-age=31536000; includeSubdomains; preload
 x-frame-options: DENY
 x-content-type-options: nosniff
 referrer-policy: strict-origin-when-cross-origin

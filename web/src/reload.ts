@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -165,20 +166,34 @@ function do_reload_app(
     blueslip.log("Starting server requested page reload");
     reload_state.set_state_to_in_progress();
 
-    // Sometimes the window.location.reload that we attempt has no
-    // immediate effect (likely by browsers trying to save power by
-    // skipping requested reloads), which can leave the Zulip app in a
-    // broken state and cause lots of confusing tracebacks.  So, we
-    // set ourselves to try reloading a bit later, both periodically
-    // and when the user focuses the window.
+    // Navigate to the same page with ?state_data=deferred, which
+    // tells the server to skip embedding state_data in page_params
+    // (the client will fetch it via /json/register instead). This
+    // is important because the /compatibility check above only
+    // verifies that a small response can be fetched; when the
+    // network is marginal (e.g., Firefox background tabs resuming
+    // from laptop suspend), the multi-megabyte HTML with embedded
+    // state_data can suffer a partial transfer while small requests
+    // succeed. With ?state_data=deferred, the HTML response is
+    // comparable in size to /compatibility, and the state_data is
+    // fetched separately via an API call that has its own error
+    // handling.
+    const reload_url = new URL(window.location.href);
+    reload_url.searchParams.set("state_data", "deferred");
+
+    // Sometimes the navigation we attempt has no immediate effect
+    // (likely by browsers trying to save power by skipping requested
+    // reloads), which can leave the Zulip app in a broken state and
+    // cause lots of confusing tracebacks.  So, we set ourselves to
+    // try reloading a bit later, both periodically and when the user
+    // focuses the window.
     setTimeout(() => {
         // We add this handler after a bit of delay, because in some
-        // browsers, processing window.location.reload causes the
-        // window to gain focus, and duplicate reload attempts result
-        // in the browser sending duplicate requests to `/`.
+        // browsers, processing the navigation causes the window to
+        // gain focus, and duplicate reload attempts result in the
+        // browser sending duplicate requests to `/`.
         $(window).one("focus", () => {
             blueslip.log("Retrying on-focus page reload");
-
             window.location.reload();
         });
     }, 5000);
@@ -195,7 +210,7 @@ function do_reload_app(
         blueslip.error("Failed to clean up before reloading", undefined, error);
     }
 
-    window.location.reload();
+    window.location.replace(reload_url.toString());
 }
 
 export function initiate({
@@ -214,7 +229,19 @@ export function initiate({
         return;
     }
 
-    if (reload_state.is_pending() && !immediate) {
+    if (immediate) {
+        // For immediate reloads (e.g., expired event queue), skip the
+        // /compatibility check — the caller just received a server
+        // response confirming reachability. Calling do_reload_app
+        // synchronously ensures reload_state.is_in_progress() is set
+        // before any pending HTTP callbacks fire; channel.ts will
+        // suppress those callbacks, preventing errors from processing
+        // stale data.
+        do_reload_app(send_after_reload, save_compose, reason);
+        return;
+    }
+
+    if (reload_state.is_pending()) {
         // If we're already pending and the caller is not requesting
         // an immediate reload, there's nothing to do.
         return;
@@ -263,7 +290,7 @@ export function initiate({
             // makes it simple to reason about: We know that reloads will be
             // spread over at least 5 minutes in all cases.
 
-            let idle_control: ReturnType<JQuery["idle"]>;
+            let reload_later: _.DebouncedFunc<() => void>;
             const random_variance = util.random_int(0, 1000 * 60 * 5);
             const unconditional_timeout = 1000 * 60 * 30 + random_variance;
             const composing_idle_timeout = 1000 * 60 * 7 + random_variance;
@@ -280,35 +307,28 @@ export function initiate({
             setTimeout(reload_from_idle, unconditional_timeout);
 
             reset_reload_timeout = function (trigger: "compose_start" | "compose_end"): void {
-                idle_control.cancel();
+                reload_later.cancel();
                 if (trigger === "compose_start") {
                     // If the user stops being idle and starts composing a
                     // message, switch to the compose-open timeouts.
-                    idle_control = $(document).idle({
-                        idle: composing_idle_timeout,
-                        onIdle: reload_from_idle,
-                    });
+                    reload_later = _.debounce(reload_from_idle, composing_idle_timeout);
                 } else {
                     // If the user sends their message or otherwise closes
                     // compose, we return them to the not-composing timeouts.
-                    idle_control = $(document).idle({
-                        idle: basic_idle_timeout,
-                        onIdle: reload_from_idle,
-                    });
+                    reload_later = _.debounce(reload_from_idle, basic_idle_timeout);
                 }
+                reload_later();
             };
 
             if (compose_state.composing()) {
-                idle_control = $(document).idle({
-                    idle: composing_idle_timeout,
-                    onIdle: reload_from_idle,
-                });
+                reload_later = _.debounce(reload_from_idle, composing_idle_timeout);
             } else {
-                idle_control = $(document).idle({
-                    idle: basic_idle_timeout,
-                    onIdle: reload_from_idle,
-                });
+                reload_later = _.debounce(reload_from_idle, basic_idle_timeout);
             }
+            reload_later();
+            $(window).on("focus keydown mousedown mousemove touchmove touchstart wheel", () => {
+                reload_later();
+            });
         },
         error(xhr) {
             server_reachable_check_failures += 1;

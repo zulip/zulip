@@ -61,7 +61,7 @@ run ./tools/test-migrations
 # run ./tools/test-documentation --skip-external-links
 run ./tools/test-help-documentation --skip-external-links "${forcearg[@]}"
 run ./tools/test-api
-run uv lock --check
+run env -u PYTHONDEVMODE -u PYTHONWARNINGS uv lock --check
 # Not running run-dev tests locally; we never have
 # run ./tools/test-run-dev
 # Not running queue worker reload tests since it's low-churn code
@@ -72,8 +72,8 @@ run ./tools/lint --groups=frontend "${forcearg[@]}"
 run ./tools/test-js-with-node
 run ./tools/check-schemas
 run ./manage.py makemessages --locale en
-run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
-run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+run ./tools/check-capitalization --no-generate
+run ./tools/check-frontend-i18n --no-generate
 run pnpm run --filter=starlight_help check
 run ./tools/test-js-with-puppeteer "${forcearg[@]}"
 

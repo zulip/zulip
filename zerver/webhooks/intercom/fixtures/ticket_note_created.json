@@ -1,0 +1,253 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "ticket_ticket_part",
+            "ticket": {
+                "type": "ticket",
+                "id": "215472629353977",
+                "ticket_id": "66040991",
+                "ticket_attributes": {
+                    "_default_title_": null,
+                    "_default_description_": null,
+                    "Platforms": null,
+                    "Root cause": null
+                },
+                "ticket_state": {
+                    "type": "ticket_state",
+                    "id": "4517893",
+                    "category": "submitted",
+                    "internal_label": "Submitted",
+                    "external_label": "Submitted"
+                },
+                "ticket_type": {
+                    "type": "ticket_type",
+                    "id": "2979330",
+                    "name": "Tickets",
+                    "description": "When a customer query can’t be instantly resolved, convert to support request ticket to ensure the right details are captured and allow customers to keep track of progress.",
+                    "icon": "🎟",
+                    "workspace_id": "abc123def",
+                    "archived": false,
+                    "created_at": 1767066651,
+                    "updated_at": 1767066651,
+                    "is_internal": false,
+                    "ticket_type_attributes": {
+                        "type": "list",
+                        "data": [
+                            {
+                                "type": "ticket_type_attribute",
+                                "id": "8514183",
+                                "workspace_id": "abc123def",
+                                "name": "_default_title_",
+                                "description": "",
+                                "data_type": "string",
+                                "input_options": {
+                                    "multiline": false
+                                },
+                                "order": 0,
+                                "required_to_create": false,
+                                "required_to_create_for_contacts": false,
+                                "visible_on_create": true,
+                                "visible_to_contacts": true,
+                                "default": true,
+                                "ticket_type_id": 2979330,
+                                "archived": false,
+                                "created_at": 1767066651,
+                                "updated_at": 1767066651
+                            },
+                            {
+                                "type": "ticket_type_attribute",
+                                "id": "8514184",
+                                "workspace_id": "abc123def",
+                                "name": "_default_description_",
+                                "description": "",
+                                "data_type": "string",
+                                "input_options": {
+                                    "multiline": true
+                                },
+                                "order": 1,
+                                "required_to_create": false,
+                                "required_to_create_for_contacts": false,
+                                "visible_on_create": true,
+                                "visible_to_contacts": true,
+                                "default": true,
+                                "ticket_type_id": 2979330,
+                                "archived": false,
+                                "created_at": 1767066651,
+                                "updated_at": 1767066651
+                            },
+                            {
+                                "type": "ticket_type_attribute",
+                                "id": "8514185",
+                                "workspace_id": "abc123def",
+                                "name": "Platforms",
+                                "description": "",
+                                "data_type": "string",
+                                "input_options": {
+                                    "multiline": false
+                                },
+                                "order": 2,
+                                "required_to_create": false,
+                                "required_to_create_for_contacts": false,
+                                "visible_on_create": true,
+                                "visible_to_contacts": true,
+                                "default": false,
+                                "ticket_type_id": 2979330,
+                                "archived": false,
+                                "created_at": 1767066651,
+                                "updated_at": 1767066651
+                            },
+                            {
+                                "type": "ticket_type_attribute",
+                                "id": "8514186",
+                                "workspace_id": "abc123def",
+                                "name": "Root cause",
+                                "description": "",
+                                "data_type": "string",
+                                "input_options": {
+                                    "multiline": false
+                                },
+                                "order": 3,
+                                "required_to_create": false,
+                                "required_to_create_for_contacts": false,
+                                "visible_on_create": true,
+                                "visible_to_contacts": true,
+                                "default": false,
+                                "ticket_type_id": 2979330,
+                                "archived": false,
+                                "created_at": 1767066651,
+                                "updated_at": 1767066651
+                            }
+                        ]
+                    },
+                    "category": "Customer"
+                },
+                "contacts": {
+                    "type": "contact.list",
+                    "contacts": [
+                        {
+                            "type": "contact",
+                            "id": "6961f75992dc9c41aeee94c6",
+                            "external_id": "100"
+                        }
+                    ]
+                },
+                "admin_assignee_id": "9608799",
+                "team_assignee_id": "0",
+                "created_at": 1768114809,
+                "updated_at": 1768117318,
+                "ticket_parts": {
+                    "type": "ticket_part.list",
+                    "ticket_parts": [
+                        {
+                            "type": "ticket_part",
+                            "id": "37403575650",
+                            "part_type": "assignment",
+                            "created_at": 1768114810,
+                            "updated_at": 1768114810,
+                            "assigned_to": {
+                                "type": "admin",
+                                "id": "9608799"
+                            },
+                            "author": {
+                                "id": "9608799",
+                                "type": "admin",
+                                "name": "John Doe",
+                                "email": "admin@example.com"
+                            },
+                            "attachments": [],
+                            "redacted": false
+                        },
+                        {
+                            "type": "ticket_part",
+                            "id": "37403575955",
+                            "part_type": "ticket_state_updated_by_admin",
+                            "ticket_state": "submitted",
+                            "previous_ticket_state": "submitted",
+                            "created_at": 1768114810,
+                            "updated_at": 1768114810,
+                            "author": {
+                                "id": "9608799",
+                                "type": "admin",
+                                "name": "John Doe",
+                                "email": "admin@example.com"
+                            },
+                            "attachments": [],
+                            "redacted": false
+                        },
+                        {
+                            "type": "ticket_part",
+                            "id": "37403591177",
+                            "part_type": "comment",
+                            "body": "<p class=\"no-margin\">hgjvjh</p>",
+                            "created_at": 1768114835,
+                            "updated_at": 1768114835,
+                            "author": {
+                                "id": "9608799",
+                                "type": "admin",
+                                "name": "John Doe",
+                                "email": "admin@example.com"
+                            },
+                            "attachments": [],
+                            "redacted": false
+                        },
+                        {
+                            "type": "ticket_part",
+                            "id": "37404518759",
+                            "part_type": "note",
+                            "body": "<p class=\"no-margin\">agd</p>",
+                            "created_at": 1768117318,
+                            "updated_at": 1768117318,
+                            "author": {
+                                "id": "9608799",
+                                "type": "admin",
+                                "name": "John Doe",
+                                "email": "admin@example.com"
+                            },
+                            "attachments": [],
+                            "redacted": false
+                        }
+                    ],
+                    "total_count": 4
+                },
+                "open": true,
+                "linked_objects": {
+                    "type": "list",
+                    "data": [],
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "category": "Customer",
+                "is_shared": true,
+                "channel": "messenger"
+            },
+            "ticket_part": {
+                "type": "ticket_part",
+                "id": "37404518759",
+                "part_type": "note",
+                "body": "<p class=\"no-margin\">agd</p>",
+                "created_at": 1768117318,
+                "updated_at": 1768117318,
+                "author": {
+                    "id": "9608799",
+                    "type": "admin",
+                    "name": "John Doe",
+                    "email": "admin@example.com"
+                },
+                "attachments": [],
+                "redacted": false
+            }
+        }
+    },
+    "links": {},
+    "id": "notif_83b0ce3c-7c9c-4125-911d-16679ad38f1e",
+    "topic": "ticket.note.created",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768117319,
+    "created_at": 1768117319,
+    "self": null
+}

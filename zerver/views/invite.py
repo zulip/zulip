@@ -17,12 +17,13 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
     do_send_user_invite_email,
 )
-from zerver.decorator import require_member_or_admin
+from zerver.decorator import require_human_non_guest_user
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
+from zerver.lib.types import Invitee
 from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
 from zerver.models import (
     MultiuseInvite,
@@ -131,7 +132,7 @@ def access_user_groups_for_invite(
     return user_groups
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def invite_users_backend(
     request: HttpRequest,
@@ -171,7 +172,7 @@ def invite_users_backend(
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
 
-    invitee_emails = get_invitee_emails_set(invitee_emails_raw)
+    invitee_emails = get_invitees_set(invitee_emails_raw)
 
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
@@ -214,13 +215,23 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
     } - {""}
 
 
-@require_member_or_admin
+def get_invitees_set(invitee_emails_raw: str) -> set[Invitee]:
+    return {
+        Invitee(email=email, full_name=full_name)
+        for full_name, email in email.utils.getaddresses(
+            invitee_emails_raw.split("\n"), strict=False
+        )
+        if email
+    }
+
+
+@require_human_non_guest_user
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_invites_controlled_by_user(user_profile)
     return json_success(request, data={"invites": all_users})
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
@@ -230,7 +241,7 @@ def revoke_user_invite(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
@@ -240,7 +251,7 @@ def revoke_multiuse_invite(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def resend_user_invite_email(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
@@ -250,7 +261,7 @@ def resend_user_invite_email(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def generate_multiuse_invite_backend(
     request: HttpRequest,

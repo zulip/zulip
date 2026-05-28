@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Collection, Sequence
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from email.utils import format_datetime as email_format_datetime
 from typing import Any
@@ -32,6 +33,7 @@ from zerver.lib.invites import notify_invites_changed
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_future_email
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.types import Invitee
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -187,7 +189,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
 @transaction.atomic(durable=True)
 def do_invite_users(
     user_profile: UserProfile,
-    invitee_emails: Collection[str],
+    invitees: Collection[Invitee],
     streams: Collection[Stream],
     notify_referrer_on_join: bool = True,
     user_groups: Collection[NamedUserGroup] = [],
@@ -197,10 +199,10 @@ def do_invite_users(
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
     welcome_message_custom_text: str | None = None,
 ) -> list[tuple[str, str, bool]]:
-    num_invites = len(invitee_emails)
+    num_invites = len(invitees)
 
     # Lock the realm, since we need to not race with other invitations
-    realm = Realm.objects.select_for_update().get(id=user_profile.realm_id)
+    realm = Realm.objects.select_for_update(no_key=True).get(id=user_profile.realm_id)
     check_invite_limit(realm, num_invites)
 
     if settings.BILLING_ENABLED:
@@ -228,34 +230,36 @@ def do_invite_users(
                 sent_invitations=False,
             )
 
-    good_emails: set[str] = set()
+    good_invitees: set[Invitee] = set()
     errors: list[tuple[str, str, bool]] = []
     validate_email_allowed_in_realm = get_realm_email_validator(realm)
-    for email in invitee_emails:
+    for invitee in invitees:
         email_error = validate_email_is_valid(
-            email,
+            invitee.email,
             validate_email_allowed_in_realm,
         )
 
         if email_error:
-            errors.append((email, email_error, False))
+            errors.append((invitee.email, email_error, False))
         else:
-            good_emails.add(email)
+            good_invitees.add(invitee)
 
     """
-    good_emails are emails that look ok so far,
+    good_invitees are invitee names and emails that look ok so far,
     but we still need to make sure they're not
     gonna conflict with existing users
     """
-    error_dict = get_existing_user_errors(realm, good_emails, allow_inactive_mirror_dummies=True)
+    error_dict = get_existing_user_errors(
+        realm, {invitee.email for invitee in good_invitees}, allow_inactive_mirror_dummies=True
+    )
 
     skipped: list[tuple[str, str, bool]] = []
     for email in error_dict:
         msg, deactivated = error_dict[email]
         skipped.append((email, msg, deactivated))
-        good_emails.remove(email)
+        good_invitees = {item for item in good_invitees if item.email != email}
 
-    validated_emails = list(good_emails)
+    validated_invitees = list(good_invitees)
 
     if errors:
         raise InvitationError(
@@ -264,7 +268,7 @@ def do_invite_users(
             sent_invitations=False,
         )
 
-    if skipped and len(skipped) == len(invitee_emails):
+    if skipped and len(skipped) == len(invitees):
         # All e-mails were skipped, so we didn't actually invite anyone.
         raise InvitationError(
             _("We weren't able to invite anyone."), skipped, sent_invitations=False
@@ -272,10 +276,13 @@ def do_invite_users(
 
     # Now that we are past all the possible errors, we actually create
     # the PreregistrationUser objects and trigger the email invitations.
-    for email in validated_emails:
+    for validated_invitee in validated_invitees:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(
-            email=email,
+            email=validated_invitee.email,
+            # We include a name if specified in the invitation request, but leave full_name_validated=False,
+            # so the receiving user can spell their name as they like after accepting the invitation.
+            full_name=validated_invitee.full_name,
             referred_by=user_profile,
             invited_as=invite_as,
             realm=realm,
@@ -310,6 +317,29 @@ def get_invitation_expiry_date(confirmation_obj: Confirmation) -> int | None:
     return datetime_to_timestamp(expiry_date)
 
 
+@dataclass
+class PreregistrationInviteData:
+    email: str
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    invited_as: int
+    is_multiuse: bool
+    notify_referrer_on_join: bool
+
+
+@dataclass
+class MultiuseInviteData:
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    link_url: str
+    invited_as: int
+    is_multiuse: bool
+
+
 def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[str, Any]]:
     """
     Returns a list of dicts representing invitations that can be controlled by user_profile.
@@ -325,12 +355,12 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
             PreregistrationUser.objects.filter(referred_by=user_profile)
         )
 
-    invites = []
+    invites: list[PreregistrationInviteData | MultiuseInviteData] = []
 
     for invitee in prereg_users:
         assert invitee.referred_by is not None
         invites.append(
-            dict(
+            PreregistrationInviteData(
                 email=invitee.email,
                 invited_by_user_id=invitee.referred_by.id,
                 invited=datetime_to_timestamp(invitee.invited_at),
@@ -372,7 +402,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
 
         assert invite.status != confirmation_settings.STATUS_REVOKED
         invites.append(
-            dict(
+            MultiuseInviteData(
                 invited_by_user_id=invite.referred_by.id,
                 invited=datetime_to_timestamp(confirmation_obj.date_sent),
                 expiry_date=get_invitation_expiry_date(confirmation_obj),
@@ -382,7 +412,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 is_multiuse=True,
             )
         )
-    return invites
+    return [asdict(invite) for invite in invites]
 
 
 @transaction.atomic(durable=True)
@@ -491,7 +521,7 @@ def do_send_user_invite_email(
 ) -> None:
     # Take a lock on the realm, so we can check for invitation limits without races
     realm_id = assert_is_not_none(prereg_user.realm_id)
-    realm = Realm.objects.select_for_update().get(id=realm_id)
+    realm = Realm.objects.select_for_update(no_key=True).get(id=realm_id)
     check_invite_limit(realm, 1)
     referrer = assert_is_not_none(prereg_user.referred_by)
 

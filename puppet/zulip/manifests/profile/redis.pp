@@ -22,38 +22,20 @@ class zulip::profile::redis {
   $file = "${redis_dir}/redis.conf"
   $zulip_redisconf = "${redis_dir}/zulip-redis.conf"
   $line = "include ${zulip_redisconf}"
-  exec { 'redis':
+  exec { 'update-redis-conf':
     unless  => "/bin/grep -Fxqe '${line}' '${file}'",
     path    => '/bin',
     command => "bash -c \"(/bin/echo; /bin/echo '# Include Zulip-specific configuration'; /bin/echo '${line}') >> '${file}'\"",
-    require => [Package[$redis],
-                File[$zulip_redisconf],
-                Exec['rediscleanup-zuli-redis']],
-  }
-
-  # Fix the typo in the path to $zulip_redisconf introduced in
-  # 071e32985c1207f20043e1cf28f82300d9f23f31 without triggering a
-  # redis restart.
-  $legacy_wrong_filename = "${redis_dir}/zuli-redis.conf"
-  exec { 'rediscleanup-zuli-redis':
-    onlyif   => "test -e ${legacy_wrong_filename}",
-    command  => "
-      mv ${legacy_wrong_filename} ${zulip_redisconf}
-      perl -0777 -pe '
-        if (m|^\\Q${line}\\E\$|m) {
-          s|^\\n?(:?# Include Zulip-specific configuration\\n)?include \\Q${legacy_wrong_filename}\\E\\n||m;
-        } else {
-          s|^include \\Q${legacy_wrong_filename}\\E\$|${line}|m;
-        }
-      ' -i /etc/redis/redis.conf
-    ",
-    provider => shell,
+    require => [
+      Package[$redis],
+      File[$zulip_redisconf],
+    ],
   }
 
   $redis_password = zulipsecret('secrets', 'redis_password', '')
   file { $zulip_redisconf:
     ensure  => file,
-    require => [Package[$redis], Exec['rediscleanup-zuli-redis']],
+    require => Package[$redis],
     owner   => 'redis',
     group   => 'redis',
     mode    => '0640',
@@ -75,22 +57,15 @@ class zulip::profile::redis {
     ensure  => running,
     require => Package['sysfsutils'],
   }
-  file { '/run/redis':
-    ensure  => directory,
-    owner   => 'redis',
-    group   => 'redis',
-    mode    => '0755',
-    require => Package[$redis],
-  }
   service { $redis:
     ensure    => running,
     require   => [
       Service['sysfsutils'],
-      File['/run/redis'],
+      Package['redis-server'],
     ],
     subscribe => [
       File[$zulip_redisconf],
-      Exec['redis'],
+      Exec['update-redis-conf'],
     ],
   }
 }

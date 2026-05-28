@@ -5,6 +5,7 @@
   "client_secret": "NORMALIZED",
   "created": 1000000000,
   "customer": "cus_NORMALIZED",
+  "customer_account": null,
   "description": null,
   "excluded_payment_method_types": null,
   "flow_directions": null,

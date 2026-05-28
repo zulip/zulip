@@ -48,7 +48,7 @@ class Stream(models.Model):
     subscriber_count = models.PositiveIntegerField(default=0, db_default=0)
 
     # Foreign key to the Recipient object for STREAM type messages to this stream.
-    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+    recipient = models.OneToOneField(Recipient, null=True, on_delete=models.SET_NULL)
 
     folder = models.ForeignKey(ChannelFolder, null=True, on_delete=models.SET_NULL)
 

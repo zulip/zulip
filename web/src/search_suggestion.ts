@@ -31,13 +31,23 @@ type ChannelTopicEntry = {
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
-const channel_incompatible_patterns: TermPattern[] = [
+const common_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
     {operator: "channel"},
     {operator: "dm-including"},
     {operator: "dm"},
     {operator: "in"},
+];
+
+const channel_incompatible_patterns: TermPattern[] = [
+    ...common_incompatible_patterns,
     {operator: "channels"},
+];
+
+const channels_public_incompatible_patterns: TermPattern[] = [
+    ...common_incompatible_patterns,
+    {operator: "channels", operand: "public"},
+    {operator: "channels", operand: "web-public"},
 ];
 
 // TODO: Expand this to support all available filters and its description.
@@ -61,27 +71,34 @@ const descriptions: Record<string, string> = {
     "has:reaction": "messages with reactions",
 };
 
-const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[]>> &
-    Record<
-        | "is:resolved"
-        | "-is:resolved"
-        | "is:dm"
-        | "is:starred"
-        | "is:mentioned"
-        | "is:followed"
-        | "is:alerted"
-        | "is:unread"
-        | "is:muted"
-        | "has:link"
-        | "has:image"
-        | "has:attachment"
-        | "has:reaction",
-        TermPattern[]
-    > = {
+type SearchFilter =
+    | NarrowCanonicalOperator
+    | "channels:public"
+    | "channels:web-public"
+    | "channels:archived"
+    | "is:resolved"
+    | "-is:resolved"
+    | "is:dm"
+    | "is:starred"
+    | "is:mentioned"
+    | "is:followed"
+    | "is:alerted"
+    | "is:unread"
+    | "is:muted"
+    | "has:link"
+    | "has:image"
+    | "has:attachment"
+    | "has:reaction";
+
+const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channel: channel_incompatible_patterns,
-    stream: channel_incompatible_patterns,
-    streams: channel_incompatible_patterns,
     channels: channel_incompatible_patterns,
+    "channels:public": channels_public_incompatible_patterns,
+    "channels:web-public": channels_public_incompatible_patterns,
+    "channels:archived": [
+        ...common_incompatible_patterns,
+        {operator: "channels", operand: "archived"},
+    ],
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
@@ -92,15 +109,10 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
         {operator: "dm"},
         {operator: "pm-with"},
         {operator: "channel"},
+        {operator: "channels"},
         {operator: "is", operand: "resolved"},
     ],
-    "pm-with": [
-        {operator: "dm"},
-        {operator: "pm-with"},
-        {operator: "channel"},
-        {operator: "is", operand: "resolved"},
-    ],
-    "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    "dm-including": [{operator: "channel"}, {operator: "stream"}, {operator: "channels"}],
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
@@ -120,9 +132,10 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
         {operator: "dm"},
         {operator: "in"},
         {operator: "topic"},
+        {operator: "channels"},
     ],
+    mentions: [{operator: "mentions"}],
     sender: [{operator: "sender"}, {operator: "from"}],
-    from: [{operator: "sender"}, {operator: "from"}],
     "is:starred": [{operator: "is", operand: "starred"}],
     "is:mentioned": [{operator: "is", operand: "mentioned"}],
     "is:followed": [
@@ -141,13 +154,18 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
     "has:image": [{operator: "has", operand: "image"}],
     "has:attachment": [{operator: "has", operand: "attachment"}],
     "has:reaction": [{operator: "has", operand: "reaction"}],
+    near: [],
+    // These below are not currently looked up.
+    has: [],
+    in: [],
+    "": [],
+    id: [],
+    is: [],
+    search: [],
+    with: [],
 };
 
-// TODO: We have stripped suggestion of all other attributes, we should now
-// replace it with simple string in other places.
-export type Suggestion = {
-    search_string: string;
-};
+export type Suggestion = string;
 
 export let max_num_of_search_results = MAX_ITEMS;
 export function rewire_max_num_of_search_results(value: typeof max_num_of_search_results): void {
@@ -168,6 +186,15 @@ function match_criteria(terms: NarrowCanonicalTerm[], criteria: TermPattern[]): 
     });
 }
 
+function filter_suggestions_by_criteria(
+    terms: NarrowCanonicalTerm[],
+    search_filters: SearchFilter[],
+): Suggestion[] {
+    return search_filters.filter(
+        (search_filter) => !match_criteria(terms, incompatible_patterns[search_filter]),
+    );
+}
+
 function check_validity(
     last_operator: NarrowCanonicalOperator,
     terms: NarrowCanonicalTerm[],
@@ -186,9 +213,7 @@ function check_validity(
 }
 
 function format_as_suggestion(terms: NarrowTerm[], is_operator_suggestion = false): Suggestion {
-    return {
-        search_string: Filter.unparse(terms, is_operator_suggestion),
-    };
+    return Filter.unparse(terms, is_operator_suggestion);
 }
 
 function compare_by_direct_message_group(
@@ -235,7 +260,7 @@ function get_channel_suggestions(
     // For users with "stream" in their muscle memory, still
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
-    if (!check_validity(last.operator, terms, valid, incompatible_patterns.channel!)) {
+    if (!check_validity(last.operator, terms, valid, incompatible_patterns.channel)) {
         return [];
     }
 
@@ -257,7 +282,7 @@ function get_channel_suggestions(
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
-        return {search_string};
+        return search_string;
     });
 }
 
@@ -343,9 +368,7 @@ function get_group_suggestions(
                 terms = [{operator: "is", operand: "dm"}, term];
             }
 
-            return {
-                search_string: Filter.unparse(terms),
-            };
+            return Filter.unparse(terms);
         });
     };
 }
@@ -382,7 +405,7 @@ function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
-    autocomplete_operator: "dm" | "sender" | "dm-including",
+    autocomplete_operator: "dm" | "sender" | "dm-including" | "mentions",
 ): Suggestion[] {
     if (last.operator === "is" && last.operand === "dm") {
         last = {operator: "dm", operand: "", negated: false};
@@ -391,7 +414,7 @@ function get_person_suggestions(
     const valid = ["search", autocomplete_operator];
 
     if (
-        !check_validity(last.operator, terms, valid, incompatible_patterns[autocomplete_operator]!)
+        !check_validity(last.operator, terms, valid, incompatible_patterns[autocomplete_operator])
     ) {
         return [];
     }
@@ -410,8 +433,9 @@ function get_person_suggestions(
                 });
                 break;
             case "sender":
+            case "mentions":
                 terms.push({
-                    operator: "sender",
+                    operator: autocomplete_operator,
                     operand: person.user_id,
                     negated: last.negated,
                 });
@@ -425,23 +449,21 @@ function get_person_suggestions(
             terms.unshift({operator: "is", operand: "dm"});
         }
 
-        return {
-            search_string: Filter.unparse(terms),
-        };
+        return Filter.unparse(terms);
     });
 }
 
 function get_default_suggestion_line(terms: NarrowCanonicalTerm[]): SuggestionLine {
     if (terms.length === 0) {
-        return [{search_string: ""}];
+        return [""];
     }
     const suggestion_line = [];
     const suggestion_strings = new Set();
     for (const term of terms) {
         const suggestion = format_as_suggestion([term]);
-        if (!suggestion_strings.has(suggestion.search_string)) {
+        if (!suggestion_strings.has(suggestion)) {
             suggestion_line.push(suggestion);
-            suggestion_strings.add(suggestion.search_string);
+            suggestion_strings.add(suggestion);
         }
     }
     return suggestion_line;
@@ -508,7 +530,7 @@ function get_topic_suggestions(
             last.operator,
             terms,
             ["channel", "topic", "search"],
-            incompatible_patterns.topic!,
+            incompatible_patterns.topic,
         )
     ) {
         return [];
@@ -516,7 +538,11 @@ function get_topic_suggestions(
 
     const operand = last.operand;
     const negated = last.operator === "topic" && last.negated;
-    let channel_id_str: string | undefined;
+    // For the case where the channel operator is the last
+    // term, the operand may just be a string and is not
+    // guaranteed to always be a channel id in a string format.
+    // We use a name that represents this .
+    let channel_id_or_operand_str: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
 
@@ -525,6 +551,7 @@ function get_topic_suggestions(
     // channel:Rome f -> show all Rome topics with a word starting in f
     // channel:Rome topic:f -> show all Rome topics with a word starting in f
     // channel:Rome topic:f -> show all Rome topics with a word starting in f
+    // channel:NonExistentChannel -> no topic suggestions.
 
     // When narrowed to a channel:
     //   topic: -> show topics from all subscribed channels with the current channel's
@@ -541,22 +568,29 @@ function get_topic_suggestions(
     switch (last.operator) {
         case "channel":
             guess = "";
-            channel_id_str = operand;
+            channel_id_or_operand_str = operand;
             break;
         case "topic":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
-                channel_id_str = filter.terms_with_operator("channel")[0]!.operand;
+                channel_id_or_operand_str = filter.terms_with_operator("channel")[0]!.operand;
                 // We want to show topics that belong only to the
                 // channel mentioned in the `channel` operator, if it exists.
                 show_topics_from_other_channels = false;
             } else {
-                channel_id_str = narrow_state.stream_id()?.toString();
+                channel_id_or_operand_str = narrow_state.stream_id()?.toString();
             }
             break;
     }
-    if (!channel_id_str && !show_topics_from_other_channels) {
+
+    if (!channel_id_or_operand_str && !show_topics_from_other_channels) {
+        return [];
+    }
+
+    // Avoid sending topic suggestions when the user is
+    // just trying to search through channels.
+    if (channel_id_or_operand_str?.length === 0 && last.operator === "channel") {
         return [];
     }
 
@@ -568,10 +602,16 @@ function get_topic_suggestions(
     );
 
     const current_channel_topic_entries: ChannelTopicEntry[] = [];
-    if (channel_id_str && !excluded_channel_ids.has(channel_id_str)) {
+    if (channel_id_or_operand_str && !excluded_channel_ids.has(channel_id_or_operand_str)) {
         // We do this outside the stream_data.subscribed_stream_ids loop,
         // since we could be viewing a channel we can't read.
-        const sub = stream_data.get_sub_by_id_string(channel_id_str)!;
+        const sub = stream_data.get_sub_by_id_string(channel_id_or_operand_str);
+        if (sub === undefined && last.operator === "channel") {
+            // Since the channel_id_or_operand_str is not a
+            // valid channel id we avoid sending any topic
+            // suggestions for a channel as the last term.
+            return [];
+        }
         if (sub && stream_data.can_access_topic_history(sub)) {
             const current_channel_id = sub.stream_id;
             stream_topic_history_util.get_server_history(current_channel_id, () => {
@@ -582,7 +622,7 @@ function get_topic_suggestions(
             });
 
             for (const topic of stream_topic_history.get_recent_topic_names(current_channel_id)) {
-                current_channel_topic_entries.push({channel_id: channel_id_str, topic});
+                current_channel_topic_entries.push({channel_id: channel_id_or_operand_str, topic});
             }
         }
     }
@@ -590,7 +630,7 @@ function get_topic_suggestions(
     const other_channel_topic_entries: ChannelTopicEntry[] = [];
     for (const subscribed_channel_id of stream_data.subscribed_stream_ids()) {
         if (
-            subscribed_channel_id.toString() === channel_id_str ||
+            subscribed_channel_id.toString() === channel_id_or_operand_str ||
             excluded_channel_ids.has(subscribed_channel_id.toString())
         ) {
             continue;
@@ -662,58 +702,38 @@ function get_topic_suggestions(
     });
 }
 
-type SuggestionAndIncompatiblePatterns = Suggestion & {incompatible_patterns: TermPattern[]};
-
 function get_special_filter_suggestions(
     last: NarrowCanonicalTermSuggestion,
-    terms: NarrowCanonicalTerm[],
-    suggestions: SuggestionAndIncompatiblePatterns[],
+    suggestions: Suggestion[],
 ): Suggestion[] {
     const is_search_operand_negated = last.operator === "search" && last.operand.startsWith("-");
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated terms.
     if (last.negated === true || is_search_operand_negated) {
         suggestions = suggestions
-            .filter((suggestion) => suggestion.search_string !== "-is:resolved")
-            .map((suggestion) => {
-                // If the search_string is "is:resolved", we want to suggest "Unresolved topics"
-                // instead of "Exclude resolved topics".
-                if (suggestion.search_string === "is:resolved") {
-                    return {
-                        ...suggestion,
-                        search_string: "-" + suggestion.search_string,
-                    };
-                }
-                return {
-                    ...suggestion,
-                    search_string: "-" + suggestion.search_string,
-                };
-            });
+            .filter((suggestion) => suggestion !== "-is:resolved")
+            .map((suggestion) => "-" + suggestion);
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
     suggestions = suggestions.filter((s) => {
-        if (match_criteria(terms, s.incompatible_patterns)) {
-            return false;
-        }
         if (last_string === "") {
             return true;
         }
 
         // returns the substring after the ":" symbol.
-        const suggestion_operand = s.search_string.slice(s.search_string.indexOf(":") + 1);
+        const suggestion_operand = s.slice(s.indexOf(":") + 1);
         // e.g for `att` search query, `has:attachment` should be suggested.
         const show_operator_suggestions =
             last.operator === "search" && suggestion_operand.toLowerCase().startsWith(last_string);
         return (
-            s.search_string.toLowerCase().startsWith(last_string) ||
+            s.toLowerCase().startsWith(last_string) ||
             show_operator_suggestions ||
-            descriptions[s.search_string]?.toLowerCase().startsWith(last_string)
+            descriptions[s]?.toLowerCase().startsWith(last_string)
         );
     });
-    const filtered_suggestions = suggestions.map(({incompatible_patterns, ...s}) => s);
 
-    return filtered_suggestions;
+    return suggestions;
 }
 
 function get_channels_filter_suggestions(
@@ -725,85 +745,49 @@ function get_channels_filter_suggestions(
     }
     const public_channels_search_string = "channels:public";
     const web_public_channels_search_string = "channels:web-public";
-    const suggestions: SuggestionAndIncompatiblePatterns[] = [];
+    const archived_channels_search_string = "channels:archived";
+    const suggestions: Suggestion[] = [];
 
     if (!page_params.is_spectator) {
-        suggestions.push({
-            search_string: public_channels_search_string,
-            incompatible_patterns: incompatible_patterns.channels!,
-        });
+        suggestions.push(...filter_suggestions_by_criteria(terms, [public_channels_search_string]));
     }
 
     if (stream_data.realm_has_web_public_streams()) {
-        suggestions.push({
-            search_string: web_public_channels_search_string,
-            incompatible_patterns: incompatible_patterns.channels!,
-        });
+        suggestions.push(
+            ...filter_suggestions_by_criteria(terms, [web_public_channels_search_string]),
+        );
     }
 
-    return get_special_filter_suggestions(last, terms, suggestions);
+    suggestions.push(...filter_suggestions_by_criteria(terms, [archived_channels_search_string]));
+    return get_special_filter_suggestions(last, suggestions);
 }
 
 function get_is_filter_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
 ): Suggestion[] {
-    let suggestions: SuggestionAndIncompatiblePatterns[];
+    let suggestions: Suggestion[];
     if (page_params.is_spectator) {
-        suggestions = [
-            {
-                search_string: "is:resolved",
-                incompatible_patterns: incompatible_patterns["is:resolved"],
-            },
-            {
-                search_string: "-is:resolved",
-                incompatible_patterns: incompatible_patterns["-is:resolved"],
-            },
-        ];
+        suggestions = filter_suggestions_by_criteria(terms, ["is:resolved", "-is:resolved"]);
     } else {
-        suggestions = [
-            {
-                search_string: "is:dm",
-                incompatible_patterns: incompatible_patterns["is:dm"],
-            },
-            {
-                search_string: "is:starred",
-                incompatible_patterns: incompatible_patterns["is:starred"],
-            },
-            {
-                search_string: "is:mentioned",
-                incompatible_patterns: incompatible_patterns["is:mentioned"],
-            },
-            {
-                search_string: "is:followed",
-                incompatible_patterns: incompatible_patterns["is:followed"],
-            },
-            {
-                search_string: "is:alerted",
-                incompatible_patterns: incompatible_patterns["is:alerted"],
-            },
-            {
-                search_string: "is:unread",
-                incompatible_patterns: incompatible_patterns["is:unread"],
-            },
-            {
-                search_string: "is:muted",
-                incompatible_patterns: incompatible_patterns["is:muted"],
-            },
-            {
-                search_string: "is:resolved",
-                incompatible_patterns: incompatible_patterns["is:resolved"],
-            },
-            {
-                search_string: "-is:resolved",
-                incompatible_patterns: incompatible_patterns["-is:resolved"],
-            },
-        ];
+        suggestions = filter_suggestions_by_criteria(terms, [
+            "is:dm",
+            "is:starred",
+            "is:mentioned",
+            "is:followed",
+            "is:alerted",
+            "is:unread",
+            "is:muted",
+            "is:resolved",
+            "-is:resolved",
+        ]);
     }
-    const special_filtered_suggestions = get_special_filter_suggestions(last, terms, suggestions);
+    const special_filtered_suggestions = get_special_filter_suggestions(last, suggestions);
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory
+    // if it is compatible with the other terms.
     const other_suggestions = [];
     if (
+        suggestions.includes("is:dm") &&
         last.operator === "is" &&
         common.phrase_match(last.operand, "private") &&
         !page_params.is_spectator
@@ -821,25 +805,13 @@ function get_has_filter_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
 ): Suggestion[] {
-    const suggestions: SuggestionAndIncompatiblePatterns[] = [
-        {
-            search_string: "has:link",
-            incompatible_patterns: incompatible_patterns["has:link"],
-        },
-        {
-            search_string: "has:image",
-            incompatible_patterns: incompatible_patterns["has:image"],
-        },
-        {
-            search_string: "has:attachment",
-            incompatible_patterns: incompatible_patterns["has:attachment"],
-        },
-        {
-            search_string: "has:reaction",
-            incompatible_patterns: incompatible_patterns["has:reaction"],
-        },
-    ];
-    return get_special_filter_suggestions(last, terms, suggestions);
+    const suggestions: Suggestion[] = filter_suggestions_by_criteria(terms, [
+        "has:link",
+        "has:image",
+        "has:attachment",
+        "has:reaction",
+    ]);
+    return get_special_filter_suggestions(last, suggestions);
 }
 
 function get_sent_by_me_suggestions(
@@ -857,7 +829,7 @@ function get_sent_by_me_suggestions(
     const from_string = negated_symbol + "from";
     const sent_string = negated_symbol + "sent";
 
-    if (match_criteria(terms, incompatible_patterns.sender!)) {
+    if (match_criteria(terms, incompatible_patterns.sender)) {
         return [];
     }
 
@@ -869,11 +841,7 @@ function get_sent_by_me_suggestions(
         sender_email_string.startsWith(last_string) ||
         last_string === sent_string
     ) {
-        return [
-            {
-                search_string: sender_query,
-            },
-        ];
+        return [sender_query];
     }
     return [];
 }
@@ -893,12 +861,16 @@ function get_operator_suggestions(
         last_operand = last_operand.slice(1);
     }
 
-    let choices: NarrowTerm["operator"][];
+    let canonicalized_operator_choices: NarrowCanonicalOperator[];
+    let legacy_operator_choices: NarrowTerm["operator"][];
+
+    const incompatible_operators = new Set<NarrowCanonicalOperator>();
 
     if (last.operator === "") {
-        choices = ["channels", "channel", "streams", "stream"];
+        canonicalized_operator_choices = ["channels", "channel"];
+        legacy_operator_choices = ["streams", "stream"];
     } else {
-        choices = [
+        canonicalized_operator_choices = [
             "channels",
             "channel",
             "topic",
@@ -906,20 +878,29 @@ function get_operator_suggestions(
             "dm-including",
             "sender",
             "near",
-            "from",
-            "pm-with",
-            "streams",
-            "stream",
+            "mentions",
         ];
+        legacy_operator_choices = ["from", "pm-with", "streams", "stream"];
     }
 
     // We remove suggestion choice if its incompatible_pattern matches
     // that of current search terms.
-    choices = choices.filter(
-        (choice) =>
-            common.phrase_match(last_operand, choice) &&
-            (!incompatible_patterns[choice] ||
-                !match_criteria(terms, incompatible_patterns[choice])),
+    canonicalized_operator_choices = canonicalized_operator_choices.filter((choice) => {
+        if (match_criteria(terms, incompatible_patterns[choice])) {
+            incompatible_operators.add(choice);
+            return false;
+        }
+        return true;
+    });
+
+    // Add equivalent legacy operators for canonicalized operators
+    legacy_operator_choices = legacy_operator_choices.filter((choice) => {
+        const canonical = filter_util.canonicalize_operator(choice);
+        return !incompatible_operators.has(canonical);
+    });
+
+    const choices = [...canonicalized_operator_choices, ...legacy_operator_choices].filter(
+        (choice) => common.phrase_match(last_operand, choice),
     );
 
     return choices.map((choice) => {
@@ -956,6 +937,7 @@ function get_operator_suggestions(
                     true,
                 );
             case "sender":
+            case "mentions":
                 return format_as_suggestion(
                     [
                         {
@@ -977,14 +959,14 @@ function get_operator_suggestions(
 type SuggestionLine = Suggestion[];
 function suggestion_search_string(suggestion_line: SuggestionLine): string {
     const search_strings = [];
-    for (const suggestion of suggestion_line) {
-        if (suggestion.search_string !== "") {
+    for (let suggestion of suggestion_line) {
+        if (suggestion !== "") {
             // This is rendered as "Direct messages" and we want to make sure
             // that we don't add another suggestion for "is:dm" in parallel.
-            if (suggestion.search_string === "is:private") {
-                suggestion.search_string = "is:dm";
+            if (suggestion === "is:private") {
+                suggestion = "is:dm";
             }
-            search_strings.push(suggestion.search_string);
+            search_strings.push(suggestion);
         }
     }
     return search_strings.join(" ");
@@ -1064,8 +1046,8 @@ class Attacher {
                 // When we add a user to a user group, we
                 // replace the last pill.
                 const last_base_term = this.base.at(-1)!;
-                const last_base_string = last_base_term.search_string;
-                const new_search_string = suggestion.search_string;
+                const last_base_string = last_base_term;
+                const new_search_string = suggestion;
                 if (
                     (new_search_string.startsWith("dm:") ||
                         new_search_string.startsWith("dm-including:")) &&
@@ -1084,13 +1066,11 @@ class Attacher {
         return this.result.map((suggestion_line) => {
             const search_strings = [];
             for (const suggestion of suggestion_line) {
-                if (suggestion.search_string !== "") {
-                    search_strings.push(suggestion.search_string);
+                if (suggestion !== "") {
+                    search_strings.push(suggestion);
                 }
             }
-            return {
-                search_string: search_strings.join(" "),
-            };
+            return search_strings.join(" ");
         });
     }
 }
@@ -1099,7 +1079,7 @@ export function search_term_description_html(operand: string): string {
     return `search for ${Handlebars.Utils.escapeExpression(operand)}`;
 }
 
-export function get_search_result(
+export let get_suggestions = function (
     pill_search_terms: NarrowCanonicalTerm[],
     text_search_terms_non_canonical: NarrowTermSuggestion[],
     add_current_filter = false,
@@ -1136,30 +1116,27 @@ export function get_search_result(
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including"];
+    const person_suggestion_ops = ["sender", "dm", "dm-including", "mentions"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
     // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
-    // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
-    // is an email of a user, both of these terms remain unchanged. Otherwise search operator
-    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
+    // and second last is {operator: 'sender', operand: 'Ted'....}. The search operator
+    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm'....}.
     if (
         text_search_terms.length > 1 &&
         last.operator === "search" &&
         person_suggestion_ops.includes(text_search_terms.at(-2)!.operator)
     ) {
         const person_op = text_search_terms.at(-2)!;
-        if (!people.reply_to_to_user_ids_string(person_op.operand)) {
-            last = {
-                operator: person_op.operator,
-                operand: person_op.operand + " " + last.operand,
-                negated: person_op.negated,
-            };
-            text_search_terms.splice(-2);
-            text_search_terms.push(last);
-            all_search_terms = [...pill_search_terms, ...text_search_terms];
-        }
+        last = {
+            operator: person_op.operator,
+            operand: person_op.operand + " " + last.operand,
+            negated: person_op.negated,
+        };
+        text_search_terms.splice(-2);
+        text_search_terms.push(last);
+        all_search_terms = [...pill_search_terms, ...text_search_terms];
     }
     const valid_base_text_search_terms = text_search_terms
         .slice(0, -1)
@@ -1172,11 +1149,7 @@ export function get_search_result(
 
     // Display the default first, unless it has invalid terms.
     if (last.operator === "search") {
-        suggestion_line = [
-            {
-                search_string: last.operand,
-            },
-        ];
+        suggestion_line = [last.operand];
         attacher.push([...attacher.base, ...suggestion_line]);
     } else if (
         // Check all provided terms are valid.
@@ -1192,7 +1165,7 @@ export function get_search_result(
     const people_getter = make_people_getter(last);
 
     function get_people(
-        flavor: "dm" | "sender" | "dm-including",
+        flavor: "dm" | "sender" | "dm-including" | "mentions",
     ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
         return function (
             last: NarrowCanonicalTermSuggestion,
@@ -1218,6 +1191,7 @@ export function get_search_result(
         get_people("dm"),
         get_people("sender"),
         get_people("dm-including"),
+        get_people("mentions"),
         get_topic_suggestions,
         get_has_filter_suggestions,
     ];
@@ -1244,39 +1218,8 @@ export function get_search_result(
     }
 
     return attacher.get_result().slice(0, max_items);
-}
-
-export let get_suggestions = function (
-    pill_search_terms: NarrowCanonicalTerm[],
-    text_search_terms: NarrowTermSuggestion[],
-    add_current_filter = false,
-): {
-    strings: string[];
-    lookup_table: Map<string, Suggestion>;
-} {
-    const result = get_search_result(pill_search_terms, text_search_terms, add_current_filter);
-    return finalize_search_result(result);
 };
 
 export function rewire_get_suggestions(value: typeof get_suggestions): void {
     get_suggestions = value;
-}
-
-export function finalize_search_result(result: Suggestion[]): {
-    strings: string[];
-    lookup_table: Map<string, Suggestion>;
-} {
-    // Typeahead expects us to give it strings, not objects,
-    // so we maintain our own hash back to our objects
-    const lookup_table = new Map<string, Suggestion>();
-
-    for (const obj of result) {
-        lookup_table.set(obj.search_string, obj);
-    }
-
-    const strings = result.map((obj: Suggestion) => obj.search_string);
-    return {
-        strings,
-        lookup_table,
-    };
 }

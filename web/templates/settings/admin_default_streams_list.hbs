@@ -1,8 +1,15 @@
 {{#with stream}}
 <tr class="default_stream_row hidden-remove-button-row" data-stream-id="{{stream_id}}">
     <td>
-        {{#if invite_only}}<i class="fa fa-lock" aria-hidden="true"></i>{{/if}}
-        <span class="default_stream_name">{{name}}</span>
+        <span class="pill-container display_only_pill">
+            <span class="pill" data-stream-id="{{stream_id}}" tabindex="0">
+                <span class="pill-label">
+                    <span class="pill-value">
+                        {{> ../decorated_channel_name stream=this}}
+                    </span>
+                </span>
+            </span>
+        </span>
     </td>
     {{#if ../can_modify}}
     <td class="actions">

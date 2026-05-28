@@ -466,6 +466,13 @@ def queue_event_on_commit(queue_name: str, event: dict[str, Any]) -> None:
     transaction.on_commit(lambda: queue_json_publish_rollback_unsafe(queue_name, event))
 
 
+def mobile_notifications_queue_name(user_id: int) -> str:
+    if settings.MOBILE_NOTIFICATIONS_SHARDS > 1:
+        shard_id = user_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
+        return f"missedmessage_mobile_notifications_shard{shard_id}"
+    return "missedmessage_mobile_notifications"
+
+
 def retry_event(
     queue_name: str, event: dict[str, Any], failure_processor: Callable[[dict[str, Any]], None]
 ) -> None:

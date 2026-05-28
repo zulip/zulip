@@ -1,0 +1,48 @@
+{
+    "type": "post",
+    "post": {
+        "team": "ad-1",
+        "channel": "amet-0",
+        "user": "eugene.montgomery",
+        "type": "",
+        "message": "consequatur est reprehenderit reiciendis ratione exercitationem facilis. facere et voluptates quisquam quas laborum ut commodi aliquam qui. asperiores tempore ex molestiae ex corporis. id doloribus dolores iure est soluta ad nisi accusamus. soluta illum dicta autem dignissimos. recusandae quia tempora unde reiciendis magnam. aut quia id repellendus aut! sed et qui nesciunt nihil.",
+        "props": {},
+        "create_at": 1768916201357,
+        "edit_at": 0,
+        "flagged_by": [],
+        "reactions": [],
+        "replies": [
+            {
+                "user": "brandon.mccoy",
+                "type": "",
+                "message": "https://www.youtube.com/watch?v=mUOPxT7VgWc",
+                "props": {},
+                "create_at": 1768916284233,
+                "edit_at": 0,
+                "flagged_by": [],
+                "is_pinned": false
+            },
+            {
+                "user": "user-1",
+                "type": "",
+                "message": "quod ut voluptatem voluptatem velit.\nrepellat ut quo omnis aspernatur enim perspiciatis in architecto enim.",
+                "props": {},
+                "create_at": 1768916252899,
+                "edit_at": 0,
+                "flagged_by": [],
+                "is_pinned": false
+            },
+            {
+                "user": "user-1",
+                "type": "",
+                "message": "nisi quasi distinctio! illo et ullam magnam voluptate iure accusamus. pariatur quae quos! magnam in sunt voluptatem corrupti ullam molestiae quas. autem qui voluptatem magnam sequi quis suscipit. eveniet vel mollitia voluptatem minus quo porro necessitatibus quia sunt aut. impedit consequuntur ipsa. suscipit dolorem maiores ut occaecati eos in velit. repudiandae ex labore facere accusantium.",
+                "props": {},
+                "create_at": 1768916233181,
+                "edit_at": 0,
+                "flagged_by": [],
+                "is_pinned": false
+            }
+        ],
+        "is_pinned": false
+    }
+}

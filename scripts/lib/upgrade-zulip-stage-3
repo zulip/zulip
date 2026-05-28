@@ -250,6 +250,16 @@ else:
         preexec_fn=su_to_zulip,
     )
 
+# Ensure the local uploads directory exists before we run system
+# checks, since check_uploads_settings verifies it.  Puppet would
+# create it later in the upgrade, but the system check runs first.
+# `os.path.isdir` follows symlinks, so admins who have replaced the
+# directory with a symlink to alternate storage are not disturbed.
+if not os.path.isdir("/home/zulip/uploads"):
+    subprocess.check_call(
+        ["install", "-d", "-o", "zulip", "-g", "zulip", "-m", "0755", "/home/zulip/uploads"]
+    )
+
 # Perform system checks -- including database checks, so we don't need
 # to do them when we do migrations, below.
 if not args.skip_checks:

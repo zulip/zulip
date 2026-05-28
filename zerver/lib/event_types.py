@@ -20,17 +20,12 @@ Url = Annotated[str, AfterValidator(check_url)]
 
 
 class BaseEvent(BaseModel):
-    id: int
+    pass
 
 
-class EventAlertWords(BaseEvent):
+class AlertWordsEvent(BaseEvent):
     type: Literal["alert_words"]
     alert_words: list[str]
-
-
-class AttachmentMessage(BaseModel):
-    id: int
-    date_sent: int
 
 
 class Attachment(BaseModel):
@@ -39,35 +34,35 @@ class Attachment(BaseModel):
     size: int
     path_id: str
     create_time: int
-    messages: list[AttachmentMessage]
+    message_ids: list[int]
 
 
-class EventAttachmentAdd(BaseEvent):
+class AttachmentAddEvent(BaseEvent):
     type: Literal["attachment"]
     op: Literal["add"]
     attachment: Attachment
     upload_space_used: int
 
 
-class AttachmentFieldForEventAttachmentRemove(BaseModel):
+class AttachmentFieldForAttachmentRemoveEvent(BaseModel):
     id: int
 
 
-class EventAttachmentRemove(BaseEvent):
+class AttachmentRemoveEvent(BaseEvent):
     type: Literal["attachment"]
     op: Literal["remove"]
-    attachment: AttachmentFieldForEventAttachmentRemove
+    attachment: AttachmentFieldForAttachmentRemoveEvent
     upload_space_used: int
 
 
-class EventAttachmentUpdate(BaseEvent):
+class AttachmentUpdateEvent(BaseEvent):
     type: Literal["attachment"]
     op: Literal["update"]
     attachment: Attachment
     upload_space_used: int
 
 
-class ChannelFolderForEventChannelFolderAdd(BaseModel):
+class ChannelFolderForChannelFolderAddEvent(BaseModel):
     id: int
     name: str
     description: str
@@ -77,10 +72,10 @@ class ChannelFolderForEventChannelFolderAdd(BaseModel):
     is_archived: bool
 
 
-class EventChannelFolderAdd(BaseEvent):
+class ChannelFolderAddEvent(BaseEvent):
     type: Literal["channel_folder"]
     op: Literal["add"]
-    channel_folder: ChannelFolderForEventChannelFolderAdd
+    channel_folder: ChannelFolderForChannelFolderAddEvent
 
 
 class ChannelFolderDataForUpdate(BaseModel):
@@ -90,13 +85,13 @@ class ChannelFolderDataForUpdate(BaseModel):
     is_archived: bool | None = None
 
 
-class EventChannelFolderReorder(BaseEvent):
+class ChannelFolderReorderEvent(BaseEvent):
     type: Literal["channel_folder"]
     op: Literal["reorder"]
     order: list[int]
 
 
-class EventChannelFolderUpdate(BaseEvent):
+class ChannelFolderUpdateEvent(BaseEvent):
     type: Literal["channel_folder"]
     op: Literal["update"]
     channel_folder_id: int
@@ -119,7 +114,7 @@ class DetailedCustomProfile(DetailedCustomProfileCore):
     display_in_profile_summary: bool | None = None
 
 
-class EventCustomProfileFields(BaseEvent):
+class CustomProfileFieldsEvent(BaseEvent):
     type: Literal["custom_profile_fields"]
     fields: list[DetailedCustomProfile]
 
@@ -131,22 +126,22 @@ class StreamGroup(BaseModel):
     streams: list[int]
 
 
-class EventDefaultStreamGroups(BaseEvent):
+class DefaultStreamGroupsEvent(BaseEvent):
     type: Literal["default_stream_groups"]
     default_stream_groups: list[StreamGroup]
 
 
-class EventDefaultStreams(BaseEvent):
+class DefaultStreamsEvent(BaseEvent):
     type: Literal["default_streams"]
     default_streams: list[int]
 
 
-class EventDeleteMessageCore(BaseEvent):
+class DeleteMessageCoreEvent(BaseEvent):
     type: Literal["delete_message"]
     message_type: Literal["private", "stream"]
 
 
-class EventDeleteMessage(EventDeleteMessageCore):
+class DeleteMessageEvent(DeleteMessageCoreEvent):
     # TODO: fix types to avoid optional fields
     message_id: int | None = None
     message_ids: list[int] | None = None
@@ -166,7 +161,7 @@ class DirectMessageDisplayRecipient(BaseModel):
     full_name: str
 
 
-class MessageFieldForEventDirectMessage(BaseModel):
+class MessageFieldForDirectMessageEvent(BaseModel):
     avatar_url: str | None
     client: str
     content: str
@@ -187,10 +182,10 @@ class MessageFieldForEventDirectMessage(BaseModel):
     display_recipient: list[DirectMessageDisplayRecipient]
 
 
-class EventDirectMessage(BaseEvent):
+class DirectMessageEvent(BaseEvent):
     type: Literal["message"]
     flags: list[str]
-    message: MessageFieldForEventDirectMessage
+    message: MessageFieldForDirectMessageEvent
 
 
 class DraftFieldsCore(BaseModel):
@@ -206,38 +201,43 @@ class DraftFields(DraftFieldsCore):
     timestamp: int | None = None
 
 
-class EventDraftsAdd(BaseEvent):
+class DraftsAddEvent(BaseEvent):
     type: Literal["drafts"]
     op: Literal["add"]
     drafts: list[DraftFields]
 
 
-class EventDraftsRemove(BaseEvent):
+class DraftsRemoveEvent(BaseEvent):
     type: Literal["drafts"]
     op: Literal["remove"]
     draft_id: int
 
 
-class EventDraftsUpdate(BaseEvent):
+class DraftsUpdateEvent(BaseEvent):
     type: Literal["drafts"]
     op: Literal["update"]
     draft: DraftFields
 
 
-class EventHasZoomToken(BaseEvent):
+class HasZoomTokenEvent(BaseEvent):
     type: Literal["has_zoom_token"]
     value: bool
 
 
-class EventHeartbeat(BaseEvent):
+class HasWebexTokenEvent(BaseEvent):
+    type: Literal["has_webex_token"]
+    value: bool
+
+
+class HeartbeatEvent(BaseEvent):
     type: Literal["heartbeat"]
 
 
-class EventInvitesChanged(BaseEvent):
+class InvitesChangedEvent(BaseEvent):
     type: Literal["invites_changed"]
 
 
-class MessageFieldForEventMessage(BaseModel):
+class MessageFieldForMessageEvent(BaseModel):
     avatar_url: str | None
     client: str
     content: str
@@ -259,13 +259,13 @@ class MessageFieldForEventMessage(BaseModel):
     stream_id: int
 
 
-class EventMessage(BaseEvent):
+class MessageEvent(BaseEvent):
     type: Literal["message"]
     flags: list[str]
-    message: MessageFieldForEventMessage
+    message: MessageFieldForMessageEvent
 
 
-class EventMutedTopics(BaseEvent):
+class MutedTopicsEvent(BaseEvent):
     type: Literal["muted_topics"]
     muted_topics: list[list[str | int]]
 
@@ -275,7 +275,7 @@ class MutedUser(BaseModel):
     timestamp: int
 
 
-class EventMutedUsers(BaseEvent):
+class MutedUsersEvent(BaseEvent):
     type: Literal["muted_users"]
     muted_users: list[MutedUser]
 
@@ -285,16 +285,32 @@ class OnboardingSteps(BaseModel):
     name: str
 
 
-class EventOnboardingSteps(BaseEvent):
+class OnboardingStepsEvent(BaseEvent):
     type: Literal["onboarding_steps"]
     onboarding_steps: list[OnboardingSteps]
 
 
-class EventPushDevice(BaseEvent):
-    type: Literal["push_device"]
-    push_account_id: int
-    status: Literal["active", "failed", "pending"]
-    error_code: str | None = None
+class DeviceAddEvent(BaseEvent):
+    type: Literal["device"]
+    op: Literal["add"]
+    device_id: int
+
+
+class DeviceRemoveEvent(BaseEvent):
+    type: Literal["device"]
+    op: Literal["remove"]
+    device_id: int
+
+
+class DeviceUpdateEvent(BaseEvent):
+    type: Literal["device"]
+    op: Literal["update"]
+    device_id: int
+    push_key_id: int | None = None
+    push_token_id: str | None = None
+    pending_push_token_id: str | None = None
+    push_token_last_updated_timestamp: int | None = None
+    push_registration_error_code: str | None = None
 
 
 class NavigationViewFields(BaseModel):
@@ -303,13 +319,13 @@ class NavigationViewFields(BaseModel):
     name: str | None
 
 
-class EventNavigationViewAdd(BaseEvent):
+class NavigationViewAddEvent(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["add"]
     navigation_view: NavigationViewFields
 
 
-class EventNavigationViewRemove(BaseEvent):
+class NavigationViewRemoveEvent(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["remove"]
     fragment: str
@@ -320,7 +336,7 @@ class NavigationViewFieldsForUpdate(BaseModel):
     name: str | None = None
 
 
-class EventNavigationViewUpdate(BaseEvent):
+class NavigationViewUpdateEvent(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["update"]
     fragment: str
@@ -334,14 +350,14 @@ class LegacyPresence(BaseModel):
     pushable: bool
 
 
-class EventLegacyPresenceCore(BaseEvent):
+class LegacyPresenceCoreEvent(BaseEvent):
     type: Literal["presence"]
     user_id: int
     server_timestamp: float | int
     presence: dict[str, LegacyPresence]
 
 
-class EventLegacyPresence(EventLegacyPresenceCore):
+class LegacyPresenceEvent(LegacyPresenceCoreEvent):
     # TODO: fix types to avoid optional fields
     email: str | None = None
 
@@ -351,21 +367,12 @@ class ModernPresence(BaseModel):
     idle_timestamp: int
 
 
-class EventModernPresence(BaseEvent):
+class ModernPresenceEvent(BaseEvent):
     type: Literal["presence"]
     presences: dict[str, ModernPresence]
 
 
-# Type for the legacy user field; the `user_id` field is intended to
-# replace this and we expect to remove this once clients have migrated
-# to support the modern API.
-class ReactionLegacyUserType(BaseModel):
-    email: str
-    full_name: str
-    user_id: int
-
-
-class EventReactionAdd(BaseEvent):
+class ReactionAddEvent(BaseEvent):
     type: Literal["reaction"]
     op: Literal["add"]
     message_id: int
@@ -373,10 +380,9 @@ class EventReactionAdd(BaseEvent):
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
     user_id: int
-    user: ReactionLegacyUserType
 
 
-class EventReactionRemove(BaseEvent):
+class ReactionRemoveEvent(BaseEvent):
     type: Literal["reaction"]
     op: Literal["remove"]
     message_id: int
@@ -384,7 +390,6 @@ class EventReactionRemove(BaseEvent):
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
     user_id: int
-    user: ReactionLegacyUserType
 
 
 class BotServicesOutgoing(BaseModel):
@@ -400,20 +405,13 @@ class BotServicesEmbedded(BaseModel):
 
 class Bot(BaseModel):
     user_id: int
-    api_key: str
-    avatar_url: str
-    bot_type: int
     default_all_public_streams: bool
     default_events_register_stream: str | None
     default_sending_stream: str | None
-    email: str
-    full_name: str
-    is_active: bool
-    owner_id: int
     services: list[BotServicesOutgoing | BotServicesEmbedded]
 
 
-class EventRealmBotAdd(BaseEvent):
+class RealmBotAddEvent(BaseEvent):
     type: Literal["realm_bot"]
     op: Literal["add"]
     bot: Bot
@@ -423,7 +421,7 @@ class BotTypeForDelete(BaseModel):
     user_id: int
 
 
-class EventRealmBotDelete(BaseEvent):
+class RealmBotDeleteEvent(BaseEvent):
     type: Literal["realm_bot"]
     op: Literal["delete"]
     bot: BotTypeForDelete
@@ -435,24 +433,19 @@ class BotTypeForUpdateCore(BaseModel):
 
 class BotTypeForUpdate(BotTypeForUpdateCore):
     # TODO: fix types to avoid optional fields
-    api_key: str | None = None
-    avatar_url: str | None = None
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None
     default_sending_stream: str | None = None
-    full_name: str | None = None
-    is_active: bool | None = None
-    owner_id: int | None = None
     services: list[BotServicesOutgoing | BotServicesEmbedded] | None = None
 
 
-class EventRealmBotUpdate(BaseEvent):
+class RealmBotUpdateEvent(BaseEvent):
     type: Literal["realm_bot"]
     op: Literal["update"]
     bot: BotTypeForUpdate
 
 
-class EventRealmDeactivated(BaseEvent):
+class RealmDeactivatedEvent(BaseEvent):
     type: Literal["realm"]
     op: Literal["deactivated"]
     realm_id: int
@@ -463,19 +456,19 @@ class RealmDomain(BaseModel):
     allow_subdomains: bool
 
 
-class EventRealmDomainsAdd(BaseEvent):
+class RealmDomainsAddEvent(BaseEvent):
     type: Literal["realm_domains"]
     op: Literal["add"]
     realm_domain: RealmDomain
 
 
-class EventRealmDomainsChange(BaseEvent):
+class RealmDomainsChangeEvent(BaseEvent):
     type: Literal["realm_domains"]
     op: Literal["change"]
     realm_domain: RealmDomain
 
 
-class EventRealmDomainsRemove(BaseEvent):
+class RealmDomainsRemoveEvent(BaseEvent):
     type: Literal["realm_domains"]
     op: Literal["remove"]
     domain: str
@@ -490,13 +483,30 @@ class RealmEmoji(BaseModel):
     still_url: str | None
 
 
-class EventRealmEmojiUpdate(BaseEvent):
+class RealmEmojiAddEvent(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["add"]
+    emoji: RealmEmoji
+
+
+class RealmEmojiUpdateData(BaseModel):
+    deactivated: bool | None = None
+
+
+class RealmEmojiUpdateOneEvent(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["update_one"]
+    emoji_id: str
+    data: RealmEmojiUpdateData
+
+
+class RealmEmojiUpdateEvent(BaseEvent):
     type: Literal["realm_emoji"]
     op: Literal["update"]
     realm_emoji: dict[str, RealmEmoji]
 
 
-class EventRealmExportConsent(BaseEvent):
+class RealmExportConsentEvent(BaseEvent):
     type: Literal["realm_export_consent"]
     user_id: int
     consented: bool
@@ -513,7 +523,7 @@ class Export(BaseModel):
     export_type: RealmExportSlug
 
 
-class EventRealmExport(BaseEvent):
+class RealmExportEvent(BaseEvent):
     type: Literal["realm_export"]
     exports: list[Export]
 
@@ -522,9 +532,12 @@ class RealmLinkifier(BaseModel):
     pattern: str
     url_template: str
     id: int
+    example_input: str | None = None
+    reverse_template: str | None = None
+    alternative_url_templates: list[str] = []
 
 
-class EventRealmLinkifiers(BaseEvent):
+class RealmLinkifiersEvent(BaseEvent):
     type: Literal["realm_linkifiers"]
     realm_linkifiers: list[RealmLinkifier]
 
@@ -536,7 +549,7 @@ class RealmPlayground(BaseModel):
     url_template: str
 
 
-class EventRealmPlaygrounds(BaseEvent):
+class RealmPlaygroundsEvent(BaseEvent):
     type: Literal["realm_playgrounds"]
     realm_playgrounds: list[RealmPlayground]
 
@@ -586,6 +599,11 @@ class RealmTopicsPolicyData(BaseModel):
     mandatory_topics: bool
 
 
+class RealmDescriptionData(BaseModel):
+    description: str
+    rendered_description: str
+
+
 class NightLogoData(BaseModel):
     night_logo_url: str
     night_logo_source: str
@@ -621,6 +639,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
     direct_message_permission_group: int | UserGroupMembersDict | None = None
+    workplace_users_group: int | UserGroupMembersDict | None = None
 
 
 class PlanTypeData(BaseModel):
@@ -629,7 +648,7 @@ class PlanTypeData(BaseModel):
     max_file_upload_size_mib: int
 
 
-class EventRealmUpdateDict(BaseEvent):
+class RealmUpdateDictEvent(BaseEvent):
     type: Literal["realm"]
     op: Literal["update_dict"]
     property: Literal["default", "icon", "logo", "night_logo"]
@@ -645,11 +664,12 @@ class EventRealmUpdateDict(BaseEvent):
     )
 
 
-class EventRealmUpdate(BaseEvent):
+class RealmUpdateEvent(BaseEvent):
     type: Literal["realm"]
     op: Literal["update"]
     property: str
     value: bool | int | str | None
+    rendered_description: str | None = None
 
 
 class RealmUser(BaseModel):
@@ -670,7 +690,7 @@ class RealmUser(BaseModel):
     delivery_email: str | None
 
 
-class EventRealmUserAdd(BaseEvent):
+class RealmUserAddEvent(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["add"]
     person: RealmUser
@@ -681,13 +701,13 @@ class RemovedUser(BaseModel):
     full_name: str
 
 
-class EventRealmUserRemove(BaseEvent):
+class RealmUserRemoveEvent(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["remove"]
     person: RemovedUser
 
 
-class EventRealmUserSettingsDefaultsUpdate(BaseEvent):
+class RealmUserSettingsDefaultsUpdateEvent(BaseEvent):
     type: Literal["realm_user_settings_defaults"]
     op: Literal["update"]
     property: str
@@ -758,13 +778,19 @@ class PersonIsImportedStub(BaseModel):
     is_imported_stub: bool
 
 
-class EventRealmUserUpdate(BaseEvent):
+class PersonDateJoined(BaseModel):
+    user_id: int
+    date_joined: str
+
+
+class RealmUserUpdateEvent(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["update"]
     person: (
         PersonAvatarFields
         | PersonBotOwnerId
         | PersonCustomProfileField
+        | PersonDateJoined
         | PersonDeliveryEmail
         | PersonEmail
         | PersonFullName
@@ -775,7 +801,7 @@ class EventRealmUserUpdate(BaseEvent):
     )
 
 
-class EventRestart(BaseEvent):
+class RestartEvent(BaseEvent):
     type: Literal["restart"]
     zulip_version: str
     zulip_merge_base: str
@@ -790,19 +816,19 @@ class SavedSnippetFields(BaseModel):
     date_created: int
 
 
-class EventSavedSnippetsAdd(BaseEvent):
+class SavedSnippetsAddEvent(BaseEvent):
     type: Literal["saved_snippets"]
     op: Literal["add"]
     saved_snippet: SavedSnippetFields
 
 
-class EventSavedSnippetsUpdate(BaseEvent):
+class SavedSnippetsUpdateEvent(BaseEvent):
     type: Literal["saved_snippets"]
     op: Literal["update"]
     saved_snippet: SavedSnippetFields
 
 
-class EventSavedSnippetsRemove(BaseEvent):
+class SavedSnippetsRemoveEvent(BaseEvent):
     type: Literal["saved_snippets"]
     op: Literal["remove"]
     saved_snippet_id: int
@@ -823,19 +849,19 @@ class ScheduledMessageFields(ScheduledMessageFieldsCore):
     topic: str | None = None
 
 
-class EventScheduledMessagesAdd(BaseEvent):
+class ScheduledMessagesAddEvent(BaseEvent):
     type: Literal["scheduled_messages"]
     op: Literal["add"]
     scheduled_messages: list[ScheduledMessageFields]
 
 
-class EventScheduledMessagesRemove(BaseEvent):
+class ScheduledMessagesRemoveEvent(BaseEvent):
     type: Literal["scheduled_messages"]
     op: Literal["remove"]
     scheduled_message_id: int
 
 
-class EventScheduledMessagesUpdate(BaseEvent):
+class ScheduledMessagesUpdateEvent(BaseEvent):
     type: Literal["scheduled_messages"]
     op: Literal["update"]
     scheduled_message: ScheduledMessageFields
@@ -852,13 +878,13 @@ class ReminderFields(BaseModel):
     reminder_target_message_id: int
 
 
-class EventRemindersAdd(BaseEvent):
+class RemindersAddEvent(BaseEvent):
     type: Literal["reminders"]
     op: Literal["add"]
     reminders: list[ReminderFields]
 
 
-class EventRemindersRemove(BaseEvent):
+class RemindersRemoveEvent(BaseEvent):
     type: Literal["reminders"]
     op: Literal["remove"]
     reminder_id: int
@@ -892,13 +918,13 @@ class BasicStreamFields(BaseModel):
     topics_policy: str
 
 
-class EventStreamCreate(BaseEvent):
+class StreamCreateEvent(BaseEvent):
     type: Literal["stream"]
     op: Literal["create"]
     streams: list[BasicStreamFields]
 
 
-class EventStreamDelete(BaseEvent):
+class StreamDeleteEvent(BaseEvent):
     type: Literal["stream"]
     op: Literal["delete"]
     # Streams is a legacy field for backwards-compatibility, and will
@@ -907,7 +933,7 @@ class EventStreamDelete(BaseEvent):
     stream_ids: list[int]
 
 
-class EventStreamUpdateCore(BaseEvent):
+class StreamUpdateCoreEvent(BaseEvent):
     type: Literal["stream"]
     op: Literal["update"]
     property: str
@@ -916,14 +942,14 @@ class EventStreamUpdateCore(BaseEvent):
     stream_id: int
 
 
-class EventStreamUpdate(EventStreamUpdateCore):
+class StreamUpdateEvent(StreamUpdateCoreEvent):
     # TODO: fix types to avoid optional fields
     rendered_description: str | None = None
     history_public_to_subscribers: bool | None = None
     is_web_public: bool | None = None
 
 
-class EventSubmessage(BaseEvent):
+class SubmessageEvent(BaseEvent):
     type: Literal["submessage"]
     message_id: int
     submessage_id: int
@@ -970,20 +996,20 @@ class SingleSubscription(BaseModel):
     wildcard_mentions_notify: bool | None
 
 
-class EventSubscriptionAdd(BaseEvent):
+class SubscriptionAddEvent(BaseEvent):
     type: Literal["subscription"]
     op: Literal["add"]
     subscriptions: list[SingleSubscription]
 
 
-class EventSubscriptionPeerAdd(BaseEvent):
+class SubscriptionPeerAddEvent(BaseEvent):
     type: Literal["subscription"]
     op: Literal["peer_add"]
     user_ids: list[int]
     stream_ids: list[int]
 
 
-class EventSubscriptionPeerRemove(BaseEvent):
+class SubscriptionPeerRemoveEvent(BaseEvent):
     type: Literal["subscription"]
     op: Literal["peer_remove"]
     user_ids: list[int]
@@ -995,13 +1021,13 @@ class RemoveSub(BaseModel):
     stream_id: int
 
 
-class EventSubscriptionRemove(BaseEvent):
+class SubscriptionRemoveEvent(BaseEvent):
     type: Literal["subscription"]
     op: Literal["remove"]
     subscriptions: list[RemoveSub]
 
 
-class EventSubscriptionUpdate(BaseEvent):
+class SubscriptionUpdateEvent(BaseEvent):
     type: Literal["subscription"]
     op: Literal["update"]
     property: str
@@ -1014,28 +1040,28 @@ class TypingPerson(BaseModel):
     user_id: int
 
 
-class EventTypingStartCore(BaseEvent):
+class TypingStartCoreEvent(BaseEvent):
     type: Literal["typing"]
     op: Literal["start"]
     message_type: Literal["direct", "stream"]
     sender: TypingPerson
 
 
-class EventTypingStart(EventTypingStartCore):
+class TypingStartEvent(TypingStartCoreEvent):
     # TODO: fix types to avoid optional fields
     recipients: list[TypingPerson] | None = None
     stream_id: int | None = None
     topic: str | None = None
 
 
-class EventTypingStopCore(BaseEvent):
+class TypingStopCoreEvent(BaseEvent):
     type: Literal["typing"]
     op: Literal["stop"]
     message_type: Literal["direct", "stream"]
     sender: TypingPerson
 
 
-class EventTypingStop(EventTypingStopCore):
+class TypingStopEvent(TypingStopCoreEvent):
     # TODO: fix types to avoid optional fields
     recipients: list[TypingPerson] | None = None
     stream_id: int | None = None
@@ -1053,7 +1079,7 @@ class RecipientFieldForTypingEditDirectMessage(BaseModel):
     user_ids: list[int]
 
 
-class EventTypingEditMessageStart(BaseEvent):
+class TypingEditMessageStartEvent(BaseEvent):
     type: Literal["typing_edit_message"]
     op: Literal["start"]
     sender_id: int
@@ -1061,7 +1087,7 @@ class EventTypingEditMessageStart(BaseEvent):
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
-class EventTypingEditMessageStop(BaseEvent):
+class TypingEditMessageStopEvent(BaseEvent):
     type: Literal["typing_edit_message"]
     op: Literal["stop"]
     sender_id: int
@@ -1069,7 +1095,7 @@ class EventTypingEditMessageStop(BaseEvent):
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
-class EventUpdateMessageCore(BaseEvent):
+class UpdateMessageCoreEvent(BaseEvent):
     type: Literal["update_message"]
     user_id: int | None
     edit_timestamp: int
@@ -1079,7 +1105,7 @@ class EventUpdateMessageCore(BaseEvent):
     rendering_only: bool
 
 
-class EventUpdateMessage(EventUpdateMessageCore):
+class UpdateMessageEvent(UpdateMessageCoreEvent):
     # TODO: fix types to avoid optional fields
     stream_id: int | None = None
     stream_name: str | None = None
@@ -1095,7 +1121,7 @@ class EventUpdateMessage(EventUpdateMessageCore):
     orig_subject: str | None = None
 
 
-class EventUpdateMessageFlagsAdd(BaseEvent):
+class UpdateMessageFlagsAddEvent(BaseEvent):
     type: Literal["update_message_flags"]
     op: Literal["add"]
     operation: Literal["add"]
@@ -1117,7 +1143,7 @@ class MessageDetails(MessageDetailsCore):
     unmuted_stream_msg: bool | None = None
 
 
-class EventUpdateMessageFlagsRemoveCore(BaseEvent):
+class UpdateMessageFlagsRemoveCoreEvent(BaseEvent):
     type: Literal["update_message_flags"]
     op: Literal["remove"]
     operation: Literal["remove"]
@@ -1126,7 +1152,7 @@ class EventUpdateMessageFlagsRemoveCore(BaseEvent):
     all: bool
 
 
-class EventUpdateMessageFlagsRemove(EventUpdateMessageFlagsRemoveCore):
+class UpdateMessageFlagsRemoveEvent(UpdateMessageFlagsRemoveCoreEvent):
     # TODO: fix types to avoid optional fields
     message_details: dict[str, MessageDetails] | None = None
 
@@ -1149,40 +1175,40 @@ class Group(BaseModel):
     deactivated: bool
 
 
-class EventUserGroupAdd(BaseEvent):
+class UserGroupAddEvent(BaseEvent):
     type: Literal["user_group"]
     op: Literal["add"]
     group: Group
 
 
-class EventUserGroupAddMembers(BaseEvent):
+class UserGroupAddMembersEvent(BaseEvent):
     type: Literal["user_group"]
     op: Literal["add_members"]
     group_id: int
     user_ids: list[int]
 
 
-class EventUserGroupAddSubgroups(BaseEvent):
+class UserGroupAddSubgroupsEvent(BaseEvent):
     type: Literal["user_group"]
     op: Literal["add_subgroups"]
     group_id: int
     direct_subgroup_ids: list[int]
 
 
-class EventUserGroupRemove(BaseEvent):
+class UserGroupRemoveEvent(BaseEvent):
     type: Literal["user_group"]
     op: Literal["remove"]
     group_id: int
 
 
-class EventUserGroupRemoveMembers(BaseEvent):
+class UserGroupRemoveMembersEvent(BaseEvent):
     type: Literal["user_group"]
     op: Literal["remove_members"]
     group_id: int
     user_ids: list[int]
 
 
-class EventUserGroupRemoveSubgroups(BaseEvent):
+class UserGroupRemoveSubgroupsEvent(BaseEvent):
     type: Literal["user_group"]
     op: Literal["remove_subgroups"]
     group_id: int
@@ -1206,31 +1232,31 @@ class UserGroupData(UserGroupDataCore):
     deactivated: bool | None = None
 
 
-class EventUserGroupUpdate(BaseEvent):
+class UserGroupUpdateEvent(BaseEvent):
     type: Literal["user_group"]
     op: Literal["update"]
     group_id: int
     data: UserGroupData
 
 
-class EventUserSettingsUpdateCore(BaseEvent):
+class UserSettingsUpdateCoreEvent(BaseEvent):
     type: Literal["user_settings"]
     op: Literal["update"]
     property: str
     value: bool | int | str
 
 
-class EventUserSettingsUpdate(EventUserSettingsUpdateCore):
+class UserSettingsUpdateEvent(UserSettingsUpdateCoreEvent):
     # TODO: fix types to avoid optional fields
     language_name: str | None = None
 
 
-class EventUserStatusCore(BaseEvent):
+class UserStatusCoreEvent(BaseEvent):
     type: Literal["user_status"]
     user_id: int
 
 
-class EventUserStatus(EventUserStatusCore):
+class UserStatusEvent(UserStatusCoreEvent):
     # TODO: fix types to avoid optional fields
     away: bool | None = None
     status_text: str | None = None
@@ -1239,7 +1265,7 @@ class EventUserStatus(EventUserStatusCore):
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"] | None = None
 
 
-class EventUserTopic(BaseEvent):
+class UserTopicEvent(BaseEvent):
     type: Literal["user_topic"]
     stream_id: int
     topic_name: str
@@ -1247,6 +1273,6 @@ class EventUserTopic(BaseEvent):
     visibility_policy: int
 
 
-class EventWebReloadClient(BaseEvent):
+class WebReloadClientEvent(BaseEvent):
     type: Literal["web_reload_client"]
     immediate: bool

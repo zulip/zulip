@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -13,6 +14,7 @@ import * as avatar from "./avatar.ts";
 import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import type {CustomProfileFieldData, PillUpdateField} from "./custom_profile_fields_ui.ts";
@@ -456,6 +458,16 @@ export function set_up(): void {
                 "#get_api_key_password",
                 "#get_api_key_password + .password_visibility_toggle",
             );
+        });
+        new ClipboardJS("#show_api_key .copy-button", {
+            text() {
+                return $("#api_key_value").text();
+            },
+        }).on("success", (e) => {
+            assert(e.trigger instanceof HTMLElement);
+            show_copied_confirmation(e.trigger, {
+                show_check_icon: true,
+            });
         });
     };
 
@@ -903,8 +915,7 @@ export function set_up(): void {
         e.stopPropagation();
         e.preventDefault();
 
-        const user = people.get_by_user_id(people.my_current_user_id());
-        user_profile.show_user_profile(user);
+        user_profile.show_user_profile(people.my_current_user_id());
     });
 
     // When the personal settings overlay is opened, we reset

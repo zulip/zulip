@@ -6,11 +6,13 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as filter_util from "./filter_util.ts";
+import * as hash_parser from "./hash_parser.ts";
 import * as internal_url from "./internal_url.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import type {SettingsPanelMenu} from "./settings_panel_menu.ts";
 import {
     current_user,
     narrow_canonical_term_schema,
@@ -42,6 +44,7 @@ export function encode_operand(term: NarrowCanonicalTerm): string {
             slug = people.user_ids_to_slug(term.operand);
             break;
         case "sender":
+        case "mentions":
             slug = people.user_ids_to_slug([term.operand]);
             break;
         case "channel":
@@ -56,7 +59,7 @@ export function encode_stream_id(stream_id: number): string {
     // URI encoding piece
     const slug = stream_data.id_to_slug(stream_id);
 
-    return internal_url.encodeHashComponent(slug);
+    return internal_url.encode_slug(stream_id, slug);
 }
 
 export function decode_operand(
@@ -79,13 +82,13 @@ export function decode_operand(
         }
     }
 
-    if (operator === "sender") {
+    if (operator === "sender" || operator === "mentions") {
         const user_ids = people.slug_to_user_ids(operand);
         if (user_ids?.length !== 1) {
             // User mistyped the URL since we don't support
-            // group operand for `sender` narrow. Returning
-            // -1 will lead to us showing a proper user
-            // doesn't exist message in the UI.
+            // group operand for `sender` or `mentions` narrow.
+            // Returning -1 will lead to us showing a proper
+            // user doesn't exist message in the UI.
             // Other options is to throw an error which will
             // lead to us showing a "Invalid URL" banner which
             // is not very nice looking.
@@ -232,10 +235,17 @@ export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined 
             return undefined;
         }
 
-        const canonical_operator = filter_util.canonicalize_operator(
+        let canonical_operator = filter_util.canonicalize_operator(
             narrow_operator_schema.parse(operator),
         );
-        const operand = decode_operand(canonical_operator, raw_operand);
+        let operand = decode_operand(canonical_operator, raw_operand);
+
+        // mentions:me is equivalent to is:mentioned.
+        if (canonical_operator === "mentions" && raw_operand === "me") {
+            canonical_operator = "is";
+            operand = "mentioned";
+        }
+
         terms.push({
             negated,
             operator: canonical_operator,
@@ -362,12 +372,125 @@ export function validate_group_settings_hash(hash: string): string {
         return group_edit_url(group, right_side_tab);
     }
 
-    const valid_section_values = ["new", "your", "all"];
+    const valid_section_values = ["new", "your", "all", "roles"];
     if (section === undefined || !valid_section_values.includes(section)) {
         blueslip.info("invalid section for groups: " + section);
         return "#groups/your";
     }
     return hash;
+}
+
+function handle_invalid_settings_tab(
+    base: string,
+    section: "bots" | "users",
+    settings_tab: string,
+): string {
+    const valid_tab_values = {
+        users: new Set(["active", "imported", "deactivated", "invitations"]),
+        bots: new Set(["all-bots", "your-bots"]),
+    };
+
+    if (!valid_tab_values[section].has(settings_tab)) {
+        let default_tab = [...valid_tab_values[section]][0]!;
+        if (section === "bots" && base === "settings") {
+            // For bots panel in "Personal" tab we open "Your bots"
+            // tab by default.
+            default_tab = "your-bots";
+        }
+        return default_tab;
+    }
+    return settings_tab;
+}
+
+function get_settings_tab(base: string, section: string): string | undefined {
+    if (section === "users" || section === "bots") {
+        const current_settings_tab = hash_parser.get_current_nth_hash_section(2);
+        return handle_invalid_settings_tab(base, section, current_settings_tab);
+    }
+    return undefined;
+}
+
+export function validate_settings_hash(
+    hash: string,
+    settings_panel_object: SettingsPanelMenu,
+): string {
+    const hash_components = hash.slice(1).split(/\//);
+    const base = hash_components[0]!;
+    let section = hash_components[1];
+
+    if (!section) {
+        const settings_tab = settings_panel_object.get_settings_tab(
+            settings_panel_object.current_tab,
+        );
+        if (settings_tab) {
+            return `#${base}/${settings_panel_object.current_tab}/${settings_tab}`;
+        }
+        return `#${base}/${settings_panel_object.current_tab}`;
+    }
+
+    let settings_tab = get_settings_tab(base, section);
+
+    if (base === "settings" && section === "display-settings") {
+        // Since display-settings was deprecated and replaced with preferences
+        // #settings/display-settings is being redirected to #settings/preferences.
+        section = "preferences";
+    }
+    if (base === "organization" && section === "bot-list-admin") {
+        // #organization/bot-list-admin is being redirected to #organization/bots/all-bots.
+        section = "bots";
+        settings_tab = "all-bots";
+    }
+    if (base === "organization" && section === "user-list-admin") {
+        // #organization/user-list-admin is being redirected to #organization/users/active
+        // after it was renamed.
+        section = "users";
+        settings_tab = "active";
+    }
+    if (base === "settings" && section === "your-bots") {
+        // #settings/your-bots is being redirected to #settings/bots/your-bots.
+        section = "bots";
+        settings_tab = "your-bots";
+    }
+
+    const valid_personal_section_values = new Set([
+        "profile",
+        "account-and-privacy",
+        "preferences",
+        "notifications",
+        "bots",
+        "alert-words",
+        "uploaded-files",
+        "topics",
+        "muted-users",
+    ]);
+    const valid_organization_section_values = new Set([
+        "organization-profile",
+        "organization-settings",
+        "organization-permissions",
+        "emoji-settings",
+        "linkifier-settings",
+        "playground-settings",
+        "users",
+        "bots",
+        "profile-field-settings",
+        "organization-level-user-defaults",
+        "channel-folders",
+        "default-channels-list",
+        "auth-methods",
+        "data-exports-admin",
+    ]);
+
+    if (base === "settings" && !valid_personal_section_values.has(section)) {
+        return "#settings/profile";
+    }
+    if (base === "organization" && !valid_organization_section_values.has(section)) {
+        return "#organization/organization-profile";
+    }
+
+    if (settings_tab) {
+        return `#${base}/${section}/${settings_tab}`;
+    }
+    return `#${base}/${section}`;
 }
 
 export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string): number[] | null {

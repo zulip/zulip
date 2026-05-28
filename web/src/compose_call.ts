@@ -1,19 +1,33 @@
 import {realm} from "./state_data.ts";
 
-export const zoom_token_callbacks = new Map();
-export const video_call_xhrs = new Map<string, JQuery.jqXHR<unknown>>();
+export type OAuthCallProvider = "zoom" | "webex";
 
-export function get_jitsi_server_url(): string | null {
-    return realm.realm_jitsi_server_url ?? realm.server_jitsi_server_url;
+export function current_oauth_call_provider(): OAuthCallProvider | null {
+    const available_providers = realm.realm_available_video_chat_providers;
+    const realm_provider = realm.realm_video_chat_provider;
+    if (
+        realm_provider === available_providers.zoom?.id ||
+        realm_provider === available_providers.zoom_server_to_server?.id
+    ) {
+        return "zoom";
+    }
+    if (realm_provider === available_providers.webex?.id) {
+        return "webex";
+    }
+    return null;
 }
 
-export function abort_video_callbacks(edit_message_id = ""): void {
-    zoom_token_callbacks.delete(edit_message_id);
-    const xhr = video_call_xhrs.get(edit_message_id);
-    if (xhr !== undefined) {
-        xhr.abort();
-        video_call_xhrs.delete(edit_message_id);
+export function get_jitsi_server_url(video_call_id?: string): URL | null {
+    const base_url = realm.realm_jitsi_server_url ?? realm.server_jitsi_server_url;
+    if (!base_url) {
+        return null;
     }
+    const url = new URL(base_url);
+    if (video_call_id !== undefined) {
+        const separator = url.pathname.endsWith("/") ? "" : "/";
+        url.pathname += `${separator}${video_call_id}`;
+    }
+    return url;
 }
 
 export function compute_show_video_chat_button(): boolean {

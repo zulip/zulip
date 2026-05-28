@@ -8,16 +8,20 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 import render_drafts_list from "../templates/drafts_list.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
+import {message_render_response_schema} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_card_popover from "./user_card_popover.ts";
@@ -164,8 +168,15 @@ function update_rendered_drafts(
 
 const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
-        const draft_arrow = drafts.draft_model.get();
-        return Object.getOwnPropertyNames(draft_arrow);
+        const draft_ids: string[] = [];
+        for (const row of document.querySelectorAll<HTMLElement>(
+            "#drafts_table .overlay-message-row",
+        )) {
+            const id = row.dataset["draftId"];
+            assert(id !== undefined);
+            draft_ids.push(id);
+        }
+        return draft_ids;
     },
     on_enter() {
         // This handles when pressing Enter while looking at drafts.
@@ -181,7 +192,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         if (focused_draft_id !== undefined) {
             restore_draft(focused_draft_id);
         } else {
-            const first_draft = draft_id_arrow.at(-1);
+            const first_draft = draft_id_arrow.at(0);
             assert(first_draft !== undefined);
             restore_draft(first_draft);
         }
@@ -255,6 +266,37 @@ function get_formatted_drafts_data(): {
     return {narrow_drafts, other_drafts, narrow_drafts_header};
 }
 
+function fetch_server_rendered_drafts(formatted_drafts: FormattedDraft[]): void {
+    // compose_ui.ts does thumbnail polling to check for thumbnails for recently
+    // uploaded images. We don't want to do that here since there will always
+    // be some time delta between writing a message and seeing the draft overlay
+    // for it.
+    for (const draft of formatted_drafts) {
+        if (markdown.contains_backend_only_syntax(draft.raw_content)) {
+            void channel.post({
+                url: "/json/messages/render",
+                data: {content: draft.raw_content},
+                success(response_data) {
+                    if (!overlays.drafts_open()) {
+                        return;
+                    }
+                    const data = message_render_response_schema.parse(response_data);
+                    const $content_element = $(
+                        `[data-draft-id="${CSS.escape(draft.draft_id)}"] .message_content`,
+                    );
+                    if ($content_element.length === 0) {
+                        return;
+                    }
+                    $content_element.html(postprocess_content(data.rendered));
+                    rendered_markdown.update_elements($content_element);
+                },
+                // We don't do anything on error and keep displaying the
+                // locally rendered message.
+            });
+        }
+    }
+}
+
 function render_widgets(
     narrow_drafts: FormattedDraft[],
     other_drafts: FormattedDraft[],
@@ -290,11 +332,25 @@ function render_widgets(
     }
     update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     update_bulk_delete_ui();
+    fetch_server_rendered_drafts([...narrow_drafts, ...other_drafts]);
 }
 
 function setup_event_handlers(): void {
     $("#drafts_table .restore-overlay-message").on("click", function (e) {
         if (mouse_drag.is_drag(e)) {
+            return;
+        }
+
+        if (
+            messages_overlay_ui.handle_overlay_media_click(
+                e,
+                "drafts",
+                keyboard_handling_context,
+                () => {
+                    browser_history.go_to_location("#drafts");
+                },
+            )
+        ) {
             return;
         }
 
@@ -395,8 +451,19 @@ export function launch(): void {
     $("#draft_overlay").css("opacity");
 
     open_overlay();
-    const first_element_id = [...narrow_drafts, ...other_drafts][0]?.draft_id;
-    messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    const restore_id = messages_overlay_ui.get_and_clear_pending_restore_element_id();
+    if (
+        restore_id === undefined ||
+        !messages_overlay_ui.try_set_initial_element(restore_id, keyboard_handling_context)
+    ) {
+        const first_element_id = [...narrow_drafts, ...other_drafts][0]?.draft_id;
+        // Delay focus initialization until the overlay DOM is fully rendered.
+        // Otherwise, get_focused_element_id() returns undefined and the focus
+        // may not be applied.
+        setTimeout(() => {
+            messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+        }, 0);
+    }
     setup_event_handlers();
     setup_bulk_actions_handlers();
 }

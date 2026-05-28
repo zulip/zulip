@@ -7,6 +7,7 @@ from zerver.models.channel_folders import ChannelFolder as ChannelFolder
 from zerver.models.clients import Client as Client
 from zerver.models.custom_profile_fields import CustomProfileField as CustomProfileField
 from zerver.models.custom_profile_fields import CustomProfileFieldValue as CustomProfileFieldValue
+from zerver.models.devices import Device as Device
 from zerver.models.drafts import Draft as Draft
 from zerver.models.groups import GroupGroupMembership as GroupGroupMembership
 from zerver.models.groups import NamedUserGroup as NamedUserGroup
@@ -42,9 +43,7 @@ from zerver.models.prereg_users import PreregistrationUser as PreregistrationUse
 from zerver.models.prereg_users import RealmReactivationStatus as RealmReactivationStatus
 from zerver.models.presence import UserPresence as UserPresence
 from zerver.models.presence import UserStatus as UserStatus
-from zerver.models.push_notifications import AbstractPushDevice as AbstractPushDevice
 from zerver.models.push_notifications import AbstractPushDeviceToken as AbstractPushDeviceToken
-from zerver.models.push_notifications import PushDevice as PushDevice
 from zerver.models.push_notifications import PushDeviceToken as PushDeviceToken
 from zerver.models.realm_audit_logs import AbstractRealmAuditLog as AbstractRealmAuditLog
 from zerver.models.realm_audit_logs import RealmAuditLog as RealmAuditLog

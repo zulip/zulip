@@ -7,7 +7,7 @@ import {group_setting_value_schema} from "./types.ts";
 import {user_settings_schema} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
-const NOT_TYPED_YET = z.unknown();
+const NOT_TYPED_YET = z.optional(z.unknown());
 
 const group_permission_setting_schema = z.object({
     require_system_group: z.boolean(),
@@ -44,6 +44,7 @@ export const narrow_canonical_operator_schema = z.enum([
     "id",
     "in",
     "is",
+    "mentions",
     "near",
     "search",
     "sender",
@@ -121,6 +122,11 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     z.object({
         operator: z.literal("with"),
         operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("mentions"),
+        operand: z.number(),
         negated: z.optional(z.boolean()),
     }),
     z.object({
@@ -216,12 +222,14 @@ export const user_schema = z.intersection(
         is_owner: z.boolean(),
         is_admin: z.boolean(),
         is_guest: z.boolean(),
+        is_deleted: z.optional(z.literal(true)),
         is_moderator: z.optional(z.boolean()),
         role: z.number(),
         timezone: z.optional(z.string()),
         avatar_url: z.nullish(z.string()),
         avatar_version: z.number(),
         profile_data: z.optional(z.record(z.coerce.number<string>(), profile_datum_schema)),
+        is_imported_stub: z.boolean(),
         // used for fake user objects.
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
@@ -372,6 +380,7 @@ const current_user_schema = z.object({
     email: z.string(),
     full_name: z.string(),
     has_zoom_token: z.boolean(),
+    has_webex_token: z.boolean(),
     is_admin: z.boolean(),
     is_guest: z.boolean(),
     is_moderator: z.boolean(),
@@ -381,9 +390,9 @@ const current_user_schema = z.object({
 
 const custom_profile_field_types_schema = z.object({
     SHORT_TEXT: z.object({id: z.number(), name: z.string()}),
-    LONG_TEXT: z.object({id: z.number(), name: z.string()}),
+    PARAGRAPH: z.object({id: z.number(), name: z.string()}),
     DATE: z.object({id: z.number(), name: z.string()}),
-    SELECT: z.object({id: z.number(), name: z.string()}),
+    DROPDOWN: z.object({id: z.number(), name: z.string()}),
     URL: z.object({id: z.number(), name: z.string()}),
     EXTERNAL_ACCOUNT: z.object({id: z.number(), name: z.string()}),
     USER: z.object({id: z.number(), name: z.string()}),
@@ -408,6 +417,9 @@ export const realm_linkifier_schema = z.object({
     pattern: z.string(),
     url_template: z.string(),
     id: z.number(),
+    example_input: z.optional(z.nullable(z.string())),
+    reverse_template: z.optional(z.nullable(z.string())),
+    alternative_url_templates: z.optional(z.array(z.string())),
 });
 
 export const realm_report_message_types = z.object({
@@ -455,6 +467,9 @@ export const realm_schema = z.object({
         zoom: z.optional(z.object({name: z.string(), id: z.number()})),
         zoom_server_to_server: z.optional(z.object({name: z.string(), id: z.number()})),
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
+        constructor_groups: z.optional(z.object({name: z.string(), id: z.number()})),
+        nextcloud_talk: z.optional(z.object({name: z.string(), id: z.number()})),
+        webex: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
     realm_bot_domain: z.string(),
@@ -536,12 +551,13 @@ export const realm_schema = z.object({
                     z.object({
                         key: z.string(),
                         label: z.string(),
-                        validator: z.string(),
+                        input_type: z.string(),
                     }),
                 ),
             ),
         }),
     ),
+    realm_media_preview_size: z.number(),
     realm_inline_image_preview: z.boolean(),
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),
@@ -582,6 +598,7 @@ export const realm_schema = z.object({
     realm_waiting_period_threshold: z.number(),
     realm_want_advertise_in_communities_directory: z.boolean(),
     realm_welcome_message_custom_text: z.string(),
+    realm_workplace_users_group: group_setting_value_schema,
     realm_zulip_update_announcements_stream_id: z.number(),
     server_avatar_changes_disabled: z.boolean(),
     server_can_summarize_topics: z.boolean(),
@@ -609,6 +626,7 @@ export const realm_schema = z.object({
     settings_send_digest_emails: z.boolean(),
     stop_words: z.array(z.string()),
     tenor_api_key: z.string(),
+    klipy_api_key: z.string(),
     upgrade_text_for_wide_organization_logo: z.string(),
     zulip_feature_level: z.number(),
     zulip_merge_base: z.string(),

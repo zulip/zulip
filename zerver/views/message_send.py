@@ -1,4 +1,5 @@
 from collections.abc import Iterable, Sequence
+from dataclasses import asdict
 from email.headerregistry import Address
 from typing import Annotated, Literal, cast
 
@@ -247,7 +248,7 @@ def send_message_backend(
 def zcommand_backend(
     request: HttpRequest, user_profile: UserProfile, *, command: str
 ) -> HttpResponse:
-    return json_success(request, data=process_zcommands(command, user_profile))
+    return json_success(request, data=asdict(process_zcommands(command, user_profile)))
 
 
 @typed_endpoint

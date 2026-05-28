@@ -13,6 +13,7 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.validator import check_capped_string
 from zerver.models import Realm, RealmPlayground, UserProfile
+from zerver.models.realm_playgrounds import PLAYGROUND_LANGUAGE_REGEX
 
 
 def check_pygments_language(var_name: str, val: object) -> str:
@@ -21,10 +22,14 @@ def check_pygments_language(var_name: str, val: object) -> str:
     # Pygments languages. Keeping it open would allow us to hook up a "playground"
     # for custom "languages" that aren't known to Pygments. We use a similar strategy
     # even in our fenced_code Markdown processor.
-    valid_pygments_language = re.compile(r"^[ a-zA-Z0-9_+-./#]*$")
-    matched_results = valid_pygments_language.match(s)
-    if not matched_results:
-        raise JsonableError(_("Invalid characters in pygments language"))
+    if not re.match(rf"^{PLAYGROUND_LANGUAGE_REGEX}$", s):
+        for char in s:
+            if not re.match(rf"^{PLAYGROUND_LANGUAGE_REGEX}$", char):
+                raise JsonableError(
+                    _("Invalid character in language: {character}").format(character=char)
+                )
+    if s in RealmPlayground.RESTRICTED_KEYWORDS:
+        raise JsonableError(_("Language '{language}' is not allowed.").format(language=s))
     return s
 
 

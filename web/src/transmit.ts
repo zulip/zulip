@@ -121,16 +121,10 @@ export function reply_message(message: Message, content: string): void {
         //       For now do nothing.
     }
 
-    const locally_echoed = false;
     const local_id = sent_messages.get_new_local_id();
 
     const sender_id = current_user.user_id;
     const queue_id = server_events_state.queue_id;
-
-    sent_messages.start_tracking_message({
-        local_id,
-        locally_echoed,
-    });
 
     if (message.type === "stream") {
         const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
@@ -154,15 +148,15 @@ export function reply_message(message: Message, content: string): void {
     }
 
     if (message.type === "private") {
-        const pm_recipient = people.pm_reply_to(message);
-        assert(pm_recipient !== undefined);
+        const user_ids = people.pm_with_user_ids(message);
+        assert(user_ids !== undefined);
 
         const reply: SendMessageData = {
             type: "private",
             local_id,
             sender_id,
             queue_id,
-            to: JSON.stringify(pm_recipient.split(",")),
+            to: JSON.stringify(user_ids),
             content,
         };
 

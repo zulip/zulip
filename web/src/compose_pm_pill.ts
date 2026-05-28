@@ -63,18 +63,6 @@ export function set_from_typeahead(person: User): void {
     });
 }
 
-export function set_from_emails(value: string): void {
-    // value is something like "alice@example.com,bob@example.com"
-    clear();
-    if (value === "") {
-        return;
-    }
-    const user_ids_string = people.emails_strings_to_user_ids_string(value);
-    if (user_ids_string) {
-        widget.appendValue(user_ids_string);
-    }
-}
-
 export function set_from_user_ids(value: number[], skip_pill_callbacks: boolean): void {
     clear();
     for (const user_id of value) {

@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -84,6 +85,8 @@ export function mark_client_idle(): void {
     // this data is fundamentally not timely.
     client_is_active = false;
 }
+
+export const mark_client_idle_later = _.debounce(mark_client_idle, DEFAULT_IDLE_TIMEOUT_MS);
 
 export function compute_active_status(): ActivityState {
     // The overall algorithm intent for the `status` field is to send
@@ -181,6 +184,7 @@ export function mark_client_active(): void {
         client_is_active = true;
         send_presence_to_server();
     }
+    mark_client_idle_later();
 }
 
 export function initialize(): void {
@@ -188,11 +192,11 @@ export function initialize(): void {
         set_new_user_input(true);
     });
 
-    $(window).on("focus", mark_client_active);
-    $(window).idle({
-        idle: DEFAULT_IDLE_TIMEOUT_MS,
-        onIdle: mark_client_idle,
-        onActive: mark_client_active,
-        keepTracking: true,
-    });
+    $(window).on(
+        "focus keydown mousedown mousemove touchmove touchstart wheel",
+        mark_client_active,
+    );
+    if (client_is_active) {
+        mark_client_idle_later();
+    }
 }

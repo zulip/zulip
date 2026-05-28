@@ -33,6 +33,12 @@ class ExternalAccount:
 # and the user should enter the full URL of their link.
 # Set url_pattern as "" to make the field a text field.
 DEFAULT_EXTERNAL_ACCOUNTS = {
+    "atlassian": ExternalAccount(
+        text="Atlassian",
+        url_pattern="",
+        name=gettext_lazy("Atlassian account ID"),
+        hint="",
+    ),
     "behance": ExternalAccount(
         text="Behance",
         url_pattern="https://www.behance.net/%(username)s",

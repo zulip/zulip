@@ -5,17 +5,20 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-mock_esm("../src/message_store", {
-    get() {
-        return {
+const message_store = zrequire("message_store");
+message_store.set_messages_for_tests([
+    {
+        message: {
             stream_id: 556,
             topic: "general",
-        };
+        },
     },
-});
+]);
+
 const user_topics = mock_esm("../src/user_topics", {
     is_topic_muted() {
         return false;
@@ -42,10 +45,10 @@ const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
 
 set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
 
-const general = {
+const general = make_stream({
     stream_id: 556,
     name: "general",
-};
+});
 
 stream_data.add_sub_for_tests(general);
 
@@ -155,7 +158,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     override(narrow_state, "stream_id", () => 556);
 
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 8);
+    assert.equal(list_info.items.length, 6);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 11);
@@ -181,7 +184,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     override(narrow_state, "topic", () => "topic 6");
 
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 8);
+    assert.equal(list_info.items.length, 6);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 10);
@@ -222,7 +225,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     add_topic_message("", 2025);
 
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 8);
+    assert.equal(list_info.items.length, 6);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 11);
@@ -244,7 +247,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     });
 
     // If we zoom in, our results are based on topic filter.
-    // If topic search input is empty, we show all 10 topics.
+    // If topic search input is empty, we show all topics.
     const zoomed = true;
     list_info = get_list_info(zoomed);
     assert.equal(list_info.items.length, 11);
@@ -334,13 +337,47 @@ test("get_list_info unreads", ({override}) => {
         );
     }
 
+    // If there are no unread messages in the channel,
+    // we show the most recent 6 topics (MAX_TOPICS).
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 6);
+    assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
+    assert.equal(list_info.num_possible_topics, 16);
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 5"],
+    );
+
+    // We show the most recent, unmuted MAX_TOPICS
+    // topics in the channel, whether they have
+    // unread messages or not.
+    override(user_topics, "is_topic_muted", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 5"].includes(
+            topic_name,
+        );
+    });
+
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 6);
+    assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
+    assert.equal(list_info.num_possible_topics, 16);
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        ["topic 6", "topic 7", "topic 8", "topic 9", "topic 10", "topic 11"],
+    );
+
+    override(user_topics, "is_topic_muted", () => false);
+
     /*
         We have 16 topics, but we only show up
-        to 12 topics, depending on how many have
-        unread counts.  We only show a max of 8
+        to 10 topics, depending on how many have
+        unread counts.  We only show a max of 6
         fully-read topics.
 
-        So first we'll get 10 topics, where 2 are
+        So first we'll get 8 topics, where 2 are
         unread.
     */
     add_unreads("topic 14", 1);
@@ -355,25 +392,14 @@ test("get_list_info unreads", ({override}) => {
     add_unreads_with_mention("topic 14", 1);
 
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 10);
+    assert.equal(list_info.items.length, 8);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 16);
 
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
-        [
-            "topic 0",
-            "topic 1",
-            "topic 2",
-            "topic 3",
-            "topic 4",
-            "topic 5",
-            "topic 6",
-            "topic 7",
-            "topic 13",
-            "topic 14",
-        ],
+        ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 5", "topic 13", "topic 14"],
     );
 
     add_unreads("topic 12", 1);
@@ -381,7 +407,7 @@ test("get_list_info unreads", ({override}) => {
     add_unreads("topic 10", 1);
 
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 12);
+    assert.equal(list_info.items.length, 10);
     assert.equal(list_info.more_topics_unreads, 2);
     assert.equal(list_info.more_topics_have_unread_mention_messages, true);
     assert.equal(list_info.num_possible_topics, 16);
@@ -395,8 +421,6 @@ test("get_list_info unreads", ({override}) => {
             "topic 3",
             "topic 4",
             "topic 5",
-            "topic 6",
-            "topic 7",
             "topic 10",
             "topic 11",
             "topic 12",
@@ -405,7 +429,6 @@ test("get_list_info unreads", ({override}) => {
     );
 
     add_unreads("topic 9", 1);
-    add_unreads("topic 8", 1);
 
     add_unreads("topic 4", 1);
     override(user_topics, "is_topic_muted", (stream_id, topic_name) => {
@@ -423,7 +446,7 @@ test("get_list_info unreads", ({override}) => {
     });
 
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 12);
+    assert.equal(list_info.items.length, 10);
     assert.equal(list_info.more_topics_unreads, 3);
     assert.equal(list_info.more_topics_have_unread_mention_messages, true);
     assert.equal(list_info.num_possible_topics, 16);
@@ -438,8 +461,6 @@ test("get_list_info unreads", ({override}) => {
             "topic 2",
             "topic 3",
             "topic 6",
-            "topic 7",
-            "topic 8",
             "topic 9",
             "topic 10",
             "topic 11",
@@ -447,13 +468,13 @@ test("get_list_info unreads", ({override}) => {
         ],
     );
 
-    // Now test with topics 4/8/9, all the ones with unreads, being muted.
+    // Now test with topics 4/9/10, all the ones with unreads, being muted.
     override(user_topics, "is_topic_muted", (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
-        return ["topic 4", "topic 8", "topic 9"].includes(topic_name);
+        return ["topic 4", "topic 9", "topic 10"].includes(topic_name);
     });
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 12);
+    assert.equal(list_info.items.length, 10);
     assert.equal(list_info.more_topics_unreads, 3);
     // Topic 14 now makes it above the "show all topics" fold.
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
@@ -468,8 +489,6 @@ test("get_list_info unreads", ({override}) => {
             "topic 2",
             "topic 3",
             "topic 6",
-            "topic 7",
-            "topic 10",
             "topic 11",
             "topic 12",
             "topic 13",
@@ -477,9 +496,9 @@ test("get_list_info unreads", ({override}) => {
         ],
     );
 
-    add_unreads_with_mention("topic 8", 1);
+    add_unreads_with_mention("topic 9", 1);
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 12);
+    assert.equal(list_info.items.length, 10);
     assert.equal(list_info.more_topics_unreads, 4);
     // Topic 8's new mention gets counted here.
     assert.equal(list_info.more_topics_have_unread_mention_messages, true);
@@ -494,8 +513,6 @@ test("get_list_info unreads", ({override}) => {
             "topic 2",
             "topic 3",
             "topic 6",
-            "topic 7",
-            "topic 10",
             "topic 11",
             "topic 12",
             "topic 13",
@@ -507,7 +524,7 @@ test("get_list_info unreads", ({override}) => {
     // result in just the unmuted unreads being counted.
     add_unreads("topic 15", 15);
     list_info = get_list_info();
-    assert.equal(list_info.items.length, 12);
+    assert.equal(list_info.items.length, 10);
     assert.equal(list_info.more_topics_unreads, 15);
     assert.equal(list_info.more_topics_have_unread_mention_messages, true);
     assert.equal(list_info.num_possible_topics, 16);
@@ -521,8 +538,6 @@ test("get_list_info unreads", ({override}) => {
             "topic 2",
             "topic 3",
             "topic 6",
-            "topic 7",
-            "topic 10",
             "topic 11",
             "topic 12",
             "topic 13",

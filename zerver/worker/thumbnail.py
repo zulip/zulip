@@ -20,7 +20,7 @@ from zerver.lib.thumbnail import (
     missing_thumbnails,
     rewrite_thumbnailed_images,
 )
-from zerver.lib.upload import save_attachment_contents, upload_backend
+from zerver.lib.upload import save_attachment_contents, store_message_attachment
 from zerver.models import ArchivedMessage, ImageAttachment, Message
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -33,13 +33,19 @@ class ThumbnailWorker(QueueProcessingWorker):
     def consume(self, event: dict[str, Any]) -> None:
         start_time = time.perf_counter()
         with transaction.atomic(savepoint=False):
+            logger.info("Starting thumbnailing for %s", event.get("path_id", f"id: {event['id']}"))
             try:
                 # This lock prevents us from racing with the on-demand
                 # rendering that can be triggered if a request is made
                 # directly to a thumbnail URL we have not made yet.
                 # This may mean that we may generate 0 thumbnail
                 # images once we get the lock.
-                row = ImageAttachment.objects.select_for_update(of=("self",)).get(id=event["id"])
+                # If the image data is bad and thumbnailing fails, the
+                # ImageAttachment row might be deleted; so we need a FOR UPDATE
+                # lock.
+                row = ImageAttachment.objects.select_for_update(of=("self",), no_key=False).get(
+                    id=event["id"]
+                )
             except ImageAttachment.DoesNotExist:  # nocoverage
                 logger.info(
                     "ImageAttachment row %d missing [%dms]",
@@ -48,7 +54,6 @@ class ThumbnailWorker(QueueProcessingWorker):
                 )
                 return
             lock_time = time.perf_counter() - start_time
-            logger.info("Starting thumbnailing for %s", row.path_id)
             result = ensure_thumbnails(row)
             commit_time = time.perf_counter()
         end_time = time.perf_counter()
@@ -139,7 +144,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> ThumbnailingResult:
             thumbnail_path = get_image_thumbnail_path(image_attachment, thumbnail_format)
             logger.debug("Uploading %d bytes to %s", len(thumbnailed_bytes), thumbnail_path)
             start_time = time.perf_counter()
-            upload_backend.upload_message_attachment(
+            store_message_attachment(
                 thumbnail_path,
                 str(thumbnail_format),
                 content_type,
@@ -226,7 +231,7 @@ def update_message_rendered_content(
     for message_class in (Message, ArchivedMessage):
         messages_with_image = (
             message_class.objects.filter(realm_id=realm_id, attachment__path_id=path_id)
-            .select_for_update(of=("self",))
+            .select_for_update(of=("self",), no_key=True)
             .order_by("id")
         )
         for message in messages_with_image:

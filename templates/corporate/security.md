@@ -40,13 +40,14 @@ encryption](https://zulip.readthedocs.io/en/stable/production/ssl-certificates.h
 and authentication over HTTPS for data transmission to and from the server, both
 on LAN and the Internet.
 
-### End-to-end encryption for push notification content
+### End-to-end encryption (E2EE) for push notification content
 
-You can [require end-to-end
-encryption](https://zulip.com/help/mobile-notifications#end-to-end-encryption-e2ee-for-mobile-push-notifications)
-for message content in mobile push notifications. If you do, content will be
-omitted when sending notifications to an app that doesn't support end-to-end
-encryption.
+[Zulip's E2EE
+protocol](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#security-and-privacy)
+ensures that message **content** and **metadata** (including the sender's and
+recipient's names, or channel and topic where the message was sent) are not
+visible to Apple, Google, or Zulip's [Mobile Push Notification
+Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
 
 ### Secure integrations
 [Integrations](/integrations/) use TLS encryption and authentication over HTTPS

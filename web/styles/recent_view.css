@@ -21,13 +21,15 @@
 #recent-view-content-table {
     /* To keep border properties to the thead th. */
     border-collapse: separate;
+    table-layout: fixed;
 
     border-spacing: 0;
     width: 100%;
 }
 
 #recent-view-content-table {
-    border: 1px solid var(--color-border-recent-view-table);
+    border: var(--recent-view-body-border-width) solid
+        var(--color-border-recent-view-table);
     border-top: none;
     border-radius: 0 0 5px 5px;
     overflow: hidden;
@@ -41,56 +43,121 @@
     padding-bottom: var(--max-unmaximized-compose-height);
 
     & td {
+        box-sizing: border-box;
         vertical-align: middle;
-        padding: 3px 8px;
+        padding: 0.1875em 0.5em; /* 3px 8px at 16px/1em */
+    }
+
+    /* Suppress focus rings and the focus-driven vdots reveal when
+       focus was set programmatically (e.g., on page load or
+       sidebar click). The class is removed on the first keyboard
+       navigation, restoring :focus outlines and the icon reveals
+       below. See focus_outline_util.ts. The icon-opacity rules
+       mirror the selectors they override (in `.recent_view_focusable`
+       below) so each wins on specificity from the extra class. */
+    &.no-visible-focus-outlines .recent_view_focusable {
+        &:focus {
+            outline: 0;
+        }
+
+        &:focus
+            > .change_visibility_policy
+            :is(
+                .recent-view-row-topic-menu,
+                .visibility-status-icon[data-vdots-original-icon-class]
+            ) {
+            opacity: 0;
+        }
+
+        &.recent-view-body-row:focus:not(:hover)
+            .change_visibility_policy
+            :is(
+                .recent-view-row-topic-menu,
+                .visibility-status-icon[data-vdots-original-icon-class]
+            ) {
+            opacity: 0;
+        }
     }
 
     .recent_view_focusable {
-        /* Use flexbox to align icons vertically */
-        display: flex;
-        align-items: center;
-
-        .recent-view-table-link,
         & > .zulip-icon {
             outline: 0;
         }
 
-        &:focus-within {
-            /* Use the same color as the message feed pointer */
-            box-shadow: 0 3px 0 var(--color-outline-focus);
+        &:focus {
+            outline: var(--focus-ring-outline);
+
+            /* Match both the natively-rendered vdots icon and the
+               swapped vdots (signaled by the data attribute set in
+               `recent_view_ui.update_visibility_icon_swap_state`) so
+               the wrapper-focus tier reads the same regardless of
+               whether the row has a status marker. */
+            > .change_visibility_policy
+                :is(
+                    .recent-view-row-topic-menu,
+                    .visibility-status-icon[data-vdots-original-icon-class]
+                ) {
+                /* Wrapper focus = direct interaction on the
+                   menu button; top of the tier. */
+                opacity: 0.7;
+            }
         }
 
-        &.change_visibility_policy.topic-popover-visible {
+        /* Stickiness: while the 3-dots topic menu has its popover
+           open, keep the icon in the direct-interaction tier (0.7)
+           so the user can see which row the open menu belongs to. */
+        &.topic-popover-visible
+            > .change_visibility_policy
             .visibility-status-icon {
-                opacity: 0.4;
-            }
+            opacity: 0.7;
         }
 
-        &.change_visibility_policy
-            .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
-            /* Show vertical ellipsis when user hovers over visibility indicator icon. */
-            background-image: url("../icons/more-vertical.svg");
-            background-repeat: no-repeat;
-            background-position: left bottom;
-            background-size: contain;
-            width: var(--base-font-size-px);
-            height: var(--base-font-size-px);
-
-            &::before {
-                content: "";
-            }
+        /* Row keyboard-selected but not mouse-hovered: extra-quiet
+           reveal of the default-state 3-dots icon, so keyboard
+           navigation doesn't loudly advertise an action the user
+           rarely needs. Mouse hover's 0.4 rule below overrides
+           whenever the mouse is on the row. */
+        &.recent-view-body-row:focus:not(:hover)
+            .change_visibility_policy
+            :is(
+                .recent-view-row-topic-menu,
+                .visibility-status-icon[data-vdots-original-icon-class]
+            ) {
+            opacity: 0.2;
         }
 
-        &.change_visibility_policy .recent-view-row-topic-menu {
+        &.recent-view-topic-visibility {
+            /* 3px (vs. 5px on `.recent-view-body-row`) keeps a
+               consistent perceived corner-rounding ratio: 5px on
+               a wide row reads as a subtle round, but on a small
+               22×22 ring (icon-natural wrapper + 3px outset) it
+               reads as nearly circular. */
+            border-radius: 0.1875em; /* 3px at 16px/1em */
+            /* 3px rather than 5px: the wrapper sits hard against
+               the recent-view table's right edge (the table has
+               overflow:hidden), so a 5px outset left the outline's
+               right side clipped. 3px gives comfortable clearance
+               while still matching the inbox's 22×22 effective
+               ring size around a 16×16 icon. */
+            outline-offset: 0.1875em; /* 3px at 16px/1em */
+        }
+
+        > .change_visibility_policy {
+            display: flex;
+        }
+
+        > .change_visibility_policy .recent-view-row-topic-menu {
+            /* Tertiary action: hidden at rest, revealed on row
+               hover / focus, brightened on direct interaction. */
             opacity: 0;
             cursor: pointer;
 
-            &:not(.visibility-status-icon) {
-                display: none;
+            &:hover {
+                opacity: 0.7;
             }
 
-            &:focus {
-                opacity: 0.2;
+            &:not(.visibility-status-icon) {
+                display: none;
             }
         }
     }
@@ -100,13 +167,21 @@
         text-decoration: none;
     }
 
-    .white-space-preserve-wrap {
-        overflow-wrap: anywhere;
-    }
-
     .empty-table-message {
         background-color: var(--color-background);
         padding: 3em 1em;
+    }
+
+    .recent-view-empty-load-more {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        /* Reset the 1.5em font-size inherited from
+           .empty-table-message so the load-more text
+           and button match normal UI text size. */
+        font-size: var(--base-font-size-px);
     }
 
     .fa-check-square-o,
@@ -126,7 +201,6 @@
     .table_fix_head {
         padding: 0 !important;
         border: 1px solid var(--color-border-recent-view-table);
-        border-bottom: none;
         border-radius: 5px 5px 0 0;
         overflow: hidden;
     }
@@ -138,7 +212,21 @@
 
     .fetch-messages-button {
         display: grid;
-        justify-items: center;
+        place-items: center;
+
+        /* Stack the loading indicator and button label in the
+           same grid cell so the label stays vertically centered
+           when the indicator is empty/hidden. */
+        > * {
+            grid-row: 1;
+            grid-column: 1;
+        }
+
+        /* Override the inline height: 0 set by loading.make_indicator
+           so the spinner participates in grid alignment. */
+        .loading-indicator {
+            height: auto !important;
+        }
 
         .loading_indicator_spinner {
             height: 20px;
@@ -155,7 +243,7 @@
            with the filters in the left and right sidebars.
            TODO: As part of the recents redesign, these filters
            should match the height of the sidebar filters. */
-        padding: 10px 10px 0;
+        padding: 10px 0 0;
         display: flex;
         gap: var(--recent-topics-filters-gap);
         /* Search box has no height without this in safari. */
@@ -174,6 +262,13 @@
     #recent-view-search-wrapper {
         flex-grow: 1;
         margin-bottom: var(--recent-topics-filters-gap);
+        /* Prevent the search input outline from being clipped
+           by the overflow:hidden ancestor at fractional browser
+           zoom levels. Applied on both sides because this
+           element can wrap to its own line at narrow widths.
+           2px because 1px can round to 0 device pixels at
+           certain fractional zoom levels (e.g., 80%). */
+        margin-inline: 2px;
     }
 
     .button-recent-filters {
@@ -189,6 +284,8 @@
         flex: 0 0 auto;
         display: flex;
         align-items: center;
+        font-family: inherit;
+        font-size: inherit;
 
         &:hover {
             background-color: var(--color-background-zulip-button-hover);
@@ -198,7 +295,7 @@
             background-color: var(--color-background-zulip-button-active);
         }
 
-        &:focus {
+        &:focus-visible {
             background-color: var(
                 --color-background-recent-filters-button-focus
             );
@@ -221,7 +318,20 @@
     }
 
     .button-recent-selected {
-        background-color: var(--color-background-recent-view-selected);
+        color: var(--color-text-brand-subtle-action-button);
+        background-color: var(--color-background-brand-subtle-action-button);
+
+        &:hover {
+            background-color: var(
+                --color-background-brand-subtle-action-button-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-background-brand-subtle-action-button-active
+            );
+        }
     }
 
     .unread_count {
@@ -234,7 +344,7 @@
         transition: outline-width 0.1s ease;
 
         &:hover {
-            outline-width: 1.5px;
+            outline-width: var(--focus-ring-width-in-views);
         }
     }
 
@@ -248,17 +358,7 @@
     }
 
     .unread_hidden {
-        visibility: hidden;
-    }
-
-    .flex_container_pm {
-        /* Flex container to fit in user circle and group icon */
-        display: flex;
-        justify-content: space-between;
-
-        .tippy-content {
-            font-weight: 400;
-        }
+        display: none;
     }
 
     .flex_container {
@@ -266,8 +366,7 @@
         align-items: center;
     }
 
-    .flex_container .right_part {
-        margin-left: auto;
+    .inline-flex-container {
         display: inline-flex;
         align-items: center;
     }
@@ -275,13 +374,20 @@
     .recent_topic_actions {
         /* Add spacing between mention marker, unread count
             and mute icon */
-        margin-left: 5px;
+        margin-left: 0.3125em; /* 5px at 16px/1em */
         display: flex;
         flex-flow: row nowrap;
-        /* Preserve space for the actions even on archived
-           channels, especially those with unreads. The
-           width is 16px at 16px/1em. */
-        min-width: 1em;
+    }
+
+    .recent-view-unread-mention-and-count-wrapper .recent_topic_actions {
+        /* Unset margin; gap on the wrapper handles spacing. */
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .recent-view-unread-mention-and-count-wrapper .unread_count {
+        /* Unset margin; gap on the wrapper handles spacing. */
+        margin: 0;
     }
 
     .mention_in_unread {
@@ -292,20 +398,27 @@
         visibility: hidden;
     }
 
-    .recent_topic_actions .recent_view_focusable {
-        /* Keep a uniform distance from the focus-within
-            indicator at bottom. */
-        padding-bottom: 3px;
-        /* But push down with margin by the same amount,
-            so as to preserve vertical alignment introduced
-            by the parent flexbox. */
-        margin-top: 3px;
-    }
-
     .recent_topic_actions .recipient_bar_icon {
         /* Zero out padding used in recipient bar. */
         padding-right: 0;
         padding-left: 0;
+    }
+
+    /* Topic state markers (follow/mute/unmute) are secondary
+       information: visible at a glance, but quieter than primary
+       content. Overrides `.recipient_bar_icon`'s 0.2 idle / 0.4
+       hover from message_header.css. */
+    .recent_topic_actions
+        .visibility-status-icon:not(.recent-view-row-topic-menu) {
+        /* 0.45 is the lowest opacity that meets WCAG 1.4.11's 3:1
+           non-text contrast against both light and dark row
+           backgrounds. */
+        opacity: 0.45;
+
+        &:hover {
+            /* Beat `.recipient_bar_icon:hover`'s !important. */
+            opacity: 0.7 !important;
+        }
     }
 
     .recent_view_participants {
@@ -317,7 +430,7 @@
         /* 24px at 16px/1em */
         height: 1.5em;
         /* 4px at 16px/1em */
-        padding: 0.25em 4px;
+        padding: 0.25em 0;
         border-radius: 6px;
         overflow: hidden;
 
@@ -329,17 +442,31 @@
             backwards, which super janky.
         */
         flex-direction: row-reverse;
+
+        &:first-child {
+            /* Remove padding of first child to align with header text. */
+            padding-left: 0;
+        }
     }
 
     .recent_view_participant_item {
         /* 24px at 16px/1em */
         height: 1.5em;
         margin: 0;
-        padding: 0 1.5px;
+        padding: 0 var(--recent-view-participant-item-padding-x);
         position: relative;
-        /* 24px at 16px/1em */
-        min-width: 1.5em;
+        width: var(--recent-view-participant-item-width);
         cursor: pointer;
+
+        /* Can't use last-child due to tippy element being appended */
+        &:last-of-type {
+            /* Remove right padding of last item to align with header text. */
+            padding-left: 0;
+        }
+
+        &:first-of-type {
+            padding-right: 0;
+        }
 
         .fa-user {
             opacity: 0.7;
@@ -369,28 +496,79 @@
     .recent_view_participant_overflow {
         /* 24px at 16px/1em */
         line-height: 1.5;
+        background-color: transparent;
+        color: var(--color-text-recent-view-last-msg-time);
+        text-align: left;
     }
 
     & tr {
         background-color: var(--color-background-recent-view-row);
 
-        &:hover {
-            background-color: var(--color-background-recent-view-row-hover);
+        /* Avoid annoying, confusing hover-state when scrolling on
+           touch devices like iPad that treat a tap-and-hold/swipe
+           as a hover. */
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                background-color: var(--color-background-recent-view-row-hover);
 
-            .change_visibility_policy .recent-view-row-topic-menu {
-                opacity: 0.4;
+                .change_visibility_policy .recent-view-row-topic-menu {
+                    /* Tertiary action reveal tier (row hover). */
+                    opacity: 0.45;
+                }
             }
         }
     }
 
-    .unread_topic {
-        background-color: var(--color-background-recent-view-unread-row);
+    & tr .recent_topic_name {
+        /* Extra left padding to make room for the unread marker bar
+           alongside the keyboard selection outline, applied to all
+           rows so content aligns between read and unread rows. */
+        padding-left: 0.75em; /* 12px at 16px/1em */
+    }
 
-        &:hover {
-            background-color: var(
-                --color-background-recent-view-unread-row-hover
-            );
+    .unread_topic {
+        & a {
+            color: var(--color-recent-view-link-unread);
+            font-weight: 500;
         }
+
+        .recent_topic_name {
+            position: relative;
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 2px;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    var(--color-unread-marker) 30%,
+                    hsl(217deg 64% 59% / 0%)
+                );
+                border-radius: 2px 0 0 2px;
+            }
+        }
+    }
+
+    /* When consecutive rows are both unread, make the blue
+       marker bar continuous with no gap between them. */
+    .unread_topic + .unread_topic .recent_topic_name::before {
+        border-top-left-radius: 0;
+    }
+
+    /* Also remove the bottom radius on the preceding unread
+       row when followed by another unread row. We use
+       :has() to look ahead at the next sibling. */
+    .unread_topic:has(+ .unread_topic) .recent_topic_name::before {
+        border-bottom-left-radius: 0;
+    }
+
+    /* Hide the unread marker bar when the "Unread" filter is active,
+       since every visible row is already unread. */
+    &.recent-view-filtered-by-unread .unread_topic .recent_topic_name::before {
+        display: none;
     }
 
     .last_msg_time {
@@ -398,17 +576,24 @@
         margin-right: 5px;
 
         .last-msg-link {
+            /* Prevent time strings from collapsing over multiple lines. */
+            display: block;
+            min-width: max-content;
             color: var(--color-text-recent-view-last-msg-time);
         }
     }
 
+    .unread_topic .last-msg-link {
+        color: var(--color-text-recent-view-last-msg-time-unread);
+    }
+
     & thead th {
+        box-sizing: border-box;
         text-align: left;
         padding: 0.25em 0 0.25em 0.5em; /* 4px at 16px/1em */
         background-color: var(--color-background-recent-view-table-thead-th);
         overflow: hidden;
         color: var(--color-text-recent-view-table-thead-th);
-        font-size: 0.9375em; /* 15px at 16px/1em */
         text-transform: uppercase;
         font-weight: 600;
         line-height: 1.25em; /* 20px at 16px/1em */
@@ -421,7 +606,7 @@
 
         .table-sortable-arrow {
             align-self: center;
-            font-size: 1.0667em; /* 16px at 15px/1em */
+            font-size: 1em; /* 16px at 16px/1em */
             transform: rotate(180deg);
             opacity: 0;
             transition: opacity 100ms ease-out;
@@ -452,83 +637,222 @@
             );
             transition: background-color 100ms ease-in-out;
         }
+
+        .zulip-icon-chevron-right {
+            font-size: 0.9375em; /* 15px at 16px/1em */
+            align-self: center;
+            color: hsl(0deg 0% 60%);
+            padding: 0 0.125em; /* 2px at 16px/1em */
+        }
     }
 
-    .recent_topic_stream,
-    .recent-view-stream-header {
-        width: 25%;
+    #recent-view-table-headers:hover
+        .recent-view-unread-sort-header
+        .table-sortable-arrow {
+        opacity: 0.7;
     }
 
     .recent-view-topic-header {
-        width: 33%;
-    }
+        /* Match left padding with row td (.recent_topic_name),
+           including the extra space for the unread marker bar. */
+        padding: 0 0.5em 0 0; /* 8px 12px at 16px/1em */
+        /* th no longer has data-sort; the individual sort spans handle
+           cursor and hover. */
+        cursor: default;
 
-    .recent-view-unread-header {
-        width: 7%;
-        /* 64px at 20px/1em */
-        min-width: 3.2em;
+        .recent-view-header-wrapper {
+            /* 0.75em left padding, 1px header width */
+            --recent-view-channel-row-header-minus-body: calc(
+                0.75em + var(--recent-view-body-border-width) - 1px
+            );
+            /* Match the row grid so "Channel" and "Conversation" sort
+               spans align with channel and topic text in rows. Sort
+               arrows are inside the spans, so 3 columns suffice.
+               1em = 16px at 16px/1em, matching the 1em (16px
+               at 16px/1em) privacy icon width in data rows. */
+            display: grid;
+            grid-template-columns:
+                calc(
+                    min(
+                            calc(
+                                var(--longest-subscribed-channel-name-width) +
+                                    1em + 8px
+                            ),
+                            calc(
+                                calc(
+                                        100% -
+                                            var(
+                                                --recent-view-channel-row-header-minus-body
+                                            )
+                                    ) /
+                                    3
+                            )
+                        ) +
+                        var(--recent-view-channel-row-header-minus-body)
+                )
+                auto 1fr auto;
+            align-items: stretch;
+        }
+
+        .recent-view-channel-sort-header,
+        .recent-view-conversation-sort-header,
+        .recent-view-unread-sort-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            /* Negative margin compensates the padding so the pill hover
+               highlight doesn't push adjacent elements out of alignment. */
+            padding: 0.25em; /* 4px at 16px/1em */
+            margin: 0;
+            border-radius: 3px;
+            transition: background-color 100ms ease-in-out;
+
+            &:hover {
+                background-color: var(
+                    --color-background-recent-view-table-thead-sort-header
+                );
+
+                .table-sortable-arrow {
+                    opacity: 0.7;
+                }
+            }
+
+            &.active .table-sortable-arrow {
+                opacity: 1;
+            }
+
+            &.descend .table-sortable-arrow {
+                transform: rotate(0deg);
+            }
+        }
+
+        .recent-view-channel-sort-header {
+            padding-left: 1em;
+            margin-left: 0;
+        }
+
+        .recent-view-conversation-sort-header {
+            /* Prevent hover pill highlight from extending into
+               the adjacent unread sort column. */
+            margin-right: 0.3125em; /* 5px at 16px/1em */
+        }
+
+        .recent-view-unread-sort-header {
+            /* Use width that reasonably covers 2-3 magnitudes of count. */
+            width: 1.5em;
+            margin-right: -0.1563em; /* 2.5px at 16px/1em */
+            justify-self: end;
+            justify-content: center;
+        }
     }
 
     .recent_topic_users,
     .recent-view-participants-header {
-        width: 20%;
+        padding-right: 0;
+        padding-left: var(--recent-view-participants-padding-x-start);
+        width: calc(
+            var(--recent-view-participants-padding-x-start) +
+                (var(--recent-view-max-avatars) + 1) *
+                (
+                    var(--recent-view-participant-item-width) + 2 *
+                        var(--recent-view-participant-item-padding-x)
+                ) -
+                /* First item start padding is --recent-view-participants-padding-x-start.
+                   Last item doesn't have end padding. */
+                2 * var(--recent-view-participant-item-padding-x)
+        );
+    }
+
+    &.recent-view-participants-hidden {
+        td {
+            padding: 0.375em 0.5em; /* 6px 8px at 16px/1em */
+        }
+
+        .recent_topic_users,
+        .recent-view-participants-header {
+            display: none;
+        }
+    }
+
+    .recent-view-participants-header .recent-view-header-wrapper {
+        display: block;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
 
     .recent_topic_timestamp,
     .recent-view-last-msg-time-header {
-        width: 15%;
-    }
-
-    /* These fixed column widths prevent column widths from being adjusted
-        as new messages arrive from the server. */
-    .recent_topic_stream {
-        padding: 8px 0 8px 8px;
-
-        .recent_view_focusable {
-            display: grid;
-            grid-template-areas: "starting-anchor-element row-content";
-            /* 14px at 14px/1em */
-            grid-template-columns: 1em minmax(0, 1fr);
-            /* Visually match the 8px of padding to
-               the left of the filter icon. */
-            gap: 7px;
-            place-content: center center;
-            /* Visually match the 8px of padding around the
-               filter icon, and keep DM icons from colliding
-               with the "Direct messages" text. */
-            margin-right: 9px;
-        }
-
-        & a {
-            overflow-wrap: anywhere;
-            hyphens: auto;
-        }
+        /* Time text width is measured from JS and set as
+           --recent-view-time-text-width. Add the visibility
+           icon width (1em), cell padding (2 × 0.5em), and space
+           for the icon's focus outline (0.5em). Falls back to
+           25% before JS has set the variable. */
+        width: 25%;
+        width: calc(var(--recent-view-time-text-width) + 2.5em);
     }
 
     .recent_topic_name {
-        width: 40%;
-
-        .line_clamp {
-            /* This -webkit-box display property is webkit-specific, but
-                it appears that line clamping works fine for this component
-                on Firefox anyway. */
-            /* stylelint-disable-next-line value-no-vendor-prefix */
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .recent-view-conversation-with-unread-wrapper {
+            display: grid;
+            grid-template-areas:
+                "conversation-type chevron-right conversation-name unread-mention-and-count"
+                ".                 .             conversation-name .";
+            width: 100%;
+            /* We add 1em for the privacy icon and 8px for the flexbox
+               gap between the icon and the channel name. */
+            grid-template-columns:
+                min(
+                    calc(
+                        var(--longest-subscribed-channel-name-width) + 1em + 8px
+                    ),
+                    calc(100% / 3)
+                )
+                auto 1fr auto;
+            align-items: center;
         }
 
-        /* We don't want to apply line clamping to 1:1 DMs,
-           as that causes an odd problem with Safari collapsing
-           the grid on .user-status-microlayout so that usernames
-           always have an ellipsis--no matter how short they are,
-           nor how much space is available in the Topic column.
+        .recent-view-conversation-type-wrapper {
+            grid-area: conversation-type;
+            display: flex;
+            align-items: center;
+            gap: 8px;
 
-           `display: inherit` here will set the value to what is
-           already established on .recent_view_focusable. */
-        .line_clamp:has(.recent-view-dm) {
-            display: inherit;
+            .stream-privacy {
+                display: flex;
+            }
+        }
+
+        .recent-view-conversation-link {
+            grid-area: conversation-name;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-view-unread-mention-and-count-wrapper {
+            grid-area: unread-mention-and-count;
+            /* Reserve space so a focused unread badge's `-5px`
+               outset focus ring (`.recent-view-table-unread-count`'s
+               `::before`) does not paint over the topic-name's
+               ellipsis when the topic is long enough to truncate. */
+            padding-left: 0.4375em; /* 7px at 16px/1em */
+        }
+
+        .zulip-icon-chevron-right {
+            grid-area: chevron-right;
+            font-size: 0.9375em; /* 15px at 16px/1em */
+            color: hsl(0deg 0% 60%);
+            padding: 0 0.125em; /* 2px at 16px/1em */
+        }
+
+        .recent-view-dm-name,
+        .recent-view-channel-name {
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 
@@ -543,14 +867,12 @@
     }
 
     @media (width < $md_min) {
-        /* Hide participants and last message time
-            on smaller screens. This ensures user always
-            has a nice UI experience. */
-        .recent_topic_users,
-        .recent_topic_timestamp,
-        thead .participants_header,
-        thead .last_msg_time_header {
-            display: none;
+        /* Hide last message time on smaller screens. */
+        &.recent-view-participants-hidden {
+            .recent_topic_timestamp,
+            thead .last_msg_time_header {
+                display: none;
+            }
         }
 
         .recent_topic_actions {
@@ -560,12 +882,6 @@
     }
 
     .private_conversation_row {
-        .recent_topic_stream {
-            /* Reduce padding of stream section so that user status
-                icon can have more padding without impacting height of the row */
-            padding: 5px 0 5px 8px;
-        }
-
         .pm_status_icon {
             display: flex;
             justify-content: center;
@@ -580,9 +896,11 @@
                 min-width: var(
                     --length-user-status-circle-recent-conversations
                 );
-                font-size: 0.625em;
+                font-size: 0.625em; /* 10px at 16px/1em */
                 float: left;
                 position: unset;
+                /* Make the width 16px to match other icons. */
+                padding: 0 0.3em; /* 3px at 10/1em */
             }
         }
 
@@ -591,20 +909,13 @@
                so prepare an ordinary inline layout... */
             .user-status-microlayout {
                 display: inline;
-                white-space: collapse;
+                white-space: nowrap;
             }
             /* ...and hide the status emoji. */
             .status-emoji {
                 display: none;
             }
         }
-    }
-
-    .stream-privacy .zulip-icon {
-        /* Let flexbox handle vertical alignment by
-           pushing back against inline-block display. */
-        display: block;
-        text-align: center;
     }
 }
 
@@ -625,9 +936,29 @@
     }
 }
 
+#recent_view_folder_filter_container {
+    display: flex;
+    align-items: center;
+    height: var(--recent-topics-filters-height);
+}
+
+#recent_view_folder_filter_button {
+    font-size: 1.5625em; /* 25px at 16px/1em */
+    padding: 0;
+
+    &:focus-visible {
+        outline: var(--focus-ring-outline);
+    }
+}
+
 #recent-view-filter_widget {
     display: inline-flex;
     width: 10.7142em; /* 150px at 14px em */
+    /* Prevent the outline from being clipped by the
+       overflow:hidden ancestor at fractional browser
+       zoom levels. 2px because 1px can round to 0
+       device pixels at certain zoom levels (e.g., 80%). */
+    margin-left: 2px;
     /* 1.5px 6px at 16px/1em */
     padding: 0 0.375em;
     /* Matching to the height of the filter search box. */
@@ -648,5 +979,76 @@
         background-color: var(--color-background-input-focus);
         outline-color: var(--color-outline-input-focus);
         box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
+    }
+}
+
+#recent_view .recent_topic_timestamp .flex_container {
+    /* Push the visibility icon to the right edge of the cell. */
+    justify-content: space-between;
+}
+
+.recent-view-unread-mention-and-count-wrapper {
+    display: flex;
+    align-items: center;
+    /* Stretch to the full row height so the unread count
+       is a larger click target for "Mark as read". */
+    align-self: stretch;
+    margin-left: auto;
+    flex-direction: row;
+    /* Match the left sidebar gap between @ marker and unread count. */
+    gap: 5px;
+
+    .unread_mention_info {
+        /* Unset margin in favor of flex gap. */
+        margin: 0;
+    }
+
+    .recent-view-unread-count-wrapper {
+        display: flex;
+        align-items: center;
+        align-self: stretch;
+    }
+}
+
+.recent-view-body-row {
+    outline-offset: -0.25em; /* -4px at 16px/1em */
+    /* 0.4688em (vs. inbox's 0.3125em / 5px) — the larger
+       negative offset on this view shrinks the ring's effective
+       corner radius (`border-radius` minus `|outline-offset|`),
+       so we bump the base radius so the ring's painted corners
+       read with the same curvature as `.inbox-row`'s 3.5px
+       effective radius. Em-based so both offset and radius
+       scale together with the user's font size, keeping the
+       perceived corner-rounding ratio stable. */
+    border-radius: 0.4688em; /* 7.5px at 16px/1em */
+}
+
+.recent-view-table-unread-count {
+    border-radius: 0.3125em; /* 5px at 16px/1em */
+    position: relative;
+}
+
+/* Focus ring drawn as a pseudo-element so the ring's corner
+   radius can be set independently of the badge's, and so the
+   wrapper-level `:focus` outline rule on `.recent_view_focusable`
+   (which the badge also matches) does not stack a second concentric
+   outline on top. Scoped via `#recent_view:not(.no-visible-focus-outlines)`
+   so it stays suppressed alongside the wrapper outline until the
+   first keyboard navigation key removes the class (see
+   focus_outline_util.ts), and so the rule has high enough
+   specificity to beat the wrapper rule. Inset `-5px` matches the
+   breathing room the inbox wrapper-extending outline gets from its
+   `padding: 0 5px`. */
+#recent_view:not(.no-visible-focus-outlines)
+    .recent-view-table-unread-count:focus {
+    outline: none;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -0.3125em; /* -5px at 16px/1em */
+        border: var(--focus-ring-outline);
+        border-radius: 0.3125em; /* 5px at 16px/1em */
+        pointer-events: none;
     }
 }

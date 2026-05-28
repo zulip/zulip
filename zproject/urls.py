@@ -18,13 +18,6 @@ from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
-from zerver.tornado.views import (
-    cleanup_event_queue,
-    get_events,
-    get_events_internal,
-    notify,
-    web_reload_clients,
-)
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.antispam import get_challenge
 from zerver.views.attachments import list_by_user, remove
@@ -61,6 +54,7 @@ from zerver.views.custom_profile_fields import (
     update_realm_custom_profile_field,
     update_user_custom_profile_data,
 )
+from zerver.views.devices import register_device, remove_device
 from zerver.views.digest import digest_page
 from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
@@ -75,6 +69,7 @@ from zerver.views.invite import (
     revoke_multiuse_invite,
     revoke_user_invite,
 )
+from zerver.views.llms_txt import llms_txt
 from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
@@ -212,7 +207,7 @@ from zerver.views.streams import (
     update_subscriptions_property,
 )
 from zerver.views.submessage import process_submessage
-from zerver.views.thumbnail import backend_serve_thumbnail
+from zerver.views.thumbnail import backend_serve_thumbnail, check_thumbnail_status
 from zerver.views.tusd import handle_tusd_hook
 from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
@@ -253,6 +248,7 @@ from zerver.views.users import (
     deactivate_bot_backend,
     deactivate_user_backend,
     deactivate_user_own_backend,
+    get_bot_api_key,
     get_bots_backend,
     get_member_backend,
     get_members_backend,
@@ -267,11 +263,16 @@ from zerver.views.users import (
     update_user_by_id_api,
 )
 from zerver.views.video_calls import (
+    complete_webex_user,
     complete_zoom_user,
+    create_nextcloud_talk_url,
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
+    make_constructor_groups_video_call,
+    make_webex_video_call,
     make_zoom_video_call,
+    register_webex_user,
     register_zoom_user,
 )
 from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
@@ -291,8 +292,7 @@ INTEGRATION_CATEGORY_REDIRECT_PATHS = [
 
 # NB: There are several other pieces of code which route requests by URL:
 #
-#   - runtornado.py has its own URL list for Tornado views.  See the
-#     invocation of web.Application in that file.
+#   - tornado_urls.py has its own URL list for Tornado views.
 #
 #   - The nginx config knows which URLs to route to Django or Tornado.
 #
@@ -367,6 +367,7 @@ v1_api_and_json_patterns = [
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
     rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
+    rest_path("bots/<int:bot_id>/api_key", GET=get_bot_api_key),
     rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
@@ -458,6 +459,11 @@ v1_api_and_json_patterns = [
     rest_path("typing", POST=send_notification_backend),
     # POST sends a message edit typing notification
     rest_path("messages/<int:message_id>/typing", POST=send_message_edit_notification_backend),
+    # Thumbnail metadata API
+    rest_path(
+        "thumbnail/status/<realm_id_str>/<path:filename>",
+        GET=check_thumbnail_status,
+    ),
     # user_uploads -> zerver.views.upload
     rest_path("user_uploads", POST=upload_file_backend),
     rest_path(
@@ -588,20 +594,21 @@ v1_api_and_json_patterns = [
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
-    # events -> zerver.tornado.views
-    rest_path(
-        "events",
-        GET=(get_events, {"narrow_user_session_cache"}),
-        DELETE=(cleanup_event_queue, {"narrow_user_session_cache"}),
-    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
+    rest_path("calls/webex/create", POST=make_webex_video_call),
     # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
+    # Used to generate a Constructor Groups video call URL
+    rest_path("calls/constructorgroups/create", POST=make_constructor_groups_video_call),
+    # Used to generate a Nextcloud Talk video call URL
+    rest_path("calls/nextcloud_talk/create", POST=create_nextcloud_talk_url),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
+    rest_path("register_client_device", POST=register_device),
+    rest_path("remove_client_device", POST=remove_device),
 ]
 
 # These views serve pages (HTML). As such, their internationalization
@@ -726,6 +733,10 @@ i18n_urls = [
     path("calls/zoom/register", register_zoom_user),
     path("calls/zoom/complete", complete_zoom_user),
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
+    # Used to complete Webex OAuth flow to get user's
+    # access token.
+    path("calls/webex/register", register_webex_user),
+    path("calls/webex/complete", complete_webex_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
     # Integrations documentation
@@ -834,6 +845,12 @@ urls += [
     path("report/csp_violations", report_csp_violations),
 ]
 
+# This URL provides machine-readable API discovery information for LLMs,
+# following the llms.txt specification (https://llmstxt.org/).
+urls += [
+    path("llms.txt", llms_txt),
+]
+
 # Incoming webhook URLs
 # We don't create URLs for particular Git integrations here
 # because of generic one below
@@ -885,14 +902,17 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
         urls += [path("", include(f"{app_name}.urls"))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
-# Used internally for communication between command-line, tusd, Django,
-# and Tornado processes
+# Used internally for communication between tusd and Django,
 urls += [
-    path("api/internal/notify_tornado", notify),
     path("api/internal/tusd", handle_tusd_hook),
-    path("api/internal/web_reload_clients", web_reload_clients),
-    path("api/v1/events/internal", get_events_internal),
 ]
+
+if settings.TEST_SUITE:
+    # Tests talk directly to Tornado APIs via the Django server, so
+    # include those URLs for convenience
+    urls += [
+        path("", include("zproject.tornado_urls")),
+    ]
 
 # Python Social Auth
 

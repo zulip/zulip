@@ -33,6 +33,20 @@ export function stream_has_topics(stream_id: number): boolean {
     return history.has_topics();
 }
 
+export function channel_has_locally_available_topic(
+    channel_id: number,
+    topic_name: string,
+): boolean {
+    if (!stream_dict.has(channel_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(channel_id);
+    assert(history !== undefined);
+
+    return history.topics.has(topic_name);
+}
+
 export function stream_has_locally_available_named_topics(stream_id: number): boolean {
     if (!stream_dict.has(stream_id)) {
         return false;
@@ -299,6 +313,23 @@ export function remove_messages(opts: {
     }
 }
 
+export function update_topic_name_case(
+    stream_id: number,
+    old_topic_name: string,
+    new_topic_name: string,
+): void {
+    const history = stream_dict.get(stream_id);
+    if (!history) {
+        return;
+    }
+
+    const existing_topic = history.topics.get(old_topic_name);
+    if (!existing_topic) {
+        return;
+    }
+    existing_topic.pretty_name = new_topic_name;
+}
+
 export function find_or_create(stream_id: number): PerStreamHistory {
     let history = stream_dict.get(stream_id);
 
@@ -338,14 +369,10 @@ export function mark_history_fetched_for(stream_id: number): void {
     fetched_stream_ids.add(stream_id);
 }
 
-export let get_recent_topic_names = (stream_id: number): string[] => {
+export function get_recent_topic_names(stream_id: number): string[] {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
-};
-
-export function rewire_get_recent_topic_names(value: typeof get_recent_topic_names): void {
-    get_recent_topic_names = value;
 }
 
 export function get_max_message_id(stream_id: number): number {

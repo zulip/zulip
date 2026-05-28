@@ -11,7 +11,9 @@
 # tools/ci/build-docker-images will rebuild all images, but not push them.
 
 ARG BASE_IMAGE
-FROM $BASE_IMAGE
+# Pin to linux/amd64 so builds on Apple Silicon (or other non-amd64
+# hosts) still produce images compatible with our GitHub Actions runners.
+FROM --platform=linux/amd64 $BASE_IMAGE
 
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 

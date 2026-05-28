@@ -20,8 +20,9 @@ from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from email.headerregistry import Address
-from typing import Any, TypedDict, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast
 
+import ldap
 import magic
 import orjson
 from decorator import decorator
@@ -38,7 +39,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser, _LDAPUserGroups, ldap_error
-from django_auth_ldap.config import LDAPSettings
+from django_auth_ldap.config import LDAPSearch, LDAPSettings
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2 import compat as onelogin_saml2_compat
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
@@ -53,6 +54,7 @@ from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
+from social_core.backends.discord import DiscordOAuth2
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
@@ -68,6 +70,7 @@ from social_core.exceptions import (
 from social_core.pipeline.partial import partial
 from social_core.storage import UserProtocol
 from social_core.strategy import HttpResponseProtocol
+from social_django.strategy import DjangoStrategy
 from social_django.utils import load_backend, load_strategy
 from typing_extensions import override
 from zxcvbn import zxcvbn
@@ -79,7 +82,11 @@ from zerver.actions.user_groups import (
     bulk_remove_members_from_user_groups,
     check_add_user_group_core,
 )
-from zerver.actions.user_settings import do_change_user_delivery_email, do_regenerate_api_key
+from zerver.actions.user_settings import (
+    do_change_full_name,
+    do_change_user_delivery_email,
+    do_regenerate_api_key,
+)
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
@@ -95,6 +102,8 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import check_user_group_name, get_role_based_system_groups_dict
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.lib.utils import assert_is_not_none
+from zerver.lib.validator import LONG_STRING_MAX_LENGTH, SHORT_STRING_MAX_LENGTH
 from zerver.models import (
     CustomProfileField,
     NamedUserGroup,
@@ -118,11 +127,17 @@ from zerver.models.users import (
     PasswordTooWeakError,
     get_user_by_delivery_email,
     get_user_profile_by_id,
+    is_cross_realm_bot_email,
     remote_user_to_email,
 )
 from zproject.settings_types import OIDCIdPConfigDict
 
+if TYPE_CHECKING:
+    from django.http.request import _ImmutableQueryDict
+
 redis_client = get_redis_client()
+
+EMAIL_WITH_ENCODED_DISCORD_ID = "{discord_user_id}@discordexport.zulip.com"
 
 
 def all_default_backend_names() -> list[str]:
@@ -235,6 +250,12 @@ def apple_auth_enabled(
     realm: Realm | None = None, realm_authentication_methods: dict[str, bool] | None = None
 ) -> bool:
     return auth_enabled_helper(["Apple"], realm, realm_authentication_methods)
+
+
+def discord_auth_enabled(
+    realm: Realm | None = None, realm_authentication_methods: dict[str, bool] | None = None
+) -> bool:
+    return auth_enabled_helper(["Discord"], realm, realm_authentication_methods)
 
 
 def saml_auth_enabled(
@@ -578,9 +599,10 @@ def is_valid_email(email: str) -> bool:
 
 
 def check_ldap_config() -> None:
+    assert settings.AUTH_LDAP_USERNAME_ATTR
     if not settings.LDAP_APPEND_DOMAIN:
         # Email search needs to be configured in this case.
-        assert settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
+        assert settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
 
     # These two are alternatives approaches to deactivating users based on an ldap attribute
     # and thus don't make sense to have enabled together.
@@ -633,7 +655,7 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
 ldap_logger = logging.getLogger("zulip.ldap")
 
 
-class LDAPReverseEmailSearch(_LDAPUser):
+class ZulipLDAPSearch(_LDAPUser):
     """
     This class is a workaround - we want to use
     django-auth-ldap to query the ldap directory for
@@ -654,12 +676,19 @@ class LDAPReverseEmailSearch(_LDAPUser):
         # for only making a search query, so we pass an empty string.
         super().__init__(LDAPBackend(), username="")
 
+    def do_search(
+        self, ldap_search: LDAPSearch, kwargs_dict: dict[str, str]
+    ) -> list[tuple[str, dict[str, list[object]]]]:
+        return ldap_search.execute(self.connection, kwargs_dict)
+
+
+class LDAPReverseEmailSearch(ZulipLDAPSearch):
     def search_for_users(self, email: str) -> list[_LDAPUser]:
         search = settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
-        USERNAME_ATTR = settings.AUTH_LDAP_USERNAME_ATTR
+        USERNAME_ATTR = assert_is_not_none(settings.AUTH_LDAP_USERNAME_ATTR)
 
         assert search is not None
-        results = search.execute(self.connection, {"email": email})
+        results = self.do_search(search, {"email": email})
 
         ldap_users = []
         for result in results:
@@ -739,6 +768,61 @@ class ZulipLDAPSettings(LDAPSettings):
             for key, value in self.USER_ATTR_MAP.items()
             if key not in self.NON_SYNCABLE_ATTRS
         }
+
+
+def get_and_sync_user_profile_by_external_auth_id(
+    *,
+    external_auth_method_name: str,
+    external_auth_id: str,
+    email: str,
+    realm: Realm,
+    return_data: dict[str, Any],
+    logger: logging.Logger,
+) -> UserProfile | None:
+    """Look up a user by their external auth ID, with email syncing.
+
+    If we're using External Auth ID based auth, then the lookup by
+    external_auth_id takes precedence over lookup by email. If the
+    user is found by external_auth_id but has a different email, we
+    sync the email (unless there's a conflict).
+
+    On first login (no ExternalAuthID record yet), we fall back to
+    email lookup and create the ExternalAuthID record.
+    """
+    try:
+        user_profile: UserProfile | None = ExternalAuthID.objects.get(
+            external_auth_method_name=external_auth_method_name,
+            external_auth_id=external_auth_id,
+            realm=realm,
+        ).user
+    except ExternalAuthID.DoesNotExist:
+        user_profile = common_get_active_user(email, realm, return_data)
+        if user_profile is not None:
+            # If we found an account with the matching email, but no ExternalAuthID, then this account hasn't
+            # yet had its external_auth_id stored - we need to do this now.
+            ExternalAuthID.objects.create(
+                external_auth_method_name=external_auth_method_name,
+                external_auth_id=external_auth_id,
+                realm=realm,
+                user=user_profile,
+            )
+        return user_profile
+
+    assert user_profile is not None
+    # We found a user with the matching external_auth_id. Now we need to do a seemingly redundant
+    # re-fetching via common_get_active_user - as that's the core function for securely fetching
+    # a user for login, in authentication contexts. It's responsible for the relevant security
+    # checks (such as the account being active) - we don't attempt to duplicate these checks
+    # here independently.
+    user_profile = common_get_active_user(user_profile.delivery_email, realm, return_data)
+    if user_profile is None:
+        return None
+
+    # We need to ensure the email address of the Zulip account remains synced with what's
+    # in the external auth directory. That's the point of external_auth_id-based authentication.
+    sync_delivery_email_if_needed(user_profile, email, external_auth_id, logger)
+
+    return user_profile
 
 
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
@@ -1013,7 +1097,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             values_by_var_name[var_name] = value
 
         try:
-            sync_user_profile_custom_fields(user_profile, values_by_var_name)
+            sync_user_profile_custom_fields(user_profile, values_by_var_name, ldap_logger)
         except SyncUserError as e:
             raise ZulipLDAPError(str(e)) from e
 
@@ -1041,6 +1125,33 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             )
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e
+
+    def sync_external_auth_id_from_ldap(
+        self, user_profile: UserProfile, ldap_user: "ZulipLDAPUser"
+    ) -> None:
+        if not ldap_external_auth_id_sync_enabled():
+            return
+
+        ldap_external_auth_id = ldap_user.get_external_auth_id()
+        external_auth_id_obj, created = ExternalAuthID.objects.get_or_create(
+            external_auth_method_name=self.name,
+            user=user_profile,
+            defaults={
+                "external_auth_id": ldap_external_auth_id,
+                "realm": user_profile.realm,
+            },
+        )
+        if created or external_auth_id_obj.external_auth_id == ldap_external_auth_id:
+            return
+
+        self.logger.warning(
+            "User %s had mismatched ExternalAuthID record. Updating %s => %s",
+            user_profile.id,
+            external_auth_id_obj.external_auth_id,
+            ldap_external_auth_id,
+        )
+        external_auth_id_obj.external_auth_id = ldap_external_auth_id
+        external_auth_id_obj.save(update_fields=["external_auth_id"])
 
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
@@ -1098,73 +1209,6 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         return user
 
-    def get_and_sync_user_profile_by_external_auth_id(
-        self, external_auth_id: str, email: str, return_data: dict[str, Any]
-    ) -> UserProfile | None:
-        # If we're using External Auth ID based auth, then the lookup by
-        # external_auth_id takes precedence over lookup by email.
-        try:
-            user_profile: UserProfile | None = ExternalAuthID.objects.get(
-                external_auth_method_name=self.name,
-                external_auth_id=external_auth_id,
-                realm=self._realm,
-            ).user
-        except ExternalAuthID.DoesNotExist:
-            user_profile = common_get_active_user(email, self._realm, return_data)
-            if user_profile is not None:
-                # If we found an account with the matching email, but no ExternalAuthID, then this account hasn't
-                # yet had its external_auth_id stored - we need to do this now.
-                ExternalAuthID.objects.create(
-                    external_auth_method_name=self.name,
-                    external_auth_id=external_auth_id,
-                    realm=self._realm,
-                    user=user_profile,
-                )
-            return user_profile
-
-        assert user_profile is not None
-        # We found a user with the matching external_auth_id. Now we need to do a seemingly redundant
-        # re-fetching via common_get_active_user - as that's the core function for securely fetching
-        # a user for login, in authentication contexts. It's responsible for the relevant security
-        # checks (such as the account being active) - we don't attempt to duplicate these checks
-        # here independently.
-        user_profile = common_get_active_user(user_profile.delivery_email, self._realm, return_data)
-        if user_profile is None:
-            return None
-
-        # We need to ensure the email address of the Zulip account remains synced with what's in the ldap
-        # directory. That's the point of external_auth_id-based authentication.
-        if user_profile.delivery_email != email:
-            # We intentionally do a case-sensitive comparison, despite emails in Zulip being
-            # case-insensitive in auth contexts. We want to support the case of sync tweaking just
-            # capitalization of the email address.
-            self.logger.info(
-                "User %s, logged in via ExternalAuthId %s, has mismatched email. Syncing: %s => %s",
-                user_profile.id,
-                external_auth_id,
-                user_profile.delivery_email,
-                email,
-            )
-            if (
-                UserProfile.objects.filter(realm=self._realm, delivery_email__iexact=email)
-                # The EXISTS query has a somewhat strange shape because we need
-                # to again consider the edge case where we might be simply
-                # updating capitalization of the email for the user. In such a
-                # situation, a "conflict" on (realm, delivery_email__iexact) is
-                # not an actual conflict.
-                .exclude(id=user_profile.id)
-                .exists()
-            ):
-                self.logger.warning(
-                    "Can't sync email for user %s: another user exists with target email %s",
-                    user_profile.id,
-                    email,
-                )
-            else:
-                do_change_user_delivery_email(user_profile, email, acting_user=None)
-
-        return user_profile
-
     def get_or_build_user(
         self, username: str, ldap_user: "ZulipLDAPUser"
     ) -> tuple[UserProfile, bool]:
@@ -1201,8 +1245,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 raise ZulipLDAPError("User has been deactivated")
 
         if ldap_external_auth_id_sync_enabled() and external_auth_id:
-            user_profile = self.get_and_sync_user_profile_by_external_auth_id(
-                external_auth_id, email, return_data
+            user_profile = get_and_sync_user_profile_by_external_auth_id(
+                external_auth_method_name=self.name,
+                external_auth_id=external_auth_id,
+                email=email,
+                realm=self._realm,
+                return_data=return_data,
+                logger=self.logger,
             )
         else:
             user_profile = common_get_active_user(email, self._realm, return_data)
@@ -1444,6 +1493,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
         self.sync_full_name_from_ldap(user, ldap_user)
         self.sync_custom_profile_fields_from_ldap(user, ldap_user)
         self.sync_groups_from_ldap(user, ldap_user)
+        self.sync_external_auth_id_from_ldap(user, ldap_user)
         return (user, built)
 
 
@@ -1466,22 +1516,189 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
     raise PopulateUserLDAPError(type(kwargs["exception"]).__name__)
 
 
+def sync_delivery_email_if_needed(
+    user_profile: UserProfile,
+    email: str,
+    external_auth_id: str,
+    logger: logging.Logger,
+    exception_on_conflict: type[Exception] | None = None,
+) -> None:
+    if user_profile.delivery_email == email:
+        # We intentionally do a case-sensitive comparison, despite emails in Zulip being
+        # case-insensitive in auth contexts. We want to support the case of sync tweaking just
+        # capitalization of the email address.
+        return
+
+    logger.info(
+        "User %s, being synced via ExternalAuthId %s, has mismatched email. Syncing: %s => %s",
+        user_profile.id,
+        external_auth_id,
+        user_profile.delivery_email,
+        email,
+    )
+
+    if is_cross_realm_bot_email(email):
+        # Cross-realm bot emails are reserved for system bots; we
+        # must never let an external auth directory sync a regular
+        # user's delivery_email onto one, since is_cross_realm_bot_email
+        # is used as an authorization shortcut in several places.
+        msg = f"Can't sync email for user {user_profile.id}: {email} is reserved for system bots"
+        if exception_on_conflict is not None:  # nocoverage
+            raise exception_on_conflict(msg)
+        else:
+            logger.warning(msg)
+    elif (
+        UserProfile.objects.filter(realm=user_profile.realm, delivery_email__iexact=email)
+        # The EXISTS query has a somewhat strange shape because we need
+        # to again consider the edge case where we might be simply
+        # updating capitalization of the email for the user. In such a
+        # situation, a "conflict" on (realm, delivery_email__iexact) is
+        # not an actual conflict.
+        .exclude(id=user_profile.id)
+        .exists()
+    ):
+        msg = f"Can't sync email for user {user_profile.id}: another user exists with target email {email}"
+        if exception_on_conflict is not None:
+            raise exception_on_conflict(msg)
+        else:
+            logger.warning(msg)
+    else:
+        do_change_user_delivery_email(user_profile, email, acting_user=None)
+
+
+def prepare_ldap_user_for_sync_by_external_auth_id(
+    backend: ZulipLDAPUserPopulator, user_profile: UserProfile, logger: logging.Logger
+) -> ZulipLDAPUser | None:
+    """
+    The purpose of this function is to take a UserProfile meant for syncing with LDAP,
+    and if it is connected to an LDAP user entry via a ExternalAuthID record, follow
+    that connection to fetch the associated LDAP user.
+    This allows the UserProfile to be linked to its associated LDAP user even if there's
+    a mismatch in the email - most commonly caused by an update to the user's email in the
+    LDAP directory.
+    If such a mismatch is detected, the UserProfile's email is synced to the LDAP value
+    in order to facilitate the rest of the sync codepath being able to successfully do
+    its job.
+    """
+    try:
+        external_auth_id_obj = ExternalAuthID.objects.get(
+            user=user_profile,
+            external_auth_method_name=ZulipLDAPAuthBackendBase.name,
+        )
+    except ExternalAuthID.DoesNotExist:
+        # This UserProfile doesn't have any records connecting it to an LDAP user entry.
+        # We can't do anything here.
+        return None
+
+    ldap_external_auth_id = external_auth_id_obj.external_auth_id
+
+    attr_name = settings.AUTH_LDAP_USER_ATTR_MAP.get("unique_account_id")
+    assert attr_name is not None
+
+    dn_as_external_auth_id = attr_name.lower() == "dn"
+
+    # We have an external_auth_id value, which should allow us to find the matching LDAP
+    # user. We need to prepare the appropriate LDAP search query.
+    ldap_user_search_obj = assert_is_not_none(settings.AUTH_LDAP_USER_SEARCH)
+    base_dn = ldap_user_search_obj.base_dn
+    scope = ldap_user_search_obj.scope
+
+    if not dn_as_external_auth_id:
+        ldap_search_args = (base_dn, scope, f"({attr_name}=%(external_auth_id)s)")
+        search_kwargs_dict = {"external_auth_id": ldap_external_auth_id}
+    else:
+        # Searching by the DN has a different structure than by a normal attribute.
+        ldap_search_args = (ldap_external_auth_id, ldap.SCOPE_BASE, "(objectClass=*)")
+        search_kwargs_dict = {}
+
+    try:
+        results = ZulipLDAPSearch().do_search(LDAPSearch(*ldap_search_args), search_kwargs_dict)
+    except ldap.NO_SUCH_OBJECT:
+        # This can happen when doing a DN-based lookup when the matching LDAP entry doesn't exist.
+        # In the ldap protocol, SCOPE_BASE lookup returns an error (rather than just empty results)
+        # if the target isn't found.
+        return None
+    results_dns = [result[0] for result in results]
+    if not results:
+        return None
+    elif len(results) > 1:
+        raise AssertionError(
+            f"LDAPSearch{ldap_search_args} returned multiple results: "
+            f"result DNs: {results_dns}. "
+            "The search MUST be unique."
+        )
+
+    assert len(results) == 1
+    user_dn, user_attrs = results[0]
+
+    # We need to return a correct ZulipLDAPUser entry to the caller. To initialize
+    # an instance of this class, we need to read the username of the target LDAP
+    # user.
+    USERNAME_ATTR = assert_is_not_none(settings.AUTH_LDAP_USERNAME_ATTR)
+    username = user_attrs[USERNAME_ATTR][0]
+    assert isinstance(username, str)
+
+    ldap_user = ZulipLDAPUser(backend, username, realm=user_profile.realm)
+    # We've already fetched the user's data, so we can set it on the relevant internal
+    # fields of _LDAPUser to avoid django-auth-ldap doing an unnecessary re-fetch.
+    ldap_user._user_dn = user_dn
+    ldap_user._user_attrs = user_attrs
+
+    email = backend.user_email_from_ldapuser(username, ldap_user)
+
+    # If we detect that the email in LDAP has changed relative to what's on the UserProfile,
+    # we need to update it - so that the rest of the sync job, which relies
+    # on the email as user identifier, can succeed.
+    sync_delivery_email_if_needed(
+        user_profile,
+        email,
+        ldap_external_auth_id,
+        logger,
+        # If we cannot sync a fundamental attribute like delivery_email, then sync should just
+        # straight-up fail.
+        # Ignoring the failure to sync the email would also mean that if later in the codepath,
+        # we try to get_user_by_delivery_email using the email value from the LDAP record,
+        # the incorrect user would be fetched. That's a recipe for very buggy and confusing
+        # sync behavior, so let's avoid it entirely.
+        exception_on_conflict=PopulateUserLDAPError,
+    )
+
+    return ldap_user
+
+
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
     backend = ZulipLDAPUserPopulator()
-    try:
-        ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
-    except NoMatchingLDAPUserError:
-        if (
-            settings.ONLY_LDAP
-            if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
-            else settings.LDAP_DEACTIVATE_NON_MATCHING_USERS
-        ):
-            do_deactivate_user(user_profile, acting_user=None)
-            logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
-            return True
-        elif user_profile.is_active:
-            logger.warning("Did not find %s in LDAP.", user_profile.delivery_email)
-        return False
+    ldap_user = None
+    if ldap_external_auth_id_sync_enabled():
+        # If we can fetch the LDAP user data based on the ExternalAuthID connection, then that's the best case.
+        # This allows us to find the LDAP user even if its email value has changed.
+        ldap_user = prepare_ldap_user_for_sync_by_external_auth_id(backend, user_profile, logger)
+        if ldap_user is not None:
+            logger.info(
+                "Syncing user %s (id=%s) via external auth id. Result DN: %s",
+                user_profile.delivery_email,
+                user_profile.id,
+                ldap_user.dn,
+            )
+
+    if ldap_user is None:
+        try:
+            ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
+        except NoMatchingLDAPUserError:
+            if (
+                settings.ONLY_LDAP
+                if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
+                else settings.LDAP_DEACTIVATE_NON_MATCHING_USERS
+            ):
+                do_deactivate_user(user_profile, acting_user=None)
+                logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
+                return True
+            elif user_profile.is_active:
+                logger.warning("Did not find %s in LDAP.", user_profile.delivery_email)
+            return False
+        ldap_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm)
+
+    assert ldap_user is not None
 
     # What one would expect to see like to do here is just a call to
     # `backend.populate_user`, which in turn just creates the
@@ -1498,7 +1715,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     #
     # Ideally, we'd contribute changes to `django-auth-ldap` upstream
     # making this flow possible in a more directly supported fashion.
-    updated_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm).populate_user()
+    updated_user = ldap_user.populate_user()
     if updated_user:
         logger.info("Updated %s.", user_profile.delivery_email)
         return True
@@ -1570,11 +1787,15 @@ class ExternalAuthMethod(ABC):
 
     auth_backend_name = "undeclared"
     name = "undeclared"
-    display_icon: str | None = None
 
     # Used to determine how to order buttons on login form, backend with
     # higher sort order are displayed first.
     sort_order = 0
+
+    @classmethod
+    @abstractmethod
+    def display_icon(cls) -> str | None:
+        pass
 
     @classmethod
     @abstractmethod
@@ -1614,6 +1835,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     multiuse_object_key: str
     full_name_validated: bool
     group_memberships_sync_map: dict[str, bool] | None
+    external_auth_id_dict_for_registration: dict[str, str]
     # The mobile app doesn't actually use a session, so this
     # data is not applicable there.
     params_to_store_in_authenticated_session: dict[str, str]
@@ -1718,11 +1940,24 @@ class SyncUserError(Exception):
     pass
 
 
-def sync_user_profile_custom_fields(
-    user_profile: UserProfile, custom_field_name_to_value: dict[str, Any]
-) -> None:
+def truncate_custom_profile_field_text_for_sync(value: str, length: int) -> str:
+    assert len(value) > length
+    return value[: length - 1] + "…"
+
+
+def validate_custom_profile_field_data_for_sync(
+    realm_id: int,
+    custom_field_name_to_value: dict[str, Any],
+    logger: logging.Logger,
+    # This can be called during new user creation (in SCIM codepaths),
+    # so user ID might not be available.
+    user_id: int | None,
+) -> list[ProfileDataElementUpdateDict]:
+    """Validate custom profile field var names and values, returning the
+    validated profile data list.  Raises SyncUserError if a var name
+    doesn't match any field or a value fails validation."""
     fields_by_var_name: dict[str, CustomProfileField] = {}
-    custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
+    custom_profile_fields = custom_profile_fields_for_realm(realm_id)
     for field in custom_profile_fields:
         var_name = "_".join(field.name.lower().split(" "))
         fields_by_var_name[var_name] = field
@@ -1733,8 +1968,28 @@ def sync_user_profile_custom_fields(
             field = fields_by_var_name[var_name]
         except KeyError:
             raise SyncUserError(f"Custom profile field with name {var_name} not found.")
+
+        # For TEXT type fields we can provide a reasonable truncation behavior to allow
+        # a mostly-successful sync instead of failing with an error.
+        text_field_max_length = {
+            CustomProfileField.SHORT_TEXT: SHORT_STRING_MAX_LENGTH,
+            CustomProfileField.PARAGRAPH: LONG_STRING_MAX_LENGTH,
+        }.get(field.field_type)
+        if (
+            isinstance(value, str)
+            and text_field_max_length is not None
+            and len(value) > text_field_max_length
+        ):
+            value = truncate_custom_profile_field_text_for_sync(value, text_field_max_length)
+            logger.warning(
+                "Truncated value for custom profile field %s of user %s to %d characters.",
+                var_name,
+                user_id,
+                text_field_max_length,
+            )
+
         try:
-            validate_user_custom_profile_field(user_profile.realm.id, field, value)
+            validate_user_custom_profile_field(realm_id, field, value)
         except ValidationError as error:
             raise SyncUserError(f"Invalid data for {var_name} field: {error.message}")
         profile_data.append(
@@ -1743,6 +1998,17 @@ def sync_user_profile_custom_fields(
                 "value": value,
             }
         )
+    return profile_data
+
+
+def sync_user_profile_custom_fields(
+    user_profile: UserProfile,
+    custom_field_name_to_value: dict[str, Any],
+    logger: logging.Logger,
+) -> None:
+    profile_data = validate_custom_profile_field_data_for_sync(
+        user_profile.realm_id, custom_field_name_to_value, logger, user_profile.id
+    )
     do_update_user_custom_profile_data_if_changed(user_profile, profile_data, None, notify=True)
 
 
@@ -1759,11 +2025,15 @@ class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMeth
 
     auth_backend_name = "RemoteUser"
     name = "remoteuser"
-    display_icon = None
     # If configured, this backend should have its button near the top of the list.
     sort_order = 9000
 
     create_unknown_user = False
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str | None:
+        return None
 
     @override
     def authenticate(  # type: ignore[override] # authenticate has an incompatible signature with ModelBackend and BaseBackend
@@ -1787,7 +2057,7 @@ class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMeth
             dict(
                 name=cls.name,
                 display_name="SSO",
-                display_icon=cls.display_icon,
+                display_icon=cls.display_icon(),
                 # The user goes to the same URL for both login and signup:
                 login_url=reverse("start-login-sso"),
                 signup_url=reverse("start-login-sso"),
@@ -2022,7 +2292,7 @@ def process_social_auth_group_sync_info(
             # should be passed in zulip_groups.
             all_realm_groups = NamedUserGroup.objects.filter(
                 realm=realm, deactivated=False, is_system_group=False
-            )
+            ).order_by("name")
             external_group_name_to_zulip_group_name = (
                 {g.name: g.name for g in all_realm_groups}
                 # If a group name is included in the user's zulip_groups, in sync-all-groups mode
@@ -2077,7 +2347,11 @@ def process_social_auth_group_sync_info(
 
 
 def social_auth_sync_user_attributes(
-    realm: Realm, user_profile: UserProfile | None, extra_attrs: dict[str, Any], backend: Any
+    realm: Realm,
+    user_profile: UserProfile | None,
+    full_name: str | None,
+    extra_attrs: dict[str, Any],
+    backend: Any,
 ) -> SocialAuthSyncNewUserInfo | None:
     """
     Syncs user attributes based on the SOCIAL_AUTH_SYNC_ATTRS_DICT setting.
@@ -2085,7 +2359,11 @@ def social_auth_sync_user_attributes(
     1. Syncing the role. This is plumbed through to user creation, so can be
        used to immediately create new users with their role set based on an attribute
        provided by the IdP.
-    2. Syncing custom attributes. This isn't supported for user creation,
+    2. Syncing the full_name. This uses the standard name data already
+       extracted during authentication. We only have to worry about syncing
+       existing users upon login; new signups already get their name from
+       the IdP via the regular registration flow plumbing.
+    3. Syncing custom attributes. This isn't supported for user creation,
        so they'll only be synced during the user's next login, not during
        signup.
     """
@@ -2102,14 +2380,16 @@ def social_auth_sync_user_attributes(
     attrs_config = attrs_by_backend.get(backend.name, {})
 
     profile_field_name_to_attr_name = cast(
-        dict[str, str], {key: value for key, value in attrs_config.items() if key != "groups"}
+        dict[str, str],
+        {key: value for key, value in attrs_config.items() if key not in ("groups", "full_name")},
     )
 
     group_sync_config = process_social_auth_group_sync_info(
         backend, realm, user_profile, attrs_config, extra_attrs
     )
     should_sync_user_attrs = extra_attrs and profile_field_name_to_attr_name
-    if not (should_sync_user_attrs or group_sync_config is not None):
+    should_sync_full_name = (attrs_config.get("full_name", False) is True) and full_name
+    if not (should_sync_user_attrs or should_sync_full_name or group_sync_config is not None):
         return None
 
     user_id = None
@@ -2169,8 +2449,27 @@ def social_auth_sync_user_attributes(
             "Set role %s for user %s", UserProfile.ROLE_ID_TO_API_NAME[new_role], user_profile.id
         )
 
+    if should_sync_full_name:
+        assert full_name is not None
+        if full_name != user_profile.full_name:
+            try:
+                validated_full_name = check_full_name(
+                    full_name_raw=full_name, user_profile=user_profile, realm=user_profile.realm
+                )
+            except JsonableError as e:
+                backend.logger.warning(
+                    "Failed to sync full_name for user %s: %s", user_profile.id, e.msg
+                )
+            else:
+                do_change_full_name(
+                    user_profile, validated_full_name, acting_user=None, notify=True
+                )
+                backend.logger.info("Set new full_name for user %s", user_profile.id)
+
     try:
-        sync_user_profile_custom_fields(user_profile, custom_profile_field_name_to_value)
+        sync_user_profile_custom_fields(
+            user_profile, custom_profile_field_name_to_value, backend.logger
+        )
     except SyncUserError as e:
         backend.logger.warning(
             "Exception while syncing custom profile fields for user %s: %s",
@@ -2199,6 +2498,8 @@ def social_associate_user_helper(
 
     Returns a UserProfile object for successful authentication, and None otherwise.
     """
+    assert isinstance(backend.strategy, DjangoStrategy)
+
     subdomain = backend.strategy.session_get("subdomain")
     try:
         realm = get_realm(subdomain)
@@ -2304,7 +2605,14 @@ def social_associate_user_helper(
 
     return_data["valid_attestation"] = True
     return_data["validated_email"] = validated_email
-    user_profile = common_get_active_user(validated_email, realm, return_data)
+
+    user_profile = backend.get_authenticated_user(
+        validated_email,
+        realm,
+        return_data,
+        details=kwargs["details"],
+        response=kwargs.get("response", {}),
+    )
 
     full_name = kwargs["details"].get("fullname")
     first_name = kwargs["details"].get("first_name")
@@ -2341,7 +2649,7 @@ def social_associate_user_helper(
     return user_profile
 
 
-@partial
+@partial  # type: ignore[untyped-decorator] # upstream annotation missing
 def social_auth_associate_user(
     backend: BaseAuth, *args: Any, **kwargs: Any
 ) -> HttpResponse | dict[str, Any]:
@@ -2448,7 +2756,7 @@ def social_auth_finish(
 
     extra_attrs = return_data.get("extra_attrs", {})
     social_auth_sync_new_user_info = social_auth_sync_user_attributes(
-        realm, user_profile, extra_attrs, backend
+        realm, user_profile, full_name, extra_attrs, backend
     )
 
     if user_profile:
@@ -2521,6 +2829,13 @@ def social_auth_finish(
                     role=social_auth_sync_new_user_info.role,
                     group_memberships_sync_map=social_auth_sync_new_user_info.group_memberships_sync_map,
                 )
+            )
+        external_auth_id_dict_for_registration = return_data.get(
+            "external_auth_id_dict_for_registration"
+        )
+        if external_auth_id_dict_for_registration is not None:
+            data_dict["external_auth_id_dict_for_registration"] = (
+                external_auth_id_dict_for_registration
             )
 
     result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
@@ -2623,7 +2938,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION]
 
     @override
-    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+    def auth_complete(
         self, *args: Any, **kwargs: Any
     ) -> UserProtocol | HttpResponseProtocol | None:
         """This is a small wrapper around the core `auth_complete` method of
@@ -2638,6 +2953,15 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
         if abort_flag.aborted:
             return None
         return result
+
+    def get_authenticated_user(
+        self,
+        email: str,
+        realm: Realm,
+        return_data: dict[str, Any],
+        **kwargs: Any,
+    ) -> UserProfile | None:
+        return common_get_active_user(email, realm, return_data)
 
     def should_auto_signup(self) -> bool:
         return False
@@ -2656,7 +2980,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
             dict(
                 name=cls.name,
                 display_name=cls.auth_backend_name,
-                display_icon=cls.display_icon,
+                display_icon=cls.display_icon(),
                 login_url=reverse("login-social", args=(cls.name,)),
                 signup_url=reverse("signup-social", args=(cls.name,)),
             )
@@ -2668,7 +2992,11 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     name = "github"
     auth_backend_name = "GitHub"
     sort_order = 100
-    display_icon = staticfiles_storage.url("images/authentication_backends/github-icon.png")
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str:
+        return staticfiles_storage.url("images/authentication_backends/github-icon.png")
 
     def get_all_associated_email_objects(self, *args: Any, **kwargs: Any) -> list[dict[str, Any]]:
         access_token = kwargs["response"]["access_token"]
@@ -2773,7 +3101,6 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
-    display_icon = staticfiles_storage.url("images/authentication_backends/azuread-icon.png")
 
     available_for_cloud_plans = [
         Realm.PLAN_TYPE_STANDARD,
@@ -2781,13 +3108,74 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
         Realm.PLAN_TYPE_PLUS,
     ]
 
+    @classmethod
+    @override
+    def display_icon(cls) -> str:
+        return staticfiles_storage.url("images/authentication_backends/azuread-icon.png")
+
+
+@external_auth_method
+class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
+    sort_order = 60
+    name = "discord"
+    auth_backend_name = "Discord"
+    # https://docs.discord.com/developers/resources/user
+    DEFAULT_SCOPE = ["identify", "email"]
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str:
+        return staticfiles_storage.url("images/authentication_backends/discord-icon.png")
+
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
+        verified_emails: list[str] = []
+        details = kwargs["response"]
+        email_verified = details.get("verified")
+        if email_verified:
+            verified_emails.append(details["email"])
+        return verified_emails
+
+    @override
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
+        # Discord has a "global_name" field which is more apt as a display name
+        # than the default "username" field. However, the field is optional.
+        # https://support.discord.com/hc/en-us/articles/12620128861463-New-Usernames-Display-Names#h_01GXPQABMYGEHGPRJJXJMPHF5C
+        return {
+            "id": response.get("id"),
+            "fullname": response.get("global_name") or response.get("username"),
+            "email": response.get("email") or "",
+        }
+
+    @override
+    def get_authenticated_user(
+        self,
+        email: str,
+        realm: Realm,
+        return_data: dict[str, Any],
+        **kwargs: Any,
+    ) -> UserProfile | None:
+        details = kwargs["details"]
+        return super().get_authenticated_user(
+            email=email,
+            realm=realm,
+            return_data=return_data,
+            kwargs=kwargs,
+        ) or super().get_authenticated_user(
+            # This is primarily for exported Discord users. Since Discord user
+            # emails are not exported, our import tool encodes their Discord
+            # user ID to a special email we can try to authenticate here.
+            email=EMAIL_WITH_ENCODED_DISCORD_ID.format(discord_user_id=details["id"]),
+            realm=realm,
+            return_data=return_data,
+            kwargs=kwargs,
+        )
+
 
 @external_auth_method
 class GitLabAuthBackend(SocialAuthMixin, GitLabOAuth2):
     sort_order = 75
     name = "gitlab"
     auth_backend_name = "GitLab"
-    display_icon = staticfiles_storage.url("images/authentication_backends/gitlab-icon.png")
 
     # Note: GitLab as of early 2020 supports having multiple email
     # addresses connected with a GitLab account, and we could access
@@ -2797,13 +3185,22 @@ class GitLabAuthBackend(SocialAuthMixin, GitLabOAuth2):
     # we just use the primary email address, which is always verified.
     # (No code is required to do so, as that's the default behavior).
 
+    @classmethod
+    @override
+    def display_icon(cls) -> str:
+        return staticfiles_storage.url("images/authentication_backends/gitlab-icon.png")
+
 
 @external_auth_method
 class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     sort_order = 150
     auth_backend_name = "Google"
     name = "google"
-    display_icon = staticfiles_storage.url("images/authentication_backends/googl_e-icon.png")
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str:
+        return staticfiles_storage.url("images/authentication_backends/googl_e-icon.png")
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
         verified_emails: list[str] = []
@@ -2834,7 +3231,6 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     sort_order = 10
     name = "apple"
     auth_backend_name = "Apple"
-    display_icon = staticfiles_storage.url("images/authentication_backends/apple-icon.png")
 
     # Apple only sends `name` in its response the first time a user
     # tries to sign up, so we won't have it in consecutive attempts.
@@ -2844,6 +3240,11 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
     SCOPE_SEPARATOR = "%20"  # https://github.com/python-social-auth/social-core/issues/470
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str:
+        return staticfiles_storage.url("images/authentication_backends/apple-icon.png")
 
     @classmethod
     def check_config(cls) -> bool:
@@ -2952,9 +3353,11 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         return user_details
 
     @override
-    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+    def auth_complete(
         self, *args: Any, **kwargs: Any
     ) -> UserProtocol | HttpResponseProtocol | None:
+        assert isinstance(self.strategy, DjangoStrategy)
+
         if not self.is_native_flow():
             # The default implementation in python-social-auth is the browser flow.
             return super().auth_complete(*args, **kwargs)
@@ -3184,8 +3587,6 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     # to have it as their main authentication method, so it seems appropriate to have
     # SAML buttons at the top.
     sort_order = 9999
-    # There's no common default logo for SAML authentication.
-    display_icon = None
 
     # The full_name provided by the IdP is very likely the standard
     # employee directory name for the user, and thus what they and
@@ -3194,6 +3595,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     full_name_validated = True
 
     available_for_cloud_plans = [Realm.PLAN_TYPE_PLUS]
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str | None:
+        # There's no common default logo for SAML authentication.
+        return None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         if settings.SAML_REQUIRE_LIMIT_TO_SUBDOMAINS:
@@ -3211,6 +3618,39 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
+
+    @override
+    def get_authenticated_user(
+        self,
+        email: str,
+        realm: Realm,
+        return_data: dict[str, Any],
+        **kwargs: Any,
+    ) -> UserProfile | None:
+        response = kwargs["response"]
+        idp_name = response["idp_name"]
+        idp_dict = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
+
+        permanent_id_attr = idp_dict.get("attr_user_permanent_id")
+        email_attr = idp_dict.get("attr_email", "email")
+        if permanent_id_attr is None or permanent_id_attr == email_attr:
+            return common_get_active_user(email, realm, return_data)
+
+        uid = str(self.get_user_id(kwargs["details"], response))
+        external_auth_method_name = f"saml:{idp_name}"
+        user_profile = get_and_sync_user_profile_by_external_auth_id(
+            external_auth_method_name=external_auth_method_name,
+            external_auth_id=uid,
+            email=email,
+            realm=realm,
+            return_data=return_data,
+            logger=self.logger,
+        )
+        return_data["external_auth_id_dict_for_registration"] = {
+            "external_auth_method_name": external_auth_method_name,
+            "external_auth_id": uid,
+        }
+        return user_profile
 
     @override
     def get_idp(self, idp_name: str | None) -> ZulipSAMLIdentityProvider:
@@ -3296,6 +3736,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return {}
 
     def choose_subdomain(self, relayed_params: dict[str, Any]) -> str | None:
+        assert isinstance(self.strategy, DjangoStrategy)
+
         subdomain = relayed_params.get("subdomain")
         if subdomain is not None:
             return subdomain
@@ -3431,7 +3873,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         )  # https://github.com/python-social-auth/social-core/pull/1511
 
     @override
-    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+    def auth_complete(
         self, *args: Any, **kwargs: Any
     ) -> UserProtocol | HttpResponseProtocol | None:
         """
@@ -3449,6 +3891,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         Additionally, this handles incoming LogoutRequests for IdP-initiated logout.
         """
+        assert isinstance(self.strategy, DjangoStrategy)
 
         encoded_saml_request = self.strategy.request_data().get("SAMLRequest")
         encoded_saml_response = self.strategy.request_data().get("SAMLResponse")
@@ -3537,7 +3980,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             # so we need to replace this param.
             post_params = self.strategy.request.POST.copy()
             post_params["RelayState"] = orjson.dumps({"idp": idp_name}).decode()
-            self.strategy.request.POST = post_params
+            self.strategy.request.POST = cast("_ImmutableQueryDict", post_params)
 
             # Call the auth_complete method of SocialAuthMixIn
             result = super().auth_complete(*args, **kwargs)
@@ -3596,7 +4039,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             saml_dict: ExternalAuthMethodDictT = dict(
                 name=f"saml:{idp_name}",
                 display_name=idp_dict.get("display_name", cls.auth_backend_name),
-                display_icon=idp_dict.get("display_icon", cls.display_icon),
+                display_icon=idp_dict.get("display_icon", cls.display_icon()),
                 login_url=reverse("login-social", args=("saml", idp_name)),
                 signup_url=reverse("signup-social", args=("saml", idp_name)),
             )
@@ -3652,9 +4095,26 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
+    available_for_cloud_plans = [Realm.PLAN_TYPE_PLUS]
+
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        if settings.OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS:
+            idps_without_limit_to_subdomains = [
+                idp_name
+                for idp_name, idp_dict in settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.items()
+                if "limit_to_subdomains" not in idp_dict
+            ]
+            if idps_without_limit_to_subdomains:
+                self.logger.error(
+                    "OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following IdPs don't have"
+                    " limit_to_subdomains specified and will be ignored: %r",
+                    idps_without_limit_to_subdomains,
+                )
+                for idp_name in idps_without_limit_to_subdomains:
+                    del settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS[idp_name]
+
         self.server_settings_dict: dict[str, OIDCIdPConfigDict] = (
             settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS
         )
@@ -3664,6 +4124,12 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         self._cached_jwks_keys: Any = None
 
         super().__init__(*args, **kwargs)
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str | None:
+        # There's no common default logo for OIDC authentication
+        return None
 
     @override
     def get_key_and_secret(self) -> tuple[str, str]:
@@ -3772,7 +4238,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         return data
 
     @override
-    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+    def auth_complete(
         self, *args: Any, **kwargs: Any
     ) -> UserProtocol | HttpResponseProtocol | None:
         """
@@ -3857,7 +4323,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
             auth_dict: ExternalAuthMethodDictT = dict(
                 name=f"oidc:{idp_name}",
                 display_name=idp_dict.get("display_name", cls.auth_backend_name),
-                display_icon=idp_dict.get("display_icon", cls.display_icon),
+                display_icon=idp_dict.get("display_icon", cls.display_icon()),
                 login_url=reverse("login-social", args=("oidc", idp_name)),
                 signup_url=reverse("signup-social", args=("oidc", idp_name)),
             )
@@ -3953,6 +4419,8 @@ class SAMLSPInitiatedLogout:
         Validates the LogoutResponse and logs out the user if successful,
         finishing the SP-initiated logout flow.
         """
+        assert isinstance(logout_response.backend.strategy, DjangoStrategy)
+
         idp = logout_response.backend.get_idp(idp_name)
         auth = logout_response.backend._create_saml_auth(idp)
         auth.process_slo(keep_local_session=True)

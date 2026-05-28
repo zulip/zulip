@@ -198,14 +198,6 @@
         border-radius: 4px;
         margin-top: 0;
 
-        &.emoji-small {
-            display: inline-block;
-            width: 1.25em;
-            box-shadow: none;
-            border: none;
-            vertical-align: text-top;
-        }
-
         &.emoji-big {
             display: inline-block;
             width: 1.5em;
@@ -220,6 +212,7 @@
             box-shadow: none;
             border: none;
             vertical-align: text-top;
+            margin-bottom: 0;
         }
     }
 

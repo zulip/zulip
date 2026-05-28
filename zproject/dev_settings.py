@@ -61,6 +61,7 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "zproject.backends.GitLabAuthBackend",
     "zproject.backends.AppleAuthBackend",
     "zproject.backends.GenericOpenIdConnectBackend",
+    "zproject.backends.DiscordAuthBackend",
 )
 
 EXTERNAL_URI_SCHEME = "http://"
@@ -181,7 +182,7 @@ if FAKE_LDAP_MODE:
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPAuthBackend",)
 
 BILLING_ENABLED = True
-LANDING_PAGE_NAVBAR_MESSAGE: str | None = None
+LANDING_PAGE_NAVBAR_MESSAGE: str | None = "Our exciting announcement <a href='#'>here</a>"
 
 # Our run-dev proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django
@@ -229,7 +230,8 @@ DEMO_ORG_DEADLINE_DAYS = 30
 if external_host_env is None and not IS_DEV_DROPLET:
     USING_CAPTCHA = True
 
-TOPIC_SUMMARIZATION_MODEL = "groq/llama-3.3-70b-versatile"
+TOPIC_SUMMARIZATION_MODEL = "llama-3.3-70b-versatile"
+TOPIC_SUMMARIZATION_API_BASE = "https://api.groq.com/openai/v1"
 # Defaults based on groq's pricing for Llama 3.3 70B Versatile 128k.
 # https://groq.com/pricing/
 OUTPUT_COST_PER_GIGATOKEN = 590

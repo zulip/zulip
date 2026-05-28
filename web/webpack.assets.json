@@ -45,18 +45,13 @@
         "./styles/portico/legacy_portico_styles_bundle.css"
     ],
     "common": ["./src/bundles/common.ts"],
-    "help": [
-        "./src/bundles/legacy_portico_bundle.ts",
-        "simplebar/dist/simplebar.css",
-        "simplebar",
-        "./src/portico/help.ts"
-    ],
+    "help": ["./src/bundles/help_bundle.ts", "simplebar/dist/simplebar.css", "simplebar"],
     "marketing-page": [
         "./src/bundles/marketing_page_bundle.ts",
         "./src/portico/legacy_landing_page.ts",
-        "./styles/portico/portico_variables.css",
         "./styles/portico/marketing_page.css",
-        "./styles/portico/pricing_plans.css"
+        "./styles/portico/pricing_plans.css",
+        "./styles/portico/comparison_table.css"
     ],
     "landing-page-hello": [
         "./src/bundles/hello.ts",
@@ -81,16 +76,16 @@
         "./styles/portico/comparison_table.css"
     ],
     "integrations": [
-        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/bundles/integrations_bundle.ts",
         "./src/portico/integrations.ts",
-        "./styles/portico/legacy_landing_page.css",
+        "./styles/portico/marketing_page.css",
         "./styles/portico/integrations.css",
         "./src/portico/help.ts"
     ],
     "communities": [
-        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/bundles/integrations_bundle.ts",
         "./src/portico/communities.ts",
-        "./styles/portico/legacy_landing_page.css",
+        "./styles/portico/marketing_page.css",
         "./styles/portico/integrations.css"
     ],
     "signup": [

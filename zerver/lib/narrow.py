@@ -44,8 +44,10 @@ from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
+    access_stream_common,
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
+    get_archived_streams_queryset,
     get_public_streams_queryset,
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
@@ -491,6 +493,8 @@ class NarrowBuilder:
             recipient_queryset = get_public_streams_queryset(self.realm)
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
+        elif operand == "archived":
+            recipient_queryset = get_archived_streams_queryset(self.realm)
         else:
             raise BadNarrowOperatorError("unknown channels operand " + operand)
 
@@ -567,73 +571,26 @@ class NarrowBuilder:
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
         except DirectMessageGroup.DoesNotExist:
-            # Group DM where direct message group doesn't exist
+            # DM group doesn't exist, so no messages can exist.
             return query.where(maybe_negate(false()))
 
-        # Group direct message
-        if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-            cond = column("recipient_id", Integer) == recipient.id
-            return query.where(maybe_negate(cond))
-
-        # 1:1 direct message
-        other_participant = None
-
-        # Find if another person is in direct message
-        for user in user_profiles:
-            if user.id != self.user_profile.id:
-                other_participant = user
-
-        # Direct message with another person
-        if other_participant:
-            # We need bidirectional direct messages with another person.
-            # But Recipient.PERSONAL objects only encode the person who
-            # received the message, and not the other participant in
-            # the thread (the sender), we need to do a somewhat
-            # complex query to get messages between these two users
-            # with either of them as the sender.
-            self_recipient_id = self.user_profile.recipient_id
-            cond = and_(
-                column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-                column("realm_id", Integer) == self.realm.id,
-                or_(
-                    and_(
-                        column("sender_id", Integer) == other_participant.id,
-                        column("recipient_id", Integer) == self_recipient_id,
-                    ),
-                    and_(
-                        column("sender_id", Integer) == self.user_profile.id,
-                        column("recipient_id", Integer) == recipient.id,
-                    ),
-                ),
-            )
-            return query.where(maybe_negate(cond))
-
-        # Direct message with self
-        cond = and_(
-            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-            column("realm_id", Integer) == self.realm.id,
-            column("sender_id", Integer) == self.user_profile.id,
-            column("recipient_id", Integer) == recipient.id,
-        )
+        cond = column("recipient_id", Integer) == recipient.id
         return query.where(maybe_negate(cond))
 
     def _get_direct_message_group_recipients(self, other_user: UserProfile) -> set[int]:
-        self_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
+        return set(
+            Subscription.objects.filter(
                 user_profile=self.user_profile,
                 recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-            ).values("recipient_id")
-        ]
-        narrow_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
-                user_profile=other_user,
-                recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-            ).values("recipient_id")
-        ]
-
-        return set(self_recipient_ids) & set(narrow_recipient_ids)
+            )
+            .values_list("recipient_id", flat=True)
+            .intersection(
+                Subscription.objects.filter(
+                    user_profile=other_user,
+                    recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+                ).values_list("recipient_id", flat=True)
+            )
+        )
 
     def by_dm_including(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
@@ -672,26 +629,7 @@ class NarrowBuilder:
             direct_message_group_recipient_ids
         )
 
-        self_recipient_id = self.user_profile.recipient_id
-        if self_recipient_id is not None and narrow_user_profile.recipient_id is not None:
-            # See note above in `by_dm` about needing bidirectional messages
-            # for direct messages with another person.
-            dm_conditions = or_(
-                and_(
-                    column("sender_id", Integer) == narrow_user_profile.id,
-                    column("recipient_id", Integer) == self_recipient_id,
-                ),
-                and_(
-                    column("sender_id", Integer) == self.user_profile.id,
-                    column("recipient_id", Integer) == narrow_user_profile.recipient_id,
-                ),
-                direct_message_group_cond,
-            )
-            cond = and_(private_flag, realm_match, dm_conditions)
-        else:
-            # If the user does not have a recipient_id, then they only rely on
-            # direct group message for their conversations.
-            cond = and_(private_flag, realm_match, direct_message_group_cond)
+        cond = and_(private_flag, realm_match, direct_message_group_cond)
         return query.where(maybe_negate(cond))
 
     def by_mention(
@@ -713,8 +651,22 @@ class NarrowBuilder:
         # topic_wildcard_mentioned) or silent mentions, since this
         # operator is defined to only match explicit @-mentions
         # directed at notifying this user individually.
-        cond = (column("user_profile_id", Integer) == target_user.id) & (
-            column("flags", Integer).op("&")(literal(UserMessage.flags.mentioned.mask)) != 0
+        #
+        # Use a subquery on the target user's UserMessage rows,
+        # since the base query's UserMessage join is constrained to
+        # the current user, who may differ from the mentioned user.
+        # We correlate via zerver_message.id (present in both base
+        # query variants) to avoid ambiguity with the outer query's
+        # zerver_usermessage table.
+        cond = (
+            select(1)
+            .select_from(table("zerver_usermessage"))
+            .where(
+                column("message_id", Integer) == literal_column("zerver_message.id", Integer),
+                column("user_profile_id", Integer) == literal(target_user.id),
+                column("flags", Integer).op("&")(literal(UserMessage.flags.mentioned.mask)) != 0,
+            )
+            .exists()
         )
 
         return query.where(maybe_negate(cond))
@@ -979,12 +931,6 @@ def update_narrow_terms_containing_with_operator(
             NarrowParameter(operator="topic", operand=topic),
         ]
         return channel_conversation_terms + filtered_terms
-
-    elif message.recipient.type == Recipient.PERSONAL:
-        dm_conversation_terms = [
-            NarrowParameter(operator="dm", operand=[message.recipient.type_id])
-        ]
-        return dm_conversation_terms + filtered_terms
 
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         huddle_user_ids = list(get_direct_message_group_user_ids(message.recipient))
@@ -1511,6 +1457,20 @@ def fetch_messages(
     num_after: int,
     client_requested_message_ids: list[int] | None = None,
 ) -> FetchedMessages:
+    if access_narrow(user_profile, narrow, is_web_public_query, realm) is False:
+        # If user is requesting messages from a narrow they don't have
+        # access to, do an early return.
+        return FetchedMessages(
+            rows=[],
+            found_anchor=False,
+            found_oldest=True,
+            found_newest=True,
+            history_limited=False,
+            anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            include_history=False,
+            is_search=False,
+        )
+
     include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
     if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
@@ -1664,3 +1624,66 @@ def fetch_messages(
         include_history=include_history,
         is_search=is_search,
     )
+
+
+def access_narrow(
+    maybe_user_profile: UserProfile | None,
+    narrow: list[NarrowParameter] | None,
+    is_web_public_query: bool,
+    realm: Realm,
+) -> bool | None:
+    """
+    We do an early return if the user doesn't have access to the
+    channel present in the narrow.
+
+    @returns None if we can't determine access here.
+    """
+
+    if (is_web_public_query is True) or (maybe_user_profile is None):
+        # Not handled here since we already have channel access
+        # checks later which will return with status code.
+        return None
+
+    # We only expect one channel term.
+    channel_requested_by_user: str | int | None = None
+    if narrow is not None:
+        for term in narrow:
+            if term.operator in channel_operators:
+                if term.negated:
+                    # We don't handle negated channel terms here.
+                    return None
+                if channel_requested_by_user is not None:
+                    # If there are multiple channel terms, there will
+                    # be no messages since we apply `AND` on them.
+                    return False
+                channel_requested_by_user = term.operand
+
+    if channel_requested_by_user is None:
+        return None
+
+    # Import here to avoid circular imports
+    from zerver.models.streams import get_realm_stream, get_stream_by_id_in_realm
+
+    # Check if channel exists.
+    try:
+        if isinstance(channel_requested_by_user, str):
+            channel = get_realm_stream(channel_requested_by_user, realm.id)
+        else:
+            channel = get_stream_by_id_in_realm(channel_requested_by_user, realm)
+    except Stream.DoesNotExist:
+        # We don't want to duplicate validation error messages here, so
+        # just return `None`.
+        return None
+
+    try:
+        access_stream_common(
+            maybe_user_profile,
+            channel,
+            error="",
+            require_active_channel=False,
+            require_content_access=True,
+        )
+        return True
+    except JsonableError:
+        # User doesn't have access to this existing stream
+        return False

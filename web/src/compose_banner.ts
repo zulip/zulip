@@ -103,10 +103,10 @@ export function update_or_append_banner(
     }
 }
 
-export let clear_message_sent_banners = (
+export function clear_message_sent_banners(
     include_unmute_banner = true,
     skip_automatic_new_visibility_policy_banner = false,
-): void => {
+): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
         if (
             skip_automatic_new_visibility_policy_banner &&
@@ -127,10 +127,6 @@ export let clear_message_sent_banners = (
         clear_unmute_topic_notifications();
     }
     scroll_to_message_banner_message_id = null;
-};
-
-export function rewire_clear_message_sent_banners(value: typeof clear_message_sent_banners): void {
-    clear_message_sent_banners = value;
 }
 
 // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.
@@ -212,8 +208,11 @@ export function show_error_message(
 }
 
 export function cannot_send_direct_message_error(error_message: string): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.cannot_send_direct_message)}`).remove();
+    // If a banner with this classname already exists, avoid removing
+    // and re-creating it.
+    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.cannot_send_direct_message)}`).length > 0) {
+        return;
+    }
 
     const new_row_html = render_cannot_send_direct_message_error({
         banner_type: ERROR,
@@ -222,14 +221,9 @@ export function cannot_send_direct_message_error(error_message: string): void {
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     hide_compose_spinner();
-
-    $("#private_message_recipient").trigger("focus").trigger("select");
 }
 
 export function topic_missing_error(empty_string_topic_display_name: string): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.topic_missing)}`).remove();
-
     const new_row_html = render_topics_required_error_banner({
         banner_type: ERROR,
         empty_string_topic_display_name,
@@ -240,9 +234,6 @@ export function topic_missing_error(empty_string_topic_display_name: string): vo
 }
 
 export function show_stream_does_not_exist_error(stream_name: string): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.stream_does_not_exist)}`).remove();
-
     const new_row_html = render_stream_does_not_exist_error({
         banner_type: ERROR,
         channel_name: stream_name,
@@ -259,10 +250,6 @@ export function show_stream_not_subscribed_error(
     sub: StreamSubscription,
     banner_text: string,
 ): void {
-    const $banner_container = $("#compose_banners");
-    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length > 0) {
-        return;
-    }
     const new_row_html = render_compose_banner({
         banner_type: ERROR,
         banner_text,
@@ -274,7 +261,7 @@ export function show_stream_not_subscribed_error(
         // closing the banner would be more confusing than helpful.
         hide_close_button: true,
     });
-    append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
 export function show_unknown_zoom_user_error(email: string): void {
@@ -305,7 +292,6 @@ export function show_convert_pasted_text_to_file_banner({
     $textarea: JQuery<HTMLTextAreaElement>;
 }): JQuery {
     const $banner_container = get_compose_banner_container($textarea);
-    $banner_container.find(CSS.escape(CLASSNAMES.convert_pasted_text_to_file)).remove();
     const $new_row = $(
         render_long_paste_options({
             banner_type: INFO,
@@ -315,6 +301,6 @@ export function show_convert_pasted_text_to_file_banner({
     );
     $new_row.on("click", ".main-view-banner-action-button.convert-to-file", convert_to_file_cb);
     $new_row.on("click", ".main-view-banner-action-button.paste-to-compose", paste_to_compose_cb);
-    append_compose_banner_to_banner_list($new_row, $banner_container);
+    update_or_append_banner($new_row, CLASSNAMES.convert_pasted_text_to_file, $banner_container);
     return $new_row;
 }

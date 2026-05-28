@@ -127,14 +127,14 @@ export function set_compose_defaults(): {
     return opts;
 }
 
-export let stream_id = (
+export function stream_id(
     current_filter: Filter | undefined = filter(),
     // If true, we'll return undefined if the filter contains a
     // stream_id, but that stream ID is not present in stream_data
     // (whether because it's an invalid channel ID, or because the
     // channel is not accessible to this user).
     only_valid_id = false,
-): number | undefined => {
+): number | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -149,10 +149,6 @@ export let stream_id = (
         }
     }
     return undefined;
-};
-
-export function rewire_stream_id(value: typeof stream_id): void {
-    stream_id = value;
 }
 
 export function stream_name(current_filter: Filter | undefined = filter()): string | undefined {

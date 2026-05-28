@@ -6,6 +6,7 @@ import render_subscription_invites_warning_modal from "../templates/confirm_dial
 import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
 
 import * as channel from "./channel.ts";
+import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -505,7 +506,7 @@ export function show_new_stream_modal(): void {
     }
 
     const $add_subscribers_container = $(
-        "#stream_creation_form .subscriber_list_settings",
+        "#stream_creation_form .add_subscribers_container",
     ).expectOne();
 
     stream_ui_updates.enable_or_disable_add_subscribers_elements(
@@ -655,6 +656,11 @@ export function set_up_handlers(): void {
         stream_ui_updates.update_can_create_topic_group_setting_state($("#stream-creation"));
     });
 
+    $container.on("click", ".create-channel-folder-button", (e) => {
+        e.preventDefault();
+        channel_folders_ui.add_channel_folder(set_channel_folder_dropdown_value);
+    });
+
     set_up_group_setting_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
     folder_widget = stream_settings_components.set_up_folder_dropdown_widget();
@@ -662,13 +668,17 @@ export function set_up_handlers(): void {
 }
 
 export function initialize(): void {
-    $("#channels_overlay_container").on("click", "#archived_stream_rename", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
+    $("#channels_overlay_container").on(
+        "click",
+        "#archived_stream_rename",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
 
-        stream_edit.open_stream_edit_modal(stream_id);
-    });
+            stream_edit.open_stream_edit_modal(stream_id, $(this).attr("id")!);
+        },
+    );
 }
 
 export function set_channel_folder_dropdown_value(folder_id: number): void {

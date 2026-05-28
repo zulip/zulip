@@ -60,9 +60,8 @@ class PushNotificationsWorker(QueueProcessingWorker):
             def failure_processor(event: dict[str, Any]) -> None:
                 if event_type == "register_push_device_to_bouncer":
                     logger.warning(
-                        "Maximum retries exceeded for trigger:(user_id=%s, push_account_id=%s) event:register_push_device_to_bouncer",
-                        event["payload"]["user_profile_id"],
-                        event["payload"]["push_account_id"],
+                        "Maximum retries exceeded for device_id:%s event:register_push_device_to_bouncer",
+                        event["payload"]["device_id"],
                     )
                 else:
                     logger.warning(

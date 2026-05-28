@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 import os
+import platform
 import pwd
 import random
 import shlex
@@ -432,35 +433,6 @@ def maybe_perform_purging(
 
 
 @functools.lru_cache(None)
-def parse_os_release() -> dict[str, str]:
-    """
-    Example of the useful subset of the data:
-    {
-     'ID': 'ubuntu',
-     'VERSION_ID': '18.04',
-     'NAME': 'Ubuntu',
-     'VERSION': '18.04.3 LTS (Bionic Beaver)',
-     'PRETTY_NAME': 'Ubuntu 18.04.3 LTS',
-    }
-
-    VERSION_CODENAME (e.g. 'bionic') is nice and readable to Ubuntu
-    developers, but we avoid using it, as it is not available on
-    RHEL-based platforms.
-    """
-    distro_info: dict[str, str] = {}
-    with open("/etc/os-release") as fp:
-        for line in fp:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                # The line may be blank or a comment, see:
-                # https://www.freedesktop.org/software/systemd/man/os-release.html
-                continue
-            k, v = line.split("=", 1)
-            [distro_info[k]] = shlex.split(v)
-    return distro_info
-
-
-@functools.lru_cache(None)
 def os_families() -> set[str]:
     """
     Known families:
@@ -470,7 +442,7 @@ def os_families() -> set[str]:
     rhel (includes: rhel, centos)
     centos (includes: centos)
     """
-    distro_info = parse_os_release()
+    distro_info = platform.freedesktop_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
 

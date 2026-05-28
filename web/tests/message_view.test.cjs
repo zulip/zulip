@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -15,6 +17,7 @@ const compose_state = zrequire("compose_state");
 const narrow_banner = zrequire("narrow_banner");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+stream_data.set_channel_has_locally_available_topic(() => false);
 const {Filter} = zrequire("../src/filter");
 const message_fetch = mock_esm("../src/message_fetch", {
     load_messages_around_anchor() {},
@@ -58,9 +61,10 @@ mock_esm("../src/spectators", {
     login_to_access() {},
 });
 
-function empty_narrow_html(title, notice_html, search_data) {
+function empty_narrow_html(title, notice_html, search_data, title_html) {
     const opts = {
         title,
+        title_html,
         notice_html,
         search_data,
     };
@@ -75,30 +79,29 @@ function set_filter(terms) {
     return new Filter(terms);
 }
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 5,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 23,
     full_name: "Alice Smith",
-};
+});
 
-const ray = {
+const ray = make_user({
     email: "ray@example.com",
     user_id: 22,
     full_name: "Raymond",
-};
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@example.com",
     user_id: 25,
     full_name: "Example Bot",
-    is_bot: true,
-};
+});
 
 const nobody = make_user_group({
     name: "role:nobody",
@@ -229,7 +232,7 @@ run_test("urls", () => {
     assert.deepEqual(user_ids, [5]);
 });
 
-run_test("show_empty_narrow_message", ({mock_template, override}) => {
+run_test("show_empty_narrow_message", ({mock_template, override, override_rewire}) => {
     settings_data.user_can_access_all_other_users = () => true;
     settings_data.user_has_permission_for_group_setting = () => true;
     override(realm, "stop_words", []);
@@ -272,7 +275,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // for non-subbed public stream
     const rome_id = 99;
-    stream_data.add_sub_for_tests({name: "ROME", stream_id: rome_id});
+    stream_data.add_sub_for_tests(
+        make_stream({name: "ROME", subscribed: false, stream_id: rome_id}),
+    );
     current_filter = set_filter([["stream", rome_id.toString()]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
@@ -310,11 +315,13 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // for web-public stream for spectator
     const web_public_id = 1231;
-    stream_data.add_sub_for_tests({
-        name: "web-public-stream",
-        stream_id: web_public_id,
-        is_web_public: true,
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "web-public-stream",
+            stream_id: web_public_id,
+            is_web_public: true,
+        }),
+    );
     current_filter = set_filter([
         ["stream", web_public_id.toString()],
         ["topic", "foo"],
@@ -573,6 +580,25 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         empty_narrow_html("translated: No search results."),
     );
 
+    current_filter = set_filter([["mentions", alice.user_id]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No messages in your message history mention Alice Smith yet.",
+            undefined,
+            undefined,
+            'translated: No messages in <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a> mention Alice Smith yet.',
+        ),
+    );
+
+    current_filter = set_filter([["mentions", -1]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
+    );
+
     current_filter = set_filter([["is", "invalid"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
@@ -584,11 +610,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     );
 
     const my_stream_id = 103;
-    const my_stream = {
+    const my_stream = make_stream({
         name: "my stream",
         stream_id: my_stream_id,
-    };
+    });
     stream_data.add_sub_for_tests(my_stream);
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(my_stream);
     current_filter = set_filter([["stream", my_stream_id.toString()]]);
     const list = new MessageList({
@@ -645,12 +672,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // The channel is private, and the user cannot subscribe (e.g., they
     // have access to channel metadata, but don't have content access).
-    const private_sub = {
+    const private_sub = make_stream({
         stream_id: 101,
         name: "private",
         subscribed: false,
         invite_only: true,
-    };
+    });
     stream_data.add_sub_for_tests(private_sub);
     settings_data.user_has_permission_for_group_setting = () => false;
     current_filter = set_filter([["stream", private_sub.stream_id.toString()]]);
@@ -661,6 +688,15 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
             "translated: You are not allowed to view messages in this private channel.",
         ),
     );
+    const channels_operands = ["archived", "public", "web-public"];
+    for (const operand of channels_operands) {
+        current_filter = set_filter([["channels", operand]]);
+        narrow_banner.show_empty_narrow_message(current_filter);
+        assert.equal(
+            $(".empty_feed_notice_main").html(),
+            empty_narrow_html("translated: There are no messages here."),
+        );
+    }
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
@@ -702,7 +738,7 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     );
 
     const streamA_id = 88;
-    stream_data.add_sub_for_tests({name: "streamA", stream_id: streamA_id});
+    stream_data.add_sub_for_tests(make_stream({name: "streamA", stream_id: streamA_id}));
     current_filter = set_filter([
         ["stream", streamA_id.toString()],
         ["search", "what about grail"],
@@ -730,8 +766,8 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
 
     const streamA_id = 88;
     const streamB_id = 77;
-    stream_data.add_sub_for_tests({name: "streamA", stream_id: streamA_id});
-    stream_data.add_sub_for_tests({name: "streamB", stream_id: streamB_id});
+    stream_data.add_sub_for_tests(make_stream({name: "streamA", stream_id: streamA_id}));
+    stream_data.add_sub_for_tests(make_stream({name: "streamB", stream_id: streamB_id}));
 
     let current_filter = set_filter([
         ["stream", streamA_id.toString()],
@@ -799,7 +835,9 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
 
     compose_state.set_message_type("stream");
     const rome_id = 99;
-    stream_data.add_sub_for_tests({name: "ROME", stream_id: rome_id, topics_policy: "inherit"});
+    stream_data.add_sub_for_tests(
+        make_stream({name: "ROME", stream_id: rome_id, topics_policy: "inherit"}),
+    );
     compose_state.set_stream_id(99);
 
     // Test with existing topic
@@ -823,7 +861,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
         {operator: "topic", operand: "four"},
     ]);
 
-    // Test with blank topic, with realm_topics_policy
+    // Test with blank topic, empty topic not allowed
     override(realm, "realm_topics_policy", "disable_empty_topic");
     compose_state.topic("");
     args.called = false;
@@ -831,8 +869,9 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
 
-    // Test with blank topic, without realm_topics_policy
+    // Test with blank topic, empty topic allowed
     override(realm, "realm_topics_policy", "allow_empty_topic");
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
     compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
@@ -842,24 +881,15 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
         {operator: "topic", operand: ""},
     ]);
 
-    // Test with no topic, with realm mandatory topics
-    override(realm, "realm_topics_policy", "disable_empty_topic");
-    compose_state.topic(undefined);
+    // When empty topic is allowed by policy but user cannot create
+    // topics and no empty topic exists, narrowing with blank topic
+    // should not include the topic term.
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
-
-    // Test with no topic, without realm mandatory topics
-    override(realm, "realm_topics_policy", "allow_empty_topic");
-    compose_state.topic(undefined);
-    args.called = false;
-    message_view.to_compose_target();
-    assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [
-        {operator: "channel", operand: rome_id.toString()},
-        {operator: "topic", operand: ""},
-    ]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
@@ -935,12 +965,15 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
         selected = {id, opts};
     };
     message_lists.current = list;
+    $("#navbar-fixed-container").set_height(50);
+    // Date jumps should place the selected message below the sticky
+    // message header, increasing the target scroll offset by 40px.
 
     const in_range = new Date(150 * 1000).toISOString();
     message_view.fast_track_current_msg_list_to_anchor("date", in_range);
     assert.deepEqual(selected, {
         id: 102,
-        opts: {then_scroll: true, from_scroll: false},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
     });
 
     list.data.fetch_status.finish_older_batch({
@@ -952,7 +985,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     message_view.fast_track_current_msg_list_to_anchor("date", before_range);
     assert.deepEqual(selected, {
         id: 101,
-        opts: {then_scroll: true, from_scroll: false},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
     });
 
     // If we have not found the oldest message, and the anchor timestamp is
@@ -988,7 +1021,12 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     assert.equal(load_messages_anchor, "date");
     assert.deepEqual(selected, {
         id: 100,
-        opts: {then_scroll: true, from_scroll: false, force_rerender: true},
+        opts: {
+            then_scroll: true,
+            from_scroll: false,
+            force_rerender: true,
+            target_scroll_offset: 90,
+        },
     });
 
     // Message 104 is not in the list so we need to fetch it from the API
@@ -1016,7 +1054,12 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     assert.equal(load_messages_anchor, "date");
     assert.deepEqual(selected, {
         id: 104,
-        opts: {then_scroll: true, from_scroll: false, force_rerender: true},
+        opts: {
+            then_scroll: true,
+            from_scroll: false,
+            force_rerender: true,
+            target_scroll_offset: 90,
+        },
     });
 
     // If we have found the newest message, having anchor_date in
@@ -1030,7 +1073,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     message_view.fast_track_current_msg_list_to_anchor("date", future_range);
     assert.deepEqual(selected, {
         id: 104,
-        opts: {then_scroll: true, from_scroll: false},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
     });
     assert.equal(load_messages_calls, 0);
 
@@ -1067,10 +1110,10 @@ run_test("narrow_compute_title", () => {
 
     // Stream narrows
     const foo_stream_id = 43;
-    const sub = {
+    const sub = make_stream({
         name: "Foo",
         stream_id: foo_stream_id,
-    };
+    });
     stream_data.add_sub_for_tests(sub);
 
     filter = new Filter([
@@ -1086,11 +1129,11 @@ run_test("narrow_compute_title", () => {
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown channel");
 
     // Direct messages with narrows
-    const joe = {
+    const joe = make_user({
         email: "joe@example.com",
         user_id: 31,
         full_name: "joe",
-    };
+    });
     people.add_active_user(joe, "server_events");
 
     filter = new Filter([{operator: "dm", operand: [joe.user_id]}]);

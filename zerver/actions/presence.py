@@ -123,7 +123,9 @@ def do_update_user_presence(
         defaults["last_active_time"] = log_time
 
     try:
-        presence = UserPresence.objects.select_for_update().get(user_profile=user_profile)
+        presence = UserPresence.objects.select_for_update(no_key=True).get(
+            user_profile=user_profile
+        )
         creating = False
     except UserPresence.DoesNotExist:
         # We're not ready to write until we know the next last_update_id value.
@@ -196,7 +198,7 @@ def do_update_user_presence(
 
     # Equivalent Python code:
     # if creating or len(update_fields) > 0:
-    #     presence_sequence = PresenceSequence.objects.select_for_update().get(realm_id=user_profile.realm_id)
+    #     presence_sequence = PresenceSequence.objects.select_for_update(no_key=True).get(realm_id=user_profile.realm_id)
     #     new_last_update_id = presence_sequence.last_update_id + 1
     #     presence_sequence.last_update_id = new_last_update_id
     #     if creating:

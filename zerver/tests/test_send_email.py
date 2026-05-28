@@ -1,19 +1,31 @@
-from smtplib import SMTP, SMTPDataError, SMTPException, SMTPRecipientsRefused
+from datetime import timedelta
+from smtplib import (
+    SMTP,
+    SMTPDataError,
+    SMTPException,
+    SMTPRecipientsRefused,
+    SMTPServerDisconnected,
+)
 from unittest import mock
 
+import time_machine
 from django.core.mail.backends.locmem import EmailBackend
-from django.core.mail.backends.smtp import EmailBackend as SMTPBackend
 from django.core.mail.message import sanitize_address
+from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.send_email import (
     EmailNotDeliveredError,
     FromAddress,
+    _send_messages,
     build_email,
-    initialize_connection,
     logger,
     send_email,
+    send_immediate_email,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.worker.email_senders import ImmediateEmailSenderWorker
+from zproject.email_backends import PersistentSMTPEmailBackend
 
 
 class TestBuildEmail(ZulipTestCase):
@@ -70,39 +82,293 @@ class TestBuildEmail(ZulipTestCase):
 
 
 class TestSendEmail(ZulipTestCase):
-    def test_initialize_connection(self) -> None:
-        # Test the new connection case
+    @override_settings(
+        EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=5,
+    )
+    @time_machine.travel(timezone_now(), tick=False)
+    def test_ensure_connected_noop_validation(self) -> None:
+        backend = PersistentSMTPEmailBackend()
         with mock.patch.object(EmailBackend, "open", return_value=True):
-            backend = initialize_connection(None)
-            self.assertTrue(isinstance(backend, EmailBackend))
+            backend.ensure_connected()
+            self.assertEqual(backend.opened_at, timezone_now())
 
-        backend = mock.MagicMock(spec=SMTPBackend)
+        with (
+            mock.patch.object(backend, "open", wraps=backend.open) as open_call,
+            mock.patch.object(backend, "close", wraps=backend.close) as close_call,
+        ):
+            # Noop raises an exception — _validate_or_reconnect closes
+            # and reopens. open() is called twice: once from
+            # ensure_connected, once from the reconnect path.
+            backend.connection = mock.MagicMock(spec=SMTP)
+            backend.connection.noop.side_effect = AssertionError
+            with mock.patch(
+                "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
+            ):
+                backend.ensure_connected()
+            self.assertEqual(open_call.call_count, 2)
+            self.assertEqual(close_call.call_count, 0)
+            close_call.reset_mock()
+            open_call.reset_mock()
+
+            # Noop succeeds — no reconnect needed.
+            backend.connection = mock.MagicMock(spec=SMTP)
+            backend.connection.noop.return_value = [250]
+            backend.ensure_connected()
+
+            self.assertEqual(open_call.call_count, 1)
+            self.assertEqual(backend.connection.noop.call_count, 1)
+            close_call.reset_mock()
+            open_call.reset_mock()
+
+            # Noop returns 404 — _validate_or_reconnect closes and reopens.
+            backend.connection.noop.return_value = [404]
+            with mock.patch(
+                "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
+            ):
+                backend.ensure_connected()
+
+            self.assertEqual(open_call.call_count, 2)
+            self.assertEqual(close_call.call_count, 0)
+            close_call.reset_mock()
+            open_call.reset_mock()
+
+            # Test backoff procedure
+            open_call.side_effect = OSError
+            with self.assertRaises(OSError):
+                backend.ensure_connected()
+            # 3 calls to open as we try 3 times before giving up
+            self.assertEqual(open_call.call_count, 3)
+
+    def test_send_messages_backoff(self) -> None:
+        """_send_messages retries on connection-level errors but not
+        on SMTP protocol errors."""
+        connection = mock.MagicMock()
+
+        # ConnectionError: retries 3 times then raises
+        connection.send_messages.side_effect = ConnectionError
+        with self.assertRaises(ConnectionError):
+            _send_messages(connection, [])
+        self.assertEqual(connection.send_messages.call_count, 3)
+        connection.reset_mock()
+
+        # SMTPServerDisconnected: retries (it's a dropped connection)
+        connection.send_messages.side_effect = SMTPServerDisconnected
+        with self.assertRaises(SMTPServerDisconnected):
+            _send_messages(connection, [])
+        self.assertEqual(connection.send_messages.call_count, 3)
+        connection.reset_mock()
+
+        # SMTPRecipientsRefused: no retry (protocol error)
+        connection.send_messages.side_effect = SMTPRecipientsRefused(
+            recipients={"a@b.com": (550, b"Unknown")}
+        )
+        with self.assertRaises(SMTPRecipientsRefused):
+            _send_messages(connection, [])
+        self.assertEqual(connection.send_messages.call_count, 1)
+        connection.reset_mock()
+
+        # SMTPDataError: no retry (protocol error)
+        connection.send_messages.side_effect = SMTPDataError(550, b"Rejected")
+        with self.assertRaises(SMTPDataError):
+            _send_messages(connection, [])
+        self.assertEqual(connection.send_messages.call_count, 1)
+
+    def test_send_immediate_email_backoff_only_without_connection(self) -> None:
+        """send_immediate_email uses backoff when it creates the
+        connection (no caller-provided one), but sends directly
+        when a connection is provided."""
+        hamlet = self.example_user("hamlet")
+
+        # Without a connection: _send_messages is called (with backoff)
+        with (
+            mock.patch("zerver.lib.send_email._send_messages", return_value=1) as patched,
+            mock.patch.object(EmailBackend, "send_messages", return_value=1) as direct,
+        ):
+            send_immediate_email(
+                "zerver/emails/password_reset",
+                to_emails=[hamlet.email],
+                from_name="Test",
+                from_address=FromAddress.NOREPLY,
+                language="en",
+            )
+            self.assertEqual(patched.call_count, 1)
+            self.assertEqual(direct.call_count, 0)
+
+        # With a connection: send_messages is called directly (no backoff)
+        connection = mock.MagicMock()
+        connection.send_messages.return_value = 1
+        with mock.patch("zerver.lib.send_email._send_messages") as patched:
+            send_immediate_email(
+                "zerver/emails/password_reset",
+                to_emails=[hamlet.email],
+                from_name="Test",
+                from_address=FromAddress.NOREPLY,
+                language="en",
+                connection=connection,
+            )
+            self.assertEqual(patched.call_count, 0)
+            self.assertEqual(connection.send_messages.call_count, 1)
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend",
+        EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=0,
+    )
+    def test_worker_no_persistent_connection(self) -> None:
+        """With EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=0, the worker
+        does not hold a persistent SMTP connection, so connections
+        are not left open between sends."""
+        worker = ImmediateEmailSenderWorker()
+        self.assertIsNone(worker.connection)
+
+    @override_settings(
+        EMAIL_BACKEND="zproject.email_backends.PersistentSMTPEmailBackend",
+        EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=5,
+    )
+    def test_worker_persistent_connection(self) -> None:
+        """With EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES > 0, the
+        worker holds a PersistentSMTPEmailBackend and calls
+        ensure_connected() before each send."""
+        hamlet = self.example_user("hamlet")
+        worker = ImmediateEmailSenderWorker()
+        self.assertIsInstance(worker.connection, PersistentSMTPEmailBackend)
+
+        event = {
+            "template_prefix": "zerver/emails/password_reset",
+            "to_emails": [hamlet.email],
+            "from_name": "Test",
+            "from_address": FromAddress.NOREPLY,
+            "language": "en",
+            "context": {},
+        }
+        with (
+            mock.patch.object(worker.connection, "ensure_connected") as mock_ensure,
+            mock.patch("zerver.worker.email_senders_base.send_immediate_email") as mock_send,
+        ):
+            worker.send_email(event)
+            mock_ensure.assert_called_once()
+            mock_send.assert_called_once()
+            # Verify the persistent connection was passed through
+            self.assertIs(mock_send.call_args[1]["connection"], worker.connection)
+
+    @time_machine.travel(timezone_now(), tick=False)
+    @override_settings(EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=None)
+    def test_max_connection_lifetime_none(self) -> None:
+        backend = PersistentSMTPEmailBackend()
+
+        with (
+            mock.patch.object(backend, "open", wraps=backend.open) as open_call,
+            mock.patch.object(backend, "close", wraps=backend.close) as close_call,
+        ):
+            backend.open()
+            backend.connection = mock.MagicMock(spec=SMTP)
+            backend.connection.noop.return_value = [250]
+
+            self.assertEqual(close_call.call_count, 0)
+            self.assertEqual(open_call.call_count, 1)
+            self.assertEqual(backend.connection.noop.call_count, 0)
+            self.assertEqual(backend.opened_at, timezone_now())
+            close_call.reset_mock()
+            open_call.reset_mock()
+
+            # Old connection is open, we will not open a new connection because max connection lifetime is None.
+            with time_machine.travel(
+                timezone_now() + timedelta(minutes=10),
+                tick=False,
+            ):
+                backend.ensure_connected()
+            self.assertEqual(close_call.call_count, 0)
+            # open is called once from ensure_connected; no reconnect.
+            self.assertEqual(open_call.call_count, 1)
+            self.assertEqual(backend.connection.noop.call_count, 1)
+
+    @time_machine.travel(timezone_now(), tick=False)
+    @override_settings(EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=5)
+    def test_max_connection_lifetime_5_minutes(self) -> None:
+        backend = PersistentSMTPEmailBackend()
+
+        with (
+            mock.patch.object(backend, "open", wraps=backend.open) as open_call,
+            mock.patch.object(backend, "close", wraps=backend.close) as close_call,
+        ):
+            backend.open()
+            self.assertEqual(close_call.call_count, 0)
+            self.assertEqual(open_call.call_count, 1)
+            self.assertEqual(backend.opened_at, timezone_now())
+            close_call.reset_mock()
+            open_call.reset_mock()
+
+            backend.connection = mock.MagicMock(spec=SMTP)
+            backend.connection.noop.return_value = [250]
+            # Within lifetime — noop check, no reconnect.
+            with time_machine.travel(
+                timezone_now() + timedelta(minutes=3),
+                tick=False,
+            ):
+                backend.ensure_connected()
+
+            self.assertEqual(close_call.call_count, 0)
+            # open is called once from ensure_connected; no reconnect.
+            self.assertEqual(open_call.call_count, 1)
+            self.assertEqual(backend.connection.noop.call_count, 1)
+            close_call.reset_mock()
+            open_call.reset_mock()
+            backend.connection.noop.reset_mock()
+
+            # Past lifetime — reconnects without noop.
+            with time_machine.travel(
+                timezone_now() + timedelta(minutes=6),
+                tick=False,
+            ):
+                self.assertEqual(backend.opened_at, timezone_now() - timedelta(minutes=6))
+                old_connection_mock = mock.MagicMock(spec=SMTP)
+                backend.connection = old_connection_mock
+                with mock.patch(
+                    "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
+                ):
+                    backend.ensure_connected()
+                self.assertEqual(backend.opened_at, timezone_now())
+
+            self.assertEqual(close_call.call_count, 0)
+            self.assertEqual(open_call.call_count, 2)
+            self.assertEqual(old_connection_mock.noop.call_count, 0)
+            close_call.reset_mock()
+            open_call.reset_mock()
+
+            # Connections older than 24 hours are properly
+            # recycled: timedelta.seconds wraps at 24 hours, but
+            # total_seconds() does not.
+            with time_machine.travel(
+                timezone_now() + timedelta(hours=25),
+                tick=False,
+            ):
+                old_connection_mock = mock.MagicMock(spec=SMTP)
+                backend.connection = old_connection_mock
+                with mock.patch(
+                    "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
+                ):
+                    backend.ensure_connected()
+                self.assertEqual(backend.opened_at, timezone_now())
+
+            # Noop should not have been attempted on the old connection.
+            self.assertEqual(old_connection_mock.noop.call_count, 0)
+            self.assertEqual(open_call.call_count, 2)
+
+    def test_open_returns_false_for_new_connection(self) -> None:
+        """open() returns False even for new connections, which
+        prevents Django's send_messages from auto-closing the
+        persistent connection."""
+        backend = PersistentSMTPEmailBackend()
+        with mock.patch.object(EmailBackend, "open", return_value=True):
+            result = backend.open()
+        self.assertIs(result, False)
+
+    def test_close_clears_connection(self) -> None:
+        """close() actually closes the connection, enabling error
+        recovery in send_immediate_email."""
+        backend = PersistentSMTPEmailBackend()
         backend.connection = mock.MagicMock(spec=SMTP)
-
-        self.assertTrue(isinstance(backend, SMTPBackend))
-
-        # Test the old connection case when it is still open
-        backend.open.return_value = False
-        backend.connection.noop.return_value = [250]
-        initialize_connection(backend)
-        self.assertEqual(backend.open.call_count, 1)
-        self.assertEqual(backend.connection.noop.call_count, 1)
-
-        # Test the old connection case when it was closed by the server
-        backend.connection.noop.return_value = [404]
-        backend.close.return_value = False
-        initialize_connection(backend)
-        # 2 more calls to open, 1 more call to noop and 1 call to close
-        self.assertEqual(backend.open.call_count, 3)
-        self.assertEqual(backend.connection.noop.call_count, 2)
-        self.assertEqual(backend.close.call_count, 1)
-
-        # Test backoff procedure
-        backend.open.side_effect = OSError
-        with self.assertRaises(OSError):
-            initialize_connection(backend)
-        # 3 more calls to open as we try 3 times before giving up
-        self.assertEqual(backend.open.call_count, 6)
+        backend.close()
+        self.assertIsNone(backend.connection)
 
     def test_send_email_exceptions(self) -> None:
         hamlet = self.example_user("hamlet")

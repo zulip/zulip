@@ -6,7 +6,7 @@ import * as z from "zod/mini";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
@@ -56,6 +56,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
+import {place_caret_at_end} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -83,7 +84,7 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
         return;
     }
     switch (tab_key_value) {
-        case "all-streams": {
+        case "all": {
             browser_history.update("#channels/all");
             break;
         }
@@ -101,7 +102,7 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     }
 }
 
-export function open_stream_edit_modal(stream_id: number): void {
+export function open_stream_edit_modal(stream_id: number, open_modal_button_id: string): void {
     const stream = sub_store.get(stream_id);
     assert(stream !== undefined);
 
@@ -113,14 +114,23 @@ export function open_stream_edit_modal(stream_id: number): void {
         max_stream_name_length: realm.max_stream_name_length,
         max_stream_description_length: realm.max_stream_description_length,
     };
+    const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+        inline_with_text: true,
+        stream,
+    });
     const change_stream_info_modal = render_change_stream_info_modal(template_data);
 
     const heading = is_archived
         ? $t_html(
-              {defaultMessage: "Edit #{channel_name} (<i>archived</i>)"},
-              {channel_name: stream.name},
+              {defaultMessage: "Edit <z-link></z-link> (<i>archived</i>)"},
+              {
+                  "z-link": () => stream_name_with_privacy_symbol_html,
+              },
           )
-        : $t_html({defaultMessage: "Edit #{channel_name}"}, {channel_name: stream.name});
+        : $t_html(
+              {defaultMessage: "Edit <z-link></z-link>"},
+              {"z-link": () => stream_name_with_privacy_symbol_html},
+          );
     dialog_widget.launch({
         modal_title_html: heading,
         modal_content_html: change_stream_info_modal,
@@ -131,6 +141,21 @@ export function open_stream_edit_modal(stream_id: number): void {
             $("#change_stream_info_modal .dialog_submit_button")
                 .addClass("save-button")
                 .attr("data-stream-id", stream_id);
+        },
+        on_shown() {
+            let $input: JQuery<HTMLInputElement | HTMLTextAreaElement> | undefined;
+            switch (open_modal_button_id) {
+                case "archived_stream_rename":
+                case "channel_title_open_channel_info_modal":
+                    $input = $("#change_stream_name");
+                    break;
+                case "open_stream_info_modal":
+                    $input = $("#change_stream_description");
+                    break;
+            }
+            if ($input) {
+                place_caret_at_end(util.the($input));
+            }
         },
         update_submit_disabled_state_on_change: true,
     });
@@ -204,7 +229,7 @@ export function get_display_text_for_realm_message_retention_setting(): string {
 
 function get_stream_id(target: HTMLElement): number {
     const $row = $(target).closest(
-        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
+        ".stream-row, .stream-title-buttons, .subscription_settings, .save-button",
     );
     return Number.parseInt($row.attr("data-stream-id")!, 10);
 }
@@ -255,6 +280,7 @@ export function update_stream_description(sub: StreamSubscription): void {
     $edit_container.find("input.description").val(sub.description);
     const html = render_stream_description({
         rendered_description: postprocess_content(sub.rendered_description),
+        use_view_only_styling: true,
     });
     $edit_container.find(".stream-description").html(html);
 }
@@ -481,12 +507,11 @@ export function show_settings_for(node: HTMLElement): void {
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
-    $("#subscription_overlay .stream_email_address_error").hide();
+    $("#subscription_overlay .channel-general-settings-status").hide();
     $("#id_topics_policy").val(sub.topics_policy);
 
     $edit_container.addClass("show");
 
-    stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     set_up_channel_privacy_dropdown_widget(undefined, sub);
@@ -611,6 +636,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         });
     }
 
+    let sender_dropdown_widget: DropdownWidget;
     function generate_email_modal_post_render(): void {
         function update_option_label(sender: User | CurrentUser | Bot): string {
             if (sender.user_id === people.EMAIL_GATEWAY_BOT.user_id) {
@@ -651,7 +677,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             event.preventDefault();
         }
 
-        const sender_dropdown_widget = new dropdown_widget.DropdownWidget({
+        sender_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "sender_channel_email_address",
             get_options,
             item_click_callback,
@@ -668,7 +694,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         dialog_widget.submit_api_request(
             channel.get,
             "/json/streams/" + sub.stream_id + "/email_address",
-            {},
+            {sender_id: sender_dropdown_widget.value()},
             {
                 success_continuation(response_data) {
                     const email = z.object({email: z.string()}).parse(response_data).email;
@@ -735,19 +761,37 @@ export function initialize(): void {
             e.preventDefault();
             e.stopPropagation();
             const stream_id = get_stream_id(this);
-            open_stream_edit_modal(stream_id);
+            open_stream_edit_modal(stream_id, $(this).attr("id")!);
         },
     );
 
-    $("body").on("click", "#change_stream_info_modal #archived_stream_rename", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    $("body").on(
+        "click",
+        "#channel_title_open_channel_info_modal",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const $target = $(e.currentTarget).parents(".stream-title-buttons");
+            const stream_id = Number.parseInt($target.attr("data-stream-id")!, 10);
 
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
+            dialog_widget.close();
+            open_stream_edit_modal(stream_id, $(this).attr("id")!);
+        },
+    );
 
-        dialog_widget.close();
-        open_stream_edit_modal(stream_id);
-    });
+    $("body").on(
+        "click",
+        "#change_stream_info_modal #archived_stream_rename",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
+
+            dialog_widget.close();
+            open_stream_edit_modal(stream_id, $(this).attr("id")!);
+        },
+    );
 
     $("#channels_overlay_container").on("keydown", "#change_stream_description", (e) => {
         // Stream descriptions cannot be multiline, so disable enter key
@@ -776,15 +820,9 @@ export function initialize(): void {
 
             const $target = $(event.target).parents(".main-view-banner");
             const stream_id = Number.parseInt($target.attr("data-stream-id")!, 10);
-            // Makes sure we take the correct stream_row.
-            const $stream_row = $(
-                `#channels_overlay_container div.stream-row[data-stream-id='${CSS.escape(
-                    stream_id.toString(),
-                )}']`,
-            );
             const sub = sub_store.get(stream_id);
             assert(sub !== undefined);
-            stream_settings_components.sub_or_unsub(sub, $stream_row);
+            stream_settings_components.sub_or_unsub(sub);
             $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
@@ -810,7 +848,7 @@ export function initialize(): void {
                     ui_report.error(
                         $t_html({defaultMessage: "Failed"}),
                         xhr,
-                        $(".stream_email_address_error"),
+                        $(".channel-general-settings-status"),
                     );
                 },
             });
@@ -852,10 +890,18 @@ export function initialize(): void {
                     sub.stream_id.toString(),
                 )}']`,
             );
-            stream_settings_components.sub_or_unsub(sub, $stream_row);
 
-            if (!sub.subscribed) {
-                open_edit_panel_for_row(util.the($stream_row));
+            if ($(this).hasClass("action-button")) {
+                // If user tries to subscribe or unsubscribe using the
+                // button in the right side subheader, we do not pass
+                // $stream_row as we do not want the spinner to appear
+                // replacing the checkmark.
+                stream_settings_components.sub_or_unsub(sub, undefined, $(this));
+            } else {
+                stream_settings_components.sub_or_unsub(sub, $stream_row);
+                if (!sub.subscribed) {
+                    open_edit_panel_for_row(util.the($stream_row));
+                }
             }
             stream_ui_updates.update_channel_email_section(sub);
 
@@ -876,7 +922,10 @@ export function initialize(): void {
         const stream_id = get_stream_id(this);
         const stream = sub_store.get(stream_id);
 
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
+        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
+            stream,
+        });
 
         const is_moderation_request_channel =
             stream_id === realm.realm_moderation_request_channel_id;
@@ -893,7 +942,6 @@ export function initialize(): void {
             is_moderation_request_channel;
 
         const modal_content_html = render_settings_deactivation_stream_modal({
-            stream_name_with_privacy_symbol_html,
             is_moderation_request_channel,
             is_new_stream_announcements_stream,
             is_signup_announcements_stream,
@@ -939,7 +987,10 @@ export function initialize(): void {
         }
 
         const stream = sub_store.get(stream_id);
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
+        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
+            stream,
+        });
         const modal_content_html = render_settings_reactivation_stream_modal();
 
         confirm_dialog.launch({
@@ -1087,7 +1138,24 @@ export function initialize(): void {
         },
     );
 
-    $("#channels_overlay_container").on("click", ".create-channel-folder-button", () => {
-        channel_folders_ui.add_channel_folder();
-    });
+    // Scope to #stream_settings (the editing pane) so this handler does not
+    // fire for the sibling creation pane (#stream-creation), which has its
+    // own handler.
+    $("#channels_overlay_container").on(
+        "click",
+        "#stream_settings .create-channel-folder-button",
+        () => {
+            const active_stream_id = stream_settings_components.get_active_data().id;
+            const sub = sub_store.get(active_stream_id);
+            assert(sub !== undefined);
+            channel_folders_ui.add_channel_folder((folder_id) => {
+                settings_components.set_dropdown_list_widget_setting_value("folder_id", folder_id);
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                settings_components.save_discard_stream_settings_widget_status_handler(
+                    $edit_container.find(".stream-settings-subsection"),
+                    sub,
+                );
+            });
+        },
+    );
 }

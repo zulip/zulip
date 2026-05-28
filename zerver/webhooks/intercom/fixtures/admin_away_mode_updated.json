@@ -1,0 +1,34 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "admin",
+            "id": 1234567,
+            "name": "John Doe",
+            "email": "admin@example.com",
+            "job_title": null,
+            "away_mode_enabled": true,
+            "away_mode_reassign": false,
+            "away_status_reason": "",
+            "has_inbox_seat": true,
+            "team_ids": [
+                9680998
+            ],
+            "avatar": {
+                "type": "avatar",
+                "image_url": "https://static.intercomassets.com/assets/default-avatars/admins/128-da5b0f4e5162b0f45cba5a162df89b82eaddb92c5f5ae86e18629c8656aa3365.png"
+            }
+        }
+    },
+    "links": {},
+    "id": "notif_ca8a37c8-c6b7-4a5c-89bf-1491a6e53131",
+    "topic": "admin.away_mode_updated",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768016828,
+    "created_at": 1768016828,
+    "self": null
+}

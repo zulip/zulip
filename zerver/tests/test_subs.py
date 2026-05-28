@@ -90,7 +90,12 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import StreamTopicsPolicyEnum, get_default_stream_groups, get_stream
-from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
+from zerver.models.users import (
+    active_non_guest_user_ids,
+    active_user_ids,
+    get_user,
+    get_user_profile_by_id_in_realm,
+)
 from zerver.views.streams import compose_views
 
 if TYPE_CHECKING:
@@ -742,6 +747,172 @@ class StreamAdminTest(ZulipTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    def test_events_when_changing_stream_privacy(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+
+        anonymous_group = UserGroupMembersData(
+            direct_members=[hamlet.id],
+            direct_subgroups=[],
+        )
+
+        realm = iago.realm
+        stream = self.make_stream("test_stream", realm)
+        self.subscribe(othello, stream.name)
+        self.subscribe(desdemona, stream.name)
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", anonymous_group, acting_user=desdemona
+        )
+
+        # These users will always have metadata access to the stream - Iago (realm admin),
+        # Othello (subscriber) and Hamlet (member of can_administer_channel_group).
+        users_with_metadata_access_always = [othello.id, iago.id, hamlet.id]
+
+        # Test when changing stream from public to private.
+        params = {
+            "is_private": orjson.dumps(True).decode(),
+        }
+        self.login("desdemona")
+        with self.capture_send_event_calls(expected_num_events=3) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.invite_only, True)
+
+        delete_event = events[0]
+        self.assertEqual(delete_event["event"]["type"], "stream")
+        self.assertEqual(delete_event["event"]["op"], "delete")
+        update_event = events[1]
+        self.assertEqual(update_event["event"]["type"], "stream")
+        self.assertEqual(update_event["event"]["op"], "update")
+
+        # Cordelia loses access to the stream.
+        self.assertIn(cordelia.id, delete_event["users"])
+        self.assertNotIn(cordelia.id, update_event["users"])
+        # Polonius did not have access initially as well
+        # so does not receive any event.
+        self.assertNotIn(polonius.id, delete_event["users"])
+        self.assertNotIn(polonius.id, update_event["users"])
+
+        # Users having metadata access originally receive only
+        # update event.
+        for user_id in users_with_metadata_access_always:
+            self.assertNotIn(user_id, delete_event["users"])
+            self.assertIn(user_id, update_event["users"])
+
+        # Test when changing stream from private to public.
+        params = {
+            "is_private": orjson.dumps(False).decode(),
+        }
+        with self.capture_send_event_calls(expected_num_events=4) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+
+        create_event = events[0]
+        self.assertEqual(create_event["event"]["type"], "stream")
+        self.assertEqual(create_event["event"]["op"], "create")
+        peer_add_event = events[1]
+        self.assertEqual(peer_add_event["event"]["type"], "subscription")
+        self.assertEqual(peer_add_event["event"]["op"], "peer_add")
+        update_event = events[2]
+        self.assertEqual(update_event["event"]["type"], "stream")
+        self.assertEqual(update_event["event"]["op"], "update")
+
+        # Cordelia gains access to the stream and receives a peer_add
+        # event as well to obtain subscriber data, but does not
+        # receive the update event as they already receive the latest
+        # data from stream creation event.
+        self.assertIn(cordelia.id, create_event["users"])
+        self.assertIn(cordelia.id, peer_add_event["users"])
+        self.assertNotIn(cordelia.id, update_event["users"])
+        # Polonius still cannot access an unsubscribed public stream.
+        self.assertNotIn(polonius.id, create_event["users"])
+        self.assertNotIn(polonius.id, peer_add_event["users"])
+        self.assertNotIn(polonius.id, update_event["users"])
+
+        # Users having metadata access originally receive only
+        # update event.
+        for user_id in users_with_metadata_access_always:
+            self.assertNotIn(user_id, create_event["users"])
+            self.assertNotIn(user_id, peer_add_event["users"])
+            self.assertIn(user_id, update_event["users"])
+
+        # Test when changing stream from public to web-public.
+        params = {"is_web_public": orjson.dumps(True).decode()}
+        with self.capture_send_event_calls(expected_num_events=4) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.is_web_public, True)
+
+        create_event = events[0]
+        self.assertEqual(create_event["event"]["type"], "stream")
+        self.assertEqual(create_event["event"]["op"], "create")
+        peer_add_event = events[1]
+        self.assertEqual(peer_add_event["event"]["type"], "subscription")
+        self.assertEqual(peer_add_event["event"]["op"], "peer_add")
+        update_event = events[2]
+        self.assertEqual(update_event["event"]["type"], "stream")
+        self.assertEqual(update_event["event"]["op"], "update")
+
+        # Polonius gains access to the stream and receives a peer_add
+        # event as well to obtain subscriber data, but does not
+        # receive the update event as they already receive the latest
+        # data from stream creation event.
+        self.assertIn(polonius.id, create_event["users"])
+        self.assertIn(polonius.id, peer_add_event["users"])
+        self.assertNotIn(polonius.id, update_event["users"])
+
+        # Cordelia already had access to the stream so receives only
+        # update event.
+        self.assertNotIn(cordelia.id, create_event["users"])
+        self.assertNotIn(cordelia.id, peer_add_event["users"])
+        self.assertIn(cordelia.id, update_event["users"])
+
+        # Users having metadata access originally receive only
+        # update event.
+        for user_id in users_with_metadata_access_always:
+            self.assertNotIn(user_id, create_event["users"])
+            self.assertNotIn(user_id, peer_add_event["users"])
+            self.assertIn(user_id, update_event["users"])
+
+        # Test when changing stream from web-public to private.
+        params = {
+            "is_web_public": orjson.dumps(False).decode(),
+            "is_private": orjson.dumps(True).decode(),
+        }
+        with self.capture_send_event_calls(expected_num_events=3) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.is_web_public, False)
+        self.assertEqual(stream.invite_only, True)
+
+        delete_event = events[0]
+        self.assertEqual(delete_event["event"]["type"], "stream")
+        self.assertEqual(delete_event["event"]["op"], "delete")
+
+        update_event = events[1]
+        self.assertEqual(update_event["event"]["type"], "stream")
+        self.assertEqual(update_event["event"]["op"], "update")
+
+        # Both cordelia and polonius lose access to the stream.
+        self.assertIn(polonius.id, delete_event["users"])
+        self.assertIn(cordelia.id, delete_event["users"])
+        self.assertNotIn(polonius.id, update_event["users"])
+        self.assertNotIn(cordelia.id, update_event["users"])
+
+        # Users having metadata access originally receive only
+        # update event.
+        for user_id in users_with_metadata_access_always:
+            self.assertNotIn(user_id, create_event["users"])
+            self.assertNotIn(user_id, peer_add_event["users"])
+            self.assertIn(user_id, update_event["users"])
+
     def test_updating_protected_history_and_can_create_topic_group_for_streams(self) -> None:
         user_profile = self.example_user("iago")
         self.login_user(user_profile)
@@ -915,6 +1086,46 @@ class StreamAdminTest(ZulipTestCase):
         stream.refresh_from_db()
         self.assertEqual(stream.history_public_to_subscribers, False)
         self.assertEqual(stream.can_create_topic_group.id, everyone_system_group.id)
+
+    def test_attachment_in_web_public_stream(self) -> None:
+        self.login("desdemona")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        owner = self.example_user("desdemona")
+        realm = owner.realm
+        self.make_stream("test_stream", realm=realm, is_web_public=True)
+        self.subscribe(owner, "test_stream")
+        body = f"First message ...[zulip.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "test_stream", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertTrue(attachment.is_web_public)
+
+        self.assertTrue(validate_attachment_request_for_spectator_access(realm, attachment))
+
+        do_set_realm_property(realm, "enable_spectator_access", False, acting_user=None)
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertIsNone(attachment.is_web_public)
+
+        self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertIsNone(attachment.is_web_public)
+
+        # Check that is_web_public is set as False when uploading a file in
+        # web-public stream with spectator access disabled for realm.
+        fp = StringIO("zulip!")
+        fp.name = "zulip1.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        body = f"Second message ...[zulip1.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "test_stream", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertEqual(attachment.is_web_public, False)
 
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")
@@ -1347,6 +1558,10 @@ class StreamAdminTest(ZulipTestCase):
                 {"is_private": orjson.dumps(False).decode()},
                 f"@_**Desdemona|{desdemona.id}** changed the [access permissions]",
             ),
+            (
+                {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
+                f'@_**Desdemona|{desdemona.id}** changed the "Allow posting to the *general chat* topic?" setting',
+            ),
         ]
 
         for param, notice in param_to_notice_list:
@@ -1496,10 +1711,10 @@ class StreamAdminTest(ZulipTestCase):
             notified_user_ids = set(event["users"])
             self.assertCountEqual(
                 notified_user_ids,
-                set(active_non_guest_user_ids(stream.realm_id)),
+                set(active_user_ids(stream.realm_id)),
             )
-            # Guest user should not be notified.
-            self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
+            # Guest user should be notified.
+            self.assertIn(self.example_user("polonius").id, notified_user_ids)
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.deactivated)
@@ -1611,7 +1826,9 @@ class StreamAdminTest(ZulipTestCase):
         def get_notified_user_ids() -> set[int]:
             # Two events should be sent: stream_name update and notification message.
             with self.capture_send_event_calls(expected_num_events=2) as events:
-                stream_id = get_stream("stream_name1", user_profile.realm).id
+                stream = get_stream("stream_name1", user_profile.realm)
+                stream_id = stream.id
+                old_name = stream.name
                 result = self.client_patch(
                     f"/json/streams/{stream_id}", {"new_name": "stream_name2"}
                 )
@@ -1625,7 +1842,7 @@ class StreamAdminTest(ZulipTestCase):
                     property="name",
                     value="stream_name2",
                     stream_id=stream_id,
-                    name="sTREAm_name1",
+                    name=old_name,
                 ),
             )
             self.assertRaises(Stream.DoesNotExist, get_stream, "stream_name1", realm)
@@ -4085,7 +4302,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
         self.assertNotIn(self.example_user("polonius").id, add_peer_event["users"])
-        self.assert_length(add_peer_event["users"], 11)
+        self.assert_length(add_peer_event["users"], 12)
         self.assertEqual(add_peer_event["event"]["type"], "subscription")
         self.assertEqual(add_peer_event["event"]["op"], "peer_add")
         self.assertEqual(add_peer_event["event"]["user_ids"], [self.user_profile.id])
@@ -4116,7 +4333,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # We don't send a peer_add event to othello
         self.assertNotIn(user_profile.id, add_peer_event["users"])
         self.assertNotIn(self.example_user("polonius").id, add_peer_event["users"])
-        self.assert_length(add_peer_event["users"], 11)
+        self.assert_length(add_peer_event["users"], 12)
         self.assertEqual(add_peer_event["event"]["type"], "subscription")
         self.assertEqual(add_peer_event["event"]["op"], "peer_add")
         self.assertEqual(add_peer_event["event"]["user_ids"], [user_profile.id])
@@ -5175,16 +5392,10 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assert_length(notification_bot_dms, 5)
-        notif_bot_dm_recipients = [
-            dm["recipient__type_id"] for dm in notification_bot_dms.values("recipient__type_id")
-        ]
-        self.assertSetEqual(
-            {id for id in user_ids if id != desdemona.id}, set(notif_bot_dm_recipients)
-        )
 
         announcement_channel_message = Message.objects.filter(
             realm_id=realm.id,
@@ -5210,7 +5421,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5263,7 +5474,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5294,7 +5505,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)

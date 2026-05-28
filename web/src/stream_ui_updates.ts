@@ -34,7 +34,7 @@ function settings_button_for_sub(sub: StreamSubscription): JQuery {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
     return $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .subscribe-button`,
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .subscribe-button`,
     );
 }
 
@@ -167,7 +167,9 @@ export function update_history_public_to_subscribers_on_can_create_topic_group_c
 }
 
 export function initialize_cant_subscribe_popover(): void {
-    const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
+    const $button_wrapper = $(
+        "#subscription_overlay .stream-title-buttons .sub_unsub_button_wrapper",
+    );
     settings_components.initialize_disable_button_hint_popover($button_wrapper, undefined);
 }
 
@@ -227,13 +229,13 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 
     if (sub.subscribed) {
+        $settings_button.find(".action-button-label").text($t({defaultMessage: "Unsubscribe"}));
         $settings_button
-            .text($t({defaultMessage: "Unsubscribe"}))
             .removeClass("unsubscribed action-button-subtle-brand")
             .addClass("action-button-subtle-neutral");
     } else {
+        $settings_button.find(".action-button-label").text($t({defaultMessage: "Subscribe"}));
         $settings_button
-            .text($t({defaultMessage: "Subscribe"}))
             .addClass("unsubscribed action-button-subtle-brand")
             .removeClass("action-button-subtle-neutral");
     }
@@ -253,34 +255,6 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 }
 
-export function update_settings_button_for_archive_and_unarchive(sub: StreamSubscription): void {
-    if (!hash_parser.is_editing_stream(sub.stream_id)) {
-        return;
-    }
-
-    // This is for the Archive/Unarchive button in the right panel.
-    const $archive_button = $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
-    );
-    const $unarchive_button = $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
-    );
-
-    if (!stream_data.can_administer_channel(sub)) {
-        $archive_button.hide();
-        $unarchive_button.hide();
-        return;
-    }
-
-    if (sub.is_archived) {
-        $archive_button.hide();
-        $unarchive_button.show();
-    } else {
-        $unarchive_button.hide();
-        $archive_button.show();
-    }
-}
-
 export function update_channel_email_section(sub: StreamSubscription): void {
     // These are in the right panel.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
@@ -289,7 +263,7 @@ export function update_channel_email_section(sub: StreamSubscription): void {
     const $settings = $(
         `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id.toString())}']`,
     );
-    if (stream_data.can_access_stream_email(sub)) {
+    if (stream_data.can_post_messages_in_stream(sub)) {
         $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".stream-email-box").hide();
@@ -519,10 +493,15 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
     }
 
     // We are only concerned with the Subscribers tab for editing streams.
-    const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
+    const $add_subscribers_container = $(".edit_subscribers_for_stream .add_subscribers_container");
 
     if (current_user.is_guest) {
         // For guest users, we just hide the add_subscribers feature.
+        $(".subscriber_list_settings_container .add-subscribers-heading").hide();
+        $(
+            ".subscriber_list_settings_container .send_notification_to_new_subscribers_container",
+        ).hide();
+        $(".subscriber_list_settings_container .add-subscribers-subtitle").hide();
         $add_subscribers_container.hide();
         return;
     }
@@ -572,17 +551,15 @@ export function enable_or_disable_add_subscribers_elements(
     stream_creation = false,
 ): void {
     const $input_element = $container_elem.find(".input").expectOne();
-    const $add_subscribers_container = $<tippy.PopperElement>(
-        ".edit_subscribers_for_stream .subscriber_list_settings",
-    );
 
     $input_element.prop("contenteditable", enable_elem);
 
     if (enable_elem) {
-        $add_subscribers_container[0]?._tippy?.destroy();
-        $container_elem.find(".add_subscribers_container").removeClass("add_subscribers_disabled");
+        const tippy_container: tippy.ReferenceElement = $container_elem[0]!;
+        tippy_container._tippy?.destroy();
+        $container_elem.removeClass("add_subscribers_disabled");
     } else {
-        $container_elem.find(".add_subscribers_container").addClass("add_subscribers_disabled");
+        $container_elem.addClass("add_subscribers_disabled");
     }
 
     if (!stream_creation) {

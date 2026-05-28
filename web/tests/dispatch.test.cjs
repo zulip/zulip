@@ -38,6 +38,10 @@ mock_esm("../src/inbox_ui", {
 const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const compose_recipient = mock_esm("../src/compose_recipient");
+mock_esm("../src/compose_validate", {
+    validate_and_update_send_button_status: noop,
+    warn_if_guest_in_dm_recipient: noop,
+});
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
@@ -148,7 +152,6 @@ page_params.test_suite = false;
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
 const channel_folders = zrequire("channel_folders");
-const compose_validate = zrequire("compose_validate");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
@@ -174,6 +177,16 @@ people.init();
 people.add_active_user(me);
 people.add_active_user(test_user);
 people.initialize_current_user(me.user_id);
+
+const bot_user = {
+    email: "the-bot@example.com",
+    user_id: 42,
+    full_name: "The Bot",
+    bot_type: 1,
+    is_active: true,
+    bot_owner_id: test_user.user_id,
+};
+people.add_active_user(bot_user);
 
 message_store.update_message_cache({
     type: "server_message",
@@ -408,7 +421,10 @@ run_test("default_streams", ({override}) => {
 });
 
 run_test("onboarding_steps", () => {
-    onboarding_steps.initialize({onboarding_steps: []}, () => {});
+    onboarding_steps.initialize(
+        {onboarding_steps: []},
+        {show_message_view() {}, update_recipient_row_attention_level() {}},
+    );
     const event = event_fixtures.onboarding_steps;
     const one_time_notices = new Set();
     for (const onboarding_step of event.onboarding_steps) {
@@ -419,7 +435,7 @@ run_test("onboarding_steps", () => {
 });
 
 run_test("invites_changed", ({override}) => {
-    $.create("#admin-invites-list", {children: ["stub"]});
+    $.set_results("#admin-invites-list", ["stub"]);
     const event = event_fixtures.invites_changed;
     const stub = make_stub();
     override(settings_invites, "set_up", stub.f);
@@ -648,8 +664,7 @@ run_test("channel_folders", ({override}) => {
     server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
 });
 
-run_test("realm settings", ({override, override_rewire}) => {
-    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
+run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
 
@@ -735,6 +750,10 @@ run_test("realm settings", ({override, override_rewire}) => {
     event = event_fixtures.realm__update__enable_spectator_access;
     dispatch(event);
     assert_same(realm.realm_enable_spectator_access, true);
+
+    event = event_fixtures.realm__update__media_preview_size;
+    dispatch(event);
+    assert_same(realm.realm_media_preview_size, 150);
 
     event = event_fixtures.realm__update_dict__default;
     override(realm, "realm_create_multiuse_invite_group", 1);
@@ -830,6 +849,7 @@ run_test("realm_bot add", ({override}) => {
     override(bot_data, "add", bot_stub.f);
     override(settings_bots, "redraw_your_bots_list", noop);
     override(settings_bots, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
 
     dispatch(event);
 
@@ -844,6 +864,7 @@ run_test("realm_bot delete", ({override}) => {
     override(bot_data, "del", bot_stub.f);
     override(settings_bots, "redraw_your_bots_list", noop);
     override(settings_bots, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -852,50 +873,19 @@ run_test("realm_bot delete", ({override}) => {
 });
 
 run_test("realm_bot update", ({override}) => {
-    let event = event_fixtures.realm_bot__update;
-    let bot_stub = make_stub();
+    const event = event_fixtures.realm_bot__update;
+    const bot_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
 
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
-    let args = bot_stub.get_args("user_id", "bot");
+    const args = bot_stub.get_args("user_id", "bot");
     assert_same(args.user_id, event.bot.user_id);
     assert_same(args.bot, event.bot);
-
-    bot_stub = make_stub();
-    override(bot_data, "update", bot_stub.f);
-    let toggle_download_container_stub = make_stub();
-    override(
-        settings_bots,
-        "toggle_bot_config_download_container",
-        toggle_download_container_stub.f,
-    );
-
-    event = event_fixtures.realm_bot__update_owner;
-    override(settings_bots, "redraw_your_bots_list", noop);
-    dispatch(event);
-    assert.equal(toggle_download_container_stub.num_calls, 1);
-    assert.equal(bot_stub.num_calls, 1);
-    args = bot_stub.get_args("user_id", "bot");
-    assert_same(args.user_id, event.bot.user_id);
-    assert_same(args.bot, event.bot);
-
-    toggle_download_container_stub = make_stub();
-    override(
-        settings_bots,
-        "toggle_bot_config_download_container",
-        toggle_download_container_stub.f,
-    );
-
-    event = event_fixtures.realm_bot__update_is_active;
-    dispatch(event);
-    assert.equal(toggle_download_container_stub.num_calls, 1);
 });
 
 run_test("realm_emoji", ({override}) => {
-    const event = event_fixtures.realm_emoji__update;
-
     const ui_func_names = [
         [settings_emoji, "populate_emoji"],
         [emoji_picker, "rebuild_catalog"],
@@ -910,9 +900,10 @@ run_test("realm_emoji", ({override}) => {
     }
 
     // Make sure we start with nothing...
-    emoji.update_emojis([]);
+    assert_same(emoji.get_server_realm_emoji_data(), {});
     assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
 
+    let event = event_fixtures.realm_emoji__add;
     dispatch(event);
 
     // Now emoji.js knows about the spain emoji.
@@ -921,6 +912,14 @@ run_test("realm_emoji", ({override}) => {
     // Make sure our UI modules all got dispatched the same simple way.
     for (const stub of ui_stubs) {
         assert.equal(stub.num_calls, 1);
+        assert.equal(stub.last_call_args.length, 0);
+    }
+
+    event = event_fixtures.realm_emoji__update_one;
+    dispatch(event);
+    assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
+    for (const stub of ui_stubs) {
+        assert.equal(stub.num_calls, 2);
         assert.equal(stub.last_call_args.length, 0);
     }
 });
@@ -1199,13 +1198,10 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
     override(user_settings, "web_escape_navigates_to_home_view", false);
-    let toggled = [];
-    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass = (cls) => {
-        toggled.push(cls);
-    };
+    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").addClass("notdisplayed");
     dispatch(event);
+    assert.ok(!$("#go-to-home-view-hotkey-help").hasClass("notdisplayed"));
     assert_same(user_settings.web_escape_navigates_to_home_view, true);
-    assert_same(toggled, ["notdisplayed"]);
 
     let called = false;
     message_lists.current.rerender = () => {
@@ -1234,13 +1230,10 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__high_contrast_mode;
     override(user_settings, "high_contrast_mode", false);
-    toggled = [];
-    $("body").toggleClass = (cls) => {
-        toggled.push(cls);
-    };
+    $("body").removeClass("high-contrast");
     dispatch(event);
     assert_same(user_settings.high_contrast_mode, true);
-    assert_same(toggled, ["high-contrast"]);
+    assert.ok($("body").hasClass("high-contrast"));
 
     event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
     override(user_settings, "web_mark_read_on_scroll_policy", 3);
@@ -1646,6 +1639,8 @@ run_test("server_event_dispatch_op_errors", () => {
     server_events_dispatch.dispatch_normal_event({type: "realm_bot", op: "other"});
     blueslip.expect("error", "Unexpected event type realm_domains/other");
     server_events_dispatch.dispatch_normal_event({type: "realm_domains", op: "other"});
+    blueslip.expect("error", "Unexpected event type realm_emoji/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_emoji", op: "other"});
     blueslip.expect("error", "Unexpected event type realm_user/other");
     server_events_dispatch.dispatch_normal_event({type: "realm_user", op: "other"});
     blueslip.expect("error", "Unexpected event type stream/other");

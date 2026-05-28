@@ -1,5 +1,7 @@
 "use strict";
 
+const {Role} = require("./example_user.cjs");
+
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
 //  have a tool called check-schemas that tries
@@ -141,12 +143,7 @@ exports.fixtures = {
             size: 4096,
             path_id: "path_id",
             create_time: fake_now,
-            messages: [
-                {
-                    id: 1000,
-                    date_sent: fake_now,
-                },
-            ],
+            message_ids: [1000],
         },
         upload_space_used: 90000,
     },
@@ -246,6 +243,11 @@ exports.fixtures = {
         message_type: "stream",
         stream_id: 99,
         topic: "topic1",
+    },
+
+    has_webex_token: {
+        type: "has_webex_token",
+        value: true,
     },
 
     has_zoom_token: {
@@ -348,11 +350,6 @@ exports.fixtures = {
         emoji_name: "airplane",
         emoji_code: "2708",
         user_id: test_user.user_id,
-        user: {
-            email: test_user.email,
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
     },
 
     reaction__remove: {
@@ -363,11 +360,6 @@ exports.fixtures = {
         emoji_name: "8ball",
         emoji_code: "1f3b1",
         user_id: test_user.user_id,
-        user: {
-            email: test_user.email,
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
     },
 
     realm__deactivated: {
@@ -409,6 +401,13 @@ exports.fixtures = {
         op: "update",
         property: "invite_required",
         value: false,
+    },
+
+    realm__update__media_preview_size: {
+        type: "realm",
+        op: "update",
+        property: "media_preview_size",
+        value: 150,
     },
 
     realm__update__moderation_request_channel_id: {
@@ -520,17 +519,10 @@ exports.fixtures = {
         type: "realm_bot",
         op: "add",
         bot: {
-            email: "the-bot@example.com",
             user_id: 42,
-            avatar_url: "/avatar/42",
-            api_key: "SOME_KEY",
-            full_name: "The Bot",
-            bot_type: 1,
             default_all_public_streams: true,
             default_events_register_stream: "whatever",
             default_sending_stream: "whatever",
-            is_active: true,
-            owner_id: test_user.user_id,
             services: [],
         },
     },
@@ -548,25 +540,7 @@ exports.fixtures = {
         op: "update",
         bot: {
             user_id: 4321,
-            full_name: "The Bot Has A New Name",
-        },
-    },
-
-    realm_bot__update_is_active: {
-        type: "realm_bot",
-        op: "update",
-        bot: {
-            user_id: 4321,
-            is_active: false,
-        },
-    },
-
-    realm_bot__update_owner: {
-        type: "realm_bot",
-        op: "update",
-        bot: {
-            user_id: 4321,
-            owner_id: test_user.user_id,
+            default_sending_stream: "new-stream",
         },
     },
 
@@ -594,10 +568,26 @@ exports.fixtures = {
         domain: "ramen",
     },
 
-    realm_emoji__update: {
+    realm_emoji__add: {
         type: "realm_emoji",
-        op: "update",
-        realm_emoji: exports.test_realm_emojis,
+        op: "add",
+        emoji: {
+            id: "101",
+            name: "spain",
+            source_url: "/some/path/to/spain.gif",
+            still_url: "/some/path/to/spain.png",
+            deactivated: false,
+            author_id: test_user.user_id,
+        },
+    },
+
+    realm_emoji__update_one: {
+        type: "realm_emoji",
+        op: "update_one",
+        emoji_id: "101",
+        data: {
+            deactivated: true,
+        },
     },
 
     realm_export: {
@@ -655,7 +645,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: false,
             is_guest: false,
             profile_data: {},
@@ -675,7 +665,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: true,
             is_guest: false,
             profile_data: {},

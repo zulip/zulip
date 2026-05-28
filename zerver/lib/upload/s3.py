@@ -1,6 +1,7 @@
 import os
 import secrets
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from typing import IO, TYPE_CHECKING, Any, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
@@ -27,6 +28,9 @@ if TYPE_CHECKING:
 # accessing uploaded files are available for clients to fetch before
 # they expire.
 SIGNED_UPLOAD_URL_DURATION = 60
+
+
+DELETE_BATCH_SIZE = 1000
 
 # Performance note:
 #
@@ -248,7 +252,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def upload_message_attachment(
+    def store_message_attachment(
         self,
         path_id: str,
         filename: str,
@@ -289,23 +293,48 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str) -> None:
-        self.delete_message_attachments([path_id])
+    def delete_message_attachment_from_storage(
+        self, path_id: str, *, raw_path: bool = False
+    ) -> None:
+        with self.delete_message_attachments_from_storage(raw_paths=raw_path) as delete_one:
+            delete_one(path_id)
 
+    @contextmanager
     @override
-    def delete_message_attachments(self, path_ids: list[str]) -> None:
-        all_paths = path_ids.copy()
-        for path_id in path_ids:
-            all_paths.append(f"{path_id}.info")
-            all_paths += [
-                thumb_path
-                for thumb_path, _ in self.all_message_attachments(
-                    include_thumbnails=True, prefix=f"thumbnail/{path_id}/"
-                )
-            ]
-        self.uploads_bucket.delete_objects(
-            Delete={"Objects": [{"Key": path_id} for path_id in all_paths], "Quiet": True},
-        )
+    def delete_message_attachments_from_storage(
+        self, *, raw_paths: bool = False, flush: None | Callable[[list[str]], None] = None
+    ) -> Iterator[Callable[[str], None]]:
+        paths: list[tuple[str, bool]] = []
+
+        def flush_queue() -> None:
+            nonlocal paths
+            self.uploads_bucket.delete_objects(
+                Delete={
+                    "Objects": [{"Key": path_id} for path_id, _ in paths[:DELETE_BATCH_SIZE]],
+                    "Quiet": True,
+                },
+            )
+            if flush:
+                flush([path for path, is_db_path_id in paths[:DELETE_BATCH_SIZE] if is_db_path_id])
+            paths = paths[DELETE_BATCH_SIZE:]
+
+        def queue_delete(path_id: str) -> None:
+            nonlocal paths
+            paths.append((path_id, True))
+            if not raw_paths:
+                paths.append((f"{path_id}.info", False))
+                paths += [
+                    (thumb_path, False)
+                    for thumb_path, _ in self.all_message_attachments(
+                        include_thumbnails=True, prefix=f"thumbnail/{path_id}/"
+                    )
+                ]
+            if len(paths) > DELETE_BATCH_SIZE:
+                flush_queue()
+
+        yield queue_delete
+        if paths:
+            flush_queue()
 
     @override
     def all_message_attachments(
@@ -332,14 +361,17 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_public_upload_url(self.get_avatar_path(hash_key, medium))
 
     @override
-    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str, avatar_source: str) -> tuple[bytes, str]:
+        # Currently, only used in codepaths where avatar_source = "U".
+        # We can extend it for avatar_source = "J", if required.
+        assert avatar_source is UserProfile.AVATAR_FROM_USER
         key = self.avatar_bucket.Object(file_path + ".original")
         image_data = key.get()["Body"].read()
         content_type = key.content_type
         return image_data, content_type
 
     @override
-    def upload_single_avatar_image(
+    def store_single_avatar_image(
         self,
         file_path: str,
         *,
@@ -360,7 +392,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_avatar_image(self, path_id: str) -> None:
+    def delete_avatar_image_from_storage(self, path_id: str) -> None:
         self.delete_file_from_s3(path_id + ".original", self.avatar_bucket)
         self.delete_file_from_s3(self.get_avatar_path(path_id, True), self.avatar_bucket)
         self.delete_file_from_s3(self.get_avatar_path(path_id, False), self.avatar_bucket)
@@ -371,7 +403,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url + f"?version={version}"
 
     @override
-    def upload_realm_icon_image(
+    def store_realm_icon_image(
         self, icon_file: IO[bytes], user_profile: UserProfile, content_type: str
     ) -> None:
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
@@ -406,7 +438,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url + f"?version={version}"
 
     @override
-    def upload_realm_logo_image(
+    def store_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
         if night:
@@ -450,7 +482,7 @@ class S3UploadBackend(ZulipUploadBackend):
             return self.get_public_upload_url(emoji_path)
 
     @override
-    def upload_single_emoji_image(
+    def store_single_emoji_image(
         self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
         upload_content_to_s3(
@@ -505,7 +537,7 @@ class S3UploadBackend(ZulipUploadBackend):
             )
 
     @override
-    def upload_export_tarball(
+    def store_export_tarball(
         self,
         realm: Realm,
         tarball_path: str,
@@ -521,7 +553,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_export_tarball_url(realm, key.key)
 
     @override
-    def delete_export_tarball(self, export_path: str) -> None:
+    def delete_export_tarball_from_storage(self, export_path: str) -> None:
         assert export_path.startswith("/")
         path_id = export_path.removeprefix("/")
         bucket = self.export_bucket or self.avatar_bucket

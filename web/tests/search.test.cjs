@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -25,7 +26,7 @@ function stub_pills() {
     const $pill_container = $("#searchbox-input-container.pill-container");
     const $pill_input = $.create("pill_input");
     $pill_container.set_find_results(".input", $pill_input);
-    $pill_input.before = noop;
+    $pill_input[0].before = noop;
 }
 
 set_global("getSelection", () => ({
@@ -34,12 +35,12 @@ set_global("getSelection", () => ({
 
 let typeahead_forced_open = false;
 
-const verona = {
+const verona = make_stream({
     subscribed: true,
     color: "blue",
     name: "Verona",
     stream_id: 1,
-};
+});
 stream_data.add_sub_for_tests(verona);
 
 const zoe = {
@@ -71,17 +72,17 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     function mock_pill_removes(widget) {
         const pills = widget._get_pills_for_testing();
         for (const pill of pills) {
-            pill.$element.remove = noop;
+            pill.$element[0].remove = noop;
         }
     }
 
     let opts;
     override(bootstrap_typeahead, "Typeahead", (input_element, opts_) => {
         opts = opts_;
-        assert.equal(input_element.$element, $search_query_box);
+        assert.equal(input_element.$element[0], $search_query_box[0]);
         assert.equal(opts.items, 999);
         assert.equal(opts.helpOnEmptyStrings, true);
-        assert.equal(opts.matcher(), true);
+        assert.equal(opts.matcher("")(), true);
 
         return {
             lookup() {
@@ -96,147 +97,62 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
     {
         {
-            const search_suggestions = {
-                lookup_table: new Map([
-                    [
-                        "dm:",
-                        {
-                            description_html: "direct messages with",
-                            search_string: "dm:",
-                        },
-                    ],
-                    [
-                        "dm",
-                        {
-                            description_html: "Search for dm",
-                            search_string: "dm",
-                        },
-                    ],
-                ]),
-                strings: ["dm", "dm:"],
-            };
-
-            /* Test source */
-            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
-            const expected_source_value = search_suggestions.strings;
-            const source = opts.source("dm");
-            assert.deepStrictEqual(source, expected_source_value);
+            const search_suggestions = ["dm", "dm:"];
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for dm</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[0], "dm"), expected_value);
+            assert.equal(opts.item_html("dm")(search_suggestions[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            dm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
-            assert.equal(opts.item_html(source[1], "dm"), expected_value);
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\ndm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
+            assert.equal(opts.item_html("dm")(search_suggestions[1]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
         }
 
         {
-            const search_suggestions = {
-                lookup_table: new Map([
-                    [
-                        "stream:Verona",
-                        {
-                            description_html: "Messages in #Verona",
-                            search_string: "stream:Verona",
-                        },
-                    ],
-                    [
-                        "ver",
-                        {
-                            description_html: "Search for ver",
-                            search_string: "ver",
-                        },
-                    ],
-                ]),
-                strings: ["ver", "stream:Verona"],
-            };
-
-            /* Test source */
-            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
-            const expected_source_value = search_suggestions.strings;
-            const source = opts.source("ver");
-            assert.deepStrictEqual(source, expected_source_value);
+            const search_suggestions = ["ver", "stream:Verona"];
 
             /* Test highlighter */
             let description_html = "Search for ver";
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for ver</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[0], "ver"), expected_value);
+            assert.equal(opts.item_html("ver")(search_suggestions[0]), expected_value);
 
             const search_string = "channel: Verona";
             description_html = "Messages in #Verona";
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
-            assert.equal(opts.item_html(source[1], "ver"), expected_value);
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
+            assert.equal(opts.item_html("ver")(search_suggestions[1]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
         }
 
         {
-            const search_suggestions = {
-                lookup_table: new Map([
-                    [
-                        "dm-including:zo",
-                        {
-                            description_html: "group direct messages including",
-                            search_string: "dm-including:" + zoe.user_id,
-                        },
-                    ],
-                    [
-                        "dm:zo",
-                        {
-                            description_html: "direct messages with",
-                            search_string: `dm:${zoe.user_id}`,
-                        },
-                    ],
-                    [
-                        "sender:zo",
-                        {
-                            description_html: "sent by",
-                            search_string: `sender:${zoe.user_id}`,
-                        },
-                    ],
-                    [
-                        "zo",
-                        {
-                            description_html: "Search for zo",
-                            search_string: "zo",
-                        },
-                    ],
-                ]),
-                strings: ["zo", "sender:zo", "dm:zo", "dm-including:zo"],
-            };
-
-            /* Test source */
-            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
-            const expected_source_value = search_suggestions.strings;
-            const source = opts.source("zo");
-            assert.deepStrictEqual(source, expected_source_value);
+            const search_suggestions = [
+                "zo",
+                `sender:${zoe.user_id}`,
+                `dm:${zoe.user_id}`,
+                `dm-including:${zoe.user_id}`,
+                `mentions:${zoe.user_id}`,
+            ];
 
             /* Test highlighter */
             const description_html = "Search for zo";
             let expected_value = `<div class="search_list_item">\n            <div class="description">${description_html}</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[0], "zo"), expected_value);
+            assert.equal(opts.item_html("zo")(search_suggestions[0]), expected_value);
 
-            people.add_active_user(
-                {
-                    email: "user7@zulipdev.com",
-                    user_id: 3,
-                    full_name: "Zoe",
-                },
-                "server_events",
-            );
             override(realm, "realm_enable_guest_user_indicator", true);
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">sender:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[1], "zo"), expected_value);
+            assert.equal(opts.item_html("zo")(search_suggestions[1]), expected_value);
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[2], "zo"), expected_value);
+            assert.equal(opts.item_html("zo")(search_suggestions[2]), expected_value);
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[3], "zo"), expected_value);
+            assert.equal(opts.item_html("zo")(search_suggestions[3]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">mentions:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            assert.equal(opts.item_html("zo")(search_suggestions[4]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
@@ -247,13 +163,13 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const _setup = (terms) => {
                 const pills = search.search_pill_widget._get_pills_for_testing();
                 for (const pill of pills) {
-                    pill.$element.remove = noop;
+                    pill.$element[0].remove = noop;
                 }
                 search_pill.set_search_bar_contents(
                     terms,
                     search.search_pill_widget,
                     false,
-                    $search_query_box.text,
+                    (text) => $search_query_box.text(text),
                 );
             };
 
@@ -268,7 +184,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
-            $(".navbar-search.expanded").length = 1;
             assert.equal(opts.updater("ver"), "ver");
             assert.ok(!input_pill_displayed);
 
@@ -311,7 +226,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             default_prevented = true;
         },
     };
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     assert.equal(keydown(ev), undefined);
     assert.ok(!default_prevented);
 
@@ -320,7 +235,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(!default_prevented);
 
     ev.key = "Enter";
-    $search_query_box.is = () => true;
+    $search_query_box.trigger("focus");
     assert.equal(keydown(ev), undefined);
     assert.ok(default_prevented);
 
@@ -331,13 +246,10 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     const _setup = (terms) => {
         const pills = search.search_pill_widget._get_pills_for_testing();
         for (const pill of pills) {
-            pill.$element.remove = noop;
+            pill.$element[0].remove = noop;
         }
-        search_pill.set_search_bar_contents(
-            terms,
-            search.search_pill_widget,
-            false,
-            $search_query_box.text,
+        search_pill.set_search_bar_contents(terms, search.search_pill_widget, false, (text) =>
+            $search_query_box.text(text),
         );
     };
 
@@ -352,7 +264,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
     ev.key = "a";
     /* istanbul ignore next */
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     $searchbox_form.trigger(ev);
 
     let search_exited = false;
@@ -361,19 +273,15 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     ev.key = "Enter";
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     $searchbox_form.trigger(ev);
     assert.ok(!search_exited);
 
     ev.key = "Enter";
-    $search_query_box.is = () => true;
+    $search_query_box.trigger("focus");
     $searchbox_form.trigger(ev);
     assert.ok(search_exited);
 
-    let is_blurred = false;
-    $search_query_box.on("blur", () => {
-        is_blurred = true;
-    });
     terms = [
         {
             negated: false,
@@ -387,9 +295,9 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     override_rewire(search, "is_using_input_method", true);
     $searchbox_form.trigger(ev);
     // No change on first Enter keyup event
-    assert.ok(!is_blurred);
+    assert.ok($search_query_box.is(":focus"));
     $searchbox_form.trigger(ev);
-    assert.ok(is_blurred);
+    assert.ok(!$search_query_box.is(":focus"));
 });
 
 run_test("initiate_search", ({override_rewire}) => {
@@ -397,7 +305,7 @@ run_test("initiate_search", ({override_rewire}) => {
     override_rewire(search, "open_search_bar_and_close_narrow_description", () => {
         search_bar_opened = true;
     });
-    $(".navbar-search.expanded").length = 0;
+    $.set_results(".navbar-search.expanded", []);
     $("#search_query").text("");
     search.initiate_search();
     assert.ok(typeahead_forced_open);

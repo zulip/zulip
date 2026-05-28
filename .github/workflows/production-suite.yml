@@ -18,6 +18,8 @@ on:
       - web/postcss.config.js
       - web/third/**
       - web/webpack.config.ts
+      - zerver/apps.py
+      - zerver/checks.py
       - zerver/worker/queue_processors.py
       - zerver/lib/push_notifications.py
       - zerver/lib/storage.py
@@ -149,6 +151,11 @@ jobs:
             os: noble
             extra-args: ""
 
+          - docker_image: zulip/ci:resolute
+            name: Ubuntu 26.04 production install
+            os: resolute
+            extra-args: ""
+
           - docker_image: zulip/ci:bookworm
             name: Debian 12 production install with custom db name and user
             os: bookworm
@@ -264,6 +271,9 @@ jobs:
           - docker_image: zulip/ci:trixie-11.0
             name: 11.0 Version Upgrade
             os: trixie
+          - docker_image: zulip/ci:resolute-12.0
+            name: 12.0 Version Upgrade
+            os: resolute
 
     name: ${{ matrix.name  }}
     container:
@@ -323,3 +333,17 @@ jobs:
           topic: ${{ steps.failure_report_string.outputs.topic }}
           type: "stream"
           content: ${{ steps.failure_report_string.outputs.content }}
+
+  required-jobs:
+    name: "Required jobs"
+    if: always()
+    needs:
+      - production_build
+      - production_install
+      - production_upgrade
+    runs-on: ubuntu-slim
+    steps:
+      - name: "Check required jobs"
+        run: jq 'with_entries(.value |= .result | select(.value | IN("success", "skipped") | not)) | if . != {} then halt_error end' <<<"$NEEDS"
+        env:
+          NEEDS: ${{ toJSON(needs) }}

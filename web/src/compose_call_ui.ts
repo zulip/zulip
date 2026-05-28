@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
+import {compose_call_session_manager} from "./compose_call_session.ts";
 import {get_recipient_label} from "./compose_closed_ui.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -58,115 +59,228 @@ export function generate_and_insert_audio_or_video_call_link(
         $target_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
     }
 
+    let xhr: JQuery.jqXHR<unknown> | undefined;
     const available_providers = realm.realm_available_video_chat_providers;
-    const provider_is_zoom = realm.realm_video_chat_provider === available_providers.zoom?.id;
     const provider_is_zoom_server_to_server =
         realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id;
+    const key = edit_message_id ?? "";
+    const oauth_call_provider = compose_call.current_oauth_call_provider();
+    const compose_call_session = compose_call_session_manager.get_compose_call_session(key);
 
-    if (provider_is_zoom || provider_is_zoom_server_to_server) {
-        compose_call.abort_video_callbacks(edit_message_id);
-        const key = edit_message_id ?? "";
-
+    if (oauth_call_provider !== null) {
         const request = {
             is_video_call: !is_audio_call,
         };
 
-        const make_zoom_call = (): void => {
-            const xhr = channel.post({
-                url: "/json/calls/zoom/create",
-                data: request,
-                success(res) {
-                    const data = call_response_schema.parse(res);
-                    compose_call.video_call_xhrs.delete(key);
-                    if (is_audio_call) {
-                        insert_audio_call_url(data.url, $target_textarea);
-                    } else {
-                        insert_video_call_url(data.url, $target_textarea);
-                    }
-                },
-                error(xhr, status) {
-                    compose_call.video_call_xhrs.delete(key);
-                    const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
-                    if (
-                        status === "error" &&
-                        parsed.success &&
-                        parsed.data.code === "INVALID_ZOOM_TOKEN"
-                    ) {
-                        current_user.has_zoom_token = false;
-                    }
-                    if (
-                        status === "error" &&
-                        parsed.success &&
-                        parsed.data.code === "UNKNOWN_ZOOM_USER"
-                    ) {
-                        compose_banner.show_unknown_zoom_user_error(current_user.delivery_email);
-                    } else if (status !== "abort") {
-                        ui_report.generic_embed_error(
-                            $t_html({defaultMessage: "Failed to create video call."}),
-                        );
-                    }
-                },
-            });
-            if (xhr !== undefined) {
-                compose_call.video_call_xhrs.set(key, xhr);
-            }
-        };
-
-        if (current_user.has_zoom_token || provider_is_zoom_server_to_server) {
-            make_zoom_call();
-        } else {
-            compose_call.zoom_token_callbacks.set(key, make_zoom_call);
-            window.open(
-                window.location.protocol + "//" + window.location.host + "/calls/zoom/register",
-                "_blank",
-                "width=800,height=500,noopener,noreferrer",
-            );
-        }
-    } else if (realm.realm_video_chat_provider === available_providers.big_blue_button?.id) {
-        const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
-        const request = {
-            meeting_name,
-            voice_only: is_audio_call,
-        };
-        void channel.get({
-            url: "/json/calls/bigbluebutton/create",
-            data: request,
-            success(response) {
-                const data = call_response_schema.parse(response);
+        const handle_success = (res: unknown): void => {
+            const callback = (): void => {
+                const data = call_response_schema.parse(res);
                 if (is_audio_call) {
                     insert_audio_call_url(data.url, $target_textarea);
                 } else {
                     insert_video_call_url(data.url, $target_textarea);
                 }
-            },
-        });
-    } else {
-        // TODO: Use `new URL` to generate the URLs here.
-        const video_call_id = util.random_int(100000000000000, 999999999999999);
-        const video_call_link = compose_call.get_jitsi_server_url() + "/" + video_call_id;
-        if (is_audio_call) {
-            insert_audio_call_url(
-                video_call_link + "#config.startWithVideoMuted=true",
-                $target_textarea,
-            );
-        } else {
-            /* Because Jitsi remembers what last call type you joined
-               in browser local storage, we need to specify that video
-               should not be muted in the video call case, or your
-               next call will also join without video after joining an
-               audio-only call.
+            };
+            compose_call_session.maybe_run_xhr_callback(xhr, callback);
+        };
 
-               This has the annoying downside that it requires users
-               who have a personal preference to disable video every
-               time, but Jitsi's UI makes that very easy to do, and
-               that inconvenience is probably less important than letting
-               the person organizing a call specify their intended
-               call type (video vs audio).
-           */
-            insert_video_call_url(
-                video_call_link + "#config.startWithVideoMuted=false",
-                $target_textarea,
+        const handle_error = (
+            _xhr: JQuery.jqXHR<unknown>,
+            status: JQuery.Ajax.ErrorTextStatus,
+        ): void => {
+            const callback = (): void => {
+                const parsed = z.object({code: z.string()}).safeParse(_xhr.responseJSON);
+                if (
+                    status === "error" &&
+                    parsed.success &&
+                    parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
+                ) {
+                    if (oauth_call_provider === "webex") {
+                        current_user.has_webex_token = false;
+                    } else {
+                        current_user.has_zoom_token = false;
+                    }
+                }
+                if (
+                    status === "error" &&
+                    parsed.success &&
+                    parsed.data.code === "UNKNOWN_ZOOM_USER"
+                ) {
+                    compose_banner.show_unknown_zoom_user_error(current_user.delivery_email);
+                } else if (status !== "abort") {
+                    ui_report.generic_embed_error(
+                        $t_html({defaultMessage: "Failed to create video call."}),
+                    );
+                }
+            };
+            compose_call_session.maybe_run_xhr_callback(xhr, callback);
+        };
+        const make_oauth_call = (from_token_callback?: boolean): void => {
+            xhr = channel.post({
+                url: `/json/calls/${oauth_call_provider}/create`,
+                data: request,
+                success: handle_success,
+                error: handle_error,
+            });
+            if (xhr && from_token_callback) {
+                compose_call_session.append_pending_xhr(xhr);
+            }
+        };
+
+        if (
+            ((current_user.has_zoom_token || provider_is_zoom_server_to_server) &&
+                oauth_call_provider === "zoom") ||
+            (current_user.has_webex_token && oauth_call_provider === "webex")
+        ) {
+            make_oauth_call();
+        } else {
+            compose_call_session.add_oauth_token_callback(oauth_call_provider, () => {
+                make_oauth_call(true);
+            });
+            window.open(
+                window.location.protocol +
+                    "//" +
+                    window.location.host +
+                    `/calls/${oauth_call_provider}/register`,
+                "_blank",
+                "width=800,height=500,noopener,noreferrer",
             );
         }
+    } else {
+        switch (realm.realm_video_chat_provider) {
+            case available_providers.big_blue_button?.id: {
+                const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
+                const request = {
+                    meeting_name,
+                    voice_only: is_audio_call,
+                };
+
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
+                        const data = call_response_schema.parse(response);
+                        if (is_audio_call) {
+                            insert_audio_call_url(data.url, $target_textarea);
+                        } else {
+                            insert_video_call_url(data.url, $target_textarea);
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.get({
+                    url: "/json/calls/bigbluebutton/create",
+                    data: request,
+                    success: handle_success,
+                });
+
+                break;
+            }
+            case available_providers.constructor_groups?.id: {
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
+                        const data = call_response_schema.parse(response);
+                        insert_video_call_url(data.url, $target_textarea);
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _xhr: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.post({
+                    url: "/json/calls/constructorgroups/create",
+                    data: {},
+                    success: handle_success,
+                    error: handle_error,
+                });
+                break;
+            }
+            case available_providers.nextcloud_talk?.id: {
+                const room_name = `${get_recipient_label()?.label_text ?? ""} conversation`;
+                const request = {room_name};
+
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
+                        const data = call_response_schema.parse(response);
+                        insert_video_call_url(data.url, $target_textarea);
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.post({
+                    url: "/json/calls/nextcloud_talk/create",
+                    data: request,
+                    success: handle_success,
+                    error: handle_error,
+                });
+
+                break;
+            }
+            case available_providers.jitsi_meet?.id: {
+                const video_call_id = util.random_int(100000000000000, 999999999999999);
+                const video_call_url = compose_call.get_jitsi_server_url(video_call_id.toString());
+                if (video_call_url === null) {
+                    return;
+                }
+                /*  Because Jitsi remembers what last call type you joined
+                    in browser local storage, we need to specify that video
+                    should not be muted in the video call case, or your
+                    next call will also join without video after joining an
+                    audio-only call.
+
+                    This has the annoying downside that it requires users
+                    who have a personal preference to disable video every
+                    time, but Jitsi's UI makes that very easy to do, and
+                    that inconvenience is probably less important than letting
+                    the person organizing a call specify their intended
+                    call type (video vs audio).
+                */
+                const video_muted = is_audio_call ? "true" : "false";
+                video_call_url.hash = `config.startWithVideoMuted=${video_muted}`;
+                const video_call_link = video_call_url.toString();
+
+                if (is_audio_call) {
+                    insert_audio_call_url(video_call_link, $target_textarea);
+                } else {
+                    insert_video_call_url(video_call_link, $target_textarea);
+                }
+                break;
+            }
+            default: {
+                throw new Error(
+                    `Unknown video call provider ID ${realm.realm_video_chat_provider}`,
+                );
+            }
+        }
+    }
+    if (xhr !== undefined) {
+        compose_call_session.append_pending_xhr(xhr);
     }
 }

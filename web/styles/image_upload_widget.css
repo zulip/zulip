@@ -9,7 +9,7 @@
     justify-content: center;
 
     .image-block {
-        background-size: contain;
+        max-height: 100%;
     }
 
     .image-hover-background {
@@ -49,6 +49,7 @@
         right: 10px;
         z-index: 99;
         line-height: 20px;
+        font-family: inherit;
 
         &:focus:not(:focus-visible) {
             outline: none;

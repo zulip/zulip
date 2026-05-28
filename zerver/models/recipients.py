@@ -21,19 +21,14 @@ class Recipient(models.Model):
     of audiences Zulip supports for a message.
 
     Recipient has just two attributes: The enum type, and a type_id,
-    which is the ID of the UserProfile/Stream/DirectMessageGroup object
-    containing all the metadata for the audience. There are 3 recipient
-    types:
+    which is the ID of the Stream/DirectMessageGroup object containing
+    all the metadata for the audience. There are 2 recipient types:
 
-    1. 1:1 direct message: The type_id is the ID of the UserProfile
-       who will receive any message to this Recipient. The sender
-       of such a message is represented separately.
-    2. Stream message: The type_id is the ID of the associated Stream.
-    3. Group direct message: In Zulip, group direct messages are
-       represented by DirectMessageGroup objects, which encode the set of
-       users in the conversation. The type_id is the ID of the associated
-       DirectMessageGroup object; the set of users is usually retrieved
-       via the Subscription table. See the DirectMessageGroup model for
+    1. Stream message: The type_id is the ID of the associated Stream.
+    2. Direct message: The type_id is the ID of the associated
+       DirectMessageGroup object, which encodes the set of users in
+       the conversation. The set of users is usually retrieved via the
+       Subscription table. See the DirectMessageGroup model for
        details.
 
     See also the Subscription model, which stores which UserProfile
@@ -43,13 +38,11 @@ class Recipient(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
-    # Valid types are {personal, stream, direct_message_group}
+    # Valid types are {stream, direct_message_group}
 
-    # The type for 1:1 direct messages.
-    PERSONAL = 1
     # The type for stream messages.
     STREAM = 2
-    # The type group direct messages.
+    # The type for direct messages (both 1:1 and group).
     DIRECT_MESSAGE_GROUP = 3
 
     class Meta:
@@ -123,11 +116,11 @@ class DirectMessageGroup(models.Model):
     corresponding DirectMessageGroup object.
     """
 
-    # TODO: We should consider whether using
-    # CommaSeparatedIntegerField would be better.
-    huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)
+    # We omit db_index and unique, as that also results in a useless
+    # varchar_pattern_ops index; see Meta, below.
+    huddle_hash = models.CharField(max_length=40)
     # Foreign key to the Recipient object for this DirectMessageGroup.
-    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+    recipient = models.OneToOneField(Recipient, null=True, on_delete=models.SET_NULL)
 
     group_size = models.IntegerField()
 
@@ -136,6 +129,9 @@ class DirectMessageGroup(models.Model):
     # it needs to be renamed to "zerver_directmessagegroup".
     class Meta:
         db_table = "zerver_huddle"
+        constraints = [
+            models.UniqueConstraint(fields=["huddle_hash"], name="zerver_huddle_huddle_hash_key")
+        ]
 
 
 def get_direct_message_group_hash(id_list: list[int]) -> str:
@@ -187,7 +183,7 @@ def get_direct_message_group(id_list: list[int]) -> DirectMessageGroup | None:
     the DirectMessageGroup object does not yet exist, it will
     return None.
     """
-
+    assert len(id_list) == len(set(id_list))
     try:
         direct_message_group_hash = get_direct_message_group_hash(id_list)
         return DirectMessageGroup.objects.get(

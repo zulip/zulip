@@ -21,13 +21,10 @@ import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as util from "./util.ts";
 
-export let set_count = (count: number): void => {
+export function set_count(count: number): void {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
-};
-
-export function rewire_set_count(value: typeof set_count): void {
-    set_count = value;
+    $(".drafts-sidebar-menu-icon").toggleClass("hide", count === 0);
 }
 
 function getTimestamp(): number {
@@ -54,7 +51,6 @@ const draft_schema = z.intersection(
         }),
         z.object({
             type: z.literal("private"),
-            reply_to: z.string(),
             private_message_recipient_ids: z.array(z.number()),
         }),
     ]),
@@ -82,7 +78,6 @@ const possibly_buggy_draft_schema = z.intersection(
         }),
         z.object({
             type: z.literal("private"),
-            reply_to: z.string(),
             private_message_recipient: z.optional(z.string()),
             private_message_recipient_ids: z.optional(z.array(z.number())),
         }),
@@ -97,6 +92,7 @@ export const draft_model = (function () {
     const KEY = "drafts";
     const ls = localstorage();
     let fixed_buggy_drafts = false;
+    let fixed_private_draft_recipient_ids = false;
 
     function get(): Record<string, LocalStorageDraft> {
         let drafts = ls.get(KEY);
@@ -109,7 +105,34 @@ export const draft_model = (function () {
             drafts = ls.get(KEY);
         }
 
+        if (!fixed_private_draft_recipient_ids) {
+            fix_private_draft_recipient_ids();
+            drafts = ls.get(KEY);
+        }
+
         return drafts_schema.parse(drafts);
+    }
+
+    function fix_private_draft_recipient_ids(): void {
+        // This is needed to make sure that invalid users are removed from
+        // recipient list of DM drafts. We do not expect this to happen in
+        // production unless a UserProfile is manually deleted from
+        // the database, but this happens in development environment
+        // when the database is re-populated.
+        const drafts = drafts_schema.parse(ls.get(KEY));
+        for (const [draft_id, draft] of Object.entries(drafts)) {
+            if (draft.type !== "private") {
+                continue;
+            }
+            const valid_recipient_ids = draft.private_message_recipient_ids.filter((user_id) =>
+                people.is_valid_user_id(user_id),
+            );
+            if (valid_recipient_ids.length !== draft.private_message_recipient_ids.length) {
+                drafts[draft_id] = {...draft, private_message_recipient_ids: valid_recipient_ids};
+            }
+        }
+        ls.set(KEY, drafts);
+        fixed_private_draft_recipient_ids = true;
     }
 
     function fix_buggy_drafts(): void {
@@ -262,13 +285,9 @@ export function rewire_update_compose_draft_count(value: typeof update_compose_d
     update_compose_draft_count = value;
 }
 
-export let sync_count = (): void => {
+export function sync_count(): void {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
-};
-
-export function rewire_sync_count(value: typeof sync_count): void {
-    sync_count = value;
 }
 
 export function delete_all_drafts(): void {
@@ -332,11 +351,9 @@ export function snapshot_message(force_save = false): LocalStorageDraft | undefi
         updatedAt: getTimestamp(),
     };
     if (message.type === "private") {
-        const recipient_emails = compose_state.private_message_recipient_emails();
         return {
             ...message,
             type: "private",
-            reply_to: recipient_emails,
             private_message_recipient_ids: compose_state.private_message_recipient_ids(),
             is_sending_saving: false,
             drafts_version: CURRENT_DRAFT_VERSION,

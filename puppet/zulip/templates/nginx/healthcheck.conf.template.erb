@@ -9,4 +9,13 @@ location /health {
     deny all;
 
     include uwsgi_params;
+
+    # Healthchecks may not supply a Host header; but also nothing in
+    # the response is host-specific, as the Django processes
+    # themselves are what are being healthchecked.  we hardcode a Host
+    # that we know is in ALLOWED_HOSTS.  The alternative is injecting
+    # a new Django middleware before
+    # `django.middleware.security.SecurityMiddleware` which only kicks
+    # in for this one specific path.
+    uwsgi_param HTTP_HOST "127.0.0.1";
 }

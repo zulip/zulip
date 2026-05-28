@@ -1,7 +1,7 @@
 <div class="navigation-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
     <div class="subsection-header">
         <h3 class="light">{{t "Navigation" }}</h3>
-        {{> settings_save_discard_widget section_name="navigation-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=true }}
+        {{> settings_save_discard_widget section_name="navigation-settings" show_save_discard_buttons=for_realm_settings }}
     </div>
 
     <div class="input-group">
@@ -44,7 +44,7 @@
 
     <div class="input-group">
         <label for="{{prefix}}web_channel_default_view" class="settings-field-label">
-            {{t "Channel links in the left sidebar go to" }}
+            {{t "Clicking on a channel in the left sidebar navigates to" }}
             {{#if for_realm_settings}}
                 {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
             {{/if}}

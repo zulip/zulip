@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -24,56 +25,58 @@ initialize_user_settings({user_settings});
 
 const OFFLINE_THRESHOLD_SECS = 200;
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     user_id: 101,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-};
+});
 
-const fred = {
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-};
+});
 
-const sally = {
+const sally = make_user({
     email: "sally@example.com",
     user_id: 3,
     full_name: "Sally Jones",
-};
+});
 
-const zoe = {
+const zoe = make_user({
     email: "zoe@example.com",
     user_id: 6,
     full_name: "Zoe Yang",
-};
+    // User created via the API who never logged in.
+    // In production, such users have no date_joined field.
+    date_joined: undefined,
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@zulip.com",
     user_id: 7,
     full_name: "The Bot",
-    is_bot: true,
-};
+});
 
-const john = {
+const john = make_user({
     email: "john@zulip.com",
     user_id: 8,
     full_name: "John Doe",
     // Second 77.
     date_joined: "1970-01-01 00:01:15 UTC",
-};
+});
 
-const jane = {
+const jane = make_user({
     email: "jane@zulip.com",
     user_id: 9,
     full_name: "Jane Doe",
-};
+});
 
 people.add_active_user(me);
 people.add_active_user(alice);
@@ -223,6 +226,8 @@ test("set_presence_info", () => {
     });
     assert.equal(presence.get_status(zoe.user_id), "offline");
     assert.equal(presence.last_active_date(zoe.user_id), undefined);
+    assert.strictEqual(zoe.date_joined, undefined);
+    assert.strictEqual(presence.presence_info.get(zoe.user_id).last_active, undefined);
 
     assert.ok(!presence.presence_info.has(bot.user_id));
     assert.equal(presence.get_status(bot.user_id), "offline");
@@ -363,4 +368,40 @@ test("update_info_from_event", () => {
         status: "idle",
         last_active: 1000,
     });
+});
+
+test("user_last_seen_response_schema", () => {
+    // Modern format with both timestamps.
+    const with_both_timestamps = {
+        result: "success",
+        msg: "",
+        server_timestamp: 1656958540,
+        presence: {
+            active_timestamp: 1656958520,
+            idle_timestamp: 1656958530,
+        },
+    };
+    const parsed_both = presence.user_last_seen_response_schema.safeParse(with_both_timestamps);
+    assert.ok(parsed_both.success);
+    assert.equal(parsed_both.data.server_timestamp, 1656958540);
+    assert.equal(parsed_both.data.presence?.active_timestamp, 1656958520);
+    assert.equal(parsed_both.data.presence?.idle_timestamp, 1656958530);
+
+    // Only active_timestamp present; idle_timestamp may be omitted
+    // if the user has only ever been active.
+    const with_active_only = {
+        result: "success",
+        msg: "",
+        presence: {active_timestamp: 1656958520},
+    };
+    const parsed_active = presence.user_last_seen_response_schema.safeParse(with_active_only);
+    assert.ok(parsed_active.success);
+    assert.equal(parsed_active.data.presence?.active_timestamp, 1656958520);
+    assert.equal(parsed_active.data.presence?.idle_timestamp, undefined);
+
+    // No presence data.
+    const without_presence = {result: "success", msg: ""};
+    const parsed_none = presence.user_last_seen_response_schema.safeParse(without_presence);
+    assert.ok(parsed_none.success);
+    assert.equal(parsed_none.data.presence, undefined);
 });

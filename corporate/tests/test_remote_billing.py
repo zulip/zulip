@@ -187,7 +187,9 @@ class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
             "/self-hosted-billing/not-configured/",
         ]:
             result = self.client_get(url)
-            self.assert_json_error(result, "Must be an organization owner")
+            self.assert_json_error(
+                result, "You do not have permission to manage plans and billing."
+            )
 
         # Login as an organization owner to gain access.
         self.login("desdemona")

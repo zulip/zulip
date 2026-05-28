@@ -1,3 +1,7 @@
+import os
+
+import orjson
+
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import (
     encode_channel,
@@ -12,6 +16,16 @@ from zerver.models.streams import get_stream
 
 
 class URLEncodeTest(ZulipTestCase):
+    def test_encode_hash_component(self) -> None:
+        fixture_path = os.path.join(
+            os.path.dirname(__file__), "fixtures/url_encoding_test_cases.json"
+        )
+        with open(fixture_path, "rb") as f:
+            data = orjson.loads(f.read())
+        for test in data:
+            with self.subTest(name=test["name"]):
+                self.assertEqual(encode_hash_component(test["input"]), test["expected_output"])
+
     def test_encode_channel(self) -> None:
         # We have more tests for this function in `test_topic_link_utils.py`
         self.assertEqual(encode_channel(9, "Verona"), "9-Verona")

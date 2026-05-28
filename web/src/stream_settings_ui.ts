@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import * as tippy from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
@@ -12,13 +12,13 @@ import render_stream_sorter_toggle_label from "../templates/stream_settings/stre
 import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
-import * as channel_folders from "./channel_folders.ts";
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
+import * as folder_filter_dropdown_widget from "./folder_dropdown_widget.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -52,7 +52,6 @@ import type {StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_ty
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
-import {LONG_HOVER_DELAY} from "./tippyjs.ts";
 import * as util from "./util.ts";
 import * as views_util from "./views_util.ts";
 
@@ -431,7 +430,7 @@ export function update_settings_for_subscribed(slim_sub: StreamSubscription): vo
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(
             sub.stream_id.toString(),
         )}'] #preview-stream-button`,
     ).show();
@@ -478,7 +477,6 @@ export function update_settings_for_archived_and_unarchived(slim_sub: StreamSubs
     const active_data = stream_settings_components.get_active_data();
     if (active_data.id === sub.stream_id) {
         stream_settings_components.set_right_panel_title(sub);
-        stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
         stream_ui_updates.update_toggler_for_sub(sub);
         stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
         stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
@@ -510,7 +508,8 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
     if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.update_add_subscriptions_elements(sub);
     }
-    if (current_user.is_guest) {
+
+    if (current_user.is_guest && hash_parser.is_editing_stream(sub.stream_id)) {
         stream_edit.open_edit_panel_empty();
     }
 
@@ -523,7 +522,7 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
     const archived_status_filters = stream_settings_data.ARCHIVED_STATUS_FILTERS;
-    const folder_filters = stream_settings_data.FOLDER_FILTERS;
+    const folder_filters = folder_filter_dropdown_widget.FOLDER_FILTERS;
     if (
         left_panel_params.archived_status_filter_value ===
             archived_status_filters.NON_ARCHIVED_CHANNELS &&
@@ -689,7 +688,7 @@ export function update_empty_left_panel_message(): void {
 function update_folder_filter_button(left_panel_params: LeftPanelParams): void {
     if (
         left_panel_params.folder_filter_value ===
-        stream_settings_data.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION
+        folder_filter_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION
     ) {
         $("#folder_filter_button").addClass("icon-button-neutral");
         $("#folder_filter_button").removeClass("icon-button-brand");
@@ -702,6 +701,12 @@ function update_folder_filter_button(left_panel_params: LeftPanelParams): void {
         $("#folder_filter_button .zulip-icon")
             .removeClass("zulip-icon-folder-chevron")
             .addClass("zulip-icon-folder-search");
+    }
+}
+
+function empty_right_panel_if_active_channel_hidden(): void {
+    if ($(".stream-row.active").hasClass("notdisplayed")) {
+        stream_edit.open_edit_panel_empty();
     }
 }
 
@@ -804,7 +809,7 @@ export function switch_stream_tab(tab_name: string): void {
     */
 
     switch (tab_name) {
-        case "all-streams": {
+        case "all": {
             stream_ui_updates.set_show_subscribed(false);
             stream_ui_updates.set_show_available(false);
             break;
@@ -879,6 +884,7 @@ function filter_click_handler(
     const filter_id = $(event.currentTarget).attr("data-unique-id");
     assert(filter_id !== undefined);
     redraw_left_panel();
+    empty_right_panel_if_active_channel_hidden();
     dropdown.hide();
     widget.render();
 }
@@ -897,98 +903,29 @@ function set_up_dropdown_widget(): void {
 }
 
 function set_up_folder_filter_dropdown_widget(): void {
-    const folder_filters = stream_settings_data.FOLDER_FILTERS;
-
-    const folder_options = (
-        current_value: string | number | undefined,
-    ): dropdown_widget.Option[] => {
-        const folders = channel_folders.get_folders_with_accessible_channels();
-        const options: dropdown_widget.Option[] = folders.map((folder) => ({
-            name: folder.name,
-            unique_id: folder.id,
-            bold_current_selection: current_value === folder.id,
-        }));
-
-        // Show "Uncategorized" option only if user can access at least
-        // one channel that is uncategorized.
-        const show_uncategorized_option = stream_data
-            .get_unsorted_subs()
-            .some((sub) => sub.folder_id === null);
-        if (show_uncategorized_option) {
-            const uncategorized_option = {
-                is_setting_disabled: true,
-                show_disabled_icon: false,
-                show_disabled_option_name: true,
-                unique_id: folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
-                name: $t({defaultMessage: "Uncategorized"}),
-                bold_current_selection:
-                    current_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
-            };
-            options.unshift(uncategorized_option);
-        }
-
-        const any_folder_option = {
-            is_setting_disabled: true,
-            show_disabled_icon: false,
-            show_disabled_option_name: true,
-            unique_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
-            name: $t({defaultMessage: "Any folder"}),
-            bold_current_selection: current_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
-        };
-        options.unshift(any_folder_option);
-
-        return options;
-    };
-
-    const widget = new dropdown_widget.DropdownWidget({
+    const widget = folder_filter_dropdown_widget.create_folder_filter_dropdown_widget({
         widget_name: "folder-filter",
         widget_selector: ".filter-folders-dropdown-widget-button",
-        get_options: folder_options,
         item_click_callback(
             event: JQuery.TriggeredEvent,
             dropdown: tippy.Instance,
             widget: dropdown_widget.DropdownWidget,
         ) {
             filter_click_handler(event, dropdown, widget);
-            update_tooltip_for_folder_filter();
+            folder_filter_dropdown_widget.update_tooltip_for_folder_filter(
+                "folder_filter_container",
+                stream_settings_components.get_folder_filter_dropdown_value(),
+            );
         },
         $events_container: $("#stream_filter"),
-        unique_id_type: "number",
-        default_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+        default_id: folder_filter_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
     });
     widget.setup();
     stream_settings_components.set_folder_filter_dropdown_widget(widget);
-    update_tooltip_for_folder_filter();
-}
-
-export function update_tooltip_for_folder_filter(): void {
-    // Destroy the previous tooltip instance.
-    $<tippy.PopperElement>("#folder_filter_container")[0]!._tippy?.destroy();
-
-    const folder_filters = stream_settings_data.FOLDER_FILTERS;
-    const filter_value = stream_settings_components.get_folder_filter_dropdown_value();
-
-    let content;
-    if (filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
-        content = $t({defaultMessage: "Filter by folder"});
-    } else if (filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
-        content = $t({defaultMessage: "Viewing uncategorized channels"});
-    } else {
-        const folder = channel_folders.get_channel_folder_by_id(filter_value);
-        content = $t(
-            {defaultMessage: "Viewing channels in {folder_name}"},
-            {folder_name: folder.name},
-        );
-    }
-
-    tippy.default(util.the($("#folder_filter_container")), {
-        animation: false,
-        hideOnClick: false,
-        placement: "bottom",
-        appendTo: () => document.body,
-        delay: LONG_HOVER_DELAY,
-        content,
-    });
+    folder_filter_dropdown_widget.update_tooltip_for_folder_filter(
+        "folder_filter_container",
+        stream_settings_components.get_folder_filter_dropdown_value(),
+    );
 }
 
 function setup_page(callback: () => void): void {
@@ -1049,7 +986,7 @@ function setup_page(callback: () => void): void {
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
                 {label: $t({defaultMessage: "Available"}), key: "available"},
-                {label: $t({defaultMessage: "All"}), key: "all-streams"},
+                {label: $t({defaultMessage: "All"}), key: "all"},
             ],
             callback(_value, key) {
                 switch_stream_tab(key);
@@ -1059,12 +996,9 @@ function setup_page(callback: () => void): void {
         const $toggler_elem = toggler.get();
         $("#channels_overlay_container .list-toggler-container").prepend($toggler_elem);
         if (current_user.is_guest) {
-            toggler.disable_tab("all-streams");
+            toggler.disable_tab("all");
             toggler.disable_tab("available");
         }
-
-        // show the "Stream settings" header by default.
-        $(".display-type #stream_settings_title").addClass("showing-info-title");
     }
 
     function populate_and_fill(): void {
@@ -1122,10 +1056,13 @@ function setup_page(callback: () => void): void {
 
         stream_ui_updates.set_folder_dropdown_visibility($("#stream-creation"));
 
-        const throttled_redraw_left_panel = _.throttle(redraw_left_panel, 50);
+        const throttled_redraw_left_and_clear_right_panels = _.throttle(() => {
+            redraw_left_panel();
+            empty_right_panel_if_active_channel_hidden();
+        }, 50);
         $("#stream_filter input[type='text']").on("input", () => {
             // Debounce filtering in case a user is typing quickly
-            throttled_redraw_left_panel();
+            throttled_redraw_left_and_clear_right_panels();
         });
 
         settings_banner.set_up_banner(
@@ -1181,90 +1118,93 @@ export function switch_to_stream_row(stream_id: number): void {
 function show_right_section(): void {
     $(".right").addClass("show");
     $("#subscription_overlay .two-pane-settings-header").addClass("slide-left");
-    resize.resize_stream_subscribers_list();
 }
 
+// `right_panel` controls the right panel:
+//   - "new"               → show the create-channel form
+//   - a channel-ID number → show that channel's settings
+//   - undefined           → empty right panel
+// `left_side_tab` controls the left panel ("subscribed" / "available" /
+//   "all"). URLs that target the right panel instead (e.g.
+//   #channels/new) don't carry a left tab, so this is undefined in
+//   those cases.
+// `right_side_tab` is the in-channel tab (general / personal /
+//   subscribers / permissions); meaningful only when right_panel is a
+//   channel ID.
 export function change_state(
-    section: string,
+    right_panel: "new" | number | undefined,
     left_side_tab: string | undefined,
     right_side_tab: string | undefined,
     folder_id?: number,
 ): void {
     assert(toggler !== undefined);
-    // if in #channels/new form.
-    if (section === "new") {
+
+    // Right panel: create form.
+    if (right_panel === "new") {
         do_open_create_stream(folder_id);
         show_right_section();
+        // We don't change the left side tab when opening the
+        // channel creation flow.
+        assert(left_side_tab === undefined);
         return;
     }
 
-    if (section === "all") {
+    // Right panel: empty.
+    if (right_panel === undefined) {
+        assert(left_side_tab !== undefined);
+        // Filter the left list to a particular folder. Must run before
+        // toggler.goto so the left-panel redraw it triggers picks up
+        // the new folder filter.
         if (folder_id !== undefined) {
             stream_settings_components.set_folder_filter_dropdown_value(folder_id);
         }
-        toggler.goto("all-streams");
+        toggler.goto(left_side_tab);
         stream_edit.empty_right_panel();
         return;
     }
 
-    if (section === "available") {
-        toggler.goto("available");
-        stream_edit.empty_right_panel();
-        return;
+    // Right panel: stream-edit.
+    const stream_id = right_panel;
+    show_right_section();
+    assert(right_side_tab !== undefined);
+    stream_edit_toggler.set_select_tab(right_side_tab);
+
+    // If undefined, infer the left side tab depending on subscription status.
+    left_side_tab ??= stream_data.is_subscribed(stream_id) ? "subscribed" : "all";
+
+    // Callback to .goto() will update browser_history unless a
+    // stream is being edited. We are always editing a stream here
+    // so its safe to call
+    if (left_side_tab !== toggler.key()) {
+        toggler.goto(left_side_tab);
     }
+    switch_to_stream_row(stream_id);
 
-    // if the section is a valid number.
-    if (/\d+/.test(section)) {
-        const stream_id = Number.parseInt(section, 10);
-        show_right_section();
-        assert(right_side_tab !== undefined);
-        stream_edit_toggler.set_select_tab(right_side_tab);
-
-        if (left_side_tab === undefined) {
-            left_side_tab = "all-streams";
-            if (stream_data.is_subscribed(stream_id)) {
-                left_side_tab = "subscribed";
-            }
+    const sub = stream_data.get_sub_by_id(stream_id);
+    if (sub && !stream_settings_components.archived_status_filter_includes_channel(sub)) {
+        const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
+        let selected_filter;
+        if (sub.is_archived) {
+            selected_filter = FILTERS.ARCHIVED_CHANNELS;
+        } else {
+            selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
         }
-
-        // Callback to .goto() will update browser_history unless a
-        // stream is being edited. We are always editing a stream here
-        // so its safe to call
-        if (left_side_tab !== toggler.value()) {
-            toggler.goto(left_side_tab);
-        }
-        switch_to_stream_row(stream_id);
-
-        const sub = stream_data.get_sub_by_id(stream_id);
-        if (sub && !stream_settings_components.archived_status_filter_includes_channel(sub)) {
-            const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
-            let selected_filter;
-            if (sub.is_archived) {
-                selected_filter = FILTERS.ARCHIVED_CHANNELS;
-            } else {
-                selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
-            }
-            stream_settings_components.set_archived_status_filter_dropdown_value(selected_filter);
-        }
-        if (sub && !stream_settings_components.folder_filter_includes_channel(sub)) {
-            const folder_filters = stream_settings_data.FOLDER_FILTERS;
-            let selected_filter;
-            if (sub.folder_id === null) {
-                selected_filter = folder_filters.UNCATEGORIZED_DROPDOWN_OPTION;
-            } else {
-                selected_filter = sub.folder_id;
-            }
-            stream_settings_components.set_folder_filter_dropdown_value(selected_filter);
-        }
-        return;
+        stream_settings_components.set_archived_status_filter_dropdown_value(selected_filter);
     }
-
-    toggler.goto("subscribed");
-    stream_edit.empty_right_panel();
+    if (sub && !stream_settings_components.folder_filter_includes_channel(sub)) {
+        const folder_filters = folder_filter_dropdown_widget.FOLDER_FILTERS;
+        let selected_filter;
+        if (sub.folder_id === null) {
+            selected_filter = folder_filters.UNCATEGORIZED_DROPDOWN_OPTION;
+        } else {
+            selected_filter = sub.folder_id;
+        }
+        stream_settings_components.set_folder_filter_dropdown_value(selected_filter);
+    }
 }
 
 export function launch(
-    section: string,
+    right_panel: "new" | number | undefined,
     left_side_tab: string | undefined,
     right_side_tab: string | undefined,
     folder_id?: number,
@@ -1277,10 +1217,10 @@ export function launch(
                 browser_history.exit_overlay();
             },
         });
-        change_state(section, left_side_tab, right_side_tab, folder_id);
+        change_state(right_panel, left_side_tab, right_side_tab, folder_id);
         setTimeout(() => {
             if (!stream_settings_components.get_active_data().id) {
-                if (section === "new") {
+                if (right_panel === "new") {
                     $("#create_stream_name").trigger("focus");
                 } else {
                     $("#search_stream_name").trigger("focus");
@@ -1353,7 +1293,7 @@ export function toggle_view(event: string): void {
                     toggler.goto("available");
                     break;
                 case "available":
-                    toggler.goto("all-streams");
+                    toggler.goto("all");
                     break;
             }
             break;
@@ -1362,7 +1302,7 @@ export function toggle_view(event: string): void {
                 case "available":
                     toggler.goto("subscribed");
                     break;
-                case "all-streams":
+                case "all":
                     toggler.goto("available");
                     break;
             }
@@ -1430,7 +1370,7 @@ export function initialize(): void {
     });
 
     $("#channels_overlay_container").on("click", "#preview-stream-button", () => {
-        const stream_id = Number.parseInt($(".stream_settings_header").attr("data-stream-id")!, 10);
+        const stream_id = Number.parseInt($(".stream-title-buttons").attr("data-stream-id")!, 10);
         window.location.href = hash_util.channel_url_by_user_setting(stream_id);
     });
 }

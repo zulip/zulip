@@ -15,6 +15,7 @@ import * as compose_reply from "./compose_reply.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_textarea from "./compose_textarea.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as condense from "./condense.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
@@ -52,6 +53,7 @@ import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
@@ -141,12 +143,14 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Cmd+Enter": {name: "action_with_enter", message_view_only: true},
     "Cmd+C": {name: "copy_with_c", message_view_only: false},
     "Cmd+K": {name: "search_with_k", message_view_only: false},
+    "Cmd+@": {name: "open_mentions_view", message_view_only: true},
     "Cmd+S": {name: "star_message", message_view_only: true},
     "Cmd+.": {name: "narrow_to_compose_target", message_view_only: true},
     "Cmd+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
     "Ctrl+Enter": {name: "action_with_enter", message_view_only: true},
     "Ctrl+C": {name: "copy_with_c", message_view_only: false},
     "Ctrl+K": {name: "search_with_k", message_view_only: false},
+    "Ctrl+@": {name: "open_mentions_view", message_view_only: true},
     "Ctrl+S": {name: "star_message", message_view_only: true},
     "Ctrl+.": {name: "narrow_to_compose_target", message_view_only: true},
     "Ctrl+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
@@ -341,8 +345,15 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
     // the same physical key combination that a QWERTY user would
     // use (e.g. 'ф' on Cyrillic maps to 'a' on QWERTY). In such cases,
     // we derive the QWERTY equivalent using `e.code` and the `CODE_TO_QWERTY_CHAR` map.
+    //
+    // The same `e.code` path is needed on macOS when Cmd+Shift are
+    // both held, as browsers report the unshifted key in that case
+    // (e.g. Cmd+Shift+2 gives e.key="2" rather than "@").  Without
+    // this, `Cmd+<shifted_symbol>` hotkeys would never match.
+    const mac_cmd_shift = common.has_mac_keyboard() && e.metaKey && e.shiftKey;
     const use_event_key =
-        common.is_printable_ascii(e.key) || KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key);
+        KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key) ||
+        (common.is_printable_ascii(e.key) && !mac_cmd_shift);
     let key = e.key;
     if (!use_event_key) {
         const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;
@@ -480,7 +491,6 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         // will zoom out, handled below.
         if (stream_list.is_zoomed_in() && $("#topic_filter_query").is(":focus")) {
             topic_list.clear_topic_search(e);
-            $("#topic_filter_query").trigger("blur");
             return true;
         }
 
@@ -552,13 +562,23 @@ function handle_popover_events(event_name: string): boolean {
     }
 
     if (popover_menu_visible_instance) {
+        const $focused_element = $(":focus");
+        const focus_in_textarea = $focused_element.is("textarea");
+        const focused_element = $focused_element[0];
+        const focus_in_textarea_at_end =
+            focus_in_textarea &&
+            event_name === "down_arrow" &&
+            focused_element instanceof HTMLTextAreaElement &&
+            focused_element.selectionStart === focused_element.value.length &&
+            focused_element.selectionEnd === focused_element.value.length;
         if (
             // Allow all hotkeys except for `down_arrow` and `up_arrow`
             // to be handled by the browser.
-            // Added to handle `schedule-reminder-note` textarea.
+            // The `down_arrow` key is specifically intercepted when the cursor
+            // is at the end of a textarea to enable popover navigation.
             processing_text() &&
-            event_name !== "down_arrow" &&
-            event_name !== "up_arrow"
+            ((focus_in_textarea && !focus_in_textarea_at_end) ||
+                (event_name !== "down_arrow" && event_name !== "up_arrow"))
         ) {
             return false;
         }
@@ -649,6 +669,10 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
+        const $draft_overlay = $("#draft_overlay");
+        if ($draft_overlay.find("a:focus, button:focus, input:focus").length > 0) {
+            return false;
+        }
         drafts_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
@@ -759,23 +783,6 @@ export function process_tab_key(): boolean {
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
 
-    let $message_edit_form;
-
-    const $focused_message_edit_content = $(".message_edit_content:focus");
-    if ($focused_message_edit_content.length > 0) {
-        $message_edit_form = $focused_message_edit_content.closest(".message_edit_form");
-        // Open message edit forms either have a save button or a close button, but not both.
-        $message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
-        return true;
-    }
-
-    const $focused_message_edit_save = $(".message_edit_save:focus");
-    if ($focused_message_edit_save.length > 0) {
-        $message_edit_form = $focused_message_edit_save.closest(".message_edit_form");
-        $message_edit_form.find(".message_edit_cancel").trigger("focus");
-        return true;
-    }
-
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("tab");
     }
@@ -787,27 +794,16 @@ export function process_shift_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
+    const focused_element = document.activeElement;
 
-    if ($("#compose-send-button").is(":focus")) {
+    if (!(focused_element instanceof HTMLElement)) {
+        return false;
+    }
+
+    if (focused_element.id === "compose-send-button") {
         // Shift-Tab: go back to content textarea and restore
         // cursor position.
         compose_textarea.restore_compose_cursor();
-        return true;
-    }
-
-    // Shift-Tabbing from the edit message cancel button takes you to save.
-    if ($(".message_edit_cancel:focus").length > 0) {
-        $(".message_edit_save").trigger("focus");
-        return true;
-    }
-
-    // Shift-Tabbing from the edit message save button takes you to the content.
-    const $focused_message_edit_save = $(".message_edit_save:focus");
-    if ($focused_message_edit_save.length > 0) {
-        $focused_message_edit_save
-            .closest(".message_edit_form")
-            .find(".message_edit_content")
-            .trigger("focus");
         return true;
     }
 
@@ -993,7 +989,6 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if ($last_focused_compose_type_input.hasClass("message_edit_content")) {
             if ($last_focused_compose_type_input.closest(".preview_mode").length > 0) {
                 message_edit.clear_preview_area($last_focused_compose_type_input);
-                $last_focused_compose_type_input.trigger("focus");
             } else {
                 message_edit.show_preview_area($last_focused_compose_type_input);
             }
@@ -1033,6 +1028,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
     }
 
     if (event_name === "narrow_to_compose_target") {
+        compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
         message_view.to_compose_target();
         return true;
     }
@@ -1045,7 +1041,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if (event_name === "open_saved_snippet_dropdown") {
             const $messagebox = $(":focus").parents(".messagebox");
             if ($messagebox.length === 1) {
-                util.the($messagebox.find(".saved_snippets_widget")).click();
+                saved_snippets_ui.open_saved_snippets_dropdown_via_hotkey();
             }
         }
 
@@ -1092,6 +1088,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                     break;
                 case "star_message":
                     // Do nothing; this allows one to use Ctrl+S inside compose.
+                    break;
+                case "open_mentions_view":
+                    // Do nothing; this allows one to use Ctrl+@ inside compose.
                     break;
                 default:
                     // Let the browser handle the key normally.
@@ -1197,10 +1196,16 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             message_view.stream_cycle_forward();
             return true;
         case "n_key":
-            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            message_view.narrow_to_next_topic({
+                trigger: "next_topic_unread_hotkey",
+                only_followed_topics: false,
+            });
             return true;
         case "narrow_to_next_unread_followed_topic":
-            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
+            message_view.narrow_to_next_topic({
+                trigger: "next_topic_unread_hotkey",
+                only_followed_topics: true,
+            });
             return true;
         case "p_key":
             message_view.narrow_to_next_pm_string({trigger: "hotkey"});
@@ -1210,7 +1215,11 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             return true;
         case "open_inbox":
             // Focus search if already in (non-channel) inbox view.
-            if (!inbox_util.is_channel_view() && !inbox_ui.is_search_focused()) {
+            if (
+                inbox_util.is_visible() &&
+                !inbox_util.is_channel_view() &&
+                !inbox_ui.is_search_focused()
+            ) {
                 inbox_ui.focus_inbox_search();
                 return true;
             }
@@ -1218,6 +1227,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             return true;
         case "open_starred_message_view":
             browser_history.go_to_location("#narrow/is/starred");
+            return true;
+        case "open_mentions_view":
+            browser_history.go_to_location("#narrow/is/mentioned");
             return true;
         case "open_combined_feed":
             browser_history.go_to_location("#feed");
@@ -1460,10 +1472,10 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
         case "compose_quote_message": // > : respond to selected message with quote
-            compose_reply.quote_message({trigger: "hotkey"});
+            compose_reply.quote_messages({trigger: "hotkey"});
             return true;
         case "compose_forward_message": // < : forward selected message
-            compose_reply.quote_message({trigger: "hotkey", forward_message: true});
+            compose_reply.quote_messages({trigger: "hotkey", forward_message: true});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);
@@ -1473,7 +1485,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "view_edit_history": {
             if (
                 realm.realm_message_edit_history_visibility_policy !==
-                message_edit_history_visibility_policy_values.never.code
+                    message_edit_history_visibility_policy_values.never.code &&
+                (msg.last_edit_timestamp !== undefined || msg.last_moved_timestamp !== undefined)
             ) {
                 message_edit_history.fetch_and_render_message_history(msg);
                 $("#message-history-overlay .exit-sign").trigger("focus");

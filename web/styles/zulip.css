@@ -1,3 +1,7 @@
+#download-mac-alt {
+    margin-top: 10px;
+}
+
 html {
     overflow: hidden scroll;
     overscroll-behavior-y: none;
@@ -128,16 +132,6 @@ button {
         padding: 0;
         border: 0;
     }
-}
-
-input,
-button,
-select {
-    font-family: "Source Sans 3 VF", sans-serif;
-    /* Disable bootstrap size CSS; we want to use our default font size on
-       body for input elements. */
-    line-height: normal;
-    font-size: inherit;
 }
 
 blockquote p {
@@ -618,6 +612,7 @@ body.has-overlay-scrollbar {
     }
 
     .column-right .right-sidebar {
+        box-sizing: border-box;
         padding-left: var(--right-sidebar-left-spacing);
         width: var(--right-sidebar-width);
     }
@@ -680,10 +675,6 @@ body.has-overlay-scrollbar {
     position: relative;
 }
 
-input {
-    font-family: "Source Sans 3 VF", sans-serif;
-}
-
 /* Override browsers that use
    `cursor: default` */
 label,
@@ -734,12 +725,6 @@ li,
 .table th,
 .table td {
     line-height: inherit;
-}
-
-.bootstrap-btn {
-    font-size: inherit;
-    height: auto;
-    line-height: 100%;
 }
 
 /* Classes which style copy buttons */
@@ -1003,6 +988,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
+    font-family: inherit;
 
     transition:
         border-color linear 0.2s,
@@ -1392,14 +1378,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
     padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
     border-radius: 4px;
-    border: var(--input-border-width) solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
+    background-color: var(--color-background-legacy-input);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
-        border-color: hsl(206deg 80% 62% / 80%);
+        border-color: var(--color-border-legacy-input-focus);
         outline: 0;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
@@ -1422,6 +1410,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     font-size: 1.5em;
     font-weight: 400;
     line-height: inherit;
+    margin: 10px 0;
     overflow-wrap: break-word;
 }
 
@@ -1533,6 +1522,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .exit {
         font-size: 1.5rem;
         font-weight: 600;
+        font-family: inherit;
         background-color: transparent;
         border: none;
         position: absolute;
@@ -1850,7 +1840,9 @@ body:not(.spectator-view) {
     }
 
     .app-main .column-right.expanded .right-sidebar,
-    .app-main .column-left.expanded .left-sidebar {
+    .app-main .column-left.expanded .left-sidebar,
+    .app-main #left-sidebar.zoom-in-topics #left-sidebar-modal,
+    .app-main #left-sidebar.zoom-in-conversations #left-sidebar-modal {
         width: 100vw;
         max-width: 100%;
     }
@@ -2126,24 +2118,33 @@ body:not(.spectator-view) {
         justify-content: center;
         cursor: pointer;
 
-        &:hover #scroll-to-bottom-button {
-            background: hsl(240deg 96% 68%);
+        #scroll-to-bottom-button,
+        #scroll-to-bottom-button-underlay {
+            width: 2.5em; /* 40px at 16px em */
+            height: 2.5em; /* 40px at 16px em */
+            border-radius: 50%;
         }
 
         #scroll-to-bottom-button {
-            text-align: center;
-            width: 2.5em; /* 40px at 16px em */
-            height: 2.5em; /* 40px at 16px em */
-            background: hsl(240deg 96% 68% / 50%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-
-            & .scroll-to-bottom-icon {
-                color: hsl(0deg 0% 100%);
-                margin: 0 auto;
-                font-size: 1.3125em; /* 21px at 16px em */
+            > .zulip-icon {
+                /* We increase the icon size for better visibility */
+                font-size: 1.5em; /* 24px at 16px em */
             }
+
+            &:active {
+                clip-path: none;
+            }
+        }
+
+        #scroll-to-bottom-button-underlay {
+            position: absolute;
+            background-color: var(--color-background-stream-message-content);
+            opacity: 0.7;
+            z-index: -1;
+        }
+
+        &:hover #scroll-to-bottom-button {
+            backdrop-filter: blur(40px);
         }
     }
 }
@@ -2196,6 +2197,21 @@ body:not(.spectator-view) {
 }
 
 .dropdown-list-container {
+    /* For hidden searchbox dropdowns, when the user uses a click to open
+       the dropdown, we focus this container, so that the rest of the
+       keyboard navigation has the right container. That itself doesn't
+       introduce focus-visible. But hotkeys.ts uses a programmatic click
+       which goes through the same path and invokes focus-visible.
+    */
+    &:focus-visible {
+        outline: none;
+    }
+
+    .dropdown-list-viewport-padding {
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -2246,12 +2262,9 @@ body:not(.spectator-view) {
     .dropdown-list .dropdown-list-item-common-styles {
         display: grid;
         grid-template:
-            "privacy-icon     item-label       " min-content
-            "item-description item-description" minmax(0, min-content) / minmax(
-                0,
-                auto
-            )
-            minmax(0, 1fr);
+            "item-label" min-content
+            "item-description" minmax(0, min-content)
+            / minmax(0, 1fr);
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
@@ -2261,28 +2274,29 @@ body:not(.spectator-view) {
            vertically centered properly. */
         line-height: 1.214;
 
-        .channel-privacy-type-icon,
-        .zulip-icon-deactivated-circle {
-            grid-area: privacy-icon;
-            line-height: 1.214;
-            font-size: 0.93em;
-            /* We set only the width so that flexbox
-            can do its work to properly center,
-            regardless of the height. */
-            width: 0.93em;
-            padding-right: 5px;
-            padding-left: 0;
-            /* Override the [data-tippy-root] style in
-               `tooltips.css`.
-               Because we are manually holding icon
-               alignment to the first/only line of a
-               channel, we make this adjustment here.
-               Calculated by eye to look good at 12px-20px. */
-            top: 0.05em;
+        .decorated-channel-name-wrapper,
+        .dropdown-list-item-direct-message,
+        .dropdown-list-item-setting-disabled-option,
+        .dropdown-list-item-channel-mapping {
+            grid-area: item-label;
+            display: flex;
+            gap: var(--dropdown-list-item-label-icon-gap);
+
+            .zulip-icon {
+                font-size: 0.9375em; /* 15px at 16px/1em */
+            }
         }
 
-        .decorated-channel-name {
-            grid-area: item-label;
+        .decorated-channel-name-wrapper .channel-privacy-type-icon,
+        .dropdown-list-item-icon {
+            line-height: 1.214;
+        }
+
+        .dropdown-list-item-channel-mapping .zulip-icon {
+            position: relative;
+            /* Calculated from visual inspection
+               to look good for 12px-20px font sizes. */
+            top: 0.1467em; /* 2.2px at 15px/1em */
         }
 
         .dropdown-list-item-description {
@@ -2342,36 +2356,51 @@ body:not(.spectator-view) {
             }
         }
     }
-}
-
-.dropdown-list-container .list-item {
-    color: var(--color-dropdown-item);
-
-    &:focus,
-    &.current_selection {
-        background-color: var(--background-color-active-dropdown-item);
-        outline: none;
-    }
-}
-
-.inbox-filter-dropdown-list-container,
-.recent-view-filter-dropdown-list-container,
-.folder-filter-dropdown-list-container,
-.stream_settings_filter-dropdown-list-container,
-.user_group_visibility_settings-dropdown-list-container {
-    overflow: visible;
 
     .list-item {
-        &:focus {
-            border-radius: 4px;
-            outline: 1px solid var(--color-outline-focus) !important;
-            outline-offset: -2px;
-            background-color: transparent;
+        border-radius: 4px;
+        margin: 0 4px;
+        position: relative;
+        color: var(--color-dropdown-item);
+
+        &:focus,
+        &.current_selection {
+            outline: none;
+            background-color: var(
+                --background-color-current-selection-dropdown-item
+            );
+
+            &:not(.highlight_value):hover {
+                background-color: transparent;
+            }
         }
 
-        &.current_user_setting {
-            background-color: var(--background-color-active-dropdown-item);
-            outline: none;
+        &:focus::before,
+        &.current_selection::before {
+            content: "";
+            position: absolute;
+            left: -3px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--color-outline-focus);
+            border-radius: 4px;
+        }
+
+        .dropdown-list-item-common-styles {
+            padding: 5px 6px;
+            border-radius: 4px;
+        }
+
+        &.highlight_value {
+            background-color: var(
+                --background-color-current-setting-dropdown-item
+            );
+
+            .dropdown-list-text-selected,
+            .setting-disabled-option-text {
+                color: var(--color-current-setting-dropdown-item);
+            }
         }
     }
 }

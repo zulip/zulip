@@ -8,7 +8,6 @@ import render_message_history_overlay from "../templates/message_history_overlay
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import {$t, $t_html} from "./i18n.ts";
-import * as lightbox from "./lightbox.ts";
 import * as loading from "./loading.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -24,6 +23,7 @@ import {realm} from "./state_data.ts";
 import {get_recipient_bar_color} from "./stream_color.ts";
 import {get_color} from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
+import * as submessage from "./submessage.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
@@ -352,27 +352,35 @@ export function handle_keyboard_events(event_key: string): void {
 }
 
 export function initialize(): void {
-    $("body").on("mouseenter", ".message_edit_notice, .edit-notifications", (e) => {
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            $(e.currentTarget).addClass("message_edit_notice_hover");
-        }
-    });
+    $("body").on(
+        "mouseenter",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
+        (e) => {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                $(e.currentTarget).addClass("message_edit_notice_hover");
+            }
+        },
+    );
 
-    $("body").on("mouseleave", ".message_edit_notice, .edit-notifications", (e) => {
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            $(e.currentTarget).removeClass("message_edit_notice_hover");
-        }
-    });
+    $("body").on(
+        "mouseleave",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
+        (e) => {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                $(e.currentTarget).removeClass("message_edit_notice_hover");
+            }
+        },
+    );
 
     $("body").on(
         "click",
-        ".message_edit_notice, .edit-notifications",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
         function (this: HTMLElement, e) {
             e.stopPropagation();
             e.preventDefault();
@@ -386,6 +394,18 @@ export function initialize(): void {
 
             if (page_params.is_spectator) {
                 spectators.login_to_access();
+                return;
+            }
+
+            // Poll messages can show an EDITED marker for widget edits
+            // (question changes, new options) that have no server-side
+            // edit history. Skip the overlay when the message has no
+            // text edits or moves to display.
+            if (
+                submessage.is_poll_message(message) &&
+                message.last_edit_timestamp === undefined &&
+                message.last_moved_timestamp === undefined
+            ) {
                 return;
             }
 
@@ -411,21 +431,6 @@ export function initialize(): void {
     );
 
     $("body").on("click", "#message-history-overlay .message_edit_history_content", (e) => {
-        const $img = $(e.target).closest("img");
-        if ($img.length > 0) {
-            e.stopPropagation();
-            e.preventDefault();
-            overlays.close_overlay("message_edit_history");
-            lightbox.handle_inline_media_element_click($img, true);
-            return;
-        }
-
-        const $video = $(e.target).closest("video");
-        if ($video.length > 0) {
-            e.stopPropagation();
-            e.preventDefault();
-            overlays.close_overlay("message_edit_history");
-            lightbox.handle_inline_media_element_click($video, true);
-        }
+        messages_overlay_ui.handle_overlay_media_click(e, "message_edit_history");
     });
 }

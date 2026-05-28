@@ -9,8 +9,6 @@ import sys
 import time
 from datetime import datetime, timedelta, timezone
 
-import dateutil.parser
-
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -60,7 +58,12 @@ env["WALG_UPLOAD_DISK_CONCURRENCY"] = disk_concurrency
 subprocess.check_call(["env-wal-g", "backup-push", pg_data_path], env=env)
 
 data = json.loads(subprocess.check_output(["env-wal-g", "backup-list", "--json"]))
-backups = {dateutil.parser.parse(backup["time"]): backup["backup_name"] for backup in data}
+# Use strptime for Python < 3.11 compatibility; we might not have
+# backports-datetime-fromisoformat here
+backups = {
+    datetime.strptime(backup["time"], "%Y-%m-%dT%H:%M:%S%z"): backup["backup_name"]
+    for backup in data
+}
 
 one_month_ago = datetime.now(tz=timezone.utc) - timedelta(days=30)
 for date in sorted(backups.keys(), reverse=True):

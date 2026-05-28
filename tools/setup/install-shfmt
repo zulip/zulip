@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 set -eu
 
-version=3.12.0
+version=3.13.1
 arch="$(uname -m)"
 
 case $arch in
     "x86_64")
         binary="shfmt_v${version}_linux_amd64"
-        sha256=d9fbb2a9c33d13f47e7618cf362a914d029d02a6df124064fff04fd688a745ea
+        sha256=fb096c5d1ac6beabbdbaa2874d025badb03ee07929f0c9ff67563ce8c75398b1
         ;;
 
     "aarch64")
         binary="shfmt_v${version}_linux_arm64"
-        sha256=5f3fe3fa6a9f766e6a182ba79a94bef8afedafc57db0b1ad32b0f67fae971ba4
+        sha256=32d92acaa5cd8abb29fc49dac123dc412442d5713967819d8af2c29f1b3857c7
         ;;
 esac
 

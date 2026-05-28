@@ -2,19 +2,14 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
-const {set_global, zrequire} = require("./lib/namespace.cjs");
+const {clock, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
-let time = 0;
 let checker;
-MockDate.set(time);
 
 function advance_secs(secs) {
-    time += secs * 1000;
-    MockDate.set(time);
+    clock.tick(secs * 1000);
 }
 
 set_global("setInterval", (f, interval) => {
@@ -133,8 +128,4 @@ run_test("browser_events", () => {
     advance_secs(80);
     pageshow_handler({persisted: false});
     assert.equal(num_times_called_back, 2);
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });

@@ -13,6 +13,7 @@ import * as message_edit from "./message_edit.ts";
 import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_popover from "./stream_popover.ts";
@@ -86,7 +87,7 @@ export function initialize(): void {
     });
 
     popover_menus.register_popover_menu(
-        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
+        "#stream_filters .topic-sidebar-menu-icon, #more-topics-modal .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
         {
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
@@ -114,15 +115,22 @@ export function initialize(): void {
                 const topic_display_name = context.topic_display_name;
                 const is_empty_string_topic = context.is_empty_string_topic;
 
-                const $elt = $(instance.reference).closest(".recent_view_focusable");
-                if ($elt.length === 1) {
-                    $elt.addClass("topic-popover-visible");
+                const $popover_trigger = $(instance.reference).closest(
+                    ".recent_view_focusable, .inbox-action-button",
+                );
+                if ($popover_trigger.length === 1) {
+                    $popover_trigger.addClass("topic-popover-visible");
+                    if ($popover_trigger.hasClass("recent-view-topic-visibility")) {
+                        recent_view_ui.update_visibility_icon_swap_state($popover_trigger);
+                    }
                 }
 
                 if (!stream_id) {
                     popover_menus.hide_current_popover_if_visible(instance);
                     return;
                 }
+
+                popover_menus.focus_popover(instance);
 
                 $popper.on("change", "input[name='sidebar-topic-visibility-select']", (e) => {
                     const start_time = Date.now();
@@ -259,13 +267,32 @@ export function initialize(): void {
                 );
             },
             onHidden(instance) {
-                const $elt = $(instance.reference).closest(".recent_view_focusable");
-                if ($elt.length === 1) {
-                    $elt.removeClass("topic-popover-visible");
+                const $popover_trigger = $(instance.reference).closest(
+                    ".recent_view_focusable, .inbox-action-button",
+                );
+                if ($popover_trigger.length === 1) {
+                    $popover_trigger.removeClass("topic-popover-visible");
+                    if ($popover_trigger.hasClass("recent-view-topic-visibility")) {
+                        recent_view_ui.update_visibility_icon_swap_state($popover_trigger);
+                    }
                 }
                 instance.destroy();
                 popover_menus.popover_instances.topics_menu = null;
                 ui_util.hide_left_sidebar_menu_icon();
+            },
+        },
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element(reference) {
+                // Left sidebar triggers sit inside a `.topic-box` or
+                // `.selectable_sidebar_block`; return focus to that
+                // enclosing row so the user re-lands on a natural
+                // target. From inbox and recent-view triggers there
+                // is no such ancestor, so fall back to the nearest
+                // focusable ancestor (or the reference itself)
+                // rather than crashing in `util.the`.
+                const $block = $(reference).closest(".topic-box, .selectable_sidebar_block");
+                return $block[0] ?? $(reference).closest("[tabindex='0']")[0] ?? reference;
             },
         },
     );

@@ -178,10 +178,7 @@ export function should_jump_to_sent_message_conversation(message: Message): bool
 
     const current_filter = narrow_state.filter();
     const is_conversation_view =
-        current_filter === undefined
-            ? false
-            : current_filter.is_conversation_view() ||
-              current_filter.is_conversation_view_with_near();
+        current_filter === undefined ? false : current_filter.is_conversation_view();
     const $row = message_lists.current.get_row(message.id);
     if (is_conversation_view && $row.length > 0) {
         // If our message is in the current conversation view, we do

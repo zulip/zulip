@@ -63,7 +63,7 @@
         & h2 {
             font-size: 1.1em;
             line-height: normal;
-            margin-bottom: 5px;
+            margin: 10px 0 5px;
             white-space: pre-wrap;
         }
     }

@@ -14,10 +14,12 @@ import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
+import {place_caret_at_end} from "./ui_util.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_group_create_members from "./user_group_create_members.ts";
 import * as user_group_create_members_data from "./user_group_create_members_data.ts";
 import * as user_groups from "./user_groups.ts";
+import {the} from "./util.ts";
 
 let created_group_name: string | undefined;
 
@@ -343,6 +345,9 @@ export function set_up_handlers(): void {
                 $("#change_group_info_modal .dialog_submit_button")
                     .addClass("save-button")
                     .attr("data-group-id", group_id);
+            },
+            on_shown() {
+                place_caret_at_end(the($("#change_user_group_name")));
             },
             update_submit_disabled_state_on_change: true,
         });

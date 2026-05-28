@@ -259,7 +259,7 @@ def main() -> None:
         token = secrets_file["secrets"]["weblate_api_key"]
 
     handler = create_handler(WeblateMetricsCollector(token=token))
-    server = HTTPServer(("", args.port), handler)
+    server = HTTPServer(("127.0.0.1", args.port), handler)
 
     logger.info("Metrics available at http://localhost:%d/metrics", args.port)
 

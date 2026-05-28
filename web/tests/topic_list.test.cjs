@@ -11,7 +11,7 @@ mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
 });
 
-const all_messages_data = zrequire("all_messages_data");
+const recent_view_messages_data = zrequire("recent_view_messages_data");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -40,16 +40,16 @@ test("is_full_topic_history_available", ({override}) => {
     ];
     const sub = stream_data.create_sub_from_server_data(general);
 
-    // Currently, all_messages_data is empty.
+    // Currently, recent_view_messages_data is empty.
     assert.equal(topic_list.is_full_topic_history_available(stream_id), false);
 
-    all_messages_data.all_messages_data.clear();
-    all_messages_data.all_messages_data.add_messages(messages, true);
+    recent_view_messages_data.recent_view_messages_data.clear();
+    recent_view_messages_data.recent_view_messages_data.add_messages(messages, true);
 
     let has_found_newest = false;
 
     override(
-        all_messages_data.all_messages_data.fetch_status,
+        recent_view_messages_data.recent_view_messages_data.fetch_status,
         "has_found_newest",
         () => has_found_newest,
     );

@@ -38,10 +38,11 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import require_member_or_admin, require_realm_admin
+from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
+from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
@@ -466,7 +467,7 @@ def get_stream_name(stream: Stream | None) -> str | None:
     return None
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def patch_bot_backend(
     request: HttpRequest,
@@ -598,7 +599,7 @@ def patch_bot_backend(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint_without_parameters
 def regenerate_bot_api_key(
     request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
@@ -612,7 +613,20 @@ def regenerate_bot_api_key(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
+@typed_endpoint_without_parameters
+def get_bot_api_key(
+    request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
+) -> HttpResponse:
+    bot = access_bot_by_id(user_profile, bot_id)
+
+    json_result = dict(
+        api_key=bot.api_key,
+    )
+    return json_success(request, data=json_result)
+
+
+@require_human_non_guest_user
 @typed_endpoint
 def add_bot_backend(
     request: HttpRequest,
@@ -633,6 +647,9 @@ def add_bot_backend(
     service_name: str | None = None,
     short_name_raw: Annotated[str, ApiParamConfig("short_name")],
 ) -> HttpResponse:
+    if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
+        check_demo_organization_has_set_email(user_profile.realm)
+
     if config_data is None:
         config_data = {}
     try:
@@ -649,7 +666,7 @@ def add_bot_backend(
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
         service_name = service_name or short_name
     full_name = check_full_name(
-        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+        full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )
     form = CreateUserForm({"full_name": full_name, "email": email})
 
@@ -680,12 +697,11 @@ def add_bot_backend(
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
-    if len(request.FILES) == 0:
-        avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-    elif len(request.FILES) != 1:
-        raise JsonableError(_("You may only upload one file at a time"))
-    else:
+    avatar_source = None
+    if len(request.FILES) == 1:
         avatar_source = UserProfile.AVATAR_FROM_USER
+    elif len(request.FILES) > 1:
+        raise JsonableError(_("You may only upload one file at a time"))
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
@@ -755,7 +771,7 @@ def add_bot_backend(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
     bot_profiles = bot_profiles.select_related(
@@ -887,7 +903,7 @@ def create_user_backend(
         raise JsonableError(_("User not authorized to create users"))
 
     full_name = check_full_name(
-        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+        full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )
     form = CreateUserForm({"full_name": full_name, "email": email})
     if not form.is_valid():

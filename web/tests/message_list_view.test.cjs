@@ -108,18 +108,99 @@ test("msg_edited_and_moved_vars", () => {
         assert.equal(result[0].edited, false);
         assert.equal(result[0].moved, false);
         assert.equal(result[0].modified, false);
+        assert.equal(result[0].widget_edited, false);
         // edit timestamp: EDITED
         assert.equal(result[1].edited, true);
         assert.equal(result[1].moved, false);
         assert.equal(result[1].modified, true);
+        assert.equal(result[1].widget_edited, false);
         // moved timestamp: MOVED
         assert.equal(result[2].edited, false);
         assert.equal(result[2].moved, true);
         assert.equal(result[2].modified, true);
+        assert.equal(result[2].widget_edited, false);
         // both edit and moved timestamp: EDITED
         assert.equal(result[3].edited, true);
         assert.equal(result[3].moved, true);
         assert.equal(result[3].modified, true);
+        assert.equal(result[3].widget_edited, false);
+    })();
+
+    (function test_widget_edited_var() {
+        function make_submessage(id, content) {
+            return {id, sender_id: 1, msg_type: "widget", content: JSON.stringify(content)};
+        }
+
+        const poll_widget_data = {widget_type: "poll", extra_data: {question: "Q?", options: []}};
+
+        const messages = [
+            // Poll with question edit → EDITED
+            {
+                msg: {
+                    submessages: [
+                        make_submessage(1, poll_widget_data),
+                        make_submessage(2, {type: "question", question: "New Q?"}),
+                    ],
+                },
+            },
+            // Poll with new_option → EDITED
+            {
+                msg: {
+                    submessages: [
+                        make_submessage(3, poll_widget_data),
+                        make_submessage(4, {type: "new_option", option: "Option A"}),
+                    ],
+                },
+            },
+            // Poll with only votes → NOT edited
+            {
+                msg: {
+                    submessages: [
+                        make_submessage(5, poll_widget_data),
+                        make_submessage(6, {type: "vote", key: "1,1", vote: 1}),
+                    ],
+                },
+            },
+            // Non-poll message with submessages → NOT edited
+            {
+                msg: {
+                    submessages: [
+                        make_submessage(7, {widget_type: "todo"}),
+                        make_submessage(8, {type: "new_task", task: "Do stuff"}),
+                    ],
+                },
+            },
+        ];
+
+        const message_group = build_message_group(messages);
+        const list = build_list([message_group]);
+
+        for (const message_container of messages) {
+            Object.assign(
+                message_container,
+                list._maybe_get_me_message(message_container.is_hidden, message_container.msg),
+                list._get_message_edited_and_moved_vars(message_container.msg),
+            );
+        }
+
+        const result = list._message_groups[0].message_containers;
+
+        // Poll with question edit
+        assert.equal(result[0].widget_edited, true);
+        assert.equal(result[0].edited, true);
+        assert.equal(result[0].modified, true);
+        // Poll with new_option
+        assert.equal(result[1].widget_edited, true);
+        assert.equal(result[1].edited, true);
+        assert.equal(result[1].modified, true);
+        // Poll with only votes
+        assert.equal(result[2].widget_edited, false);
+        assert.equal(result[2].edited, false);
+        assert.equal(result[2].modified, false);
+        // Non-poll widget
+        assert.equal(result[3].widget_edited, false);
+        assert.equal(result[3].edited, false);
+        assert.equal(result[3].modified, false);
     })();
 });
 
@@ -263,7 +344,7 @@ test("muted_message_vars", () => {
     (function test_hidden_message_variables() {
         // We want to have no search results, which apparently works like this.
         // See https://chat.zulip.org/#narrow/channel/6-frontend/topic/set_find_results.20with.20no.20results/near/1414799
-        const empty_list_stub = $.create("empty-stub", {children: []});
+        const empty_list_stub = $.set_results("empty-stub", []);
         $("<message-stub-1>").set_find_results(".user-mention:not(.silent)", empty_list_stub);
         $("<message-stub2>").set_find_results(".user-mention:not(.silent)", empty_list_stub);
         $("<message-stub-3>").set_find_results(".user-mention:not(.silent)", empty_list_stub);
@@ -669,6 +750,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
+        list.$list[0].prepend = noop;
         const result = list.merge_message_groups([message_group2], "top");
 
         assert.equal(message_group1.bookend_top, undefined);

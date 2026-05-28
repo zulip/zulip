@@ -215,6 +215,7 @@ js_rules = RuleList(
             "exclude": {
                 "web/tests/compose_paste.test.cjs",
                 "web/tests/postprocess_content.test.cjs",
+                "web/tests/lib/zjquery_element.cjs",
             },
             "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
@@ -902,7 +903,7 @@ help_markdown_rules = RuleList(
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
             "include_only": {"starlight_help/src/content/docs/"},
-            "exclude_pattern": "Rocket.Chat|org.zulip.Zulip|Directory.Read.All|RoleManagement.Read.Directory|User.Read.All",
+            "exclude_pattern": "Rocket.Chat|org.zulip.Zulip|Directory.Read.All|RoleManagement.Read.Directory|User.Read.All|ChannelMessage.Read.All",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",

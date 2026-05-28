@@ -18,7 +18,7 @@ from zerver.actions.user_groups import (
     do_update_user_group_name,
     remove_subgroups_from_user_group,
 )
-from zerver.decorator import require_member_or_admin, require_user_group_create_permission
+from zerver.decorator import require_non_guest_user, require_user_group_create_permission
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
@@ -30,9 +30,11 @@ from zerver.lib.user_groups import (
     access_user_group_for_setting,
     access_user_group_for_update,
     access_user_group_to_read_membership,
+    check_group_membership_management_permissions_with_admins_only,
     check_user_group_name,
     get_direct_memberships_of_users,
     get_group_setting_value_for_api,
+    get_role_based_system_groups_dict,
     get_subgroup_ids,
     get_system_user_group_by_name,
     get_user_group_direct_member_ids,
@@ -41,6 +43,7 @@ from zerver.lib.user_groups import (
     lock_subgroups_with_respect_to_supergroup,
     parse_group_setting_value,
     user_groups_in_realm_serialized,
+    validate_group_membership_management_setting,
     validate_group_setting_value_change,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
@@ -112,7 +115,7 @@ def add_user_group(
     return json_success(request, data={"group_id": user_group.id})
 
 
-@require_member_or_admin
+@require_non_guest_user
 @typed_endpoint
 def get_user_groups(
     request: HttpRequest,
@@ -127,7 +130,7 @@ def get_user_groups(
 
 
 @transaction.atomic(durable=True)
-@require_member_or_admin
+@require_non_guest_user
 @typed_endpoint
 def edit_user_group(
     request: HttpRequest,
@@ -172,7 +175,8 @@ def edit_user_group(
         do_reactivate_user_group(user_group, acting_user=user_profile)
 
     request_settings_dict = locals()
-    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
+    system_groups_name_dict = get_role_based_system_groups_dict(user_profile.realm)
+    nobody_group = system_groups_name_dict[SystemGroups.NOBODY]
     for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
         if setting_name not in request_settings_dict:  # nocoverage
             continue
@@ -201,6 +205,16 @@ def edit_user_group(
                 permission_configuration=permission_config,
                 current_setting_value=current_value,
             )
+
+            if setting_name in NamedUserGroup.MEMBERSHIP_MANAGEMENT_SETTINGS:
+                validate_group_membership_management_setting(
+                    user_group,
+                    setting_name,
+                    new_setting_value,
+                    user_profile.realm,
+                    system_groups_name_dict,
+                )
+
             do_change_user_group_permission_setting(
                 user_group,
                 setting_name,
@@ -225,7 +239,7 @@ def deactivate_user_group(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_non_guest_user
 @typed_endpoint
 @transaction.atomic(durable=True)
 def update_user_group_backend(
@@ -466,6 +480,26 @@ def add_subgroups_to_group_backend(
                 ).format(user_group_id=user_group_id)
             )
 
+        realm = user_profile.realm
+        if user_group_id == realm.workplace_users_group_id or user_group_id in get_subgroup_ids(
+            realm.workplace_users_group
+        ):
+            # If the user group being updated is used for workplace_users_group, we need
+            # to make sure that only admins have permission to update members for all its
+            # recursive subgroups.
+            non_system_subgroups = [
+                group for group in context.recursive_subgroups if not group.is_system_group
+            ]
+            system_groups_name_dict = get_role_based_system_groups_dict(realm)
+            if not check_group_membership_management_permissions_with_admins_only(
+                non_system_subgroups, realm, system_groups_name_dict
+            ):
+                raise JsonableError(
+                    _(
+                        "Subgroups of a group used for 'workplace_users_group' must allow only organization administrators to manage their membership."
+                    )
+                )
+
         add_subgroups_to_user_group(
             context.supergroup, context.direct_subgroups, acting_user=user_profile
         )
@@ -502,7 +536,7 @@ def remove_subgroups_from_group_backend(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_non_guest_user
 @typed_endpoint
 @transaction.atomic(durable=True)
 def update_subgroups_of_user_group(
@@ -535,7 +569,7 @@ def update_subgroups_of_user_group(
     return json_success(request, data)
 
 
-@require_member_or_admin
+@require_non_guest_user
 @typed_endpoint
 def get_is_user_group_member(
     request: HttpRequest,
@@ -558,7 +592,7 @@ def get_is_user_group_member(
     )
 
 
-@require_member_or_admin
+@require_non_guest_user
 @typed_endpoint
 def get_user_group_members(
     request: HttpRequest,
@@ -577,7 +611,7 @@ def get_user_group_members(
     )
 
 
-@require_member_or_admin
+@require_non_guest_user
 @typed_endpoint
 def get_subgroups_of_user_group(
     request: HttpRequest,

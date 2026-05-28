@@ -12,7 +12,7 @@ import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
-import {queue_id} from "./server_events_state.ts";
+import {mark_first_events_response_received, queue_id} from "./server_events_state.ts";
 import {server_message_schema} from "./server_message.ts";
 import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
@@ -198,6 +198,7 @@ function get_events({dont_block = false} = {}) {
                 popup_banners.close_connection_error_popup_banner("server_events");
 
                 get_events_success(data.events);
+                mark_first_events_response_received();
             } catch (error) {
                 blueslip.error("Failed to handle get_events success", undefined, error);
             }

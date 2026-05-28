@@ -1,0 +1,10 @@
+{
+    "type": "team",
+    "team": {
+        "name": "zulip",
+        "display_name": "zulip",
+        "type": "O",
+        "description": "",
+        "allow_open_invite": false
+    }
+}

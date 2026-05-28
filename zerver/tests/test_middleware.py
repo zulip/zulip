@@ -4,6 +4,7 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 from django.http import HttpResponse
 
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import ZulipTestCase
@@ -129,8 +130,7 @@ class OpenGraphTest(ZulipTestCase):
             "* note-3\n\n"
             "Enjoy!"
         )
-        realm.description = description
-        realm.save(update_fields=["description"])
+        do_set_realm_property(realm, "description", description, acting_user=None)
 
         self.check_title_and_description(
             "/login/",
@@ -162,9 +162,7 @@ class OpenGraphTest(ZulipTestCase):
         realm.icon_source = "U"
         realm.save(update_fields=["icon_source"])
         icon_url = f"https://foo.s3.amazonaws.com/{realm.id}/realm/icon.png?version={1}"
-        with patch(
-            "zerver.lib.realm_icon.upload_backend.get_realm_icon_url", return_value=icon_url
-        ):
+        with patch("zerver.lib.realm_icon.get_uploaded_realm_icon_url", return_value=icon_url):
             response = self.client_get("/login/")
         self.assertEqual(response.status_code, 200)
 

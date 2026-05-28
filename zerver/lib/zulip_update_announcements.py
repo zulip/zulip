@@ -554,6 +554,90 @@ folder in the inbox view.
             configure_inbox_folders_url="/help/channel-folders#configure-whether-channels-are-grouped-by-folder-in-the-inbox-view",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=24,
+        message="""
+**Web and desktop updates**
+- The [recent conversations view]({recent_conversations_url}) has been
+redesigned, with a new option to [filter by folder]({filter_by_folder_url}).
+- [Search]({search_url}) typeahead now suggests topics across all your
+subscribed channels — no need to pick a channel first.
+
+**New organization settings**
+- [Size of image and video previews]({image_video_thumbnail_size_url}) in the message feed.
+- Configure [linkifiers]({linkifiers_url}) to also work in reverse: when you paste a URL that
+matches the linkifier, Zulip will automatically convert it to linkified text.
+- You can now create [custom profile fields]({custom_profile_fields_url}) for many types of external
+accounts, and allow them to be used for @-mention suggestions.
+- A new option for [default profile pictures for new
+users]({configure_default_profile_pictures_url}) looks great in both light and
+dark theme.
+
+Administrators can now [reset]({reset_settings_for_users_url}) any non-privacy
+user preference or notification setting to the [organization
+default]({configure_default_new_user_settings_url}), for everyone or just for
+users who haven't personally configured it.
+""".format(
+            recent_conversations_url="/help/recent-conversations",
+            filter_by_folder_url="/help/recent-conversations#filter-by-folder",
+            search_url="/help/search-for-messages",
+            image_video_thumbnail_size_url="/help/image-video-and-website-previews#configure-image-and-video-thumbnail-size",
+            linkifiers_url="/help/add-a-custom-linkifier",
+            custom_profile_fields_url="/help/custom-profile-fields",
+            configure_default_profile_pictures_url="/help/configure-default-profile-pictures",
+            reset_settings_for_users_url="/help/reset-settings-for-users",
+            configure_default_new_user_settings_url="/help/configure-default-new-user-settings",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=25,
+        message="""
+**Web and desktop updates**
+- You can now instantly [scroll to any date]({scroll_to_date_url}) in the
+message feed, whether you're viewing a conversation, a channel feed, search
+results, or anything else.
+- You can now [quote or forward]({quote_or_forward_url}) selected text from
+several messages at once using the `>` and `<` keyboard shortcuts.
+""".format(
+            scroll_to_date_url="/help/scroll-to-date",
+            quote_or_forward_url="/help/quote-or-forward-a-message",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=26,
+        message="""
+Zulip now [encrypts]({mobile_notifications_e2ee_url}) your push notifications
+end to end from the Zulip server to your mobile device when you use version
+30.0.272+ of the mobile app.
+
+**Web and desktop updates**
+- You can now [search]({search_your_important_messages_url}) for messages that
+mention any user with the `mentions:` filter.
+
+""".format(
+            mobile_notifications_e2ee_url="/help/mobile-notifications#end-to-end-encryption-e2ee-for-mobile-push-notifications",
+            search_your_important_messages_url="/help/search-for-messages#search-your-important-messages",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=27,
+        message=(
+            """
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since last
+August, in the [blog post]({blog_post_12_0_url}) announcing today's release of
+Zulip Server 12.0.
+"""
+            if settings.CORPORATE_ENABLED
+            else """
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_12_0_url}) to learn about additional
+feature highlights in Zulip Server 12.0, and other Zulip project updates.
+"""
+        ).format(
+            blog_post_12_0_url="https://blog.zulip.com/zulip-server-12-0",
+        ),
+    ),
 ]
 
 

@@ -99,20 +99,13 @@
  *   Since it's in the right part of the DOM, we don't need to do
  *   the manual positioning in the show() function.
  *
- * 11. Add `openInputFieldOnKeyUp` option:
- *
- *   If the typeahead isn't shown yet, the `lookup` call in the keyup
- *   handler will open it. Here we make a callback to the input field
- *   before we open the lookahead in case it needs to make UI changes first
- *   (e.g. widening the search bar).
- *
- * 12. Add `closeInputFieldOnHide` option:
+ * 11. Add `closeInputFieldOnHide` option:
  *
  *   Some input fields like search have visual changes that need to happen
  *   when the typeahead hides. This callback function is called in `hide()`
  *   and allows those extra UI changes to happen.
  *
- *  13. Allow option to remove custom logic for tab keypresses:
+ *  12. Allow option to remove custom logic for tab keypresses:
  *
  *   Sometimes tab is treated similarly to the escape or enter key, with
  *   custom functionality, which also prevents propagation to default tab
@@ -120,15 +113,15 @@
  *   turned off so that tab only does one thing while focus is in the
  *   typeahead -- move focus to the next element.
  *
- * 14. Don't act on blurs that change focus within the `non_tippy_parent_element`:
+ * 13. Don't act on blurs that change focus within the `non_tippy_parent_element`:
  *
  *   This allows us to have things like a close button, and be able
  *   to move focus there without the typeahead closing.
  *
- * 15. To position typeaheads, we use Tippyjs except for typeaheads that are
+ * 14. To position typeaheads, we use Tippyjs except for typeaheads that are
  *    appended to a `non_tippy_parent_element`.
  *
- * 16. Add `requireHighlight` and `shouldHighlightFirstResult` options:
+ * 15. Add `requireHighlight` and `shouldHighlightFirstResult` options:
  *
  *   Allow none of the typeahead options to be highlighted, which lets
  *   the user remove highlight by going navigating (with the keyboard)
@@ -141,18 +134,18 @@
  *   `shouldHighlightFirstResult` relatedly lets us decide whether
  *   the first result should be highlighted when the typeahead opens.
  *
- * 17. Add `updateElementContent` option.
+ * 16. Add `updateElementContent` option.
  *
  *   This is useful for complicated typeaheads that have custom logic
  *   for setting their element's contents after an item is selected.
  *
- * 18. Add `hideAfterSelect` option, default true.
+ * 17. Add `hideAfterSelect` option, default true.
  *
  *   This is useful for custom situations where we want to trigger the
  *   typeahead to do a lookup after selecting an option, when the user
  *   is making multiple related selections in a row.
  *
- * 19. Add `hideOnEmptyAfterBackspace` option, default false.
+ * 18. Add `hideOnEmptyAfterBackspace` option, default false.
  *
  *   This allows us to prevent the typeahead menu from being displayed
  *   when a pill is deleted using the backspace key.
@@ -220,9 +213,9 @@ export type TypeaheadInputElement =
 export class Typeahead<ItemType extends string | object> {
     input_element: TypeaheadInputElement;
     items: number;
-    matcher: (item: ItemType, query: string) => boolean;
+    matcher: (query: string) => (item: ItemType) => boolean;
     sorter: (items: ItemType[], query: string) => ItemType[];
-    item_html: (item: ItemType, query: string) => string | undefined;
+    item_html: (query: string) => (item: ItemType) => string | undefined;
     updater: (
         item: ItemType,
         query: string,
@@ -249,7 +242,6 @@ export class Typeahead<ItemType extends string | object> {
     select_on_escape_condition: () => boolean;
     // Used to clear tooltip instances attached to typeahead container.
     clear_typeahead_tooltip: (() => void) | undefined;
-    openInputFieldOnKeyUp: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
@@ -282,7 +274,7 @@ export class Typeahead<ItemType extends string | object> {
             assert(!this.input_element.$element.is("[contenteditable]"));
         }
         this.items = options.items ?? MAX_ITEMS;
-        this.matcher = options.matcher ?? ((item, query) => this.defaultMatcher(item, query));
+        this.matcher = options.matcher ?? ((query) => (item) => this.defaultMatcher(item, query));
         this.sorter = options.sorter;
         this.item_html = options.item_html;
         this.updater = options.updater ?? ((items) => this.defaultUpdater(items));
@@ -305,7 +297,6 @@ export class Typeahead<ItemType extends string | object> {
         this.stopAdvance = options.stopAdvance ?? false;
         this.select_on_escape_condition = options.select_on_escape_condition ?? (() => false);
         this.advanceKeys = options.advanceKeys ?? [];
-        this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
@@ -472,6 +463,41 @@ export class Typeahead<ItemType extends string | object> {
                         // the placement of typeahead.
                         void instance.popperInstance?.update();
                     });
+
+                    // While the above requestAnimationFrame call works well in
+                    // fast environments, it fails to preventOverflow if the
+                    // typeahead has still not completely rendered after 1 frame.
+                    // So, this is a safe guard to ensure that typeahead never
+                    // overflows.
+                    function check_and_update_position(): boolean {
+                        if (!instance.state.isVisible) {
+                            return true;
+                        }
+
+                        const popper_rect = instance.popper.getBoundingClientRect();
+                        if (popper_rect.x + popper_rect.width <= window.innerWidth) {
+                            return true;
+                        }
+                        void instance.popperInstance?.update();
+                        return false;
+                    }
+
+                    function scheduleCheck(attempts: number): void {
+                        if (check_and_update_position() || attempts <= 0) {
+                            return;
+                        }
+                        setTimeout(() => {
+                            scheduleCheck(attempts - 1);
+                        }, 10);
+                    }
+
+                    const MAX_ATTEMPTS = 5;
+                    // In chrome browser for @amanagr, just one call at 1ms is
+                    // sufficient to preventOverflow of typeahead.
+                    setTimeout(() => {
+                        void instance.popperInstance?.update();
+                        scheduleCheck(MAX_ATTEMPTS);
+                    }, 1);
                 },
                 onHidden: (instance) => {
                     this.clear_typeahead_tooltip?.();
@@ -529,7 +555,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     process(items: ItemType[]): this {
-        const matching_items = $.grep(items, (item) => this.matcher(item, this.query));
+        const matching_items = $.grep(items, this.matcher(this.query));
 
         const final_items = this.sorter(matching_items, this.query);
 
@@ -555,10 +581,11 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     render(final_items: ItemType[], matching_items: ItemType[]): this {
+        const render_item = this.item_html(this.query);
         const $items: JQuery[] = final_items.map((item) => {
             const $i = $(ITEM_HTML);
             this.values.set(the($i), item);
-            const item_html = this.item_html(item, this.query) ?? "";
+            const item_html = render_item(item) ?? "";
             const $item_html = $i.find("a").html(item_html);
 
             const option_label_html = this.option_label(matching_items, item);
@@ -807,13 +834,6 @@ export class Typeahead<ItemType extends string | object> {
                 ) {
                     return;
                 }
-                if (this.openInputFieldOnKeyUp !== undefined && !this.shown) {
-                    // If the typeahead isn't shown yet, the `lookup` call will open it.
-                    // Here we make a callback to the input field before we open the
-                    // lookahead in case it needs to make UI changes first (e.g. widening
-                    // the search bar).
-                    this.openInputFieldOnKeyUp();
-                }
                 if (e.key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
@@ -917,7 +937,7 @@ export class Typeahead<ItemType extends string | object> {
  * =========================== */
 
 type TypeaheadOptions<ItemType> = {
-    item_html: (item: ItemType, query: string) => string | undefined;
+    item_html: (query: string) => (item: ItemType) => string | undefined;
     items?: number;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     // optional options
@@ -928,10 +948,9 @@ type TypeaheadOptions<ItemType> = {
     footer_html?: (matching_items: ItemType[]) => string | false;
     helpOnEmptyStrings?: boolean;
     hideOnEmptyAfterBackspace?: boolean;
-    matcher?: (item: ItemType, query: string) => boolean;
+    matcher?: (query: string) => (item: ItemType) => boolean;
     on_escape?: () => void;
     clear_typeahead_tooltip?: () => void;
-    openInputFieldOnKeyUp?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
     non_tippy_parent_element?: string;
     sorter: (items: ItemType[], query: string) => ItemType[];

@@ -1,6 +1,7 @@
 import "./common.ts";
 import "../portico/header.ts";
 import "../portico/google-analytics.ts";
+import "../../styles/portico/portico_variables.css";
 // These are select stylesheets loaded in legacy areas
 // by the legacy_portico_styles_bundle.css file
 import "../../styles/portico/markdown.css";

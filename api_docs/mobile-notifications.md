@@ -134,13 +134,13 @@ Sample JSON data sent by a self-hosted server to the Zulip's push notifications 
   "realm_uuid": "e502dde1-74fc-44b3-9e3a-114c41ed3ea4",
   "push_requests": [
     {
-      "device_id": 1,
+      "token_id": "AAAAAAAAAAE=",
       "http_headers": {
         "apns_priority": 10,
         "apns_push_type": "alert"
       },
       "payload": {
-        "push_account_id": 10,
+        "push_key_id": 10,
         "encrypted_data": "uOGQ9m8bdnLab/2Qq6WLdJnFUsU/NlX0955rF6GgpiZylQB/HSD+lrHct0KUXdCneu+fnGOuBMAGkYol+SLlbvdsnePn/f6wSvMDbm3iffcgiz2u8TywUlmQL/Q7Ruj5RSpLgEhpFitL/WjwQBtrA31vsqMHycmROju+tOhFlVjmzJmYy3o7ZQDi/YeB2Y+CnA5EuuXjckBYSjL4vi/YaEJXmeHvJ8Pk3T/WwXvo8CFZYlafiqSw0vC/2bkjPTFFAFVo/49nAUI+5Rpa90wJUVChsrkKTclOs4Ih1dNIDYr6+WoIKJTtIR9zgDg3YOkVHBZhlt7Se3i40WAs5JAb1PViMpAp2hbU36z1Qq0g90nmfRjXN9FRdAPaKlbFTT2PkEtS9wVBv9T14ufkhbOwaMLfx5iaHKw3XHoWo7Fe+0IF9ZJ77uhCZoA1kyFKDhl7AZ8K4DOvib8gsfkeAR4XXXnXVmLtAyjBhMrWYNsECo9j4UeE6M90z3xIVR8=",
         "aps": {
           "mutable-content": 1,
@@ -151,10 +151,10 @@ Sample JSON data sent by a self-hosted server to the Zulip's push notifications 
       }
     },
     {
-      "device_id": 2,
+      "token_id": "AAAAAAAAAAI=",
       "fcm_priority": "high",
       "payload": {
-        "push_account_id": 20,
+        "push_key_id": 20,
         "encrypted_data": "OzPhtLiyU1U+3ynqyTxkFt83N5GN7t3Uw8/OkCoFKFo/cu3GAzCMMbAAhPghflkrFK37SNOuxpPiL1TzPy5tQJqdSKpQrgu6cp0Y6VVA1aV/zsCDAcSABaWeaOeC5mVL+xFpmFeEbhzUaOLchbRn4kBO4m8gqDU/rAn0cKFY1F7tyCgC+fvvcczP05itDLpkwZMnrADGp3tSHFldr4iGO1pWJxFTXFFhg63UyH1FcMXKFzBPek7hLbpLsqu5OFEQv2TtDbAYdWZr1LXRqnkHTDmMd6NAdkOsVcnk31jHThFPDqaM5zDXb24hGHW79OpBnGAQWydfeChS4pC4yHWCO6ZRDqwvJX9IydS+V7S91KCl0QSToaXvgW7Q3zvHunzu7L/rw0dQQRgPM3qIOHr7gGtptkZpmKuT6icdDGgjRtgP/L0TfxdRKa37fn6nF64+HH60wLPYWOz7vZjgTrA20MrbA3ogMfhFYpwjppidFGVWjrLpk+peQjHB1sY="
       }
     }
@@ -162,7 +162,12 @@ Sample JSON data sent by a self-hosted server to the Zulip's push notifications 
 }
 ```
 
-**Changes**: New in Zulip 11.0 (feature level 413).
+**Changes**: In Zulip 12.0 (feature level 468), the `device_id` and
+`push_account_id` fields were replaced with `token_id` and `push_key_id`
+to support the rotation of tokens provided by FCM/APNs and keys used
+to encrypt push notifications.
+
+New in Zulip 11.0 (feature level 413).
 
 ### Data sent to FCM
 
@@ -175,7 +180,7 @@ passed to [`firebase_admin.messaging.send_each`](https://firebase.google.com/doc
 [
   firebase_admin.messaging.Message(
     data={
-      'push_account_id': '20',
+      'push_key_id': '20',
       'encrypted_data': 'OzPhtLiyU1U+3ynqyTxkFt83N5GN7t3Uw8/OkCoFKFo/cu3GAzCMMbAAhPghflkrFK37SNOuxpPiL1TzPy5tQJqdSKpQrgu6cp0Y6VVA1aV/zsCDAcSABaWeaOeC5mVL+xFpmFeEbhzUaOLchbRn4kBO4m8gqDU/rAn0cKFY1F7tyCgC+fvvcczP05itDLpkwZMnrADGp3tSHFldr4iGO1pWJxFTXFFhg63UyH1FcMXKFzBPek7hLbpLsqu5OFEQv2TtDbAYdWZr1LXRqnkHTDmMd6NAdkOsVcnk31jHThFPDqaM5zDXb24hGHW79OpBnGAQWydfeChS4pC4yHWCO6ZRDqwvJX9IydS+V7S91KCl0QSToaXvgW7Q3zvHunzu7L/rw0dQQRgPM3qIOHr7gGtptkZpmKuT6icdDGgjRtgP/L0TfxdRKa37fn6nF64+HH60wLPYWOz7vZjgTrA20MrbA3ogMfhFYpwjppidFGVWjrLpk+peQjHB1sY=',
     },
     token='push-device-token-3',
@@ -184,7 +189,11 @@ passed to [`firebase_admin.messaging.send_each`](https://firebase.google.com/doc
 ]
 ```
 
-**Changes**: New in Zulip 11.0 (feature level 413).
+**Changes**: In Zulip 12.0 (feature level 468), the `push_account_id`
+field was replaced with `push_key_id` to support the rotation of
+keys used to encrypt push notifications.
+
+New in Zulip 11.0 (feature level 413).
 
 ### Data sent to APNs
 
@@ -197,7 +206,7 @@ aioapns.NotificationRequest(
   apns_topic='remote_push_device_ios_app_id',
   device_token='push-device-token-1',
   message={
-    'push_account_id': 10,
+    'push_key_id': 10,
     'encrypted_data': 'rUNqoWOB+EQmjThJyXhDptmUrHyzSx4DPlvShzrM7XGdRVMG5qNuH0dnGQDVza9frnWNVOF3vFcuYvDnUnYRBf1j+/n1ML1K2CBnsThCGl3KJNWrKcf5fME7Q1dU2xtJ3+RAKuLtZ9y2gq6DWamui7WfQ75m1eJpYRDbbHIQEiSIZpo7X2Lie3aHkQBgE8SN5MJ6N3VM33DM6i1xGpIeWiFy+hqNloGyEI2qf6xV0SjvvkN+HbGticben4atBkAuAIKi0gIYMPyMihH26T1sEhOH3IDyO3KvaHe1NIdj0naT9RoFkN5UgdxIchXQ7qkVEjivA2E/HefpvZYlhems6TAosfJwgCMB8HuydqdImjixkugRQfugroTTG97p6xQIJSFWCOyrpuBDElI0Ale8XjmzaVo4Dbgqz5kIAhmJWtlwgJw8nt7Orr3EWUVjnIAi0nHCFObAXNShedAbyuLeC1qezqC4FZe/GOLLi4DPWgWSdk8PV5vGw9YC+XcZ38dqQogtpG7dpzMwwsqzLBmlzQ==',
     'aps': {
       'mutable-content': 1,
@@ -209,4 +218,8 @@ aioapns.NotificationRequest(
 )
 ```
 
-**Changes**: New in Zulip 11.0 (feature level 413).
+**Changes**: In Zulip 12.0 (feature level 468), the `push_account_id`
+field was replaced with `push_key_id` to support the rotation of
+keys used to encrypt push notifications.
+
+New in Zulip 11.0 (feature level 413).

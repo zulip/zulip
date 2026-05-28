@@ -294,15 +294,23 @@ def user_allows_notifications_in_StreamTopic(
     visibility_policy: int,
     stream_specific_setting: bool | None,
     global_setting: bool,
+    channel_specific_setting_overrides_mute: bool,
 ) -> bool:
     """
     Captures the hierarchy of notification settings, where visibility policy is considered first,
     followed by stream-specific settings, and the global-setting in the UserProfile is the fallback.
+
+    When `channel_specific_setting_overrides_mute` is True (currently used for
+    `wildcard_mentions_notify` setting), `stream_specific_setting` overrides
+    channel mute, but not topic mute.
     """
-    if stream_is_muted and visibility_policy != UserTopic.VisibilityPolicy.UNMUTED:
+    # Muted topics always suppress notifications, regardless of other settings.
+    if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
         return False
 
-    if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
+    if stream_is_muted and visibility_policy != UserTopic.VisibilityPolicy.UNMUTED:
+        if channel_specific_setting_overrides_mute and stream_specific_setting is not None:
+            return stream_specific_setting
         return False
 
     if stream_specific_setting is not None:

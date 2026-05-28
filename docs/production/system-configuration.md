@@ -16,6 +16,15 @@ The `zulip-puppet-apply` command will display the configuration
 changes it will make and prompt for you to confirm you'd like to make
 those changes, before executing them (if you approve).
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-settings` and
+{doc}`docker:reference/environment-vars` for configuring
+`zulip.conf` via `CONFIG_*` environment variables.
+
+:::
+
 ### Truthy values
 
 When a setting refers to "set to true" or "set to false", the values
@@ -132,10 +141,12 @@ memory (currently 3.5GiB) to run a single-server Zulip installation in
 the multiprocess mode.
 
 Set explicitly to true or false to override the automatic
-calculation. This override is useful both Docker systems (where the
-above algorithm might see the host's memory, not the container's)
-and/or when using remote servers for postgres, memcached, redis, and
-RabbitMQ.
+calculation. This override is useful for Docker systems, where the
+above algorithm will see the host's memory size, not the container's,
+unless a [memory limit is set][docker-memory-limit], as well as when
+using remote servers for PostgreSQL, memcached, Redis, and RabbitMQ.
+
+[docker-memory-limit]: https://docs.docker.com/reference/compose-file/deploy/#memory
 
 #### `rolling_restart`
 

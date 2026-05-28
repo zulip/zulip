@@ -90,7 +90,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def upload_message_attachment(
+    def store_message_attachment(
         self,
         path_id: str,
         filename: str,
@@ -118,10 +118,13 @@ class LocalUploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str) -> None:
+    def delete_message_attachment_from_storage(
+        self, path_id: str, *, raw_path: bool = False
+    ) -> None:
         delete_local_file("files", path_id)
-        delete_local_file("files", f"{path_id}.info")
-        delete_local_file("files", f"thumbnail/{path_id}/", directory=True)
+        if not raw_path:
+            delete_local_file("files", f"{path_id}.info")
+            delete_local_file("files", f"thumbnail/{path_id}/", directory=True)
 
     @override
     def all_message_attachments(
@@ -149,13 +152,16 @@ class LocalUploadBackend(ZulipUploadBackend):
         return "/user_avatars/" + self.get_avatar_path(hash_key, medium)
 
     @override
-    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str, avatar_source: str) -> tuple[bytes, str]:
+        # Currently, only used in codepaths where avatar_source = "U".
+        # We can extend it for avatar_source = "J", if required.
+        assert avatar_source is UserProfile.AVATAR_FROM_USER
         image_data = b"".join(read_local_file("avatars", file_path + ".original"))
         content_type = guess_type(file_path)[0]
         return image_data, content_type or "application/octet-stream"
 
     @override
-    def upload_single_avatar_image(
+    def store_single_avatar_image(
         self,
         file_path: str,
         *,
@@ -167,7 +173,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file("avatars", file_path, image_data)
 
     @override
-    def delete_avatar_image(self, path_id: str) -> None:
+    def delete_avatar_image_from_storage(self, path_id: str) -> None:
         delete_local_file("avatars", path_id + ".original")
         delete_local_file("avatars", self.get_avatar_path(path_id, True))
         delete_local_file("avatars", self.get_avatar_path(path_id, False))
@@ -177,7 +183,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
 
     @override
-    def upload_realm_icon_image(
+    def store_realm_icon_image(
         self, icon_file: IO[bytes], user_profile: UserProfile, content_type: str
     ) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
@@ -196,7 +202,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
 
     @override
-    def upload_realm_logo_image(
+    def store_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
@@ -231,7 +237,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             )
 
     @override
-    def upload_single_emoji_image(
+    def store_single_emoji_image(
         self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
         write_local_file("avatars", path, image_data)
@@ -242,7 +248,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return realm.url + export_path
 
     @override
-    def upload_export_tarball(
+    def store_export_tarball(
         self,
         realm: Realm,
         tarball_path: str,
@@ -260,7 +266,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return self.get_export_tarball_url(realm, "/user_avatars/" + path)
 
     @override
-    def delete_export_tarball(self, export_path: str) -> None:
+    def delete_export_tarball_from_storage(self, export_path: str) -> None:
         assert export_path.startswith("/")
         file_path = export_path.removeprefix("/").split("/", 1)[-1]
         delete_local_file("avatars", file_path)

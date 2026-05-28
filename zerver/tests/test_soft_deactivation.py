@@ -87,6 +87,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user("polonius"),
             self.example_user("desdemona"),
             self.example_user("shiva"),
+            self.example_user("imported_user"),
         ]
         client, _ = Client.objects.get_or_create(name="website")
         query = "/some/random/endpoint"
@@ -103,7 +104,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         filter_kwargs = dict(user_profile__realm=get_realm("zulip"))
         users_to_deactivate = get_users_for_soft_deactivation(-1, filter_kwargs)
 
-        self.assert_length(users_to_deactivate, 10)
+        self.assert_length(users_to_deactivate, 11)
         for user in users_to_deactivate:
             self.assertTrue(user in users)
 
@@ -149,6 +150,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user("polonius"),
             self.example_user("desdemona"),
             self.example_user("shiva"),
+            self.example_user("imported_user"),
         ]
         for user_profile in UserProfile.objects.all().iterator():
             user_profile.long_term_idle = True
@@ -157,7 +159,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         filter_kwargs = dict(realm=get_realm("zulip"))
         users_to_catch_up = get_soft_deactivated_users_for_catch_up(filter_kwargs)
 
-        self.assert_length(users_to_catch_up, 10)
+        self.assert_length(users_to_catch_up, 11)
         for user in users_to_catch_up:
             self.assertTrue(user in users)
 

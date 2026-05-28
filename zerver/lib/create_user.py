@@ -9,15 +9,7 @@ from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.onboarding_steps import copy_onboarding_steps
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
-from zerver.models import (
-    Realm,
-    RealmUserDefault,
-    Recipient,
-    Stream,
-    Subscription,
-    UserBaseSettings,
-    UserProfile,
-)
+from zerver.models import Realm, RealmUserDefault, Stream, UserBaseSettings, UserProfile
 from zerver.models.realms import get_fake_email_domain
 
 
@@ -114,7 +106,9 @@ def create_user_profile(
     tos_version: str | None,
     timezone: str,
     default_language: str,
+    is_deleted: bool = False,
     force_date_joined: datetime | None = None,
+    is_imported_stub: bool = False,
     *,
     email_address_visibility: int,
 ) -> UserProfile:
@@ -136,11 +130,13 @@ def create_user_profile(
         bot_type=bot_type,
         bot_owner=bot_owner,
         is_mirror_dummy=is_mirror_dummy,
+        is_deleted=is_deleted,
         tos_version=tos_version,
         timezone=timezone,
         default_language=default_language,
         delivery_email=email,
         email_address_visibility=email_address_visibility,
+        is_imported_stub=is_imported_stub,
     )
     if bot_type or not active:
         password = None
@@ -162,8 +158,9 @@ def create_user(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
-    avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    avatar_source: str | None = None,
     is_mirror_dummy: bool = False,
+    is_deleted: bool = False,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
     default_events_register_stream: Stream | None = None,
@@ -202,9 +199,12 @@ def create_user(
         tos_version,
         timezone,
         default_language,
+        is_deleted,
         force_date_joined=force_date_joined,
         email_address_visibility=user_email_address_visibility,
     )
+    if avatar_source is None:
+        avatar_source = realm.default_avatar_source
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream
@@ -241,11 +241,4 @@ def create_user(
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
 
-    recipient = Recipient.objects.create(type_id=user_profile.id, type=Recipient.PERSONAL)
-    user_profile.recipient = recipient
-    user_profile.save(update_fields=["recipient"])
-
-    Subscription.objects.create(
-        user_profile=user_profile, recipient=recipient, is_user_active=user_profile.is_active
-    )
     return user_profile

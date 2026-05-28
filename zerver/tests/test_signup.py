@@ -16,7 +16,7 @@ from django.template.response import TemplateResponse
 from django.test import Client, override_settings
 from django.utils import translation
 
-from confirmation.models import Confirmation, one_click_unsubscribe_link
+from confirmation.models import Confirmation, create_confirmation_link, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
@@ -63,6 +63,7 @@ from zerver.lib.test_helpers import (
     ratelimit_rule,
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
+from zerver.lib.types import Invitee
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -84,7 +85,11 @@ from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
-from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
+from zerver.views.auth import (
+    create_preregistration_user,
+    redirect_and_log_into_subdomain,
+    start_two_factor_auth,
+)
 from zerver.views.development.registration import confirmation_key
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult, email_auth_enabled
 
@@ -434,7 +439,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
 
         # Initial DM sent by welcome bot is also starred.
         initial_direct_user_message = UserMessage.objects.get(
-            user_profile=hamlet, message__recipient__type=Recipient.PERSONAL
+            user_profile=hamlet, message__recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         )
         self.assertTrue(initial_direct_user_message.flags.starred.is_set)
 
@@ -451,7 +456,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         new_messages_count = message_stream_count(user_profile)
         self.assertEqual(new_messages_count, old_messages_count + 1)
 
-        recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
+        recipient = self.get_dm_group_recipient(user_profile)
         message = most_recent_message(user_profile)
         self.assertEqual(message.recipient, recipient)
 
@@ -983,7 +988,7 @@ class LoginTest(ZulipTestCase):
             # We're over the allowed limit, so the next attempt, even with the correct
             # password, will get blocked.
             result = self.login_with_return(email)
-            self.assert_in_success_response(["Try again in 10 seconds"], result)
+            self.assert_in_success_response(["Try again in 5 seconds"], result)
 
         # After time passes, we should be able to log in.
         with patch("time.time", return_value=start_time + 11):
@@ -1063,8 +1068,8 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(96),
-            self.assert_memcached_count(18),
+            self.assert_database_query_count(101),
+            self.assert_memcached_count(19),
             self.captureOnCommitCallbacks(execute=True),
         ):
             self.register(self.nonreg_email("test"), "test")
@@ -1212,8 +1217,7 @@ class LoginTest(ZulipTestCase):
     def test_zulip_default_context_does_not_load_inline_previews(self) -> None:
         realm = get_realm("zulip")
         description = "https://www.google.com/images/srpr/logo4w.png"
-        realm.description = description
-        realm.save(update_fields=["description"])
+        do_set_realm_property(realm, "description", description, acting_user=None)
         response: HttpResponseBase = self.client_get("/login/")
         expected_response = """<p><a href="https://www.google.com/images/srpr/logo4w.png">\
 https://www.google.com/images/srpr/logo4w.png</a></p>"""
@@ -1807,6 +1811,39 @@ class UserSignUpTest(ZulipTestCase):
 
         result = self.verify_signup(email=email, password=password)
         assert isinstance(result, UserProfile)
+
+    def test_signup_redirects_to_next(self) -> None:
+        email = "nextuser@zulip.com"
+        next_url = "/#narrow/channel/7-test-here"
+        realm = get_realm("zulip")
+
+        prereg_user = create_preregistration_user(
+            email, realm, password_required=False, full_name="Next User"
+        )
+        confirmation_url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        confirmation_key = confirmation_url.split("/")[-1]
+        result = self.client_post(
+            "/accounts/register/",
+            {
+                "key": confirmation_key,
+                "from_confirmation": "1",
+                "full_name": "Next User",
+                "next": next_url,
+            },
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(
+            [f'<input type="hidden" name="next" value="{next_url}" />'], result
+        )
+
+        result = self.submit_reg_form_for_user(
+            email, None, full_name="Next User", next=next_url, key=confirmation_key
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], realm.url + next_url)
 
     def test_signup_with_email_address_race(self) -> None:
         """
@@ -3385,7 +3422,7 @@ class UserSignUpTest(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 admin,
-                [mirror_dummy.delivery_email],
+                [Invitee(email=mirror_dummy.delivery_email)],
                 [],
                 invite_expires_in_minutes=None,
                 include_realm_default_subscriptions=True,
@@ -3580,7 +3617,7 @@ class UserSignUpTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 

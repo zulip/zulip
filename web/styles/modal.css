@@ -19,11 +19,6 @@
         hsl(0deg 0% 15%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-modal-subtitle-text: color-mix(
-        in oklch,
-        var(--color-modal-heading-text) 75%,
-        transparent
-    );
     --color-background-modal: light-dark(hsl(0deg 0% 93%), hsl(0deg 0% 14%));
     --color-background-modal-bar: light-dark(
         hsl(0deg 0% 96%),
@@ -70,7 +65,7 @@
        right padding and the column to its left accounts for the
        space of modal close button icon width - right padding. */
     grid-template:
-        ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
+        ". modal-header-content modal-close-button ." 2.75em /* 44px at 16px/1em */
         ". modal-header-content .                  ." minmax(0, auto)
         ". modal-tab-switcher   modal-tab-switcher ." minmax(0, auto)
         / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
@@ -120,15 +115,6 @@
         padding: 0.25em; /* 4px at 16px/1em */
     }
 
-    .channel-privacy-type-icon {
-        /* This pushes back on suspect styles
-           in app_components.css. A fuller fix
-           will require tracking down other
-           instances of this class. */
-        width: auto;
-        padding-right: 0;
-    }
-
     /* help_link_widget margin for the fa-circle-o. */
     .help_link_widget {
         margin-left: 5px;
@@ -149,13 +135,17 @@
 }
 
 .modal__subtitle {
-    margin-top: 0.25em; /* 4px at 16px/1em */
+    margin-top: 0.875em; /* 14px at 16px/1em */
     line-height: 1.25; /* 20px at 16px/1em */
-    color: var(--color-modal-subtitle-text);
 }
 
 .modal__close {
     grid-area: modal-close-button;
+    align-self: center;
+    /* Offset the close button to the right so that the
+       X lines up with the other visual elements, but
+       the padded clickable area is maintained. */
+    margin-right: calc(var(--icon-button-padding) * -1);
 
     &:focus-visible {
         outline-offset: -2px !important;
@@ -180,15 +170,6 @@
            itself correctly */
         max-width: calc(100% + 3em);
     }
-
-    .channel-privacy-type-icon {
-        /* This pushes back on suspect styles
-           in app_components.css. A fuller fix
-           will require tracking down other
-           instances of this class. */
-        width: auto;
-        padding-right: 0;
-    }
 }
 
 #api_key_value {
@@ -200,6 +181,7 @@
     /* We need the backup value for billing related html files where
        this variable is not defined. */
     font-size: var(--base-font-size-px, 14px);
+    font-family: inherit;
     padding: 8px 16px;
     background-color: hsl(0deg 0% 90%);
     border-radius: 4px;
@@ -282,9 +264,15 @@
         line-height: 1;
     }
 
-    #profile-tab {
-        margin: 1px 5px 0;
+    .tab-switcher {
+        margin: 2px;
+    }
 
+    .tabcontent {
+        margin: 1px 2.5px 0 1.5px;
+    }
+
+    #profile-tab {
         & li.custom_user_field {
             display: block;
         }
@@ -368,6 +356,25 @@
         margin-bottom: var(--user-profile-modal-body-margin-bottom);
     }
 
+    &.prevent-user-modal-content-scrolling {
+        .modal__content {
+            flex-grow: 1;
+
+            .simplebar-content {
+                height: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        .tab-data {
+            height: calc(100% - var(--user-profile-modal-body-margin-bottom));
+        }
+
+        .tabcontent {
+            height: 100%;
+        }
+    }
+
     .group-tab-element-header,
     .stream-tab-element-header {
         margin: 0;
@@ -375,14 +382,11 @@
         font-weight: 600;
         /* 18px at 16px/1em */
         font-size: 1.125em;
+        line-height: var(--header-line-height);
     }
 
     #user-profile-groups-tab,
     #user-profile-streams-tab {
-        height: calc(
-            var(--user-profile-modal-body-height) -
-                var(--user-profile-modal-body-margin-bottom)
-        );
         display: grid;
         grid-template:
             "alert" auto
@@ -457,6 +461,7 @@
     margin: 0;
     font-weight: 600;
     font-size: 1.125em; /* 18px at 16px em */
+    line-height: var(--header-line-height);
 }
 
 #user-profile-modal .group-list-container,
@@ -475,10 +480,15 @@
         margin-bottom: 10px;
         gap: 10px;
 
-        .dropdown-widget-button,
-        .dropdown_widget_with_label_wrapper {
+        .dropdown-widget-button {
             max-width: 100%;
             width: var(--modal-input-width);
+
+            .dropdown_widget_value {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
 }
@@ -499,22 +509,28 @@
     margin-bottom: 5px;
     -webkit-overflow-scrolling: touch;
 
-    .user-profile-group-row,
-    .stream-row {
+    .modal-group-list-row,
+    .modal-channel-list-row {
         display: flex;
         justify-content: space-between;
-        padding: 0.3125em 0.625em;
+        padding-right: 0.625em;
         align-items: center;
         text-decoration: none;
         border-bottom: none;
         border-radius: 4px;
         color: var(--color-dropdown-item);
-        cursor: pointer;
 
-        .user-group-list-item,
-        .stream-row-content {
+        .list-row-content {
             display: flex;
             overflow: hidden;
+            border-radius: 4px;
+            padding: 0.3125em 0.5em;
+            cursor: pointer;
+
+            &:focus-visible {
+                outline: 1px solid var(--color-outline-focus);
+                outline-offset: -2px;
+            }
         }
 
         .stream-privacy {
@@ -526,34 +542,19 @@
             padding-right: 3px;
         }
 
-        &:hover {
-            background-color: var(--color-user-profile-list-item-hover);
-        }
-
-        &:focus-visible {
-            outline: 1px solid var(--color-outline-user-profile-list-item);
-            outline-offset: -2px;
-        }
-
-        .user-group-name,
-        .stream-name {
+        .list-item-name {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-right: 2px;
         }
     }
 
-    .subscription-group-list,
-    .subscription-stream-list,
-    .edit-channel-folder-stream-list {
+    .modal-list-scroll-container {
         /* We set max-height to remaining height of stream-list-container
             so that we don't clip it. Search field height takes up 2em of total. */
         height: calc(100% - 2em);
 
-        .user-group-list,
-        .user-stream-list,
-        .folder-stream-list {
+        .modal-item-list {
             list-style: none;
             margin: 0;
         }
@@ -594,6 +595,10 @@
 #read_receipts_error,
 #dialog_error {
     margin-bottom: 10px;
+}
+
+.modal__header #dialog_error {
+    margin-top: 10px;
 }
 
 #read_receipts_modal {
@@ -798,17 +803,18 @@
     padding: 4px 25px 4px 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
     max-width: 100%;
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
 
         /* The background-color of select elements inside modal is different than the others in
         settings pages, because the background of the modal is brighter than the setting page. */
-        background-color: hsl(0deg 0% 90%);
+        background-color: var(--color-background-disabled-modal-select);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;
@@ -857,6 +863,7 @@
         100% - 2 * var(--input-horizontal-padding) - 2 *
             var(--input-border-width)
     );
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1081,6 +1088,12 @@
             }
         }
     }
+
+    #integration-url-config-options-container {
+        /* Same bottom margin as that of input-group,
+           to maintain consistent gap between fields. */
+        margin-bottom: 1.25em; /* 20px at 16px/em */
+    }
 }
 
 .slack-topics-dropdown-dropdown-list-container {
@@ -1157,6 +1170,7 @@
             border-radius: 8px;
             border: 1px solid hsl(0deg 0% 100%);
             transition: transform 0.25s ease-out;
+            font-family: inherit;
 
             &:hover {
                 transform: scale(1.05);

@@ -23,7 +23,7 @@ export type SearchUserPill = {
 } & SearchUserPillContext;
 
 export type SearchUserPillContext = {
-    operator: "dm" | "dm-including" | "sender";
+    operator: "dm" | "dm-including" | "mentions" | "sender";
     negated: boolean;
     users: {
         full_name: string;
@@ -39,6 +39,18 @@ export type SearchUserPillContext = {
 type SearchPill = ({type: "generic_operator"} & NarrowCanonicalTerm) | SearchUserPill;
 
 export type SearchPillWidget = InputPillContainer<SearchPill>;
+
+type PillRenderData =
+    | ({type: "generic_operator"} & NarrowTermSuggestion & {
+              display_value?: string;
+              is_empty_string_topic?: boolean;
+              sign?: string;
+              topic_display_name?: string;
+              description_html?: string;
+              is_combined_channel_topic?: boolean;
+              combined_channel_name?: string;
+          })
+    | SearchUserPill;
 
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_term = util.the(Filter.parse(search_string));
@@ -59,6 +71,7 @@ export function get_search_string_from_item(item: SearchPill): string {
     switch (item.operator) {
         case "dm":
         case "dm-including":
+        case "mentions":
         case "sender":
             assert(item.type === "search_user");
             operand = item.users.map((user) => user.email).join(",");
@@ -137,7 +150,7 @@ function maybe_generate_combined_channel_topic_pill(
     index: number,
     search_terms: NarrowTermSuggestion[],
     search_pill: SearchPill,
-): ({type: "generic_operator"} & NarrowTermSuggestion & {display_value: string}) | undefined {
+): PillRenderData | undefined {
     assert(search_pill.operator === "topic");
     if (index === 0) {
         return undefined;
@@ -156,12 +169,16 @@ function maybe_generate_combined_channel_topic_pill(
     const channel_name = stream_data.get_valid_sub_by_id_string(channel_operand).name;
     return {
         ...search_pill,
-        display_value: `${sign}#${channel_name} > ${util.get_final_topic_display_name(search_pill.operand)}`,
+        sign,
+        combined_channel_name: channel_name,
+        is_combined_channel_topic: true,
+        topic_display_name: util.get_final_topic_display_name(search_pill.operand),
+        is_empty_string_topic: search_pill.operand === "",
     };
 }
 
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
-    const search_terms = Filter.parse(suggestion.search_string);
+    const search_terms = Filter.parse(suggestion);
 
     // This is used to track the index of the channel pill data
     // for a channel that is combined with the subsequent topic pill
@@ -169,15 +186,6 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
     // The index tracked here will then be removed from `pill_render_data`
     // before rendering the pills to avoid an extra channel pill.
     let redundant_channel_pill_index = -1;
-    type PillRenderData =
-        | ({type: "generic_operator"} & NarrowTermSuggestion & {
-                  display_value?: string;
-                  is_empty_string_topic?: boolean;
-                  sign?: string;
-                  topic_display_name?: string;
-                  description_html?: string;
-              })
-        | SearchUserPill;
     const pill_render_data: PillRenderData[] = search_terms.map((term, index) => {
         const narrow_term: NarrowCanonicalTerm | undefined =
             Filter.convert_suggestion_to_term(term);
@@ -200,6 +208,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
         switch (search_pill.operator) {
             case "dm":
             case "dm-including":
+            case "mentions":
             case "sender":
                 return search_user_pill_data_from_term(narrow_term);
             case "topic": {
@@ -355,6 +364,7 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
             switch (item.operator) {
                 case "dm":
                 case "dm-including":
+                case "mentions":
                 case "sender":
                     assert(item.type === "search_user");
                     return render_search_user_pill(item);
@@ -385,7 +395,7 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
 }
 
 function get_user_ids_from_term_with_user_pill_operator(term: NarrowCanonicalTerm): number[] {
-    if (term.operator === "sender") {
+    if (term.operator === "sender" || term.operator === "mentions") {
         return [term.operand];
     }
 
@@ -395,7 +405,10 @@ function get_user_ids_from_term_with_user_pill_operator(term: NarrowCanonicalTer
 
 function search_user_pill_data_from_term(term: NarrowCanonicalTerm): SearchUserPill {
     assert(
-        term.operator === "dm" || term.operator === "dm-including" || term.operator === "sender",
+        term.operator === "dm" ||
+            term.operator === "dm-including" ||
+            term.operator === "mentions" ||
+            term.operator === "sender",
     );
     const user_ids = get_user_ids_from_term_with_user_pill_operator(term);
     const users = user_ids.map((user_id) => people.get_by_user_id(user_id));
@@ -412,7 +425,7 @@ function is_sent_by_me_pill(pill: SearchUserPill): boolean {
 
 function search_user_pill_data(
     users: User[],
-    operator: "dm" | "dm-including" | "sender",
+    operator: "dm" | "dm-including" | "mentions" | "sender",
     negated: boolean,
 ): SearchUserPill {
     return {
@@ -434,7 +447,7 @@ function search_user_pill_data(
 function append_user_pill(
     users: User[],
     pill_widget: SearchPillWidget,
-    operator: "dm" | "dm-including" | "sender",
+    operator: "dm" | "dm-including" | "mentions" | "sender",
     negated: boolean,
 ): void {
     const pill_data = search_user_pill_data(users, operator, negated);
@@ -489,6 +502,7 @@ export function set_search_bar_contents(
         switch (term.operator) {
             case "dm":
             case "dm-including":
+            case "mentions":
             case "sender": {
                 const user_ids = get_user_ids_from_term_with_user_pill_operator(narrow_term);
                 const users = user_ids.map((user_id) => people.get_by_user_id(user_id));
@@ -532,6 +546,7 @@ export function get_current_search_pill_terms(
                     negated: item.negated,
                 };
             case "sender":
+            case "mentions":
                 assert(item.type === "search_user");
                 return {
                     operator: item.operator,

@@ -1,7 +1,6 @@
 import os
 from datetime import timedelta
 from unittest import mock
-from unittest.mock import call, patch
 
 import time_machine
 from django.conf import settings
@@ -414,19 +413,12 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
 
-            with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING"):
+            with self.assertLogs(level="WARNING"):
                 do_convert_data(
                     mattermost_data_dir=mattermost_data_dir,
                     output_dir=output_dir,
                     masking_content=True,
                 )
-            self.assertEqual(
-                mock_print.mock_calls,
-                [
-                    call("Generating data for", "gryffindor"),
-                    call("Generating data for", "slytherin"),
-                ],
-            )
 
             gryffindor_output_dir = os.path.join(output_dir, "gryffindor")
 
@@ -450,13 +442,15 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             self.assertEqual(
                 imported_realm.zulip_update_announcements_stream, gryffindor_common_room
             )
-            personal_message = Message.objects.filter(
-                realm=imported_realm, sender=notification_bot, recipient__type=Recipient.PERSONAL
+            bot_message = Message.objects.filter(
+                realm=imported_realm,
+                sender=notification_bot,
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             ).first()
-            assert personal_message is not None
+            assert bot_message is not None
             self.assertIn(
                 "Starting tomorrow, users in your organization will receive",
-                personal_message.content,
+                bot_message.content,
             )
 
             # Two new updates added.

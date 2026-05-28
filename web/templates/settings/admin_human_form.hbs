@@ -31,7 +31,9 @@
             {{#if is_active}}
             {{> ../components/action_button custom_classes="deactivate-user-button" variant="subtle" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") disabled=user_is_only_organization_owner }}
             {{else}}
+            {{#unless is_deleted}}
             {{> ../components/action_button custom_classes="reactivate-user-button" variant="subtle" intent="success" label=(t "Reactivate user") aria-label=(t "Reactivate user") }}
+            {{/unless}}
             {{/if}}
         </div>
     </div>

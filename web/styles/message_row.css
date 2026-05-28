@@ -327,6 +327,8 @@
         text-overflow: ellipsis;
         overflow-wrap: normal;
         font-variant: all-small-caps;
+        font-family: inherit;
+        font-size: inherit;
 
         &:hover {
             background-color: var(
@@ -834,6 +836,8 @@
     border-radius: 4px;
     border: 0;
     line-height: 1;
+    font-family: inherit;
+    font-size: inherit;
 
     &:focus {
         outline: none;
@@ -927,7 +931,7 @@
 
     font-size: 1em;
     line-height: var(--base-line-height-unitless);
-    font-family: "Source Sans 3 VF", sans-serif;
+    font-family: inherit;
 
     &:focus {
         outline: 0;
@@ -1019,6 +1023,9 @@
     /* margin on either side to let the border of
        .edit-content-container show through. */
     margin: 0 1px;
+    /* Display before Save/Cancel visually, even though
+       it comes after them in the DOM (for Tab order). */
+    order: -1;
 }
 
 .message_edit_save .loader {
@@ -1068,6 +1075,12 @@
     }
 
     .edit-controls {
+        /* Use flex column layout so that we can use `order`
+           to keep the formatting buttons row visually above
+           the Save/Cancel buttons, while the DOM order has
+           Save/Cancel first for correct Tab key navigation. */
+        display: flex;
+        flex-direction: column;
         margin-left: 0;
         margin-top: 0;
     }
@@ -1088,6 +1101,10 @@
     overflow-x: clip;
     text-overflow: ellipsis;
     padding-right: 5.5px;
+    cursor: pointer;
+}
+
+.edit-notifications.has-edit-history {
     cursor: pointer;
 }
 
@@ -1156,7 +1173,7 @@
 .message_feed_divider {
     display: grid;
     grid-area: message_feed_divider_content;
-    grid-template: auto / minmax(20px, 1fr) auto max-content;
+    grid-template: auto / minmax(20px, 1fr) auto minmax(max-content, 1fr);
     grid-template-areas: "left_divider_content middle_divider_content right_divider_content";
     align-items: center;
     padding: 8px 0;
@@ -1197,46 +1214,48 @@
         }
     }
 
-    .timerender-content {
+    .date-divider-content {
+        position: relative;
         grid-area: right_divider_content;
         display: flex;
         align-items: center;
         justify-content: end;
         white-space: nowrap;
         letter-spacing: 0.04em;
-        /* Right padding matches time in message row and date in recipient row. */
-        padding-right: 6px;
 
         &::before {
+            position: relative;
             min-width: 20px;
             width: 100%;
-            right: 0.25em;
+            right: calc(-1 * var(--date-divider-line-inset));
             margin-left: -50%;
         }
 
         &::after {
-            width: 6px;
-            left: 0.25em;
-            /* Align date with message time and recipient bar date. */
-            margin-right: -1px;
+            position: absolute;
+            right: var(--date-divider-right-edge-offset);
+            width: calc(
+                var(--date-divider-line-inset) -
+                    var(--date-divider-right-edge-offset)
+            );
         }
 
         &::before,
         &::after {
-            position: relative;
             content: " ";
             height: 0;
             border-bottom: 1px solid
                 var(--color-border-message-group-spacer-line);
         }
 
-        &.date_row_text {
+        .date_row_text {
+            padding: 0 var(--date-divider-text-padding);
             cursor: pointer;
         }
     }
 
     .stream-status,
-    .timerender-content {
+    .date-divider-content {
         overflow: hidden;
         text-transform: uppercase;
         font-size: calc(12em / 14);
@@ -1315,6 +1334,8 @@
 }
 
 #report-message-preview-container {
+    margin: 0.9375em 0; /* 15px at 16px/1em */
+
     /* Hide most UI for interacting with a message in the report message preview UI. */
     .add-task-bar,
     .change_visibility_policy,

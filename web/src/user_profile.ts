@@ -6,12 +6,12 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
+import render_channel_list_item from "../templates/channel_list_item.hbs";
 import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
-import render_stream_list_item from "../templates/stream_list_item.hbs";
 import render_user_custom_profile_fields from "../templates/user_custom_profile_fields.hbs";
 import render_user_full_name from "../templates/user_full_name.hbs";
 import render_user_group_list_item from "../templates/user_group_list_item.hbs";
@@ -79,6 +79,7 @@ export type CustomProfileFieldData = {
     required: boolean;
     value: string;
     rendered_value?: string | null | undefined;
+    is_long_text: boolean;
     subtype?: string;
     link?: string;
 };
@@ -281,15 +282,7 @@ function get_fetched_user_unsub_streams(user_id: number): dropdown_widget.Option
             unique_id: stream.stream_id,
             stream,
         }))
-        .toSorted((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
+        .toSorted((a, b) => util.compare_stream_by_archived_then_name(a.stream, b.stream));
 }
 
 function format_user_stream_list_item_html(stream: StreamSubscription, user: User): string {
@@ -299,16 +292,11 @@ function format_user_stream_list_item_html(stream: StreamSubscription, user: Use
         people.is_my_user_id(user.user_id) && stream.invite_only;
     const show_last_user_in_private_stream_unsub_tooltip =
         stream.invite_only && peer_data.get_subscriber_count(stream.stream_id) === 1;
-    return render_stream_list_item({
-        name: stream.name,
-        stream_id: stream.stream_id,
-        stream_color: stream.color,
-        invite_only: stream.invite_only,
-        is_web_public: stream.is_web_public,
+    return render_channel_list_item({
+        stream,
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
         show_last_user_in_private_stream_unsub_tooltip,
-        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
     });
 }
 
@@ -331,7 +319,6 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
     return render_user_group_list_item({
         group_id: group.id,
         name: user_groups.get_display_group_name(group.name),
-        group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
         is_direct_member,
         subgroups_name: subgroups_name.join(", "),
@@ -488,6 +475,7 @@ export function get_custom_profile_field_data(
         is_user_field: false,
         is_link: field_type === field_types.URL.id,
         is_external_account: field_type === field_types.EXTERNAL_ACCOUNT.id,
+        is_long_text: field_type === field_types.PARAGRAPH.id,
         type: field_type,
         display_in_profile_summary: field.display_in_profile_summary,
         required: field.required,
@@ -504,7 +492,7 @@ export function get_custom_profile_field_data(
             profile_field.is_user_field = true;
             profile_field.value = field_value.value;
             break;
-        case field_types.SELECT.id: {
+        case field_types.DROPDOWN.id: {
             const field_choice_dict = settings_components.select_field_data_schema.parse(
                 JSON.parse(field.field_data),
             );
@@ -512,7 +500,7 @@ export function get_custom_profile_field_data(
             break;
         }
         case field_types.SHORT_TEXT.id:
-        case field_types.LONG_TEXT.id:
+        case field_types.PARAGRAPH.id:
             profile_field.value = field_value.value;
             profile_field.rendered_value = field_value.rendered_value;
             break;
@@ -690,7 +678,8 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
     add_user_to_next_group();
 }
 
-export function show_user_profile(user: User, default_tab_key = "profile-tab"): void {
+export function show_user_profile(user_id: number, default_tab_key = "profile-tab"): void {
+    const user = people.get_by_user_id(user_id);
     // Reset these widgets so that they are created again for the opened modal.
     user_streams_list_widget = undefined;
     user_groups_list_widget = undefined;
@@ -731,6 +720,8 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         user_is_guest: user.is_guest,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
+        is_imported_stub: user.is_imported_stub,
+        is_deleted: user.is_deleted,
     };
 
     if (user.is_bot) {
@@ -770,6 +761,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
+            $("#user-profile-modal").removeClass("prevent-user-modal-content-scrolling");
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
                 "manage-profile-tab-active",
             );
@@ -782,10 +774,12 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     break;
                 case "user-profile-groups-tab": {
                     render_or_update_user_groups_tab(user);
+                    $("#user-profile-modal").addClass("prevent-user-modal-content-scrolling");
                     break;
                 }
                 case "user-profile-streams-tab": {
                     void render_or_update_user_streams_tab(user);
+                    $("#user-profile-modal").addClass("prevent-user-modal-content-scrolling");
                     break;
                 }
                 case "manage-profile-tab":
@@ -867,11 +861,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
-        api_key: bot_user.api_key,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
         max_bot_name_length: people.MAX_USER_NAME_LENGTH,
         realm_bot_domain: realm.realm_bot_domain,
-        zuliprc: "zuliprc",
     });
     $container.append($(modal_content_html));
     let avatar_widget: UploadWidget;
@@ -903,6 +895,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         }
         toggle_submit_button($("#bot-edit-form"));
     });
+    // Remove any previously registered handler to avoid duplicate API
+    // calls when the "Manage bot" tab is opened multiple times.
+    $("#user-profile-modal").off("click", ".dialog_submit_button");
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt(
             $<HTMLSelectOneElement>("select:not([multiple])#bot-role-select").val()!.trim(),
@@ -1110,13 +1105,38 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
         });
 
-        $("#bot-edit-form").on("click", ".generate_url_for_integration", (e) => {
+        $("#bot-edit-form").on(
+            "click",
+            ".generate_url_for_integration",
+            function (this: HTMLElement, e) {
+                e.preventDefault();
+                e.stopPropagation();
+                assert(bot !== undefined);
+                const $button = $(this);
+                void (async () => {
+                    const api_key = await bot_helper.fetch_bot_api_key(
+                        bot.user_id,
+                        $("#bot-edit-form-error"),
+                        $button,
+                    );
+                    if (!api_key) {
+                        $("#bot-edit-form")
+                            .closest(".simplebar-content-wrapper")
+                            .animate({scrollTop: 0}, "fast");
+                        return;
+                    }
+                    integration_url_modal.show_generate_integration_url_modal(api_key);
+                })();
+            },
+        );
+
+        $("#bot-edit-form").on("click", ".show-api-key", (e) => {
             e.preventDefault();
             e.stopPropagation();
             assert(bot !== undefined);
-            const current_bot_data = bot_data.get(bot.user_id);
-            assert(current_bot_data !== undefined);
-            integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
+            void (async () => {
+                await bot_helper.show_api_key_modal(bot.user_id);
+            })();
         });
     }
 }
@@ -1244,6 +1264,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
         is_active,
+        is_deleted: person.is_deleted,
         hide_deactivate_button,
         user_is_only_organization_owner,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
@@ -1329,6 +1350,9 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         toggle_submit_button($("#edit-user-form"));
     });
 
+    // Remove any previously registered handler to avoid duplicate API
+    // calls when the "Manage user" tab is opened multiple times.
+    $("#user-profile-modal").off("click", ".dialog_submit_button");
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt(
             $<HTMLSelectOneElement>("select:not([multiple])#user-role-select").val()!.trim(),
@@ -1460,7 +1484,7 @@ export function initialize(): void {
         );
     });
 
-    $("body").on("click", "#user-profile-modal .stream-row .remove-button", (e) => {
+    $("body").on("click", "#user-profile-modal .modal-channel-list-row .remove-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const $remove_button = $(e.currentTarget).closest(".remove-button");
@@ -1647,10 +1671,121 @@ export function initialize(): void {
     });
 
     $("body").on(
-        "click",
-        "#user-profile-modal .user-profile-channel-row, .user-profile-group-row",
-        () => {
-            hide_user_profile();
+        "keydown",
+        ".stream-list-container .stream-search, .group-list-container .group-search",
+        function (this: HTMLElement, e) {
+            const $container = $(this).closest(".stream-list-container, .group-list-container");
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                e.stopPropagation();
+                $container.find(".modal-item-list .list-row-content").first().trigger("focus");
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                e.stopPropagation();
+                $container.find(".modal-item-list .list-row-content").last().trigger("focus");
+            }
+        },
+    );
+
+    $("body").on("keydown", ".modal-item-list .list-row-content", function (this: HTMLElement, e) {
+        const $row = $(this).closest(".modal-list-item");
+        switch (e.key) {
+            case "Enter": {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).trigger("click");
+                break;
+            }
+            case "ArrowLeft":
+            case "ArrowRight": {
+                const $remove_button = $row.find(".hidden-remove-button");
+                if ($remove_button.length === 0) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                $remove_button.trigger("focus");
+                break;
+            }
+            case "ArrowDown": {
+                e.preventDefault();
+                e.stopPropagation();
+                const $next_item = $row.next(".modal-list-item");
+                if ($next_item.length > 0) {
+                    $next_item.find(".list-row-content").trigger("focus");
+                } else {
+                    $(this)
+                        .closest(".stream-list-container, .group-list-container")
+                        .find(".stream-search, .group-search")
+                        .trigger("focus");
+                }
+                break;
+            }
+            case "ArrowUp": {
+                e.preventDefault();
+                e.stopPropagation();
+                const $prev_item = $row.prev(".modal-list-item");
+                if ($prev_item.length > 0) {
+                    $prev_item.find(".list-row-content").trigger("focus");
+                } else {
+                    $(this)
+                        .closest(".stream-list-container, .group-list-container")
+                        .find(".stream-search, .group-search")
+                        .trigger("focus");
+                }
+                break;
+            }
+        }
+    });
+
+    $("body").on(
+        "keydown",
+        ".modal-item-list .hidden-remove-button",
+        function (this: HTMLElement, e) {
+            const $row = $(this).closest(".modal-list-item");
+            switch (e.key) {
+                case "ArrowLeft":
+                case "ArrowRight": {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $row.find(".list-row-content").trigger("focus");
+                    break;
+                }
+                case "ArrowDown": {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const $next_item = $row.next(".modal-list-item");
+                    const $next_button = $next_item.find(".hidden-remove-button");
+                    if ($next_item.length > 0 && $next_button.length > 0) {
+                        $next_button.trigger("focus");
+                    } else {
+                        $(this)
+                            .closest(".stream-list-container, .group-list-container")
+                            .find(".stream-search, .group-search")
+                            .trigger("focus");
+                    }
+                    break;
+                }
+                case "ArrowUp": {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const $prev_item = $row.prev(".modal-list-item");
+                    if ($prev_item.length > 0) {
+                        const $prev_button = $prev_item.find(".hidden-remove-button");
+                        if ($prev_button.length > 0) {
+                            $prev_button.trigger("focus");
+                        } else {
+                            $prev_item.find(".list-row-content").trigger("focus");
+                        }
+                    } else {
+                        $(this)
+                            .closest(".stream-list-container, .group-list-container")
+                            .find(".stream-search, .group-search")
+                            .trigger("focus");
+                    }
+                    break;
+                }
+            }
         },
     );
 
@@ -1686,6 +1821,4 @@ export function initialize(): void {
             show_check_icon: true,
         });
     });
-
-    bot_helper.initialize_clipboard_handlers();
 }

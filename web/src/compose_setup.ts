@@ -10,12 +10,14 @@ import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
+import {compose_call_session_manager} from "./compose_call_session.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
@@ -34,6 +36,7 @@ import * as resize from "./resize.ts";
 import {unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
@@ -55,7 +58,9 @@ function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_box_clear_hook(compose.clear_preview_area);
 
     compose_actions.register_compose_cancel_hook(abort_xhr);
-    compose_actions.register_compose_cancel_hook(compose_call.abort_video_callbacks);
+    compose_actions.register_compose_cancel_hook(() => {
+        compose_call_session_manager.abandon_session("");
+    });
 }
 
 export function initialize(): void {
@@ -93,6 +98,9 @@ export function initialize(): void {
             if (recipient_widget_hidden) {
                 compose_validate.warn_if_topic_resolved(false);
             }
+            compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings(
+                $<HTMLTextAreaElement>("textarea#compose-textarea").expectOne(),
+            );
             const compose_text_length = compose_validate.check_overflow_text(
                 $("#send_message_form"),
             );
@@ -223,8 +231,7 @@ export function initialize(): void {
                     const stream_id_string = stream_id.toString();
                     if (
                         current_filter &&
-                        (current_filter.is_conversation_view() ||
-                            current_filter.is_conversation_view_with_near()) &&
+                        current_filter.is_conversation_view() &&
                         current_filter.has_topic(stream_id_string, topic_name)
                     ) {
                         message_view.show(
@@ -385,6 +392,34 @@ export function initialize(): void {
             $(event.target).parents(classname_selector).remove();
         });
     }
+
+    // Trap Tab/Shift+Tab focus within #compose-container so keyboard navigation
+    // doesn't leave the compose box when it is open.
+    $("#compose-container").on("keydown", (e) => {
+        if (e.key !== "Tab" || !compose_state.composing()) {
+            return;
+        }
+
+        const $compose_container = $("#compose-container");
+        const visible_focusable_elements = [
+            ...$compose_container.find("input, textarea, button, .input, a[href], a[tabindex='0']"),
+        ].filter(
+            (element) =>
+                element.getClientRects().length > 0 &&
+                $(element).css("visibility") !== "hidden" &&
+                !$(element).is(":disabled"),
+        );
+
+        if (e.shiftKey) {
+            if (document.activeElement === visible_focusable_elements[0]) {
+                e.preventDefault();
+            }
+        } else {
+            if (document.activeElement === visible_focusable_elements.at(-1)) {
+                e.preventDefault();
+            }
+        }
+    });
 
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field
@@ -598,6 +633,7 @@ export function initialize(): void {
 
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
+        compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
         message_view.to_compose_target();
     });
 
@@ -682,11 +718,31 @@ export function initialize(): void {
         $compose_recipient.addClass("recently-focused");
     });
 
+    function handle_topic_length_limit(): void {
+        let topic = compose_state.topic();
+        if (topic.length > realm.max_topic_length) {
+            topic = topic.slice(0, realm.max_topic_length);
+            compose_state.topic(topic);
+            $("input#stream_message_recipient_topic").addClass("shake");
+        }
+    }
+
+    $("input#stream_message_recipient_topic").on("animationend", function () {
+        $(this).removeClass("shake");
+    });
+
     $("input#stream_message_recipient_topic").on("input", () => {
+        handle_topic_length_limit();
         compose_recipient.update_placeholder_visibility();
         compose_recipient.update_compose_area_placeholder_text();
     });
 
+    $("input#stream_message_recipient_topic").on("paste", () => {
+        /* setTimeout is needed to allow the pasted content to be
+            added to the input before checking the topic length limit,
+            since the paste event fires before the input value is updated.*/
+        setTimeout(handle_topic_length_limit, 0);
+    });
     $("#private_message_recipient").on("focus", () => {
         // We don't want the `.recently-focused` class removed via
         // setTimeout from the "blur" event, if we're suddenly
@@ -699,6 +755,10 @@ export function initialize(): void {
         // to the recipient row
         compose_recipient.set_high_attention_recipient_row();
         $compose_recipient.addClass("recently-focused");
+        // Validate recipient to show error banners for deactivated
+        // users or insufficient DM permissions, and disable the
+        // compose textarea if the recipient is invalid.
+        compose_validate.validate_private_message(false);
     });
 
     $("input#stream_message_recipient_topic, #private_message_recipient").on("blur", () => {

@@ -68,12 +68,12 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     # Change to CamelCase
     name = name.replace("_", " ").title().replace(" ", "")
 
-    # Use EventModernPresence type to check "presence" events
+    # Use ModernPresenceEvent type to check "presence" events
     if name == "Presence":
         name = "Modern" + name
 
-    # And add the prefix.
-    name = "Event" + name
+    # And add the suffix.
+    name = name + "Event"
 
     if not hasattr(event_schema, name):
         raise ValueError(f"We could not find {name} in event_schemas.py")

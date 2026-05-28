@@ -20,7 +20,7 @@ export type Recipient =
           message_id: number;
       };
 
-type TypingStatusWorker = {
+export type TypingStatusWorker = {
     get_current_time: () => number;
     notify_server_start: (recipient: Recipient) => void;
     notify_server_stop: (recipient: Recipient) => void;

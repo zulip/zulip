@@ -15,7 +15,7 @@ import * as ui_report from "./ui_report.ts";
 
 export let loaded = false;
 
-export let rerender_alert_words_ui = (): void => {
+export function rerender_alert_words_ui(): void {
     if (!loaded) {
         return;
     }
@@ -36,10 +36,6 @@ export let rerender_alert_words_ui = (): void => {
             ...ListWidget.generic_sort_functions("alphabetic", ["word"]),
         },
     });
-};
-
-export function rewire_rerender_alert_words_ui(value: typeof rerender_alert_words_ui): void {
-    rerender_alert_words_ui = value;
 }
 
 const open_alert_word_status_banner = (alert_word: string, is_error: boolean): void => {

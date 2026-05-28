@@ -170,6 +170,7 @@ def maybe_send_to_registration(
     email: str,
     *,
     desktop_flow_otp: str | None = None,
+    external_auth_id_dict_for_registration: dict[str, str] | None = None,
     full_name: str = "",
     full_name_validated: bool = False,
     group_memberships_sync_map: dict[str, bool] | None = None,
@@ -177,6 +178,7 @@ def maybe_send_to_registration(
     mobile_flow_otp: str | None = None,
     multiuse_object_key: str = "",
     params_to_store_in_authenticated_session: dict[str, str] | None = None,
+    redirect_to: str | None = None,
     role: int | None = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
@@ -334,9 +336,20 @@ def maybe_send_to_registration(
         else:
             prereg_user.invited_as = invited_as
         prereg_user.multiuse_invite = multiuse_obj
+        if external_auth_id_dict_for_registration:
+            prereg_user.external_auth_method_name = external_auth_id_dict_for_registration[
+                "external_auth_method_name"
+            ]
+            prereg_user.external_auth_id = external_auth_id_dict_for_registration[
+                "external_auth_id"
+            ]
         prereg_user.save()
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
+        if redirect_to:
+            confirmation_link = append_url_query_string(
+                confirmation_link, urlencode({"next": redirect_to})
+            )
         if is_signup:
             return redirect(confirmation_link)
 
@@ -379,6 +392,8 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         "multiuse_object_key",
         "full_name_validated",
         "params_to_store_in_authenticated_session",
+        "redirect_to",
+        "external_auth_id_dict_for_registration",
     ]
     for key in dict(kwargs):
         if key not in kwargs_to_pass:
@@ -750,7 +765,7 @@ def _start_social_auth_flow(
         return config_error(request, "apple")
 
     # TODO: Add AzureAD also.
-    if backend in ["github", "google", "gitlab"]:
+    if backend in ["github", "google", "gitlab", "discord"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):

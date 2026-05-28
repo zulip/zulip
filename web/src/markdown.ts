@@ -2,14 +2,15 @@ import {getUnixTime, isValid} from "date-fns";
 import katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import type Template from "uri-template-lite";
+import type {Matcher, RE2JS} from "re2js";
 
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 import marked from "../third/marked/lib/marked.cjs";
-import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
+import type {ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
 
 import * as fenced_code from "./fenced_code.ts";
+import type {LinkifierMapValue} from "./linkifiers.ts";
 import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -28,13 +29,28 @@ const preview_regexes = [
 
     /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm|\.aac|\.flac|\.mp3|\.mpeg|\.wav)\)?(\s+|$)/m,
 
-    // Twitter and youtube links are given previews
+    // YouTube links are given previews
 
-    /\S*(?:twitter|youtube)\.com\/\S*/,
+    /\S*youtube\.com\/\S*/,
 ];
 
 function contains_preview_link(content: string): boolean {
     return preview_regexes.some((re) => re.test(content));
+}
+
+function contains_topic_wildcard_mention(content: string): boolean {
+    // If the content has topic wildcard mention (@**topic**) then don't
+    // render it locally. We have only server-side restriction check for
+    // @topic mention. This helps to show the error message (no permission)
+    // via the compose banner and not to local-echo then fail due to restriction.
+    return content.includes("@**topic**");
+}
+
+export function contains_backend_only_syntax(content: string): boolean {
+    // Try to guess whether or not a message contains syntax that only the
+    // backend Markdown processor can correctly handle.
+    // If it doesn't, we can immediately render it client-side for local echo.
+    return contains_preview_link(content) || contains_topic_wildcard_mention(content);
 }
 
 export let web_app_helpers: MarkdownHelpers | undefined;
@@ -45,10 +61,7 @@ export type AbstractMap<K, V> = {
     get: (k: K) => V | undefined;
 };
 
-export type AbstractLinkifierMap = AbstractMap<
-    RegExp,
-    {url_template: Template; group_number_to_name: Record<number, string>}
->;
+export type AbstractLinkifierMap = AbstractMap<RE2JS, LinkifierMapValue>;
 
 type GetLinkifierMap = () => AbstractLinkifierMap;
 
@@ -131,46 +144,6 @@ export function translate_emoticons_to_names({
     }
 
     return translated;
-}
-
-function contains_problematic_linkifier(
-    content: string,
-    get_linkifier_map: GetLinkifierMap,
-): boolean {
-    // If a linkifier doesn't start with some specified characters
-    // then don't render it locally. It is workaround for the fact that
-    // javascript regex doesn't support lookbehind.
-    for (const re of get_linkifier_map().keys()) {
-        const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
-        const regex = new RegExp(pattern);
-        if (regex.test(content)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-function contains_topic_wildcard_mention(content: string): boolean {
-    // If the content has topic wildcard mention (@**topic**) then don't
-    // render it locally. We have only server-side restriction check for
-    // @topic mention. This helps to show the error message (no permission)
-    // via the compose banner and not to local-echo then fail due to restriction.
-    return content.includes("@**topic**");
-}
-
-function content_contains_backend_only_syntax(
-    content: string,
-    get_linkifier_map: GetLinkifierMap,
-): boolean {
-    // Try to guess whether or not a message contains syntax that only the
-    // backend Markdown processor can correctly handle.
-    // If it doesn't, we can immediately render it client-side for local echo.
-    return (
-        contains_preview_link(content) ||
-        contains_problematic_linkifier(content, get_linkifier_map) ||
-        contains_topic_wildcard_mention(content)
-    );
 }
 
 function parse_with_options(
@@ -412,24 +385,45 @@ export function get_topic_links(topic: string): TopicLink[] {
     // We export this for testing purposes, and mobile may want to
     // use this as well in the future.
     const links: Link[] = [];
+    if (!topic) {
+        return links;
+    }
     // The lower the precedence is, the more prioritized the pattern is.
     let precedence = 0;
 
     assert(web_app_helpers !== undefined);
     const get_linkifier_map = web_app_helpers.get_linkifier_map;
 
-    for (const [pattern, {url_template, group_number_to_name}] of get_linkifier_map().entries()) {
-        let match;
-        while ((match = pattern.exec(topic)) !== null) {
+    for (const [pattern, {url_template}] of get_linkifier_map().entries()) {
+        let pos = 0;
+        while (pos < topic.length) {
+            const matcher = pattern.matcher(topic.slice(pos));
+            if (!matcher.find()) {
+                break;
+            }
+            // After a successful find() on a pattern wrapped by
+            // compile_linkifier, groups 1 (leading boundary), 2 (user
+            // pattern body), and the trailing boundary group are always
+            // matched, as are all named groups inside the user pattern.
+            // Advance position past the leading boundary group.
+            pos += matcher.end(1);
+
             const template_context = Object.fromEntries(
-                match
-                    .slice(1)
-                    .map((matched_group, i) => [group_number_to_name[i + 1]!, matched_group]),
+                Object.keys(pattern.namedGroups()).map((groupname) => [
+                    groupname,
+                    matcher.group(groupname)!,
+                ]),
             );
+
             const link_url = url_template.expand(template_context);
             // We store the starting index as well, to sort the order of occurrence of the links
             // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
-            links.push({url: link_url, text: match[0], index: match.index, precedence});
+            const match_text = matcher.group(2)!;
+            links.push({url: link_url, text: match_text, index: pos, precedence});
+
+            // Advance past the user match body, but not the trailing boundary,
+            // so that patterns can overlap their whitespace.
+            pos += match_text.length;
         }
         precedence += 1;
     }
@@ -555,33 +549,27 @@ function handleEmoji({
 
 function handleLinkifier({
     pattern,
-    matches,
+    matcher,
     get_linkifier_map,
 }: {
-    pattern: RegExp;
-    matches: LinkifierMatch[];
+    pattern: RE2JS;
+    matcher: Matcher;
     get_linkifier_map: GetLinkifierMap;
 }): string {
     const item = get_linkifier_map().get(pattern);
     assert(item !== undefined);
-    const {url_template, group_number_to_name} = item;
+    const {url_template} = item;
     const template_context = Object.fromEntries(
-        matches.map((match, i) => [group_number_to_name[i + 1]!, match]),
+        Object.keys(pattern.namedGroups()).map((groupname) => [
+            groupname,
+            matcher.group(groupname)!,
+        ]),
     );
     return url_template.expand(template_context);
 }
 
 function handleTimestamp(time_string: string): string {
-    let timeobject;
-    const time = Number(time_string);
-
-    if (Number.isNaN(time)) {
-        timeobject = new Date(time_string); // not a Unix timestamp
-    } else {
-        // JavaScript dates are in milliseconds, Unix timestamps are in seconds
-        timeobject = new Date(time * 1000);
-    }
-
+    const timeobject = new Date(time_string);
     const escaped_time = _.escape(time_string);
     if (!isValid(timeobject) || getUnixTime(timeobject) < 0) {
         // Unsupported time format: rerender accordingly.
@@ -707,7 +695,7 @@ export function parse({
     content: string;
     flags: string[];
 } {
-    function get_linkifier_regexes(): RegExp[] {
+    function get_linkifier_regexes(): RE2JS[] {
         return [...helper_config.get_linkifier_map().keys()];
     }
 
@@ -818,10 +806,10 @@ export function parse({
         return handleUnicodeEmoji(unicode_emoji, helper_config.get_emoji_name);
     }
 
-    function linkifierHandler(pattern: RegExp, matches: LinkifierMatch[]): string {
+    function linkifierHandler(pattern: RE2JS, matcher: Matcher): string {
         return handleLinkifier({
             pattern,
-            matches,
+            matcher,
             get_linkifier_map: helper_config.get_linkifier_map,
         });
     }
@@ -878,11 +866,6 @@ export function render(
         flags,
         is_me_message: is_status_message(raw_content),
     };
-}
-
-export function contains_backend_only_syntax(content: string): boolean {
-    assert(web_app_helpers !== undefined);
-    return content_contains_backend_only_syntax(content, web_app_helpers.get_linkifier_map);
 }
 
 export function parse_non_message(raw_content: string): string {

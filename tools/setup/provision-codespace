@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# 1) Give passwordless sudo access to the 'vscode' user for postgres.
+sudo sh -c "echo 'vscode ALL=(postgres) NOPASSWD: ALL' > /etc/sudoers.d/vscode_postgres"
+
+# 2) Add 127.0.0.1 \\$(hostname) to /etc/hosts.
+if ! grep -qE "^127\.0\.0\.1[[:space:]]+$(hostname)([[:space:]]|$)" /etc/hosts; then
+    echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts >/dev/null
+fi
+
+# 3) Unset variables to prevent PyICU conflicts.
+unset VIRTUAL_ENV
+unset CONDA_PREFIX
+unset CONDA_DEFAULT_ENV
+unset CONDA_PROMPT_MODIFIER
+unset CONDA_EXE
+unset CE_CONDA
+
+# 4) Finally, execute Zulip provisioning.
+./tools/provision

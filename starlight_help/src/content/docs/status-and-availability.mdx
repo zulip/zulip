@@ -5,6 +5,7 @@ title: Status and availability
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import ClearStatus from "../include/_ClearStatus.mdx";
@@ -42,6 +43,10 @@ You can set a status emoji, status message, or both.
 
       <SetStatus />
     </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Shift</kbd> + <kbd>Y</kbd> to open the status menu.
+    </KeyboardTip>
   </TabItem>
 
   <TabItem label="Via personal settings">
@@ -50,6 +55,10 @@ You can set a status emoji, status message, or both.
 
       <SetStatus />
     </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Shift</kbd> + <kbd>Y</kbd> to open the status menu.
+    </KeyboardTip>
   </TabItem>
 
   <TabItem label="Mobile">
@@ -74,6 +83,10 @@ You can set a status emoji, status message, or both.
 
       <ClearStatus />
     </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Shift</kbd> + <kbd>Y</kbd> to open the status menu.
+    </KeyboardTip>
   </TabItem>
 
   <TabItem label="Via personal settings">
@@ -82,6 +95,10 @@ You can set a status emoji, status message, or both.
 
       <ClearStatus />
     </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Shift</kbd> + <kbd>Y</kbd> to open the status menu.
+    </KeyboardTip>
   </TabItem>
 
   <TabItem label="Mobile">

@@ -14,19 +14,16 @@ exports.mock_banners = () => {
                 .split(" ")
                 .map((classname) => CSS.escape(classname))
                 .join(".")}`,
-        ).remove = noop;
+        )[0].remove = noop;
     }
-    $("#compose_banners .warning").remove = noop;
-    $("#compose_banners .error").remove = noop;
-    $("#compose_banners .upload_banner").remove = noop;
+    $("#compose_banners .warning")[0].remove = noop;
+    $("#compose_banners .error")[0].remove = noop;
+    $("#compose_banners .upload_banner")[0].remove = noop;
 
-    const $stub = $.create("stub_to_remove");
+    const $stub = $.set_results("stub_to_remove", []);
     const $cb = $("#compose_banners");
 
-    $stub.remove = noop;
-    $stub.length = 0;
-
-    $cb.closest = () => [];
+    $cb.set_closest_results(".edit_form_banners", $.create("edit-form-banners-stub"));
     $cb.set_find_results(".no_post_permissions", $stub);
     $cb.set_find_results(".message_too_long", $stub);
     $cb.set_find_results(".wildcards_not_allowed", $stub);

@@ -122,3 +122,13 @@ def parse_enum_from_string_value(
         return enum[val]
     except KeyError:
         raise JsonableError(_("Invalid {setting_name}").format(setting_name=setting_name))
+
+
+def check_uint32(val: int) -> int:
+    if not (0 <= val <= 4294967295):
+        raise ValueError(_("Not a valid unsigned 32-bit integer"))
+    return val
+
+
+def uint32_validator() -> AfterValidator:
+    return AfterValidator(check_uint32)

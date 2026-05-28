@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   check-feature-level-updated:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
       - name: Checkout repository
@@ -44,7 +44,7 @@ jobs:
         run: exit 1
 
   notify-if-api-docs-changed:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: check-feature-level-updated
 
     steps:

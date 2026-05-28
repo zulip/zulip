@@ -284,12 +284,8 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     to welcome-bot, trigger the welcome-bot reply."""
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
-    if send_request.message.recipient.type == Recipient.PERSONAL:
-        conversation_recipient_id = send_request.message.sender.recipient_id
-        assert conversation_recipient_id is not None
-    else:
-        assert send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
-        conversation_recipient_id = send_request.message.recipient.id
+    assert send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+    conversation_recipient_id = send_request.message.recipient.id
     content = select_welcome_bot_response(human_response_lower)
     realm_id = send_request.realm.id
     commands = bot_commands()
@@ -580,7 +576,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # We find the one of our just-sent greetings messages, and react to it.
     # This is a bit hacky, but works and is kinda a 1-off thing.
     greetings_message = (
-        Message.objects.select_for_update()
+        Message.objects.select_for_update(no_key=True)
         .filter(
             id__in=message_ids, content=remove_single_newlines(content1_of_greetings_topic_name)
         )

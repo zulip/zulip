@@ -1,0 +1,119 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "conversation",
+            "id": "215472621305755",
+            "created_at": 1768033580,
+            "updated_at": 1768033580,
+            "waiting_since": null,
+            "snoozed_until": null,
+            "source": {
+                "type": "conversation",
+                "id": "219032411",
+                "delivered_as": "admin_initiated",
+                "subject": "",
+                "body": "<p class=\"no-margin\">qftweqwrfeyufy</p>",
+                "author": {
+                    "type": "admin",
+                    "id": "9608799",
+                    "name": "John Doe",
+                    "email": "admin@example.com"
+                },
+                "attachments": [],
+                "url": null,
+                "redacted": false
+            },
+            "contacts": {
+                "type": "contact.list",
+                "contacts": [
+                    {
+                        "type": "contact",
+                        "id": "6961e6de046e053d93e4da0b",
+                        "external_id": "fixture-user-1"
+                    }
+                ]
+            },
+            "first_contact_reply": null,
+            "admin_assignee_id": null,
+            "team_assignee_id": null,
+            "open": true,
+            "state": "open",
+            "read": false,
+            "tags": {
+                "type": "tag.list",
+                "tags": []
+            },
+            "priority": "not_priority",
+            "sla_applied": null,
+            "statistics": {
+                "type": "conversation_statistics",
+                "time_to_assignment": null,
+                "time_to_admin_reply": null,
+                "time_to_first_close": null,
+                "time_to_last_close": null,
+                "median_time_to_reply": null,
+                "first_contact_reply_at": null,
+                "first_assignment_at": null,
+                "first_admin_reply_at": null,
+                "first_close_at": null,
+                "last_assignment_at": null,
+                "last_assignment_admin_reply_at": null,
+                "last_contact_reply_at": null,
+                "last_admin_reply_at": null,
+                "last_close_at": null,
+                "last_closed_by_id": null,
+                "count_reopens": 0,
+                "count_assignments": 0,
+                "count_conversation_parts": 1,
+                "assigned_team_first_response_time": [],
+                "assigned_team_first_response_time_in_office_hours": [],
+                "handling_time": null
+            },
+            "conversation_rating": null,
+            "teammates": {
+                "type": "admin.list",
+                "admins": []
+            },
+            "title": null,
+            "custom_attributes": {
+                "Has attachments": false,
+                "Imported via standalone": false,
+                "Auto-translated": false,
+                "Fin AI Agent: Preview": false,
+                "Fin AI Agent: Image used in reply": false,
+                "Copilot used": false
+            },
+            "topics": {
+                "type": "topic.list",
+                "topics": [],
+                "total_count": 0
+            },
+            "ticket": null,
+            "linked_objects": {
+                "type": "list",
+                "data": [],
+                "total_count": 0,
+                "has_more": false
+            },
+            "ai_agent": null,
+            "ai_agent_participated": false,
+            "conversation_parts": {
+                "type": "conversation_part.list",
+                "conversation_parts": [],
+                "total_count": 0
+            }
+        }
+    },
+    "links": {},
+    "id": "notif_b735a345-53e3-4e99-ab8e-6bfd955d862c",
+    "topic": "conversation.admin.single.created",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768033580,
+    "created_at": 1768033580,
+    "self": null
+}

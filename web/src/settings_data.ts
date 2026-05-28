@@ -60,15 +60,23 @@ export function user_has_permission_for_group_setting(
     setting_type: "realm" | "stream" | "group",
     user: CurrentUser | User = current_user,
 ): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
-
     const settings_config = group_permission_settings.get_group_permission_setting_config(
         setting_name,
         setting_type,
     );
     assert(settings_config !== undefined);
+
+    if (
+        settings_config.allow_internet_group &&
+        typeof setting_value === "number" &&
+        setting_value === user_groups.get_user_group_from_name("role:internet")!.id
+    ) {
+        return true;
+    }
+
+    if (page_params.is_spectator) {
+        return false;
+    }
 
     if (!settings_config.allow_everyone_group && user.is_guest) {
         return false;
@@ -313,8 +321,7 @@ export function using_dark_theme(): boolean {
 
     if (
         user_settings.color_scheme === settings_config.color_scheme_values.automatic.code &&
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
+        window.matchMedia?.("(prefers-color-scheme: dark)").matches
     ) {
         return true;
     }
@@ -419,4 +426,15 @@ export function guests_can_access_all_other_users(): boolean {
 
 export function can_user_manage_folder(): boolean {
     return current_user.is_admin;
+}
+
+export function two_tier_billing_enabled(): boolean {
+    if (typeof realm.realm_workplace_users_group !== "number") {
+        return true;
+    }
+
+    const workplace_users_group = user_groups.get_user_group_from_id(
+        realm.realm_workplace_users_group,
+    );
+    return workplace_users_group.name !== "role:everyone";
 }

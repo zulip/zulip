@@ -15,8 +15,6 @@ from urllib.parse import parse_qs, parse_qsl, urlencode, urljoin, urlsplit, urlu
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
-import dateutil.parser
-import dateutil.tz
 import lxml.etree
 import markdown
 import markdown.blockprocessors
@@ -44,7 +42,7 @@ from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
-    BEFORE_MENTION_ALLOWED_REGEX,
+    BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX,
     ChannelTopicInfo,
     FullNameInfo,
     MentionBackend,
@@ -53,6 +51,7 @@ from zerver.lib.mention import (
 )
 from zerver.lib.mime_types import AUDIO_INLINE_MIME_TYPES, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
+from zerver.lib.per_request_cache import cache_for_current_request
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import (
@@ -61,7 +60,7 @@ from zerver.lib.thumbnail import (
     rewrite_thumbnailed_images,
 )
 from zerver.lib.timeout import unsafe_timeout
-from zerver.lib.timezone import common_timezones
+from zerver.lib.topic_link_util import TOPIC_LINK_SYNTAX_FOR_DISPLAY
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_channel, encode_hash_component
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
@@ -77,12 +76,14 @@ ReturnT = TypeVar("ReturnT")
 html_safelisted_schemes = (
     "bitcoin",
     "geo",
+    "hansoft",
     "im",
     "irc",
     "ircs",
     "magnet",
     "mailto",
     "matrix",
+    "obsidian",
     "mms",
     "news",
     "nntp",
@@ -96,7 +97,10 @@ html_safelisted_schemes = (
     "webcal",
     "wtai",
     "xmpp",
+    "zotero",
+    "asanadesktop",
 )
+auto_linked_schemes = ["https?", "hansoft", "obsidian", "zotero", "asanadesktop"]
 allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
 
 
@@ -119,6 +123,8 @@ class MessageRenderingResult:
     user_ids_with_alert_words: set[int]
     potential_attachment_path_ids: list[str]
     thumbnail_spinners: set[str]
+    has_image: bool
+    has_link: bool
 
 
 @dataclass
@@ -152,7 +158,7 @@ def verbose_compile(pattern: str) -> Pattern[str]:
 
 
 STREAM_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
                      \#\*\*                         # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*]+)    # stream name can contain anything
                      \*\*                           # ends by double asterisks
@@ -173,7 +179,7 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
 
 
 STREAM_TOPIC_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
@@ -196,7 +202,7 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
 
 
 STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
@@ -228,6 +234,7 @@ def get_web_link_regex() -> Pattern[str]:
     # caching the value is super important here.
 
     tlds = r"|".join(list_of_tlds())
+    schemes_regex = r"|".join(auto_linked_schemes)
 
     # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
     #
@@ -251,12 +258,13 @@ def get_web_link_regex() -> Pattern[str]:
     nested_paren_chunk %= (inner_paren_contents,)
 
     file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
+
     REGEX = rf"""
-        (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
+        (?<![^\s'"\(,:<\u0080-\U0010FFFF])    # Start after whitespace, specified chars, or multibyte chars
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
             (?:(?:           # Domain part
-                https?://[\w.:@-]+?   # If it has a protocol, anything goes.
+                (?:{schemes_regex})://[\w.:@-]+?   # If it has a protocol, anything goes.
                |(?:                   # Or, if not, be more strict to avoid false-positives
                     (?:[\w-]+\.)+     # One or more domain components, separated by dots
                     (?:{tlds})        # TLDs
@@ -629,8 +637,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         desc = desc if desc is not None else ""
 
         # Update message.has_image attribute.
-        if "message_inline_image" in class_attr and self.zmd.zulip_message:
-            self.zmd.zulip_message.has_image = True
+        if "message_inline_image" in class_attr:
+            self.zmd.zulip_rendering_result.has_image = True
 
         if insertion_index is not None:
             div = Element("div")
@@ -788,6 +796,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def dropbox_media(self, url: str) -> DropboxMediaInfo | None:
+        if not self.zmd.image_preview_enabled:
+            return None
         parsed_url = urlsplit(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
             # See https://www.dropboxforum.com/discussions/101001012/shared-link--scl-to-s/689070/replies/695266
@@ -1034,10 +1044,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return False
 
         url_type = guess_type(url)[0]
-        # Support only video formats (containers) that are supported cross-browser and cross-device. As per
+        # Video container formats broadly supported across browsers; see
         # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
-        # MP4 and WebM are the only formats that are widely supported.
-        supported_mimetypes = ["video/mp4", "video/webm"]
+        # Whether a specific file actually plays depends on the codecs
+        # inside the container; the frontend hides the preview on a
+        # playback error and falls back to the download link.
+        supported_mimetypes = ["video/mp4", "video/quicktime", "video/webm"]
         return url_type in supported_mimetypes
 
     def add_video(
@@ -1087,11 +1099,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote
         }
 
-        # Set has_link and similar flags whenever a message is processed by Markdown
-        if self.zmd.zulip_message:
-            self.zmd.zulip_message.has_link = len(found_urls) > 0
-            self.zmd.zulip_message.has_image = False  # This is updated in self.add_a
+        # Update message.has_link attribute.
+        if len(found_urls) > 0:
+            self.zmd.zulip_rendering_result.has_link = True
 
+        if self.zmd.zulip_message:
             for url in unique_urls:
                 maybe_add_attachment_path_id(url, self.zmd)
 
@@ -1229,14 +1241,8 @@ class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Element | str:
         time_input_string = match.group("time")
         try:
-            timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
-        except (ValueError, OverflowError):
-            try:
-                timestamp = datetime.fromtimestamp(float(time_input_string), tz=timezone.utc)
-            except ValueError:
-                timestamp = None
-
-        if not timestamp:
+            timestamp = datetime.fromisoformat(time_input_string)
+        except ValueError:
             return f"&lt;time:{time_input_string}&gt;"
 
         # Use HTML5 <time> element for valid timestamps.
@@ -1644,7 +1650,10 @@ def prepare_linkifier_pattern(source: str) -> str:
     # We use an extended definition of 'whitespace' which is
     # equivalent to \p{White_Space} -- since \s in re2 only matches
     # ASCII spaces, and re2 does not support \p{White_Space}.
-    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
+    #
+    # This implementation should be kept in sync with the one in
+    # web/src/linkifiers.ts.
+    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
 # We use maxsize of 10000. We need to prevent against admins
@@ -1873,7 +1882,9 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
             el.text = markdown.util.AtomicString(f"#{stream_name} > ")
             el.append(topic_el)
         else:
-            text = f"#{stream_name} > {topic_name}"
+            text = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
+                channel_name=stream_name, topic_name=topic_name
+            )
             el.text = markdown.util.AtomicString(text)
 
         return el, m.start(), m.end()
@@ -2141,41 +2152,43 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
         db_data: DbData | None = self.zmd.zulip_db_data
         src = rewrite_local_links_to_relative(db_data, src)
         maybe_add_attachment_path_id(src, self.zmd)
-        img.set("data-original-src", src)
 
-        # We try to use image thumbnails for previews of the user
-        # upload images rather than original images when available.
-        if src.startswith("/user_uploads/") and db_data:
-            path_id = src[len("/user_uploads/") :]
+        # We only support Markdown image syntax for uploaded files
+        if not src.startswith("/user_uploads/"):
+            return None
 
-            # We should have pulled the preview data for this image
-            # (even if that's "no preview yet") from the database
-            # before rendering; Else, its header didn't parse as
-            # a valid image type which libvips handles.
-            if path_id not in db_data.user_upload_previews.image_metadata:
-                return None
-            else:
-                assert path_id in db_data.user_upload_previews.image_metadata
-                metadata = db_data.user_upload_previews.image_metadata[path_id]
+        path_id = src[len("/user_uploads/") :]
 
-            # Insert a placeholder image spinner.  We post-process
-            # this content (see rewrite_thumbnailed_images in
-            # zerver.lib.thumbnail), looking specifically for this
-            # tag, and may re-write it into the thumbnail URL if it
-            # already exists when the message is sent.
-            img.set("class", "inline-image image-loading-placeholder")
-            img.set("src", "/static/images/loading/loader-black.svg")
-            img.set(
-                "data-original-dimensions",
-                f"{metadata.original_width_px}x{metadata.original_height_px}",
-            )
-            if metadata.original_content_type:
-                img.set(
-                    "data-original-content-type",
-                    metadata.original_content_type,
-                )
+        # We should have pulled the preview data for this image
+        # (even if that's "no preview yet") from the database
+        # before rendering; Else, its header didn't parse as
+        # a valid image type which libvips handles.
+        if not db_data or path_id not in db_data.user_upload_previews.image_metadata:
+            return None
         else:
-            img.set("src", src)
+            assert path_id in db_data.user_upload_previews.image_metadata
+            metadata = db_data.user_upload_previews.image_metadata[path_id]
+
+        # Insert a placeholder image spinner.  We post-process
+        # this content (see rewrite_thumbnailed_images in
+        # zerver.lib.thumbnail), looking specifically for this
+        # tag, and may re-write it into the thumbnail URL if it
+        # already exists when the message is sent.
+        img.set("data-original-src", src)
+        img.set("class", "inline-image image-loading-placeholder")
+        img.set("src", "/static/images/loading/loader-black.svg")
+        img.set(
+            "data-original-dimensions",
+            f"{metadata.original_width_px}x{metadata.original_height_px}",
+        )
+        if metadata.original_content_type:
+            img.set(
+                "data-original-content-type",
+                metadata.original_content_type,
+            )
+
+        # Update message.has_image attribute.
+        self.zmd.zulip_rendering_result.has_image = True
 
         return img
 
@@ -2459,6 +2472,7 @@ class TopicLinkMatch:
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
 # are validated and escaped inside `url_to_a`).
+@cache_for_current_request
 def topic_links(linkifiers_key: int, topic_name: str) -> list[dict[str, str]]:
     matches: list[TopicLinkMatch] = []
     linkifiers = linkifiers_for_realm(linkifiers_key)
@@ -2622,6 +2636,8 @@ def do_convert(
         user_ids_with_alert_words=set(),
         potential_attachment_path_ids=[],
         thumbnail_spinners=set(),
+        has_image=False,
+        has_link=False,
     )
 
     md_engine.zulip_message = message
@@ -2696,6 +2712,12 @@ def do_convert(
             rendering_result.thumbnail_spinners = thumbnail_spinners
             if content_with_thumbnails is not None:
                 rendering_result.rendered_content = content_with_thumbnails
+
+        # Update the has_link and has_image on message based on the rendering result.
+        # This way if a message's content is edited these attributes are still accurate.
+        if message is not None:
+            message.has_image = rendering_result.has_image
+            message.has_link = rendering_result.has_link
 
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
@@ -2817,3 +2839,7 @@ def get_markdown_link_for_url(filename: str, url: str) -> str:
     # filename we're linking.
     filename = re.sub(r"\[|\]", "", filename)
     return f"[{filename}]({url})"
+
+
+def get_markdown_image_for_url(filename: str, url: str) -> str:
+    return f"!{get_markdown_link_for_url(filename, url)}"

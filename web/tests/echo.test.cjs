@@ -2,10 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
 const {make_user_group} = require("./lib/example_group.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
@@ -90,11 +89,11 @@ const stream_topic_history = zrequire("stream_topic_history");
 const current_user = {};
 set_current_user(current_user);
 
-const general_sub = {
+const general_sub = make_stream({
     stream_id: 101,
     name: "general",
     subscribed: true,
-};
+});
 stream_data.add_sub_for_tests(general_sub);
 
 run_test("process_from_server for un-echoed messages", () => {
@@ -305,7 +304,7 @@ run_test("update_message_lists", () => {
 
 run_test("insert_local_message streams", ({override}) => {
     const fake_now = 555;
-    MockDate.set(new Date(fake_now * 1000));
+    clock.setSystemTime(new Date(fake_now * 1000));
 
     const local_id_float = 101.01;
 
@@ -392,6 +391,7 @@ run_test("insert_local_message direct message", ({override}) => {
     override(markdown, "render", () => {
         render_called = true;
     });
+    override(markdown, "get_topic_links", () => []);
 
     const message_request = {
         private_message_recipient: "cordelia@zulip.com",
@@ -448,8 +448,4 @@ run_test("test reify_message_id", ({override}) => {
     const history = stream_topic_history.find_or_create(general_sub.stream_id);
     assert.equal(history.max_message_id, 110);
     assert.equal(history.topics.get("test").message_id, 110);
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });

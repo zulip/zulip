@@ -84,6 +84,16 @@ maxdepth: 3
 contributing/index
 ```
 
+(project-processes)=
+
+```{toctree}
+---
+maxdepth: 3
+---
+
+processes/index
+```
+
 (development-environment)=
 
 ```{toctree}

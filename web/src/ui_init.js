@@ -14,7 +14,6 @@ import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
-import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
@@ -106,6 +105,7 @@ import * as pygments_data from "./pygments_data.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
@@ -117,6 +117,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
 import * as scroll_bar from "./scroll_bar.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
+import {FETCH_EVENT_TYPES} from "./server_event_types.ts";
 import * as server_events from "./server_events.js";
 import * as server_events_state from "./server_events_state.ts";
 import * as settings from "./settings.ts";
@@ -207,6 +208,7 @@ function initialize_navbar() {
         embedded: page_params.narrow_stream !== undefined,
         user_avatar: current_user.avatar_url_medium,
         realm_icon_url: realm.realm_icon_url,
+        realm_name: realm.realm_name,
     });
 
     $("#header-container").html(rendered_navbar);
@@ -225,6 +227,7 @@ function initialize_compose_box() {
                 giphy_enabled: gif_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 tenor_enabled: gif_state.is_tenor_enabled(),
+                klipy_enabled: gif_state.is_klipy_enabled(),
                 max_topic_length: realm.max_topic_length,
                 empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
@@ -457,6 +460,14 @@ export async function initialize_everything(state_data) {
     set_realm(state_data.realm);
     set_realm_billing(state_data.realm_billing);
 
+    if (page_params.narrow_stream !== undefined) {
+        // In the /?stream=X mini-window flow, the user's main Zulip
+        // window is the primary recipient of desktop notifications;
+        // suppress them here so the embedded window doesn't fire
+        // duplicate alerts.
+        state_data.user_settings.user_settings.enable_desktop_notifications = false;
+    }
+
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */
@@ -470,6 +481,7 @@ export async function initialize_everything(state_data) {
         theme.initialize_theme_for_spectator();
     }
     thumbnail.initialize();
+    thumbnail.set_media_preview_size_css_variable();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
@@ -504,6 +516,11 @@ export async function initialize_everything(state_data) {
 
     await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
+
+    // Must happen after people.initialize(). And also before
+    // settings.initialize(), as we check if the user owns any
+    // bot to show the lock icon for "Bots" panel
+    bot_data.initialize(state_data.bot);
 
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.
@@ -549,7 +566,7 @@ export async function initialize_everything(state_data) {
         maybe_load_older_messages(first_unread_message_id) {
             recent_view_ui.set_backfill_in_progress(true);
             message_fetch.maybe_load_older_messages({
-                msg_list_data: all_messages_data,
+                msg_list_data: recent_view_messages_data,
                 recent_view: true,
                 // To have a hard anchor on our target of first unread message id,
                 // we pass it from here, otherwise it might get updated and lead to confusion.
@@ -581,6 +598,9 @@ export async function initialize_everything(state_data) {
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(state_data.stream_data);
+    stream_data.set_channel_has_locally_available_topic(
+        stream_topic_history.channel_has_locally_available_topic,
+    );
     user_group_edit_members.initialize();
     stream_card_popover.initialize();
     pm_conversations.recent.initialize(state_data.pm_conversations);
@@ -597,7 +617,7 @@ export async function initialize_everything(state_data) {
             message_view.show(
                 [
                     {
-                        operator: "stream",
+                        operator: "channel",
                         operand: sub.stream_id.toString(),
                     },
                 ],
@@ -643,7 +663,6 @@ export async function initialize_everything(state_data) {
     drafts.initialize(); // Must happen before reload_setup.initialize()
     reload_setup.initialize();
     unread.initialize(state_data.unread);
-    bot_data.initialize(state_data.bot); // Must happen after people.initialize()
     message_fetch.initialize(() => {
         recent_view_ui.set_initial_message_fetch_status(false);
         recent_view_ui.revive_current_focus();
@@ -759,6 +778,8 @@ export async function initialize_everything(state_data) {
     // is defined. Also, must happen after people.initialize()
     onboarding_steps.initialize(state_data.onboarding_steps, {
         show_message_view: message_view.show,
+        update_recipient_row_attention_level:
+            compose_recipient.update_recipient_row_attention_level,
     });
     typing.initialize();
     starred_messages_ui.initialize();
@@ -792,44 +813,100 @@ function show_try_zulip_modal() {
 $(() => {
     update_page_loading_indicator_notice();
 
-    // Remove '?show_try_zulip_modal', if present.
+    // Remove transient query parameters.
     const url = new URL(window.location.href);
+    let needs_url_cleanup = false;
     if (url.searchParams.has("show_try_zulip_modal")) {
         url.searchParams.delete("show_try_zulip_modal");
+        needs_url_cleanup = true;
+    }
+    if (url.searchParams.has("state_data")) {
+        url.searchParams.delete("state_data");
+        needs_url_cleanup = true;
+    }
+    if (needs_url_cleanup) {
         window.history.replaceState(window.history.state, "", url.toString());
     }
 
-    if (page_params.is_spectator) {
-        const data = {
-            apply_markdown: true,
-            client_capabilities: JSON.stringify({
-                notification_settings_null: true,
-                bulk_message_deletion: true,
-                user_avatar_url_field_optional: true,
-                // Set this to true when stream typing notifications are implemented.
-                stream_typing_notifications: false,
-                user_settings_object: true,
-                empty_topic_name: true,
-            }),
-            client_gravatar: false,
-        };
-        channel.post({
-            url: "/json/register",
-            data,
-            success(response_data) {
-                const state_data = state_data_schema.parse(response_data);
-                initialize_everything(state_data);
-                if (page_params.show_try_zulip_modal) {
-                    show_try_zulip_modal();
-                }
-            },
-            error() {
-                $("#app-loading-middle-content").hide();
-                $("#app-loading-bottom-content").hide();
-                $(".app").hide();
-                $("#app-loading-error").css({visibility: "visible"});
-            },
-        });
+    if (page_params.no_event_queue) {
+        // For spectators and client-triggered reloads, fetch
+        // state_data via the API rather than reading it from the
+        // (potentially very large) HTML response. For reloads, this
+        // avoids partial-transfer failures that leave users stuck on
+        // the loading screen. See #36094.
+        let data;
+        if (page_params.is_spectator) {
+            data = {
+                apply_markdown: true,
+                client_capabilities: JSON.stringify({
+                    notification_settings_null: true,
+                    bulk_message_deletion: true,
+                    user_avatar_url_field_optional: true,
+                    // Set this to true when stream typing notifications are implemented.
+                    stream_typing_notifications: false,
+                    user_settings_object: true,
+                    empty_topic_name: true,
+                    individual_emoji_changes: true,
+                }),
+                client_gravatar: false,
+            };
+        } else {
+            // Logged-in reload: request the same parameters the
+            // server-side do_events_register call uses for the initial
+            // page load. Keep these in sync with the call in
+            // zerver/lib/home.py.
+            data = {
+                apply_markdown: true,
+                client_gravatar: true,
+                slim_presence: true,
+                include_subscribers: "partial",
+                presence_history_limit_days: page_params.presence_history_limit_days_for_web_app,
+                fetch_event_types: JSON.stringify(FETCH_EVENT_TYPES),
+                client_capabilities: JSON.stringify({
+                    notification_settings_null: true,
+                    bulk_message_deletion: true,
+                    user_avatar_url_field_optional: true,
+                    stream_typing_notifications: true,
+                    linkifier_url_template: true,
+                    user_list_incomplete: true,
+                    include_deactivated_groups: true,
+                    archived_channels: true,
+                    empty_topic_name: true,
+                    simplified_presence_events: true,
+                    individual_emoji_changes: true,
+                }),
+            };
+        }
+        let register_failures = 0;
+        function fetch_state_data() {
+            channel.post({
+                url: "/json/register",
+                data,
+                success(response_data) {
+                    const state_data = state_data_schema.parse(response_data);
+                    initialize_everything(state_data);
+                    if (page_params.show_try_zulip_modal) {
+                        show_try_zulip_modal();
+                    }
+                },
+                error(xhr) {
+                    register_failures += 1;
+                    if (register_failures <= 5) {
+                        const retry_delay_secs = util.get_retry_backoff_seconds(
+                            xhr,
+                            register_failures,
+                        );
+                        setTimeout(fetch_state_data, retry_delay_secs * 1000);
+                        return;
+                    }
+                    $("#app-loading-middle-content").hide();
+                    $("#app-loading-bottom-content").hide();
+                    $(".app").hide();
+                    $("#app-loading-error").css({visibility: "visible"});
+                },
+            });
+        }
+        fetch_state_data();
     } else {
         const state_data = page_params.state_data;
         assert(state_data !== null);

@@ -108,7 +108,7 @@ su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-onl
 
 # Update extensions
 if [ -n "$SCRIPTS_PATH" ] && [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
-    su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
+    su postgres -c "psql --file $SCRIPTS_PATH/update_extensions.sql"
     rm "$SCRIPTS_PATH/update_extensions.sql"
 fi
 

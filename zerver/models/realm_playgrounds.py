@@ -10,6 +10,8 @@ from zerver.lib.types import RealmPlaygroundDict
 from zerver.models.linkifiers import url_template_validator
 from zerver.models.realms import Realm
 
+PLAYGROUND_LANGUAGE_REGEX = r"[a-zA-Z0-9_+-./#]+"
+
 
 class RealmPlayground(models.Model):
     """Server side storage model to store playground information needed by our
@@ -17,6 +19,8 @@ class RealmPlayground(models.Model):
     """
 
     MAX_PYGMENTS_LANGUAGE_LENGTH = 40
+
+    RESTRICTED_KEYWORDS = {"latex", "math", "quote", "spoiler"}
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     url_template = models.TextField(validators=[url_template_validator])
@@ -33,7 +37,8 @@ class RealmPlayground(models.Model):
         # language in the code block.
         validators=[
             RegexValidator(
-                regex=r"^[ a-zA-Z0-9_+-./#]*$", message=_("Invalid characters in pygments language")
+                regex=rf"^{PLAYGROUND_LANGUAGE_REGEX}$",
+                message=_("Invalid characters in pygments language"),
             )
         ],
     )

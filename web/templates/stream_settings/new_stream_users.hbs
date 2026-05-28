@@ -1,17 +1,24 @@
-<div class="subscriber_list_settings">
-    <div class="subscriber_list_add float-left">
-        {{> add_subscribers_form hide_add_button=true}}
-    </div>
-    <br />
+{{> add_subscribers_form hide_add_button=true}}
+
+<div class="add-subscribers-subtitle">
+    {{#tr}}
+        Enter a <z-user-roles-link>user role</z-user-roles-link>,
+        <z-user-groups-link>user group</z-user-groups-link>,
+        or <z-channel-link>#channel</z-channel-link> to add multiple users at once.
+        {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-channel-link"}}<a href="/help/introduction-to-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
 </div>
 
 <div class="create_stream_subscriber_list_header">
-    <h4 class="stream_setting_subsection_title">{{t 'Subscribers preview' }}</h4>
+    <div class="subscribers-heading">
+        <h4 class="stream_setting_subsection_title">{{t 'Subscribers preview' }}</h4>
+        <div class="add-subscriber-loading-spinner"></div>
+    </div>
     <input class="add-user-list-filter filter_text_input" name="user_list_filter" type="text"
       autocomplete="off" placeholder="{{t 'Filter' }}" />
 </div>
-
-<div class="add-subscriber-loading-spinner"></div>
 
 <div class="subscriber-list-box">
     <div class="subscriber_list_container" data-simplebar data-simplebar-tab-index="-1">

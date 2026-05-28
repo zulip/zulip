@@ -75,11 +75,11 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         expected_participants = {self.example_user(sender).full_name for sender in senders}
 
-        self.assertEqual(set(hot_convo["participants"]), expected_participants)
-        self.assertEqual(hot_convo["count"], 5 - 2)  # 5 messages, but 2 shown
-        teaser_messages = hot_convo["first_few_messages"]["senders"]
-        self.assertIn("some content", teaser_messages[0]["content"][0]["plain"])
-        self.assertIn(teaser_messages[0]["sender"], expected_participants)
+        self.assertEqual(set(hot_convo.participants), expected_participants)
+        self.assertEqual(hot_convo.count, 5 - 2)  # 5 messages, but 2 shown
+        teaser_messages = hot_convo.first_few_messages.senders
+        self.assertIn("some content", teaser_messages[0].content[0].plain)
+        self.assertIn(teaser_messages[0].sender, expected_participants)
 
         # If we run another batch, we reuse the topic queries; there
         # are 3 reused streams and one new one, for a net of two fewer
@@ -276,11 +276,11 @@ class TestDigestEmailMessages(ZulipTestCase):
             hot_convo = hot_conversations[0]
             expected_participants = {self.example_user(sender).full_name for sender in senders}
 
-            self.assertEqual(set(hot_convo["participants"]), expected_participants)
-            self.assertEqual(hot_convo["count"], 5 - 2)  # 5 messages, but 2 shown
-            teaser_messages = hot_convo["first_few_messages"]["senders"]
-            self.assertIn("some content", teaser_messages[0]["content"][0]["plain"])
-            self.assertIn(teaser_messages[0]["sender"], expected_participants)
+            self.assertEqual(set(hot_convo.participants), expected_participants)
+            self.assertEqual(hot_convo.count, 5 - 2)  # 5 messages, but 2 shown
+            teaser_messages = hot_convo.first_few_messages.senders
+            self.assertIn("some content", teaser_messages[0].content[0].plain)
+            self.assertIn(teaser_messages[0].sender, expected_participants)
 
         last_message_id = get_last_message_id()
         for digest_user in digest_users:
@@ -405,7 +405,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         num_queued_users = call_enqueue_emails(get_realm("zulipinternal"))
         self.assertEqual(num_queued_users, 0)
         num_queued_users = call_enqueue_emails(get_realm("zulip"))
-        self.assertEqual(num_queued_users, 10)
+        self.assertEqual(num_queued_users, 11)
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self) -> None:
@@ -659,7 +659,10 @@ class TestDigestEmailMessages(ZulipTestCase):
         ).update(event_time=subscription_created_date)
 
         # No 'hot_conversations'
-        with mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
+        with (
+            mock.patch("zerver.lib.digest.enough_traffic", return_value=True),
+            mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email,
+        ):
             bulk_handle_digest_email([aaron.id], cutoff_date.timestamp())
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -711,11 +714,11 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         hot_convo = kwargs["context"]["hot_conversations"][0]
         # Verify the header HTML contains the general chat
-        header_html = hot_convo["first_few_messages"]["header"]["html"]
+        header_html = hot_convo.first_few_messages.header.html
         self.assertIn("<span class='empty-topic-display'>general chat</span>", header_html)
 
         # Verify the Plain header contains the general chat
-        header_plain = hot_convo["first_few_messages"]["header"]["plain"]
+        header_plain = hot_convo.first_few_messages.header.plain
         self.assertIn("general chat", header_plain)
 
 

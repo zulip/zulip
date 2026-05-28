@@ -18,6 +18,7 @@ import type {
 } from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t, get_language_list_columns} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -246,6 +247,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 
 export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
+    realm_media_preview_size: true,
     realm_message_edit_history_visibility_policy: true,
     realm_topics_policy: true,
 });
@@ -483,7 +485,7 @@ export function read_field_data_from_form(
     const field_types = realm.custom_profile_field_types;
 
     // Only the following field types support associated field data.
-    if (field_type_id === field_types.SELECT.id) {
+    if (field_type_id === field_types.DROPDOWN.id) {
         return read_select_field_data_from_form($profile_field_form, old_field_data);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         const parsed_old_field_data = old_field_data
@@ -566,7 +568,11 @@ export function get_dropdown_list_widget_setting_value($input_elem: JQuery): num
     return setting_value;
 }
 
-export function change_save_button_state($element: JQuery, state: string): void {
+export function change_save_button_state(
+    $element: JQuery,
+    state: string,
+    error_callback?: () => void,
+): void {
     function show_hide_element(
         $element: JQuery,
         show: boolean,
@@ -604,6 +610,14 @@ export function change_save_button_state($element: JQuery, state: string): void 
         return;
     }
 
+    if (state === "failed") {
+        assert(error_callback !== undefined);
+        show_hide_element($element, false, 0, () => {
+            error_callback();
+        });
+        return;
+    }
+
     if (state === "succeeded" && $save_button.attr("data-status") === "unsaved") {
         // We don't show the "saved" state if the save button is in the "unsaved"
         // state, as that would indicate that user has made some other changes
@@ -634,10 +648,6 @@ export function change_save_button_state($element: JQuery, state: string): void 
 
             $element.find(".discard-button").hide();
             buttons.show_button_loading_indicator($save_button);
-            break;
-        case "failed":
-            data_status = "failed";
-            is_show = true;
             break;
         case "succeeded":
             button_text = $t({defaultMessage: "Saved"});
@@ -890,7 +900,8 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
-        case "realm_direct_message_permission_group": {
+        case "realm_direct_message_permission_group":
+        case "realm_workplace_users_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             proposed_val = get_group_setting_widget_value(pill_widget);
@@ -988,8 +999,8 @@ export function get_group_setting_widget_value(
         return direct_subgroups[0];
     }
 
-    direct_subgroups.sort();
-    direct_members.sort();
+    direct_subgroups.sort((a, b) => a - b);
+    direct_members.sort((a, b) => a - b);
     return {direct_subgroups, direct_members};
 }
 
@@ -1152,6 +1163,7 @@ export function populate_data_for_realm_settings_request(
                     "create_multiuse_invite_group",
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
+                    "workplace_users_group",
                 ]);
                 if (realm_group_settings.has(property_name)) {
                     const old_value = get_realm_settings_property_value(
@@ -1303,7 +1315,7 @@ function switching_to_private(properties_elements: HTMLElement[]): boolean {
 }
 
 export function save_discard_realm_settings_widget_status_handler($subsection: JQuery): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
@@ -1319,7 +1331,7 @@ export function save_discard_stream_settings_widget_status_handler(
     $subsection: JQuery,
     sub: StreamSubscription | undefined,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     let show_change_process_button = false;
@@ -1369,7 +1381,7 @@ export function save_discard_group_widget_status_handler(
     $subsection: JQuery,
     group: UserGroup,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
@@ -1383,7 +1395,7 @@ export function save_discard_group_widget_status_handler(
 export function save_discard_default_realm_settings_widget_status_handler(
     $subsection: JQuery,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
@@ -1623,14 +1635,20 @@ export function disable_opening_typeahead_on_clicking_label($container: JQuery):
     $group_setting_labels.off("click");
 }
 
-export function disable_group_permission_setting($containers: JQuery): void {
+export function disable_group_permission_setting($containers: JQuery, placeholder?: string): void {
     $containers.find(".input").prop("contenteditable", false);
+    if (placeholder !== undefined) {
+        $containers.find(".input").attr("data-placeholder", placeholder);
+    }
     $containers.closest(".input-group").addClass("group_setting_disabled");
     disable_opening_typeahead_on_clicking_label($containers.closest(".input-group"));
 }
 
-export function enable_group_permission_setting($containers: JQuery): void {
+export function enable_group_permission_setting($containers: JQuery, placeholder?: string): void {
     $containers.find(".input").prop("contenteditable", true);
+    if (placeholder !== undefined) {
+        $containers.find(".input").attr("data-placeholder", placeholder);
+    }
     $containers.closest(".input-group").removeClass("group_setting_disabled");
     enable_opening_typeahead_on_clicking_label($containers.closest(".input-group"));
 }
@@ -1674,6 +1692,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_create_multiuse_invite_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
+    ["realm_workplace_users_group", null],
 ]);
 
 export function get_group_setting_widget(setting_name: string): GroupSettingPillContainer | null {
@@ -1932,6 +1951,13 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
     } of settings_config.realm_group_permission_settings) {
         const assigned_permission_objects = [];
         for (const setting_name of settings) {
+            if (
+                setting_name === "workplace_users_group" &&
+                (!page_params.development_environment ||
+                    !page_params.non_workplace_pricing_eligible)
+            ) {
+                continue;
+            }
             const setting_value = realm[z.keyof(realm_schema).parse("realm_" + setting_name)];
             const can_edit = settings_config.owner_editable_realm_group_permission_settings.has(
                 setting_name,
@@ -2093,7 +2119,7 @@ export let resize_textareas_in_subsection = ($subsection: JQuery): void => {
     }
 
     $textareas.each(function () {
-        const $el = $<HTMLTextAreaElement>(this);
+        const $el = $(this);
 
         const min_rows = 2;
         const max_rows = 5;

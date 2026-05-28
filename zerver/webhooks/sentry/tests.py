@@ -197,6 +197,33 @@ Traceback:
 ```"""
         self.check_webhook("event_for_message_python", expected_topic_name, expected_message)
 
+    def test_error_for_exception_javascript(self) -> None:
+        expected_topic_name = "ReferenceError: blooopy is not defined"
+        expected_message = """\
+:orange_circle: **New exception:** [ReferenceError: blooopy is not defined](https://sentry.io/organizations/test-org/issues/1170820242/events/bb78c1407cea4519aa397afc059c793d/)
+```quote
+**level:** error
+**timestamp:** <time:2019-08-19T20:58:37+00:00>
+**filename:** /runner
+```
+
+Traceback:
+```javascript
+     <!doctype html>
+     <html>
+---> <meta charset=utf-8>
+     <title>JS Bin Runner</title>
+
+     <style type="text/css">
+       body {
+         margin: 0;
+```"""
+        self.check_webhook(
+            "error_for_exception_js",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_issue_assigned_to_individual(self) -> None:
         expected_topic_name = "A test message event from golang."
         expected_message = """Issue **A test message event from golang.** has now been assigned to **Hemanth V. Alluri** by **Hemanth V. Alluri**."""
@@ -238,16 +265,6 @@ Traceback:
         expected_topic_name = "Exception: program has entered an invalid state."
         expected_message = """Issue **Exception: program has entered an invalid state.** was marked as resolved by **Hemanth V. Alluri**."""
         self.check_webhook("issue_resolved", expected_topic_name, expected_message)
-
-    def test_deprecated_exception_message(self) -> None:
-        expected_topic_name = "zulip"
-        expected_message = """\
-:orange_circle: New [issue](https://sentry.io/zulip/zulip/issues/156699934/) (level: ERROR):
-
-``` quote
-This is an example python exception
-```"""
-        self.check_webhook("deprecated_exception_message", expected_topic_name, expected_message)
 
     def test_sample_event_through_alert(self) -> None:
         expected_topic_name = "This is an example Python exception"

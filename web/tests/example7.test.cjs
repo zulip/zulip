@@ -75,10 +75,6 @@ const denmark_stream = make_stream({
 });
 
 run_test("unread_ops", ({override}) => {
-    $("#message_feed_container").css = (property) => {
-        assert.equal(property, "display");
-        return "block";
-    };
     stream_data.clear_subscriptions();
     stream_data.add_sub_for_tests(denmark_stream);
     message_store.clear_for_testing();

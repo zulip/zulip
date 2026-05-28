@@ -59,7 +59,7 @@ location /help {
 }
 
 # Send longpoll requests to Tornado
-location /json/events {
+location = /json/events {
     if ($request_method = 'OPTIONS') {
         # add_header does not propagate into/out of blocks, so this
         # include cannot be factored out
@@ -81,7 +81,7 @@ location /json/events {
 }
 
 # Send longpoll requests to Tornado
-location /api/v1/events {
+location = /api/v1/events {
 
     if ($request_method = 'OPTIONS') {
         include /etc/nginx/zulip-include/tornado_cors_headers;

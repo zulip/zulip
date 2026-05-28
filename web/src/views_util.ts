@@ -90,6 +90,7 @@ export function show(opts: {
     is_visible: () => boolean;
     set_visible: (value: boolean) => void;
     complete_rerender: (coming_from_other_views?: boolean) => void;
+    update_participants_column_class?: () => void;
     is_recent_view?: boolean;
 }): void {
     if (opts.is_visible()) {
@@ -113,6 +114,19 @@ export function show(opts: {
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     compose_recipient.handle_middle_pane_transition();
+
+    // Call before complete_rerender to ensure
+    // that any size changes are taken into account.
+    if (opts.is_recent_view) {
+        resize.set_recent_view_participants_rerender(() => {
+            opts.complete_rerender(false);
+        });
+        resize.set_recent_view_participants_column_class_update(() => {
+            opts.update_participants_column_class?.();
+        });
+        resize.update_recent_view();
+    }
+
     opts.complete_rerender(true);
     compose_actions.on_show_navigation_view();
     popup_banners.close_found_missing_unreads_banner();
@@ -120,11 +134,6 @@ export function show(opts: {
     // This has to happen after resetting the current narrow filter, so
     // that the buddy list is rendered with the correct narrow state.
     activity_ui.build_user_sidebar();
-
-    // Misc.
-    if (opts.is_recent_view) {
-        resize.update_recent_view();
-    }
 }
 
 export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void}): void {
@@ -179,6 +188,24 @@ export function is_in_focus(): boolean {
         can_current_view_steal_focus &&
         !$(".navbar-item").is(":focus")
     );
+}
+
+export function find_element_at_point(
+    x: number,
+    y: number,
+    container_selector: string,
+): Element | undefined {
+    // When the view is obscured by a modal, overlay, popover, etc.
+    // `elementFromPoint` would return the covering element. Use
+    // `elementsFromPoint` to search through the full element stack
+    // and find the matching element beneath it.
+    const elements = document.elementsFromPoint(x, y);
+    for (const element of elements) {
+        if (element.closest(container_selector) !== null) {
+            return element;
+        }
+    }
+    return undefined;
 }
 
 export function is_scroll_position_for_render(): boolean {

@@ -95,7 +95,7 @@ run_test("multiple item list", ({override}) => {
     override(cursor, "adjust_scroll", noop);
 
     function li(key) {
-        return $.create(`item-${key}`, {children: ["stub"]});
+        return $.create(`item-${key}`);
     }
 
     const list_items = {

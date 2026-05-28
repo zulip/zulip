@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -25,22 +27,22 @@ const user_settings = {};
 initialize_user_settings({user_settings});
 
 // Not muted streams
-const general = {
+const general = make_stream({
     subscribed: true,
     name: "general",
     stream_id: 10,
     is_muted: false,
     wildcard_mentions_notify: null,
-};
+});
 
 // Muted streams
-const muted = {
+const muted = make_stream({
     subscribed: true,
     name: "muted",
     stream_id: 20,
     is_muted: true,
     wildcard_mentions_notify: null,
-};
+});
 
 stream_data.add_sub_for_tests(general);
 stream_data.add_sub_for_tests(muted);
@@ -237,6 +239,28 @@ test("message_is_notifiable", ({override}) => {
     assert.equal(message_notifications.message_is_notifiable(message), false);
 
     // Case 8: If a message is in a muted stream
+    //  and has a wildcard mention with channel-specific wildcard_mentions_notify=true,
+    //  DO notify the user (channel-specific setting overrides channel muting)
+    muted.wildcard_mentions_notify = true;
+    message = {
+        id: 50,
+        content: "message number 5a",
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned: true,
+        mentioned_me_directly: false,
+        type: "stream",
+        stream_id: muted.stream_id,
+        topic: "whatever",
+    };
+    assert.equal(message_notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+
+    // Reset state
+    muted.wildcard_mentions_notify = null;
+
+    // Case 9: If a message is in a muted stream
     //  and does mention the user DIRECTLY,
     //  DO notify the user
     message = {
@@ -254,7 +278,7 @@ test("message_is_notifiable", ({override}) => {
     assert.equal(message_notifications.should_send_audible_notification(message), true);
     assert.equal(message_notifications.message_is_notifiable(message), true);
 
-    // Case 9: If a message is in a muted topic
+    // Case 10: If a message is in a muted topic
     //  and does not mention the user DIRECTLY (i.e. wildcard mention),
     //  DO NOT notify the user
     message = {
@@ -272,7 +296,25 @@ test("message_is_notifiable", ({override}) => {
     assert.equal(message_notifications.should_send_audible_notification(message), true);
     assert.equal(message_notifications.message_is_notifiable(message), false);
 
-    // Case 10:
+    // Case 11:
+    // For wildcard mentions, even with channel-specific
+    // wildcard_mentions_notify=True, muted topics suppress notifications.
+    message = {
+        id: 50,
+        content: "message number 6",
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned: true,
+        mentioned_me_directly: false,
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "muted topic",
+    };
+    assert.equal(message_notifications.message_is_notifiable(message), false);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+
+    // Case 12:
     // Wildcard mentions in a followed topic with 'wildcard_mentions_notify',
     // 'enable_followed_topic_desktop_notifications',
     // 'enable_followed_topic_audible_notifications' disabled and
@@ -308,7 +350,7 @@ test("message_is_notifiable", ({override}) => {
     override(user_settings, "enable_followed_topic_audible_notifications", true);
     override(user_settings, "enable_followed_topic_wildcard_mentions_notify", true);
 
-    // Case 11: If `None` is selected as the notification sound, send no
+    // Case 13: If `None` is selected as the notification sound, send no
     // audible notification, no matter what other user configurations are.
     message = {
         id: 50,
@@ -350,9 +392,13 @@ test("message_is_notifiable", ({override}) => {
 });
 
 test("basic_notifications", () => {
-    $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap() {}})})});
-    $("<div>").set_find_results("span.katex", {each() {}});
-    $("<div>").children = () => [];
+    const $emoji_stub = $.create("emoji-stub");
+    $emoji_stub.set_matches("img", false);
+    $emoji_stub.set_contents([]);
+    const $katex_stub = $.set_results("katex-stub", []);
+    $("<div>").set_find_results(".emoji", $emoji_stub);
+    $("<div>").set_find_results("span.katex", $katex_stub);
+    $("<div>").set_children([]);
 
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;
@@ -380,21 +426,21 @@ test("basic_notifications", () => {
 
     desktop_notifications.set_notification_api(StubNotification);
 
-    const jesse = {
+    const jesse = make_user({
         email: "jesse@example.com",
         full_name: "Jesse Pinkman",
         user_id: 1,
-    };
-    const gus = {
+    });
+    const gus = make_user({
         email: "gus@example.com",
         full_name: "Gus Fring",
         user_id: 2,
-    };
-    const walter = {
+    });
+    const walter = make_user({
         email: "walter@example.com",
         full_name: "Walter White",
         user_id: 3,
-    };
+    });
     people.add_active_user(jesse);
     people.add_active_user(gus);
     people.add_active_user(walter);

@@ -46,6 +46,7 @@ EXEMPT_FILES = make_set(
     [
         "web/src/about_zulip.ts",
         "web/src/abstract_gif_network.ts",
+        "web/src/activity_ui.ts",
         "web/src/add_group_members_pill.ts",
         "web/src/add_stream_options_popover.ts",
         "web/src/add_subscribers_pill.ts",
@@ -140,6 +141,7 @@ EXEMPT_FILES = make_set(
         "web/src/integration_url_modal.ts",
         "web/src/invite.ts",
         "web/src/invite_stream_picker_pill.ts",
+        "web/src/klipy_network.ts",
         "web/src/left_sidebar_navigation_area.ts",
         "web/src/left_sidebar_navigation_area_popovers.ts",
         "web/src/left_sidebar_tooltips.ts",
@@ -253,6 +255,7 @@ EXEMPT_FILES = make_set(
         "web/src/settings_user_topics.ts",
         "web/src/settings_users.ts",
         "web/src/setup.ts",
+        "web/src/sidebar_tooltip_helpers.ts",
         "web/src/sidebar_ui.ts",
         "web/src/spectators.ts",
         "web/src/spoilers.ts",
@@ -281,6 +284,7 @@ EXEMPT_FILES = make_set(
         "web/src/thumbnail.ts",
         "web/src/timerender.ts",
         "web/src/tippyjs.ts",
+        "web/src/todo_data.ts",
         "web/src/todo_widget.ts",
         "web/src/topic_filter_pill.ts",
         "web/src/topic_generator.ts",
@@ -323,9 +327,7 @@ EXEMPT_FILES = make_set(
         "web/src/zform.ts",
         "web/src/zulip_test.ts",
         # Test library code isn't always fully used.
-        "web/tests/lib/example_user.cjs",
         "web/tests/lib/mdiff.cjs",
-        "web/tests/lib/real_jquery.cjs",
         "web/tests/lib/zjquery_element.cjs",
         "web/tests/lib/zpage_billing_params.cjs",
         # There are some important functions which are not called right now but will

@@ -39,6 +39,7 @@ TOKENIZED_NOREPLY_EMAIL_ADDRESS = Address(
 ).addr_spec
 PHYSICAL_ADDRESS = ""
 FAKE_EMAIL_DOMAIN = EXTERNAL_HOST_WITHOUT_PORT
+EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES: int | None = 0
 
 # SMTP settings
 EMAIL_HOST: str | None = None
@@ -85,6 +86,7 @@ SOCIAL_AUTH_GITLAB_KEY = get_secret("social_auth_gitlab_key", development_only=T
 SOCIAL_AUTH_SUBDOMAIN: str | None = None
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = get_secret("social_auth_azuread_oauth2_key", development_only=True)
 SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key", development_only=True)
+SOCIAL_AUTH_DISCORD_KEY = get_secret("social_auth_discord_key", development_only=True)
 # SAML:
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: str | None = None
 SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
@@ -98,6 +100,7 @@ SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {}
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
 SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
+OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS = False
 
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID: str | None = None
@@ -114,7 +117,9 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
-SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str | list[str | tuple[str, str]]]]] = {}
+SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[
+    str, dict[str, dict[str, str | bool | list[str | tuple[str, str]]]]
+] = {}
 
 # Other auth
 SSO_APPEND_DOMAIN: str | None = None
@@ -125,6 +130,9 @@ VIDEO_ZOOM_OAUTH_URL: str = "https://zoom.us"
 VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = get_secret("video_zoom_account_id", development_only=True)
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
+VIDEO_WEBEX_API_URL: str = "https://webexapis.com/v1/"
+VIDEO_WEBEX_CLIENT_ID = get_secret("video_webex_client_id", development_only=True)
+VIDEO_WEBEX_CLIENT_SECRET = get_secret("video_webex_client_secret")
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""
@@ -191,9 +199,19 @@ GIPHY_API_KEY = get_secret("giphy_api_key")
 # Tenor API key
 TENOR_API_KEY = get_secret("tenor_api_key")
 
+# Klipy API key
+KLIPY_API_KEY = get_secret("klipy_api_key")
+
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
 BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
+
+# Allow setting Constructor Groups URL in development.
+CONSTRUCTOR_GROUPS_URL = get_secret("constructor_groups_url", development_only=True)
+
+# Allow setting Nextcloud Talk settings in zulip-secrets.conf in
+# development; this is useful since there are no public Nextcloud Talk servers.
+NEXTCLOUD_SERVER = get_secret("nextcloud_server", development_only=True)
 
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
@@ -233,7 +251,7 @@ INLINE_IMAGE_PREVIEW = True
 INLINE_URL_EMBED_PREVIEW = True
 NAME_CHANGES_DISABLED = False
 AVATAR_CHANGES_DISABLED = False
-PASSWORD_MIN_LENGTH = 6
+PASSWORD_MIN_LENGTH = 8
 PASSWORD_MAX_LENGTH = 100
 PASSWORD_MIN_GUESSES = 10000
 
@@ -352,6 +370,10 @@ DEFAULT_RATE_LIMITING_RULES = {
     # organization feature.
     "demo_realm_creation_by_ip": [
         # 10 demos per day
+        (86400, 10),
+    ],
+    "transfer_remote_server_registration_endpoint_by_ip": [
+        # 10 transfer registration requests per day per IP
         (86400, 10),
     ],
 }
@@ -738,7 +760,8 @@ MAX_DEACTIVATED_REALM_DELETION_DAYS: int | None = None
 
 
 TOPIC_SUMMARIZATION_MODEL: str | None = None
-TOPIC_SUMMARIZATION_PARAMETERS: dict[str, object] = {}
+TOPIC_SUMMARIZATION_API_BASE: str | None = None
+TOPIC_SUMMARIZATION_PARAMETERS: dict[str, Any] = {}
 # Price per token for input and output tokens, and maximum cost. Units
 # are arbitrarily, but typically will be USD.
 INPUT_COST_PER_GIGATOKEN: int = 0
@@ -760,7 +783,3 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
 # Minimum number of subscribers in a channel for us to no longer
 # send full subscriber data to the client.
 MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000
-
-# Whether to prefer direct message group over personal recipient
-# for 1:1 or self messages.
-PREFER_DIRECT_MESSAGE_GROUP = False

@@ -237,12 +237,8 @@ h3,
     }
 }
 
-#playground-settings {
-    #playground_pygments_language,
-    #playground_name,
-    #playground_url_template {
-        width: calc(100% - 10em - 6em);
-    }
+#playground-settings .new-playground-form input {
+    width: calc(100% - 10em - 6em);
 }
 
 #language_selection_modal {
@@ -283,6 +279,17 @@ h3,
             background-color: transparent;
             color: inherit;
         }
+    }
+
+    /* Bare <h3> section titles in settings panels get their font-size,
+       font-weight, and line-height from the '#settings_page h3' rule
+       further down in this file; previously their margin came from the
+       universal h1-h4 reset in bootstrap.app.css. Set the margin
+       explicitly here so the spacing survives that reset's removal.
+       Specificity matches the existing '.admin-realm-form h3' margin
+       override, which appears later in this file and so still wins. */
+    & h3 {
+        margin: 10px 0;
     }
 
     .table-sticky-headers {
@@ -358,13 +365,14 @@ h3,
     padding: 0 25px 0 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-disabled-settings-select);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;
@@ -380,10 +388,12 @@ select.settings_select {
     background-repeat: no-repeat;
     background-position: 98%;
     background-size: 1em;
+    font-family: inherit;
 }
 
 #admin-active-users-list,
-#admin-bot-list {
+#admin-bot-list,
+#personal-bot-list {
     .table tr:first-of-type td {
         border-top: none;
     }
@@ -394,13 +404,21 @@ select.settings_select {
     }
 }
 
-#admin-bot-list .user-status-settings {
+#admin-bot-list .user-status-settings,
+#personal-bot-list .user-status-settings {
     display: flex;
     justify-content: flex-end;
 }
 
 .config-download-text {
     margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.bot-list-error {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .user_role,
@@ -438,7 +456,8 @@ select.settings_select {
     width: fit-content;
 }
 
-#bot-edit-form {
+#bot-edit-form,
+#api-key-modal {
     .api-key-details-container,
     .zuliprc-container {
         display: flex;
@@ -450,9 +469,19 @@ select.settings_select {
             align-items: center;
         }
     }
+
+    .modal_text_input {
+        margin-bottom: 0;
+    }
 }
 
 #zuliprc-section {
+    /* Normally all input-group elements have bottom margin of 1.25em.
+    But here the buttons have bottom padding of 0.375em and thus there is
+    already some extra space between this and the section below it, so we
+    reduce the bottom margin by 0.375em. */
+    margin-bottom: calc(1.25em - var(--icon-button-padding));
+
     .modal-field-label {
         margin-bottom: 0;
     }
@@ -511,11 +540,6 @@ input[type="checkbox"] {
            16px-square box (at 16px/1em) for the
            chevron icon. */
         max-width: calc(100% - 1em);
-        display: flex;
-        align-items: baseline;
-        /* Mimic the space from the previous inline
-           layout. */
-        gap: 0.4ch;
     }
 
     .decorated-channel-name {
@@ -634,14 +658,6 @@ input[type="checkbox"] {
                 visibility: visible;
             }
         }
-    }
-}
-
-#confirm_reset_stream_notifications_modal {
-    .channel-privacy-type-icon {
-        padding-left: 3px;
-        padding-right: 0;
-        width: auto;
     }
 }
 
@@ -990,10 +1006,9 @@ input[type="checkbox"] {
     }
 }
 
-.add-new-linkifier-box,
 .add-new-playground-box {
     & button {
-        margin-left: calc(10em + 20px) !important;
+        margin-left: calc(10em + 20px);
     }
     margin-bottom: 15px;
 
@@ -1026,9 +1041,36 @@ input[type="checkbox"] {
     }
 }
 
-#admin-linkifier-pattern-status,
-#admin-linkifier-template-status {
-    margin: 20px 0 0;
+.admin_linkifiers_table {
+    th:first-child,
+    td:first-child {
+        white-space: nowrap;
+    }
+
+    th.convert-url-heading {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    td.convert-cell {
+        text-align: center;
+    }
+}
+
+.alternative-url-template-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+
+    & input {
+        flex: 1;
+    }
+
+    &:last-child .delete-alternative-url-template {
+        visibility: hidden;
+    }
 }
 
 #organization-permissions {
@@ -1043,7 +1085,8 @@ input[type="checkbox"] {
     }
 }
 
-.org-permissions-form .pill-container {
+.org-permissions-form .pill-container,
+.org-settings-form .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 
@@ -1062,6 +1105,12 @@ input[type="checkbox"] {
 
 #admin-default-channels-list .progressive-table-wrapper {
     max-height: calc(95vh - 280px);
+}
+
+#admin-default-channels-list .pill {
+    &:hover {
+        background-color: var(--color-background-input-pill-hover);
+    }
 }
 
 .edit_bot_form {
@@ -1212,8 +1261,17 @@ input[type="checkbox"] {
 
                 opacity: 0.6;
 
-                &:hover {
+                &:focus {
+                    outline: none;
+                }
+
+                &:hover,
+                &:focus-visible {
                     opacity: 1;
+                }
+
+                &:focus-visible {
+                    outline: 2px solid var(--color-outline-focus);
                 }
             }
 
@@ -1352,6 +1410,23 @@ label.preferences-radio-choice-label {
 
 .open-user-form {
     min-width: initial !important;
+}
+
+#show_api_key {
+    .api-key-container {
+        padding-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .copy-button {
+            padding: 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
 }
 
 #api_key_buttons {
@@ -1554,6 +1629,7 @@ label.preferences-radio-choice-label {
         & h1 {
             text-align: center;
             font-size: 1.1em;
+            font-weight: bold;
             line-height: 1;
             text-transform: uppercase;
         }
@@ -1619,6 +1695,7 @@ label.preferences-radio-choice-label {
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1735,13 +1812,6 @@ label.preferences-radio-choice-label {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
     }
-}
-
-.subsection-failed-status p {
-    background-color: hsl(0deg 43% 91%);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin: 0 0 0 5px;
 }
 
 #muted_topics_table {
@@ -1897,7 +1967,7 @@ label.preferences-radio-choice-label {
 
     font-size: 1em;
     line-height: var(--base-line-height-unitless);
-    font-family: "Source Sans 3 VF", sans-serif;
+    font-family: inherit;
 
     &:focus {
         border-color: var(--focus-border-color-textarea);
@@ -1922,10 +1992,10 @@ label.preferences-radio-choice-label {
    rendered realm and channel descriptions. */
 .settings-view-only-textarea {
     margin: 0;
-    /* 5px at 16px and 10px at 16px */
-    padding: 0.3125em 0.625em;
+    /* 5px at 16px */
+    padding: 0.3125em var(--view-only-field-horizontal-padding);
     background-color: var(--background-color-view-only-textarea);
-    border: 1px solid var(--border-color-textarea);
+    border: var(--input-border-width) solid var(--border-color-textarea);
     border-radius: 4px;
 }
 
@@ -1954,10 +2024,6 @@ label.preferences-radio-choice-label {
     .user-avatar-section,
     .realm-icon-section {
         display: block;
-    }
-
-    .subsection-failed-status p {
-        margin: 5px 0 0;
     }
 }
 
@@ -2069,7 +2135,8 @@ label.preferences-radio-choice-label {
     }
 
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row {
             .user_name,
             .email {
@@ -2088,7 +2155,8 @@ label.preferences-radio-choice-label {
 
 @media (width < $sm_min) {
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row,
         .table-sticky-headers {
             .bot_type,
@@ -2107,15 +2175,14 @@ label.preferences-radio-choice-label {
         margin: auto;
     }
 
-    #linkifier-settings .new-linkifier-form input,
-    #playground-settings .new-playground-form input,
-    #profile-field-settings .new-profile-field-form input {
-        width: calc(100% - 20px) !important;
+    #playground-settings .new-playground-form input {
+        width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
     }
 
-    #linkifier-settings .new-linkifier-form label,
-    #playground-settings .new-playground-form label,
-    #profile-field-settings .new-profile-field-form label {
+    #playground-settings .new-playground-form label {
         display: block;
         width: 120px;
         padding: 0;
@@ -2149,6 +2216,20 @@ label.preferences-radio-choice-label {
             min-width: 8em;
         }
     }
+
+    .add-new-playground-box {
+        .action-button {
+            margin-left: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+
+    .tab-switcher.org-user-settings-switcher {
+        gap: 0.5em;
+        display: flex;
+        flex-wrap: wrap;
+    }
 }
 
 @media (width < $ml_min) {
@@ -2169,8 +2250,8 @@ label.preferences-radio-choice-label {
 }
 
 #edit-linkifier-form {
-    #edit-linkifier-pattern,
-    #edit-linkifier-url-template {
+    #linkifier-pattern,
+    #linkifier-url-template {
         width: 400px;
     }
 
@@ -2178,8 +2259,8 @@ label.preferences-radio-choice-label {
         margin-bottom: 4px;
     }
 
-    #edit-linkifier-pattern-status,
-    #edit-linkifier-template-status {
+    #linkifier-pattern-status,
+    #linkifier-template-status {
         margin-top: 10px;
     }
 
@@ -2209,7 +2290,6 @@ label.preferences-radio-choice-label {
 
         & .dropdown-widget-button {
             height: 1.4em;
-            max-width: 160px;
             box-sizing: content-box;
         }
 
@@ -2218,6 +2298,14 @@ label.preferences-radio-choice-label {
             filters to keep them aligned in .settings_panel_list_header */
             margin: 0;
         }
+    }
+
+    .user_filters .dropdown-widget-button {
+        max-width: 11em; /* 176px at 16px */
+    }
+
+    .bot-filters .dropdown-widget-button {
+        max-width: 160px;
     }
 
     .add_default_streams_button_container {
@@ -2255,6 +2343,7 @@ label.preferences-radio-choice-label {
             border: none;
             outline: none;
             display: grid;
+            font-size: inherit;
 
             &:hover {
                 color: var(--color-text-clear-search-button-hover);
@@ -2299,6 +2388,7 @@ label.preferences-radio-choice-label {
 }
 
 #admin_users_table .deactivated_user,
+#admin_imported_users_table .deactivated_user,
 #admin_deactivated_users_table .active-user {
     color: hsl(0deg 0% 64%);
 
@@ -2328,6 +2418,7 @@ label.preferences-radio-choice-label {
         var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
             var(--input-border-width)
     );
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -2388,6 +2479,25 @@ label.preferences-radio-choice-label {
         width: 75%;
     }
 
+    .integration-url-topic {
+        position: relative;
+    }
+
+    #integration-url-topic-placeholder {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        pointer-events: none;
+        visibility: hidden;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.visible {
+            visibility: visible;
+        }
+    }
+
     #stream-not-specified-notice {
         margin-top: -10px;
     }
@@ -2398,7 +2508,8 @@ label.preferences-radio-choice-label {
 }
 
 #admin-user-list .tab-switcher .ind-tab {
-    width: 110px;
+    width: auto;
+    min-width: 110px;
 }
 
 #admin-user-list .tab-switcher {
@@ -2406,7 +2517,14 @@ label.preferences-radio-choice-label {
 }
 
 #data-exports .tab-switcher .ind-tab {
-    width: 160px;
+    width: auto;
+    min-width: 160px;
+}
+
+#admin-bot-list .tab-switcher .ind-tab,
+#personal-bot-list .tab-switcher .ind-tab {
+    width: auto;
+    min-width: 90px;
 }
 
 #admin_invites_table {

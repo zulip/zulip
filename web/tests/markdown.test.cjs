@@ -6,7 +6,10 @@ const katex = require("katex");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const markdown_assert = require("./lib/markdown_assert.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -84,128 +87,142 @@ const emoji_params = {
 emoji.initialize(emoji_params);
 fenced_code.initialize(pygments_data);
 
-const cordelia = {
+const cordelia = make_user({
     full_name: "Cordelia, Lear's daughter",
     user_id: 101,
     email: "cordelia@zulip.com",
-};
+});
 people.add_active_user(cordelia);
 
-people.add_active_user({
-    full_name: "Leo",
-    user_id: 102,
-    email: "leo@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Leo",
+        user_id: 102,
+        email: "leo@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Bobby <h1>Tables</h1>",
-    user_id: 103,
-    email: "bobby@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Bobby <h1>Tables</h1>",
+        user_id: 103,
+        email: "bobby@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Mark Twin",
-    user_id: 104,
-    email: "twin1@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Mark Twin",
+        user_id: 104,
+        email: "twin1@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Mark Twin",
-    user_id: 105,
-    email: "twin2@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Mark Twin",
+        user_id: 105,
+        email: "twin2@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Brother of Bobby|123",
-    user_id: 106,
-    email: "bobby2@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Brother of Bobby|123",
+        user_id: 106,
+        email: "bobby2@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "& & &amp;",
-    user_id: 107,
-    email: "ampampamp@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "& & &amp;",
+        user_id: 107,
+        email: "ampampamp@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Zoe",
-    user_id: 7,
-    email: "zoe@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Zoe",
+        user_id: 7,
+        email: "zoe@zulip.com",
+    }),
+);
 
 people.add_inaccessible_user(108);
 
 people.initialize_current_user(cordelia.user_id);
 
-const hamletcharacters = {
+const hamletcharacters = make_user_group({
     name: "hamletcharacters",
     id: 1,
     description: "Characters of Hamlet",
     members: [cordelia.user_id],
-};
+});
 
-const backend = {
+const backend = make_user_group({
     name: "Backend",
     id: 2,
     description: "Backend team",
     members: [],
-};
+});
 
-const edgecase_group = {
+const edgecase_group = make_user_group({
     name: "Bobby <h1>Tables</h1>",
     id: 3,
     description: "HTML syntax to check for Markdown edge cases.",
     members: [],
-};
+});
 
-const amp_group = {
+const amp_group = make_user_group({
     name: "& & &amp;",
     id: 4,
     description: "Check ampersand escaping",
     members: [],
-};
+});
 
 user_groups.add(hamletcharacters);
 user_groups.add(backend);
 user_groups.add(edgecase_group);
 user_groups.add(amp_group);
 
-const denmark = {
+const denmark = make_stream({
     subscribed: false,
     color: "blue",
     name: "Denmark",
     stream_id: 1,
     is_muted: true,
-};
-const social = {
+});
+const social = make_stream({
     subscribed: true,
     color: "red",
     name: "social",
     stream_id: 2,
     is_muted: false,
     invite_only: true,
-};
-const edgecase_stream = {
+});
+const edgecase_stream = make_stream({
     subscribed: true,
     color: "green",
     name: "Bobby <h1>Tables</h1>",
     stream_id: 3,
     is_muted: false,
-};
-const edgecase_stream_2 = {
+});
+const edgecase_stream_2 = make_stream({
     subscribed: true,
     color: "yellow",
     name: "Bobby <h1",
     stream_id: 4,
     is_muted: false,
-};
-const amp_stream = {
+});
+const amp_stream = make_stream({
     subscribed: true,
     color: "orange",
     name: "& & &amp;",
     stream_id: 5,
     is_muted: false,
-};
+});
 stream_data.add_sub_for_tests(denmark);
 stream_data.add_sub_for_tests(social);
 stream_data.add_sub_for_tests(edgecase_stream);
@@ -245,6 +262,10 @@ test("markdown_detection", () => {
         "User Mention @**leo with some name**",
         "Group Mention @*hamletcharacters*",
         "Stream #**Verona**",
+        "Twitter URL https://twitter.com/jacobian/status/407886996565016579",
+        "https://twitter.com/jacobian/status/407886996565016579",
+        "then https://twitter.com/jacobian/status/407886996565016579",
+        "Twitter URL http://twitter.com/jacobian/status/407886996565016579",
     ];
 
     const markup = [
@@ -255,10 +276,6 @@ test("markdown_detection", () => {
         "https://zulip.com/image.jpg too",
         "Contains a zulip.com/foo.jpeg file",
         "Contains a https://zulip.com/image.png file",
-        "Twitter URL https://twitter.com/jacobian/status/407886996565016579",
-        "https://twitter.com/jacobian/status/407886996565016579",
-        "then https://twitter.com/jacobian/status/407886996565016579",
-        "Twitter URL http://twitter.com/jacobian/status/407886996565016579",
         "YouTube URL https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
     ];
 
@@ -508,9 +525,6 @@ test("marked", ({override}) => {
             expected:
                 '<blockquote>\n<p>User group mention in quote: <span class="user-group-mention silent" data-user-group-id="2">Backend</span></p>\n</blockquote>\n<blockquote>\n<p>Another user group mention in quote: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>\n</blockquote>',
         },
-        // Test only those linkifiers which don't return True for
-        // `contains_backend_only_syntax()`. Those which return True
-        // are tested separately.
         {
             input: "This is a linkifier #1234 with text after it",
             expected:
@@ -530,6 +544,14 @@ test("marked", ({override}) => {
             input: "This is a linkifier with ZGROUP_123:45 groups",
             expected:
                 '<p>This is a linkifier with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>',
+        },
+        {
+            input: "Here is the PR-#123.",
+            expected: `<p>Here is the PR-<a href="https://trac.example.com/ticket/123" title="https://trac.example.com/ticket/123">#123</a>.</p>`,
+        },
+        {
+            input: "Function abc() was introduced in (PR)#123.",
+            expected: `<p>Function abc() was introduced in (PR)<a href="https://trac.example.com/ticket/123" title="https://trac.example.com/ticket/123">#123</a>.</p>`,
         },
         {input: "Test *italic*", expected: "<p>Test <em>italic</em></p>"},
         {
@@ -647,12 +669,12 @@ test("marked", ({override}) => {
         {
             input: "#**& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream" data-stream-id="5" href="/#narrow/channel/5-.26-.26-.26amp.3B">#&amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream" data-stream-id="5" href="/#narrow/channel/5">#&amp; &amp; &amp;amp;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;>& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="5" href="#narrow/channel/5-.26-.26-.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="5" href="#narrow/channel/5/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
         },
     ];
 
@@ -973,16 +995,6 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
-});
-
-test("backend_only_linkifiers", () => {
-    const backend_only_linkifiers = [
-        "Here is the PR-#123.",
-        "Function abc() was introduced in (PR)#123.",
-    ];
-    for (const content of backend_only_linkifiers) {
-        assert.equal(markdown.contains_backend_only_syntax(content), true);
-    }
 });
 
 test("translate_emoticons_to_names", () => {

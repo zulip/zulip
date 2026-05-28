@@ -67,6 +67,7 @@ class ErrorCode(Enum):
     FAILED_TO_CONNECT_BOUNCER = auto()
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
+    PERMISSION_DENIED = auto()
 
 
 class JsonableError(Exception):
@@ -231,6 +232,19 @@ class IncompatibleParametersError(JsonableError):
         return _("Unsupported parameter combination: {parameters}")
 
 
+class MissingDependentParameterError(JsonableError):
+    data_fields = ["required_parameter", "set_parameter"]
+
+    def __init__(self, required_parameter: str, set_parameter: str) -> None:
+        self.required_parameter = required_parameter
+        self.set_parameter = set_parameter
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("{required_parameter} is required when {set_parameter} is set.")
+
+
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
     data_fields = ["is_last_owner", "entity"]
@@ -299,18 +313,6 @@ class InvalidJSONError(JsonableError):
         return _("Malformed JSON")
 
 
-class OrganizationMemberRequiredError(JsonableError):
-    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
-
-    def __init__(self) -> None:
-        pass
-
-    @staticmethod
-    @override
-    def msg_format() -> str:
-        return _("Must be an organization member")
-
-
 class OrganizationAdministratorRequiredError(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
@@ -333,6 +335,18 @@ class OrganizationOwnerRequiredError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Must be an organization owner")
+
+
+class BotRequiredError(JsonableError):
+    code: ErrorCode = ErrorCode.PERMISSION_DENIED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Must be a bot user")
 
 
 class AuthenticationFailedError(JsonableError):

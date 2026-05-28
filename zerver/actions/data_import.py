@@ -6,6 +6,7 @@ import tempfile
 from typing import Any
 
 from django.conf import settings
+from django.db import transaction
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.create_realm import get_email_address_visibility_default
@@ -128,9 +129,10 @@ def import_slack_data(event: dict[str, Any]) -> None:
                 preregistration_realm.data_import_metadata["invalid_file_error_message"] = str(e)
             preregistration_realm.save()
 
-            realm = Realm.objects.get(string_id=string_id)
-            do_delete_all_realm_attachments(realm)
-            realm.delete()
+            with transaction.atomic(durable=True):
+                realm = Realm.objects.select_for_update(no_key=False).get(string_id=string_id)
+                do_delete_all_realm_attachments(realm)
+                realm.delete()
         except Realm.DoesNotExist:
             pass
         raise
