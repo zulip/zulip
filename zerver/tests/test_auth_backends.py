@@ -1327,6 +1327,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             seconds=JUST_CREATED_THRESHOLD + 1
         )
         self.user_profile.save()
+        now = timezone_now()
 
         with self.settings(SEND_LOGIN_EMAILS=True):
             # Verify that the right thing happens with an invalid-format OTP
@@ -1362,6 +1363,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
+
+        expected_method = "saml:test_idp" if self.backend.name == "saml" else self.backend.name
+        self.assert_login_audit_log_entry(hamlet, method=expected_method, since=now)
 
     def test_social_auth_desktop_success(self) -> None:
         desktop_flow_otp = "1234abcd" * 8
@@ -1575,6 +1579,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         realm = get_realm("zulip")
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=email, name=name)
+        now = timezone_now()
 
         result = self.social_auth_test(
             account_data_dict,
@@ -1593,6 +1598,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.BACKEND_CLASS.full_name_validated,
             mobile_flow_otp=mobile_flow_otp,
         )
+
+        new_user = get_user_by_delivery_email(email, realm)
+        expected_method = "saml:test_idp" if self.backend.name == "saml" else self.backend.name
+        self.assert_login_audit_log_entry(new_user, method=expected_method, since=now)
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_desktop_registration(self) -> None:

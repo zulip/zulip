@@ -222,6 +222,13 @@ def maybe_send_to_registration(
             mobile_flow_otp,
             expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
+        if params_to_store_in_authenticated_session:
+            set_expirable_session_var(
+                request.session,
+                "registration_mobile_flow_params_to_store_in_authenticated_session",
+                orjson.dumps(params_to_store_in_authenticated_session).decode(),
+                expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
+            )
     elif desktop_flow_otp:
         set_expirable_session_var(
             request.session,
@@ -443,7 +450,9 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     # or not they're using the mobile OTP flow or want a browser session.
     is_realm_creation = result.data_dict.get("is_realm_creation")
     if mobile_flow_otp is not None:
-        return finish_mobile_flow(request, user_profile, mobile_flow_otp)
+        return finish_mobile_flow(
+            request, user_profile, mobile_flow_otp, params_to_store_in_authenticated_session
+        )
     elif desktop_flow_otp is not None:
         return finish_desktop_flow(
             request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
@@ -496,7 +505,12 @@ def finish_desktop_flow(
     return TemplateResponse(request, "zerver/desktop_redirect.html", context=context)
 
 
-def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
+def finish_mobile_flow(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    otp: str,
+    params_to_store_in_authenticated_session: dict[str, str] | None = None,
+) -> HttpResponse:
     # For the mobile OAuth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URL scheme.
     api_key = user_profile.api_key
@@ -513,6 +527,15 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
     # Arguably, sending a fake 'user_logged_in' signal would be a better approach:
     #   user_logged_in.send(sender=type(user_profile), request=request, user=user_profile)
     email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
+    # No Django session is created here, so the social_auth_backend
+    # marker that login_or_register_remote_user would otherwise copy
+    # into the session isn't available to our audit-log helper. Pass
+    # the value through explicitly so the recorded method matches the
+    # equivalent web flow (e.g. "github" rather than "GitHubAuthBackend").
+    login_method = None
+    if params_to_store_in_authenticated_session is not None:
+        login_method = params_to_store_in_authenticated_session.get("social_auth_backend")
+    do_create_login_audit_log_entry(user_profile, request, login_method=login_method)
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)

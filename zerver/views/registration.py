@@ -960,7 +960,17 @@ def login_and_redirect(
         request.session, "registration_desktop_flow_otp", delete=True
     )
     if mobile_flow_otp is not None:
-        return finish_mobile_flow(request, user_profile, mobile_flow_otp)
+        params_to_store_in_authenticated_session = orjson.loads(
+            get_expirable_session_var(
+                request.session,
+                "registration_mobile_flow_params_to_store_in_authenticated_session",
+                default_value="{}",
+                delete=True,
+            )
+        )
+        return finish_mobile_flow(
+            request, user_profile, mobile_flow_otp, params_to_store_in_authenticated_session
+        )
     elif desktop_flow_otp is not None:
         params_to_store_in_authenticated_session = orjson.loads(
             get_expirable_session_var(

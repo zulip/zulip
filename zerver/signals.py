@@ -67,9 +67,10 @@ def get_login_audit_log_extra_data(
     Resolution of `method`, in order:
 
     1. The explicit `login_method` argument, if provided. Sessionless
-       paths (`process_api_key_fetch_authenticate_result`) pass this
-       because they don't go through Django's session-based login, so
-       the `social_auth_backend` session marker isn't populated for them.
+       paths (`process_api_key_fetch_authenticate_result`,
+       'finish_mobile_flow') pass this because they don't go through
+       Django's session-based login, so the `social_auth_backend`
+       session marker isn't populated for them.
     2. `request.session["social_auth_backend"]` — set by
        `login_or_register_remote_user` for social/OIDC/SAML logins.
        Also set by `login_and_redirect` for email/LDAP registration.
