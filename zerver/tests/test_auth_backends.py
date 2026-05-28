@@ -6271,12 +6271,14 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.email = self.user_profile.delivery_email
 
     def test_success(self) -> None:
+        now = timezone_now()
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
         json_response = self.assert_json_success(result)
         self.assertEqual(json_response["user_id"], self.user_profile.id)
+        self.assert_login_audit_log_entry(self.user_profile, method="email", since=now)
 
     def test_invalid_email(self) -> None:
         result = self.client_post(
@@ -6327,6 +6329,7 @@ class FetchAPIKeyTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_auth_email_auth_disabled_success(self) -> None:
         self.init_default_ldap_database()
+        now = timezone_now()
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
             result = self.client_post(
                 "/api/v1/fetch_api_key",
@@ -6334,6 +6337,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             )
         json_response = self.assert_json_success(result)
         self.assertEqual(json_response["user_id"], self.user_profile.id)
+        self.assert_login_audit_log_entry(self.user_profile, method="ldap", since=now)
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
@@ -9408,12 +9412,14 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
             web_token = jwt.encode(payload, key, algorithm)
             req_data = {"token": web_token}
+            now = timezone_now()
             result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
             self.assert_json_success(result)
             data = result.json()
             self.assertEqual(data["api_key"], self.api_key)
             self.assertEqual(data["email"], self.email)
             self.assertNotIn("user", data)
+            self.assert_login_audit_log_entry(self.user_profile, method="jwt", since=now)
 
     def test_success_with_profile_false(self) -> None:
         payload = {"email": self.email}

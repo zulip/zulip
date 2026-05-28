@@ -56,7 +56,9 @@ def get_device_os(user_agent: str) -> str | None:
     return None
 
 
-def get_login_audit_log_extra_data(user: UserProfile, request: Any) -> dict[str, Any]:
+def get_login_audit_log_extra_data(
+    user: UserProfile, request: Any, login_method: str | None = None
+) -> dict[str, Any]:
     """Build the extra_data dict for a USER_LOGGED_IN / USER_LOGGED_OUT entry.
 
     Returns a dict with `method`, `ip_address`, `user_agent`, and parsed
@@ -64,10 +66,14 @@ def get_login_audit_log_extra_data(user: UserProfile, request: Any) -> dict[str,
 
     Resolution of `method`, in order:
 
-    1. `request.session["social_auth_backend"]` — set by
+    1. The explicit `login_method` argument, if provided. Sessionless
+       paths (`process_api_key_fetch_authenticate_result`) pass this
+       because they don't go through Django's session-based login, so
+       the `social_auth_backend` session marker isn't populated for them.
+    2. `request.session["social_auth_backend"]` — set by
        `login_or_register_remote_user` for social/OIDC/SAML logins.
        Also set by `login_and_redirect` for email/LDAP registration.
-    2. The Django authentication backend class name, mapped through
+    3. The Django authentication backend class name, mapped through
        `AUTH_BACKEND_AUDIT_LOG_METHOD` so the recorded slug matches
        what the corresponding backend class exposes as its `name`. For
        session-based email/LDAP logins where no `social_auth_backend`
@@ -83,14 +89,17 @@ def get_login_audit_log_extra_data(user: UserProfile, request: Any) -> dict[str,
     if request is None:
         return extra_data
 
-    method = request.session.get("social_auth_backend")
-    if not method:
-        backend = getattr(user, "backend", None) or request.session.get("_auth_user_backend")
-        if backend:
-            backend_class_name = backend.rsplit(".", 1)[-1]
-            method = AUTH_BACKEND_AUDIT_LOG_METHOD.get(backend_class_name, backend_class_name)
-    if method:
-        extra_data["method"] = method
+    if login_method is not None:
+        extra_data["method"] = login_method
+    else:
+        method = request.session.get("social_auth_backend")
+        if not method:
+            backend = getattr(user, "backend", None) or request.session.get("_auth_user_backend")
+            if backend:
+                backend_class_name = backend.rsplit(".", 1)[-1]
+                method = AUTH_BACKEND_AUDIT_LOG_METHOD.get(backend_class_name, backend_class_name)
+        if method:
+            extra_data["method"] = method
 
     user_agent = request.headers.get("User-Agent", "")
     extra_data["ip_address"] = request.META.get("REMOTE_ADDR")
@@ -100,7 +109,9 @@ def get_login_audit_log_extra_data(user: UserProfile, request: Any) -> dict[str,
     return extra_data
 
 
-def do_create_login_audit_log_entry(user: UserProfile, request: Any) -> None:
+def do_create_login_audit_log_entry(
+    user: UserProfile, request: Any, *, login_method: str | None = None
+) -> None:
     if user.is_bot:
         # Skip bots; they can hit the API-key-fetch path and would
         # generate noise.
@@ -112,7 +123,7 @@ def do_create_login_audit_log_entry(user: UserProfile, request: Any) -> None:
         modified_user=user,
         event_type=AuditLogEventType.USER_LOGGED_IN,
         event_time=timezone_now(),
-        extra_data=get_login_audit_log_extra_data(user, request),
+        extra_data=get_login_audit_log_extra_data(user, request, login_method),
     )
 
 

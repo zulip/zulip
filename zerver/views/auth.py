@@ -86,7 +86,7 @@ from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import get_realm
 from zerver.models.users import remote_user_to_email
-from zerver.signals import email_on_new_login
+from zerver.signals import do_create_login_audit_log_entry, email_on_new_login
 from zerver.views.errors import config_error
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
@@ -1061,7 +1061,7 @@ def start_two_factor_auth(
 
 
 def process_api_key_fetch_authenticate_result(
-    request: HttpRequest, user_profile: UserProfile
+    request: HttpRequest, user_profile: UserProfile, *, method: str | None = None
 ) -> str:
     assert user_profile.is_authenticated
 
@@ -1071,6 +1071,7 @@ def process_api_key_fetch_authenticate_result(
     # in the session. If the signal receiver assumes that we do then that
     # would cause problems.
     email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
+    do_create_login_audit_log_entry(user_profile, request, login_method=method)
 
     # Mark this request as having a logged-in user for our server logs.
     assert isinstance(user_profile, UserProfile)
@@ -1122,7 +1123,7 @@ def jwt_fetch_api_key(
 
     assert isinstance(user_profile, UserProfile)
 
-    api_key = process_api_key_fetch_authenticate_result(request, user_profile)
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile, method="jwt")
 
     result: dict[str, Any] = {
         "api_key": api_key,
