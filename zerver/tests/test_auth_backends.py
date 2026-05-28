@@ -7370,6 +7370,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_success(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
+        now = timezone_now()
         with self.settings(
             AUTHENTICATION_BACKENDS=(
                 "zproject.backends.ZulipRemoteUserBackend",
@@ -7379,10 +7380,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
+            self.assert_login_audit_log_entry(user_profile, method="remote_user_sso", since=now)
 
     def test_login_success_with_sso_append_domain(self) -> None:
         username = "hamlet"
         user_profile = self.example_user("hamlet")
+        now = timezone_now()
         with self.settings(
             AUTHENTICATION_BACKENDS=(
                 "zproject.backends.ZulipRemoteUserBackend",
@@ -7393,10 +7396,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=username)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
+            self.assert_login_audit_log_entry(user_profile, method="remote_user_sso", since=now)
 
     def test_login_case_insensitive(self) -> None:
         user_profile = self.example_user("hamlet")
         email_upper = user_profile.delivery_email.upper()
+        now = timezone_now()
         with self.settings(
             AUTHENTICATION_BACKENDS=(
                 "zproject.backends.ZulipRemoteUserBackend",
@@ -7406,6 +7411,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=email_upper)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
+            self.assert_login_audit_log_entry(user_profile, method="remote_user_sso", since=now)
 
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
@@ -7500,6 +7506,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_success_under_subdomains(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
+        now = timezone_now()
         with (
             mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"),
             self.settings(
@@ -7512,6 +7519,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
+            self.assert_login_audit_log_entry(user_profile, method="remote_user_sso", since=now)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(
@@ -7526,6 +7534,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         user_profile.date_joined = timezone_now() - timedelta(seconds=61)
         user_profile.save()
         mobile_flow_otp = "1234abcd" * 8
+        now = timezone_now()
 
         # Verify that the right thing happens with an invalid-format OTP
         result = self.client_get(
@@ -7566,6 +7575,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
+        self.assert_login_audit_log_entry(user_profile, method="remote_user_sso", since=now)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(SSO_APPEND_DOMAIN="zulip.com")
@@ -7582,6 +7592,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         user_profile.date_joined = timezone_now() - timedelta(seconds=61)
         user_profile.save()
         mobile_flow_otp = "1234abcd" * 8
+        now = timezone_now()
 
         # Verify that the right thing happens with an invalid-format OTP
         result = self.client_get(
@@ -7622,6 +7633,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
+        self.assert_login_audit_log_entry(user_profile, method="remote_user_sso", since=now)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(
@@ -7636,6 +7648,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         user_profile.date_joined = timezone_now() - timedelta(seconds=61)
         user_profile.save()
         desktop_flow_otp = "1234abcd" * 8
+        now = timezone_now()
 
         # Verify that the right thing happens with an invalid-format OTP
         result = self.client_get(
@@ -7654,6 +7667,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             "/accounts/login/sso/", dict(desktop_flow_otp=desktop_flow_otp), REMOTE_USER=email
         )
         self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
+        self.assert_login_audit_log_entry(user_profile, method="remote_user_sso", since=now)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(SSO_APPEND_DOMAIN="zulip.com")
@@ -7670,6 +7684,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         user_profile.date_joined = timezone_now() - timedelta(seconds=61)
         user_profile.save()
         desktop_flow_otp = "1234abcd" * 8
+        now = timezone_now()
 
         # Verify that the right thing happens with an invalid-format OTP
         result = self.client_get(
@@ -7688,6 +7703,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             "/accounts/login/sso/", dict(desktop_flow_otp=desktop_flow_otp), REMOTE_USER=remote_user
         )
         self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
+        self.assert_login_audit_log_entry(user_profile, method="remote_user_sso", since=now)
 
     def test_redirect_to(self) -> None:
         """This test verifies the behavior of the redirect_to logic in
