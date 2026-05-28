@@ -162,7 +162,7 @@ function build_message_view_header(filter: Filter | undefined): void {
     } else {
         const context = get_message_view_header_context(filter);
         append_and_display_title_area(context);
-        search.close_search_bar_and_open_narrow_description();
+        search.close_search();
     }
 }
 
