@@ -1830,6 +1830,7 @@ class SlackImporter(ZulipTestCase):
                 "channel": "C06P6T3QGD7",
                 "event_ts": "1723609070.703489",
                 "channel_type": "channel",
+                "channel_name": "general",
             },
         ]
 
