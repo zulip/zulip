@@ -234,6 +234,7 @@ export function initialize(): void {
                             topic_name,
                             true,
                             $recipient_row,
+                            stream_id,
                         );
                     });
 

@@ -403,6 +403,19 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
 
     compose_state.set_stream_id(special_sub.stream_id);
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    compose_state.set_pending_resolution({
+        message_id: 1,
+        stream_id: special_sub.stream_id,
+        topic: "resolved topic",
+    });
+    $("textarea#compose-textarea").val("   ");
+    assert.ok(!compose_validate.validate());
+    assert.equal(
+        compose_validate.get_disabled_send_tooltip_html(),
+        compose_validate.NO_MESSAGE_CONTENT_ERROR_MESSAGE,
+    );
+    compose_state.clear_pending_resolution_state();
+    $("textarea#compose-textarea").val("foobarfoobar");
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 

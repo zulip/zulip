@@ -26,6 +26,7 @@ import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
+import * as topic_resolution_compose from "./topic_resolution_compose.ts";
 import * as transmit from "./transmit.ts";
 import * as typing from "./typing.ts";
 import {user_settings} from "./user_settings.ts";
@@ -49,6 +50,7 @@ export type SendMessageData = {
           type: "stream";
           stream_id: number;
           topic: string;
+          then_resolve_topic?: boolean;
       }
     | {
           type: "private";
@@ -139,6 +141,8 @@ export function send_message_success(
     echo.reify_message_id(sent_message.local_id, data.id);
     drafts.draft_model.deleteDrafts([sent_message.draft_id]);
 
+    topic_resolution_compose.clear_pending_resolution();
+
     if (sent_message.type === "stream") {
         if (data.automatic_new_visibility_policy) {
             if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
@@ -214,12 +218,19 @@ export let send_message = (): void => {
             stream_id,
             to: JSON.stringify([stream_id]),
             draft_id,
+            then_resolve_topic: topic_resolution_compose.has_pending_resolution(),
         };
     }
 
     let local_id: string;
 
-    const message = echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+    // Skip local echo for topic resolutions to avoid a visual glitch where
+    // the unresolved topic is bumped briefly before the resolution event arrives.
+    const message =
+        message_data.type === "stream" && message_data.then_resolve_topic
+            ? undefined
+            : echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+
     const locally_echoed = Boolean(message);
     if (message) {
         // We are rendering this message locally with an id

@@ -313,6 +313,21 @@ export const message_edit_history_visibility_policy_values: Record<
     },
 };
 
+export const topic_resolution_message_requirement_values = {
+    not_requested: {
+        code: "not_requested",
+        description: $t({defaultMessage: "Not requested"}),
+    },
+    optional: {
+        code: "optional",
+        description: $t({defaultMessage: "Optional"}),
+    },
+    required: {
+        code: "required",
+        description: $t({defaultMessage: "Required"}),
+    },
+};
+
 type PolicyValue = SettingDescription<string>;
 
 export const realm_media_preview_size_values: SettingDescription<number>[] = [

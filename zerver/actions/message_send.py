@@ -657,6 +657,7 @@ def build_message_send_dict(
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
     no_previews: bool = False,
+    then_resolve_topic: bool = False,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -789,6 +790,7 @@ def build_message_send_dict(
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        then_resolve_topic=then_resolve_topic,
     )
 
     return message_send_dict
@@ -1327,6 +1329,13 @@ def do_send_messages(
                     },
                 )
 
+        if send_request.then_resolve_topic:
+            from zerver.actions.message_edit import (
+                do_resolve_topic_after_sending_resolution_message,
+            )
+
+            do_resolve_topic_after_sending_resolution_message(send_request.message)
+
     sent_message_results = [
         SentMessageResult(
             message_id=send_request.message.id,
@@ -1477,6 +1486,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    then_resolve_topic: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     message_request = check_message(
@@ -1492,6 +1502,7 @@ def check_send_message(
         sender_queue_id,
         widget_content,
         skip_stream_access_check=skip_stream_access_check,
+        then_resolve_topic=then_resolve_topic,
     )
     return do_send_messages(
         [message_request],
@@ -1756,6 +1767,7 @@ def check_message(
     archived_channel_notice: bool = False,
     no_previews: bool = False,
     acting_user: UserProfile | None = None,
+    then_resolve_topic: bool = False,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1817,6 +1829,21 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
+        if then_resolve_topic:
+            from zerver.lib.streams import can_resolve_topics
+            from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
+
+            if topic_name.startswith(RESOLVED_TOPIC_PREFIX):
+                raise JsonableError(_("Topic is already resolved"))
+
+            if topic_name == "":
+                raise JsonableError(_("Cannot resolve the general chat topic."))
+
+            if not can_resolve_topics(sender, stream, stream):
+                raise JsonableError(
+                    _("You don't have permission to resolve topics in this channel.")
+                )
+
         check_for_can_create_topic_group_violation(
             user_profile=sender,
             stream=stream,
@@ -1834,6 +1861,9 @@ def check_message(
             raise TopicsNotAllowedError(empty_topic_display_name)
 
     elif addressee.is_private():
+        if then_resolve_topic:
+            raise JsonableError(_("then_resolve_topic is only supported for channel messages"))
+
         user_profiles = addressee.user_profiles()
         mirror_message = client.name in [
             "irc_mirror",
@@ -1916,6 +1946,7 @@ def check_message(
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
         no_previews=no_previews,
+        then_resolve_topic=then_resolve_topic,
     )
 
     if (
