@@ -174,6 +174,7 @@ export function update_emoji_data(initial_emojis: EmojiDict[]): void {
                 reaction_type,
                 emoji_name: emoji_dict.name,
                 emoji_url: emoji_dict.url,
+                still_url: emoji_dict.still_url,
                 is_realm_emoji: true,
                 emoji_code: undefined,
             });
