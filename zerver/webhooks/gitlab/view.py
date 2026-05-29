@@ -145,6 +145,34 @@ def get_issue_event_body(action: str, payload: WildValue, include_title: bool, r
     )
 
 
+def get_work_item_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+    stringified_description = get_work_item_description(payload)
+
+    return get_pull_request_event_message(
+        user_name=get_user_name(payload, realm),
+        action="created",
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
+        message=stringified_description,
+        assignees=replace_assignees_username_with_name(get_assignees(payload)),
+        type=payload["object_attributes"]["type"].tame(check_string).lower(),
+        title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_work_item_event_body(
+    action: str, payload: WildValue, include_title: bool, realm: Realm
+) -> str:
+    return get_pull_request_event_message(
+        user_name=get_user_name(payload, realm),
+        action=action,
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
+        type=payload["object_attributes"]["type"].tame(check_string).lower(),
+        title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
+    )
+
+
 def get_merge_request_updated_event_body(
     payload: WildValue, include_title: bool, realm: Realm
 ) -> str:
@@ -688,10 +716,18 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Issue Hook close": partial(get_issue_event_body, "closed"),
     "Issue Hook reopen": partial(get_issue_event_body, "reopened"),
     "Issue Hook update": partial(get_issue_event_body, "updated"),
+    "Issue Hook Incident open": get_work_item_created_event_body,
+    "Issue Hook Incident close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Incident reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Incident update": partial(get_work_item_event_body, "updated"),
     "Confidential Issue Hook open": get_issue_created_event_body,
     "Confidential Issue Hook close": partial(get_issue_event_body, "closed"),
     "Confidential Issue Hook reopen": partial(get_issue_event_body, "reopened"),
     "Confidential Issue Hook update": partial(get_issue_event_body, "updated"),
+    "Confidential Issue Hook Incident open": get_work_item_created_event_body,
+    "Confidential Issue Hook Incident close": partial(get_work_item_event_body, "closed"),
+    "Confidential Issue Hook Incident reopen": partial(get_work_item_event_body, "reopened"),
+    "Confidential Issue Hook Incident update": partial(get_work_item_event_body, "updated"),
     "Note Hook Commit": get_commented_commit_event_body,
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
@@ -798,7 +834,7 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
     elif event.startswith(("Issue Hook", "Confidential Issue Hook")):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
-            type="issue",
+            type=payload["object_attributes"].get("type", "issue").tame(check_string).lower(),
             id=payload["object_attributes"]["iid"].tame(check_int),
             title=payload["object_attributes"]["title"].tame(check_string),
         )
@@ -879,7 +915,17 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
             event_name = payload["object_kind"].tame(check_string)
         event = event_name.split("__")[0].replace("_", " ").title()
         event = f"{event} Hook"
-    if event in ["Confidential Issue Hook", "Issue Hook", "Merge Request Hook", "Wiki Page Hook"]:
+    if event in ["Merge Request Hook", "Wiki Page Hook"]:
+        action = payload["object_attributes"].get("action", "open").tame(check_string)
+        event = f"{event} {action}"
+    elif event in ["Issue Hook", "Confidential Issue Hook"]:
+        # GitLab unifies all work items under Issue Hook and Confidential Issue Hook.
+        # Older versions without work items had only issue and omits the `type` field.
+        work_item_type = payload["object_attributes"].get("type", "").tame(check_string)
+        # Regular issues report `type` as "Issue", which we
+        # don't append to the event name to avoid a redundant "Issue Hook Issue open".
+        if work_item_type and work_item_type != "Issue":
+            event += f" {work_item_type}"
         action = payload["object_attributes"].get("action", "open").tame(check_string)
         event = f"{event} {action}"
     elif event in ["Confidential Note Hook", "Note Hook"]:
