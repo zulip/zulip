@@ -18,7 +18,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
-import {user_settings} from "./user_settings.ts";
+import {type EmojiAnimationSetting, user_settings} from "./user_settings.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
 
@@ -379,7 +379,7 @@ export let insert_new_reaction = (
         count: 1,
         label: new_label,
         local_id: get_local_reaction_id(clean_reaction_object),
-        emoji_alt_code: user_settings.emojiset === "text",
+        ...build_emoji_display_settings(),
         is_realm_emoji,
         vote_text: "", // Updated below
         class: reaction_class,
@@ -596,6 +596,7 @@ export function update_clean_reactions(message: Message): void {
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     for (const clean_reaction of message.clean_reactions.values()) {
         update_user_fields(clean_reaction, should_display_reactors);
+        Object.assign(clean_reaction, build_emoji_display_settings());
     }
 }
 
@@ -619,7 +620,6 @@ function make_clean_reaction({
         emoji_code,
         reaction_type,
     });
-    const emoji_alt_code = user_settings.emojiset === "text";
     const is_realm_emoji =
         emoji_details.reaction_type === "realm_emoji" ||
         emoji_details.reaction_type === "zulip_extra_emoji";
@@ -628,9 +628,22 @@ function make_clean_reaction({
         local_id,
         user_ids,
         ...emoji_details,
-        emoji_alt_code,
+        ...build_emoji_display_settings(),
         is_realm_emoji,
         ...build_reaction_data(user_ids, emoji_name, should_display_reactors),
+    };
+}
+
+function build_emoji_display_settings(): {
+    emoji_alt_code: boolean;
+    emoji_animation_setting: EmojiAnimationSetting;
+} {
+    // These fields snapshot user settings that control how the emoji is
+    // displayed, rather than anything about the reaction itself, so
+    // update_clean_reactions refreshes them before every rerender.
+    return {
+        emoji_alt_code: user_settings.emojiset === "text",
+        emoji_animation_setting: user_settings.web_animate_image_previews,
     };
 }
 
