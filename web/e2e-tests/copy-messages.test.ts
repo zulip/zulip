@@ -8,9 +8,10 @@ async function copy_messages(
     page: Page,
     start_message: string,
     end_message: string,
+    send_copied_plain_text?: boolean,
 ): Promise<string[]> {
     return await page.evaluate(
-        (start_message: string, end_message: string) => {
+        (start_message: string, end_message: string, send_copied_plain_text?: boolean) => {
             function get_message_node(message: string): Element {
                 return [...document.querySelectorAll(".message-list .message_content")].find(
                     (node) => node.textContent?.trim() === message,
@@ -33,8 +34,12 @@ async function copy_messages(
             });
             document.dispatchEvent(copy_event);
 
-            const copied_html = clipboard_data.getData("text/html");
+            if (send_copied_plain_text) {
+                const copied_plain_text = clipboard_data.getData("text/plain");
+                return copied_plain_text.split("\n");
+            }
 
+            const copied_html = clipboard_data.getData("text/html");
             // Convert the copied HTML into separate message strings
             const parser = new DOMParser();
             const doc = parser.parseFromString(copied_html, "text/html");
@@ -43,6 +48,7 @@ async function copy_messages(
         },
         start_message,
         end_message,
+        send_copied_plain_text,
     );
 }
 
@@ -110,6 +116,21 @@ async function test_copying_all_from_prev_first_from_next(page: Page): Promise<v
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
+async function test_copying_plain_text(page: Page): Promise<void> {
+    const actual_copied_lines = await copy_messages(
+        page,
+        "copy paste test A",
+        "copy paste test B",
+        true,
+    );
+    const expected_copied_lines = [
+        "Desdemona: copy paste test A",
+        "",
+        "Desdemona: copy paste test B",
+    ];
+    assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
+}
+
 async function test_copying_messages_from_several_topics(page: Page): Promise<void> {
     const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test F");
     const expected_copied_lines = [
@@ -163,6 +184,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_last_from_prev_all_from_next(page);
     await test_copying_all_from_prev_first_from_next(page);
     await test_copying_messages_from_several_topics(page);
+    await test_copying_plain_text(page);
 }
 
 await common.run_test(copy_paste_test);
