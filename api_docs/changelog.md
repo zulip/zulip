@@ -63,10 +63,10 @@ format used by the Zulip server that they are interacting with.
   happened on a previous server, so its tarball is no longer stored
   on this server. This change was also backported to the Zulip 12.x
   series, at feature level 499.
-* `DELETE /export/realm/{export_id}`: Export records with the
-  `export_from_prior_server` field set to `true` cannot be deleted, as the
-  server has no exported data to delete for them. This change was also
-  backported to the Zulip 12.x series, at feature level 499.
+* [`DELETE /export/realm/{export_id}`](/api/delete-realm-export): Export
+  records with the `export_from_prior_server` field set to `true` cannot
+  be deleted, as the server has no exported data to delete for them. This
+  change was also backported to the Zulip 12.x series, at feature level 499.
 
 **Feature level 505**
 
@@ -114,10 +114,10 @@ releases.
   for records that were carried across a realm import; the export
   happened on a previous server, so its tarball is no longer stored
   on this server. Backported change from feature level 506.
-* `DELETE /export/realm/{export_id}`: Export records with the
-  `export_from_prior_server` field set to `true` cannot be deleted, as the
-  server has no exported data to delete for them. Backported change from feature
-  level 506.
+* [`DELETE /export/realm/{export_id}`](/api/delete-realm-export): Export
+  records with the `export_from_prior_server` field set to `true` cannot
+  be deleted, as the server has no exported data to delete for them.
+  Backported change from feature level 506.
 
 ## Changes in Zulip 12.0
 
