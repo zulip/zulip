@@ -41,6 +41,7 @@ export type EmojiDict = {
 } & (
     | {
           is_realm_emoji: true;
+          still_url: string | null;
           emoji_code?: undefined;
       }
     | {
@@ -219,6 +220,7 @@ function build_emojis_by_name({
             aliases: [realm_emoji_name],
             is_realm_emoji: true,
             url: realm_emoji.emoji_url,
+            still_url: realm_emoji.still_url,
             has_reacted: false,
             emoji_code: undefined,
         };
