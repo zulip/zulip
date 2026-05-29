@@ -57,6 +57,7 @@ from zerver.lib.event_types import (
     OnboardingStepsEvent,
     PersonAvatarFields,
     PersonBotOwnerId,
+    PersonBotType,
     PersonCustomProfileField,
     PersonDateJoined,
     PersonDeliveryEmail,
@@ -283,6 +284,7 @@ _check_user_status = make_checker(UserStatusEvent)
 PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     avatar_fields=PersonAvatarFields,
     bot_owner_id=PersonBotOwnerId,
+    bot_type=PersonBotType,
     custom_profile_field=PersonCustomProfileField,
     date_joined=PersonDateJoined,
     delivery_email=PersonDeliveryEmail,

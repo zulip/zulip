@@ -21,10 +21,8 @@ import * as integration_url_modal from "./integration_url_modal.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
-import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -47,11 +45,6 @@ export const personal_all_bots_list_dropdown_widget_name =
     "personal_all_bots_list_select_bot_status";
 export const personal_your_bots_list_dropdown_widget_name =
     "personal_your_bots_list_select_bot_status";
-
-type BotType = {
-    type_id: number;
-    name: string;
-};
 
 type BotInfo = {
     is_bot: boolean;
@@ -163,43 +156,22 @@ export function generate_botserverrc_content(
     return bot_helper.generate_bot_config_file_content("[]", email, api_key, token);
 }
 
-export function can_create_new_bots(): boolean {
-    return settings_data.user_has_permission_for_group_setting(
-        realm.realm_can_create_bots_group,
-        "can_create_bots_group",
-        "realm",
-    );
-}
-
-export function can_create_incoming_webhooks(): boolean {
-    // User who have the permission to create any bot can also
-    // create incoming webhooks.
-    return (
-        can_create_new_bots() ||
-        settings_data.user_has_permission_for_group_setting(
-            realm.realm_can_create_write_only_bots_group,
-            "can_create_write_only_bots_group",
-            "realm",
-        )
-    );
-}
-
 export function update_bot_settings_tip($tip_container: JQuery): void {
-    if (can_create_new_bots()) {
+    if (settings_data.can_create_new_bots()) {
         $tip_container.hide();
         return;
     }
 
     const rendered_tip = render_bot_settings_tip({
-        can_create_any_bots: can_create_new_bots(),
-        can_create_incoming_webhooks: can_create_incoming_webhooks(),
+        can_create_any_bots: settings_data.can_create_new_bots(),
+        can_create_incoming_webhooks: settings_data.can_create_incoming_webhooks(),
     });
     $tip_container.show();
     $tip_container.html(rendered_tip);
 }
 
 function update_add_bot_button(): void {
-    if (can_create_incoming_webhooks()) {
+    if (settings_data.can_create_incoming_webhooks()) {
         $("#admin-bot-list .add-a-new-bot").show();
         $("#personal-bot-list .add-a-new-bot").show();
     } else {
@@ -210,7 +182,7 @@ function update_add_bot_button(): void {
 
 export function update_lock_icon_in_sidebar(): void {
     if (
-        can_create_incoming_webhooks() ||
+        settings_data.can_create_incoming_webhooks() ||
         current_user.is_admin ||
         bot_data.get_all_bots_ids_for_current_user().length > 0
     ) {
@@ -229,24 +201,6 @@ export function update_bot_permissions_ui(): void {
     update_lock_icon_in_sidebar();
 }
 
-export function get_allowed_bot_types(): BotType[] {
-    const allowed_bot_types: BotType[] = [];
-    const bot_types = settings_config.bot_type_values;
-    if (can_create_new_bots()) {
-        allowed_bot_types.push(
-            bot_types.default_bot,
-            bot_types.incoming_webhook_bot,
-            bot_types.outgoing_webhook_bot,
-        );
-        if (page_params.embedded_bots_enabled) {
-            allowed_bot_types.push(bot_types.embedded_bot);
-        }
-    } else if (can_create_incoming_webhooks()) {
-        allowed_bot_types.push(bot_types.incoming_webhook_bot);
-    }
-    return allowed_bot_types;
-}
-
 function bot_owner_full_name(owner_id: number | null): string | undefined {
     if (!owner_id) {
         return undefined;
@@ -263,7 +217,7 @@ function bot_owner_full_name(owner_id: number | null): string | undefined {
 export function add_a_new_bot(): void {
     const user_has_email_set = !settings_data.user_email_not_configured();
     const modal_content_html = render_add_new_bot_form({
-        bot_types: get_allowed_bot_types(),
+        bot_types: bot_helper.get_allowed_bot_types(),
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
         user_has_email_set,

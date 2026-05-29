@@ -33,15 +33,16 @@ from zerver.actions.user_settings import (
 )
 from zerver.actions.users import (
     do_change_user_role,
+    do_create_bot_service,
     do_deactivate_user,
-    do_update_bot_config_data,
-    do_update_outgoing_webhook_service,
+    do_update_bot_service_and_config_data,
+    do_update_bot_type,
 )
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import set_bot_config
+from zerver.lib.bot_config import get_bot_configs
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -52,7 +53,6 @@ from zerver.lib.exceptions import (
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
 )
-from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.rate_limiter import (
     rate_limit_spectator_attachment_access_by_file,
     should_rate_limit,
@@ -82,12 +82,11 @@ from zerver.lib.users import (
     access_bot_by_id,
     access_user_by_email,
     access_user_by_id,
-    add_service,
     check_bot_name_available,
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
-    check_valid_bot_config,
+    check_payload_for_bot_type,
     check_valid_bot_type,
     check_valid_interface_type,
     get_users_for_api,
@@ -95,8 +94,8 @@ from zerver.lib.users import (
     validate_short_name_and_construct_bot_email,
     validate_user_custom_profile_data,
 )
-from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import get_bot_services
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -475,19 +474,21 @@ def patch_bot_backend(
     *,
     bot_id: PathOnly[int],
     bot_owner_id: Json[int] | None = None,
-    config_data: Json[dict[str, str]] | None = None,
+    bot_type: Json[int] | None = None,
+    config_data: Json[Mapping[str, str]] | None = None,
     default_all_public_streams: Json[bool] | None = None,
     default_events_register_stream: str | None = None,
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
     service_interface: Json[int] = 1,
+    service_name: Json[str] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
-
-    # Handle short_name change
+    # Handle short_name change first, so that bot.email is up to date
+    # when deriving the outgoing webhook service_name below.
     if short_name is not None:
         try:
             _validated_short_name, new_email = validate_short_name_and_construct_bot_email(
@@ -511,6 +512,78 @@ def patch_bot_backend(
             except ValidationError:
                 raise JsonableError(_("Email address already in use"))
             do_change_user_delivery_email(bot, new_email, acting_user=user_profile)
+
+    # Handle bot_type change.
+    if bot_type is not None and bot_type != bot.bot_type:
+        if bot_type == UserProfile.EMBEDDED_BOT and not settings.EMBEDDED_BOTS_ENABLED:
+            raise JsonableError(_("Embedded bots are not enabled."))
+        check_valid_bot_type(user_profile, bot_type)
+        if config_data is None:
+            config_data = {}
+        short_name = bot.email.split("-bot@")[0]
+        if bot_type in UserProfile.SERVICE_BOT_TYPES:
+            service_name = service_name or short_name
+        check_payload_for_bot_type(bot_type, service_name, service_payload_url, config_data)
+        check_valid_interface_type(service_interface)
+        do_update_bot_type(
+            bot,
+            bot_type,
+            service_name,
+            service_payload_url,
+            service_interface,
+            config_data,
+            user_profile,
+        )
+
+    # Handle service and config data update without changing bot_type.
+    elif service_payload_url is not None or service_name is not None or config_data is not None:
+        if bot.bot_type == UserProfile.DEFAULT_BOT:
+            raise JsonableError(
+                _("This bot type doesn't support updating service_name or config_data.")
+            )
+        services = get_bot_services(bot.id)
+        existing_service = services[0] if services else None
+        existing_config_data = get_bot_configs([bot.id]).get(bot.id, {})
+
+        proposed_service_name: str | None
+        if service_name is not None:
+            proposed_service_name = service_name
+        else:
+            if bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+                proposed_service_name = existing_config_data.get("integration_id", None)
+            else:
+                proposed_service_name = existing_service.name if existing_service else None
+
+        if config_data is not None:
+            proposed_config_data = config_data
+        else:
+            if bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+                proposed_config_data = {
+                    k: v for k, v in existing_config_data.items() if k != "integration_id"
+                }
+            else:
+                proposed_config_data = existing_config_data
+
+        proposed_payload_url: str | None
+        if service_payload_url is not None:
+            proposed_payload_url = service_payload_url
+        else:
+            proposed_payload_url = existing_service.base_url if existing_service else None
+
+        check_valid_interface_type(service_interface)
+        assert bot.bot_type is not None
+        check_payload_for_bot_type(
+            bot.bot_type, proposed_service_name, proposed_payload_url, proposed_config_data
+        )
+
+        do_update_bot_service_and_config_data(
+            bot,
+            interface=service_interface,
+            base_url=service_payload_url,
+            service_name=service_name,
+            config_data=config_data,
+            acting_user=user_profile,
+        )
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
@@ -554,19 +627,6 @@ def patch_bot_backend(
         do_change_default_all_public_streams(
             bot, default_all_public_streams, acting_user=user_profile
         )
-
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        assert service_interface is not None
-        do_update_outgoing_webhook_service(
-            bot,
-            interface=service_interface,
-            base_url=service_payload_url,
-            acting_user=user_profile,
-        )
-
-    if config_data is not None:
-        do_update_bot_config_data(bot, config_data)
 
     if len(request.FILES) == 0:
         pass
@@ -663,18 +723,15 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
+    if bot_type in UserProfile.SERVICE_BOT_TYPES:
         service_name = service_name or short_name
     full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )
     form = CreateUserForm({"full_name": full_name, "email": email})
 
-    if bot_type == UserProfile.EMBEDDED_BOT:
-        if not settings.EMBEDDED_BOTS_ENABLED:
-            raise JsonableError(_("Embedded bots are not enabled."))
-        if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
-            raise JsonableError(_("Invalid embedded bot name."))
+    if bot_type == UserProfile.EMBEDDED_BOT and not settings.EMBEDDED_BOTS_ENABLED:
+        raise JsonableError(_("Embedded bots are not enabled."))
 
     if not form.is_valid():  # nocoverage
         # coverage note: The similar block above covers the most
@@ -696,6 +753,7 @@ def add_bot_backend(
     check_can_create_bot(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
+    check_payload_for_bot_type(bot_type, service_name, payload_url, config_data)
 
     avatar_source = None
     if len(request.FILES) == 1:
@@ -714,9 +772,6 @@ def add_bot_backend(
         (default_events_register_stream, _sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name
         )
-
-    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and service_name:
-        check_valid_bot_config(bot_type, service_name, config_data)
 
     bot_profile = do_create_user(
         email=email,
@@ -739,22 +794,9 @@ def add_bot_backend(
             user_file, bot_profile, content_type=user_file.content_type, future=False
         )
 
-    if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        assert isinstance(service_name, str)
-        add_service(
-            name=service_name,
-            user_profile=bot_profile,
-            base_url=payload_url,
-            interface=interface_type,
-            token=generate_api_key(),
-        )
-
-    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
-        set_bot_config(bot_profile, "integration_id", service_name)
-
-    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        for key, value in config_data.items():
-            set_bot_config(bot_profile, key, value)
+    do_create_bot_service(
+        bot_profile, bot_type, service_name, payload_url, interface_type, config_data
+    )
 
     notify_created_bot(bot_profile)
 
