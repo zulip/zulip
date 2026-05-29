@@ -2051,8 +2051,10 @@ def apply_event(
                 "push_registration_error_code": None,
             }
         elif event["op"] == "remove":
-            del state["devices"][str(event["device_id"])]
+            state["devices"].pop(str(event["device_id"]), None)
         elif event["op"] == "update":
+            if str(event["device_id"]) not in state["devices"]:
+                return
             if "push_key_id" in event:
                 state["devices"][str(event["device_id"])]["push_key_id"] = event["push_key_id"]
             if "push_token_id" in event:
