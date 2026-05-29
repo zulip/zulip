@@ -301,6 +301,76 @@ class GitlabHookTests(WebhookTestCase):
             "confidential_issue_hook__incident_updated", expected_topic_name, expected_message
         )
 
+    def test_create_task_event_message(self) -> None:
+        expected_topic_name = "mVc / task #7 Sample Task."
+        expected_message = "Sathwik Shetty created [task #7](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/7):\n\n``` quote\nSample Task.\n```"
+        self.check_webhook("issue_hook__task_created", expected_topic_name, expected_message)
+
+    def test_create_task_with_assignee_event_message(self) -> None:
+        expected_topic_name = "mVc / task #8 Sample Task with assignee."
+        expected_message = "Sathwik Shetty created [task #8](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/8) (assigned to Sathwik Shetty):\n\n``` quote\nSample Task with assignee.\n```"
+        self.check_webhook(
+            "issue_hook__task_created_with_assignee", expected_topic_name, expected_message
+        )
+
+    def test_close_task_event_message(self) -> None:
+        expected_topic_name = "mVc / task #8 Sample Task with assignee."
+        expected_message = "Sathwik Shetty closed [task #8](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/8)."
+        self.check_webhook("issue_hook__task_closed", expected_topic_name, expected_message)
+
+    def test_reopen_task_event_message(self) -> None:
+        expected_topic_name = "mVc / task #8 Sample Task with assignee."
+        expected_message = "Sathwik Shetty reopened [task #8](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/8)."
+        self.check_webhook("issue_hook__task_reopened", expected_topic_name, expected_message)
+
+    def test_update_task_event_message(self) -> None:
+        expected_topic_name = "mVc / task #8 Sample Task with assignee."
+        expected_message = "Sathwik Shetty updated [task #8](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/8)."
+        self.check_webhook("issue_hook__task_updated", expected_topic_name, expected_message)
+
+    def test_create_confidential_task_event_message(self) -> None:
+        expected_topic_name = "mVc / task #12 Sample Confidential Task."
+        expected_message = (
+            "Administrator created [task #12](http://gitlab.local/root/mvc/-/work_items/12)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__task_created", expected_topic_name, expected_message
+        )
+
+    def test_create_confidential_task_with_assignee_event_message(self) -> None:
+        expected_topic_name = "mVc / task #13 Sample Confidential Task with assignee."
+        expected_message = "Administrator created [task #13](http://gitlab.local/root/mvc/-/work_items/13) (assigned to Administrator):\n\n``` quote\nSample Confidential Task with assignee.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__task_created_with_assignee",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_close_confidential_task_event_message(self) -> None:
+        expected_topic_name = "mVc / task #14 Testing"
+        expected_message = "Sathwik Shetty closed [task #14](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/14)."
+        self.check_webhook(
+            "confidential_issue_hook__task_closed", expected_topic_name, expected_message
+        )
+
+    def test_reopen_confidential_task_event_message(self) -> None:
+        expected_topic_name = "mVc / task #13 Sample Confidential Task with assignee."
+        expected_message = (
+            "Administrator reopened [task #13](http://gitlab.local/root/mvc/-/work_items/13)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__task_reopened", expected_topic_name, expected_message
+        )
+
+    def test_update_confidential_task_event_message(self) -> None:
+        expected_topic_name = "mVc / task #13 Sample Confidential Task with assignee."
+        expected_message = (
+            "Administrator updated [task #13](http://gitlab.local/root/mvc/-/work_items/13)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__task_updated", expected_topic_name, expected_message
+        )
+
     def test_unsupported_work_item_event_message(self) -> None:
         payload = self.webhook_fixture_data(self.webhook_dir_name, "issue_hook__incident_created")
         data = orjson.loads(payload)
