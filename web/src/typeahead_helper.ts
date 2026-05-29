@@ -284,12 +284,7 @@ export function compare_by_pms(user_a: User, user_b: User): number {
 
     // We use alpha sort as a tiebreaker, which might be helpful for
     // new users.
-    if (user_a.full_name < user_b.full_name) {
-        return -1;
-    } else if (user_a === user_b) {
-        return 0;
-    }
-    return 1;
+    return user_a.full_name.localeCompare(user_b.full_name);
 }
 
 export function compare_people_for_relevance(
@@ -748,13 +743,7 @@ export function compare_group_setting_options(
         }
     }
 
-    if (option_a.user.full_name < option_b.user.full_name) {
-        return -1;
-    } else if (option_a.user.full_name === option_b.user.full_name) {
-        return 0;
-    }
-
-    return 1;
+    return option_a.user.full_name.localeCompare(option_b.user.full_name);
 }
 
 export const sort_users_and_groups_options = ({
@@ -941,13 +930,7 @@ export function compare_stream_or_group_members_options(
     assert(option_a.type === "user");
     assert(option_b.type === "user");
 
-    if (option_a.user.full_name < option_b.user.full_name) {
-        return -1;
-    } else if (option_a.user.full_name === option_b.user.full_name) {
-        return 0;
-    }
-
-    return 1;
+    return option_a.user.full_name.localeCompare(option_b.user.full_name);
 }
 
 export let sort_stream_or_group_members_options = ({
