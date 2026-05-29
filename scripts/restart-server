@@ -27,7 +27,7 @@ from scripts.lib.zulip_tools import (
     has_application_server,
     has_process_fts_updates,
     overwrite_symlink,
-    start_arg_parser,
+    start_script_arg_parser,
     su_to_zulip,
 )
 
@@ -39,7 +39,7 @@ verbing = action.title() + "ing"
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format=f"%(asctime)s {action}-server: %(message)s", level=logging.INFO)
 
-parser = start_arg_parser(action=action, add_help=True)
+parser = start_script_arg_parser(action=action, add_help=True)
 args = parser.parse_args()
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))

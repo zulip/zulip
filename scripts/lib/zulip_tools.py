@@ -651,7 +651,7 @@ def deport(netloc: str) -> str:
     return "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
 
 
-def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentParser:
+def start_script_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(add_help=add_help)
     parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
     parser.add_argument(
@@ -690,7 +690,7 @@ def upgrade_script_arg_parser() -> argparse.ArgumentParser:
     the parsed values through to stage-3.
     """
     parser = argparse.ArgumentParser(
-        add_help=False, parents=[start_arg_parser(action="restart", add_help=False)]
+        add_help=False, parents=[start_script_arg_parser(action="restart", add_help=False)]
     )
     parser.add_argument(
         "--skip-restart",
