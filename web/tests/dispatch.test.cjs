@@ -126,7 +126,7 @@ const current_user = {};
 set_current_user(current_user);
 const realm_user_settings_defaults = {};
 initialize_realm_user_settings_defaults({realm_user_settings_defaults});
-const user_settings = {};
+const user_settings = {web_animate_image_previews: "on_hover"};
 initialize_user_settings({user_settings});
 
 message_lists.update_recipient_bar_background_color = noop;
@@ -1658,6 +1658,7 @@ run_test("user_status", ({override}) => {
             reaction_type: "unicode_emoji",
             // Extra parameters that were added by `emoji.get_emoji_details_by_name`
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
         });
     }
 

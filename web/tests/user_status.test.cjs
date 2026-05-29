@@ -12,7 +12,8 @@ const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji");
 const {initialize_user_settings} = zrequire("user_settings");
 
-initialize_user_settings({user_settings: {}});
+const user_settings = {emojiset: "google", web_animate_image_previews: "on_hover"};
+initialize_user_settings({user_settings});
 
 const emoji_params = {
     realm_emoji: {
@@ -55,6 +56,8 @@ run_test("basics", () => {
     initialize();
 
     assert.deepEqual(user_status.get_status_emoji(5), {
+        emoji_alt_code: false,
+        emoji_animation_setting: "on_hover",
         emoji_code: "992",
         emoji_name: "deactivated_realm_emoji",
         reaction_type: "realm_emoji",
@@ -74,6 +77,7 @@ run_test("basics", () => {
 
     assert.deepEqual(user_status.get_status_emoji(5), {
         emoji_alt_code: false,
+        emoji_animation_setting: "on_hover",
         emoji_code: "991",
         emoji_name: "example_realm_emoji",
         reaction_type: "realm_emoji",
@@ -114,6 +118,7 @@ run_test("basics", () => {
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
         emoji_alt_code: false,
+        emoji_animation_setting: "on_hover",
     });
 
     user_status.set_status_emoji({
@@ -187,4 +192,38 @@ run_test("defensive checks", () => {
             message: "Cannot find realm emoji for code 'fake_code'.",
         },
     );
+});
+
+run_test("refresh_cached_display_settings_for_all_users", ({override}) => {
+    initialize();
+
+    for (const user_id of [4, 5]) {
+        assert.deepEqual(
+            {
+                emoji_alt_code: user_status.get_status_emoji(user_id).emoji_alt_code,
+                emoji_animation_setting:
+                    user_status.get_status_emoji(user_id).emoji_animation_setting,
+            },
+            {emoji_alt_code: false, emoji_animation_setting: "on_hover"},
+        );
+    }
+
+    // Templates render from these cached objects, so a change to either
+    // setting has to be pushed in before the affected views rerender;
+    // otherwise a status emoji set before the change would keep the old
+    // setting while one set afterwards used the new one.
+    override(user_settings, "emojiset", "text");
+    override(user_settings, "web_animate_image_previews", "always");
+    user_status.refresh_cached_display_settings_for_all_users();
+
+    for (const user_id of [4, 5]) {
+        assert.deepEqual(
+            {
+                emoji_alt_code: user_status.get_status_emoji(user_id).emoji_alt_code,
+                emoji_animation_setting:
+                    user_status.get_status_emoji(user_id).emoji_animation_setting,
+            },
+            {emoji_alt_code: true, emoji_animation_setting: "always"},
+        );
+    }
 });

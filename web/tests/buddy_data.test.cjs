@@ -40,7 +40,7 @@ const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
-const user_settings = {};
+const user_settings = {web_animate_image_previews: "on_hover"};
 initialize_user_settings({user_settings});
 
 // The buddy_data module is mostly tested indirectly through
@@ -645,6 +645,7 @@ test("get_items_for_users", ({override}) => {
 
     const status_emoji_info = {
         emoji_alt_code: false,
+        emoji_animation_setting: "on_hover",
         emoji_name: "car",
         emoji_code: "1f697",
         reaction_type: "unicode_emoji",
