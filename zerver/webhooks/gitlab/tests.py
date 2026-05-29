@@ -371,6 +371,82 @@ class GitlabHookTests(WebhookTestCase):
             "confidential_issue_hook__task_updated", expected_topic_name, expected_message
         )
 
+    def test_create_key_result_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #3 Sample key result."
+        expected_message = "Administrator created [key result #3](http://gitlab.local/root/mvc/-/work_items/3):\n\n``` quote\nSample key result.\n```"
+        self.check_webhook("issue_hook__key_result_created", expected_topic_name, expected_message)
+
+    def test_create_key_result_with_assignee_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #4 Sample Key Result with assignee."
+        expected_message = "Administrator created [key result #4](http://gitlab.local/root/mvc/-/work_items/4) (assigned to Administrator):\n\n``` quote\nSample Key Result with assignee.\n```"
+        self.check_webhook(
+            "issue_hook__key_result_created_with_assignee", expected_topic_name, expected_message
+        )
+
+    def test_close_key_result_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #4 Sample Key Result with assignee."
+        expected_message = (
+            "Administrator closed [key result #4](http://gitlab.local/root/mvc/-/work_items/4)."
+        )
+        self.check_webhook("issue_hook__key_result_closed", expected_topic_name, expected_message)
+
+    def test_reopen_key_result_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #4 Sample Key Result with assignee."
+        expected_message = (
+            "Administrator reopened [key result #4](http://gitlab.local/root/mvc/-/work_items/4)."
+        )
+        self.check_webhook("issue_hook__key_result_reopened", expected_topic_name, expected_message)
+
+    def test_update_key_result_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #4 Sample Key Result with assignee."
+        expected_message = (
+            "Administrator updated [key result #4](http://gitlab.local/root/mvc/-/work_items/4)."
+        )
+        self.check_webhook("issue_hook__key_result_updated", expected_topic_name, expected_message)
+
+    def test_create_confidential_key_result_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #8 Sample Confidential Key Result."
+        expected_message = "Administrator created [key result #8](http://gitlab.local/root/mvc/-/work_items/8):\n\n``` quote\nSample Confidential Key Result.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__key_result_created", expected_topic_name, expected_message
+        )
+
+    def test_create_confidential_key_result_with_assignee_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #9 Sample Confidential Key Result with a..."
+        expected_message = "Administrator created [key result #9](http://gitlab.local/root/mvc/-/work_items/9) (assigned to Administrator):\n\n``` quote\nSample Confidential Key Result.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__key_result_created_with_assignee",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_close_confidential_key_result_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #9 Sample Confidential Key Result with a..."
+        expected_message = (
+            "Administrator closed [key result #9](http://gitlab.local/root/mvc/-/work_items/9)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__key_result_closed", expected_topic_name, expected_message
+        )
+
+    def test_reopen_confidential_key_result_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #9 Sample Confidential Key Result with a..."
+        expected_message = (
+            "Administrator reopened [key result #9](http://gitlab.local/root/mvc/-/work_items/9)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__key_result_reopened", expected_topic_name, expected_message
+        )
+
+    def test_update_confidential_key_result_event_message(self) -> None:
+        expected_topic_name = "mVc / key result #9 Sample Confidential Key Result with a..."
+        expected_message = (
+            "Administrator updated [key result #9](http://gitlab.local/root/mvc/-/work_items/9)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__key_result_updated", expected_topic_name, expected_message
+        )
+
     def test_unsupported_work_item_event_message(self) -> None:
         payload = self.webhook_fixture_data(self.webhook_dir_name, "issue_hook__incident_created")
         data = orjson.loads(payload)
