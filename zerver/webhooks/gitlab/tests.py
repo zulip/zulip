@@ -1,7 +1,11 @@
+from typing import Any
 from unittest.mock import MagicMock, patch
+
+import orjson
 
 from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.webhooks.common import call_fixture_to_headers, standardize_headers
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.models.realms import get_realm
 
@@ -225,6 +229,93 @@ class GitlabHookTests(WebhookTestCase):
 
         self.check_webhook(
             "issue_hook__confidential_issue_reopened", expected_subject, expected_message
+        )
+
+    def test_create_incident_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #2 Testing"
+        expected_message = "Sathwik Shetty created [incident #2](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/2):\n\n``` quote\nZulip Test\n```"
+        self.check_webhook("issue_hook__incident_created", expected_topic_name, expected_message)
+
+    def test_create_incident_with_assignee_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #6 Testing"
+        expected_message = "Sathwik Shetty created [incident #6](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/6) (assigned to Sathwik Shetty):\n\n``` quote\nIncident was observed.\n```"
+        self.check_webhook(
+            "issue_hook__incident_created_with_assignee", expected_topic_name, expected_message
+        )
+
+    def test_close_incident_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #6 Testing"
+        expected_message = "Sathwik Shetty closed [incident #6](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/6)."
+        self.check_webhook("issue_hook__incident_closed", expected_topic_name, expected_message)
+
+    def test_reopen_incident_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #6 Testing"
+        expected_message = "Sathwik Shetty reopened [incident #6](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/6)."
+        self.check_webhook("issue_hook__incident_reopen", expected_topic_name, expected_message)
+
+    def test_update_incident_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #6 Testing"
+        expected_message = "Sathwik Shetty updated [incident #6](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/6)."
+        self.check_webhook("issue_hook__incident_updated", expected_topic_name, expected_message)
+
+    def test_create_confidential_incident_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #6 Testing"
+        expected_message = "Administrator created [incident #6](http://gitlab.local/root/mvc/-/issues/6):\n\n``` quote\nSample Confidential Incident.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__incident_created", expected_topic_name, expected_message
+        )
+
+    def test_create_confidential_incident_with_assignee_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #7 Testing"
+        expected_message = "Administrator created [incident #7](http://gitlab.local/root/mvc/-/issues/7) (assigned to Administrator):\n\n``` quote\nSample Confidential Incident with assignee.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__incident_created_with_assignee",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_close_confidential_incident_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #7 Testing"
+        expected_message = (
+            "Administrator closed [incident #7](http://gitlab.local/root/mvc/-/issues/7)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__incident_closed", expected_topic_name, expected_message
+        )
+
+    def test_reopen_confidential_incident_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #7 Testing"
+        expected_message = (
+            "Administrator reopened [incident #7](http://gitlab.local/root/mvc/-/issues/7)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__incident_reopened", expected_topic_name, expected_message
+        )
+
+    def test_update_confidential_incident_event_message(self) -> None:
+        expected_topic_name = "mVc / incident #7 Testing"
+        expected_message = (
+            "Administrator updated [incident #7](http://gitlab.local/root/mvc/-/issues/7)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__incident_updated", expected_topic_name, expected_message
+        )
+
+    def test_unsupported_work_item_event_message(self) -> None:
+        payload = self.webhook_fixture_data(self.webhook_dir_name, "issue_hook__incident_created")
+        data = orjson.loads(payload)
+        data["object_attributes"]["type"] = "Unknown Work Item"
+        headers: dict[str, Any] = standardize_headers(
+            call_fixture_to_headers(self.webhook_dir_name, "issue_hook__incident_created")
+        )
+        result = self.client_post(
+            self.url, orjson.dumps(data).decode(), content_type="application/json", **headers
+        )
+        self.assert_json_success(result)
+        self.assert_in_response(
+            "The 'Issue Hook Unknown Work Item open' event isn't currently supported"
+            " by the GitLab webhook; ignoring",
+            result,
         )
 
     def test_note_commit_event_message(self) -> None:
