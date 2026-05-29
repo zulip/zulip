@@ -17319,6 +17319,67 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /export/realm/{export_id}:
+    delete:
+      operationId: delete-realm-export
+      summary: Delete a data export
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Delete a completed public or standard [data export][export-data]
+        of the organization.
+
+        Data exports that happened on a previous server (i.e., an export
+        with `"export_from_prior_server": true` in the
+        [`GET /export/realm`](/api/get-realm-exports#response) response)
+        cannot be deleted using this endpoint, since their tarball is no
+        longer stored on this server; attempting to do so fails with
+        the same error as for an export that has already been deleted.
+
+        This endpoint's success response does not describe the resulting
+        state of the organization's data exports. Clients should rely
+        on the [`realm_export` event](/api/get-events#realm_export),
+        which every organization administrator receives whenever a
+        data export's state changes, for the current state of an
+        organization's data exports.
+
+        **Changes**: Prior to Zulip 13.0 (feature level 506), data
+        exports without a tarball stored on this server had no
+        dedicated status, so attempting to delete one resulted in an
+        unexpected error. Starting at that feature level, such a
+        delete attempt instead fails cleanly, as described above. This
+        change was also backported to the Zulip 12.x series, at
+        feature level 499.
+
+        New in Zulip 2.1.
+
+        [export-data]: /help/export-your-organization#export-data-in-an-importable-format
+      parameters:
+        - name: export_id
+          in: path
+          description: The ID of the data export to be deleted.
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for an invalid data export ID.
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid data export ID",
+                        "result": "error",
+                      }
   /export/realm:
     get:
       operationId: get-realm-exports
