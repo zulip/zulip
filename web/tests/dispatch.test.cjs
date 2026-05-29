@@ -1336,6 +1336,13 @@ run_test("user_settings", ({override}) => {
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
     }
+    // Every surface that displays custom emoji is rerendered for this
+    // setting; see the `web_animate_image_previews` case in
+    // server_events_dispatch.
+    override(activity_ui, "build_user_sidebar", noop);
+    override(pm_list, "update_private_messages", noop);
+    override(settings_emoji, "populate_emoji", noop);
+
     {
         event = event_fixtures.user_settings__web_animate_image_previews_always;
         override(user_settings, "web_animate_image_previews", "on_hover");
