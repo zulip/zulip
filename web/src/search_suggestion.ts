@@ -1112,6 +1112,63 @@ export function search_term_description_html(operand: string): string {
     return `search for ${Handlebars.Utils.escapeExpression(operand)}`;
 }
 
+// The canonical list of filterers that the search typeahead runs. The
+// list is factored into its own function so that a follow-up commit
+// can reuse it from a second code path (the channel multi-word
+// suggestion handler) without duplicating the list.
+function build_filterer_list(
+    last: NarrowCanonicalTermSuggestion,
+): ((last: NarrowCanonicalTermSuggestion, terms: NarrowCanonicalTerm[]) => Suggestion[])[] {
+    // only make one people_getter to avoid duplicate work
+    const people_getter = make_people_getter(last);
+
+    function get_people(
+        flavor: "dm" | "sender" | "dm-including" | "mentions",
+    ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
+        return function (
+            last: NarrowCanonicalTermSuggestion,
+            base_terms: NarrowCanonicalTerm[],
+        ): Suggestion[] {
+            return get_person_suggestions(people_getter, last, base_terms, flavor);
+        };
+    }
+
+    // Remember to update the spectator list when changing this.
+    let filterers = [
+        // This should show before other `get_people` suggestions
+        // because both are valid suggestions for typing a user's
+        // name, and if there's already has a DM pill then the
+        // searching user probably is looking to make a group DM.
+        get_group_suggestions("dm"),
+        get_group_suggestions("dm-including"),
+        get_channels_filter_suggestions,
+        get_operator_suggestions,
+        get_is_filter_suggestions,
+        get_sent_by_me_suggestions,
+        get_channel_suggestions,
+        get_people("dm"),
+        get_people("sender"),
+        get_people("dm-including"),
+        get_people("mentions"),
+        get_topic_suggestions,
+        get_has_filter_suggestions,
+    ];
+
+    if (page_params.is_spectator) {
+        filterers = [
+            get_channels_filter_suggestions,
+            get_operator_suggestions,
+            get_is_filter_suggestions,
+            get_channel_suggestions,
+            get_people("sender"),
+            get_topic_suggestions,
+            get_has_filter_suggestions,
+        ];
+    }
+
+    return filterers;
+}
+
 export let get_suggestions = function (
     pill_search_terms: NarrowCanonicalTerm[],
     text_search_terms_non_canonical: NarrowTermSuggestion[],
@@ -1183,52 +1240,7 @@ export let get_suggestions = function (
         attacher.push(suggestion_line);
     }
 
-    // only make one people_getter to avoid duplicate work
-    const people_getter = make_people_getter(last);
-
-    function get_people(
-        flavor: "dm" | "sender" | "dm-including" | "mentions",
-    ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
-        return function (
-            last: NarrowCanonicalTermSuggestion,
-            base_terms: NarrowCanonicalTerm[],
-        ): Suggestion[] {
-            return get_person_suggestions(people_getter, last, base_terms, flavor);
-        };
-    }
-
-    // Remember to update the spectator list when changing this.
-    let filterers = [
-        // This should show before other `get_people` suggestions
-        // because both are valid suggestions for typing a user's
-        // name, and if there's already has a DM pill then the
-        // searching user probably is looking to make a group DM.
-        get_group_suggestions("dm"),
-        get_group_suggestions("dm-including"),
-        get_channels_filter_suggestions,
-        get_operator_suggestions,
-        get_is_filter_suggestions,
-        get_sent_by_me_suggestions,
-        get_channel_suggestions,
-        get_people("dm"),
-        get_people("sender"),
-        get_people("dm-including"),
-        get_people("mentions"),
-        get_topic_suggestions,
-        get_has_filter_suggestions,
-    ];
-
-    if (page_params.is_spectator) {
-        filterers = [
-            get_channels_filter_suggestions,
-            get_operator_suggestions,
-            get_is_filter_suggestions,
-            get_channel_suggestions,
-            get_people("sender"),
-            get_topic_suggestions,
-            get_has_filter_suggestions,
-        ];
-    }
+    const filterers = build_filterer_list(last);
 
     const max_items = max_num_of_search_results;
 
