@@ -1,7 +1,7 @@
 {{#with emoji_dict}}
-<div class="emoji-showcase">
+<div class="emoji-showcase emoji-animation-hover-area">
     {{#if is_realm_emoji}}
-    <img src="{{url}}" class="emoji emoji-preview"/>
+    {{> ../../realm_emoji url=url still_url=still_url emoji_animation_setting=../emoji_animation_setting custom_classes="emoji-preview" }}
     {{else}}
     <div class="emoji emoji-preview emoji-{{emoji_code}}"></div>
     {{/if}}
