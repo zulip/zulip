@@ -8,7 +8,7 @@ async function copy_messages(
     page: Page,
     start_message: string,
     end_message: string,
-): Promise<string[]> {
+): Promise<{html_lines: string[]; plain_text: string}> {
     return await page.evaluate(
         (start_message: string, end_message: string) => {
             function get_message_node(message: string): Element {
@@ -34,12 +34,16 @@ async function copy_messages(
             document.dispatchEvent(copy_event);
 
             const copied_html = clipboard_data.getData("text/html");
+            const plain_text = clipboard_data.getData("text/plain");
 
             // Convert the copied HTML into separate message strings
             const parser = new DOMParser();
             const doc = parser.parseFromString(copied_html, "text/html");
 
-            return [...doc.body.children].map((el) => el.textContent.trim());
+            return {
+                html_lines: [...doc.body.children].map((el) => el.textContent.trim()),
+                plain_text,
+            };
         },
         start_message,
         end_message,
@@ -47,25 +51,41 @@ async function copy_messages(
 }
 
 async function test_copying_first_message_from_topic(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test C", "copy paste test C");
+    const {html_lines: actual_copied_lines} = await copy_messages(
+        page,
+        "copy paste test C",
+        "copy paste test C",
+    );
     const expected_copied_lines: string[] = [];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
 async function test_copying_last_message_from_topic(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test E", "copy paste test E");
+    const {html_lines: actual_copied_lines} = await copy_messages(
+        page,
+        "copy paste test E",
+        "copy paste test E",
+    );
     const expected_copied_lines: string[] = [];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
 async function test_copying_first_two_messages_from_topic(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test C", "copy paste test D");
+    const {html_lines: actual_copied_lines} = await copy_messages(
+        page,
+        "copy paste test C",
+        "copy paste test D",
+    );
     const expected_copied_lines = ["Desdemona: copy paste test C", "Desdemona: copy paste test D"];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
 async function test_copying_all_messages_from_topic(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test C", "copy paste test E");
+    const {html_lines: actual_copied_lines} = await copy_messages(
+        page,
+        "copy paste test C",
+        "copy paste test E",
+    );
     const expected_copied_lines = [
         "Desdemona: copy paste test C",
         "Desdemona: copy paste test D",
@@ -75,7 +95,11 @@ async function test_copying_all_messages_from_topic(page: Page): Promise<void> {
 }
 
 async function test_copying_last_from_prev_first_from_next(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test C");
+    const {html_lines: actual_copied_lines} = await copy_messages(
+        page,
+        "copy paste test B",
+        "copy paste test C",
+    );
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 Today",
         "Desdemona: copy paste test B",
@@ -86,7 +110,11 @@ async function test_copying_last_from_prev_first_from_next(page: Page): Promise<
 }
 
 async function test_copying_last_from_prev_all_from_next(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test E");
+    const {html_lines: actual_copied_lines} = await copy_messages(
+        page,
+        "copy paste test B",
+        "copy paste test E",
+    );
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 Today",
         "Desdemona: copy paste test B",
@@ -99,7 +127,11 @@ async function test_copying_last_from_prev_all_from_next(page: Page): Promise<vo
 }
 
 async function test_copying_all_from_prev_first_from_next(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test A", "copy paste test C");
+    const {html_lines: actual_copied_lines} = await copy_messages(
+        page,
+        "copy paste test A",
+        "copy paste test C",
+    );
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 Today",
         "Desdemona: copy paste test A",
@@ -111,7 +143,11 @@ async function test_copying_all_from_prev_first_from_next(page: Page): Promise<v
 }
 
 async function test_copying_messages_from_several_topics(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test F");
+    const {html_lines: actual_copied_lines} = await copy_messages(
+        page,
+        "copy paste test B",
+        "copy paste test F",
+    );
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 Today",
         "Desdemona: copy paste test B",
@@ -123,6 +159,15 @@ async function test_copying_messages_from_several_topics(page: Page): Promise<vo
         "Desdemona: copy paste test F",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
+}
+
+async function test_plain_text_newlines_between_messages(page: Page): Promise<void> {
+    // Verify that plain-text copies of multiple messages are separated by
+    // newlines rather than being squashed onto one line (#39021).
+    const {plain_text} = await copy_messages(page, "copy paste test C", "copy paste test E");
+    const expected =
+        "Desdemona: copy paste test C\nDesdemona: copy paste test D\nDesdemona: copy paste test E";
+    assert.strictEqual(plain_text, expected);
 }
 
 async function copy_paste_test(page: Page): Promise<void> {
@@ -163,6 +208,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_last_from_prev_all_from_next(page);
     await test_copying_all_from_prev_first_from_next(page);
     await test_copying_messages_from_several_topics(page);
+    await test_plain_text_newlines_between_messages(page);
 }
 
 await common.run_test(copy_paste_test);

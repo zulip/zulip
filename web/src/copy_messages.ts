@@ -232,6 +232,56 @@ function maybe_update_range_for_code_blocks(range: Range, ev: ClipboardEvent): b
     return false;
 }
 
+function get_plain_text_with_newlines($elem: JQuery): string {
+    // jQuery's .text() concatenates all text nodes without any separator,
+    // causing block-level elements like <p> to produce no newlines in the
+    // plain-text clipboard output.  This function traverses the DOM tree
+    // and appends a newline after each block-level element so that pasting
+    // into a plain-text editor preserves message separation.
+    const block_tags = new Set([
+        "BLOCKQUOTE",
+        "DIV",
+        "H1",
+        "H2",
+        "H3",
+        "H4",
+        "H5",
+        "H6",
+        "LI",
+        "OL",
+        "P",
+        "PRE",
+        "UL",
+    ]);
+
+    function process_node(node: Node): string {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return node.textContent ?? "";
+        }
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            return "";
+        }
+        assert(node instanceof Element);
+        if (node.tagName === "BR") {
+            return "\n";
+        }
+        let child_text = "";
+        for (const child of node.childNodes) {
+            child_text += process_node(child);
+        }
+        if (block_tags.has(node.tagName)) {
+            return child_text + "\n";
+        }
+        return child_text;
+    }
+
+    let result = "";
+    for (const child of $elem[0]!.childNodes) {
+        result += process_node(child);
+    }
+    return result.replaceAll(/\n{3,}/g, "\n\n").trim();
+}
+
 export function copy_handler(ev: ClipboardEvent): boolean {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
@@ -318,7 +368,7 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     construct_copy_div($div, start_id, end_id);
 
     const html_content = $div.html().trim();
-    const plain_text = $div.text().trim();
+    const plain_text = get_plain_text_with_newlines($div);
     ev.clipboardData?.setData("text/html", html_content);
     ev.clipboardData?.setData("text/plain", plain_text);
 
