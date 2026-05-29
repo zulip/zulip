@@ -1296,12 +1296,17 @@ def make_emoji(codepoint: str, display_string: str) -> Element:
     return span
 
 
-def make_realm_emoji(src: str, display_string: str) -> Element:
+def make_realm_emoji(src: str, display_string: str, still_url: str | None = None) -> Element:
     elt = Element("img")
     elt.set("src", src)
     elt.set("class", "emoji")
     elt.set("alt", display_string)
     elt.set("title", display_string[1:-1].replace("_", " "))
+    if still_url is not None:
+        # Animated realm emoji: expose both URLs so the frontend can
+        # honor the web_animate_image_previews setting.
+        elt.set("data-animated-url", src)
+        elt.set("data-still-url", still_url)
     return elt
 
 
@@ -1365,7 +1370,11 @@ class Emoji(markdown.inlinepatterns.Pattern):
             active_realm_emoji = db_data.active_realm_emoji
 
         if name in active_realm_emoji:
-            return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
+            return make_realm_emoji(
+                active_realm_emoji[name]["source_url"],
+                orig_syntax,
+                still_url=active_realm_emoji[name]["still_url"],
+            )
         elif name == "zulip":
             # We explicitly do not use staticfiles to generate the URL
             # for this, so that it is portable if exported.
