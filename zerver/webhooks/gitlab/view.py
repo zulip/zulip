@@ -107,7 +107,7 @@ def get_tag_push_event_body(payload: WildValue, include_title: bool, realm: Real
     )
 
 
-def get_issue_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+def get_work_item_description(payload: WildValue) -> str | None:
     description = payload["object_attributes"].get("description")
     # Filter out multiline hidden comments
     if description:
@@ -118,6 +118,11 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool, realm:
         stringified_description = stringified_description.rstrip()
     else:
         stringified_description = None
+    return stringified_description
+
+
+def get_issue_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+    stringified_description = get_work_item_description(payload)
 
     return get_issue_event_message(
         user_name=get_user_name(payload, realm),
