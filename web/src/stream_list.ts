@@ -434,10 +434,9 @@ export function build_stream_list(force_rerender: boolean): void {
     //
     // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
-    const stream_groups = stream_list_sort.sort_groups(
-        streams,
-        ui_util.get_left_sidebar_search_term(),
-    );
+    const search_term =
+        ui_util.get_left_sidebar_topic_search_term() ?? ui_util.get_left_sidebar_search_term();
+    const stream_groups = stream_list_sort.sort_groups(streams, search_term);
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -943,6 +942,17 @@ export let update_streams_sidebar = (force_rerender = false): void => {
 
     const filter = narrow_state.filter();
     if (!filter) {
+        // The narrow-specific update path below (which handles both
+        // the topic-search rebuild and its cleanup) doesn't run when
+        // there's no narrow, e.g. in Recent Conversations, so do both
+        // here directly. We can't rely on build_stream_list() above to
+        // clear topics, since it skips that when the channel list is
+        // unchanged.
+        if (ui_util.is_topic_search()) {
+            update_stream_sidebar_for_topic_search();
+        } else {
+            clear_topics();
+        }
         return;
     }
 
@@ -1210,6 +1220,29 @@ function deselect_stream_items(): void {
     $("ul#stream_filters li").removeClass("active-filter stream-expanded");
 }
 
+export function update_stream_sidebar_for_topic_search(): void {
+    // In "topic:" search mode the sidebar renders only the channels
+    // whose topics matched the search. get_stream_ids() returns the
+    // currently rendered rows, so we build topic lists for exactly
+    // those, rather than walking every subscription — most of which
+    // have no visible row and no matching topics.
+    for (const stream_id of stream_list_sort.get_stream_ids()) {
+        const row = stream_sidebar.get_row(stream_id);
+        assert(row !== undefined);
+        topic_list.rebuild_left_sidebar(row.get_li(), stream_id, true);
+    }
+}
+
+// Skip topic clearing when we're in topic-search mode — otherwise we'd wipe
+// the topic lists that update_stream_sidebar_for_topic_search() just populated
+// across all channels.
+function clear_topics_if_not_searching(): void {
+    const rerender_topics_for_search = ui_util.is_topic_search();
+    if (!rerender_topics_for_search) {
+        clear_topics();
+    }
+}
+
 export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undefined {
     const info = get_sidebar_stream_topic_info(filter);
 
@@ -1217,17 +1250,26 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
 
     const stream_id = info.stream_id;
 
+    // If we're currently searching for topics across all channels
+    // (via the "topic:" prefix), show all topic lists, each filtered
+    // by the search term. Otherwise we'll only show the topic list for
+    // the current narrow.
+    const rerender_topics_for_search = ui_util.is_topic_search();
+    if (rerender_topics_for_search) {
+        update_stream_sidebar_for_topic_search();
+    }
+
     if (!stream_id) {
-        clear_topics();
+        clear_topics_if_not_searching();
         return undefined;
     }
 
     const $stream_li = get_stream_li(stream_id);
 
+    // When zoomed into a channel's topic list, only the
+    // zoomed-in channel has a row in the sidebar.
     if (!$stream_li) {
-        // When zoomed into a channel's topic list, only the
-        // zoomed-in channel has a row in the sidebar.
-        clear_topics();
+        clear_topics_if_not_searching();
         return undefined;
     }
 
@@ -1241,13 +1283,15 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     $stream_li.addClass("stream-expanded");
 
     if (stream_id !== topic_list.active_stream_id()) {
-        clear_topics();
+        clear_topics_if_not_searching();
     }
 
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
-    topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    if (!rerender_topics_for_search) {
+        topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    }
     topic_list.topic_state_typeahead?.lookup(true);
 
     // If we're updating a view for a highlighted stream, it's possible

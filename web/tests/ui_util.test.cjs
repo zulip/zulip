@@ -70,6 +70,44 @@ run_test("potentially_collapse_quotes", ({override_rewire}) => {
     );
 });
 
+run_test("topic search term parsing", ({override_rewire}) => {
+    // get_left_sidebar_search_term() already trims, so each value
+    // here stands in for an already-trimmed search input.
+    function set_search_term(term) {
+        override_rewire(ui_util, "get_left_sidebar_search_term", () => term);
+    }
+
+    // Without the "topic:" prefix, there is no topic search.
+    set_search_term("foo");
+    assert.equal(ui_util.get_left_sidebar_topic_search_term(), undefined);
+    assert.equal(ui_util.is_topic_search(), false);
+
+    // The "topic:" prefix yields the rest of the term as the query.
+    set_search_term("topic:foo");
+    assert.equal(ui_util.get_left_sidebar_topic_search_term(), "foo");
+    assert.equal(ui_util.is_topic_search(), true);
+
+    // Whitespace after the prefix is trimmed off the query.
+    set_search_term("topic:   important");
+    assert.equal(ui_util.get_left_sidebar_topic_search_term(), "important");
+
+    // The prefix match is case-insensitive; the query keeps its case.
+    set_search_term("TOPIC:Foo");
+    assert.equal(ui_util.get_left_sidebar_topic_search_term(), "Foo");
+    assert.equal(ui_util.is_topic_search(), true);
+
+    // The prefix alone, with an empty query, still counts as a topic
+    // search (so the sidebar switches to topic-filtering mode).
+    set_search_term("topic:");
+    assert.equal(ui_util.get_left_sidebar_topic_search_term(), "");
+    assert.equal(ui_util.is_topic_search(), true);
+
+    // "topic:" only counts as a prefix, not when it appears mid-term.
+    set_search_term("mytopic:foo");
+    assert.equal(ui_util.get_left_sidebar_topic_search_term(), undefined);
+    assert.equal(ui_util.is_topic_search(), false);
+});
+
 run_test("replace_emoji_name_with_emoji_unicode", () => {
     const $emoji = $.create("span").attr("class", "emoji emoji-1f419");
     $emoji.set_matches("img", false);

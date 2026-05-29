@@ -337,11 +337,31 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
     }
 }
 
-export function get_left_sidebar_search_term(): string {
+export let get_left_sidebar_search_term = function (): string {
     const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
     const search_term = $search_box.val();
     assert(search_term !== undefined);
     return search_term.trim();
+};
+
+export function rewire_get_left_sidebar_search_term(
+    value: typeof get_left_sidebar_search_term,
+): void {
+    get_left_sidebar_search_term = value;
+}
+
+const TOPIC_SEARCH_PREFIX = "topic:";
+
+export function get_left_sidebar_topic_search_term(): string | undefined {
+    const search_term = get_left_sidebar_search_term();
+    if (search_term.toLowerCase().startsWith(TOPIC_SEARCH_PREFIX)) {
+        return search_term.slice(TOPIC_SEARCH_PREFIX.length).trim();
+    }
+    return undefined;
+}
+
+export function is_topic_search(): boolean {
+    return get_left_sidebar_topic_search_term() !== undefined;
 }
 
 export function disable_left_sidebar_search(): void {
