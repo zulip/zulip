@@ -93,7 +93,7 @@ let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
 let original_values: (Record<string, unknown> & {user_id?: string | undefined}) | undefined;
 
-const INCOMING_WEBHOOK_BOT_TYPE = 2;
+const INCOMING_WEBHOOK_BOT_TYPE_INT = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
 
@@ -861,7 +861,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
-        is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT,
         max_bot_name_length: people.MAX_USER_NAME_LENGTH,
         realm_bot_domain: realm.realm_bot_domain,
     });
