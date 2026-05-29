@@ -4359,6 +4359,30 @@ class NormalActionsTest(BaseAction):
             self.client_post("/json/mobile_push/register", payload)
         check_device_update("events[0]", events[0])
 
+    def test_apply_device_event_missing_from_state(self) -> None:
+        # A `device/remove` (or preceding `device/update`) event can
+        # arrive for a device_id that `get_devices` no longer returns,
+        # because the queue was created before the initial state was fetched.
+        # Test to verify `apply_events` handles such events.
+        state: dict[str, Any] = {"devices": {}}
+        events = [
+            {"type": "device", "op": "remove", "device_id": 999, "id": 0},
+            {"type": "device", "op": "update", "device_id": 999, "push_key_id": 1, "id": 1},
+        ]
+        apply_events(
+            self.user_profile,
+            state=state,
+            events=events,
+            fetch_event_types=None,
+            client_gravatar=True,
+            slim_presence=False,
+            include_subscribers=True,
+            linkifier_url_template=True,
+            user_list_incomplete=False,
+            include_deactivated_groups=False,
+        )
+        self.assertEqual(state["devices"], {})
+
     def test_notify_realm_export_on_failure(self) -> None:
         self.set_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
