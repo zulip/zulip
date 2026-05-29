@@ -10,11 +10,11 @@
 <ul class="user-status-options modal-options-list">
     {{#each default_status_messages_and_emoji_info}}
         <li class="user-status-option">
-            <a class="modal-option-content trigger-click-on-enter user-status-value" tabindex="0">
+            <a class="modal-option-content trigger-click-on-enter user-status-value emoji-animation-hover-area" tabindex="0">
                 {{#if emoji.emoji_alt_code}}
                     <div class="emoji_alt_code">&nbsp;:{{emoji.emoji_name}}:</div>
                 {{else if emoji.url}}
-                    <img src="{{emoji.url}}" class="emoji status-emoji" />
+                    {{> realm_emoji url=emoji.url still_url=emoji.still_url emoji_animation_setting=../emoji_animation_setting custom_classes="status-emoji" }}
                 {{else}}
                     <div class="emoji status-emoji emoji-{{emoji.emoji_code}}"></div>
                 {{/if}}
