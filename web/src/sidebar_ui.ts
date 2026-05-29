@@ -545,12 +545,20 @@ function all_rows(): JQuery {
         "#streams_list.is_searching .stream-list-toggle-inactive-or-muted-channels.bottom_left_row",
     );
 
-    return $all_rows
+    const $filtered_rows = $all_rows
         .not($inactive_or_muted_rows)
         .not($collapsed_views)
         .not($collapsed_channels)
         .not($hidden_topic_rows)
         .not($toggle_inactive_or_muted_channels_row);
+
+    // With a "topic:" prefix search, keyboard navigation only lands on
+    // topic rows, not channel header rows.
+    if (ui_util.is_topic_search()) {
+        return $filtered_rows.not("#stream_filters .channel-header.bottom_left_row");
+    }
+
+    return $filtered_rows;
 }
 
 class LeftSidebarListCursor extends ListCursor<JQuery> {

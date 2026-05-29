@@ -447,17 +447,13 @@ export class TopicListWidget {
     }
 }
 
-function filter_topics_left_sidebar(topic_names: string[]): string[] {
+function filter_topics_left_sidebar(topic_names: string[], stream_id: number): string[] {
     // This runs both for the zoomed-in topic list and the inline
     // topic lists under streams, so we read the search term from
     // whichever input is in use.
     const search_term = zoomed
         ? get_zoomed_topic_search_term()
-        : ui_util.get_left_sidebar_search_term();
-    const stream_id = active_stream_id();
-    if (stream_id === undefined) {
-        return topic_names;
-    }
+        : (ui_util.get_left_sidebar_topic_search_term() ?? ui_util.get_left_sidebar_search_term());
     return topic_list_data.filter_topics_by_search_term(
         stream_id,
         topic_names,
@@ -468,7 +464,9 @@ function filter_topics_left_sidebar(topic_names: string[]): string[] {
 
 export class LeftSidebarTopicListWidget extends TopicListWidget {
     constructor($stream_li: JQuery, my_stream_id: number, for_modal: boolean) {
-        super($stream_li, my_stream_id, for_modal, filter_topics_left_sidebar);
+        super($stream_li, my_stream_id, for_modal, (topic_names) =>
+            filter_topics_left_sidebar(topic_names, my_stream_id),
+        );
     }
 
     override build(spinner = false): void {
@@ -524,7 +522,11 @@ export function get_stream_li(): JQuery | undefined {
     return $stream_li;
 }
 
-export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): void {
+export function rebuild_left_sidebar(
+    $stream_li: JQuery,
+    stream_id: number,
+    for_search = false,
+): void {
     if (zoomed) {
         if (zoomed_in_widget?.my_stream_id !== stream_id) {
             clear_zoomed();
@@ -535,14 +537,23 @@ export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): voi
     }
 
     zoomed_in_widget?.remove();
+
+    // Only search should have more than one channel widget open
+    if (!for_search && active_widgets.size > 1) {
+        clear();
+    }
     const active_widget = active_widgets.get(stream_id);
 
+    // Rebuild existing channel widget
     if (active_widget) {
         active_widget.build();
         return;
     }
 
-    clear();
+    // Create new channel widget
+    if (!for_search) {
+        clear();
+    }
     const widget = new LeftSidebarTopicListWidget($stream_li, stream_id, false);
     widget.build();
 
