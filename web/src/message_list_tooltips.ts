@@ -10,6 +10,7 @@ import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_li
 
 import * as compose_validate from "./compose_validate.ts";
 import * as flatpickr from "./flatpickr.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -17,6 +18,7 @@ import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import {
     INTERACTIVE_HOVER_DELAY,
@@ -490,4 +492,71 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    message_list_tooltip(
+        ".message_content a[data-message-link-type='external_named_link'], " +
+            ".message_content a[data-message-link-type='external_plain_url'], " +
+            ".message_content a[data-message-link-type='user_upload'], " +
+            ".message_content a[data-message-link-type='internal_named_link']",
+        {
+            onCreate(instance) {
+                const $elem = $(instance.reference);
+                const link_type = $elem.attr("data-message-link-type");
+
+                if (link_type === "external_named_link" || link_type === "internal_named_link") {
+                    instance.setProps({delay: 0});
+                } else {
+                    instance.setProps({delay: LONG_HOVER_DELAY});
+                }
+            },
+            onShow(instance) {
+                const $elem = $(instance.reference);
+                const href = $elem.attr("href");
+                const link_type = $elem.attr("data-message-link-type");
+
+                if (!href || !link_type) {
+                    return false;
+                }
+
+                let tooltip_content;
+
+                if (link_type === "internal_named_link") {
+                    const is_message_link = href.includes("/near/");
+                    const stream_topic = hash_util.decode_stream_topic_from_url(href);
+
+                    if (stream_topic !== null) {
+                        const channel = stream_data.get_stream_name_from_id(stream_topic.stream_id);
+                        const topic = stream_topic.topic_name;
+
+                        let canonical_format;
+                        if (is_message_link && topic) {
+                            canonical_format = `#${channel} > ${topic} @`;
+                        } else if (topic) {
+                            canonical_format = `#${channel} > ${topic}`;
+                        } else {
+                            canonical_format = `#${channel}`;
+                        }
+
+                        tooltip_content = $t(
+                            {defaultMessage: "Go to {canonical_format}"},
+                            {canonical_format},
+                        );
+                    } else {
+                        tooltip_content = href;
+                    }
+                } else if (link_type === "user_upload") {
+                    const filename = decodeURIComponent(href.slice(href.lastIndexOf("/") + 1));
+                    tooltip_content = $t({defaultMessage: "Download {filename}"}, {filename});
+                } else {
+                    tooltip_content = href;
+                }
+
+                instance.setContent(tooltip_content);
+                return undefined;
+            },
+            onHidden(instance) {
+                instance.destroy();
+            },
+        },
+    );
 }

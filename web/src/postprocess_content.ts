@@ -1,11 +1,12 @@
 import assert from "minimalistic-assert";
 
-import {$t} from "./i18n.ts";
 import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
+
+const STANDARD_INTERNAL_URLS = new Set(["stream", "stream-topic", "message-link"]);
 
 export function postprocess_content(html: string): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
@@ -81,35 +82,46 @@ export function postprocess_content(html: string): string {
         }
 
         if (!elt.parentElement?.classList.contains("message_inline_image")) {
-            // For non-media (images, video) user uploads, the following block
-            // ensures that the title attribute always displays the filename,
-            // as a security measure.
-            let title: string;
-            let legacy_title: string;
+            const link_class = elt.getAttribute("class") ?? "";
+            const is_standard_internal = STANDARD_INTERNAL_URLS.has(link_class);
+
+            const link_text = elt.textContent?.trim() ?? "";
+            const link_href = elt.href.replace(/\/$/, "");
+            const text_matches_href = link_text === link_href;
+            const is_external_link = url.origin !== window.location.origin;
+            const is_user_upload = !is_external_link && url.pathname.startsWith("/user_uploads/");
+
+            let will_get_tippy_tooltip = false;
             if (
-                url.origin === window.location.origin &&
-                url.pathname.startsWith("/user_uploads/")
+                !elt.classList.contains("message_embed_image") &&
+                !elt.classList.contains("message-embed-title-link") &&
+                !elt.classList.contains("media-anchor-element") &&
+                !is_standard_internal
             ) {
-                // We add the word "download" to make clear what will
-                // happen when clicking the file.  This is particularly
-                // important in the desktop app, where hovering a URL does
-                // not display the URL like it does in the web app.
-                title = legacy_title = $t(
-                    {defaultMessage: "Download {filename}"},
-                    {
-                        filename: decodeURIComponent(
-                            url.pathname.slice(url.pathname.lastIndexOf("/") + 1),
-                        ),
-                    },
-                );
-            } else {
-                title = url.toString();
-                legacy_title = href;
+                if (is_external_link && !text_matches_href) {
+                    elt.setAttribute("data-message-link-type", "external_named_link");
+                    will_get_tippy_tooltip = true;
+                } else if (is_external_link && text_matches_href) {
+                    elt.setAttribute("data-message-link-type", "external_plain_url");
+                    will_get_tippy_tooltip = true;
+                } else if (is_user_upload) {
+                    elt.setAttribute("data-message-link-type", "user_upload");
+                    will_get_tippy_tooltip = true;
+                } else if (!is_external_link && !text_matches_href) {
+                    elt.setAttribute("data-message-link-type", "internal_named_link");
+                    will_get_tippy_tooltip = true;
+                }
             }
-            elt.setAttribute(
-                "title",
-                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-            );
+
+            if (!is_standard_internal && !will_get_tippy_tooltip) {
+                const title = url.toString();
+                const legacy_title = href;
+
+                elt.setAttribute(
+                    "title",
+                    ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
+                );
+            }
         }
     }
 
