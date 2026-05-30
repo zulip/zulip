@@ -447,6 +447,82 @@ class GitlabHookTests(WebhookTestCase):
             "confidential_issue_hook__key_result_updated", expected_topic_name, expected_message
         )
 
+    def test_create_objective_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #1 Sample objective."
+        expected_message = "Administrator created [objective #1](http://gitlab.local/root/mvc/-/work_items/1):\n\n``` quote\nSample objective.\n```"
+        self.check_webhook("issue_hook__objective_created", expected_topic_name, expected_message)
+
+    def test_create_objective_with_assignee_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #2 Sample objective with assignee."
+        expected_message = "Administrator created [objective #2](http://gitlab.local/root/mvc/-/work_items/2) (assigned to Administrator):\n\n``` quote\nSample objective with assignee.\n```"
+        self.check_webhook(
+            "issue_hook__objective_created_with_assignee", expected_topic_name, expected_message
+        )
+
+    def test_close_objective_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #2 Sample objective with assignee."
+        expected_message = (
+            "Administrator closed [objective #2](http://gitlab.local/root/mvc/-/work_items/2)."
+        )
+        self.check_webhook("issue_hook__objective_closed", expected_topic_name, expected_message)
+
+    def test_reopen_objective_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #2 Sample objective with assignee."
+        expected_message = (
+            "Administrator reopened [objective #2](http://gitlab.local/root/mvc/-/work_items/2)."
+        )
+        self.check_webhook("issue_hook__objective_reopened", expected_topic_name, expected_message)
+
+    def test_update_objective_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #2 Sample objective with assignee."
+        expected_message = (
+            "Administrator updated [objective #2](http://gitlab.local/root/mvc/-/work_items/2)."
+        )
+        self.check_webhook("issue_hook__objective_updated", expected_topic_name, expected_message)
+
+    def test_create_confidential_objective_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #10 Sample Confidential Objective."
+        expected_message = "Administrator created [objective #10](http://gitlab.local/root/mvc/-/work_items/10):\n\n``` quote\nSample Confidential Objective.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__objective_created", expected_topic_name, expected_message
+        )
+
+    def test_create_confidential_objective_with_assignee_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #11 Confidential objective testing"
+        expected_message = "Administrator created [objective #11](http://gitlab.local/root/mvc/-/work_items/11) (assigned to Administrator):\n\n``` quote\nConfidential objective testing.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__objective_created_with_assignee",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_close_confidential_objective_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #11 Confidential objective testing"
+        expected_message = (
+            "Administrator closed [objective #11](http://gitlab.local/root/mvc/-/work_items/11)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__objective_closed", expected_topic_name, expected_message
+        )
+
+    def test_reopen_confidential_objective_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #11 Confidential objective testing"
+        expected_message = (
+            "Administrator reopened [objective #11](http://gitlab.local/root/mvc/-/work_items/11)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__objective_reopened", expected_topic_name, expected_message
+        )
+
+    def test_update_confidential_objective_event_message(self) -> None:
+        expected_topic_name = "mVc / objective #11 Confidential objective testing"
+        expected_message = (
+            "Administrator updated [objective #11](http://gitlab.local/root/mvc/-/work_items/11)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__objective_updated", expected_topic_name, expected_message
+        )
+
     def test_unsupported_work_item_event_message(self) -> None:
         payload = self.webhook_fixture_data(self.webhook_dir_name, "issue_hook__incident_created")
         data = orjson.loads(payload)
