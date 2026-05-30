@@ -221,6 +221,17 @@ def squash_renumbers_into_origin(renames: list[tuple[str, str]], migrations_dir:
             "into the appropriate commits by hand."
         )
         sys.exit(1)
+
+    current_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    print(
+        "Starting rebase of renames into their original commits; if you need "
+        f"to reset to the old state, HEAD is currently at {current_head}"
+    )
     fixups = 0
     for old, new in renames:
         old_path = os.path.join(migrations_dir, old)
