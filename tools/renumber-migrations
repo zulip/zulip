@@ -111,7 +111,17 @@ def get_upstream_files(app_label: str) -> set[str] | None:
             text=True,
             check=True,
         )
-    except (FileNotFoundError, subprocess.CalledProcessError):
+    except FileNotFoundError:
+        return None
+    except subprocess.CalledProcessError:
+        print(
+            "This branch has no upstream tracking branch (@{u} is not set).\n"
+            "Falling back to interactive prompts for each conflict group.\n"
+            "\n"
+            "For the faster auto-resolve flow, you can exit (Ctrl-C), then run:\n"
+            "    git branch --set-upstream-to=upstream/main\n"
+            "and re-run this script."
+        )
         return None
     return {
         basename
