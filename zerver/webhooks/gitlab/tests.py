@@ -523,6 +523,54 @@ class GitlabHookTests(WebhookTestCase):
             "confidential_issue_hook__objective_updated", expected_topic_name, expected_message
         )
 
+    def test_create_test_case_event_message(self) -> None:
+        expected_topic_name = "mVc / test case #10 Sample Test case"
+        expected_message = "Sathwik Shetty created [test case #10](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/10):\n\n``` quote\nSample Test Case\n```"
+        self.check_webhook("issue_hook__test_case_created", expected_topic_name, expected_message)
+
+    def test_close_test_case_event_message(self) -> None:
+        expected_topic_name = "mVc / test case #10 Sample Test case"
+        expected_message = "Sathwik Shetty closed [test case #10](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/10)."
+        self.check_webhook("issue_hook__test_case_closed", expected_topic_name, expected_message)
+
+    def test_reopen_test_case_event_message(self) -> None:
+        expected_topic_name = "mVc / test case #10 Sample Test case"
+        expected_message = "Sathwik Shetty reopened [test case #10](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/10)."
+        self.check_webhook("issue_hook__test_case_reopened", expected_topic_name, expected_message)
+
+    def test_update_test_case_event_message(self) -> None:
+        expected_topic_name = "mVc / test case #10 Sample Test case"
+        expected_message = "Sathwik Shetty updated [test case #10](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/10)."
+        self.check_webhook("issue_hook__test_case_updated", expected_topic_name, expected_message)
+
+    def test_create_confidential_test_case_event_message(self) -> None:
+        expected_topic_name = "mVc / test case #16 Confidential Test Case."
+        expected_message = "Sathwik Shetty created [test case #16](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/16):\n\n``` quote\nConfidential Test Case.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__test_case_created", expected_topic_name, expected_message
+        )
+
+    def test_close_confidential_test_case_event_message(self) -> None:
+        expected_topic_name = "mVc / test case #16 Confidential Test Case."
+        expected_message = "Sathwik Shetty closed [test case #16](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/16)."
+        self.check_webhook(
+            "confidential_issue_hook__test_case_closed", expected_topic_name, expected_message
+        )
+
+    def test_reopen_confidential_test_case_event_message(self) -> None:
+        expected_topic_name = "mVc / test case #16 Confidential Test Case."
+        expected_message = "Sathwik Shetty reopened [test case #16](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/16)."
+        self.check_webhook(
+            "confidential_issue_hook__test_case_reopened", expected_topic_name, expected_message
+        )
+
+    def test_update_confidential_test_case_event_message(self) -> None:
+        expected_topic_name = "mVc / test case #16 Confidential Test Case."
+        expected_message = "Sathwik Shetty updated [test case #16](https://gitlab.com/sathwikshetty33-group/mVc/-/issues/16)."
+        self.check_webhook(
+            "confidential_issue_hook__test_case_updated", expected_topic_name, expected_message
+        )
+
     def test_unsupported_work_item_event_message(self) -> None:
         payload = self.webhook_fixture_data(self.webhook_dir_name, "issue_hook__incident_created")
         data = orjson.loads(payload)
