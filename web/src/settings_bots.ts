@@ -10,6 +10,13 @@ import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
 import type {Bot} from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
+import {
+    EMBEDDED_BOT_TYPE,
+    GENERIC_BOT_TYPE,
+    INCOMING_WEBHOOK_BOT_TYPE_INT,
+    OUTGOING_WEBHOOK_BOT_TYPE,
+    OUTGOING_WEBHOOK_BOT_TYPE_INT,
+} from "./bot_type_values.ts";
 import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import {csrf_token} from "./csrf.ts";
@@ -34,12 +41,6 @@ import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_sort from "./user_sort.ts";
 import * as util from "./util.ts";
-
-const GENERIC_BOT_TYPE = 1;
-const INCOMING_WEBHOOK_BOT_TYPE_INT = 2;
-const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
-const EMBEDDED_BOT_TYPE = "4";
 
 export const org_all_bots_list_dropdown_widget_name = "org_all_bots_list_select_bot_status";
 export const org_your_bots_list_dropdown_widget_name = "org_your_bots_list_select_bot_status";

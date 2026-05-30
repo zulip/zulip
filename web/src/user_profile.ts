@@ -21,6 +21,11 @@ import * as avatar from "./avatar.ts";
 import * as banners from "./banners.ts";
 import * as bot_data from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
+import {
+    EMBEDDED_BOT_TYPE,
+    INCOMING_WEBHOOK_BOT_TYPE_INT,
+    OUTGOING_WEBHOOK_BOT_TYPE,
+} from "./bot_type_values.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as buttons from "./buttons.ts";
@@ -92,10 +97,6 @@ let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
 let original_values: (Record<string, unknown> & {user_id?: string | undefined}) | undefined;
-
-const INCOMING_WEBHOOK_BOT_TYPE_INT = 2;
-const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-const EMBEDDED_BOT_TYPE = "4";
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
