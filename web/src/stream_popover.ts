@@ -397,6 +397,7 @@ export async function build_move_topic_to_stream_popover(
         only_topic_edit: boolean;
         disable_topic_input?: boolean;
         message_placement?: "first" | "intermediate" | "last";
+        has_permission_to_move_all_messages?: boolean;
         stream: sub_store.StreamSubscription | undefined;
         max_topic_length: number;
     } = {
@@ -409,6 +410,7 @@ export async function build_move_topic_to_stream_popover(
         from_message_actions_popover: message !== undefined,
         only_topic_edit,
         max_topic_length: realm.max_topic_length,
+        has_permission_to_move_all_messages: true,
     };
 
     // When the modal is opened for moving the whole topic from left sidebar,
@@ -481,6 +483,22 @@ export async function build_move_topic_to_stream_popover(
         const move_limit_buffer = 5;
         args.disable_topic_input = !message_edit.is_topic_editable(message, move_limit_buffer);
         disable_stream_input = !message_edit.is_stream_editable(message, move_limit_buffer);
+
+        let has_permission_to_move_all_messages = true;
+        const messages_in_topic = message_util.get_loaded_messages_in_topic(
+            current_stream_id,
+            topic_name,
+        );
+        for (const msg of messages_in_topic) {
+            const can_move_msg =
+                message_edit.is_topic_editable(msg, move_limit_buffer) ||
+                message_edit.is_stream_editable(msg, move_limit_buffer);
+
+            if (!can_move_msg) {
+                has_permission_to_move_all_messages = false;
+            }
+        }
+        args.has_permission_to_move_all_messages = has_permission_to_move_all_messages;
 
         // If message is in a search view, default to "move only this message" option,
         // same as if it were the last message in any view.
