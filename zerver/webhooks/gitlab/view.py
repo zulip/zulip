@@ -736,6 +736,10 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Issue Hook Test Case close": partial(get_work_item_event_body, "closed"),
     "Issue Hook Test Case reopen": partial(get_work_item_event_body, "reopened"),
     "Issue Hook Test Case update": partial(get_work_item_event_body, "updated"),
+    "Issue Hook Requirement open": get_work_item_created_event_body,
+    "Issue Hook Requirement close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Requirement reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Requirement update": partial(get_work_item_event_body, "updated"),
     "Confidential Issue Hook open": get_issue_created_event_body,
     "Confidential Issue Hook close": partial(get_issue_event_body, "closed"),
     "Confidential Issue Hook reopen": partial(get_issue_event_body, "reopened"),
@@ -959,6 +963,17 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
         if work_item_type and work_item_type != "Issue":
             event += f" {work_item_type}"
         action = payload["object_attributes"].get("action", "open").tame(check_string)
+        # Requirements combine updated/closed/reopened actions into update action,
+        # but state updates(reopened and closed) have a `state_id` field in the `changes` section of the payload.
+        if (
+            work_item_type == "Requirement"
+            and action == "update"
+            and "state_id" in payload["changes"]
+        ):
+            if payload["object_attributes"]["state"].tame(check_string) == "closed":
+                action = "close"
+            else:
+                action = "reopen"
         event = f"{event} {action}"
     elif event in ["Confidential Note Hook", "Note Hook"]:
         action = payload["object_attributes"]["noteable_type"].tame(check_string)
