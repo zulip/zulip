@@ -2465,6 +2465,12 @@ def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     ignored_tables = {"django_session"}
 
     for model in all_models:
+        # Skip managed=False models -- they wrap session-scoped
+        # temp tables (e.g. DmgUserProfileIdsTempTable) that are
+        # created lazily by export code, not by migrations, so the
+        # table won't exist in test setUp.
+        if not model._meta.managed:
+            continue
         table_name = model._meta.db_table
         if table_name in ignored_tables:
             continue
