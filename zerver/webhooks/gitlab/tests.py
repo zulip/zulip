@@ -571,6 +571,30 @@ class GitlabHookTests(WebhookTestCase):
             "confidential_issue_hook__test_case_updated", expected_topic_name, expected_message
         )
 
+    def test_create_requirement_event_message(self) -> None:
+        expected_topic_name = "mVc / requirement #12 Sample requirement."
+        expected_message = "Sathwik Shetty created [requirement #12](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/12):\n\n``` quote\nSample requirement.\n```"
+        self.check_webhook("issue_hook__requirement_created", expected_topic_name, expected_message)
+
+    def test_archive_requirement_event_message(self) -> None:
+        expected_topic_name = "mVc / requirement #12 Sample requirement."
+        expected_message = "Sathwik Shetty closed [requirement #12](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/12)."
+        self.check_webhook(
+            "issue_hook__requirement_archived", expected_topic_name, expected_message
+        )
+
+    def test_reopen_requirement_event_message(self) -> None:
+        expected_topic_name = "mVc / requirement #12 Sample requirement."
+        expected_message = "Sathwik Shetty reopened [requirement #12](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/12)."
+        self.check_webhook(
+            "issue_hook__requirement_reopened", expected_topic_name, expected_message
+        )
+
+    def test_update_requirement_event_message(self) -> None:
+        expected_topic_name = "mVc / requirement #12 Sample requirement."
+        expected_message = "Sathwik Shetty updated [requirement #12](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/12)."
+        self.check_webhook("issue_hook__requirement_updated", expected_topic_name, expected_message)
+
     def test_unsupported_work_item_event_message(self) -> None:
         payload = self.webhook_fixture_data(self.webhook_dir_name, "issue_hook__incident_created")
         data = orjson.loads(payload)
