@@ -19,6 +19,7 @@ import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
@@ -90,7 +91,8 @@ export function initialize(): void {
 
         $("#main_div").on("contextmenu", ".messagebox", (e) => {
             e.preventDefault();
-        });
+
+	});
     }
 
     // this initializes the trigger that will give off the longtap event, which
@@ -99,6 +101,29 @@ export function initialize(): void {
     if (util.is_mobile()) {
         initialize_long_tap();
     }
+
+    // ISSUE #38845: Rechtsklick auf Nachricht öffnet das Menü
+    $("#main_div").on("contextmenu", ".message_row", (e) => {
+	    // Wenn Text markiert ist, Browser-Menü kopieren
+	    if (window.getSelection()?.toString()) {
+                return;
+	    }
+
+	    if ($(e.target).closest("a, img, .message_control_button").length > 0) {
+	        return;
+	    }
+
+	    e.preventDefault();
+	    e.stopPropagation();
+
+	    const $row = $(e.currentTarget);
+	    const message_id = rows.id($row);
+	    const message = message_lists.current?.get(message_id);
+
+	    if (message !== undefined) {
+                message_actions_popover.toggle_message_actions_menu($row[0]);
+	    }
+    });
 
     function is_clickable_message_element($target: JQuery<Element>): boolean {
         // This function defines all the elements within a message
