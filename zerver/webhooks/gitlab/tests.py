@@ -595,6 +595,92 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Sathwik Shetty updated [requirement #12](https://gitlab.com/sathwikshetty33-group/mVc/-/work_items/12)."
         self.check_webhook("issue_hook__requirement_updated", expected_topic_name, expected_message)
 
+    def test_create_epic_event_message(self) -> None:
+        expected_topic_name = "sathwikshetty33-group / epic #3 Sample Epic"
+        expected_message = "Sathwik Shetty created [epic #3](https://gitlab.com/groups/sathwikshetty33-group/-/work_items/3):\n\n``` quote\nSample Epic Without assignee.\n```"
+        self.check_webhook("issue_hook__epic_created", expected_topic_name, expected_message)
+
+    def test_create_epic_with_assignee_event_message(self) -> None:
+        expected_topic_name = "sathwikshetty33-group / epic #2 Sample Zulip Epic"
+        expected_message = "Sathwik Shetty created [epic #2](https://gitlab.com/groups/sathwikshetty33-group/-/work_items/2) (assigned to Sathwik Shetty):\n\n``` quote\nSample Epic.\n```"
+        self.check_webhook(
+            "issue_hook__epic_created_with_assignee", expected_topic_name, expected_message
+        )
+
+    def test_close_epic_event_message(self) -> None:
+        expected_topic_name = "sathwikshetty33-group / epic #2 Sample Zulip Epic"
+        expected_message = "Sathwik Shetty closed [epic #2](https://gitlab.com/groups/sathwikshetty33-group/-/work_items/2)."
+        self.check_webhook("issue_hook__epic_closed", expected_topic_name, expected_message)
+
+    def test_reopen_epic_event_message(self) -> None:
+        expected_topic_name = "sathwikshetty33-group / epic #2 Sample Zulip Epic"
+        expected_message = "Sathwik Shetty reopened [epic #2](https://gitlab.com/groups/sathwikshetty33-group/-/work_items/2)."
+        self.check_webhook("issue_hook__epic_reopened", expected_topic_name, expected_message)
+
+    def test_update_epic_event_message(self) -> None:
+        expected_topic_name = "sathwikshetty33-group / epic #2 Sample Zulip Epic"
+        expected_message = "Sathwik Shetty updated [epic #2](https://gitlab.com/groups/sathwikshetty33-group/-/work_items/2)."
+        self.check_webhook("issue_hook__epic_updated", expected_topic_name, expected_message)
+
+    def test_create_confidential_epic_event_message(self) -> None:
+        expected_topic_name = "test / epic #1 Sample Confidential Epic."
+        expected_message = (
+            "Administrator created [epic #1](http://gitlab.local/groups/test/-/work_items/1)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__epic_created", expected_topic_name, expected_message
+        )
+
+    def test_create_confidential_epic_with_assignee_event_message(self) -> None:
+        expected_topic_name = "test / epic #2 Sample Confidential Epic with assignee."
+        expected_message = "Administrator created [epic #2](http://gitlab.local/groups/test/-/work_items/2) (assigned to Administrator):\n\n``` quote\nSample Confidential Epic with assignee.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__epic_created_with_assignee",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_close_confidential_epic_event_message(self) -> None:
+        expected_topic_name = "test / epic #2 Sample Confidential Epic with assignee."
+        expected_message = (
+            "Administrator closed [epic #2](http://gitlab.local/groups/test/-/work_items/2)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__epic_closed", expected_topic_name, expected_message
+        )
+
+    def test_reopen_confidential_epic_event_message(self) -> None:
+        expected_topic_name = "test / epic #2 Sample Confidential Epic with assignee."
+        expected_message = (
+            "Administrator reopened [epic #2](http://gitlab.local/groups/test/-/work_items/2)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__epic_reopened", expected_topic_name, expected_message
+        )
+
+    def test_update_confidential_epic_event_message(self) -> None:
+        expected_topic_name = "test / epic #2 Sample Confidential Epic with assignee."
+        expected_message = (
+            "Administrator updated [epic #2](http://gitlab.local/groups/test/-/work_items/2)."
+        )
+        self.check_webhook(
+            "confidential_issue_hook__epic_updated", expected_topic_name, expected_message
+        )
+
+    def test_create_epic_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic_name = "notifications"
+        expected_message = "[[sathwikshetty33-group](https://gitlab.com/groups/sathwikshetty33-group)] Sathwik Shetty created [epic #3 Sample Epic](https://gitlab.com/groups/sathwikshetty33-group/-/work_items/3):\n\n``` quote\nSample Epic Without assignee.\n```"
+        self.check_webhook("issue_hook__epic_created", expected_topic_name, expected_message)
+
+    def test_close_confidential_epic_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic_name = "notifications"
+        expected_message = "[[test](http://gitlab.local/groups/test)] Administrator closed [epic #2 Sample Confidential Epic with assignee.](http://gitlab.local/groups/test/-/work_items/2)"
+        self.check_webhook(
+            "confidential_issue_hook__epic_closed", expected_topic_name, expected_message
+        )
+
     def test_unsupported_work_item_event_message(self) -> None:
         payload = self.webhook_fixture_data(self.webhook_dir_name, "issue_hook__incident_created")
         data = orjson.loads(payload)
