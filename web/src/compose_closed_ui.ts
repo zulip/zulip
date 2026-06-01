@@ -133,31 +133,22 @@ export function get_recipient_label(
 
 // Exported for tests
 export let update_reply_button_state = (disable = false): void => {
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
         if (maybe_get_selected_message_stream_id() !== undefined) {
-            $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
-                "data-reply-button-type",
-                "stream_disabled",
-            );
+            $compose_reply_button_wrapper.attr("data-reply-button-type", "stream_disabled");
         } else {
-            $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
-                "data-reply-button-type",
-                "direct_disabled",
-            );
+            $compose_reply_button_wrapper.attr("data-reply-button-type", "direct_disabled");
         }
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
-            "data-reply-button-type",
-            "selected_message",
-        );
+        $compose_reply_button_wrapper.attr("data-reply-button-type", "selected_message");
     } else {
-        $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
-            "data-reply-button-type",
-            "selected_conversation",
-        );
+        $compose_reply_button_wrapper.attr("data-reply-button-type", "selected_conversation");
     }
 };
 
