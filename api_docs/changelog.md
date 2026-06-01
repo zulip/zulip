@@ -27,10 +27,12 @@ format used by the Zulip server that they are interacting with.
   boolean field to the export objects returned. It is `true`
   for records that were carried across a realm import; the export
   happened on a previous server, so its tarball is no longer stored
-  on this server.
+  on this server. This change was also backported to the Zulip 12.x
+  series, at feature level 499.
 * `DELETE /export/realm/{export_id}`: Export records with the
-  `export_from_prior_server` field set to `true` cannot be deleted, as
-  the server has no exported data to delete for them.
+  `export_from_prior_server` field set to `true` cannot be deleted, as the
+  server has no exported data to delete for them. This change was also
+  backported to the Zulip 12.x series, at feature level 499.
 
 **Feature level 505**
 
@@ -57,8 +59,23 @@ format used by the Zulip server that they are interacting with.
 
 No changes; start of Zulip 13.0 development branch.
 
-Feature levels 499-501 reserved for future use in 12.x maintenance
+Feature levels 500-501 reserved for future use in 12.x maintenance
 releases.
+
+## Changes in Zulip 12.1
+
+**Feature level 499**
+
+* [`GET /export/realm`](/api/get-realm-exports),
+  [`GET /events`](/api/get-events): Added an `export_from_prior_server`
+  boolean field to the export objects returned. It is `true`
+  for records that were carried across a realm import; the export
+  happened on a previous server, so its tarball is no longer stored
+  on this server. Backported change from feature level 506.
+* `DELETE /export/realm/{export_id}`: Export records with the
+  `export_from_prior_server` field set to `true` cannot be deleted, as the
+  server has no exported data to delete for them. Backported change from feature
+  level 506.
 
 ## Changes in Zulip 12.0
 
