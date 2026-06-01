@@ -255,7 +255,7 @@
 
     .color_animated_button {
         .zulip-icon {
-            color: hsl(0deg 0% 100%);
+            color: var(--color-animated-button-text);
         }
     }
 
