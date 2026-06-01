@@ -148,17 +148,19 @@ def get_issue_event_body(action: str, payload: WildValue, include_title: bool, r
 def get_work_item_event_body(
     action: str, payload: WildValue, include_title: bool, realm: Realm
 ) -> str:
-    stringified_description = get_work_item_description(payload)
+    message: str | None = None
+    assignees: list[dict[str, str]] | None = None
+    if action == "created":
+        message = get_work_item_description(payload)
+        assignees = replace_assignees_username_with_name(get_assignees(payload))
 
     return get_pull_request_event_message(
         user_name=get_user_name(payload, realm),
         action=action,
         url=get_object_url(payload),
         number=payload["object_attributes"]["iid"].tame(check_int),
-        message=stringified_description if action == "created" else None,
-        assignees=replace_assignees_username_with_name(get_assignees(payload))
-        if action == "created"
-        else None,
+        message=message,
+        assignees=assignees,
         type=payload["object_attributes"]["type"].tame(check_string).lower(),
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
@@ -627,6 +629,10 @@ def get_emoji_event_body(action: str, payload: WildValue, include_title: bool, r
 
 
 def get_repo_name(payload: WildValue) -> str:
+    if payload.get("object_attributes", {}).get("type").tame(check_none_or(check_string)) == "Epic":
+        # Epics are group-level entities, but their payloads don't have a `group` section.
+        return payload["object_attributes"]["url"].tame(check_string).split("/")[-4]
+
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
 
@@ -661,6 +667,9 @@ def get_user_name(payload: WildValue, realm: Realm) -> str:
 
 
 def get_project_homepage(payload: WildValue) -> str:
+    if payload.get("object_attributes", {}).get("type").tame(check_none_or(check_string)) == "Epic":
+        # Epics are group-level but their payload don't have a `group` section.
+        return payload["object_attributes"]["url"].tame(check_string).split("/-/")[0]
     if "project" in payload:
         return payload["project"]["web_url"].tame(check_string)
     if "repository" in payload:
@@ -731,6 +740,10 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Issue Hook Requirement close": partial(get_work_item_event_body, "closed"),
     "Issue Hook Requirement reopen": partial(get_work_item_event_body, "reopened"),
     "Issue Hook Requirement update": partial(get_work_item_event_body, "updated"),
+    "Issue Hook Epic open": partial(get_work_item_event_body, "created"),
+    "Issue Hook Epic close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Epic reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Epic update": partial(get_work_item_event_body, "updated"),
     "Confidential Issue Hook open": get_issue_created_event_body,
     "Confidential Issue Hook close": partial(get_issue_event_body, "closed"),
     "Confidential Issue Hook reopen": partial(get_issue_event_body, "reopened"),
@@ -755,6 +768,10 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Confidential Issue Hook Test Case close": partial(get_work_item_event_body, "closed"),
     "Confidential Issue Hook Test Case reopen": partial(get_work_item_event_body, "reopened"),
     "Confidential Issue Hook Test Case update": partial(get_work_item_event_body, "updated"),
+    "Confidential Issue Hook Epic open": partial(get_work_item_event_body, "created"),
+    "Confidential Issue Hook Epic close": partial(get_work_item_event_body, "closed"),
+    "Confidential Issue Hook Epic reopen": partial(get_work_item_event_body, "reopened"),
+    "Confidential Issue Hook Epic update": partial(get_work_item_event_body, "updated"),
     "Note Hook Commit": get_commented_commit_event_body,
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
@@ -804,11 +821,9 @@ def api_gitlab_webhook(
     event = get_event(request, payload, branches)
 
     # Ignore events from private projects if the URL option is set
-    if (
-        "project" in payload
-        and payload["project"]["visibility_level"].tame(check_int) == 0
-        and ignore_private_projects
-    ):
+    # Epics belongs to groups and send `project` as null.
+    project = payload.get("project")
+    if project and project["visibility_level"].tame(check_int) == 0 and ignore_private_projects:
         return json_success(request)
 
     if event is not None:

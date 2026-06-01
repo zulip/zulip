@@ -1,0 +1,83 @@
+{
+    "object_kind": "work_item",
+    "event_type": "work_item",
+    "user": {
+        "id": 34850171,
+        "name": "Sathwik Shetty",
+        "username": "sathwikshetty33",
+        "avatar_url": "https://secure.gravatar.com/avatar/79b0d73b098ae394e65a2fe2002edb1a994627914e4889e35cd759fbbf326a5b?s=80&d=identicon",
+        "email": "[REDACTED]"
+    },
+    "project": null,
+    "object_attributes": {
+        "author_id": 34850171,
+        "closed_at": null,
+        "confidential": false,
+        "created_at": "2026-05-28T05:54:03.097Z",
+        "description": "Sample Epic Without assignee.",
+        "discussion_locked": null,
+        "due_date": null,
+        "id": 191204183,
+        "iid": 3,
+        "last_edited_at": null,
+        "last_edited_by_id": null,
+        "milestone_id": null,
+        "moved_to_id": null,
+        "duplicated_to_id": null,
+        "project_id": null,
+        "relative_position": null,
+        "state_id": 1,
+        "time_estimate": 0,
+        "title": "Sample Epic",
+        "updated_at": "2026-05-28T05:54:03.097Z",
+        "updated_by_id": null,
+        "weight": null,
+        "health_status": null,
+        "type": "Epic",
+        "url": "https://gitlab.com/groups/sathwikshetty33-group/-/work_items/3",
+        "total_time_spent": 0,
+        "time_change": 0,
+        "human_total_time_spent": null,
+        "human_time_change": null,
+        "human_time_estimate": null,
+        "assignee_ids": [],
+        "assignee_id": null,
+        "labels": [],
+        "state": "opened",
+        "severity": "unknown",
+        "customer_relations_contacts": [],
+        "action": "open"
+    },
+    "labels": [],
+    "changes": {
+        "author_id": {
+            "previous": null,
+            "current": 34850171
+        },
+        "created_at": {
+            "previous": null,
+            "current": "2026-05-28T05:54:03.097Z"
+        },
+        "description": {
+            "previous": null,
+            "current": "Sample Epic Without assignee."
+        },
+        "id": {
+            "previous": null,
+            "current": 191204183
+        },
+        "iid": {
+            "previous": null,
+            "current": 3
+        },
+        "title": {
+            "previous": null,
+            "current": "Sample Epic"
+        },
+        "updated_at": {
+            "previous": null,
+            "current": "2026-05-28T05:54:03.097Z"
+        }
+    },
+    "repository": null
+}
