@@ -204,7 +204,7 @@ run_test("reply_label", ({mock_template}) => {
 
 run_test("empty_narrow", () => {
     message_lists.current.visibly_empty = () => true;
-    compose_closed_ui.update_recipient_text_for_reply_button();
+    compose_closed_ui.update_reply_button_with_recipient_context();
     const label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });
@@ -225,21 +225,21 @@ run_test("test_non_message_list_input", ({mock_template}) => {
     stream_data.add_sub_for_tests(stream);
 
     // Channel and topic row.
-    compose_closed_ui.update_recipient_text_for_reply_button({
+    compose_closed_ui.update_reply_button_with_recipient_context({
         stream_id: stream.stream_id,
         topic: "topic test",
     });
     test_reply_label("<rendered-channel-stub:stream test> &gt; topic test");
 
     // Direct message conversation with current user row.
-    compose_closed_ui.update_recipient_text_for_reply_button({
+    compose_closed_ui.update_reply_button_with_recipient_context({
         user_ids: [current_user.user_id],
     });
     let label = $("#left_bar_compose_reply_button_big").html();
     assert.equal(label, "translated: Write yourself a note");
 
     // Invalid data for a the reply button text.
-    compose_closed_ui.update_recipient_text_for_reply_button({
+    compose_closed_ui.update_reply_button_with_recipient_context({
         invalid_field: "something unexpected",
     });
     label = $("#left_bar_compose_reply_button_big").text();
