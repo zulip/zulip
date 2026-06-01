@@ -27976,7 +27976,7 @@ components:
             still being generated, or if this export happened
             on a previous server.
 
-            **Changes**: Starting in Zulip 13.0 (feature level ZF-6bb2a7),
+            **Changes**: Starting in Zulip 13.0 (feature level 506),
             this is also `null` for exports that happened on a previous
             server.
         pending:
@@ -27998,7 +27998,7 @@ components:
             realm import; the record is preserved for audit purposes
             but its data is no longer available for download.
 
-            **Changes**: New in Zulip 13.0 (feature level ZF-6bb2a7).
+            **Changes**: New in Zulip 13.0 (feature level 506).
         export_type:
           type: string
           enum:
