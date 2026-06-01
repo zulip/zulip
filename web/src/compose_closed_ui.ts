@@ -189,13 +189,12 @@ export function should_disable_compose_reply_button_for_direct_message(
 
 export function update_buttons(update_type?: string): void {
     update_new_conversation_button(update_type === "stream" ? "stream" : "non-specific");
-    // We omit recipient_information here, so update_reply_button_with_recipient_context
-    // derives the reply target from the current message list: the selected
+    // We omit recipient_information here, so update_reply_button derives
+    // the reply target from the current message list: the selected
     // message, or the narrowed conversation in an empty view. (The Inbox
     // and Recent Conversations views instead pass the reply target from
     // their focused row.)
-    update_reply_button_with_recipient_context();
-    update_reply_button_state();
+    update_reply_button();
 }
 
 export function maybe_update_buttons_for_dm_recipient(): void {
@@ -272,6 +271,15 @@ export function update_reply_button_with_recipient_context(
     }
 }
 
+// This should be called when updating the reply button so that
+// update_reply_button_with_recipient_context() runs before
+// update_reply_button_state(), ensuring that the button wrapper
+// contains the relevant recipient metadata.
+export function update_reply_button(): void {
+    update_reply_button_with_recipient_context();
+    update_reply_button_state();
+}
+
 export function initialize(): void {
     // When the message selection changes, change the label on the Reply button.
     $(document).on("message_selected.zulip", () => {
@@ -279,8 +287,7 @@ export function initialize(): void {
             // message_selected events can occur with Recent Conversations
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
-            update_reply_button_with_recipient_context();
-            update_reply_button_state();
+            update_reply_button();
         }
     });
 
