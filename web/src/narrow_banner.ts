@@ -539,12 +539,6 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             // mentions:me is redirected to is:mentioned in Filter.parse(),
             // so mentioned_user will never be the current user here.
             return {
-                title: $t(
-                    {
-                        defaultMessage: "No messages in your message history mention {person} yet.",
-                    },
-                    {person: mentioned_user.full_name},
-                ),
                 title_html: $t_html(
                     {
                         defaultMessage:
