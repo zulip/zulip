@@ -23,6 +23,7 @@ type RecipientLabel = {
     stream?: StreamSubscription;
     topic_display_name?: string;
     is_dm_with_self?: boolean;
+    user_ids?: number[];
 };
 
 function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
@@ -50,6 +51,7 @@ function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel 
     const recipient_label: RecipientLabel = {
         label_text,
         is_dm_with_self,
+        user_ids,
     };
     return recipient_label;
 }
@@ -210,12 +212,15 @@ export function update_buttons(update_type?: string): void {
         // Based on whether there's a selected channel message in
         // the current message list.
         disable_reply_button = should_disable_compose_reply_button_for_stream();
-    } else {
-        // Default case for most views.
-        set_standard_text_for_reply_button();
     }
 
     update_new_conversation_button(update_type === "stream" ? "stream" : "non-specific");
+    // We omit recipient_information here, so update_reply_button_with_recipient_context
+    // derives the reply target from the current message list: the selected
+    // message, or the narrowed conversation in an empty view. (The Inbox
+    // and Recent Conversations views instead pass the reply target from
+    // their focused row.)
+    update_reply_button_with_recipient_context();
     update_reply_button_state(disable_reply_button);
 }
 
@@ -232,12 +237,22 @@ function set_reply_button_label(label: string): void {
 
 export function set_standard_text_for_reply_button(): void {
     set_reply_button_label($t({defaultMessage: "Compose message"}));
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
+    // Clear any stale recipient context from a previous reply target.
+    $compose_reply_button_wrapper.removeAttr("data-stream-id");
+    $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
+    $compose_reply_button_wrapper.removeAttr("data-reply-button-type");
 }
 
-export function update_recipient_text_for_reply_button(
+export function update_reply_button_with_recipient_context(
     recipient_information?: ReplyRecipientInformation,
 ): void {
     const recipient_label = get_recipient_label(recipient_information);
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
     if (recipient_label !== undefined) {
         const empty_string_topic_display_name = util.get_final_topic_display_name("");
         const rendered_recipient_label = render_reply_recipient_label({
@@ -248,6 +263,32 @@ export function update_recipient_text_for_reply_button(
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
         });
+        // We store the recipient state so that update_reply_button_state
+        // can use that information without re-examining the message list
+        // or narrow state. The state is reset/unset by
+        // set_standard_text_for_reply_button().
+        if (recipient_label.stream) {
+            // Channel message recipient.
+            $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
+            $compose_reply_button_wrapper.attr(
+                "data-stream-id",
+                recipient_label.stream.stream_id.toString(),
+            );
+        } else if (recipient_label.user_ids) {
+            // Direct message recipient.
+            $compose_reply_button_wrapper.removeAttr("data-stream-id");
+            $compose_reply_button_wrapper.attr(
+                "data-user-ids-string",
+                recipient_label.user_ids.join(","),
+            );
+        } else {
+            // Fallback case: recipient label from display_reply_to
+            // text when we couldn't decode user IDs from the narrow
+            // URL. We can't check permissions, so we leave the
+            // button enabled.
+            $compose_reply_button_wrapper.removeAttr("data-stream-id");
+            $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
+        }
         $("#left_bar_compose_reply_button_big").html(rendered_recipient_label);
     } else {
         set_standard_text_for_reply_button();
@@ -273,7 +314,7 @@ export function initialize(): void {
             // message_selected events can occur with Recent Conversations
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
-            update_recipient_text_for_reply_button();
+            update_reply_button_with_recipient_context();
             update_reply_button_state(
                 !can_user_reply_to_message(message_lists.current!.selected_id()),
             );
