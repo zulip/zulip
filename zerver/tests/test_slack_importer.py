@@ -2539,38 +2539,36 @@ To Do
 
         # We don't want to test to whole realm import process here but only that
         # realm import calls are made with correct arguments and different cases
-        # are handled well.
-        realm = do_create_realm(
-            string_id=prereg_realm.string_id,
-            name=prereg_realm.name,
-        )
+        # are handled well. do_import_realm creates the realm (and its users) as
+        # part of the import, so mock it to do so here -- matching production,
+        # where no realm with this subdomain exists until the import creates it.
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            realm = do_create_realm(
+                string_id=prereg_realm.string_id,
+                name=prereg_realm.name,
+            )
+            do_create_user("email1", "password", realm, "full_name", acting_user=None)
+            do_create_user(
+                "bot_email",
+                "password",
+                realm,
+                "bot_full_name",
+                bot_type=UserProfile.DEFAULT_BOT,
+                acting_user=None,
+            )
+            self.assertEqual(
+                get_email_address_visibility_default(realm.org_type),
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            )
+            return realm
 
-        test_user = do_create_user("email1", "password", realm, "full_name", acting_user=None)
-        test_bot_user = do_create_user(
-            "bot_email",
-            "password",
-            realm,
-            "bot_full_name",
-            bot_type=UserProfile.DEFAULT_BOT,
-            acting_user=None,
-        )
-        self.assertEqual(
-            get_email_address_visibility_default(realm.org_type),
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-        )
-        self.assertEqual(
-            test_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        )
-        self.assertEqual(
-            test_bot_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-        )
         with (
             mock.patch(
                 "zerver.actions.data_import.save_attachment_contents"
             ) as mocked_save_attachment,
             mock.patch("zerver.actions.data_import.do_convert_zipfile") as mocked_convert_zipfile,
             mock.patch(
-                "zerver.actions.data_import.do_import_realm", return_value=realm
+                "zerver.actions.data_import.do_import_realm", side_effect=fake_do_import_realm
             ) as mocked_import_realm,
         ):
             from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -2587,20 +2585,21 @@ To Do
         self.assertTrue(mocked_save_attachment.called)
         self.assertTrue(mocked_convert_zipfile.called)
         self.assertTrue(mocked_import_realm.called)
-        realm.refresh_from_db()
+        realm = Realm.objects.get(string_id=prereg_realm.string_id)
         self.assertEqual(realm.org_type, prereg_realm.org_type)
         self.assertEqual(realm.default_language, prereg_realm.default_language)
         prereg_realm.refresh_from_db()
         self.assertTrue(prereg_realm.data_import_metadata["need_select_realm_owner"])
 
-        # Check that imported users have user provided email visibility setting.
-        test_user.refresh_from_db()
+        # Check that imported non-bot users have the importer-provided email
+        # visibility setting.
+        test_user = UserProfile.objects.get(realm=realm, delivery_email="email1")
         self.assertEqual(
             test_user.email_address_visibility,
             importer_set_email_address_visibility,
         )
         # Check that bots were not impacted by this setting.
-        test_bot_user.refresh_from_db()
+        test_bot_user = UserProfile.objects.get(realm=realm, delivery_email="bot_email")
         self.assertEqual(
             test_bot_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         )
@@ -2698,16 +2697,22 @@ To Do
             email="test_import_slack_data_user@example.com",
             data_import_metadata={"import_from": "slack"},
         )
-        mock_realm = do_create_realm(
-            string_id=prereg_realm.string_id,
-            name=prereg_realm.name,
-        )
-        mock_do_import_realm.return_value = mock_realm
 
-        importing_user = UserProfile.objects.create(
-            realm=mock_realm,
-            delivery_email=prereg_realm.email,
-        )
+        # do_import_realm creates the realm (with the importing user) during
+        # the import; mock it to do so, matching production where the realm
+        # does not exist until the import creates it.
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            realm = do_create_realm(
+                string_id=prereg_realm.string_id,
+                name=prereg_realm.name,
+            )
+            UserProfile.objects.create(
+                realm=realm,
+                delivery_email=prereg_realm.email,
+            )
+            return realm
+
+        mock_do_import_realm.side_effect = fake_do_import_realm
 
         event = {
             "preregistration_realm_id": prereg_realm.id,
@@ -2725,12 +2730,14 @@ To Do
 
         prereg_realm.refresh_from_db()
         self.assertEqual(prereg_realm.status, 1)  # STATUS_USED
-        self.assertEqual(prereg_realm.created_realm, mock_realm)
+        realm = prereg_realm.created_realm
+        assert realm is not None
+        self.assertEqual(realm.string_id, prereg_realm.string_id)
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
         self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
 
         # Check that the importing user was made the realm owner
-        importing_user.refresh_from_db()
+        importing_user = UserProfile.objects.get(realm=realm, delivery_email=prereg_realm.email)
         self.assertEqual(importing_user.role, UserProfile.ROLE_REALM_OWNER)
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
@@ -2760,11 +2767,17 @@ To Do
         confirmation_key = find_key_by_email(email)
         assert confirmation_key is not None
         prereg_realm = PreregistrationRealm.objects.get(email=email)
-        mock_realm = do_create_realm(
-            string_id=prereg_realm.string_id,
-            name=prereg_realm.name,
-        )
-        mock_do_import_realm.return_value = mock_realm
+
+        # do_import_realm creates the realm during the import; mock it to do
+        # so, matching production where the realm does not exist until the
+        # import creates it.
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            return do_create_realm(
+                string_id=prereg_realm.string_id,
+                name=prereg_realm.name,
+            )
+
+        mock_do_import_realm.side_effect = fake_do_import_realm
 
         event = {
             "preregistration_realm_id": prereg_realm.id,
@@ -2833,7 +2846,8 @@ To Do
 
         prereg_realm.refresh_from_db()
         self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
-        self.assertEqual(prereg_realm.created_realm, mock_realm)
+        assert prereg_realm.created_realm is not None
+        self.assertEqual(prereg_realm.created_realm.string_id, prereg_realm.string_id)
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
         self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
         self.assertIsNone(prereg_realm.data_import_metadata.get("user_activation_url"))
@@ -2884,18 +2898,21 @@ To Do
         mock_do_convert_zipfile: mock.Mock,
         mock_do_import_realm: mock.Mock,
     ) -> None:
+        # If do_import_realm durably creates the realm and then fails during a
+        # later step, the failure handler must delete the half-imported realm
+        # that this import created.
         prereg_realm = PreregistrationRealm.objects.create(
             string_id="test-realm",
             name="Test Realm",
             email="test@example.com",
             data_import_metadata={"import_from": "slack"},
         )
-        do_create_realm(
-            string_id=prereg_realm.string_id,
-            name=prereg_realm.name,
-        )
-        self.assertTrue(Realm.objects.filter(string_id=prereg_realm.string_id).exists())
-        mock_do_import_realm.side_effect = AssertionError("Import failed")
+
+        def create_realm_then_fail(*args: object, **kwargs: object) -> Realm:
+            do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            raise AssertionError("Import failed")
+
+        mock_do_import_realm.side_effect = create_realm_then_fail
         event = {
             "preregistration_realm_id": prereg_realm.id,
             "filename": "import/test/slack.zip",
