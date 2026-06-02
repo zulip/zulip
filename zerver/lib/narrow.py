@@ -938,18 +938,18 @@ def update_narrow_terms_containing_with_operator(
 
 
 def exclude_muting_conditions(user_profile: UserProfile, narrow: list[NarrowParameter] | None) -> Q:
-    channel_id = None
+    channel_ids: list[int] = []
     try:
         # Note: It is okay here to not check access to channel
         # because we are only using the channel ID to exclude data,
         # not to include results.
         channel = get_channel_from_narrow_access_unchecked(narrow, user_profile.realm)
         if channel is not None:
-            channel_id = channel.id
+            channel_ids = [channel.id]
     except Stream.DoesNotExist:
         pass
 
-    conditions = exclude_stream_and_topic_mutes(user_profile, channel_id)
+    conditions = exclude_stream_and_topic_mutes(user_profile, channel_ids)
 
     # Muted user logic for hiding messages is implemented entirely
     # client-side. This is by design, as it allows UI to hint that
