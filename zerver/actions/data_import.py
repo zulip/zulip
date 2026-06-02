@@ -12,6 +12,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.create_realm import get_email_address_visibility_default
+from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import do_delete_all_realm_attachments
 from zerver.actions.users import do_change_user_role
 from zerver.context_processors import is_realm_import_enabled
@@ -124,12 +125,24 @@ def import_slack_data(event: dict[str, Any]) -> None:
 
             # Try finding the user who imported this realm and make them owner.
             try:
-                importing_user = get_user_by_delivery_email(preregistration_realm.email, realm)
-                assert (
-                    importing_user.is_active
-                    and not importing_user.is_bot
-                    and not importing_user.is_mirror_dummy
+                importing_user: UserProfile | None = get_user_by_delivery_email(
+                    preregistration_realm.email, realm
                 )
+            except UserProfile.DoesNotExist:
+                importing_user = None
+
+            if importing_user is None or importing_user.is_bot or importing_user.is_mirror_dummy:
+                # The email address that the importing user validated
+                # with Zulip either does not appear in the data export,
+                # or maps to an account that cannot own the
+                # organization (a bot or a placeholder/mirror-dummy
+                # account). Prompt them to pick which account is theirs.
+                preregistration_realm.data_import_metadata["need_select_realm_owner"] = True
+            else:
+                if not importing_user.is_active:
+                    # The importer's account was deactivated in the
+                    # export; reactivate it so they can own the realm.
+                    do_reactivate_user(importing_user, acting_user=None)
                 if importing_user.role != UserProfile.ROLE_REALM_OWNER:
                     do_change_user_role(
                         importing_user,
@@ -138,11 +151,6 @@ def import_slack_data(event: dict[str, Any]) -> None:
                         notify=False,
                     )
                 preregistration_realm.status = confirmation_settings.STATUS_USED
-            except UserProfile.DoesNotExist:
-                # If the email address that the importing user
-                # validated with Zulip does not appear in the data
-                # export, we will prompt them which account is theirs.
-                preregistration_realm.data_import_metadata["need_select_realm_owner"] = True
 
             preregistration_realm.created_realm = realm
             preregistration_realm.data_import_metadata["is_import_work_queued"] = False

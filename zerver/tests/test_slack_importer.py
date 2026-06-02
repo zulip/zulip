@@ -25,6 +25,7 @@ from confirmation.models import Confirmation, create_confirmation_link, get_obje
 from zerver.actions.create_realm import do_create_realm, get_email_address_visibility_default
 from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
+from zerver.actions.users import do_deactivate_user
 from zerver.data_import.import_util import (
     UploadFileRequest,
     UploadRecordData,
@@ -2761,6 +2762,107 @@ To Do
         # Check that the importing user was made the realm owner
         importing_user = UserProfile.objects.get(realm=realm, delivery_email=prereg_realm.email)
         self.assertEqual(importing_user.role, UserProfile.ROLE_REALM_OWNER)
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_reactivates_deactivated_importing_user(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # If the importing user's account was deactivated in the export, the
+        # import must not fail at the end (throwing away the imported realm);
+        # instead reactivate the account and make it the realm owner.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm-inactive-owner",
+            name="Test Realm",
+            email="importer@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            importing_user = do_create_user(
+                prereg_realm.email,
+                "password",
+                realm,
+                "Importing user",
+                acting_user=None,
+            )
+            do_deactivate_user(importing_user, acting_user=None)
+            return realm
+
+        mock_do_import_realm.side_effect = fake_do_import_realm
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        import_slack_data(event)
+
+        prereg_realm.refresh_from_db()
+        realm = prereg_realm.created_realm
+        assert realm is not None
+        # The imported realm is preserved and its owner reactivated.
+        self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
+        self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
+        importing_user = UserProfile.objects.get(realm=realm, delivery_email=prereg_realm.email)
+        self.assertTrue(importing_user.is_active)
+        self.assertEqual(importing_user.role, UserProfile.ROLE_REALM_OWNER)
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_importing_user_is_bot_prompts_owner_selection(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # If the importer's email maps to a bot account, it cannot own the
+        # realm; fall back to the "select your account" flow rather than
+        # crashing and discarding the imported realm.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm-bot-owner",
+            name="Test Realm",
+            email="bot-importer@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            owner = do_create_user(
+                "human-owner@example.com", "password", realm, "Human", acting_user=None
+            )
+            do_create_user(
+                prereg_realm.email,
+                "password",
+                realm,
+                "Bot account",
+                bot_type=UserProfile.DEFAULT_BOT,
+                bot_owner=owner,
+                acting_user=None,
+            )
+            return realm
+
+        mock_do_import_realm.side_effect = fake_do_import_realm
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        import_slack_data(event)
+
+        prereg_realm.refresh_from_db()
+        realm = prereg_realm.created_realm
+        assert realm is not None
+        # The realm is preserved; the user is asked to select an owner.
+        self.assertTrue(prereg_realm.data_import_metadata["need_select_realm_owner"])
+        self.assertNotEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")
