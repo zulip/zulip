@@ -47,6 +47,20 @@ def import_slack_data(event: dict[str, Any]) -> None:
 
     preregistration_realm = PreregistrationRealm.objects.get(id=event["preregistration_realm_id"])
     string_id = preregistration_realm.string_id
+
+    if Realm.objects.filter(string_id=string_id).exists():
+        # The subdomain is already taken -- e.g. by an earlier or
+        # concurrent import of the same subdomain that won the race to
+        # create the realm (string_id is unique). Importing would fail
+        # on that unique constraint, and we must not touch the existing
+        # realm, so abort before the expensive conversion work and
+        # surface the conflict to the user.
+        logger.error("(%s) Aborting Slack import: subdomain is already in use", string_id)
+        preregistration_realm.data_import_metadata["is_import_work_queued"] = False
+        preregistration_realm.data_import_metadata["subdomain_unavailable"] = True
+        preregistration_realm.save(update_fields=["data_import_metadata"])
+        return
+
     output_dir = tempfile.mkdtemp(
         prefix=f"import-{preregistration_realm.id}-converted-",
         dir=settings.IMPORT_TMPFILE_DIRECTORY,

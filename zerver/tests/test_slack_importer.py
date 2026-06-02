@@ -3058,6 +3058,56 @@ To Do
         # A non-string_id error must not be reported as a taken subdomain.
         self.assertNotIn("subdomain_unavailable", prereg_realm.data_import_metadata)
 
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_aborts_when_subdomain_taken(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # If a realm with this subdomain already exists when the import job
+        # starts -- e.g. an earlier import of the same subdomain finished
+        # first -- abort without attempting the (doomed) import and without
+        # touching the existing realm.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack", "is_import_work_queued": True},
+        )
+        other_realm = do_create_realm(
+            string_id=prereg_realm.string_id,
+            name=prereg_realm.name,
+        )
+        other_user = UserProfile.objects.create(
+            realm=other_realm,
+            delivery_email="someone@example.com",
+            email="someone@example.com",
+        )
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with self.assertLogs("zulip.registration", "ERROR") as logs:
+            import_slack_data(event)
+        self.assertIn("subdomain is already in use", logs.output[0])
+
+        # The import was not attempted, and the existing realm is untouched.
+        mock_save_attachment_contents.assert_not_called()
+        mock_do_convert_zipfile.assert_not_called()
+        mock_do_import_realm.assert_not_called()
+        self.assertTrue(Realm.objects.filter(id=other_realm.id).exists())
+        self.assertTrue(UserProfile.objects.filter(id=other_user.id).exists())
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        # The conflict is recorded so the status poll can surface it.
+        self.assertTrue(prereg_realm.data_import_metadata["subdomain_unavailable"])
+
     @responses.activate
     def test_cancel_realm_import(self) -> None:
         # Choose import from slack
