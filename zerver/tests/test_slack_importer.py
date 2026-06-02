@@ -21,7 +21,7 @@ from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
 
 from confirmation import settings as confirmation_settings
-from confirmation.models import Confirmation, get_object_from_key
+from confirmation.models import Confirmation, create_confirmation_link, get_object_from_key
 from zerver.actions.create_realm import do_create_realm, get_email_address_visibility_default
 from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
@@ -3107,6 +3107,37 @@ To Do
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
         # The conflict is recorded so the status poll can surface it.
         self.assertTrue(prereg_realm.data_import_metadata["subdomain_unavailable"])
+
+    def test_realm_import_status_failed_import_does_not_use_other_realm(self) -> None:
+        # A failed import must report its own failure, even when a
+        # different registration's realm happens to share the
+        # subdomain. Otherwise the failed import's status poll would
+        # read the other realm and report misleading progress (or even
+        # "Done").
+        other_realm = do_create_realm(string_id="shared-subdomain", name="Other realm")
+        self.assertFalse(other_realm.deactivated)
+
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="shared-subdomain",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={
+                "import_from": "slack",
+                "is_import_work_queued": False,
+                "subdomain_unavailable": True,
+            },
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        result = self.client_get(f"/json/realm/import/status/{confirmation_key}")
+        response_dict = self.assert_json_success(result)
+        self.assertIn("no longer available", response_dict["status"])
+        # The other realm must not be reported as this import's result.
+        self.assertNotIn("Done", response_dict["status"])
 
     @responses.activate
     def test_cancel_realm_import(self) -> None:
