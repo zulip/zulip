@@ -98,6 +98,15 @@ function test(label, f) {
     });
 }
 
+test("person_multi_word_completion", () => {
+    // The help center documents searching person operators by full name,
+    // e.g. `sender:Elena García`. An unquoted multi-word name parses with a
+    // trailing `search:` term, which get_suggestions merges back into the
+    // person operand before resolving the name to a user id.
+    assert.deepEqual(get_suggestions("sender:Ted Smith"), [`sender:${ted.user_id}`]);
+    assert.deepEqual(get_suggestions("mentions:Ted Smith"), [`mentions:${ted.user_id}`]);
+});
+
 test("basic_get_suggestions", ({override}) => {
     const query = "fred";
 
