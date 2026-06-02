@@ -1605,36 +1605,19 @@ export class MessageListView {
         );
     }
 
-    _rerender_header(message_containers: MessageContainer[]): void {
-        // Given a list of messages that are in the **same** message group,
-        // rerender the header / recipient bar of the messages. This method
-        // should only be called with rerender_messages as the rerendered
-        // header may need to be updated for the "sticky_header" class.
-        if (message_containers.length === 0) {
-            return;
-        }
-
-        const $first_row = this.get_row(message_containers[0]!.msg.id);
-
-        // We may not have the row if the stream or topic was muted
-        if ($first_row.length === 0) {
-            return;
-        }
-
-        const $recipient_row = rows.get_message_recipient_row($first_row);
-        const $header = $recipient_row.find(".message_header");
-        const message_group_id = $recipient_row.attr("id")!;
-
-        // Since there might be multiple dates within the message
-        // group, it's important to look up the original/full message
-        // group rather than doing an artificial rerendering of the
-        // message header from the set of message containers passed in
-        // here.
+    _rerender_header(message_group_id: string): void {
+        // Rerender the header / recipient bar of the given message group,
+        // rebuilding it from the authoritative group looked up below. This
+        // method should only be called with rerender_messages as the
+        // rerendered header may need to be updated for the "sticky_header"
+        // class.
         const group = this._find_message_group(message_group_id);
         if (group === undefined) {
             blueslip.error("Could not find message group for rerendering headers");
             return;
         }
+
+        const $header = $(`#${CSS.escape(message_group_id)}`).find(".message_header");
 
         // TODO: It's possible that we no longer need this populate
         // call; it was introduced in an earlier version of this code
@@ -1759,29 +1742,28 @@ export class MessageListView {
             }
         }
 
-        const message_groups = [];
-        let current_group = [];
+        // Rerender each message row, collecting the distinct recipient
+        // bars they belong to by their row's rendered group id. The
+        // messages can span several bars -- even bars that share a
+        // recipient -- so the group id is what distinguishes the bars.
         const rerendered_elements: HTMLElement[] = [];
-
+        const rerendered_group_ids = new Set<string>();
         for (const message_container of message_containers) {
-            if (
-                current_group.length === 0 ||
-                same_recipient(current_group.at(-1), message_container)
-            ) {
-                current_group.push(message_container);
-            } else {
-                message_groups.push(current_group);
-                current_group = [];
-            }
             const $rendered = this._rerender_message(message_container, {
                 message_content_edited,
                 is_revealed: false,
             });
             rerendered_elements.push(...$rendered);
-        }
-
-        if (current_group.length > 0) {
-            message_groups.push(current_group);
+            const $row = this.get_row(message_container.msg.id);
+            // The row may be absent, e.g. for a muted stream or topic, in
+            // which case there is no recipient bar to rerender.
+            if ($row.length === 0) {
+                continue;
+            }
+            const message_group_id = rows.get_message_recipient_row($row).attr("id");
+            if (message_group_id !== undefined) {
+                rerendered_group_ids.add(message_group_id);
+            }
         }
 
         // Only the current message list needs its condense/collapse
@@ -1792,8 +1774,10 @@ export class MessageListView {
             condense.condense_and_collapse($(rerendered_elements));
         }
 
-        for (const messages_in_group of message_groups) {
-            this._rerender_header(messages_in_group);
+        // Now that every row is rerendered, rerender each affected bar's
+        // header once.
+        for (const message_group_id of rerendered_group_ids) {
+            this._rerender_header(message_group_id);
         }
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
