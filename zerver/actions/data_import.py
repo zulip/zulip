@@ -3,10 +3,12 @@ import logging
 import os
 import shutil
 import tempfile
+from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
+from django.utils.timezone import now as timezone_now
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.create_realm import get_email_address_visibility_default
@@ -22,6 +24,20 @@ from zerver.models.realms import Realm
 from zerver.models.users import RealmUserDefault, UserProfile, get_user_by_delivery_email
 
 logger = logging.getLogger("zulip.registration")
+
+
+def is_string_id_unique_violation(e: BaseException) -> bool:
+    """True when e is the IntegrityError from violating the unique constraint
+    on Realm.string_id -- i.e. the subdomain is already taken by another
+    realm. Other IntegrityErrors (e.g. genuine bugs elsewhere in the import)
+    return False, so they get the normal failure handling rather than being
+    mistaken for a taken subdomain."""
+    if not isinstance(e, IntegrityError):
+        return False
+    # Django wraps the underlying psycopg2 error as __cause__; its
+    # diagnostics carry the Postgres constraint name.
+    diag = getattr(e.__cause__, "diag", None)
+    return getattr(diag, "constraint_name", None) == "zerver_realm_string_id_key"
 
 
 def import_slack_data(event: dict[str, Any]) -> None:
@@ -121,18 +137,44 @@ def import_slack_data(event: dict[str, Any]) -> None:
     except Exception as e:
         logger.exception(e)
         try:
-            # Clean up the realm if the import failed
             preregistration_realm.created_realm = None
             preregistration_realm.data_import_metadata["is_import_work_queued"] = False
             if type(e) is SlackImportInvalidFileError:
                 # Store the error to be displayed to the user.
                 preregistration_realm.data_import_metadata["invalid_file_error_message"] = str(e)
+
+            # do_import_realm creates the realm with this string_id. If a
+            # concurrent or earlier import of the same subdomain won the
+            # race to create it, our realm insert violates the unique
+            # constraint on Realm.string_id and do_import_realm raises that
+            # IntegrityError. The existing realm belongs to the other
+            # import, so we must not clean it up: deleting it would destroy
+            # their data and can deadlock against their in-progress work on
+            # zerver_userprofile. We record the conflict for the status poll
+            # to surface instead.
+            subdomain_taken = is_string_id_unique_violation(e)
+            if subdomain_taken:
+                preregistration_realm.data_import_metadata["subdomain_unavailable"] = True
             preregistration_realm.save()
 
-            with transaction.atomic(durable=True):
-                realm = Realm.objects.select_for_update(no_key=False).get(string_id=string_id)
-                do_delete_all_realm_attachments(realm)
-                realm.delete()
+            # For any other failure -- including IntegrityErrors from
+            # genuine bugs on some other constraint -- delete the realm
+            # this import created, if it got that far. A failure before
+            # do_import_realm creates the realm (e.g. an invalid-file error
+            # during conversion) leaves no such realm, so the get() below
+            # raises Realm.DoesNotExist, which we swallow. Otherwise the
+            # realm with this string_id is the (possibly half-imported) one
+            # we created. The age assertion is a last line of defense
+            # against a bug ever pointing this deletion at an established
+            # realm; a Slack import's realm is created at conversion time,
+            # so it is always far younger than a day by the time we get
+            # here.
+            if not subdomain_taken:
+                with transaction.atomic(durable=True):
+                    realm = Realm.objects.select_for_update(no_key=False).get(string_id=string_id)
+                    assert realm.date_created >= timezone_now() - timedelta(hours=24)
+                    do_delete_all_realm_attachments(realm)
+                    realm.delete()
         except Realm.DoesNotExist:
             pass
         raise
