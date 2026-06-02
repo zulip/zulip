@@ -263,6 +263,20 @@ function resolve_user_id_from_operand(operand: string): number | undefined {
     );
 }
 
+// Resolve a comma-separated `dm`/`dm-including` operand to user ids, returning
+// undefined if any token cannot be resolved to a user.
+function resolve_user_ids_from_operand(operand: string): number[] | undefined {
+    const user_ids = [];
+    for (const token of operand.split(",")) {
+        const user_id = resolve_user_id_from_operand(token);
+        if (user_id === undefined) {
+            return undefined;
+        }
+        user_ids.push(user_id);
+    }
+    return user_ids;
+}
+
 function convert_single_user_id_suggestion_to_term(
     suggestion: NarrowTermSuggestion,
     canonical_operator: "sender" | "mentions",
@@ -547,15 +561,19 @@ export class Filter {
             switch (canonical_operator) {
                 case "dm":
                 case "dm-including": {
+                    // An empty operand is invalid for dm and dm-including.
+                    if (suggestion.operand === "") {
+                        return undefined;
+                    }
                     let operand: number[];
                     if (suggestion.operand.toLowerCase() === "me") {
                         operand = [people.my_current_user_id()];
                     } else {
-                        operand = people.user_ids_string_to_ids_array(suggestion.operand);
-                    }
-                    // An empty operand is invalid for dm and dm-including.
-                    if (suggestion.operand === "") {
-                        return undefined;
+                        const user_ids = resolve_user_ids_from_operand(suggestion.operand);
+                        if (user_ids === undefined) {
+                            return undefined;
+                        }
+                        operand = user_ids;
                     }
                     potential_narrow_term = {
                         operator: canonical_operator,
