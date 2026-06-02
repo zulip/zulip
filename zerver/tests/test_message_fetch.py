@@ -239,6 +239,59 @@ class NarrowBuilderTest(ZulipTestCase):
             (stream.recipient_id,),
         )
 
+    def test_add_term_using_channels_operator_and_channel_id_list_operand(self) -> None:
+        scotland = get_stream("Scotland", self.realm)
+        verona = get_stream("Verona", self.realm)
+        term = NarrowParameter(operator="channels", operand=[scotland.id, verona.id])
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
+    def test_add_term_using_channels_operator_and_channel_id_list_operand_negated(self) -> None:
+        scotland = get_stream("Scotland", self.realm)
+        verona = get_stream("Verona", self.realm)
+        term = NarrowParameter(operator="channels", operand=[scotland.id, verona.id], negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
+
+    def test_add_term_using_channels_operator_and_single_element_channel_id_list_operand(
+        self,
+    ) -> None:
+        scotland = get_stream("Scotland", self.realm)
+        term = NarrowParameter(operator="channels", operand=[scotland.id])
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
+    def test_add_term_using_channels_operator_and_invalid_channel_id_list_operand_should_raise_error(
+        self,
+    ) -> None:
+        non_existent_channel_id = 10000000
+        term = NarrowParameter(operator="channels", operand=[non_existent_channel_id])
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_channels_operator_and_inaccessible_private_channel_id_should_raise_error(
+        self,
+    ) -> None:
+        private_channel = self.make_stream("private_channel", realm=self.realm, invite_only=True)
+        # Hamlet is not subscribed to this private channel, so he must
+        # not be able to narrow to it.
+        term = NarrowParameter(operator="channels", operand=[private_channel.id])
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_streams_operator_and_channel_id_list_operand(self) -> None:
+        scotland = get_stream("Scotland", self.realm)
+        verona = get_stream("Verona", self.realm)
+        term = NarrowParameter(operator="streams", operand=[scotland.id, verona.id])
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
     def test_add_term_using_is_operator_and_dm_operand(self) -> None:
         term = NarrowParameter(operator="is", operand="dm")
         self._do_add_term_test(term, 'WHERE "zerver_usermessage"."flags" & %s != 0')
@@ -1503,6 +1556,57 @@ class IncludeHistoryTest(ZulipTestCase):
         self.assertTrue(ok_to_include_history(narrow, guest_user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
 
+        # A list of channel IDs may include history only if the user can
+        # access history for every listed channel.
+        public_channel = get_stream("public_channel", user_profile.realm)
+        public_channel_2 = get_stream("public_channel_2", user_profile.realm)
+        private_channel = get_stream("private_channel", user_profile.realm)
+        private_channel_2 = get_stream("private_channel_2", user_profile.realm)
+
+        narrow = [
+            NarrowParameter(operator="channels", operand=[public_channel.id, public_channel_2.id]),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Negated list searches must not include history.
+        narrow = [
+            NarrowParameter(
+                operator="channels",
+                operand=[public_channel.id, public_channel_2.id],
+                negated=True,
+            ),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # An empty list does not narrow to any channel, so we must not
+        # include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand=[]),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # If any listed channel's history is inaccessible to the user, we
+        # must not include history for the whole list.
+        narrow = [
+            NarrowParameter(operator="channels", operand=[public_channel.id, private_channel.id]),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # cordelia is subscribed to private_channel_2, which has public
+        # history to its subscribers, so she can include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand=[public_channel.id, private_channel_2.id]),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
+
+        # Guests cannot include history for public channels even via a
+        # list operand.
+        narrow = [
+            NarrowParameter(operator="channels", operand=[public_channel.id]),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+
 
 class PostProcessTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -2574,6 +2678,42 @@ class GetOldMessagesTest(ZulipTestCase):
         # they are the most recent.
         self.verify_web_public_query_result_success(result, 5)
 
+    def test_unauthenticated_narrow_to_web_public_channels_list(self) -> None:
+        self.setup_web_public_test()
+        web_public_channel = get_stream("web-public-channel", get_realm("zulip"))
+        non_web_public_channel = get_stream("non-web-public-channel", get_realm("zulip"))
+
+        # A spectator can narrow to a list of web-public channel IDs.
+        # The `channels:web-public` term is what makes this a web-public
+        # query; the list operand then filters to specific channels.
+        post_params: dict[str, int | str | bool] = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "narrow": orjson.dumps(
+                [
+                    dict(operator="channels", operand="web-public"),
+                    dict(operator="channels", operand=[web_public_channel.id]),
+                ]
+            ).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.verify_web_public_query_result_success(result, 1)
+
+        # A non-web-public channel in the list rejects the whole narrow.
+        post_params["narrow"] = orjson.dumps(
+            [
+                dict(operator="channels", operand="web-public"),
+                dict(operator="channels", operand=[non_web_public_channel.id]),
+            ]
+        ).decode()
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(
+            result,
+            f"Invalid narrow operator: unknown web-public channel {non_web_public_channel.id}",
+            status_code=400,
+        )
+
     def test_client_avatar(self) -> None:
         """
         The client_gravatar flag determines whether we send avatar_url.
@@ -2986,6 +3126,144 @@ class GetOldMessagesTest(ZulipTestCase):
                     self.assertEqual(message_dict["type"], "stream")
                     self.assertEqual(message_dict["display_recipient"], channel_name)
                     self.assertEqual(message_dict["recipient_id"], channel.recipient_id)
+
+    def test_get_messages_with_narrow_channels_list(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        realm = hamlet.realm
+
+        num_messages_per_channel = 5
+        channel_names = ["Scotland", "Verona", "Venice"]
+
+        Message.objects.filter(realm_id=realm.id, recipient__type=Recipient.STREAM).delete()
+        for channel_name in channel_names:
+            self.subscribe(hamlet, channel_name)
+            for i in range(num_messages_per_channel):
+                self.send_stream_message(hamlet, channel_name, content=f"test {i}")
+
+        scotland = get_stream("Scotland", realm)
+        verona = get_stream("Verona", realm)
+        venice = get_stream("Venice", realm)
+
+        # A list of channel IDs returns messages from every listed channel.
+        narrow: list[dict[str, Any]] = [dict(operator="channels", operand=[scotland.id, verona.id])]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), num_after=100)
+        )
+        fetched_messages: list[dict[str, object]] = result["messages"]
+        self.assert_length(fetched_messages, num_messages_per_channel * 2)
+        fetched_recipient_ids = {message["recipient_id"] for message in fetched_messages}
+        self.assertEqual(fetched_recipient_ids, {scotland.recipient_id, verona.recipient_id})
+
+        # The "streams" alias behaves identically.
+        narrow = [dict(operator="streams", operand=[scotland.id, verona.id])]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), num_after=100)
+        )
+        self.assert_length(result["messages"], num_messages_per_channel * 2)
+
+        # A single-element list works too.
+        narrow = [dict(operator="channels", operand=[venice.id])]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), num_after=100)
+        )
+        fetched_messages = result["messages"]
+        self.assert_length(fetched_messages, num_messages_per_channel)
+        for message_dict in fetched_messages:
+            self.assertEqual(message_dict["recipient_id"], venice.recipient_id)
+
+        # A negated list excludes messages from the listed channels.
+        narrow = [dict(operator="channels", operand=[scotland.id, verona.id], negated=True)]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), num_after=100)
+        )
+        for message_dict in result["messages"]:
+            self.assertNotIn(
+                message_dict["recipient_id"], {scotland.recipient_id, verona.recipient_id}
+            )
+
+    def test_get_messages_with_narrow_channels_list_invalid_channel(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        # A non-existent channel ID rejects the whole narrow.
+        narrow = [dict(operator="channels", operand=[10000000])]
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=orjson.dumps(narrow).decode(), anchor="newest", num_before=10),
+        )
+        self.assert_json_error(
+            result, "Invalid narrow operator: unknown channel 10000000", status_code=400
+        )
+
+    def test_get_messages_with_narrow_channels_list_inaccessible_channel(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        realm = hamlet.realm
+
+        self.subscribe(hamlet, "Scotland")
+        scotland = get_stream("Scotland", realm)
+
+        # A private channel that hamlet is not subscribed to.
+        private_channel = self.make_stream("private_channel", realm=realm, invite_only=True)
+        self.subscribe(self.example_user("cordelia"), "private_channel")
+        self.send_stream_message(self.example_user("cordelia"), "private_channel")
+
+        # Because one listed channel is inaccessible, the narrow is
+        # rejected rather than silently dropping it from the results.
+        narrow = [dict(operator="channels", operand=[scotland.id, private_channel.id])]
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=orjson.dumps(narrow).decode(), anchor="newest", num_before=10),
+        )
+        self.assert_json_error(
+            result,
+            f"Invalid narrow operator: unknown channel {private_channel.id}",
+            status_code=400,
+        )
+
+    def test_get_messages_with_narrow_channels_list_and_is_muted(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        realm = hamlet.realm
+
+        self.subscribe(hamlet, "Scotland")
+        self.subscribe(hamlet, "Verona")
+        scotland = get_stream("Scotland", realm)
+        verona = get_stream("Verona", realm)
+
+        # A topic-muted message in Scotland, and messages in the
+        # channel-muted Verona.
+        muted_topic_message = self.send_stream_message(
+            hamlet, "Scotland", topic_name="golf", content="muted topic message"
+        )
+        unmuted_topic_message = self.send_stream_message(
+            hamlet, "Scotland", topic_name="lunch", content="unmuted topic message"
+        )
+        verona_message = self.send_stream_message(
+            hamlet, "Verona", topic_name="general", content="message in muted channel"
+        )
+
+        set_topic_visibility_policy(
+            hamlet, [["Scotland", "golf"]], UserTopic.VisibilityPolicy.MUTED
+        )
+        mute_channel(realm, hamlet, "Verona")
+
+        narrow = [
+            dict(operator="channels", operand=[scotland.id, verona.id]),
+            dict(operator="is", operand="muted"),
+        ]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), num_after=100)
+        )
+        fetched_ids = {message["id"] for message in result["messages"]}
+
+        # Only the topic-muted message is returned by is:muted; the
+        # explicitly-listed but channel-muted Verona is not treated as
+        # muted, and the unmuted topic is excluded.
+        self.assertIn(muted_topic_message, fetched_ids)
+        self.assertNotIn(unmuted_topic_message, fetched_ids)
+        self.assertNotIn(verona_message, fetched_ids)
 
     def test_get_visible_messages_with_narrow_channel(self) -> None:
         self.login("hamlet")
@@ -5184,6 +5462,41 @@ AND NOT ("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel_m
                 "Hi",
             ),
         )
+
+    def test_exclude_muting_conditions_with_channels_list(self) -> None:
+        user_profile = self.example_user("hamlet")
+        realm = user_profile.realm
+        self.subscribe(user_profile, "Scotland")
+        self.subscribe(user_profile, "Verona")
+
+        scotland = get_stream("Scotland", realm)
+        verona = get_stream("Verona", realm)
+
+        # Mute a topic within Scotland and mute the Verona channel itself.
+        set_topic_visibility_policy(
+            user_profile, [["Scotland", "golf"]], UserTopic.VisibilityPolicy.MUTED
+        )
+        mute_channel(realm, user_profile, "Verona")
+
+        narrow = [
+            NarrowParameter(operator="channels", operand=[scotland.id, verona.id]),
+        ]
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        query = select(column("id", Integer)).select_from(table("zerver_message"))
+        query = query.where(*muting_conditions)
+
+        # Only the topic mute within Scotland is applied. The explicitly
+        # listed Verona channel is not excluded, even though the channel
+        # itself is muted.
+        expected_query = """\
+SELECT id \n\
+FROM zerver_message \n\
+WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s) AND is_channel_message)\
+"""
+        self.assertEqual(get_sqlalchemy_sql(query), expected_query)
+        params = get_sqlalchemy_query_params(query)
+        self.assertEqual(params["recipient_id_1"], scotland.recipient_id)
+        self.assertEqual(params["param_1"], "golf")
 
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
