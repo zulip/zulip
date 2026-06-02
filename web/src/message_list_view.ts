@@ -1761,7 +1761,7 @@ export class MessageListView {
 
         const message_groups = [];
         let current_group = [];
-        let $rerendered_rows = $();
+        const rerendered_elements: HTMLElement[] = [];
 
         for (const message_container of message_containers) {
             if (
@@ -1777,7 +1777,7 @@ export class MessageListView {
                 message_content_edited,
                 is_revealed: false,
             });
-            $rerendered_rows = $rerendered_rows.add($rendered);
+            rerendered_elements.push(...$rendered);
         }
 
         if (current_group.length > 0) {
@@ -1788,8 +1788,8 @@ export class MessageListView {
         // state refreshed here; non-current lists get
         // `condense_and_collapse` reapplied via `restore_rendered_list`
         // in `message_view` when they're brought back into view.
-        if (this.list === message_lists.current && $rerendered_rows.length > 0) {
-            condense.condense_and_collapse($rerendered_rows);
+        if (this.list === message_lists.current && rerendered_elements.length > 0) {
+            condense.condense_and_collapse($(rerendered_elements));
         }
 
         for (const messages_in_group of message_groups) {
