@@ -1124,13 +1124,25 @@ def realm_import_status(
         raise JsonableError(_("Unauthenticated"))
 
     assert isinstance(preregistration_realm, PreregistrationRealm)
-    try:
-        realm = Realm.objects.get(string_id=preregistration_realm.string_id)
-    except Realm.DoesNotExist:
-        # TODO: Either store the path to the temporary conversion directory on
-        # preregistration_realm.data_import_metadata, or have the conversion
-        # process support writing updates to this for a better progress indicator.
-        if preregistration_realm.data_import_metadata.get("is_import_work_queued"):
+    metadata = preregistration_realm.data_import_metadata
+
+    if metadata.get("is_import_work_queued"):
+        # This preregistration's import job is still running; report its
+        # progress. We find the realm being imported by its subdomain;
+        # in the rare case that a concurrent import of the same
+        # subdomain is further along, the progress shown may briefly
+        # reflect that import, but this resolves once this job finishes.
+        #
+        # TODO: The progress below is inferred from the observed state of
+        # the Realm (whether it exists yet, is still deactivated, has
+        # messages or attachments). A cleaner design would have
+        # import_slack_data record explicit status strings on
+        # data_import_metadata as it advances ("queued", "converting",
+        # "importing converted data", "finalizing") so this endpoint reads
+        # the status directly instead of reverse-engineering it.
+        try:
+            realm = Realm.objects.get(string_id=preregistration_realm.string_id)
+        except Realm.DoesNotExist:
             return json_success(
                 request,
                 {
@@ -1141,24 +1153,64 @@ def realm_import_status(
                     )
                 },
             )
-        elif preregistration_realm.data_import_metadata.get("invalid_file_error_message"):
+
+        if realm.deactivated:
+            # These "if" cases are in the inverse order than they're done
+            # in the import process, so we get the latest step that it's
+            # on.
+            if Message.objects.filter(realm_id=realm.id).exists():
+                return json_success(request, {"status": _("Importing messages…")})
+            try:
+                next(all_message_attachments(prefix=f"{realm.id}/"))
+                return json_success(request, {"status": _("Importing attachment data…")})
+            except StopIteration:
+                pass
+            return json_success(request, {"status": _("Importing converted Slack data…")})
+
+        # The realm has been reactivated, but the import job is still
+        # running its post-import steps.
+        return json_success(request, {"status": _("Finalizing import…")})
+
+    # The import job is no longer running. A successful import always
+    # links preregistration_realm.created_realm, so if it is unset the
+    # import failed. We deliberately key on this preregistration's own
+    # created_realm rather than a subdomain lookup, so that a failed
+    # import isn't reported using a different registration's realm that
+    # happens to share the subdomain.
+    if preregistration_realm.created_realm is None:
+        if metadata.get("subdomain_unavailable"):
+            # Another import already registered this subdomain. Send the
+            # user back to registration to choose a different one.
+            return json_success(
+                request,
+                {
+                    "status": _(
+                        "This organization URL is no longer available. "
+                        "Please choose a different URL."
+                    ),
+                    "redirect": reverse(
+                        "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
+                    ),
+                },
+            )
+        elif metadata.get("invalid_file_error_message"):
             # Redirect user the file upload page if we have an error message to display.
-            result = {
-                "status": preregistration_realm.data_import_metadata.get(
-                    "invalid_file_error_message"
-                ),
-                "redirect": reverse(
-                    "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
-                ),
-            }
-            return json_success(request, result)
+            return json_success(
+                request,
+                {
+                    "status": metadata.get("invalid_file_error_message"),
+                    "redirect": reverse(
+                        "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
+                    ),
+                },
+            )
         else:
             # The import failed due to an unexpected reason. Ask user to email
             # support with the import file so that we can do the import manually
             # and investigate the failure.
             # If there was an error during import, it would have already been logged by Sentry.
             # We don't have access to the exception here.
-            preregistration_realm.data_import_metadata["unexpected_import_failure"] = True
+            metadata["unexpected_import_failure"] = True
             preregistration_realm.save(update_fields=["data_import_metadata"])
             return json_success(
                 request,
@@ -1167,26 +1219,10 @@ def realm_import_status(
                 },
             )
 
-    if realm.deactivated:
-        # These "if" cases are in the inverse order than they're done
-        # in the import process, so we get the latest step that it's
-        # on.
-        if Message.objects.filter(realm_id=realm.id).exists():
-            return json_success(request, {"status": _("Importing messages…")})
-        try:
-            next(all_message_attachments(prefix=f"{realm.id}/"))
-            return json_success(request, {"status": _("Importing attachment data…")})
-        except StopIteration:
-            pass
-        return json_success(request, {"status": _("Importing converted Slack data…")})
+    # The import succeeded; created_realm is this preregistration's own realm.
+    realm = preregistration_realm.created_realm
+    need_select_realm_owner = metadata.get("need_select_realm_owner", False)
 
-    need_select_realm_owner = preregistration_realm.data_import_metadata.get(
-        "need_select_realm_owner", False
-    )
-    if not need_select_realm_owner and preregistration_realm.created_realm is None:
-        return json_success(request, {"status": _("Finalizing import…")})
-
-    # We have a non-deactivated realm and it's linked to the prereg key
     result = {"status": _("Done!")}
     if not need_select_realm_owner:
         importing_user = get_user_by_delivery_email(preregistration_realm.email, realm)
