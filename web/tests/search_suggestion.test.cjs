@@ -100,11 +100,29 @@ function test(label, f) {
 
 test("person_multi_word_completion", () => {
     // The help center documents searching person operators by full name,
-    // e.g. `sender:Elena García`. An unquoted multi-word name parses with a
-    // trailing `search:` term, which get_suggestions merges back into the
-    // person operand before resolving the name to a user id.
+    // e.g. `sender:Elena García` and the multi-user `dm:Bo Lin, Elena
+    // García`. An unquoted multi-word name parses with a trailing `search:`
+    // term, which get_suggestions merges back into the person operand before
+    // resolving each name to a user id.
     assert.deepEqual(get_suggestions("sender:Ted Smith"), [`sender:${ted.user_id}`]);
     assert.deepEqual(get_suggestions("mentions:Ted Smith"), [`mentions:${ted.user_id}`]);
+    assert.deepEqual(get_suggestions("dm:Ted Smith"), [`dm:${ted.user_id}`]);
+    assert.deepEqual(get_suggestions("dm-including:Ted Smith"), [`dm-including:${ted.user_id}`]);
+
+    // dm and dm-including resolve a comma-separated list of names, with or
+    // without a space after the comma.
+    assert.deepEqual(get_suggestions("dm:Ted Smith, Alice Ignore"), [
+        `dm:${ted.user_id},${alice.user_id}`,
+    ]);
+    assert.deepEqual(get_suggestions("dm:Ted Smith,Alice Ignore"), [
+        `dm:${ted.user_id},${alice.user_id}`,
+    ]);
+    assert.deepEqual(get_suggestions("dm-including:Ted Smith, Alice Ignore"), [
+        `dm-including:${ted.user_id},${alice.user_id}`,
+    ]);
+    assert.deepEqual(get_suggestions("dm-including:Ted Smith,Alice Ignore"), [
+        `dm-including:${ted.user_id},${alice.user_id}`,
+    ]);
 });
 
 test("basic_get_suggestions", ({override}) => {
