@@ -5,6 +5,7 @@ import tempfile
 import zipfile
 from collections.abc import Iterator
 from io import BytesIO
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 from unittest import mock
 from unittest.mock import ANY
@@ -14,6 +15,7 @@ import orjson
 import responses
 from attr import dataclass
 from django.conf import settings
+from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
@@ -166,6 +168,26 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
     except KeyError:
         return team_not_found
     return (200, {}, orjson.dumps({"ok": True, "team": {"id": team_id, "domain": team_domain}}))
+
+
+class FakeUniqueViolationError(Exception):
+    """Stand-in for the psycopg2 UniqueViolation that Django exposes as
+    IntegrityError.__cause__, carrying the diagnostics (diag.constraint_name)
+    that import_slack_data inspects."""
+
+    def __init__(self, message: str, constraint_name: str) -> None:
+        super().__init__(message)
+        self.diag = SimpleNamespace(constraint_name=constraint_name)
+
+
+def slack_import_integrity_error(constraint_name: str) -> IntegrityError:
+    """Build the IntegrityError Django raises when an INSERT violates a unique
+    constraint, so import_slack_data can recognize a taken subdomain from the
+    constraint name."""
+    message = f'duplicate key value violates unique constraint "{constraint_name}"'
+    error = IntegrityError(message)
+    error.__cause__ = FakeUniqueViolationError(message, constraint_name)
+    return error
 
 
 class SlackImporter(ZulipTestCase):
@@ -2929,6 +2951,112 @@ To Do
         self.assertIsNone(prereg_realm.created_realm)
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
         self.assertFalse(Realm.objects.filter(string_id=prereg_realm.string_id).exists())
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_failure_keeps_concurrently_created_realm(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # A concurrent import of the same subdomain wins the race to create
+        # the realm while this import runs; do_import_realm then fails with an
+        # IntegrityError on the unique string_id. This import created nothing,
+        # so it must not delete the concurrently created realm -- doing so
+        # would destroy that realm's data and can deadlock against its
+        # in-progress work.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+
+        def create_realm_then_conflict(*args: object, **kwargs: object) -> Realm:
+            other_realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            UserProfile.objects.create(
+                realm=other_realm,
+                delivery_email="someone@example.com",
+                email="someone@example.com",
+            )
+            raise slack_import_integrity_error("zerver_realm_string_id_key")
+
+        mock_do_import_realm.side_effect = create_realm_then_conflict
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with (
+            self.assertLogs("zulip.registration", "ERROR") as logs,
+            self.assertRaises(IntegrityError),
+        ):
+            import_slack_data(event)
+        self.assertIn("zerver_realm_string_id_key", logs.output[0])
+
+        # The concurrently created realm and its data must be untouched.
+        other_realm = Realm.objects.get(string_id=prereg_realm.string_id)
+        self.assertTrue(
+            UserProfile.objects.filter(
+                realm=other_realm, delivery_email="someone@example.com"
+            ).exists()
+        )
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        # The conflict is recorded so the status poll can surface it.
+        self.assertTrue(prereg_realm.data_import_metadata["subdomain_unavailable"])
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_failure_unrelated_integrity_error(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # An IntegrityError that is not the unique violation on Realm.string_id
+        # -- e.g. a genuine bug in the import code hitting some other constraint
+        # -- must be treated like any other failure: the half-imported realm
+        # this import created is cleaned up, and the subdomain is not reported
+        # as unavailable.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+
+        def create_realm_then_unrelated_conflict(*args: object, **kwargs: object) -> Realm:
+            do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            raise slack_import_integrity_error("zerver_useractivityinterval_uniq")
+
+        mock_do_import_realm.side_effect = create_realm_then_unrelated_conflict
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with (
+            self.assertLogs("zulip.registration", "ERROR") as logs,
+            self.assertRaises(IntegrityError),
+        ):
+            import_slack_data(event)
+        self.assertIn("zerver_useractivityinterval_uniq", logs.output[0])
+
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        # The realm this import created is cleaned up, since this is not a
+        # subdomain conflict.
+        self.assertFalse(Realm.objects.filter(string_id=prereg_realm.string_id).exists())
+        # A non-string_id error must not be reported as a taken subdomain.
+        self.assertNotIn("subdomain_unavailable", prereg_realm.data_import_metadata)
 
     @responses.activate
     def test_cancel_realm_import(self) -> None:
