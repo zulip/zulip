@@ -1082,6 +1082,8 @@ class LoginTest(ZulipTestCase):
         # Clear the ContentType cache.
         ContentType.objects.clear_cache()
 
+        now = timezone_now()
+
         # Ensure the number of queries we make is not O(streams)
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -1096,6 +1098,11 @@ class LoginTest(ZulipTestCase):
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
+
+        # USER_LOGGED_IN audit log entry is created for
+        # newly registered user as well.
+        self.assert_login_audit_log_entry(user_profile, method="email", since=now)
+
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
         self.check_user_added_in_system_group(user_profile)
 
@@ -2871,6 +2878,7 @@ class UserSignUpTest(ZulipTestCase):
             LDAP_APPEND_DOMAIN="zulip.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
+            now = timezone_now()
             self.login_with_return(email, password, HTTP_HOST=subdomain + ".testserver")
 
             user_profile = UserProfile.objects.get(delivery_email=email)
@@ -2885,6 +2893,10 @@ class UserSignUpTest(ZulipTestCase):
                 user_profile=user_profile, field=phone_number_field
             )
             self.assertEqual(phone_number_field_value.value, "a-new-number")
+
+            # Auto-registration via LDAP login creates a USER_LOGGED_IN
+            # audit row for the newly-created user.
+            self.assert_login_audit_log_entry(user_profile, method="ldap", since=now)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_auto_registration_on_login_invalid_email_in_directory(self) -> None:

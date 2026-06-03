@@ -66,6 +66,7 @@ def get_login_audit_log_extra_data(user: UserProfile, request: Any) -> dict[str,
 
     1. `request.session["social_auth_backend"]` — set by
        `login_or_register_remote_user` for social/OIDC/SAML logins.
+       Also set by `login_and_redirect` for email/LDAP registration.
     2. The Django authentication backend class name, mapped through
        `AUTH_BACKEND_AUDIT_LOG_METHOD` so the recorded slug matches
        what the corresponding backend class exposes as its `name`. For
