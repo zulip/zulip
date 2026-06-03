@@ -10,11 +10,11 @@ import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
 import {mark_first_events_response_received, queue_id} from "./server_events_state.ts";
 import {server_message_schema} from "./server_message.ts";
-import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
@@ -205,7 +205,7 @@ function get_events({dont_block = false} = {}) {
             get_events_timeout = setTimeout(get_events, 0);
         },
         error(xhr, error_type) {
-            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
+            const retry_delay_secs = get_retry_backoff_seconds(xhr, get_events_failures);
             try {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been

@@ -7,8 +7,8 @@ import {LazySet} from "./lazy_set.ts";
 import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as sub_store from "./sub_store.ts";
-import * as util from "./util.ts";
 
 // Maps stream_id to the number of subscribers in that stream.
 // Note: These counts can sometimes be wrong due to races on the backend,
@@ -87,7 +87,7 @@ export async function fetch_stream_subscribers_with_retry(
     // Failed request, retry.
     if (subscribers === null) {
         num_attempts += 1;
-        const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+        const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
         await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
         return fetch_stream_subscribers_with_retry(stream_id, num_attempts);
     }
@@ -565,7 +565,7 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
             // Failed request, so try again (unless we've reached the retry limit)
             else if (result === null) {
                 num_attempts += 1;
-                const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+                const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
                 await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
                 continue;
             }

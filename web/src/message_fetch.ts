@@ -25,12 +25,12 @@ import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as unread_ops from "./unread_ops.ts";
-import * as util from "./util.ts";
 
 export const message_ids_response_schema = z.object({
     found_newest: z.boolean(),
@@ -489,7 +489,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 return;
             }
 
-            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
+            const delay_secs = get_retry_backoff_seconds(xhr, attempt, true);
             popup_banners.open_connection_error_popup_banner({
                 caller: "message_fetch",
                 retry_delay_secs: delay_secs,

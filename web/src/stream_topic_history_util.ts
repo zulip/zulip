@@ -2,8 +2,8 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
-import * as util from "./util.ts";
 
 const stream_topic_history_response_schema = z.object({
     topics: z.array(
@@ -40,7 +40,7 @@ function fetch_channel_history_with_retry(stream_id: number, attempt = 1): void 
             pending_on_success_callbacks.delete(stream_id);
         },
         error(xhr) {
-            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, attempt);
+            const retry_delay_secs = get_retry_backoff_seconds(xhr, attempt);
             setTimeout(() => {
                 fetch_channel_history_with_retry(stream_id, attempt + 1);
             }, retry_delay_secs * 1000);

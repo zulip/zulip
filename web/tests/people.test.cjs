@@ -32,11 +32,11 @@ set_global("setTimeout", (func) => {
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const retry_backoff = zrequire("retry_backoff");
 const settings_config = zrequire("../src/settings_config.ts");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
-const util = zrequire("util");
 
 const current_user = {};
 set_current_user(current_user);
@@ -1736,7 +1736,7 @@ run_test("fetch_users retry", async ({override, override_rewire}) => {
     });
 
     // Math.round will be `0`.
-    override_rewire(util, "get_retry_backoff_seconds", () => retry_count / 1000);
+    override_rewire(retry_backoff, "get_retry_backoff_seconds", () => retry_count / 1000);
     // Check that we retry the request after a failed attempt.
     blueslip.expect(
         "warn",
@@ -1979,7 +1979,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
         }
     });
 
-    override_rewire(util, "get_retry_backoff_seconds", () => 0);
+    override_rewire(retry_backoff, "get_retry_backoff_seconds", () => 0);
     // Check that we retry the request after a failed attempt.
     blueslip.expect(
         "warn",

@@ -12,6 +12,7 @@ import * as message_user_ids from "./message_user_ids.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as reload_state from "./reload_state.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as server_events_state from "./server_events_state.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -1961,7 +1962,7 @@ async function start_fetch_for_requested_users(): Promise<void> {
             break;
         } catch (error) {
             // Retry on error.
-            const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+            const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
 
             // Since users are in `valid_user_ids`, we expect
             // the fetch to eventually succeed, so we log a warning
