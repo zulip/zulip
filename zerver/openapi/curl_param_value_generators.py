@@ -459,6 +459,21 @@ def regenerate_bot_api_key_test() -> dict[str, object]:
     return {"bot_id": bot.id}
 
 
+@openapi_param_value_generator(["/bots/{bot_id}:delete"])
+def deactivate_bot() -> dict[str, object]:
+    iago = helpers.example_user("iago")
+    bot = do_create_user(
+        email="deactivate-bot-test@zulip.com",
+        password=None,
+        full_name="Bot to be deactivated",
+        realm=get_realm("zulip"),
+        bot_type=UserProfile.DEFAULT_BOT,
+        bot_owner=iago,
+        acting_user=None,
+    )
+    return {"bot_id": bot.id}
+
+
 @openapi_param_value_generator(["/thumbnail/status/{realm_id_str}/{filename}:get"])
 def check_thumbnail_status_for_uploaded_file() -> dict[str, object]:
     realm_id = ""
