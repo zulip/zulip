@@ -404,10 +404,35 @@ def registration_helper(
 
         if start_slack_import:
             assert is_realm_import_enabled()
-            assert prereg_realm.data_import_metadata.get("slack_access_token") is not None
-            assert prereg_realm.data_import_metadata.get("uploaded_import_file_name") is not None
-            assert prereg_realm.data_import_metadata.get("is_import_work_queued") is not True
+            # check_prereg_key guarantees this: a prereg whose import already
+            # created a realm only validates with need_select_realm_owner set,
+            # which is handled above.
             assert prereg_realm.created_realm is None
+
+            if Realm.objects.filter(string_id=prereg_realm.string_id).exists():
+                # The subdomain was taken since registration -- e.g. a
+                # concurrent import of the same subdomain finished first.
+                # Importing would fail on the unique string_id, so don't
+                # start a doomed import; tell the user to start over with a
+                # different URL.
+                return render_slack_import_page(
+                    request,
+                    prereg_realm,
+                    key,
+                    slack_import_error=_(
+                        "This organization URL is no longer available. "
+                        "Please start over and choose a different URL."
+                    ),
+                )
+
+            if (
+                prereg_realm.data_import_metadata.get("slack_access_token") is None
+                or prereg_realm.data_import_metadata.get("uploaded_import_file_name") is None
+            ):
+                # The Slack token and export file must be provided before the
+                # import can start. The UI gates this, but re-render the page
+                # rather than erroring if the form is somehow submitted early.
+                return render_slack_import_page(request, prereg_realm, key)
 
             prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
             prereg_realm.save(update_fields=["data_import_metadata"])

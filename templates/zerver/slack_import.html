@@ -35,6 +35,11 @@
                     </div>
                 </div>
                 {% else %}
+                {% if slack_import_error %}
+                <div class="input-box">
+                    <p id="slack-import-error" class="help-inline text-error">{{ slack_import_error }}</p>
+                </div>
+                {% endif %}
                 <form method="post" class="form-inline" action="{{ url('import_realm_from_slack') }}">
                     {{ csrf_input }}
                     <div class="input-box no-validation">
