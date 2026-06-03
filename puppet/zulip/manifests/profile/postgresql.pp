@@ -2,6 +2,7 @@
 class zulip::profile::postgresql(Boolean $start = true) {
   include zulip::profile::base
   include zulip::postgresql_base
+  include zulip::systemd_daemon_reload
 
   $version = $zulip::postgresql_common::version
 
@@ -68,6 +69,25 @@ class zulip::profile::postgresql(Boolean $start = true) {
     fail("PostgreSQL ${version} not supported")
   }
 
+  # PostgreSQL 18's io_method = io_uring requires a larger
+  # RLIMIT_MEMLOCK than systemd's default on Linux 6.14 and newer
+  if $facts['os']['family'] == 'Debian' {
+    file { '/etc/systemd/system/postgresql@.service.d':
+      ensure => directory,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0755',
+    }
+    file { '/etc/systemd/system/postgresql@.service.d/zulip.conf':
+      ensure => file,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0644',
+      source => 'puppet:///modules/zulip/postgresql/postgresql@.service.d/zulip.conf',
+      notify => [Exec['reload systemd'], Service['postgresql']],
+    }
+  }
+
   if $replication_primary != undef and $replication_user != undef {
     # The presence of a standby.signal file triggers replication
     file { "${zulip::postgresql_base::postgresql_datadir}/standby.signal":
@@ -90,7 +110,7 @@ class zulip::profile::postgresql(Boolean $start = true) {
   }
   service { 'postgresql':
     ensure    => $start,
-    require   => $require,
+    require   => $require + [Exec['reload systemd']],
     subscribe => [ File[$postgresql_conf_file] ],
   }
 }
