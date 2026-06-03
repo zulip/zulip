@@ -482,13 +482,12 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             for (const user of people_in_dms.values()) {
                 if (user === undefined) {
                     return {
-                        // We intentionally give the same non-specific
-                        // error message as the single user case,
+                        // We don't pinpoint which user is invalid,
                         // since we don't display API email addresses
                         // or user IDs typically in UI errors, and we
                         // don't have any other handle as to which
                         // user this was supposed to be.
-                        title: $t({defaultMessage: "This user does not exist!"}),
+                        title: $t({defaultMessage: "One or more of these users do not exist!"}),
                     };
                 }
                 valid_people_in_dms.push(user);

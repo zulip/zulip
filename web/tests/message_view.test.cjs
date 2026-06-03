@@ -515,7 +515,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This user does not exist!"),
+        empty_narrow_html("translated: One or more of these users do not exist!"),
     );
 
     current_filter = set_filter([["dm-including", [alice.user_id]]]);
