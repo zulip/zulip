@@ -821,6 +821,29 @@ def regenerate_api_key(client: Client) -> None:
     client.session = None
 
 
+@openapi_test_function("/bots/{bot_id}:patch")
+def update_bot(client: Client) -> None:
+    bot_id = 17
+    new_owner_id = 10
+    ensure_users([bot_id, new_owner_id], ["default-bot", "hamlet"])
+
+    # {code_example|start}
+    # Update a bot's full name, role, and owner, given the bot's ID.
+    request = {
+        "full_name": "NewBotName",
+        "role": 400,
+        "bot_owner_id": new_owner_id,
+    }
+    result = client.call_endpoint(
+        url=f"/bots/{bot_id}",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bots/{bot_id}", "patch", "200")
+
+
 @openapi_test_function("/bots/{bot_id}/api_key:get")
 def get_bot_api_key(client: Client) -> None:
     bot_id = 17
@@ -2235,6 +2258,10 @@ def test_users(client: Client, owner_client: Client) -> None:
     remove_device(client)
 
 
+def test_user_bots(client: Client) -> None:
+    update_bot(client)
+
+
 def test_streams(client: Client, nonadmin_client: Client) -> None:
     add_subscriptions(client)
     add_channel(client)
@@ -2332,6 +2359,7 @@ def test_the_api(
     # `regenerate_api_key`, since they are needed for curl tests.
     test_api_key_endpoints(client)
     test_users(client, owner_client)
+    test_user_bots(client)
     test_streams(client, nonadmin_client)
     test_messages(client, nonadmin_client)
     test_queues(client)

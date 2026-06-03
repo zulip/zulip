@@ -519,7 +519,8 @@ element to plain escaped text.
 
 **Feature level 447**
 
-* `PATCH /bots/{bot_id}`: Added `short_name` parameter to support updating bot's email.
+* [`PATCH /bots/{bot_id}`](/api/update-bot): Added `short_name` parameter to
+  support updating bot's email.
 
 **Feature level 446**
 
@@ -1280,11 +1281,11 @@ No changes; feature level used for Zulip 10.0 release.
 
 **Feature level 359**
 
-* `PATCH /bots/{bot_user_id}`: Previously, changing the owner of a bot
-  unsubscribed the bot from any channels that the new owner was not
-  subscribed to. This behavior was removed in favor of documenting the
-  security trade-off associated with giving bots read access to
-  sensitive channel content.
+* [`PATCH /bots/{bot_user_id}`](/api/update-bot): Previously, changing
+  the owner of a bot unsubscribed the bot from any channels that the new
+  owner was not subscribed to. This behavior was removed in favor of
+  documenting the security trade-off associated with giving bots read
+  access to sensitive channel content.
 
 **Feature level 358**
 
@@ -3528,9 +3529,9 @@ user's profile.
 
 **Feature level 130**
 
-* `PATCH /bots/{bot_user_id}`: Added support for changing a bot's role
-  via this endpoint. Previously, this could only be done via [`PATCH
-  /users/{user_id}`](/api/update-user).
+* [`PATCH /bots/{bot_user_id}`](/api/update-bot): Added support for
+  changing a bot's role via this endpoint. Previously, this could
+  only be done via [`PATCH /users/{user_id}`](/api/update-user).
 
 **Feature level 129**
 

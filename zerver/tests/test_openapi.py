@@ -228,7 +228,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These "organization settings" endpoint have modest value to document:
         "/realm",
         "/bots",
-        "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
         "/realm/profile_fields/{field_id}",
         "/realm/icon",
@@ -1007,6 +1006,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "reminders",
             "navigation_views",
             "bots",
+            "bot_users",
         ]
         paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]
         for path, path_item in paths.items():
