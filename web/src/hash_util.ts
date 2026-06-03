@@ -582,3 +582,22 @@ export function get_link_hash(link: string): string {
         return "";
     }
 }
+
+const user_profile_tab_url_map: Record<string, string> = {
+    "profile-tab": "profile",
+    "user-profile-streams-tab": "channels",
+    "user-profile-groups-tab": "groups",
+    "manage-profile-tab": "manage",
+};
+
+export const user_profile_url_tab_map: Record<string, string> = {
+    profile: "profile-tab",
+    channels: "user-profile-streams-tab",
+    groups: "user-profile-groups-tab",
+    manage: "manage-profile-tab",
+};
+
+export function user_profile_url(user_id: number, tab_key = "profile-tab"): string {
+    const tab_segment = user_profile_tab_url_map[tab_key] ?? "profile";
+    return `#user/${user_id}/${tab_segment}`;
+}
