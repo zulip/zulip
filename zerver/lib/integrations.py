@@ -8,9 +8,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import HttpRequest, HttpResponseBase
 from django.urls import URLPattern, path
 from django.utils.module_loading import import_string
-from django.utils.translation import gettext_lazy
 from django.views.decorators.csrf import csrf_exempt
-from django_stubs_ext import StrPromise
 from typing_extensions import override
 
 from zerver.lib.storage import static_path
@@ -36,24 +34,23 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-
-CATEGORIES: dict[str, StrPromise] = {
-    "meta-integration": gettext_lazy("Integration frameworks"),
-    "bots": gettext_lazy("Interactive bots"),
-    "video-calling": gettext_lazy("Video calling"),
-    "continuous-integration": gettext_lazy("Continuous integration"),
-    "customer-support": gettext_lazy("Customer support"),
-    "deployment": gettext_lazy("Deployment"),
-    "entertainment": gettext_lazy("Entertainment"),
-    "communication": gettext_lazy("Communication"),
-    "financial": gettext_lazy("Financial"),
-    "hr": gettext_lazy("Human resources"),
-    "marketing": gettext_lazy("Marketing"),
-    "misc": gettext_lazy("Miscellaneous"),
-    "monitoring": gettext_lazy("Monitoring"),
-    "project-management": gettext_lazy("Project management"),
-    "productivity": gettext_lazy("Productivity"),
-    "version-control": gettext_lazy("Version control"),
+CATEGORIES: dict[str, str] = {
+    "meta-integration": "Integration frameworks",
+    "bots": "Interactive bots",
+    "video-calling": "Video calling",
+    "continuous-integration": "Continuous integration",
+    "customer-support": "Customer support",
+    "deployment": "Deployment",
+    "entertainment": "Entertainment",
+    "communication": "Communication",
+    "financial": "Financial",
+    "hr": "Human resources",
+    "marketing": "Marketing",
+    "misc": "Miscellaneous",
+    "monitoring": "Monitoring",
+    "project-management": "Project management",
+    "productivity": "Productivity",
+    "version-control": "Version control",
 }
 
 # Can also be computed from INTEGRATIONS by removing entries from
@@ -241,9 +238,6 @@ class Integration:
     def get_bot_avatar_path(self) -> str:
         name = os.path.splitext(os.path.basename(self.logo_path))[0]
         return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
-
-    def get_translated_categories(self) -> list[str]:
-        return [str(category) for category in self.categories]
 
 
 class BotIntegration(Integration):
