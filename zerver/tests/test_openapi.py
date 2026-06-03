@@ -741,6 +741,69 @@ class TestCurlExampleGeneration(ZulipTestCase):
         },
     }
 
+    spec_mock_using_multipart_form_data = {
+        "security": [{"basicAuth": []}],
+        "paths": {
+            "/endpoint": {
+                "post": {
+                    "description": "Upload some files.",
+                    "x-curl-examples-parameters": {
+                        "oneOf": [
+                            {
+                                "type": "include",
+                                "parameters": {"enum": ["description", "file_a"]},
+                            },
+                        ],
+                    },
+                    "parameters": [
+                        {
+                            "name": "description",
+                            "in": "query",
+                            "description": "A short description for the upload.",
+                            "schema": {"type": "string"},
+                            "example": "note",
+                            "required": True,
+                        },
+                        {
+                            "name": "priority",
+                            "in": "query",
+                            "description": "Sort priority.",
+                            "schema": {"type": "integer"},
+                            "example": 7,
+                            "required": True,
+                        },
+                    ],
+                    "requestBody": {
+                        "content": {
+                            "multipart/form-data": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "file_a": {
+                                            "type": "string",
+                                            "format": "binary",
+                                            "example": "/path/to/a.png",
+                                        },
+                                        "file_b": {
+                                            "type": "string",
+                                            "format": "binary",
+                                            "example": "/path/to/b.png",
+                                        },
+                                        "file_c": {
+                                            "type": "string",
+                                            "format": "binary",
+                                            "example": "/path/to/c.png",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+
     def curl_example(self, endpoint: str, method: str, *args: Any, **kwargs: Any) -> list[str]:
         return generate_curl_example(endpoint, method, "http://localhost:9991/api", *args, **kwargs)
 
@@ -895,6 +958,64 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "channel"}]\'',
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_generate_and_render_curl_example_multipart_with_includes(
+        self, spec_mock: MagicMock
+    ) -> None:
+        spec_mock.return_value = self.spec_mock_using_multipart_form_data
+        generated_curl_example = self.curl_example(
+            "/endpoint",
+            "POST",
+            include=["description", "file_a"],
+        )
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/endpoint \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    --data-urlencode description=note \\",
+            "    -F file_a=@/path/to/a.png",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_generate_and_render_curl_example_multipart_with_excludes(
+        self, spec_mock: MagicMock
+    ) -> None:
+        spec_mock.return_value = self.spec_mock_using_multipart_form_data
+        generated_curl_example = self.curl_example(
+            "/endpoint",
+            "POST",
+            exclude=["priority", "file_b"],
+        )
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/endpoint \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    --data-urlencode description=note \\",
+            "    -F file_a=@/path/to/a.png \\",
+            "    -F file_c=@/path/to/c.png",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_render_curl_example_multipart_curl_wrapper(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_using_multipart_form_data
+        generated_curl_example = render_curl_example(
+            "/endpoint:POST", api_url="http://localhost:9991/api"
+        )
+        expected_curl_example = [
+            "{!curl-auth-credentials.md!}\n\n",
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/endpoint \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    --data-urlencode description=note \\",
+            "    -F file_a=@/path/to/a.png",
             "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
