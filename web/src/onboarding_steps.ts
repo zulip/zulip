@@ -10,6 +10,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import type {StateData, onboarding_step_schema} from "./state_data.ts";
 import * as util from "./util.ts";
 
@@ -49,7 +50,7 @@ export function post_onboarding_step_as_read(
                 return;
             }
 
-            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, attempt);
+            const retry_delay_secs = get_retry_backoff_seconds(xhr, attempt);
             setTimeout(() => {
                 post_onboarding_step_as_read(
                     onboarding_step_name,

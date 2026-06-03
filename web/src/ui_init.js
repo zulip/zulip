@@ -111,6 +111,7 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
@@ -893,7 +894,7 @@ $(() => {
                 error(xhr) {
                     register_failures += 1;
                     if (register_failures <= 5) {
-                        const retry_delay_secs = util.get_retry_backoff_seconds(
+                        const retry_delay_secs = get_retry_backoff_seconds(
                             xhr,
                             register_failures,
                             false,

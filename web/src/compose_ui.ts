@@ -27,6 +27,7 @@ import {message_render_response_schema} from "./message_store.ts";
 import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as rtl from "./rtl.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -1554,7 +1555,7 @@ async function poll_thumbnail_status(
         }
 
         if (pending_thumbnail_paths.size > 0) {
-            const retry_delay_secs = util.get_retry_backoff_seconds(undefined, attempt, true);
+            const retry_delay_secs = get_retry_backoff_seconds(undefined, attempt, true);
             thumbnail_poll_timeout = setTimeout(() => {
                 void poll_thumbnail_status(
                     $preview_container,

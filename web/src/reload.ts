@@ -15,6 +15,7 @@ import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import type {ReloadingReason} from "./popup_banners.ts";
 import * as reload_state from "./reload_state.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as util from "./util.ts";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -332,7 +333,7 @@ export function initiate({
         },
         error(xhr) {
             server_reachable_check_failures += 1;
-            const retry_delay_secs = util.get_retry_backoff_seconds(
+            const retry_delay_secs = get_retry_backoff_seconds(
                 xhr,
                 server_reachable_check_failures,
             );

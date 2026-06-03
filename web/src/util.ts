@@ -546,8 +546,6 @@ export function is_topic_name_considered_empty(topic: string): boolean {
     return false;
 }
 
-export {get_retry_backoff_seconds, rewire_get_retry_backoff_seconds} from "./retry_backoff.ts";
-
 export async function sha256_hash(text: string): Promise<string | undefined> {
     // The Web Crypto API is only available in secure contexts (HTTPS or localhost).
     if (!window.isSecureContext) {
