@@ -837,7 +837,7 @@ def registration_helper(
                 user_profile = user
                 if not realm_creation:
                     # Since we'll have created a user, we now just log them in.
-                    return login_and_redirect(request, user_profile, next)
+                    return login_and_redirect(request, user_profile, next, login_method="ldap")
                 # With realm_creation=True, we're going to return further down,
                 # after finishing up the creation process.
 
@@ -948,7 +948,7 @@ def registration_helper(
             return redirect("/")
 
         assert isinstance(auth_result, UserProfile)
-        return login_and_redirect(request, auth_result, next)
+        return login_and_redirect(request, auth_result, next, login_method="email")
 
     default_email_address_visibility = None
     if realm is not None:
@@ -994,7 +994,10 @@ def registration_helper(
 
 
 def login_and_redirect(
-    request: HttpRequest, user_profile: UserProfile, next: str = ""
+    request: HttpRequest,
+    user_profile: UserProfile,
+    next: str = "",
+    login_method: str | None = None,
 ) -> HttpResponse:
     mobile_flow_otp = get_expirable_session_var(
         request.session, "registration_mobile_flow_otp", delete=True
@@ -1017,7 +1020,7 @@ def login_and_redirect(
             request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
         )
 
-    do_login(request, user_profile)
+    do_login(request, user_profile, login_method=login_method)
     if next:
         redirect_to = get_safe_redirect_to(next, user_profile.realm.url)
     else:
