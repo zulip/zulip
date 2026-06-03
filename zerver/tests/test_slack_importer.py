@@ -3305,6 +3305,29 @@ To Do
         self.assertIsNone(prereg_realm.created_realm)
         self.assertIsNot(prereg_realm.data_import_metadata.get("is_import_work_queued"), True)
 
+    def test_slack_import_page_warns_when_subdomain_taken(self) -> None:
+        # When the subdomain is already taken (e.g. a concurrent import of the
+        # same subdomain got there first), the import setup page itself shows
+        # the error, rather than leaving the user filling out a form for an
+        # import that can't succeed.
+        do_create_realm(string_id="taken-subdomain-2", name="Existing realm")
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="taken-subdomain-2",
+            name="Test Realm",
+            email="taken2@zulip.com",
+            data_import_metadata={"import_from": "slack", "slack_access_token": "xoxb-token"},
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        # Render the setup page (no start_slack_import).
+        result = self.client_post("/new/import/slack/", {"key": confirmation_key})
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("no longer available", result)
+
     @responses.activate
     def test_cancel_realm_import(self) -> None:
         # Choose import from slack

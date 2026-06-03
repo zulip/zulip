@@ -309,6 +309,17 @@ def render_slack_import_page(
     return TemplateResponse(request, "zerver/slack_import.html", context)
 
 
+def check_for_slack_import_subdomain_unavailable_error(
+    prereg_realm: PreregistrationRealm,
+) -> str | None:
+    if Realm.objects.filter(string_id=prereg_realm.string_id).exists():
+        return _(
+            "This organization URL is no longer available. "
+            "Please start over and choose a different URL."
+        )
+    return None
+
+
 @never_cache
 @require_post
 def import_realm_from_slack(*args: Any, **kwargs: Any) -> HttpResponse:
@@ -409,20 +420,17 @@ def registration_helper(
             # which is handled above.
             assert prereg_realm.created_realm is None
 
-            if Realm.objects.filter(string_id=prereg_realm.string_id).exists():
+            subdomain_unavailable_error = check_for_slack_import_subdomain_unavailable_error(
+                prereg_realm
+            )
+            if subdomain_unavailable_error is not None:
                 # The subdomain was taken since registration -- e.g. a
                 # concurrent import of the same subdomain finished first.
                 # Importing would fail on the unique string_id, so don't
                 # start a doomed import; tell the user to start over with a
                 # different URL.
                 return render_slack_import_page(
-                    request,
-                    prereg_realm,
-                    key,
-                    slack_import_error=_(
-                        "This organization URL is no longer available. "
-                        "Please start over and choose a different URL."
-                    ),
+                    request, prereg_realm, key, slack_import_error=subdomain_unavailable_error
                 )
 
             if (
@@ -463,6 +471,13 @@ def registration_helper(
         elif prereg_realm.data_import_metadata.get("import_from") == "slack":
             assert is_realm_import_enabled()
 
+            # Warn up front if the subdomain has been taken (e.g. by a
+            # concurrent import of the same subdomain) so the user isn't left
+            # filling out the form for an import that can't succeed.
+            subdomain_unavailable_error = check_for_slack_import_subdomain_unavailable_error(
+                prereg_realm
+            )
+
             saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
             if slack_access_token is not None and slack_access_token != saved_slack_access_token:
                 # Verify slack token access.
@@ -481,13 +496,16 @@ def registration_helper(
                         request,
                         prereg_realm,
                         key,
+                        slack_import_error=subdomain_unavailable_error or "",
                         slack_access_token_validation_error=str(e),
                     )
 
                 prereg_realm.data_import_metadata["slack_access_token"] = slack_access_token
                 prereg_realm.save(update_fields=["data_import_metadata"])
 
-            return render_slack_import_page(request, prereg_realm, key)
+            return render_slack_import_page(
+                request, prereg_realm, key, slack_import_error=subdomain_unavailable_error or ""
+            )
 
         password_required = True
         role = UserProfile.ROLE_REALM_OWNER
