@@ -905,6 +905,22 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
+    def test_generate_and_render_curl_example_multipart_with_excludes(self) -> None:
+        generated_curl_example = self.curl_example(
+            "/bots/{bot_id}",
+            "PATCH",
+            include=["full_name", "file"],
+            exclude=["file"],
+        )
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX PATCH http://localhost:9991/api/v1/bots/17 \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    --data-urlencode 'full_name=The New Bot Name'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
 
 class OpenAPIAttributesTest(ZulipTestCase):
     def test_attributes(self) -> None:
