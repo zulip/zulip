@@ -3241,6 +3241,70 @@ To Do
         # The other realm must not be reported as this import's result.
         self.assertNotIn("Done", response_dict["status"])
 
+    def test_start_slack_import_without_uploaded_file_renders_page(self) -> None:
+        # POSTing "start import" before the export file finished uploading must
+        # re-render the import page, not 500 on an assertion.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="start-no-file",
+            name="Test Realm",
+            email="nofile@zulip.com",
+            data_import_metadata={"import_from": "slack", "slack_access_token": "xoxb-token"},
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        with mock.patch(
+            "zerver.views.registration.queue_json_publish_rollback_unsafe"
+        ) as queue_mock:
+            result = self.client_post(
+                "/new/import/slack/",
+                {"key": confirmation_key, "start_slack_import": "true"},
+            )
+
+        self.assertEqual(result.status_code, 200)
+        queue_mock.assert_not_called()
+        prereg_realm.refresh_from_db()
+        self.assertIsNot(prereg_realm.data_import_metadata.get("is_import_work_queued"), True)
+
+    def test_start_slack_import_with_taken_subdomain_shows_error(self) -> None:
+        # Starting an import for a subdomain that has since been taken -- e.g.
+        # a concurrent import of the same subdomain finished first -- must show
+        # a clear error rather than enqueueing a doomed import.
+        do_create_realm(string_id="taken-subdomain", name="Existing realm")
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="taken-subdomain",
+            name="Test Realm",
+            email="taken@zulip.com",
+            data_import_metadata={
+                "import_from": "slack",
+                "slack_access_token": "xoxb-token",
+                "uploaded_import_file_name": "export.zip",
+            },
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        with mock.patch(
+            "zerver.views.registration.queue_json_publish_rollback_unsafe"
+        ) as queue_mock:
+            result = self.client_post(
+                "/new/import/slack/",
+                {"key": confirmation_key, "start_slack_import": "true"},
+            )
+
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("no longer available", result)
+        queue_mock.assert_not_called()
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertIsNot(prereg_realm.data_import_metadata.get("is_import_work_queued"), True)
+
     @responses.activate
     def test_cancel_realm_import(self) -> None:
         # Choose import from slack
