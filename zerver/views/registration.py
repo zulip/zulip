@@ -276,6 +276,39 @@ def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
     return registration_helper(*args, **kwargs)
 
 
+def render_slack_import_page(
+    request: HttpRequest,
+    prereg_realm: PreregistrationRealm,
+    key: str,
+    *,
+    slack_import_error: str = "",
+    slack_access_token_validation_error: str = "",
+) -> HttpResponse:
+    # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it
+    # doesn't overflow the select box in the slack import page.
+    email_address_visibility_options = []
+    for visibility_id, name in RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items():
+        if visibility_id == RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+            name = gettext_lazy("Everyone")
+        email_address_visibility_options.append((visibility_id, name))
+
+    metadata = prereg_realm.data_import_metadata
+    context: dict[str, Any] = {
+        "key": key,
+        "max_file_size": settings.MAX_WEB_DATA_IMPORT_SIZE_MB,
+        "email_address_visibility_options": email_address_visibility_options,
+        "email_address_visibility_default": get_email_address_visibility_default(
+            prereg_realm.org_type
+        ),
+        "slack_access_token": metadata.get("slack_access_token"),
+        "uploaded_import_file_name": metadata.get("uploaded_import_file_name"),
+        "invalid_file_error_message": metadata.get("invalid_file_error_message", ""),
+        "slack_access_token_validation_error": slack_access_token_validation_error,
+        "slack_import_error": slack_import_error,
+    }
+    return TemplateResponse(request, "zerver/slack_import.html", context)
+
+
 @never_cache
 @require_post
 def import_realm_from_slack(*args: Any, **kwargs: Any) -> HttpResponse:
@@ -403,67 +436,33 @@ def registration_helper(
             )
 
         elif prereg_realm.data_import_metadata.get("import_from") == "slack":
-            # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it doesn't overflow the
-            # select box in the slack import page.
-            email_address_visibility_options = []
-
-            for id, name in RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items():
-                if id == RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-                    name = gettext_lazy("Everyone")
-                email_address_visibility_options.append((id, name))
-
             assert is_realm_import_enabled()
-            context: dict[str, Any] = {
-                "key": key,
-                "max_file_size": settings.MAX_WEB_DATA_IMPORT_SIZE_MB,
-                "email_address_visibility_options": email_address_visibility_options,
-                "email_address_visibility_default": get_email_address_visibility_default(
-                    prereg_realm.org_type
-                ),
-            }
 
             saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
-            if saved_slack_access_token or slack_access_token is not None:
-                if (
-                    slack_access_token is not None
-                    and slack_access_token != saved_slack_access_token
-                ):
-                    # Verify slack token access.
-                    from zerver.data_import.slack import (
-                        SLACK_IMPORT_TOKEN_SCOPES,
-                        check_slack_token_access,
+            if slack_access_token is not None and slack_access_token != saved_slack_access_token:
+                # Verify slack token access.
+                from zerver.data_import.slack import (
+                    SLACK_IMPORT_TOKEN_SCOPES,
+                    check_slack_token_access,
+                )
+
+                try:
+                    check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
+                except Exception as e:
+                    logger.info(
+                        "(%s) Slack token failed validation: %s", prereg_realm.string_id, str(e)
+                    )
+                    return render_slack_import_page(
+                        request,
+                        prereg_realm,
+                        key,
+                        slack_access_token_validation_error=str(e),
                     )
 
-                    try:
-                        check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
-                    except Exception as e:
-                        context["slack_access_token_validation_error"] = str(e)
-                        logger.info(
-                            "(%s) Slack token failed validation: %s", prereg_realm.string_id, str(e)
-                        )
-                        return TemplateResponse(
-                            request,
-                            "zerver/slack_import.html",
-                            context,
-                        )
+                prereg_realm.data_import_metadata["slack_access_token"] = slack_access_token
+                prereg_realm.save(update_fields=["data_import_metadata"])
 
-                    saved_slack_access_token = slack_access_token
-                    prereg_realm.data_import_metadata["slack_access_token"] = slack_access_token
-                    prereg_realm.save(update_fields=["data_import_metadata"])
-
-                context["slack_access_token"] = saved_slack_access_token
-                context["uploaded_import_file_name"] = prereg_realm.data_import_metadata.get(
-                    "uploaded_import_file_name"
-                )
-                context["invalid_file_error_message"] = prereg_realm.data_import_metadata.get(
-                    "invalid_file_error_message", ""
-                )
-
-            return TemplateResponse(
-                request,
-                "zerver/slack_import.html",
-                context,
-            )
+            return render_slack_import_page(request, prereg_realm, key)
 
         password_required = True
         role = UserProfile.ROLE_REALM_OWNER
