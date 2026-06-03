@@ -590,6 +590,9 @@ html_rules: list["Rule"] = [
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
             "web/templates/settings/playground_settings_admin.hbs",
+            # The integrations pages are documentation pages that we
+            # intentionally do not translate.
+            "templates/zerver/integrations/catalog.html",
         },
         "good_lines": [
             '<input class="left-sidebar-search-input" type="text" placeholder="{{ _(\'Filter left sidebar\') }}" />'

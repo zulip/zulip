@@ -19,16 +19,14 @@
                 <div class="integration-main-text">
                     <header>
                         <h1 class="portico-page-heading">
-                            {% trans %}Over {{integrations_count_display}} native integrations.{% endtrans %}
+                            Over {{ integrations_count_display }} native integrations.
                         </h1>
                     </header>
                     <p class="portico-page-subheading">
-                        {% trans %}
                         And hundreds more through
                         <a href="/integrations/zapier">Zapier</a>
                         and
                         <a href="/integrations/ifttt">IFTTT</a>.
-                        {% endtrans %}
                     </p>
                 </div>
 
@@ -36,12 +34,12 @@
                     <div class="searchbar">
                         <div class="searchbar-reset">
                             <i class="zulip-icon zulip-icon-search" aria-hidden="true"></i>
-                            <input type="text" class="search_input" placeholder="{{ _('Search integrations') }}"/>
+                            <input type="text" class="search_input" placeholder="Search integrations"/>
                         </div>
                     </div>
                 </div>
 
-                {% set dropdown_label = _('Filter by category') %}
+                {% set dropdown_label = 'Filter by category' %}
                 {% if selected_category_slug != 'all' %}
                 {% set dropdown_label = categories_dict.get(selected_category_slug, dropdown_label) %}
                 {% endif %}
@@ -52,46 +50,46 @@
                     </div>
                     <div class="dropdown-list">
                         <a href="/integrations/" class="integration-category {% if selected_category_slug == 'all' %}selected{% endif %}" data-category="all">
-                            {% trans %}All{% endtrans %}
+                            All
                         </a>
                         {% for category in categories_dict.keys() %}
                         <a href="/integrations/category/{{ category }}" class="integration-category {% if selected_category_slug == category %}selected{% endif %}" data-category="{{ category }}">
                             {{ categories_dict[category] }}
                         </a>
                         {% endfor %}
-                        <h3 class="heading">{% trans %}Custom integrations{% endtrans %}</h3>
+                        <h3 class="heading">Custom integrations</h3>
                         <a href="https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html">
-                            {% trans %}Incoming webhooks{% endtrans %}
+                            Incoming webhooks
                         </a>
                         <a href="/help/writing-bots">
-                            {% trans %}Interactive bots{% endtrans %}
+                            Interactive bots
                         </a>
                         <a href="/api/rest">
-                            {% trans %}REST API{% endtrans %}
+                            REST API
                         </a>
                     </div>
                 </div>
 
                 <div class="catalog">
                     <div class="integration-categories-sidebar">
-                        <h3>{% trans %}Categories{% endtrans %}</h3>
+                        <h3>Categories</h3>
                         <a href="/integrations/" data-category="all" class="integration-category {% if selected_category_slug == 'all' %}selected{% endif %}">
-                            {% trans %}All{% endtrans %}
+                            All
                         </a>
                         {% for category in categories_dict.keys() %}
                         <a href="/integrations/category/{{ category }}" data-category="{{ category }}" class="integration-category {% if selected_category_slug == category %}selected{% endif %}">
                             {{ categories_dict[category] }}
                         </a>
                         {% endfor %}
-                        <h3>{% trans %}Custom integrations{% endtrans %}</h3>
+                        <h3>Custom integrations</h3>
                         <a href="https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html">
-                            {% trans %}Incoming webhooks{% endtrans %}
+                            Incoming webhooks
                         </a>
                         <a href="/help/writing-bots">
-                            {% trans %}Interactive bots{% endtrans %}
+                            Interactive bots
                         </a>
                         <a href="/api/rest">
-                            {% trans %}REST API{% endtrans %}
+                            REST API
                         </a>
                     </div>
 
