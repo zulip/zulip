@@ -50,6 +50,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
 import * as fenced_code from "./fenced_code.ts";
+import * as file_attachment_preview from "./file_attachment_preview.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as gif_state from "./gif_state.ts";
@@ -132,7 +133,6 @@ import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spoilers from "./spoilers.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
-import * as file_attachment_preview from "./file_attachment_preview.ts";
 import {
     current_user,
     realm,

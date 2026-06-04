@@ -15,6 +15,7 @@ import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
 import * as emoji_picker from "./emoji_picker.ts";
+import * as file_attachment_preview from "./file_attachment_preview.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
@@ -40,7 +41,6 @@ import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
-import * as file_attachment_preview from "./file_attachment_preview.ts";
 import * as topic_list from "./topic_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
@@ -400,7 +400,7 @@ export function initialize(): void {
             href &&
             href.startsWith("/user_uploads/") &&
             // Don't intercept image/video links handled by lightbox
-            !$(this).closest(".message_inline_image, .message_inline_video").length
+            $(this).closest(".message_inline_image, .message_inline_video").length === 0
         ) {
             e.preventDefault();
             e.stopPropagation();
@@ -408,7 +408,7 @@ export function initialize(): void {
             if (file_attachment_preview.should_preview(href)) {
                 void file_attachment_preview.open_preview(href, filename);
             } else {
-                void file_attachment_preview.open_download_only(href, filename);
+                file_attachment_preview.open_download_only(href, filename);
             }
         }
     });
