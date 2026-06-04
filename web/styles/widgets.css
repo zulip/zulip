@@ -274,6 +274,10 @@ input {
     font-size: 0.8571em; /* 12px at 14px/em */
     display: flex;
     align-items: center;
+
+    &:empty {
+        display: none;
+    }
 }
 
 .poll-question-check,
