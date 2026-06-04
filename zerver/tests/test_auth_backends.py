@@ -1920,6 +1920,54 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             ],
         )
 
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_social_auth_with_ldap_auth_registration_user_in_ldap(self) -> None:
+        """
+        This test checks that in configurations that use the LDAP authentication
+        backend and a social backend, a user who exists in the LDAP directory
+        can create an account via the social backend, with their identity
+        having been verified by the social backend.
+        """
+        self.init_default_ldap_database()
+        email = "newuser_email@zulip.com"
+        name = "Social Fullname"
+        # The name of this user in the LDAP directory, which is expected
+        # to take precedence over the name provided by the social backend.
+        ldap_name = "New LDAP fullname"
+        realm = get_realm("zulip")
+        subdomain = "zulip"
+        ldap_user_attr_map = {"full_name": "cn"}
+
+        backend_path = f"zproject.backends.{self.BACKEND_CLASS.__name__}"
+        with self.settings(
+            POPULATE_PROFILE_VIA_LDAP=True,
+            LDAP_EMAIL_ATTR="mail",
+            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            AUTHENTICATION_BACKENDS=(
+                backend_path,
+                "zproject.backends.ZulipLDAPAuthBackend",
+                "zproject.backends.ZulipDummyBackend",
+            ),
+        ):
+            account_data_dict = self.get_account_data_dict(email=email, name=name)
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain=subdomain,
+                is_signup=True,
+            )
+            # The full name is populated from LDAP, so the registration form
+            # is skipped and the account is created directly.
+            self.stage_two_of_registration(
+                result,
+                realm,
+                subdomain,
+                email,
+                name,
+                ldap_name,
+                skip_registration_form=True,
+            )
+
     def test_social_auth_complete(self) -> None:
         def mock_process_error(backend: BaseOAuth2, data: Mapping[str, object]) -> None:
             raise AuthFailed(backend, "Not found")
