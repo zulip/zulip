@@ -49,7 +49,7 @@ from typing_extensions import override
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user, do_reactivate_user
-from zerver.actions.invites import do_invite_users
+from zerver.actions.invites import do_invite_users, do_revoke_user_invite
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
@@ -1597,6 +1597,105 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.stage_two_of_registration(
             result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
         )
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_social_auth_registration_invitation_exists_invite_required(self) -> None:
+        """
+        A user with a pending email invitation can sign up via a social
+        backend even when the organization requires invitations to join.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "invite_required", True, acting_user=None)
+
+        iago = self.example_user("iago")
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                iago,
+                [Invitee(full_name=name, email=email)],
+                [],
+                include_realm_default_subscriptions=True,
+                invite_expires_in_minutes=2 * 24 * 60,
+            )
+
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+        )
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_social_auth_registration_invite_required_invalid_invitations(self) -> None:
+        """
+        In an organization requiring invitations, PreregistrationUser rows
+        that aren't valid pending invitations to this realm do not permit
+        signup.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "invite_required", True, acting_user=None)
+        iago = self.example_user("iago")
+
+        def invite(referred_by: UserProfile) -> PreregistrationUser:
+            with self.captureOnCommitCallbacks(execute=True):
+                do_invite_users(
+                    referred_by,
+                    [Invitee(full_name=name, email=email)],
+                    [],
+                    include_realm_default_subscriptions=True,
+                    invite_expires_in_minutes=2 * 24 * 60,
+                )
+            return PreregistrationUser.objects.get(email=email, referred_by=referred_by)
+
+        def leftover_signup_attempt() -> None:
+            # Left over from the user's own earlier signup attempt, made
+            # while the organization permitted signups; such rows have
+            # referred_by unset.
+            prereg_user = PreregistrationUser.objects.create(
+                email=email, realm=realm, password_required=False
+            )
+            create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
+
+        def revoked_invitation() -> None:
+            do_revoke_user_invite(invite(iago), acting_user=iago)
+
+        def expired_invitation() -> None:
+            with time_machine.travel(timezone_now() - timedelta(days=3), tick=False):
+                invite(iago)
+
+        def invitation_in_another_realm() -> None:
+            invite(self.lear_user("cordelia"))
+
+        for setup in [
+            leftover_signup_attempt,
+            revoked_invitation,
+            expired_invitation,
+            invitation_in_another_realm,
+        ]:
+            with self.subTest(setup.__name__):
+                setup()
+                account_data_dict = self.get_account_data_dict(email=email, name=name)
+                result = self.social_auth_test(
+                    account_data_dict,
+                    expect_choose_email_screen=True,
+                    subdomain=subdomain,
+                    is_signup=True,
+                )
+                result = self.client_get(result["Location"])
+                self.assertEqual(result.status_code, 200)
+                self.assert_in_success_response(
+                    [f"Please request an invite for {email} from the organization administrator."],
+                    result,
+                )
+                with self.assertRaises(UserProfile.DoesNotExist):
+                    get_user_by_delivery_email(email, realm)
+                PreregistrationUser.objects.filter(email=email).delete()
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_with_invalid_multiuse_invite(self) -> None:
