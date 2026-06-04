@@ -296,10 +296,12 @@ export async function warn_if_private_stream_is_linked(
     );
 
     if (!existing_stream_warnings.includes(linked_stream.stream_id)) {
+        const audience_channel = sub_store.get(stream_id)!;
         const new_row_html = render_private_stream_warning({
             stream_id: linked_stream.stream_id,
             banner_type: compose_banner.WARNING,
             channel_name: linked_stream.name,
+            audience_channel_name: audience_channel.name,
             classname: compose_banner.CLASSNAMES.private_stream_warning,
         });
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
