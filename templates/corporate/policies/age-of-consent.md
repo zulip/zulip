@@ -50,7 +50,7 @@ is higher than our minimal requirement of 13 years of age.
 
 ## Pacific
 
-* Australia: 15
+* Australia: 16
 * Indonesia: 18
 * Malaysia: 18
 * Philippines: 18
