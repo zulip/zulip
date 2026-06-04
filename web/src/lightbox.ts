@@ -686,7 +686,7 @@ function remove_video_players(): void {
 }
 
 export function handle_inline_media_element_click(
-    $media: JQuery<HTMLMediaElement> | JQuery<HTMLImageElement>,
+    $media: JQuery<HTMLMediaElement | HTMLImageElement>,
     hide_navigation_arrows = false,
 ): void {
     set_selected_media_element($media);

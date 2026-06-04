@@ -1,11 +1,26 @@
 import $ from "jquery";
 
-import * as file_attachment_preview from "./file_attachment_preview.ts";
-import * as lightbox from "./lightbox.ts";
 import * as overlays from "./overlays.ts";
 
 // Unified attachment type — represents any navigable attachment in the message list.
 export type AttachmentType = "image" | "video" | "file" | "unsupported";
+
+// Renderers for the different viewers we can navigate to. These are
+// registered by file_attachment_preview at startup so that this module
+// doesn't import file_attachment_preview or lightbox directly, which
+// would create an import cycle (both of those import this module).
+type NavigationRenderers = {
+    should_preview: (url: string) => boolean;
+    open_file_preview: (url: string, filename: string) => void;
+    open_download_only: (url: string, filename: string) => void;
+    open_media_lightbox: ($el: JQuery<HTMLImageElement | HTMLMediaElement>) => void;
+};
+
+let renderers: NavigationRenderers | undefined;
+
+export function register_navigation_renderers(r: NavigationRenderers): void {
+    renderers = r;
+}
 
 export type Attachment = {
     type: AttachmentType;
@@ -44,10 +59,10 @@ export function collect_attachments(): Attachment[] {
         const $row = $(this);
 
         // Collect inline images
-        $row.find(
+        $row.find<HTMLImageElement>(
             ".message-media-inline-image img, .message-media-preview-image img",
         ).each(function () {
-            const $img = $(this as HTMLImageElement);
+            const $img = $(this);
             const $anchor = $img.parent("a");
             const url = $anchor.attr("href") ?? $img.attr("src") ?? "";
             const title = $anchor.attr("aria-label") ?? url.split("/").pop() ?? "image";
@@ -60,8 +75,8 @@ export function collect_attachments(): Attachment[] {
         });
 
         // Collect inline videos
-        $row.find(".message_inline_video video").each(function () {
-            const $video = $(this as HTMLMediaElement);
+        $row.find<HTMLMediaElement>(".message_inline_video video").each(function () {
+            const $video = $(this);
             const url = $video.attr("src") ?? "";
             const filename = url.split("/").pop() ?? "video";
             attachments.push({
@@ -107,9 +122,7 @@ export function collect_attachments(): Attachment[] {
             }
 
             attachments.push({
-                type: file_attachment_preview.should_preview(href)
-                    ? "file"
-                    : "unsupported",
+                type: renderers?.should_preview(href) ? "file" : "unsupported",
                 url: href,
                 filename,
             });
@@ -170,6 +183,10 @@ function navigate_to(index: number): void {
         index = 0;
     }
 
+    if (renderers === undefined) {
+        return;
+    }
+
     const target = attachment_list[index]!;
     current_index = index;
 
@@ -185,24 +202,16 @@ function navigate_to(index: number): void {
     // Open the appropriate viewer for the target attachment
     switch (target.type) {
         case "image":
-            if (target.$element && target.$element.length > 0) {
-                lightbox.handle_inline_media_element_click(
-                    target.$element as JQuery<HTMLImageElement>,
-                );
-            }
-            break;
         case "video":
             if (target.$element && target.$element.length > 0) {
-                lightbox.handle_inline_media_element_click(
-                    target.$element as JQuery<HTMLMediaElement>,
-                );
+                renderers.open_media_lightbox(target.$element);
             }
             break;
         case "file":
-            void file_attachment_preview.open_preview(target.url, target.filename);
+            renderers.open_file_preview(target.url, target.filename);
             break;
         case "unsupported":
-            void file_attachment_preview.open_download_only(target.url, target.filename);
+            renderers.open_download_only(target.url, target.filename);
             break;
     }
 }

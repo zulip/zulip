@@ -8,8 +8,10 @@ import * as attachment_navigator from "./attachment_navigator.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import {$t} from "./i18n.ts";
+import * as lightbox from "./lightbox.ts";
 import {message_render_response_schema} from "./message_store.ts";
 import * as overlays from "./overlays.ts";
+import type * as pdf_preview from "./pdf_preview.ts";
 import {user_settings} from "./user_settings.ts";
 
 hljs.registerLanguage("matlab", matlab);
@@ -107,7 +109,12 @@ function get_extra_extensions(): Set<string> {
     if (!raw) {
         return new Set();
     }
-    return new Set(raw.split(",").map((ext) => ext.trim().toLowerCase()).filter(Boolean));
+    return new Set(
+        raw
+            .split(",")
+            .map((ext) => ext.trim().toLowerCase())
+            .filter(Boolean),
+    );
 }
 
 export function should_preview(url: string): boolean {
@@ -132,8 +139,7 @@ function get_download_url(url: string): string {
             parsed.pathname.startsWith("/user_uploads/")
         ) {
             parsed.pathname =
-                "/user_uploads/download/" +
-                parsed.pathname.slice("/user_uploads/".length);
+                "/user_uploads/download/" + parsed.pathname.slice("/user_uploads/".length);
             return parsed.href;
         }
     } catch {
@@ -180,36 +186,50 @@ function parse_csv(text: string): string[][] {
     let current_field = "";
     let in_quotes = false;
 
-    for (let i = 0; i < text.length; i++) {
+    for (let i = 0; i < text.length; i += 1) {
         const ch = text[i];
         if (in_quotes) {
             if (ch === '"') {
                 if (i + 1 < text.length && text[i + 1] === '"') {
                     current_field += '"';
-                    i++;
+                    i += 1;
                 } else {
                     in_quotes = false;
                 }
             } else {
                 current_field += ch;
             }
-        } else if (ch === '"') {
-            in_quotes = true;
-        } else if (ch === ",") {
-            current_row.push(current_field);
-            current_field = "";
-        } else if (ch === "\n" || ch === "\r") {
-            if (ch === "\r" && i + 1 < text.length && text[i + 1] === "\n") {
-                i++;
-            }
-            current_row.push(current_field);
-            current_field = "";
-            if (current_row.some((f) => f.length > 0)) {
-                rows.push(current_row);
-            }
-            current_row = [];
         } else {
-            current_field += ch;
+            switch (ch) {
+                case '"': {
+                    in_quotes = true;
+
+                    break;
+                }
+                case ",": {
+                    current_row.push(current_field);
+                    current_field = "";
+
+                    break;
+                }
+                case "\n":
+                case "\r": {
+                    if (ch === "\r" && i + 1 < text.length && text[i + 1] === "\n") {
+                        i += 1;
+                    }
+                    current_row.push(current_field);
+                    current_field = "";
+                    if (current_row.some((f) => f.length > 0)) {
+                        rows.push(current_row);
+                    }
+                    current_row = [];
+
+                    break;
+                }
+                default: {
+                    current_field += ch;
+                }
+            }
         }
     }
     current_row.push(current_field);
@@ -228,14 +248,15 @@ function render_csv_table(text: string): string {
     const header = rows[0]!;
     const body_rows = rows.slice(1);
 
-    let html = '<div class="file-preview-csv-wrapper"><table class="file-preview-csv-table"><thead><tr>';
+    let html =
+        '<div class="file-preview-csv-wrapper"><table class="file-preview-csv-table"><thead><tr>';
     for (const cell of header) {
         html += `<th>${escape_html(cell)}</th>`;
     }
     html += "</tr></thead><tbody>";
     for (const row of body_rows) {
         html += "<tr>";
-        for (let i = 0; i < header.length; i++) {
+        for (let i = 0; i < header.length; i += 1) {
             html += `<td>${escape_html(row[i] ?? "")}</td>`;
         }
         html += "</tr>";
@@ -247,15 +268,13 @@ function render_csv_table(text: string): string {
 // PDF state for multi-page navigation — managed by the dynamically
 // imported pdf_preview module.  We keep a local reference for the
 // click handlers that need synchronous access to the state.
-let pdf_preview_mod: typeof import("./pdf_preview.ts") | null = null;
+let pdf_preview_mod: typeof pdf_preview | null = null;
 
 // Lazy-load the PDF preview module (and its pdfjs-dist dependency).
 // Isolated into its own module so that pdfjs-dist (ESM-only) doesn't
 // prevent the CJS test runner from loading this file.
-async function load_pdf_preview(): Promise<typeof import("./pdf_preview.ts")> {
-    if (!pdf_preview_mod) {
-        pdf_preview_mod = await import("./pdf_preview.ts");
-    }
+async function load_pdf_preview(): Promise<typeof pdf_preview> {
+    pdf_preview_mod ??= await import("./pdf_preview.ts");
     return pdf_preview_mod;
 }
 
@@ -416,7 +435,10 @@ export function open_download_only(url: string, filename: string): void {
     update_nav_arrows();
 
     show_error(
-        $t({defaultMessage: "No preview available for this file type. Use the Download button to save it."}),
+        $t({
+            defaultMessage:
+                "No preview available for this file type. Use the Download button to save it.",
+        }),
     );
 }
 
@@ -425,6 +447,18 @@ export function initialize(): void {
         return;
     }
     is_initialized = true;
+
+    // Register the viewers that attachment_navigator drives, so that it
+    // doesn't need to import this module or lightbox directly (which
+    // would create an import cycle).
+    attachment_navigator.register_navigation_renderers({
+        should_preview,
+        open_file_preview(url, filename) {
+            void open_preview(url, filename);
+        },
+        open_download_only,
+        open_media_lightbox: lightbox.handle_inline_media_element_click,
+    });
 
     const rendered = render_file_attachment_preview();
     $("body").append($(rendered));
@@ -437,11 +471,11 @@ export function initialize(): void {
         overlays.close_overlay(OVERLAY_NAME);
     });
 
-    $overlay.on("click", ".file-preview-download", function () {
+    $overlay.on("click", ".file-preview-download", function (this: HTMLElement) {
         this.blur();
     });
 
-    $overlay.on("click", ".file-preview-error-download", function () {
+    $overlay.on("click", ".file-preview-error-download", function (this: HTMLElement) {
         this.blur();
     });
 

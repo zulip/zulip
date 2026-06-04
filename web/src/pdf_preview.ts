@@ -51,7 +51,7 @@ export async function render_pdf_page(
         const fit_scale = (container_width - 40) / viewport_unscaled.width;
         // Apply user zoom and device pixel ratio for crisp rendering
         const dpr = window.devicePixelRatio || 1;
-        const scale = Math.min(fit_scale, 2.0) * pdf_state.scale * dpr;
+        const scale = Math.min(fit_scale, 2) * pdf_state.scale * dpr;
         const viewport = page.getViewport({scale});
 
         const canvas = $rendered.find<HTMLCanvasElement>(".file-preview-pdf-canvas")[0]!;
@@ -72,14 +72,12 @@ export async function render_pdf_page(
             .text(`${page_number} / ${pdf_state.total_pages}`);
 
         // Update button states
-        $rendered
-            .find(".file-preview-pdf-prev")
-            .prop("disabled", page_number <= 1);
+        $rendered.find(".file-preview-pdf-prev").prop("disabled", page_number <= 1);
         $rendered
             .find(".file-preview-pdf-next")
             .prop("disabled", page_number >= pdf_state.total_pages);
 
-        pdf.destroy();
+        void pdf.destroy();
     } catch (error) {
         blueslip.warn("Error rendering PDF page", {error: String(error)});
         show_error($t({defaultMessage: "An error occurred while rendering the PDF."}));
@@ -101,7 +99,7 @@ export async function show_pdf(
             total_pages,
             current_page: 1,
             url,
-            scale: 1.0,
+            scale: 1,
         };
 
         // Build PDF viewer UI with page navigation
@@ -135,7 +133,7 @@ export async function show_pdf(
         const viewport_unscaled = page.getViewport({scale: 1});
         const fit_scale = (container_width - 40) / viewport_unscaled.width;
         const dpr = window.devicePixelRatio || 1;
-        const scale = Math.min(fit_scale, 2.0) * dpr;
+        const scale = Math.min(fit_scale, 2) * dpr;
         const viewport = page.getViewport({scale});
 
         const canvas = $rendered.find<HTMLCanvasElement>(".file-preview-pdf-canvas")[0]!;
@@ -145,7 +143,7 @@ export async function show_pdf(
         canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
 
         await page.render({canvas, viewport}).promise;
-        pdf.destroy();
+        void pdf.destroy();
     } catch (error) {
         blueslip.warn("Error loading PDF", {error: String(error)});
         show_error($t({defaultMessage: "Could not load PDF. The file may be corrupted."}));

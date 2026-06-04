@@ -196,7 +196,9 @@ export function set_up(settings_panel: SettingsPanel): void {
         "input[name='file_preview_extensions']",
         function (this: HTMLElement, e) {
             const $input_elem = $(e.currentTarget);
-            const data = {file_preview_extensions: $input_elem.val() as string};
+            const setting_value = settings_components.get_input_element_value(this);
+            assert(typeof setting_value === "string");
+            const data = {file_preview_extensions: setting_value};
             const $status_element = $input_elem
                 .closest(".subsection-parent")
                 .find(".alert-notification");

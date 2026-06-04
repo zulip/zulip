@@ -106,16 +106,11 @@ export function postprocess_content(html: string): string {
                 // Add a download icon button next to the attachment link
                 // so users can download without opening the preview.
                 const download_pathname =
-                    "/user_uploads/download/" +
-                    url.pathname.slice("/user_uploads/".length);
+                    "/user_uploads/download/" + url.pathname.slice("/user_uploads/".length);
                 const download_url = new URL(download_pathname, url.origin);
 
                 // Only add if not already present (idempotent)
-                if (
-                    !elt.nextElementSibling?.classList.contains(
-                        "attachment-download-icon",
-                    )
-                ) {
+                if (!elt.nextElementSibling?.classList.contains("attachment-download-icon")) {
                     assert(inertDocument !== undefined);
                     const download_link = inertDocument.createElement("a");
                     download_link.classList.add(
