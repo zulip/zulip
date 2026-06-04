@@ -743,49 +743,46 @@ def registration_helper(
                 # with LDAP and we need to carefully decide whether they should be permitted to proceed
                 # with account creation anyway or be stopped. There are three scenarios to consider:
                 #
-                # 1. EmailAuthBackend is enabled for the realm. That explicitly means that a user
+                # 1. The user came here through one of the ExternalAuthMethods. Their identity has
+                #    already been verified by the external authentication method, so LDAP password
+                #    verification is not applicable and account creation can proceed.
+                # 2. EmailAuthBackend is enabled for the realm. That explicitly means that a user
                 #    with a valid confirmation link should be able to create an account, because
                 #    they were invited or organization permissions allowed sign up.
-                # 2. EmailAuthBackend is disabled - that means the organization wants to be authenticating
-                #    users with an external source (LDAP or one of the ExternalAuthMethods). If the user
-                #    came here through one of the ExternalAuthMethods, their identity can be considered
-                #    verified and account creation can proceed.
                 # 3. EmailAuthBackend is disabled and the user did not come here through an ExternalAuthMethod.
                 #    That means they came here by entering their email address on the registration page
                 #    and clicking the confirmation link received. That means their identity needs to be
                 #    verified with LDAP - and that has just failed above. Thus the account should NOT be
                 #    created.
                 #
-                if email_auth_enabled(realm):
-                    can_use_different_backend = True
                 # We can identify the user came here through an ExternalAuthMethod by password_required
                 # being set to False on the PreregistrationUser object.
-                elif len(get_external_method_dicts(realm)) > 0 and not password_required:
-                    can_use_different_backend = True
-                else:
-                    can_use_different_backend = False
-
-                if settings.LDAP_APPEND_DOMAIN:
-                    # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-LDAP account
-                    # if the email matches the ldap domain.
-                    can_use_different_backend = can_use_different_backend and (
-                        not email_belongs_to_ldap(realm, email)
-                    )
-                if return_data.get("no_matching_ldap_user") and can_use_different_backend:
-                    # If both the LDAP and Email or Social auth backends are
-                    # enabled, and there's no matching user in the LDAP
-                    # directory then the intent is to create a user in the
-                    # realm with their email outside the LDAP organization
-                    # (with e.g. a password stored in the Zulip database,
-                    # not LDAP).  So we fall through and create the new
-                    # account.
+                if len(get_external_method_dicts(realm)) > 0 and not password_required:
+                    # Scenario 1: fall through and create the new account.
                     pass
                 else:
-                    # TODO: This probably isn't going to give a
-                    # user-friendly error message, but it doesn't
-                    # particularly matter, because the registration form
-                    # is hidden for most users.
-                    return HttpResponseRedirect(reverse("login", query={"email": email}))
+                    can_use_different_backend = email_auth_enabled(realm)
+                    if settings.LDAP_APPEND_DOMAIN:
+                        # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-LDAP account
+                        # if the email matches the ldap domain.
+                        can_use_different_backend = can_use_different_backend and (
+                            not email_belongs_to_ldap(realm, email)
+                        )
+                    if return_data.get("no_matching_ldap_user") and can_use_different_backend:
+                        # Scenario 2: If both the LDAP and Email auth backends are
+                        # enabled, and there's no matching user in the LDAP
+                        # directory then the intent is to create a user in the
+                        # realm with their email outside the LDAP organization
+                        # (with e.g. a password stored in the Zulip database,
+                        # not LDAP).  So we fall through and create the new
+                        # account.
+                        pass
+                    else:
+                        # TODO: This probably isn't going to give a
+                        # user-friendly error message, but it doesn't
+                        # particularly matter, because the registration form
+                        # is hidden for most users.
+                        return HttpResponseRedirect(reverse("login", query={"email": email}))
             else:
                 assert isinstance(user, UserProfile)
                 user_profile = user
