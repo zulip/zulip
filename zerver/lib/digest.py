@@ -293,9 +293,36 @@ def gather_new_streams(
     return len(new_streams), {"html": channels_html, "plain": channels_plain}
 
 
-def get_new_messages_count(user: UserProfile, threshold: datetime) -> int:
+def get_min_recent_message_id(realm_id: int, threshold: datetime) -> int | None:
+    # ID of the realm's earliest message at or after the threshold,
+    # or None if there are none.
+    return (
+        # Uses index: zerver_message_realm_date_sent
+        Message.objects.filter(realm_id=realm_id, date_sent__gte=threshold)
+        .order_by("date_sent")
+        .values_list("id", flat=True)
+        .first()
+    )
+
+
+def get_new_messages_count(user: UserProfile, min_recent_message_id: int | None) -> int:
+    if min_recent_message_id is None:
+        # No message was sent since the threshold.
+        return 0
+
+    # We filter on `message_id` for performance, so the planner drives
+    # from the unique (user_profile_id, message_id) index on `UserMessage`.
+    #
+    # Since we want "messages the user received since threshold",
+    # the intuition is to filter on `user_profile` and `message__date_sent`.
+    # When filtering without `message_id`, the planner drives from Message's
+    # `date_sent` index, which is not scoped to a user: it reads every message
+    # sent since threshold and joins against all UserMessage rows for the user
+    # to determine whether they received each message - which is too slow.
     count = UserMessage.objects.filter(
-        user_profile=user, message__date_sent__gte=threshold, message__sender__is_bot=False
+        user_profile=user,
+        message_id__gte=min_recent_message_id,
+        message__sender__is_bot=False,
     ).count()
     return count
 
@@ -404,6 +431,12 @@ def bulk_get_digest_context(
     stream_id_map = get_slim_stream_id_map(stream_ids)
     user_muted_topics_map = get_user_muted_topics_map(user_ids)
 
+    # ID of the realm's earliest message at or after the `cutoff`.
+    # Shared across all users, and computed lazily since it is only
+    # needed for users who have message content hidden in emails.
+    min_recent_message_id: int | None = None
+    have_min_recent_message_id = False
+
     for user in users:
         context = common_context(user)
 
@@ -428,7 +461,10 @@ def bulk_get_digest_context(
 
         if not message_content_allowed_in_missedmessage_emails(user):
             # Count new messages when message content is hidden in email notifications.
-            context["new_messages_count"] = get_new_messages_count(user, cutoff_date)
+            if not have_min_recent_message_id:
+                min_recent_message_id = get_min_recent_message_id(realm.id, cutoff_date)
+                have_min_recent_message_id = True
+            context["new_messages_count"] = get_new_messages_count(user, min_recent_message_id)
             context["hot_conversations"] = []
             context["show_message_content"] = False
         else:

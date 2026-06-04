@@ -20,6 +20,7 @@ from zerver.lib.digest import (
     enqueue_emails,
     gather_new_streams,
     get_hot_topics,
+    get_min_recent_message_id,
     get_new_messages_count,
     get_recent_topics,
     get_recently_created_streams,
@@ -617,12 +618,19 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.subscribe(othello, "Verona")
         cutoff = timezone_now() - timedelta(days=5)
 
+        # No message sent since the cutoff.
+        min_recent_message_id = get_min_recent_message_id(othello.realm_id, cutoff)
+        self.assertIsNone(min_recent_message_id)
+        self.assertEqual(get_new_messages_count(othello, min_recent_message_id), 0)
+
         senders = ["hamlet", "cordelia", "default_bot"]
         # Exclude messages sent by bots from digests, as only human messages should be considered.
         new_messages_count = len(self.simulate_stream_conversation("Verona", senders)) - 1
 
+        min_recent_message_id = get_min_recent_message_id(othello.realm_id, cutoff)
+        self.assertIsNotNone(min_recent_message_id)
         self.assertEqual(
-            get_new_messages_count(othello, cutoff),
+            get_new_messages_count(othello, min_recent_message_id),
             new_messages_count,
         )
 
@@ -660,7 +668,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         one_click_unsubscribe_link(othello, "digest")
         # Clear the LRU cache on the stream topics
         get_recent_topics.cache_clear()
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(10):
             bulk_handle_digest_email([othello.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -673,7 +681,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         stream.date_created = timezone_now() - timedelta(days=3)
         stream.save()
 
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(10):
             bulk_handle_digest_email([othello.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 2)
