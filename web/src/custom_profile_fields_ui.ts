@@ -255,6 +255,19 @@ export function initialize_custom_date_type_fields(
         return;
     }
 
+    function toggle_remove_date_visibility(): void {
+        $(element_id)
+            .find<HTMLInputElement>(".custom_user_field input.datepicker")
+            .each(function () {
+                const $custom_user_field = $(this).closest(".custom_user_field");
+                if ($(this).val()!.length > 0) {
+                    $custom_user_field.addClass("has-value");
+                } else {
+                    $custom_user_field.removeClass("has-value");
+                }
+            });
+    }
+
     function update_date(instance: flatpickr.Instance, date_str: string): void {
         const $input_elem = $(instance.element);
         const field_id = Number.parseInt($input_elem.attr("data-field-id")!, 10);
@@ -270,6 +283,7 @@ export function initialize_custom_date_type_fields(
                     return;
                 }
                 update_user_custom_profile_fields([{id: field_id}], channel.del);
+                toggle_remove_date_visibility();
                 return;
             }
 
@@ -286,6 +300,7 @@ export function initialize_custom_date_type_fields(
             );
             const original_value = people.get_custom_profile_data(user_id, field_id)?.value ?? "";
             instance.setDate(original_value);
+            toggle_remove_date_visibility();
             if (!for_profile_settings_panel) {
                 // Trigger "input" event so that save button state can
                 // be toggled in "Manage user" modal.
@@ -311,6 +326,7 @@ export function initialize_custom_date_type_fields(
             fields.push({id: field_id});
             update_user_custom_profile_fields(fields, channel.del);
         }
+        toggle_remove_date_visibility();
     }
 
     let common_class_name = "modal_text_input";
@@ -342,6 +358,7 @@ export function initialize_custom_date_type_fields(
             update_date(instance, date_str);
         },
     });
+    toggle_remove_date_visibility();
 
     // This "change" event handler is needed to make sure that
     // the date is successfully changed when typing a new value
@@ -393,6 +410,7 @@ export function initialize_custom_date_type_fields(
             $displayed_input.val("");
             $custom_user_field.val("");
             $custom_user_field.trigger("input");
+            toggle_remove_date_visibility();
         });
 }
 
