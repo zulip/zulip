@@ -617,7 +617,8 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     let banner_rendered = false;
     mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
-        assert.equal(data.channel_name, "Denmark");
+        assert.equal(data.channel_name, "secret");
+        assert.equal(data.audience_channel_name, "Denmark");
         banner_rendered = true;
         return "<banner-stub>";
     });
@@ -644,7 +645,7 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     compose_state.set_selected_recipient_id(denmark.stream_id);
     const secret_stream = {
         invite_only: true,
-        name: "Denmark",
+        name: "secret",
         stream_id: 22,
     };
     stream_data.add_sub_for_tests(secret_stream);
