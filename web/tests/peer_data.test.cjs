@@ -21,7 +21,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 const channel = mock_esm("../src/channel");
 
-const {GENERIC_BOT_TYPE, INCOMING_WEBHOOK_BOT_TYPE_INT} = zrequire("bot_type_values");
+const {GENERIC_BOT_TYPE_INT, INCOMING_WEBHOOK_BOT_TYPE_INT} = zrequire("bot_type_values");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -544,7 +544,7 @@ test("is_subscriber_subset", async () => {
         email: "generic@zulip.com",
         full_name: "Generic Bot",
         user_id: 106,
-        bot_type: GENERIC_BOT_TYPE,
+        bot_type: GENERIC_BOT_TYPE_INT,
     });
     people.add_active_user(generic_bot);
 
