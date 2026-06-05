@@ -1826,32 +1826,44 @@ def do_convert_directory(
     logging.info("Zulip data dump created at %s", output_dir)
 
 
+class SlackTokenValidationError(Exception):
+    """Raised by check_slack_token_access when a Slack token fails validation.
+    The message never includes the token itself, so it is safe to surface to
+    users -- e.g. on the self-serve import page or to a webhook's bot owner."""
+
+
 def check_slack_token_access(token: str, required_scopes: set[str]) -> None:
     if token.startswith("xoxp-"):
         logging.info("This is a Slack user token, which grants all rights the user has!")
     elif not required_scopes:
         raise ValueError("required_scopes shouldn't be empty!")
     elif token.startswith("xoxb-"):
-        data = requests.get(
-            "https://slack.com/api/api.test", headers={"Authorization": f"Bearer {token}"}
-        )
+        try:
+            data = requests.get(
+                "https://slack.com/api/api.test", headers={"Authorization": f"Bearer {token}"}
+            )
+        except requests.RequestException as e:
+            logging.info("Slack token validation request failed: %s", e)
+            raise SlackTokenValidationError(
+                "Could not reach Slack to validate the token. Please try again."
+            )
         if data.status_code != 200:
-            raise ValueError(
-                f"Failed to fetch data (HTTP status {data.status_code}) for Slack token: {token}"
+            raise SlackTokenValidationError(
+                f"Failed to validate the token with Slack (HTTP status {data.status_code})."
             )
         if not data.json()["ok"]:
             error = data.json()["error"]
             if error != "missing_scope":
                 logging.info("Slack token is invalid: %s", error)
-                raise ValueError(f"Invalid token: {token}")
+                raise SlackTokenValidationError("Invalid token.")
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
         missing_scopes = required_scopes - has_scopes
         if missing_scopes:
-            raise ValueError(
+            raise SlackTokenValidationError(
                 f"Slack token is missing the following required scopes: {sorted(missing_scopes)}"
             )
     else:
-        raise Exception("Invalid token. Valid tokens start with xoxb-.")
+        raise SlackTokenValidationError("Invalid token. Valid tokens start with xoxb-.")
 
 
 def get_slack_api_data(

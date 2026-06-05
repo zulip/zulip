@@ -46,6 +46,7 @@ from zerver.data_import.slack import (
     MessageConversionResult,
     SlackBotEmail,
     SlackBotNotFoundError,
+    SlackTokenValidationError,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
     check_slack_token_access,
@@ -450,9 +451,12 @@ class SlackImporter(ZulipTestCase):
         )
 
         def exception_for(token: str, required_scopes: set[str] = SLACK_IMPORT_TOKEN_SCOPES) -> str:
-            with self.assertRaises(Exception) as invalid:
+            with self.assertRaises(SlackTokenValidationError) as invalid:
                 check_slack_token_access(token, required_scopes)
-            return invalid.exception.args[0]
+            message = invalid.exception.args[0]
+            # The user-facing message must never leak the token.
+            self.assertNotIn(token, message)
+            return message
 
         self.assertEqual(
             exception_for("xoxq-unknown"),
@@ -462,12 +466,12 @@ class SlackImporter(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             self.assertEqual(
                 exception_for("xoxb-invalid-token"),
-                "Invalid token: xoxb-invalid-token",
+                "Invalid token.",
             )
 
         self.assertEqual(
             exception_for("xoxb-broken-request"),
-            "Failed to fetch data (HTTP status 400) for Slack token: xoxb-broken-request",
+            "Failed to validate the token with Slack (HTTP status 400).",
         )
 
         self.assertEqual(
@@ -479,10 +483,10 @@ class SlackImporter(ZulipTestCase):
             "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
         )
 
-        self.assertEqual(
-            exception_for("xoxb-valid-token", set()),
-            "required_scopes shouldn't be empty!",
-        )
+        # An empty required_scopes is a caller bug, not a token problem.
+        with self.assertRaises(ValueError) as empty_scopes:
+            check_slack_token_access("xoxb-valid-token", set())
+        self.assertEqual(empty_scopes.exception.args[0], "required_scopes shouldn't be empty!")
 
         check_slack_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
 
@@ -2477,7 +2481,7 @@ To Do
         assert confirmation_key is not None
 
         # Check that the we show an error message if the token is invalid.
-        mock_check_slack_token_access.side_effect = ValueError("Invalid slack token")
+        mock_check_slack_token_access.side_effect = SlackTokenValidationError("Invalid slack token")
         result = self.client_post(
             "/new/import/slack/",
             {

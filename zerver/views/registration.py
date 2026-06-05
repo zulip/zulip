@@ -483,12 +483,13 @@ def registration_helper(
                 # Verify slack token access.
                 from zerver.data_import.slack import (
                     SLACK_IMPORT_TOKEN_SCOPES,
+                    SlackTokenValidationError,
                     check_slack_token_access,
                 )
 
                 try:
                     check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
-                except Exception as e:
+                except SlackTokenValidationError as e:
                     logger.info(
                         "(%s) Slack token failed validation: %s", prereg_realm.string_id, str(e)
                     )
