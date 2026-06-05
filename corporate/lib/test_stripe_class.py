@@ -246,6 +246,7 @@ def normalize_fixture_data(
         ("setatt", 24),
         ("bpc", 24),
         ("bps", 24),
+        ("file", 24),
     ]
 
     # We'll replace "invoice_prefix": "A35BC4Q" with something like "invoice_prefix": "NORMA01"
@@ -269,6 +270,7 @@ def normalize_fixture_data(
         # elsewhere in the file
         r'"realm_id": "[0-9]+"': '"realm_id": "1"',
         r'"account_name": "[^"]+"': '"account_name": "NORMALIZED"',
+        r'"display_name": "[^"]+"': '"display_name": "STRIPE SANDBOX"',
     }
 
     # Customer IDs whose ``Customer.create`` we never recorded get the

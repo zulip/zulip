@@ -94,6 +94,7 @@
           },
           "regulated_status": "unregulated",
           "three_d_secure": null,
+          "transaction_link_id": null,
           "wallet": null
         },
         "type": "card"
@@ -207,6 +208,7 @@
           },
           "regulated_status": "unregulated",
           "three_d_secure": null,
+          "transaction_link_id": null,
           "wallet": null
         },
         "type": "card"
