@@ -386,5 +386,5 @@ You can check out the following tools for capturing screenshots and videos/GIFs.
 
 #### Linux
 
-- [hibiki](https://github.com/linuxmobile/hibiki), for X11.
-- [screenkey](https://gitlab.com/screenkey/screenkey), for Wayland.
+- [hibiki](https://github.com/linuxmobile/hibiki), for Wayland.
+- [screenkey](https://gitlab.com/screenkey/screenkey), for X11.
