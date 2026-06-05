@@ -18270,6 +18270,28 @@ paths:
                           This will be `""` if the server does not know its `merge-base`.
 
                           **Changes**: New in Zulip 5.0 (feature level 88).
+                      miatsu_version:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The release version of the Miatsu.co fork running on this server, or
+                          `""` if the server is not running Miatsu.co. This is independent of
+                          `zulip_version`.
+
+                          **Changes**: New in Miatsu.co 0.1.
+                      miatsu_capabilities:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          A list of named capability flags identifying Miatsu.co fork features
+                          supported by this server. Clients should detect Miatsu.co features by
+                          checking for a capability name in this list.
+
+                          **Changes**: New in Miatsu.co 0.1.
                       alert_words:
                         type: array
                         description: |
@@ -22800,6 +22822,26 @@ paths:
                         description: |
                           Whether the Zulip client that has sent a request to this endpoint is
                           deemed incompatible with the server.
+                      miatsu_version:
+                        type: string
+                        description: |
+                          The release version of the Miatsu.co fork running on this server, or
+                          `""` if the server is not running Miatsu.co. This is independent of
+                          `zulip_version`.
+
+                          **Changes**: New in Miatsu.co 0.1.
+                      miatsu_capabilities:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          A list of named capability flags identifying Miatsu.co fork features
+                          supported by this server. Clients should detect Miatsu.co features by
+                          checking for a capability name in this list, never by comparing
+                          `zulip_feature_level` (whose values are owned by upstream Zulip).
+                          Empty if the server is not running Miatsu.co.
+
+                          **Changes**: New in Miatsu.co 0.1.
                       email_auth_enabled:
                         type: boolean
                         description: |

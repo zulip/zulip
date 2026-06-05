@@ -119,6 +119,8 @@ class HomeTest(ZulipTestCase):
         "max_stream_name_length",
         "max_bulk_new_subscription_messages",
         "max_topic_length",
+        "miatsu_capabilities",
+        "miatsu_version",
         "muted_topics",
         "muted_users",
         "navigation_tour_video_url",
