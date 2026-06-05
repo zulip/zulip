@@ -52,7 +52,9 @@ def do_claim_attachments(
         if is_channel_message:
             stream = Stream.objects.get(id=message.recipient.type_id)
             is_message_realm_public = stream.is_public()
-            is_message_web_public = stream.is_web_public
+            is_message_web_public = (
+                user_profile.realm.web_public_streams_enabled() and stream.is_web_public
+            )
 
         if not validate_attachment_request(user_profile, path_id)[0]:
             # Technically, there are 2 cases here:
