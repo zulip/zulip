@@ -92,36 +92,7 @@ EXPORTED_MICROSOFT_TEAMS_TEAM_ID: dict[str, str] = {
 }
 
 
-def graph_api_users_callback(request: PreparedRequest) -> ResponseTuple:
-    assert request.url is not None
-    parsed = urlsplit(request.url)
-    query_params = parse_qs(parsed.query)
 
-    if query_params.get("$filter") == ["userType eq 'Guest'"]:
-        test_class = ZulipTestCase()
-        body = test_class.fixture_data(
-            "users_guest.json",
-            "microsoft_graph_api_response_fixtures",
-        )
-    else:
-        raise AssertionError("There are no response fixture for this request.")
-
-    # https://learn.microsoft.com/en-us/graph/query-parameters?tabs=http#select
-    selected_fields = query_params.get("$select")
-    if selected_fields:
-        trimmed_values = []
-        response = json.loads(body)
-        for data in response["value"]:
-            trimmed_data = {}
-            for field in selected_fields:
-                trimmed_data[field] = data[field]
-            trimmed_values.append(trimmed_data)
-
-        response["value"] = trimmed_values
-        body = json.dumps(response)
-
-    headers = {"Content-Type": "application/json"}
-    return 200, headers, body
 
 
 def mock_microsoft_graph_api_calls(
@@ -135,6 +106,35 @@ def mock_microsoft_graph_api_calls(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> None:
+        def graph_api_users_callback(request: PreparedRequest) -> ResponseTuple:
+            assert request.url is not None
+            parsed = urlsplit(request.url)
+            query_params = parse_qs(parsed.query)
+
+            if query_params.get("$filter") == ["userType eq 'Guest'"]:
+                body = self.fixture_data(
+                    "users_guest.json",
+                    "microsoft_graph_api_response_fixtures",
+                )
+            else:
+                raise AssertionError("There are no response fixture for this request.")
+
+            # https://learn.microsoft.com/en-us/graph/query-parameters?tabs=http#select
+            selected_fields = query_params.get("$select")
+            if selected_fields:
+                trimmed_values = []
+                response = json.loads(body)
+                for data in response["value"]:
+                    trimmed_data = {}
+                    for field in selected_fields:
+                        trimmed_data[field] = data[field]
+                    trimmed_values.append(trimmed_data)
+
+                response["value"] = trimmed_values
+                body = json.dumps(response)
+
+            headers = {"Content-Type": "application/json"}
+            return 200, headers, body
         responses.add_callback(
             responses.GET,
             "https://graph.microsoft.com/v1.0/users",
