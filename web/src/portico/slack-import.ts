@@ -125,6 +125,10 @@ $(() => {
         $("#cancel-slack-import-form").trigger("submit");
     });
 
+    $("#slack-import-start-over").on("click", () => {
+        window.location.assign("/new/");
+    });
+
     $("#slack-access-token").on("input", () => {
         $("#update-slack-access-token").show();
     });

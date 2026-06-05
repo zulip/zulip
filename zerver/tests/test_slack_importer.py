@@ -3445,6 +3445,9 @@ To Do
 
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("no longer available", result)
+        # The page offers a clear way out and hides the now-useless import form.
+        self.assert_in_response("Start over", result)
+        self.assert_not_in_success_response(["Slack bot user OAuth token"], result)
         queue_mock.assert_not_called()
         prereg_realm.refresh_from_db()
         self.assertIsNone(prereg_realm.created_realm)
@@ -3472,6 +3475,9 @@ To Do
         result = self.client_post("/new/import/slack/", {"key": confirmation_key})
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("no longer available", result)
+        # The page offers a clear way out and hides the now-useless import form.
+        self.assert_in_response("Start over", result)
+        self.assert_not_in_success_response(["Slack bot user OAuth token"], result)
 
     @responses.activate
     def test_cancel_realm_import(self) -> None:
