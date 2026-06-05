@@ -842,7 +842,7 @@ strong {
 .messagebox-content .slow-send-spinner {
     display: block;
     font-size: 0.8571em; /* 12px at 14px/em */
-    text-align: right;
+    margin-left: auto;
     opacity: 0.8;
     color: var(--color-text-default);
     animation: rotate 1s infinite linear;
