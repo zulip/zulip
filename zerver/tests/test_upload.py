@@ -1037,6 +1037,63 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(response.getvalue(), b"zulip!")
             self.logout()
 
+    def test_file_download_authorization_attachment_deleted_concurrently(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+        fp_path_id = re.sub(r"/user_uploads/", "", url)
+        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/{fp_path_id})"
+        self.send_stream_message(hamlet, "Denmark", body, "test")
+
+        # Message edits/moves invalidate the is_realm_public cache; the
+        # next access then refills it and refreshes the attachment.
+        Attachment.objects.filter(path_id=fp_path_id).update(is_realm_public=None)
+
+        # If the attachment is deleted concurrently between the initial
+        # fetch and that refresh, the attachment should be reported as
+        # not existing rather than raising an unhandled exception.
+        with mock.patch.object(Attachment, "refresh_from_db", side_effect=Attachment.DoesNotExist):
+            self.assertEqual(validate_attachment_request(hamlet, fp_path_id), (False, None))
+
+            # The call above refilled the is_realm_public cache; invalidate
+            # it again so the file-serving request also takes the refresh
+            # code path.
+            Attachment.objects.filter(path_id=fp_path_id).update(is_realm_public=None)
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 404)
+            self.assert_in_response("This file does not exist or has been deleted.", response)
+
+    def test_spectator_file_access_attachment_deleted_concurrently(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+        fp_path_id = re.sub(r"/user_uploads/", "", url)
+
+        self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(hamlet, "web-public-stream")
+        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/{fp_path_id})"
+        self.send_stream_message(hamlet, "web-public-stream", body, "test")
+        self.logout()
+
+        # Sending the message above filled the is_web_public cache; the
+        # spectator code path only refreshes the attachment when that
+        # cache is unset, so invalidate it to exercise the refresh.
+        Attachment.objects.filter(path_id=fp_path_id).update(is_web_public=None)
+
+        # If the attachment is deleted concurrently between the initial
+        # fetch and that refresh, a spectator should get a 404 rather
+        # than an unhandled exception.
+        with mock.patch.object(Attachment, "refresh_from_db", side_effect=Attachment.DoesNotExist):
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 404)
+            self.assert_in_response("This file does not exist or has been deleted.", response)
+
     def test_serve_local(self) -> None:
         def check_xsend_links(
             name: str,
