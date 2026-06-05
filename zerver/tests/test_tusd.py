@@ -163,6 +163,23 @@ class TusdPreCreateTest(ZulipTestCase):
         )
         self.assertEqual(result_json["RejectUpload"], True)
 
+    def test_unauthed_invalid_key_rejected(self) -> None:
+        # An unauthenticated upload carrying a non-empty but invalid
+        # confirmation key is rejected, rather than being routed to the
+        # realm-import handlers.
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(key="a" * 24).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        result_json = result.json()
+        self.assertEqual(result_json["HttpResponse"]["StatusCode"], 401)
+        self.assertEqual(
+            orjson.loads(result_json["HttpResponse"]["Body"]), {"message": "Unauthenticated upload"}
+        )
+        self.assertEqual(result_json["RejectUpload"], True)
+
     def test_api_key_auth(self) -> None:
         user_profile = self.example_user("hamlet")
         result = self.client_post(
@@ -374,6 +391,74 @@ class TusdPreCreateTest(ZulipTestCase):
         )
 
         self.assertEqual(result.status_code, 200)
+        prereg_realm.refresh_from_db()
+        self.assertTrue(
+            prereg_realm.data_import_metadata["uploaded_import_file_name"].endswith(filename)
+        )
+
+    def test_realm_import_data_upload_while_logged_in(self) -> None:
+        # A user who is signed in to an existing organization while creating a
+        # new one via Slack import must still have the upload routed to the
+        # registration by its key, rather than treated as an ordinary
+        # attachment just because the request happens to be authenticated.
+        email = "ete-slack-import@zulip.com"
+        self.submit_realm_creation_form(
+            email,
+            realm_subdomain="ete-slack-import",
+            realm_name="Slack import end to end",
+            import_from="slack",
+        )
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        confirmation_key = find_key_by_email(email)
+        assert confirmation_key is not None
+
+        self.login("hamlet")
+
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(key=confirmation_key).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        filename = f"import/{prereg_realm.id}/slack.zip"
+        self.assertTrue(result.json()["ChangeFileInfo"]["ID"].endswith(filename))
+
+        info = TusUpload(
+            id=filename,
+            size=len("zulip!"),
+            offset=0,
+            size_is_deferred=False,
+            meta_data={
+                "filename": filename,
+                "filetype": "text/plain",
+                "name": "zulip.zip",
+                "type": "text/plain",
+                "key": confirmation_key,
+            },
+            is_final=False,
+            is_partial=False,
+            partial_uploads=None,
+            storage=None,
+        )
+        request = TusHook(
+            type="pre-finish",
+            event=TusEvent(
+                upload=info,
+                http_request=TusHTTPRequest(
+                    method="PATCH",
+                    uri=f"/api/v1/tus/{info.id}",
+                    remote_addr="12.34.56.78",
+                    header={},
+                ),
+            ),
+        )
+        result = self.client_post(
+            "/api/internal/tusd",
+            request.model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+
         prereg_realm.refresh_from_db()
         self.assertTrue(
             prereg_realm.data_import_metadata["uploaded_import_file_name"].endswith(filename)
