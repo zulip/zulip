@@ -4,8 +4,15 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
+
+const channel = mock_esm("../src/channel", {post: noop});
+mock_esm("../src/buttons", {
+    show_button_loading_indicator: noop,
+    hide_button_loading_indicator: noop,
+});
 
 const bot_data = zrequire("bot_data");
 const bot_helper = zrequire("bot_helper");
@@ -79,6 +86,90 @@ test("generate_zuliprc_content", () => {
         "site=https://chat.example.com\n";
 
     assert.equal(content, expected);
+});
+
+test("regenerate_bot_api_key_inline_confirmation", () => {
+    bot_helper.initialize_bot_click_handlers();
+
+    // Both the regenerate icon and the confirm button live inside the
+    // `.bot-api-key-container`, which carries the bot id.
+    const $container = $.create("bot-api-key-container-stub");
+    $container.attr("data-user-id", "1");
+
+    const $regenerate_button = $(".regenerate-button-stub");
+    const $confirm_button = $(".confirm-button-stub");
+    const $warning = $.create("regenerate-warning-stub");
+    $confirm_button.addClass("hide");
+    $warning.addClass("hide");
+
+    $regenerate_button.set_closest_results(".bot-api-key-container", $container);
+    $confirm_button.set_closest_results(".bot-api-key-container", $container);
+    $container.set_find_results(".bot-modal-regenerate-bot-api-key", $regenerate_button);
+    $container.set_find_results(".bot-modal-confirm-regenerate-bot-api-key", $confirm_button);
+    $container.set_find_results(".bot-api-key-regenerate-warning", $warning);
+
+    const $api_key_input = $.create("api-key-input-stub");
+    const $error = $.create("api-key-error-stub");
+    $container.set_find_results(".api-key", $api_key_input);
+    $container.set_find_results(".bot-modal-api-key-error", $error);
+
+    let post_opts;
+    channel.post = (opts) => {
+        post_opts = opts;
+    };
+
+    // The first click only swaps in the inline confirmation; nothing is
+    // regenerated yet. That's the whole point of the fix.
+    const regenerate_handler = $("body").get_on_handler(
+        "click",
+        "button.bot-modal-regenerate-bot-api-key",
+    );
+    regenerate_handler({preventDefault: noop, currentTarget: ".regenerate-button-stub"});
+
+    assert.equal(post_opts, undefined);
+    assert.ok($regenerate_button.hasClass("hide"));
+    assert.ok(!$confirm_button.hasClass("hide"));
+    assert.ok(!$warning.hasClass("hide"));
+
+    // Confirming sends the regenerate request for this bot.
+    const confirm_handler = $("body").get_on_handler(
+        "click",
+        "button.bot-modal-confirm-regenerate-bot-api-key",
+    );
+    confirm_handler.call(".confirm-button-stub", {preventDefault: noop});
+    assert.equal(post_opts.url, "/json/bots/1/api_key/regenerate");
+
+    // On success, the modal shows the new key and returns to the
+    // initial regenerate-icon state.
+    post_opts.success({api_key: "new-api-key"});
+    post_opts.complete();
+    assert.equal($api_key_input.val(), "new-api-key");
+    assert.equal($container.attr("data-api-key"), "new-api-key");
+    assert.ok(!$regenerate_button.hasClass("hide"));
+    assert.ok($confirm_button.hasClass("hide"));
+    assert.ok($warning.hasClass("hide"));
+
+    // A crafted server error message is shown below the key; this one is
+    // what access_bot_by_id raises when the owner loses permission for
+    // the bot between opening the modal and confirming.
+    regenerate_handler({preventDefault: noop, currentTarget: ".regenerate-button-stub"});
+    confirm_handler.call(".confirm-button-stub", {preventDefault: noop});
+    post_opts.error({status: 400, responseJSON: {msg: "Insufficient permission"}});
+    post_opts.complete();
+    assert.equal($error.text(), "Insufficient permission");
+    assert.ok($error.visible());
+
+    // A failure without a JSON body (network failure, or a proxy-level
+    // 502 during a server restart) must still surface a generic error
+    // rather than failing silently.
+    regenerate_handler({preventDefault: noop, currentTarget: ".regenerate-button-stub"});
+    confirm_handler.call(".confirm-button-stub", {preventDefault: noop});
+    post_opts.error({status: 0});
+    post_opts.complete();
+    assert.equal($error.text(), "translated: Failed to generate new API key");
+    assert.ok($error.visible());
+    assert.ok(!$regenerate_button.hasClass("hide"));
+    assert.ok($confirm_button.hasClass("hide"));
 });
 
 test("generate_botserverrc_content", () => {

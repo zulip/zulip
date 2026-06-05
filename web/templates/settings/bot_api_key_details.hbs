@@ -4,7 +4,7 @@
         <div class="api-key-details-container">
             <input type="text" autocomplete="off" name="api-key" class="modal_text_input api-key inline-block" value="{{ api_key }}" readonly/>
             <div class="buttons-container">
-                <span data-user-id="{{bot_id}}">
+                <span>
                     {{> ../components/icon_button
                       icon="refresh-cw"
                       intent="brand"
@@ -12,6 +12,14 @@
                       data-tippy-content=(t "Generate new API key")
                       }}
                 </span>
+                {{> ../components/action_button
+                  icon="exclamation-circle"
+                  intent="warning"
+                  variant="subtle"
+                  label=(t "Confirm key rotation")
+                  hidden=true
+                  custom_classes="bot-modal-confirm-regenerate-bot-api-key"
+                  }}
                 <span>
                     {{> ../components/icon_button
                       icon="copy"
@@ -23,6 +31,7 @@
                 </span>
             </div>
         </div>
+        <div class="bot-api-key-regenerate-warning hide">{{t "This invalidates the current API key. Integrations using the old key will stop working." }}</div>
         <div class="bot-modal-api-key-error text-error"></div>
     </div>
 </div>

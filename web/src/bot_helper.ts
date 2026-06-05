@@ -13,7 +13,7 @@ import * as channel from "./channel.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import {realm} from "./state_data.ts";
 
 export function validate_bot_short_name(value: string): boolean {
@@ -182,35 +182,60 @@ export async function show_api_key_modal(bot_id: number): Promise<void> {
 }
 
 export function initialize_bot_click_handlers(): void {
+    // The first click only swaps the button for an inline "Confirm key
+    // rotation" button; the request fires on the confirming click.
     $("body").on("click", "button.bot-modal-regenerate-bot-api-key", (e) => {
         e.preventDefault();
-        const bot_id = Number.parseInt(
-            $(e.currentTarget).closest("span").attr("data-user-id")!,
-            10,
-        );
-        const $row = $(e.currentTarget).closest(".input-group");
-
-        void channel.post({
-            url: `/json/bots/${encodeURIComponent(bot_id)}/api_key/regenerate`,
-            success(data) {
-                const parsed_data = z
-                    .object({
-                        api_key: z.string(),
-                    })
-                    .parse(data);
-
-                $row.find(".api-key").val(parsed_data.api_key);
-                $row.closest(".bot-api-key-container").attr("data-api-key", parsed_data.api_key);
-                $row.find(".bot-modal-api-key-error").hide();
-            },
-            error(xhr) {
-                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-                if (parsed.success && parsed.data.msg) {
-                    $row.find(".bot-modal-api-key-error").text(parsed.data.msg).show();
-                }
-            },
-        });
+        const $container = $(e.currentTarget).closest(".bot-api-key-container");
+        $(e.currentTarget).addClass("hide");
+        $container.find(".bot-api-key-regenerate-warning").removeClass("hide");
+        $container
+            .find(".bot-modal-confirm-regenerate-bot-api-key")
+            .removeClass("hide")
+            .trigger("focus");
     });
+
+    $("body").on(
+        "click",
+        "button.bot-modal-confirm-regenerate-bot-api-key",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            const $button = $(this);
+            const $container = $button.closest(".bot-api-key-container");
+            const bot_id = Number.parseInt($container.attr("data-user-id")!, 10);
+
+            $button.prop("disabled", true);
+            buttons.show_button_loading_indicator($button);
+            void channel.post({
+                url: `/json/bots/${encodeURIComponent(bot_id)}/api_key/regenerate`,
+                success(data) {
+                    const parsed_data = z.object({api_key: z.string()}).parse(data);
+                    $container.find(".api-key").val(parsed_data.api_key);
+                    $container.attr("data-api-key", parsed_data.api_key);
+                    $container.find(".bot-modal-api-key-error").hide();
+                },
+                error(xhr) {
+                    const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                    const message =
+                        parsed.success && parsed.data.msg !== ""
+                            ? parsed.data.msg
+                            : $t({defaultMessage: "Failed to generate new API key"});
+                    $container.find(".bot-modal-api-key-error").text(message).show();
+                },
+                complete() {
+                    // Restore the initial state whether or not regenerating
+                    // succeeded; on failure the error is shown below the key.
+                    buttons.hide_button_loading_indicator($button);
+                    $button.addClass("hide");
+                    $container.find(".bot-api-key-regenerate-warning").addClass("hide");
+                    $container
+                        .find(".bot-modal-regenerate-bot-api-key")
+                        .removeClass("hide")
+                        .trigger("focus");
+                },
+            });
+        },
+    );
 
     $("body").on("click", "button.download-bot-zuliprc", function () {
         void (async () => {
