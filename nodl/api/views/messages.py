@@ -730,6 +730,7 @@ def send_message(request: HttpRequest) -> HttpResponse:
                     "result": "success",
                     "msg": "",
                     "id": message.id,
+                    "message": serializer.model_dump(),
                 },
                 status=200,
             )
@@ -794,6 +795,7 @@ def send_message(request: HttpRequest) -> HttpResponse:
                 "result": "success",
                 "msg": "",
                 "id": message.id,
+                "message": serializer.model_dump(),
             },
             status=200,
         )
