@@ -336,13 +336,18 @@ Transcoded images presented in Markdown image syntax are structured like this:
 Clients are recommended to do the following when processing image
 previews:
 
-- Clients that would like to use the image's aspect ratio to lay out
-  one or more images in the message feed may use the
-  `data-original-dimensions` attribute, which is present even if the
-  image is a placeholder spinner.  This attribute encodes the
-  dimensions of the original image as `{width}x{height}`.  These
-  dimensions are for the image as rendered, _after_ any EXIF rotation
-  and mirroring has been applied.
+- Images should be sized from their aspect ratio: choose a maximum
+  height and derive the width from the aspect ratio (for very wide
+  images, constrain the width to the space available instead), rather
+  than rendering them inside a fixed-size container. This maximum
+  height may be scaled using the organization's
+  `realm_media_preview_size` policy, from the `register` response
+  (new in Zulip 12.0).
+- The aspect ratio is derived from the `data-original-dimensions`
+  attribute, which is present even if the image is a placeholder
+  spinner. This attribute encodes the dimensions of the original
+  image as `{width}x{height}`. These dimensions are for the image as
+  rendered, _after_ any EXIF rotation and mirroring has been applied.
 - If the client would like to control the thumbnail resolution used,
   it can replace the final section of the URL (`840x560.webp` in the
   example above) with the `name` of its preferred format from the set
