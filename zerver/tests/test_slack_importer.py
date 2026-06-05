@@ -3241,6 +3241,38 @@ To Do
         # The other realm must not be reported as this import's result.
         self.assertNotIn("Done", response_dict["status"])
 
+    def test_realm_import_status_clears_stale_subdomain_unavailable_flag(self) -> None:
+        # If the import that won the race for the subdomain later failed and
+        # freed it, this import's stored subdomain_unavailable flag is stale.
+        # The status poll must clear the flag and report this import's own
+        # failure, rather than telling the user the URL is still taken.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="freed-subdomain",
+            name="Test Realm",
+            email="freed@example.com",
+            data_import_metadata={
+                "import_from": "slack",
+                "is_import_work_queued": False,
+                "subdomain_unavailable": True,
+            },
+        )
+        self.assertFalse(Realm.objects.filter(string_id="freed-subdomain").exists())
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        result = self.client_get(f"/json/realm/import/status/{confirmation_key}")
+        response_dict = self.assert_json_success(result)
+        # The freed subdomain is not reported as taken; this import's own
+        # failure surfaces instead.
+        self.assertNotIn("no longer available", response_dict["status"])
+        self.assertEqual(response_dict["status"], "unexpected_import_failure")
+        # The stale flag has been cleared from the stored metadata.
+        prereg_realm.refresh_from_db()
+        self.assertNotIn("subdomain_unavailable", prereg_realm.data_import_metadata)
+
     def test_start_slack_import_without_uploaded_file_renders_page(self) -> None:
         # POSTing "start import" before the export file finished uploading must
         # re-render the import page, not 500 on an assertion.
