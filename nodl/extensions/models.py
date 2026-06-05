@@ -2,7 +2,7 @@
 
 from django.db import models
 
-from zerver.models import Realm, UserProfile
+from zerver.models import Realm, Stream, UserProfile
 
 
 class SyncStatus(models.TextChoices):
@@ -124,3 +124,85 @@ class NodlRealmExtension(models.Model):
     def linked_zulip_realm_id(self) -> int | None:
         """Get the Zulip realm ID if linked."""
         return self.zulip_realm.id if self.zulip_realm else None
+
+
+class NodlRealmUserExtension(models.Model):
+    """Per-realm Supabase-to-Zulip user mapping.
+
+    The legacy NodlUserExtension is globally unique by Supabase user. Task
+    stream membership needs a realm-scoped mapping so one human can participate
+    in more than one workspace realm without re-homing the global extension.
+    """
+
+    zulip_realm = models.ForeignKey(
+        Realm,
+        on_delete=models.CASCADE,
+        related_name="nodl_user_extensions",
+    )
+    zulip_user = models.OneToOneField(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="nodl_realm_user_extension",
+    )
+    supabase_user_id = models.UUIDField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_synced_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = "nodl_realm_user_extension"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["zulip_realm", "supabase_user_id"],
+                name="uq_nodl_realm_user_supabase",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["supabase_user_id"],
+                name="idx_nodl_realm_user_supabase",
+            ),
+            models.Index(
+                fields=["zulip_realm", "supabase_user_id"],
+                name="idx_nodl_realm_user_lookup",
+            ),
+        ]
+
+
+class NodlTaskStreamExtension(models.Model):
+    """Extension table linking nodl tasks to hidden Zulip task streams."""
+
+    zulip_realm = models.ForeignKey(
+        Realm,
+        on_delete=models.CASCADE,
+        related_name="nodl_task_streams",
+    )
+    zulip_stream = models.OneToOneField(
+        Stream,
+        on_delete=models.CASCADE,
+        related_name="nodl_task_extension",
+    )
+    nodl_workspace_id = models.UUIDField()
+    nodl_task_id = models.UUIDField(unique=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    archived_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = "nodl_task_stream_extension"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["nodl_workspace_id", "nodl_task_id"],
+                name="uq_nodl_task_stream_workspace_task",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["nodl_workspace_id"],
+                name="idx_nodl_task_stream_workspace",
+            ),
+            models.Index(
+                fields=["nodl_task_id"],
+                name="idx_nodl_task_stream_task",
+            ),
+        ]

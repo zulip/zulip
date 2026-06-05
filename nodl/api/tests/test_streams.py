@@ -44,6 +44,7 @@ class MockUserProfile:
     ):
         self.id = id
         self.realm_id = realm_id
+        self.realm = MockRealm(realm_id)
         self.role = role
         self.is_authenticated = is_authenticated
 
@@ -186,6 +187,33 @@ class TestListStreams(TestCase):
         stream_ids = [s["id"] for s in data["streams"]]
         self.assertIn(1, stream_ids)
         self.assertNotIn(2, stream_ids)
+
+    @patch("nodl.api.views.streams.Subscription.objects.filter")
+    @patch("nodl.api.views.streams.NodlTaskStreamExtension.objects")
+    @patch("nodl.api.views.streams._get_unread_counts_for_streams")
+    @patch("nodl.api.views.streams.get_streams_for_user")
+    def test_task_streams_hidden_from_list_response(
+        self,
+        mock_get_streams: MagicMock,
+        mock_unread_counts: MagicMock,
+        mock_task_stream_objects: MagicMock,
+        mock_subscription_filter: MagicMock,
+    ) -> None:
+        normal_stream = MockStream(id=1, name="general", realm_id=1)
+        task_stream = MockStream(id=2, name="task-abc", realm_id=1)
+        mock_get_streams.return_value = [normal_stream, task_stream]
+        mock_unread_counts.return_value = {}
+        mock_task_stream_objects.filter.return_value.values_list.return_value = [2]
+        mock_subscription_filter.return_value.values.return_value = []
+
+        request = self.factory.get("/api/v1/streams")
+        request.user_profile = self.user
+
+        response = list_streams(request)
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual([stream["id"] for stream in data["streams"]], [1])
 
     def test_method_not_allowed_for_post(self) -> None:
         """Test POST requests return 405."""

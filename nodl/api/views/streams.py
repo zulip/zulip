@@ -22,6 +22,7 @@ from nodl.api.serializers.streams import (
     StreamUpdatePayload,
     TopicSerializer,
 )
+from nodl.extensions.models import NodlTaskStreamExtension
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -209,8 +210,18 @@ def list_streams(request: HttpRequest) -> HttpResponse:
         exclude_archived=True,
     )
 
-    # Filter streams to user's realm
-    realm_streams = [s for s in streams if s.realm_id == user.realm_id]
+    task_stream_ids = set(
+        NodlTaskStreamExtension.objects.filter(zulip_realm_id=user.realm_id).values_list(
+            "zulip_stream_id",
+            flat=True,
+        )
+    )
+
+    # Filter streams to user's realm and hide task-owned streams from chat navigation.
+    realm_streams = [
+        s for s in streams
+        if s.realm_id == user.realm_id and s.id not in task_stream_ids
+    ]
 
     # Apply pagination
     paginated_streams = realm_streams[offset : offset + limit]

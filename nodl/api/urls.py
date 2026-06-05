@@ -37,6 +37,11 @@ from nodl.api.views.streams import (
     unsubscribe_from_stream,
     update_stream,
 )
+from nodl.api.views.task_streams import (
+    archive_task_stream,
+    sync_task_stream,
+    sync_task_stream_subscribers,
+)
 from nodl.api.views.uploads import upload_file
 from nodl.api.views.users import (
     get_current_user,
@@ -57,6 +62,17 @@ urlpatterns = [
     path("api/v1/internal/users/sync", sync_user, name="nodl_sync_user"),
     path("api/v1/internal/realms/sync", sync_realm, name="nodl_sync_realm"),
     path("api/v1/internal/realms/deactivate", deactivate_realm, name="nodl_deactivate_realm"),
+    path("api/v1/internal/task-streams/sync", sync_task_stream, name="nodl_sync_task_stream"),
+    path(
+        "api/v1/internal/task-streams/subscribers",
+        sync_task_stream_subscribers,
+        name="nodl_sync_task_stream_subscribers",
+    ),
+    path(
+        "api/v1/internal/task-streams/archive",
+        archive_task_stream,
+        name="nodl_archive_task_stream",
+    ),
     # User REST API endpoints - authenticated via JWT
     # Presence endpoint - authenticated via JWT
     path("api/v1/users/me/presence", update_presence, name="nodl_presence"),
