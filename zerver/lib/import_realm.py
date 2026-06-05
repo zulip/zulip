@@ -1905,7 +1905,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # is deterministically generated using a combination of user ID and realm UUID
     # as input value. Since user ID possibly changes on import, the resulting
     # Jdenticon would differ. We regenerate it here using the current user ID.
-    for user_profile in UserProfile.objects.filter(avatar_source=UserProfile.AVATAR_FROM_JDENTICON):
+    for user_profile in UserProfile.objects.filter(
+        avatar_source=UserProfile.AVATAR_FROM_JDENTICON, realm=realm
+    ):
         generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
 
     # We need to have this check as the emoji files may not
