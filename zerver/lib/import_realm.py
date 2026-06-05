@@ -2,6 +2,7 @@ import collections
 import logging
 import os
 import shutil
+from collections.abc import Callable
 from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -1345,7 +1346,18 @@ def disable_restricted_authentication_methods(data: ImportedTableData) -> None:
 # Because the Python object => JSON conversion process is not fully
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
 # and foreign keys) to do the import correctly.
-def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Realm:
+def do_import_realm(
+    import_dir: Path,
+    subdomain: str,
+    processes: int = 1,
+    *,
+    on_realm_created: Callable[[Realm], None] | None = None,
+) -> Realm:
+    # on_realm_created, if given, is called with the freshly-created (still
+    # deactivated) Realm inside the same durable transaction that creates it.
+    # The self-serve Slack import uses this to record which realm an import
+    # owns, atomically with its creation, so a redelivered import can later
+    # recognize and clean up its own half-imported realm.
     logging.info("Importing realm dump %s", import_dir)
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
@@ -1456,6 +1468,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
                 setattr(realm, setting_name + "_id", -1)
 
         realm.save()
+
+        if on_realm_created is not None:
+            on_realm_created(realm)
 
         if "zerver_presencesequence" in data:
             re_map_foreign_keys(data, "zerver_presencesequence", "realm", related_table="realm")

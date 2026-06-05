@@ -2753,7 +2753,9 @@ To Do
         mock_do_convert_zipfile.assert_called_once_with(
             mock.ANY, mock.ANY, event["slack_access_token"]
         )
-        mock_do_import_realm.assert_called_once_with(mock.ANY, prereg_realm.string_id)
+        mock_do_import_realm.assert_called_once_with(
+            mock.ANY, prereg_realm.string_id, on_realm_created=mock.ANY
+        )
 
         prereg_realm.refresh_from_db()
         self.assertEqual(prereg_realm.status, 1)  # STATUS_USED
@@ -2919,7 +2921,9 @@ To Do
         mock_do_convert_zipfile.assert_called_once_with(
             mock.ANY, mock.ANY, event["slack_access_token"]
         )
-        mock_do_import_realm.assert_called_once_with(mock.ANY, prereg_realm.string_id)
+        mock_do_import_realm.assert_called_once_with(
+            mock.ANY, prereg_realm.string_id, on_realm_created=mock.ANY
+        )
 
         prereg_realm.refresh_from_db()
         self.assertTrue(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
@@ -3213,6 +3217,111 @@ To Do
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
         # The conflict is recorded so the status poll can surface it.
         self.assertTrue(prereg_realm.data_import_metadata["subdomain_unavailable"])
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_recovers_own_orphaned_realm_on_redelivery(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # do_import_realm durably commits the realm partway through, so a
+        # worker that dies before finishing leaves a half-imported realm; the
+        # event is then redelivered. On redelivery the import must recognize
+        # the realm as its own (via the import_created_realm_id stamp) and
+        # clean it up and re-import, rather than treating it as a foreign
+        # conflict and orphaning the realm forever.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack", "is_import_work_queued": True},
+        )
+        # The orphan left behind by the crashed prior attempt, stamped as ours.
+        orphan = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+        orphan_user = UserProfile.objects.create(
+            realm=orphan,
+            delivery_email="someone@example.com",
+            email="someone@example.com",
+        )
+        prereg_realm.data_import_metadata["import_created_realm_id"] = orphan.id
+        prereg_realm.save(update_fields=["data_import_metadata"])
+
+        def reimport(*args: object, on_realm_created: object = None, **kwargs: object) -> Realm:
+            new_realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            assert callable(on_realm_created)
+            on_realm_created(new_realm)
+            return new_realm
+
+        mock_do_import_realm.side_effect = reimport
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with self.assertLogs("zulip.registration", "INFO") as logs:
+            import_slack_data(event)
+        self.assertIn(
+            "WARNING:zulip.registration:"
+            "(test-realm) Cleaning up our own orphaned realm from a prior import attempt",
+            logs.output,
+        )
+
+        # The orphan and its data are gone, and a fresh realm was imported in
+        # its place.
+        self.assertFalse(Realm.objects.filter(id=orphan.id).exists())
+        self.assertFalse(UserProfile.objects.filter(id=orphan_user.id).exists())
+        mock_do_import_realm.assert_called_once()
+        new_realm = Realm.objects.get(string_id=prereg_realm.string_id)
+        self.assertNotEqual(new_realm.id, orphan.id)
+        prereg_realm.refresh_from_db()
+        self.assertEqual(prereg_realm.created_realm_id, new_realm.id)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_skips_redelivery_after_success(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # If a successful import's event is redelivered (the worker died after
+        # the import finished but before acking), the import must be a no-op
+        # rather than re-running and clobbering the created realm.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+        created_realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+        prereg_realm.created_realm = created_realm
+        prereg_realm.save(update_fields=["created_realm"])
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with self.assertLogs("zulip.registration", "INFO") as logs:
+            import_slack_data(event)
+        self.assertEqual(
+            logs.output,
+            [
+                "INFO:zulip.registration:"
+                "(test-realm) Slack import already completed; skipping redelivery"
+            ],
+        )
+
+        mock_save_attachment_contents.assert_not_called()
+        mock_do_convert_zipfile.assert_not_called()
+        mock_do_import_realm.assert_not_called()
+        self.assertTrue(Realm.objects.filter(id=created_realm.id).exists())
 
     def test_realm_import_status_failed_import_does_not_use_other_realm(self) -> None:
         # A failed import must report its own failure, even when a
