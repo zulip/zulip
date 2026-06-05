@@ -1221,21 +1221,27 @@ def realm_import_status(
     # happens to share the subdomain.
     if preregistration_realm.created_realm is None:
         if metadata.get("subdomain_unavailable"):
-            # Another import already registered this subdomain. Send the
-            # user back to registration to choose a different one.
-            return json_success(
-                request,
-                {
-                    "status": _(
-                        "This organization URL is no longer available. "
-                        "Please choose a different URL."
-                    ),
-                    "redirect": reverse(
-                        "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
-                    ),
-                },
-            )
-        elif metadata.get("invalid_file_error_message"):
+            if Realm.objects.filter(string_id=preregistration_realm.string_id).exists():
+                # A realm still holds this subdomain. Send the user back to
+                # registration to choose a different one.
+                return json_success(
+                    request,
+                    {
+                        "status": _(
+                            "This organization URL is no longer available. "
+                            "Please choose a different URL."
+                        ),
+                        "redirect": reverse(
+                            "get_prereg_key_and_redirect",
+                            kwargs={"confirmation_key": confirmation_key},
+                        ),
+                    },
+                )
+            # The subdomain has since been freed, so the stored flag is stale;
+            # clear it and report this import's own failure below.
+            del metadata["subdomain_unavailable"]
+            preregistration_realm.save(update_fields=["data_import_metadata"])
+        if metadata.get("invalid_file_error_message"):
             # Redirect user the file upload page if we have an error message to display.
             return json_success(
                 request,
