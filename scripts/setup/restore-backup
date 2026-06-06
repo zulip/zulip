@@ -99,6 +99,15 @@ def restore_backup(tarball_file: IO[bytes], keep_settings: bool, keep_zulipconf:
         db_dir = os.path.join(tmp, "zulip-backup", "database")
         os.setresuid(0, 0, 0)
         run(["chown", "-R", POSTGRES_PWENT.pw_name, "--", tmp])
+        # Open the terminate-psql-sessions script while still running
+        # as root, since the postgres user may lack permission to read
+        # it -- e.g. because /home/zulip is not world-readable, which
+        # is the default for home directories on Debian 13 and Ubuntu
+        # 21.04 and newer.
+        terminate_psql_sessions_fd = os.open(
+            os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"),
+            os.O_RDONLY,
+        )
         os.setresuid(POSTGRES_PWENT.pw_uid, POSTGRES_PWENT.pw_uid, 0)
 
         postgresql_env = dict(os.environ)
@@ -111,12 +120,11 @@ def restore_backup(tarball_file: IO[bytes], keep_settings: bool, keep_zulipconf:
                 postgresql_env["PGPASSWORD"] = db["PASSWORD"]
 
         run(
-            [
-                os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"),
-                db["NAME"],
-            ],
+            ["bash", "-s", "-", db["NAME"]],
+            stdin=terminate_psql_sessions_fd,
             env=postgresql_env,
         )
+        os.close(terminate_psql_sessions_fd)
         run(["dropdb", "--if-exists", "--", db["NAME"]], cwd="/", env=postgresql_env)
         run(
             ["createdb", "--owner=zulip", "--template=template0", "--", db["NAME"]],
