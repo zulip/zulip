@@ -280,15 +280,22 @@ def maybe_send_to_registration(
         # intended to have, when they were invited.
         invited_as = existing_prereg_user.invited_as
 
-    # A valid email invitation for this user permits them to sign up
-    # even if the organization requires invitations to join. Only
-    # invitations have referred_by set; PreregistrationUser rows
-    # created by the user's own earlier signup attempts do not, and
-    # must not bypass the invite_required check.
+    # A valid pending email invitation for this user permits them to
+    # sign up even if the organization requires invitations to join;
+    # PreregistrationUser rows left over from the user's own earlier
+    # signup attempts are not invitations, and must not bypass the
+    # invite_required check.
     has_pending_invitation = filter_to_valid_prereg_users(
         PreregistrationUser.objects.filter(
-            email__iexact=email, realm=realm, referred_by__isnull=False
-        )
+            email__iexact=email,
+            realm=realm,
+            # Only invitations have referred_by set. This condition is
+            # redundant with invitations_only below; we keep both as
+            # defense in depth to ensure we only look at the intended
+            # PreregistrationUser set.
+            referred_by__isnull=False,
+        ),
+        invitations_only=True,
     ).exists()
 
     form = HomepageForm(
