@@ -31,10 +31,13 @@ def check_required_settings(
         if value and value != default:
             continue
 
+        # Even in Docker, MANUAL_CONFIGURATION means the admin
+        # manages /etc/zulip/settings.py themselves, so the SETTING_*
+        # environment variables are not where to make changes.
         if settings.RUNNING_IN_HELM:
             settings_location = "your Helm values"
             setting_display_name = "zulip.environment.SETTING_" + setting_name
-        elif settings.RUNNING_IN_DOCKER:
+        elif settings.RUNNING_IN_DOCKER and os.environ.get("MANUAL_CONFIGURATION") != "True":
             settings_location = "your Docker environment configuration"
             setting_display_name = "SETTING_" + setting_name
         else:
