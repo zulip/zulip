@@ -85,6 +85,18 @@ class TestChecks(ZulipTestCase):
             ZULIP_ADMINISTRATOR=None,
         )
 
+    @override_settings(RUNNING_IN_DOCKER=True)
+    def test_checks_required_setting_docker_manual_configuration(self) -> None:
+        # With MANUAL_CONFIGURATION, the admin manages
+        # /etc/zulip/settings.py themselves, so the bare-metal
+        # message is the accurate one.
+        with mock.patch.dict(os.environ, {"MANUAL_CONFIGURATION": "True"}):
+            self.assert_check_with_error(
+                "(zulip.E001) ZULIP_ADMINISTRATOR is still set to the example value "
+                "'zulip-admin@example.com'; change it in /etc/zulip/settings.py",
+                ZULIP_ADMINISTRATOR="zulip-admin@example.com",
+            )
+
     @override_settings(DEVELOPMENT=False, PRODUCTION=True, EXTERNAL_URI_SCHEME="https://")
     def test_checks_external_host_domain(self) -> None:
         message_re = r"\(zulip\.E002\) EXTERNAL_HOST \(\S+\) does not contain a domain part"
