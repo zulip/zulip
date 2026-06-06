@@ -307,7 +307,8 @@
       "[X] 0797_userprofile_is_deleted",
       "[X] 0798_remove_userprofile_recipient_and_personal_recipients",
       "[X] 0799_remove_realm_emoji_from_audit_log_extra_data",
-      "[X] 0800_cleanup_case_mismatched_legacy_apns_tokens"
+      "[X] 0800_cleanup_case_mismatched_legacy_apns_tokens",
+      "[X] 0801_realmemoji_date_created"
     ],
     "zilencer": [
       "[X] 0001_squashed_0064_remotezulipserver_last_merge_base (64 squashed migrations)",

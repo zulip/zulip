@@ -738,8 +738,16 @@ def download_and_export_upload_file(
         shutil.copyfileobj(response.raw, upload_file)
 
 
-def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
-    NOW = float(timezone_now().timestamp())
+def build_realm_emoji(
+    realm_id: int,
+    name: str,
+    id: int,
+    file_name: str,
+    *,
+    date_created: float | None = None,
+) -> ZerverFieldsT:
+    if date_created is None:
+        date_created = float(timezone_now().timestamp())
     emoji_dict = model_to_dict(
         RealmEmoji(
             realm_id=realm_id,
@@ -748,7 +756,7 @@ def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> Zerv
             file_name=file_name,
         ),
     )
-    emoji_dict["date_created"] = NOW
+    emoji_dict["date_created"] = date_created
     return emoji_dict
 
 

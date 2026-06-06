@@ -3,6 +3,7 @@ import os
 import struct
 import uuid
 from collections import defaultdict
+from datetime import datetime
 from collections.abc import Callable, Iterator
 from typing import IO, Any
 
@@ -388,6 +389,13 @@ def convert_direct_message_group_data(
     return zerver_direct_message_group
 
 
+def _gridfs_upload_date_to_timestamp(upload_date: Any) -> float | None:
+    """Rocket.Chat GridFS `uploadDate` values decode as datetime (often UTC-aware)."""
+    if isinstance(upload_date, datetime):
+        return float(upload_date.timestamp())
+    return None
+
+
 def build_custom_emoji(
     realm_id: int, custom_emoji_data: dict[str, list[dict[str, Any]]], output_dir: str
 ) -> list[ZerverFieldsT]:
@@ -399,12 +407,23 @@ def build_custom_emoji(
     zerver_realmemoji: list[ZerverFieldsT] = []
     emoji_records: list[ZerverFieldsT] = []
 
-    # Map emoji file_id to emoji file data
+    # Map emoji file_id to emoji file data; also map sanitized GridFS filename to the
+    # latest upload timestamp (GridFS may contain duplicate filenames across revisions).
     emoji_file_data = defaultdict(list)
     object_id_to_filename = {}
+    filename_to_latest_upload_timestamp: dict[str, float] = {}
     for emoji_file in custom_emoji_data["file"]:
         if isinstance(emoji_file["_id"], bson.objectid.ObjectId):  # nocoverage
             object_id_to_filename[str(emoji_file["_id"])] = emoji_file["filename"]
+        raw_filename = emoji_file.get("filename")
+        if raw_filename is None:
+            continue
+        sanitized_filename = sanitize_name(str(raw_filename))
+        upload_ts = _gridfs_upload_date_to_timestamp(emoji_file.get("uploadDate"))
+        if upload_ts is not None:
+            previous_ts = filename_to_latest_upload_timestamp.get(sanitized_filename)
+            if previous_ts is None or upload_ts > previous_ts:
+                filename_to_latest_upload_timestamp[sanitized_filename] = upload_ts
     for emoji_chunk in sorted(custom_emoji_data["chunk"], key=lambda c: c["n"]):
         file_id = str(emoji_chunk["files_id"])
         emoji_file_data[object_id_to_filename.get(file_id, file_id)].append(emoji_chunk["data"])
@@ -426,6 +445,8 @@ def build_custom_emoji(
         emoji_aliases = [rc_emoji["name"]]
         emoji_aliases.extend(rc_emoji["aliases"])
 
+        emoji_date_created = filename_to_latest_upload_timestamp.get(emoji_filename)
+
         for alias in emoji_aliases:
             emoji_record = dict(
                 path=target_sub_path,
@@ -441,6 +462,7 @@ def build_custom_emoji(
                 name=alias,
                 id=NEXT_ID("realmemoji"),
                 file_name=emoji_filename,
+                date_created=emoji_date_created,
             )
             zerver_realmemoji.append(realmemoji)
 
