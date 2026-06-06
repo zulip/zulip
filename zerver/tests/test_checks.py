@@ -34,7 +34,8 @@ class TestChecks(ZulipTestCase):
     @override_settings(RUNNING_IN_DOCKER=False)
     def test_checks_required_setting(self) -> None:
         self.assert_check_with_error(
-            "(zulip.E001) You must set ZULIP_ADMINISTRATOR in /etc/zulip/settings.py",
+            "(zulip.E001) ZULIP_ADMINISTRATOR is still set to the example value "
+            "'zulip-admin@example.com'; change it in /etc/zulip/settings.py",
             ZULIP_ADMINISTRATOR="zulip-admin@example.com",
         )
 
@@ -51,7 +52,8 @@ class TestChecks(ZulipTestCase):
     @override_settings(RUNNING_IN_DOCKER=True)
     def test_checks_required_setting_docker(self) -> None:
         self.assert_check_with_error(
-            "(zulip.E001) You must set SETTING_ZULIP_ADMINISTRATOR in your Docker environment configuration",
+            "(zulip.E001) SETTING_ZULIP_ADMINISTRATOR is still set to the example value "
+            "'zulip-admin@example.com'; change it in your Docker environment configuration",
             ZULIP_ADMINISTRATOR="zulip-admin@example.com",
         )
 
@@ -68,7 +70,8 @@ class TestChecks(ZulipTestCase):
     @override_settings(RUNNING_IN_DOCKER=True, RUNNING_IN_HELM=True)
     def test_checks_required_setting_helm(self) -> None:
         self.assert_check_with_error(
-            "(zulip.E001) You must set zulip.environment.SETTING_ZULIP_ADMINISTRATOR in your Helm values",
+            "(zulip.E001) zulip.environment.SETTING_ZULIP_ADMINISTRATOR is still set to "
+            "the example value 'zulip-admin@example.com'; change it in your Helm values",
             ZULIP_ADMINISTRATOR="zulip-admin@example.com",
         )
 

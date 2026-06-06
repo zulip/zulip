@@ -27,11 +27,8 @@ def check_required_settings(
     ]
     errors = []
     for setting_name, default in required_settings:
-        if (
-            hasattr(settings, setting_name)
-            and getattr(settings, setting_name) != default
-            and getattr(settings, setting_name)
-        ):
+        value = getattr(settings, setting_name, None)
+        if value and value != default:
             continue
 
         if settings.RUNNING_IN_HELM:
@@ -43,9 +40,19 @@ def check_required_settings(
         else:
             settings_location = "/etc/zulip/settings.py"
             setting_display_name = setting_name
+        if value:
+            # The setting is still the example value from the
+            # documentation, which the admin must replace -- saying
+            # "you must set" it would be confusing, as it is set.
+            message = (
+                f"{setting_display_name} is still set to the example value {default!r}; "
+                f"change it in {settings_location}"
+            )
+        else:
+            message = f"You must set {setting_display_name} in {settings_location}"
         errors.append(
             checks.Error(
-                f"You must set {setting_display_name} in {settings_location}",
+                message,
                 obj=f"settings.{setting_name}",
                 id="zulip.E001",
             )
