@@ -236,7 +236,9 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
             const x_offset = -(popper_rect.width / 2 - ref_rect.width / 2);
             instance.setProps({offset: [x_offset, 5]});
         },
-        tippy_props: {},
+        tippy_props: {
+            arrow: true,
+        },
     });
     saved_snippets_widget.setup();
 }
