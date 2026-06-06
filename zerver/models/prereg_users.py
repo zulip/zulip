@@ -138,18 +138,27 @@ class PreregistrationUser(models.Model):
 
 def filter_to_valid_prereg_users(
     query: QuerySet[PreregistrationUser],
+    invitations_only: bool = False,
 ) -> QuerySet[PreregistrationUser]:
     """
-    If invite_expires_in_days is specified, we return only those PreregistrationUser
-    objects that were created at most that many days in the past.
+    Filters out PreregistrationUser objects that have been used or
+    revoked, or whose confirmation link has expired.
     """
     used_value = confirmation_settings.STATUS_USED
     revoked_value = confirmation_settings.STATUS_REVOKED
 
     query = query.exclude(status__in=[used_value, revoked_value])
-    return query.filter(
-        Q(confirmation__expiry_date=None) | Q(confirmation__expiry_date__gte=timezone_now())
+
+    confirmation_q = Q(confirmation__expiry_date=None) | Q(
+        confirmation__expiry_date__gte=timezone_now()
     )
+    if invitations_only:
+        # Imported here to avoid a circular import.
+        from confirmation.models import Confirmation
+
+        confirmation_q &= Q(confirmation__type=Confirmation.INVITATION)
+
+    return query.filter(confirmation_q)
 
 
 class MultiuseInvite(models.Model):
