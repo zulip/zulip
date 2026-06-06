@@ -1461,7 +1461,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.assert_in_response("Enter your account details to complete registration.", result)
 
             # Verify that the user is asked for name but not password
-            self.assert_not_in_success_response(["id_password"], result)
+            self.assert_not_in_success_response(["id_password", "ldap-password"], result)
             self.assert_in_success_response(["id_full_name"], result)
             if expect_full_name_prepopulated:
                 # Verify the name field gets correctly pre-populated:
@@ -1966,6 +1966,54 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
                 name,
                 ldap_name,
                 skip_registration_form=True,
+            )
+
+    @override_settings(TERMS_OF_SERVICE_VERSION="1.0")
+    def test_social_auth_with_ldap_auth_registration_user_in_ldap_with_form(self) -> None:
+        """
+        Like test_social_auth_with_ldap_auth_registration_user_in_ldap, but with
+        a Terms of Service version set, so that
+        the registration form is displayed instead of being skipped. The form
+        should not prompt the user for their LDAP password, since their
+        identity was already verified by the social backend and any password
+        entered would be ignored.
+        """
+        self.init_default_ldap_database()
+        email = "newuser_email@zulip.com"
+        name = "Social Fullname"
+        # The name of this user in the LDAP directory, which is expected
+        # to take precedence over the name provided by the social backend.
+        ldap_name = "New LDAP fullname"
+        realm = get_realm("zulip")
+        subdomain = "zulip"
+        ldap_user_attr_map = {"full_name": "cn"}
+
+        backend_path = f"zproject.backends.{self.BACKEND_CLASS.__name__}"
+        with self.settings(
+            POPULATE_PROFILE_VIA_LDAP=True,
+            LDAP_EMAIL_ATTR="mail",
+            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            AUTHENTICATION_BACKENDS=(
+                backend_path,
+                "zproject.backends.ZulipLDAPAuthBackend",
+                "zproject.backends.ZulipDummyBackend",
+            ),
+        ):
+            account_data_dict = self.get_account_data_dict(email=email, name=name)
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain=subdomain,
+                is_signup=True,
+            )
+            self.stage_two_of_registration(
+                result,
+                realm,
+                subdomain,
+                email,
+                name,
+                ldap_name,
+                skip_registration_form=False,
             )
 
     def test_social_auth_complete(self) -> None:

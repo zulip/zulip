@@ -584,7 +584,13 @@ def registration_helper(
                     # requires that LDAP accounts enter their LDAP
                     # password to register, or ZulipLDAPUserPopulator,
                     # which just populates UserProfile fields (no auth).
-                    require_ldap_password = isinstance(backend, ZulipLDAPAuthBackend)
+                    #
+                    # If the user is signing up via an external auth method,
+                    # their identity has already been verified and password_required
+                    # is set to False.
+                    require_ldap_password = (
+                        isinstance(backend, ZulipLDAPAuthBackend) and password_required
+                    )
                     break
 
         initial_data = {}
