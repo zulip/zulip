@@ -157,6 +157,10 @@ def _get_subscribers_for_stream(stream: Stream) -> list[int]:
     )
 
 
+def _parse_bool(value: str | None) -> bool:
+    return value is not None and value.lower() in {"1", "true", "yes", "on"}
+
+
 @require_jwt_auth
 @rate_limit(key_prefix="streams_read", limit=STREAMS_READ_LIMIT)
 def list_streams(request: HttpRequest) -> HttpResponse:
@@ -167,6 +171,7 @@ def list_streams(request: HttpRequest) -> HttpResponse:
     Query parameters:
     - limit: Maximum number of streams to return (default: 100)
     - offset: Number of streams to skip (default: 0)
+    - include_task_streams: Include task-owned streams in a separate response list.
 
     Response:
     {
@@ -190,6 +195,7 @@ def list_streams(request: HttpRequest) -> HttpResponse:
         )
 
     user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+    include_task_streams = _parse_bool(request.GET.get("include_task_streams"))
 
     # Parse pagination parameters
     try:
@@ -210,27 +216,36 @@ def list_streams(request: HttpRequest) -> HttpResponse:
         exclude_archived=True,
     )
 
-    task_stream_ids = set(
-        NodlTaskStreamExtension.objects.filter(zulip_realm_id=user.realm_id).values_list(
+    task_stream_lookup = {
+        stream_id: str(task_id)
+        for stream_id, task_id in NodlTaskStreamExtension.objects.filter(
+            zulip_realm_id=user.realm_id
+        ).values_list(
             "zulip_stream_id",
-            flat=True,
+            "nodl_task_id",
         )
-    )
+    }
+    task_stream_ids = set(task_stream_lookup)
 
-    # Filter streams to user's realm and hide task-owned streams from chat navigation.
-    realm_streams = [
+    task_realm_streams = [
+        s for s in streams
+        if s.realm_id == user.realm_id and s.id in task_stream_ids
+    ]
+    normal_realm_streams = [
         s for s in streams
         if s.realm_id == user.realm_id and s.id not in task_stream_ids
     ]
 
-    # Apply pagination
-    paginated_streams = realm_streams[offset : offset + limit]
+    if include_task_streams:
+        stream_counts = normal_realm_streams + task_realm_streams
+    else:
+        stream_counts = normal_realm_streams
 
     # Get all unread counts in a single query (fixes N+1 problem)
-    unread_by_recipient = _get_unread_counts_for_streams(user, paginated_streams)
+    unread_by_recipient = _get_unread_counts_for_streams(user, stream_counts)
 
     # Get user's subscription preferences (mute, pin) in a single query
-    recipient_ids = [s.recipient_id for s in paginated_streams]
+    recipient_ids = [s.recipient_id for s in stream_counts]
     subscriptions = Subscription.objects.filter(
         user_profile=user,
         recipient_id__in=recipient_ids,
@@ -241,25 +256,42 @@ def list_streams(request: HttpRequest) -> HttpResponse:
         for sub in subscriptions
     }
 
-    # Build response with unread counts and subscription preferences
-    stream_data = []
-    for stream in paginated_streams:
-        unread_count = unread_by_recipient.get(stream.recipient_id, 0)
-        sub_prefs = sub_prefs_by_recipient.get(
-            stream.recipient_id, {"is_muted": False, "pin_to_top": False}
-        )
-        serializer = StreamListSerializer.from_stream_with_unread(
-            stream,
-            unread_count=unread_count,
-            is_muted=sub_prefs["is_muted"],
-            pin_to_top=sub_prefs["pin_to_top"],
-        )
-        stream_data.append(serializer.model_dump())
+    def serialize_streams(source_streams: list[Stream], *, is_task_stream: bool) -> list[dict]:
+        stream_data = []
+        for stream in source_streams:
+            unread_count = unread_by_recipient.get(stream.recipient_id, 0)
+            sub_prefs = sub_prefs_by_recipient.get(
+                stream.recipient_id, {"is_muted": False, "pin_to_top": False}
+            )
+            serializer = StreamListSerializer.from_stream_with_unread(
+                stream,
+                unread_count=unread_count,
+                is_muted=sub_prefs["is_muted"],
+                pin_to_top=sub_prefs["pin_to_top"],
+                is_task_stream=is_task_stream,
+                task_id=task_stream_lookup.get(stream.id) if is_task_stream else None,
+            )
+            stream_data.append(serializer.model_dump())
+        return stream_data
+
+    # Filter streams to user's realm and hide task-owned streams from normal chat navigation.
+    realm_streams = normal_realm_streams
+
+    # Apply pagination to normal streams only; task streams are returned as a separate,
+    # usually-small list for the task discussion section.
+    paginated_streams = realm_streams[offset : offset + limit]
+    stream_data = serialize_streams(paginated_streams, is_task_stream=False)
+    task_stream_data = (
+        serialize_streams(task_realm_streams, is_task_stream=True)
+        if include_task_streams
+        else []
+    )
 
     return JsonResponse(
         {
             "result": "success",
             "streams": stream_data,
+            "task_streams": task_stream_data,
             "count": len(stream_data),
             "total": len(realm_streams),
         }

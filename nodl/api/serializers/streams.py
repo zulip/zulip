@@ -61,6 +61,10 @@ class StreamListSerializer(StreamSerializer):
         bool, Field(default=False, description="Whether the stream is pinned to the top")
     ]
     topics: Annotated[list[TopicSerializer], Field(default=[], description="Topics in the stream")]
+    is_task_stream: Annotated[
+        bool, Field(default=False, description="Whether this stream is owned by a nodl task")
+    ]
+    task_id: Annotated[str | None, Field(default=None, description="Owning nodl task ID")]
 
     @classmethod
     def from_stream_with_unread(
@@ -71,6 +75,8 @@ class StreamListSerializer(StreamSerializer):
         topics: list[TopicSerializer] | None = None,
         is_muted: bool = False,
         pin_to_top: bool = False,
+        is_task_stream: bool = False,
+        task_id: str | None = None,
     ) -> "StreamListSerializer":
         """Create serializer from Stream model with unread count and user preferences."""
         return cls(
@@ -87,6 +93,8 @@ class StreamListSerializer(StreamSerializer):
             is_muted=is_muted,
             pin_to_top=pin_to_top,
             topics=topics or [],
+            is_task_stream=is_task_stream,
+            task_id=task_id,
         )
 
 
