@@ -161,6 +161,27 @@ def _parse_bool(value: str | None) -> bool:
     return value is not None and value.lower() in {"1", "true", "yes", "on"}
 
 
+def _get_subscribed_task_stream_extension(
+    user: UserProfile,
+    stream_id: int,
+) -> NodlTaskStreamExtension | None:
+    task_extension = (
+        NodlTaskStreamExtension.objects.select_related("zulip_stream")
+        .filter(
+            zulip_realm_id=user.realm_id,
+            zulip_stream_id=stream_id,
+        )
+        .first()
+    )
+    if not task_extension:
+        return None
+    is_subscribed = Subscription.objects.filter(
+        user_profile=user,
+        recipient=task_extension.zulip_stream.recipient,
+    ).exists()
+    return task_extension if is_subscribed else None
+
+
 @require_jwt_auth
 @rate_limit(key_prefix="streams_read", limit=STREAMS_READ_LIMIT)
 def list_streams(request: HttpRequest) -> HttpResponse:
@@ -213,16 +234,13 @@ def list_streams(request: HttpRequest) -> HttpResponse:
         include_public=True,
         include_subscribed=True,
         include_web_public=False,
-        exclude_archived=True,
+        exclude_archived=not include_task_streams,
     )
 
     task_stream_lookup = {
-        stream_id: str(task_id)
-        for stream_id, task_id in NodlTaskStreamExtension.objects.filter(
+        extension.zulip_stream_id: extension
+        for extension in NodlTaskStreamExtension.objects.filter(
             zulip_realm_id=user.realm_id
-        ).values_list(
-            "zulip_stream_id",
-            "nodl_task_id",
         )
     }
     task_stream_ids = set(task_stream_lookup)
@@ -233,7 +251,11 @@ def list_streams(request: HttpRequest) -> HttpResponse:
     ]
     normal_realm_streams = [
         s for s in streams
-        if s.realm_id == user.realm_id and s.id not in task_stream_ids
+        if (
+            s.realm_id == user.realm_id
+            and s.id not in task_stream_ids
+            and not getattr(s, "deactivated", False)
+        )
     ]
 
     if include_task_streams:
@@ -263,13 +285,25 @@ def list_streams(request: HttpRequest) -> HttpResponse:
             sub_prefs = sub_prefs_by_recipient.get(
                 stream.recipient_id, {"is_muted": False, "pin_to_top": False}
             )
+            extension = task_stream_lookup.get(stream.id) if is_task_stream else None
+            task_title = (
+                extension.task_title.strip()
+                if extension and extension.task_title
+                else None
+            )
+            is_archived = bool(
+                (extension and extension.archived_at)
+                or getattr(stream, "deactivated", False)
+            )
             serializer = StreamListSerializer.from_stream_with_unread(
                 stream,
                 unread_count=unread_count,
                 is_muted=sub_prefs["is_muted"],
                 pin_to_top=sub_prefs["pin_to_top"],
                 is_task_stream=is_task_stream,
-                task_id=task_stream_lookup.get(stream.id) if is_task_stream else None,
+                task_id=str(extension.nodl_task_id) if extension and is_task_stream else None,
+                display_name=task_title,
+                is_archived=is_archived,
             )
             stream_data.append(serializer.model_dump())
         return stream_data
@@ -417,18 +451,48 @@ def get_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
 
     user: UserProfile = request.user_profile  # type: ignore[attr-defined]
 
+    task_extension = None
     try:
         stream, _ = access_stream_by_id(user, stream_id)
     except Exception:
-        return JsonResponse(
-            {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
-            status=404,
-        )
+        task_extension = _get_subscribed_task_stream_extension(user, stream_id)
+        if not task_extension:
+            return JsonResponse(
+                {
+                    "result": "error",
+                    "code": "NOT_FOUND",
+                    "msg": "Stream not found or access denied",
+                },
+                status=404,
+            )
+        stream = task_extension.zulip_stream
 
     # Get subscribers if stream is visible
     subscribers = _get_subscribers_for_stream(stream)
 
-    serializer = StreamSerializer.from_stream(stream, subscribers=subscribers)
+    if task_extension is None:
+        task_extension = (
+            NodlTaskStreamExtension.objects.filter(
+                zulip_realm_id=user.realm_id,
+                zulip_stream_id=stream.id,
+            ).first()
+        )
+    task_title = (
+        task_extension.task_title.strip()
+        if task_extension and task_extension.task_title
+        else None
+    )
+    serializer = StreamSerializer.from_stream(
+        stream,
+        subscribers=subscribers,
+        display_name=task_title,
+        is_task_stream=task_extension is not None,
+        task_id=str(task_extension.nodl_task_id) if task_extension else None,
+        is_archived=bool(
+            (task_extension and task_extension.archived_at)
+            or getattr(stream, "deactivated", False)
+        ),
+    )
     return JsonResponse(
         {
             "result": "success",
@@ -610,10 +674,17 @@ def get_stream_topics(request: HttpRequest, stream_id: int) -> HttpResponse:
     try:
         stream, _ = access_stream_by_id(user, stream_id)
     except Exception:
-        return JsonResponse(
-            {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
-            status=404,
-        )
+        task_extension = _get_subscribed_task_stream_extension(user, stream_id)
+        if not task_extension:
+            return JsonResponse(
+                {
+                    "result": "error",
+                    "code": "NOT_FOUND",
+                    "msg": "Stream not found or access denied",
+                },
+                status=404,
+            )
+        stream = task_extension.zulip_stream
 
     # Get topic history
     public_history = stream.is_history_realm_public() or stream.history_public_to_subscribers

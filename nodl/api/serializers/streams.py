@@ -20,6 +20,7 @@ class StreamSerializer(BaseModel):
 
     id: Annotated[int, Field(description="Stream ID")]
     name: Annotated[str, Field(description="Stream name")]
+    display_name: Annotated[str | None, Field(default=None, description="User-facing stream name")]
     description: Annotated[str, Field(description="Stream description")]
     is_private: Annotated[bool, Field(description="Whether the stream is private")]
     is_announcement_only: Annotated[bool, Field(description="Whether only admins can post")]
@@ -29,17 +30,29 @@ class StreamSerializer(BaseModel):
     ]
     first_message_id: Annotated[int | None, Field(description="ID of first message")]
     subscribers: Annotated[list[int], Field(default=[], description="List of subscriber user IDs")]
+    is_task_stream: Annotated[
+        bool, Field(default=False, description="Whether this stream is owned by a nodl task")
+    ]
+    task_id: Annotated[str | None, Field(default=None, description="Owning nodl task ID")]
+    is_archived: Annotated[
+        bool, Field(default=False, description="Whether this stream is archived")
+    ]
 
     @classmethod
     def from_stream(
         cls,
         stream: Stream,
         subscribers: list[int] | None = None,
+        display_name: str | None = None,
+        is_task_stream: bool = False,
+        task_id: str | None = None,
+        is_archived: bool = False,
     ) -> "StreamSerializer":
         """Create serializer from Stream model."""
         return cls(
             id=stream.id,
             name=stream.name,
+            display_name=display_name,
             description=stream.description,
             is_private=stream.invite_only,
             is_announcement_only=False,  # Simplified - group permissions not exposed via REST API
@@ -47,6 +60,9 @@ class StreamSerializer(BaseModel):
             history_public_to_subscribers=stream.history_public_to_subscribers,
             first_message_id=stream.first_message_id,
             subscribers=subscribers or [],
+            is_task_stream=is_task_stream,
+            task_id=task_id,
+            is_archived=is_archived,
         )
 
 
@@ -65,6 +81,10 @@ class StreamListSerializer(StreamSerializer):
         bool, Field(default=False, description="Whether this stream is owned by a nodl task")
     ]
     task_id: Annotated[str | None, Field(default=None, description="Owning nodl task ID")]
+    display_name: Annotated[str | None, Field(default=None, description="User-facing stream name")]
+    is_archived: Annotated[
+        bool, Field(default=False, description="Whether this stream is archived")
+    ]
 
     @classmethod
     def from_stream_with_unread(
@@ -77,11 +97,14 @@ class StreamListSerializer(StreamSerializer):
         pin_to_top: bool = False,
         is_task_stream: bool = False,
         task_id: str | None = None,
+        display_name: str | None = None,
+        is_archived: bool = False,
     ) -> "StreamListSerializer":
         """Create serializer from Stream model with unread count and user preferences."""
         return cls(
             id=stream.id,
             name=stream.name,
+            display_name=display_name,
             description=stream.description,
             is_private=stream.invite_only,
             is_announcement_only=False,  # Simplified - group permissions not exposed via REST API
@@ -95,6 +118,7 @@ class StreamListSerializer(StreamSerializer):
             topics=topics or [],
             is_task_stream=is_task_stream,
             task_id=task_id,
+            is_archived=is_archived,
         )
 
 

@@ -9,6 +9,7 @@ import json
 import logging
 from collections import defaultdict
 from collections.abc import Callable
+from contextlib import suppress
 from functools import wraps
 from typing import Any
 
@@ -23,6 +24,7 @@ from nodl.api.serializers.messages import (
     MessageUpdatePayload,
     ReactionSerializer,
 )
+from nodl.extensions.models import NodlTaskStreamExtension
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import do_update_message
 from zerver.actions.message_flags import do_update_message_flags
@@ -37,7 +39,7 @@ from zerver.lib.rate_limiter import RateLimitedObject, RedisRateLimiterBackend
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.types import StreamMessageEditRequest
 from zerver.lib.users import access_user_by_id_including_cross_realm
-from zerver.models import Message, Reaction, UserMessage, UserProfile
+from zerver.models import Message, Reaction, Subscription, UserMessage, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.streams import get_stream_by_id_in_realm
 
@@ -48,6 +50,26 @@ logger = logging.getLogger(__name__)
 MESSAGES_READ_LIMIT = 300  # requests per minute
 MESSAGES_WRITE_LIMIT = 60  # messages per minute
 RATE_LIMIT_WINDOW = 60  # seconds
+
+
+def _access_stream_or_archived_task_stream(user: UserProfile, stream_id: int):
+    try:
+        return access_stream_by_id(user, stream_id)[0]
+    except Exception:
+        task_extension = (
+            NodlTaskStreamExtension.objects.select_related("zulip_stream")
+            .filter(
+                zulip_realm_id=user.realm_id,
+                zulip_stream_id=stream_id,
+            )
+            .first()
+        )
+        if not task_extension or not Subscription.objects.filter(
+            user_profile=user,
+            recipient=task_extension.zulip_stream.recipient,
+        ).exists():
+            raise
+        return task_extension.zulip_stream
 
 
 class MessagesRateLimitedObject(RateLimitedObject):
@@ -389,7 +411,11 @@ def list_messages(request: HttpRequest) -> HttpResponse:
                 base_query = _build_dm_recipient_query(user, user_ids)
                 if base_query is None:
                     return JsonResponse(
-                        {"result": "error", "code": "NOT_FOUND", "msg": "DM conversation not found"},
+                        {
+                            "result": "error",
+                            "code": "NOT_FOUND",
+                            "msg": "DM conversation not found",
+                        },
                         status=404,
                     )
                 # Filter out bot messages from DMs (e.g., Zulip's "Welcome Bot")
@@ -411,7 +437,7 @@ def list_messages(request: HttpRequest) -> HttpResponse:
                         )
 
                 try:
-                    stream, _ = access_stream_by_id(user, operand)
+                    stream = _access_stream_or_archived_task_stream(user, operand)
                 except Exception:
                     return JsonResponse(
                         {
@@ -457,7 +483,7 @@ def list_messages(request: HttpRequest) -> HttpResponse:
 
         # Verify user has access to the stream
         try:
-            stream, _ = access_stream_by_id(user, stream_id)
+            stream = _access_stream_or_archived_task_stream(user, stream_id)
         except Exception:
             return JsonResponse(
                 {
@@ -643,14 +669,12 @@ def send_message(request: HttpRequest) -> HttpResponse:
         try:
             body = json.loads(request.body)
         except (json.JSONDecodeError, ValueError):
-            body = {k: v for k, v in request.POST.items()}
+            body = dict(request.POST.items())
             # Parse JSON-encoded values in form data
             for key in ("to", "stream_id"):
                 if key in body and isinstance(body[key], str):
-                    try:
+                    with suppress(json.JSONDecodeError, ValueError):
                         body[key] = json.loads(body[key])
-                    except (json.JSONDecodeError, ValueError):
-                        pass
         # Extract Zulip client fields not in MessageCreatePayload
         local_id = body.pop("local_id", None)
         queue_id = body.pop("queue_id", None)
@@ -1495,7 +1519,7 @@ def update_flags(request: HttpRequest) -> HttpResponse:
     try:
         body = json.loads(request.body) if request.body else {}
     except (json.JSONDecodeError, ValueError):
-        body = {k: v for k, v in request.POST.items()}
+        body = dict(request.POST.items())
 
     op = body.get("op", "")
     flag = body.get("flag", "")
@@ -1590,7 +1614,11 @@ def update_flags_narrow(request: HttpRequest) -> HttpResponse:
         for key in ("anchor", "flag", "include_anchor", "narrow", "num_after", "num_before", "op"):
             if key in body and key not in request.POST:
                 val = body[key]
-                request.POST[key] = json.dumps(val) if isinstance(val, (list, dict, bool)) else str(val)
+                request.POST[key] = (
+                    json.dumps(val)
+                    if isinstance(val, list | dict | bool)
+                    else str(val)
+                )
 
     from zerver.views.message_flags import update_message_flags_for_narrow
 

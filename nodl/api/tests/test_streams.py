@@ -93,6 +93,20 @@ class MockStream:
         pass
 
 
+def mock_task_extension(
+    stream_id: int,
+    task_id: str,
+    task_title: str = "",
+    archived_at=None,
+) -> MagicMock:
+    extension = MagicMock()
+    extension.zulip_stream_id = stream_id
+    extension.nodl_task_id = task_id
+    extension.task_title = task_title
+    extension.archived_at = archived_at
+    return extension
+
+
 class TestRequireJwtAuth(TestCase):
     """Test cases for JWT authentication decorator."""
 
@@ -111,16 +125,22 @@ class TestRequireJwtAuth(TestCase):
         data = json.loads(response.content)
         self.assertEqual(data["code"], "UNAUTHORIZED")
 
+    @patch("nodl.api.views.streams.Subscription.objects.filter")
+    @patch("nodl.api.views.streams.NodlTaskStreamExtension.objects")
+    @patch("nodl.api.views.streams._get_unread_counts_for_streams")
     @patch("nodl.api.views.streams.get_streams_for_user")
-    @patch("nodl.api.views.streams._get_unread_count_for_stream")
     def test_authenticated_request_passes_through(
         self,
-        mock_unread: MagicMock,
         mock_get_streams: MagicMock,
+        mock_unread_counts: MagicMock,
+        mock_task_stream_objects: MagicMock,
+        mock_subscription_filter: MagicMock,
     ) -> None:
         """Test requests with auth pass through."""
         mock_get_streams.return_value = []
-        mock_unread.return_value = 0
+        mock_unread_counts.return_value = {}
+        mock_task_stream_objects.filter.return_value = []
+        mock_subscription_filter.return_value.values.return_value = []
 
         request = self.factory.get("/api/v1/streams")
         request.user_profile = MockUserProfile()
@@ -153,7 +173,7 @@ class TestListStreams(TestCase):
         stream = MockStream()
         mock_get_streams.return_value = [stream]
         mock_unread_counts.return_value = {stream.recipient_id: 5}
-        mock_task_stream_objects.filter.return_value.values_list.return_value = []
+        mock_task_stream_objects.filter.return_value = []
         mock_subscription_filter.return_value.values.return_value = []
 
         request = self.factory.get("/api/v1/streams")
@@ -186,7 +206,7 @@ class TestListStreams(TestCase):
 
         mock_get_streams.return_value = [user_realm_stream, other_realm_stream]
         mock_unread_counts.return_value = {}
-        mock_task_stream_objects.filter.return_value.values_list.return_value = []
+        mock_task_stream_objects.filter.return_value = []
         mock_subscription_filter.return_value.values.return_value = []
 
         request = self.factory.get("/api/v1/streams")
@@ -215,8 +235,8 @@ class TestListStreams(TestCase):
         task_stream = MockStream(id=2, name="task-abc", realm_id=1)
         mock_get_streams.return_value = [normal_stream, task_stream]
         mock_unread_counts.return_value = {}
-        mock_task_stream_objects.filter.return_value.values_list.return_value = [
-            (2, "47d74c7c-ccc7-4a32-b95c-54c8f84aee1b")
+        mock_task_stream_objects.filter.return_value = [
+            mock_task_extension(2, "47d74c7c-ccc7-4a32-b95c-54c8f84aee1b")
         ]
         mock_subscription_filter.return_value.values.return_value = []
 
@@ -246,8 +266,8 @@ class TestListStreams(TestCase):
         task_id = "47d74c7c-ccc7-4a32-b95c-54c8f84aee1b"
         mock_get_streams.return_value = [normal_stream, task_stream]
         mock_unread_counts.return_value = {}
-        mock_task_stream_objects.filter.return_value.values_list.return_value = [
-            (2, task_id)
+        mock_task_stream_objects.filter.return_value = [
+            mock_task_extension(2, task_id, "Install cabinets")
         ]
         mock_subscription_filter.return_value.values.return_value = []
 
@@ -261,7 +281,41 @@ class TestListStreams(TestCase):
         self.assertEqual([stream["id"] for stream in data["streams"]], [1])
         self.assertEqual([stream["id"] for stream in data["task_streams"]], [2])
         self.assertEqual(data["task_streams"][0]["task_id"], task_id)
+        self.assertEqual(data["task_streams"][0]["display_name"], "Install cabinets")
         self.assertTrue(data["task_streams"][0]["is_task_stream"])
+        self.assertFalse(data["task_streams"][0]["is_archived"])
+
+    @patch("nodl.api.views.streams.Subscription.objects.filter")
+    @patch("nodl.api.views.streams.NodlTaskStreamExtension.objects")
+    @patch("nodl.api.views.streams._get_unread_counts_for_streams")
+    @patch("nodl.api.views.streams.get_streams_for_user")
+    def test_archived_task_streams_returned_when_requested(
+        self,
+        mock_get_streams: MagicMock,
+        mock_unread_counts: MagicMock,
+        mock_task_stream_objects: MagicMock,
+        mock_subscription_filter: MagicMock,
+    ) -> None:
+        task_stream = MockStream(id=2, name="task-done", realm_id=1, deactivated=True)
+        task_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        mock_get_streams.return_value = [task_stream]
+        mock_unread_counts.return_value = {}
+        mock_task_stream_objects.filter.return_value = [
+            mock_task_extension(2, task_id, "Paint kitchen", archived_at=object())
+        ]
+        mock_subscription_filter.return_value.values.return_value = []
+
+        request = self.factory.get("/api/v1/streams?include_task_streams=true")
+        request.user_profile = self.user
+
+        response = list_streams(request)
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data["streams"], [])
+        self.assertEqual([stream["id"] for stream in data["task_streams"]], [2])
+        self.assertEqual(data["task_streams"][0]["display_name"], "Paint kitchen")
+        self.assertTrue(data["task_streams"][0]["is_archived"])
 
     def test_method_not_allowed_for_post(self) -> None:
         """Test POST requests return 405."""
@@ -659,15 +713,24 @@ class TestRateLimiting(TestCase):
         self.factory = RequestFactory()
         self.user = MockUserProfile()
 
+    @patch("nodl.api.views.streams.Subscription.objects.filter")
+    @patch("nodl.api.views.streams.NodlTaskStreamExtension.objects")
+    @patch("nodl.api.views.streams._get_unread_counts_for_streams")
     @patch("nodl.api.views.streams.StreamsRateLimitedObject.rate_limit_request")
     @patch("nodl.api.views.streams.get_streams_for_user")
     def test_rate_limiting_decorator_applied(
         self,
         mock_get_streams: MagicMock,
         mock_rate_limit: MagicMock,
+        mock_unread_counts: MagicMock,
+        mock_task_stream_objects: MagicMock,
+        mock_subscription_filter: MagicMock,
     ) -> None:
         """Test rate limiting decorator is applied to endpoints."""
         mock_get_streams.return_value = []
+        mock_unread_counts.return_value = {}
+        mock_task_stream_objects.filter.return_value = []
+        mock_subscription_filter.return_value.values.return_value = []
 
         request = self.factory.get("/api/v1/streams")
         request.user_profile = self.user

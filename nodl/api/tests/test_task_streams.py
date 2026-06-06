@@ -39,6 +39,7 @@ class TestTaskStreamSync(TestCase):
             "workspace_id": self.workspace_id,
             "task_id": self.task_id,
             "stream_name": f"task-{self.task_id}",
+            "task_title": "Install cabinets",
             "privacy_tag": "internal",
             "members": [
                 {
@@ -92,6 +93,10 @@ class TestTaskStreamSync(TestCase):
         mock_create_stream.assert_called_once()
         self.assertTrue(mock_create_stream.call_args.kwargs["invite_only"])
         mock_extension_objects.create.assert_called_once()
+        self.assertEqual(
+            mock_extension_objects.create.call_args.kwargs["task_title"],
+            "Install cabinets",
+        )
         mock_subscribe.assert_called_once()
         mock_preferences.assert_called_once_with(stream, [user])
 
@@ -191,6 +196,7 @@ class TestTaskStreamSync(TestCase):
             "workspace_id": self.workspace_id,
             "task_id": self.task_id,
             "zulip_stream_id": 42,
+            "task_title": "Install cabinets",
         }
         request = self.factory.post(
             "/api/v1/internal/task-streams/archive",
@@ -203,4 +209,5 @@ class TestTaskStreamSync(TestCase):
 
         self.assertEqual(response.status_code, 200)
         mock_deactivate.assert_not_called()
-        extension.save.assert_called_once_with(update_fields=["archived_at"])
+        self.assertEqual(extension.task_title, "Install cabinets")
+        extension.save.assert_called_once_with(update_fields=["task_title", "archived_at"])

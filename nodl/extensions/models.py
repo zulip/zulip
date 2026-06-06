@@ -184,6 +184,7 @@ class NodlTaskStreamExtension(models.Model):
     )
     nodl_workspace_id = models.UUIDField()
     nodl_task_id = models.UUIDField(unique=True)
+    task_title = models.CharField(max_length=500, blank=True, default="")
 
     created_at = models.DateTimeField(auto_now_add=True)
     archived_at = models.DateTimeField(blank=True, null=True)

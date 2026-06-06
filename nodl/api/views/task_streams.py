@@ -42,6 +42,7 @@ class TaskStreamSyncPayload(BaseModel):
     workspace_id: str
     task_id: str
     stream_name: str
+    task_title: str | None = None
     privacy_tag: str | None = None
     members: list[TaskStreamMemberPayload] = Field(default_factory=list)
 
@@ -58,6 +59,7 @@ class TaskStreamArchivePayload(BaseModel):
     workspace_id: str
     task_id: str
     zulip_stream_id: int
+    task_title: str | None = None
 
 
 def _parse_payload(request: HttpRequest, payload_type: type[PayloadT]) -> PayloadT | JsonResponse:
@@ -170,6 +172,10 @@ def _get_task_stream(
     )
 
 
+def _clean_task_title(task_title: str | None) -> str:
+    return (task_title or "").strip()[:500]
+
+
 @csrf_exempt  # type: ignore[untyped-decorator]
 @require_service_auth  # type: ignore[untyped-decorator]
 def sync_task_stream(request: HttpRequest) -> HttpResponse:
@@ -195,6 +201,10 @@ def sync_task_stream(request: HttpRequest) -> HttpResponse:
         if existing:
             stream = existing.zulip_stream
             created = False
+            task_title = _clean_task_title(payload.task_title)
+            if task_title and existing.task_title != task_title:
+                existing.task_title = task_title
+                existing.save(update_fields=["task_title"])
         else:
             stream, created = create_stream_if_needed(
                 realm,
@@ -209,6 +219,7 @@ def sync_task_stream(request: HttpRequest) -> HttpResponse:
                 zulip_stream=stream,
                 nodl_workspace_id=uuid.UUID(payload.workspace_id),
                 nodl_task_id=task_uuid,
+                task_title=_clean_task_title(payload.task_title),
             )
 
         users = _resolve_members(realm, payload.members)
@@ -326,9 +337,16 @@ def archive_task_stream(request: HttpRequest) -> HttpResponse:
         stream = extension.zulip_stream
         if not stream.deactivated:
             do_deactivate_stream(stream, acting_user=None)
+        task_title = _clean_task_title(payload.task_title)
+        update_fields = []
+        if task_title and extension.task_title != task_title:
+            extension.task_title = task_title
+            update_fields.append("task_title")
         if extension.archived_at is None:
             extension.archived_at = timezone.now()
-            extension.save(update_fields=["archived_at"])
+            update_fields.append("archived_at")
+        if update_fields:
+            extension.save(update_fields=update_fields)
         return JsonResponse({"result": "success", "archived": True}, status=200)
     except NodlTaskStreamExtension.DoesNotExist:
         return JsonResponse({"result": "success", "archived": True}, status=200)
