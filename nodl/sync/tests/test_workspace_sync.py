@@ -52,6 +52,7 @@ class TestWorkspaceSyncService(TestCase):
         call_kwargs = mock_create_realm.call_args.kwargs
         self.assertEqual(call_kwargs["name"], "Test Workspace")
         self.assertEqual(call_kwargs["description"], "A test workspace")
+        self.assertFalse(call_kwargs["create_zulip_discussion_channel"])
 
         # Verify default stream created
         mock_ensure_stream.assert_called_once()

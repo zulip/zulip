@@ -185,6 +185,7 @@ def do_create_realm(
     prereg_realm: PreregistrationRealm | None = None,
     how_realm_creator_found_zulip: str | None = None,
     how_realm_creator_found_zulip_extra_context: str | None = None,
+    create_zulip_discussion_channel: bool = True,
 ) -> Realm:
     if string_id in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]:
         raise AssertionError(
@@ -318,12 +319,14 @@ def do_create_realm(
 
     # Create channels once Realm object has been saved
     with override_language(realm.default_language):
-        zulip_discussion_channel = ensure_stream(
-            realm,
-            str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-            stream_description=_("Questions and discussion about using Zulip."),
-            acting_user=None,
-        )
+        zulip_discussion_channel = None
+        if create_zulip_discussion_channel:
+            zulip_discussion_channel = ensure_stream(
+                realm,
+                str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+                stream_description=_("Questions and discussion about using Zulip."),
+                acting_user=None,
+            )
         zulip_sandbox_channel = ensure_stream(
             realm,
             str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
@@ -342,12 +345,14 @@ def do_create_realm(
     realm.zulip_update_announcements_stream = new_stream_announcements_stream
 
     # With the current initial streams situation, the public channels are
-    # 'zulip_discussion_channel', 'zulip_sandbox_channel', 'new_stream_announcements_stream'.
+    # 'zulip_discussion_channel' when enabled, 'zulip_sandbox_channel',
+    # and 'new_stream_announcements_stream'.
     public_channels = [
-        DefaultStream(stream=zulip_discussion_channel, realm=realm),
         DefaultStream(stream=zulip_sandbox_channel, realm=realm),
         DefaultStream(stream=new_stream_announcements_stream, realm=realm),
     ]
+    if zulip_discussion_channel is not None:
+        public_channels.insert(0, DefaultStream(stream=zulip_discussion_channel, realm=realm))
     DefaultStream.objects.bulk_create(public_channels)
 
     # New realm is initialized with the latest zulip update announcements

@@ -140,6 +140,7 @@ class WorkspaceSyncService:
             name=request.name,
             description=request.description,
             org_type=Realm.ORG_TYPES["business"]["id"],
+            create_zulip_discussion_channel=False,
         )
 
         logger.info(

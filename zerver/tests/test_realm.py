@@ -52,6 +52,7 @@ from zerver.lib.upload import delete_message_attachments, upload_message_attachm
 from zerver.models import (
     Attachment,
     CustomProfileField,
+    DefaultStream,
     Message,
     NamedUserGroup,
     Realm,
@@ -1764,6 +1765,28 @@ class RealmTest(ZulipTestCase):
                 getattr(realm, setting_name).named_user_group.name,
                 permission_configuration.default_group_name,
             )
+
+    def test_do_create_realm_without_zulip_discussion_channel(self) -> None:
+        realm = do_create_realm(
+            "realm_without_zulip",
+            "realm without Zulip",
+            create_zulip_discussion_channel=False,
+        )
+
+        self.assertFalse(
+            Stream.objects.filter(
+                realm=realm,
+                name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            ).exists()
+        )
+        sandbox = get_stream(str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), realm)
+        general = get_stream(str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), realm)
+
+        self.assertEqual(realm.new_stream_announcements_stream, general)
+        self.assertEqual(
+            set(DefaultStream.objects.filter(realm=realm).values_list("stream_id", flat=True)),
+            {sandbox.id, general.id},
+        )
 
     def test_do_create_realm_with_keyword_arguments(self) -> None:
         date_created = timezone_now() - timedelta(days=100)
