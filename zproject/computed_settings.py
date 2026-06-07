@@ -43,6 +43,7 @@ from .configured_settings import (
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
     IS_DEV_DROPLET,
+    JITSI_SERVER_URL,
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
@@ -1308,3 +1309,7 @@ SCIM_SERVICE_PROVIDER = {
 TOPIC_SUMMARIZATION_API_KEY = get_secret("topic_summarization_api_key", None)
 
 PARTIAL_USERS = bool(os.environ.get("PARTIAL_USERS"))
+
+# The URL of the Jitsi server to use for video calls.  If this is None, video calls are disabled
+if JITSI_SERVER_URL and not JITSI_SERVER_URL.startswith(("http://", "https://")):
+    JITSI_SERVER_URL = f"https://{JITSI_SERVER_URL}"
