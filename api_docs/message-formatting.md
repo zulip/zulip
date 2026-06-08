@@ -350,6 +350,11 @@ equally to both formats.
   spinner. This attribute encodes the dimensions of the original
   image as `{width}x{height}`. These dimensions are for the image as
   rendered, _after_ any EXIF rotation and mirroring has been applied.
+- For link-derived image previews, clients should present the preview
+  against a neutral thumbnail background, with the image inset by a few
+  pixels so that a thin border of the background color frames it. The
+  same background is also visible behind the thumbnail while it loads
+  and around images that are smaller than their preview area.
 - If the client would like to control the thumbnail resolution used,
   it can replace the final section of the URL (`840x560.webp` in the
   example above) with the `name` of its preferred format from the set
