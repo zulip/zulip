@@ -583,7 +583,7 @@ function handleTimestamp(time_string: string): string {
 
     // Use html5 <time> tag for valid timestamps.
     // render time without milliseconds.
-    const escaped_isotime = _.escape(timeobject.toISOString().split(".")[0] + "Z");
+    const escaped_isotime = _.escape(timeobject.toISOString().split(".", 1)[0] + "Z");
     return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
 }
 
