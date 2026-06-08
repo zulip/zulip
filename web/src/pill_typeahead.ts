@@ -96,11 +96,10 @@ export function set_up_stream(
         $element: $input,
         type: "contenteditable",
     };
-    opts.help_on_empty_strings ??= false;
     opts.hide_on_empty_after_backspace ??= false;
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
-        helpOnEmptyStrings: opts.help_on_empty_strings,
+        helpOnEmptyStrings: () => opts.help_on_empty_strings ?? false,
         hideOnEmptyAfterBackspace: opts.hide_on_empty_after_backspace,
         source(_query: string): StreamPillData[] {
             return stream_pill.typeahead_source(pills, opts.invite_streams);
@@ -174,7 +173,7 @@ export function set_up_user_group(
             $input.trigger("focus");
         },
         stopAdvance: true,
-        helpOnEmptyStrings: true,
+        helpOnEmptyStrings: () => true,
         hideOnEmptyAfterBackspace: true,
     });
 }
@@ -263,7 +262,7 @@ export function set_up_group_setting_typeahead(
             $input.trigger("focus");
         },
         stopAdvance: true,
-        helpOnEmptyStrings: true,
+        helpOnEmptyStrings: () => true,
         hideOnEmptyAfterBackspace: true,
     });
 }
@@ -298,7 +297,7 @@ export function set_up_combined(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
-        helpOnEmptyStrings: true,
+        helpOnEmptyStrings: () => true,
         hideOnEmptyAfterBackspace: true,
         source(query: string): TypeaheadItem[] {
             let source: TypeaheadItem[] = [];

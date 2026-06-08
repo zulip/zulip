@@ -243,7 +243,7 @@ export class Typeahead<ItemType extends string | object> {
     // Used to clear tooltip instances attached to typeahead container.
     clear_typeahead_tooltip: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
-    helpOnEmptyStrings: boolean;
+    helpOnEmptyStrings: () => boolean;
     tabIsEnter: boolean;
     stopAdvance: boolean;
     advanceKeys: string[];
@@ -302,7 +302,7 @@ export class Typeahead<ItemType extends string | object> {
         this.advanceKeys = options.advanceKeys ?? [];
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
-        this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
+        this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? (() => false);
         this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
         this.requireHighlight = options.requireHighlight ?? true;
@@ -546,7 +546,7 @@ export class Typeahead<ItemType extends string | object> {
         // The force_lookup parameter allows specific code paths to override
         // the helpOnEmptyStrings configured for the typeahead element.
         if (
-            (!this.helpOnEmptyStrings || hideOnEmpty) &&
+            (!this.helpOnEmptyStrings() || hideOnEmpty) &&
             (!this.query || this.query.length < MIN_LENGTH) &&
             !force_lookup
         ) {
@@ -964,7 +964,7 @@ type TypeaheadOptions<ItemType> = {
     closeInputFieldOnHide?: () => void;
     dropup?: boolean;
     footer_html?: (matching_items: ItemType[]) => string | false;
-    helpOnEmptyStrings?: boolean;
+    helpOnEmptyStrings?: () => boolean;
     hideOnEmptyAfterBackspace?: boolean;
     matcher?: (query: string) => (item: ItemType) => boolean;
     on_escape?: () => void;
