@@ -10,7 +10,7 @@ your use of our website(s), products, services and applications (the
 terms or the Services, please contact us at:
 
 * Email: [support@zulip.com](mailto:support@zulip.com)
-* Address: Kandra Labs Inc., 450 Townsend Street, San Francisco, CA 94107
+* Address: Kandra Labs, Inc., 584 Castro St #3175, San Francisco, CA 94114
 
 These Terms of Service (the “Terms”) are a binding contract between
 you and **KANDRA LABS, INC.** (“Zulip,” “we” and “us”). Your use of
@@ -320,8 +320,8 @@ Please contact Zulip's Designated Agent at the following address:
 
 Kandra Labs, Inc.<br/>
 Attn: DMCA Designated Agent<br/>
-450 Townsend Street<br/>
-San Francisco, CA 94107
+584 Castro St #3175<br/>
+San Francisco, CA 94114
 
 ## Who is responsible for what I see and do on the Services?
 
@@ -691,7 +691,7 @@ enforce these Terms against you as the third-party beneficiary hereof.
 
 * (f) *Opt-out*. You have the right to opt out of the provisions of this
   Arbitration Agreement by sending written notice of your decision to opt out to
-  the following address: 450 Townsend Street, San Francisco, CA 94107 postmarked
+  the following address: 584 Castro St #3175, San Francisco, CA 94114 postmarked
   within thirty (30) days of first accepting these Terms. You must include (i)
   your name and residence address, (ii) the email address and/or telephone
   number associated with your account, and (iii) a clear statement that you want
