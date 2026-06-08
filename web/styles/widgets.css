@@ -280,6 +280,9 @@ input {
 .poll-question-remove,
 .todo-task-list-title-check,
 .todo-task-list-title-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     align-self: stretch;
     /* TODO: Re-express the 30.5px value here
        as part of information density work. */
@@ -298,6 +301,8 @@ input {
 
 .poll-edit-question,
 .todo-edit-task-list-title {
+    position: relative;
+    top: 1px;
     color: var(--color-message-action-visible);
 
     &:hover,
