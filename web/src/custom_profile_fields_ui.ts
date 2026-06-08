@@ -410,7 +410,7 @@ export function initialize_custom_pronouns_type_fields(element_id: string): void
                 type: "input" as const,
             };
             new Typeahead(bootstrap_typeahead_input, {
-                helpOnEmptyStrings: true,
+                helpOnEmptyStrings: () => true,
                 source() {
                     return commonly_used_pronouns;
                 },

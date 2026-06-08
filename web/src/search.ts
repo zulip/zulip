@@ -212,7 +212,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         },
         non_tippy_parent_element: "#searchbox_form",
         items: search_suggestion.max_num_of_search_results,
-        helpOnEmptyStrings: true,
+        helpOnEmptyStrings: () => true,
         stopAdvance: true,
         requireHighlight: false,
         item_html(query: string): (item: string) => string {

@@ -283,6 +283,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(config.helpOnEmptyStrings(), false);
 
         // test queries
         const stream_query = "#denmark";
@@ -376,6 +377,7 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(config.helpOnEmptyStrings(), true);
 
         const group_query = "testers";
 
@@ -476,6 +478,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(config.helpOnEmptyStrings(), true);
 
         // test queries
         const stream_query = "#Denmark";
@@ -786,6 +789,7 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(config.helpOnEmptyStrings(), true);
 
         // test queries
         const person_query = "me";
