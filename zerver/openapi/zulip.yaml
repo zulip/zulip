@@ -8653,7 +8653,7 @@ paths:
       summary: Get messages
       tags: ["messages"]
       description: |
-        This endpoint is the primary way to fetch a messages. It is used by all official
+        This endpoint is the primary way to fetch messages. It is used by all official
         Zulip clients (e.g. the web, desktop, mobile, and terminal clients) as well as
         many bots, API clients, backup scripts, etc.
 
