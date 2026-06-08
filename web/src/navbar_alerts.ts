@@ -114,7 +114,7 @@ export function maybe_toggle_empty_required_profile_fields_banner(): void {
             ...f,
             value: people.my_custom_profile_data(f.id)?.value,
         }))
-        .find((f) => f.required && !f.value);
+        .some((f) => f.required && !f.value);
     if (empty_required_profile_fields_exist) {
         open_navbar_banner_and_resize(PROFILE_MISSING_REQUIRED_FIELDS_BANNER);
     } else if ($banner?.attr("data-process") === "profile-missing-required-fields") {
