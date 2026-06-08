@@ -1576,6 +1576,35 @@ function compose_trigger_selection(event: JQuery.KeyDownEvent): boolean {
     return false;
 }
 
+// Used to hide the auto-opened topic typeahead once the input already
+// names an existing topic and no other topic still matches the query,
+// since there is then nothing left to suggest. We never suppress an
+// empty query (the typeahead should still list the existing topics)
+// nor when there are non-topic suggestions such as people to show.
+export function should_suppress_topic_typeahead(
+    query: string,
+    items: (string | UserPillData)[],
+): boolean {
+    if (!query) {
+        return false;
+    }
+    if (items.some((item) => typeof item !== "string")) {
+        return false;
+    }
+    const topics = items.filter((item): item is string => typeof item === "string");
+    const normalize = (topic: string): string =>
+        util.get_final_topic_display_name(topic).trim().toLowerCase();
+    const normalized_query = normalize(query);
+    if (!topics.some((topic) => normalize(topic) === normalized_query)) {
+        return false;
+    }
+    // Suppress only if every topic is either the one the user already
+    // typed, or wouldn't be displayed for this query anyway; otherwise
+    // the user may be typing toward another suggestion.
+    const matcher = get_topic_matcher(query);
+    return topics.every((topic) => normalize(topic) === normalized_query || !matcher(topic));
+}
+
 export function initialize_topic_edit_typeahead(
     form_field: JQuery<HTMLInputElement>,
     stream_name: string,
@@ -1588,6 +1617,8 @@ export function initialize_topic_edit_typeahead(
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
+        helpOnEmptyStrings: () => !stream_data.is_topic_creation_enabled(stream_id),
+        showOnFocus: () => !stream_data.is_topic_creation_enabled(stream_id),
         item_html(_query: string): (item: string) => string {
             return function (item: string): string {
                 const is_empty_string_topic = item === "";
@@ -1615,8 +1646,12 @@ export function initialize_topic_edit_typeahead(
             }
             return sorted;
         },
-        source(): string[] {
-            return topics_seen_for(stream_id);
+        source(query: string): string[] {
+            const topics = topics_seen_for(stream_id);
+            if (should_suppress_topic_typeahead(query, topics)) {
+                return [];
+            }
+            return topics;
         },
         items: max_num_items,
         getCustomItemClassname() {
@@ -1764,13 +1799,19 @@ export function initialize({
     };
     stream_message_topic_typeahead = new Typeahead(stream_message_typeahead_input, {
         dropup: true,
+        helpOnEmptyStrings: () => !stream_data.is_topic_creation_enabled(compose_state.stream_id()),
+        showOnFocus: () => !stream_data.is_topic_creation_enabled(compose_state.stream_id()),
         source(query: string): (UserPillData | string)[] {
             let people_candidates: UserPillData[] = [];
             if (query && query.length > 3) {
                 people_candidates = get_person_suggestion_for_topic_typeahead(query);
             }
             const topics = topics_seen_for(compose_state.stream_id());
-            return [...people_candidates, ...topics];
+            const candidates = [...people_candidates, ...topics];
+            if (should_suppress_topic_typeahead(query, candidates)) {
+                return [];
+            }
+            return candidates;
         },
         items: max_num_items,
         item_html(_query: string): (item: string | UserPillData) => string {

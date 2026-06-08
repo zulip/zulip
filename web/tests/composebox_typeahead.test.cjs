@@ -842,6 +842,99 @@ test("topics_seen_for", ({override}) => {
     assert.deepEqual(ct.topics_seen_for(""), []);
 });
 
+test("should_suppress_topic_typeahead", () => {
+    // An empty query is never suppressed, even when the empty topic (which
+    // renders as a non-empty display name) is among the items.
+    assert.ok(!ct.should_suppress_topic_typeahead("", ["", "design"]));
+
+    // An exact match against an existing topic suppresses the typeahead,
+    // normalizing case and surrounding whitespace.
+    assert.ok(ct.should_suppress_topic_typeahead("design", ["design", "other"]));
+    assert.ok(ct.should_suppress_topic_typeahead("  DESIGN ", ["Design"]));
+
+    // An exact match is not suppressed while another topic still matches
+    // the query, since the user may be typing toward it.
+    assert.ok(!ct.should_suppress_topic_typeahead("design", ["design", "designs"]));
+    assert.ok(!ct.should_suppress_topic_typeahead("design", ["design", "my design doc"]));
+
+    // Another topic keeps the typeahead open only if the typeahead would
+    // actually display it: a multi-word query must match other topics at
+    // a word boundary, not as a mid-word substring ("design office"
+    // contains "sign off" but is not a suggestion for it).
+    assert.ok(!ct.should_suppress_topic_typeahead("sign off", ["sign off", "sign offsite"]));
+    assert.ok(ct.should_suppress_topic_typeahead("sign off", ["sign off", "design office"]));
+
+    // A query that names no existing topic is not suppressed.
+    assert.ok(!ct.should_suppress_topic_typeahead("new topic", ["design"]));
+
+    // People suggestions keep the typeahead open even on an exact match.
+    assert.ok(!ct.should_suppress_topic_typeahead("design", ["design", cordelia_item]));
+});
+
+test("topic typeahead auto-opens when topic creation is disabled", ({
+    override,
+    override_rewire,
+}) => {
+    let topic_edit_config;
+    override(bootstrap_typeahead, "Typeahead", (_input_element, config) => {
+        topic_edit_config = config;
+    });
+
+    let topic_creation_allowed = true;
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => topic_creation_allowed);
+
+    ct.initialize_topic_edit_typeahead($.create("fake-topic-edit-input"), "Denmark", false);
+
+    // The same typeahead instance reflects the channel's live permission,
+    // so it auto-opens on focus (showOnFocus) and shows for an empty query
+    // (helpOnEmptyStrings) exactly when topic creation is disabled.
+    topic_creation_allowed = false;
+    assert.ok(topic_edit_config.showOnFocus());
+    assert.ok(topic_edit_config.helpOnEmptyStrings());
+
+    topic_creation_allowed = true;
+    assert.ok(!topic_edit_config.showOnFocus());
+    assert.ok(!topic_edit_config.helpOnEmptyStrings());
+
+    // With no channel resolved, topic creation is treated as allowed, so
+    // the typeahead does not auto-open.
+    ct.initialize_topic_edit_typeahead($.create("fake-missing-stream-input"), "Nonexistent", false);
+    topic_creation_allowed = false;
+    assert.ok(!topic_edit_config.showOnFocus());
+    assert.ok(!topic_edit_config.helpOnEmptyStrings());
+});
+
+test("topic typeahead source suppresses an exact-match topic", ({override}) => {
+    let topic_edit_config;
+    override(bootstrap_typeahead, "Typeahead", (_input_element, config) => {
+        topic_edit_config = config;
+    });
+    override(stream_topic_history_util, "get_server_history", noop);
+    // Higher message_ids are more recent, so "design" sorts before
+    // "design docs" in the source's output.
+    for (const [message_id, topic_name] of [
+        [2, "design"],
+        [1, "design docs"],
+    ]) {
+        stream_topic_history.add_message({
+            stream_id: netherland_stream.stream_id,
+            message_id,
+            topic_name,
+        });
+    }
+
+    ct.initialize_topic_edit_typeahead($.create("fake-source-input"), "The Netherlands", false);
+
+    // "design docs" still has "design" as a substring, so an exact match on
+    // "design" keeps the existing topics listed.
+    assert.deepEqual(topic_edit_config.source("design"), ["design", "design docs"]);
+    // Matching the longest topic exactly leaves nothing to suggest, so the
+    // source returns no items and the typeahead stays hidden.
+    assert.deepEqual(topic_edit_config.source("design docs"), []);
+    // A query that names no existing topic lists the topics as usual.
+    assert.deepEqual(topic_edit_config.source("new"), ["design", "design docs"]);
+});
+
 test("content_typeahead_selected", ({override}) => {
     const input_element = {
         $element: {},

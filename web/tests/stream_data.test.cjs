@@ -1561,6 +1561,16 @@ test("can_create_topics_in_stream", ({override}) => {
     page_params.is_spectator = false;
     sub.is_archived = true;
     assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), false);
+
+    // is_topic_creation_enabled tracks can_create_new_topics_in_stream,
+    // and treats "no channel selected" (undefined) as enabled.
+    sub.is_archived = false;
+    sub.can_create_topic_group = admins_group.id;
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.is_topic_creation_enabled(sub.stream_id), true);
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.is_topic_creation_enabled(sub.stream_id), false);
+    assert.equal(stream_data.is_topic_creation_enabled(undefined), true);
 });
 
 test("can_move_messages_out_of_channel", ({override}) => {
