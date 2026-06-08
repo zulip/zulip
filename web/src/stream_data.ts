@@ -962,6 +962,15 @@ export function rewire_can_create_new_topics_in_stream(
     can_create_new_topics_in_stream = value;
 }
 
+// Returns true when no channel is selected, so callers can pass the
+// compose state's channel id directly.
+export function is_topic_creation_enabled(stream_id: number | undefined): boolean {
+    if (stream_id === undefined) {
+        return true;
+    }
+    return can_create_new_topics_in_stream(stream_id);
+}
+
 export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {
     if (page_params.is_spectator) {
         return false;
