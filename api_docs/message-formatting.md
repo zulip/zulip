@@ -351,6 +351,11 @@ equally to both formats.
   spinner. This attribute encodes the dimensions of the original
   image as `{width}x{height}`. These dimensions are for the image as
   rendered, _after_ any EXIF rotation and mirroring has been applied.
+- When there's a run of consecutive images (Markdown images or
+  link-derived previews) not interspersed with text, clients may group
+  them together to show them side-by-side in a "gallery" block to make
+  good use of horizontal space, even if the images have line breaks
+  in between.
 - If the client would like to control the thumbnail resolution used,
   it can replace the final section of the URL (`840x560.webp` in the
   example above) with the `name` of its preferred format from the set
