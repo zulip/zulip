@@ -36,18 +36,18 @@ export function initialize(): void {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.personal_menu = instance;
 
-            $popper.on("change", "input[name='theme-select']", (e) => {
-                const new_theme_code = $(e.currentTarget).attr("data-theme-code");
+            $popper.on("change", "input[name='theme-select']", function () {
+                const new_theme_code = $(this).attr("data-theme-code");
                 channel.patch({
                     url: "/json/settings",
                     data: {color_scheme: new_theme_code},
-                    error() {
+                    error: () => {
                         // NOTE: The additional delay allows us to visually communicate
                         // that an error occurred due to which we are reverting back
                         // to the previously used value.
                         setTimeout(() => {
                             const prev_theme_code = user_settings.color_scheme;
-                            $(e.currentTarget)
+                            $(this)
                                 .parent()
                                 .find(`input[data-theme-code="${prev_theme_code}"]`)
                                 .prop("checked", true);
