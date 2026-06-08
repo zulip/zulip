@@ -39,6 +39,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_deactivate_realm,
     do_delete_all_realm_attachments,
+    do_delete_realm,
     do_reactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
@@ -69,6 +70,7 @@ from zerver.lib.upload import upload_avatar_image, upload_message_attachment
 from zerver.models import (
     Attachment,
     CustomProfileField,
+    DirectMessageGroup,
     ImageAttachment,
     Message,
     NamedUserGroup,
@@ -76,8 +78,10 @@ from zerver.models import (
     RealmAuditLog,
     RealmReactivationStatus,
     RealmUserDefault,
+    Recipient,
     ScheduledEmail,
     Stream,
+    Subscription,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -85,6 +89,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import ScheduledMessage
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
@@ -3707,3 +3712,73 @@ class ScrubRealmTest(ZulipTestCase):
             self.assertNotRegex(
                 user.delivery_email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$"
             )
+
+
+class DeleteRealmTest(ZulipTestCase):
+    def test_do_delete_realm_cleans_up_orphan_recipients(self) -> None:
+        zulip = get_realm("zulip")
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        cordelia = self.lear_user("cordelia")
+        king = self.lear_user("king")
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+
+        # Orphan: realm user + system bot.
+        bot_dmg = get_or_create_direct_message_group([hamlet.id, welcome_bot.id])
+        # Orphan: realm users only.
+        zulip_only_dmg = get_or_create_direct_message_group([hamlet.id, iago.id])
+        # Preserved: in a different realm.
+        lear_only_dmg = get_or_create_direct_message_group([cordelia.id, king.id])
+        # Preserved: different realm's user + system bot.
+        lear_bot_dmg = get_or_create_direct_message_group([cordelia.id, welcome_bot.id])
+        assert bot_dmg.recipient_id is not None
+        assert zulip_only_dmg.recipient_id is not None
+        assert lear_bot_dmg.recipient_id is not None
+
+        zulip_stream_recipient_ids = set(
+            Stream.objects.filter(realm=zulip)
+            .exclude(recipient__isnull=True)
+            .values_list("recipient_id", flat=True)
+        )
+        lear_stream_recipient_ids = set(
+            Stream.objects.filter(realm=get_realm("lear"))
+            .exclude(recipient__isnull=True)
+            .values_list("recipient_id", flat=True)
+        )
+        self.assertNotEqual(zulip_stream_recipient_ids, set())
+        self.assertNotEqual(lear_stream_recipient_ids, set())
+
+        do_delete_realm(zulip)
+
+        self.assertFalse(Realm.objects.filter(id=zulip.id).exists())
+
+        self.assertFalse(DirectMessageGroup.objects.filter(id=bot_dmg.id).exists())
+        self.assertFalse(Recipient.objects.filter(id=bot_dmg.recipient_id).exists())
+        self.assertFalse(
+            Subscription.objects.filter(
+                user_profile=welcome_bot, recipient_id=bot_dmg.recipient_id
+            ).exists()
+        )
+        self.assertFalse(DirectMessageGroup.objects.filter(id=zulip_only_dmg.id).exists())
+        self.assertFalse(Recipient.objects.filter(id=zulip_only_dmg.recipient_id).exists())
+
+        self.assertTrue(DirectMessageGroup.objects.filter(id=lear_only_dmg.id).exists())
+        self.assertTrue(DirectMessageGroup.objects.filter(id=lear_bot_dmg.id).exists())
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=welcome_bot, recipient_id=lear_bot_dmg.recipient_id
+            ).exists()
+        )
+
+        self.assertFalse(Recipient.objects.filter(id__in=zulip_stream_recipient_ids).exists())
+        self.assertEqual(
+            set(
+                Recipient.objects.filter(id__in=lear_stream_recipient_ids).values_list(
+                    "id", flat=True
+                )
+            ),
+            lear_stream_recipient_ids,
+        )
+
+        self.assertTrue(UserProfile.objects.filter(id=welcome_bot.id).exists())

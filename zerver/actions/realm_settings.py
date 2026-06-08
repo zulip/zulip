@@ -37,6 +37,7 @@ from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
+    DirectMessageGroup,
     ImageAttachment,
     Message,
     NamedUserGroup,
@@ -747,6 +748,57 @@ def do_delete_all_realm_attachments(realm: Realm) -> None:
             for path_id in to_delete.iterator():
                 delete_one(path_id)
             obj_class._default_manager.filter(realm_id=realm.id).delete()
+
+
+@transaction.atomic(durable=True)
+def do_delete_realm(realm: Realm) -> None:
+    """Permanently delete a Realm.
+
+    Prefer do_deactivate_realm + do_scrub_realm for production use;
+    they preserve UserProfile rows.
+    """
+    realm = Realm.objects.select_for_update(no_key=False).get(id=realm.id)
+    do_delete_all_realm_attachments(realm)
+
+    # realm.delete() leaves DirectMessageGroup and Recipient rows
+    # behind (no FK back to Realm), and for DMGs with cross-realm
+    # bot subs the bot Subscription survives too.  Human-to-human
+    # cross-realm DMs aren't currently possible, so every DMG our
+    # users were in becomes orphan on realm.delete(): any survivor
+    # must be a system bot.  Snapshot the Recipients now, while
+    # the Subscription join still exists.
+    #
+    # TODO: if cross-realm human DMs become possible, this has to
+    # filter out DMGs that still have a non-bot subscriber from
+    # another realm.
+    orphan_dmg_recipient_ids = set(
+        Subscription.objects.filter(
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            user_profile__realm_id=realm.id,
+        )
+        .distinct("recipient_id")
+        .values_list("recipient_id", flat=True)
+    )
+    orphan_huddle_ids = set(
+        Recipient.objects.filter(id__in=orphan_dmg_recipient_ids).values_list("type_id", flat=True)
+    )
+
+    # Stream Recipients have no FK back to Stream either, so the
+    # realm's Stream cascade strands them in the same way.  Capture
+    # them alongside the DMG Recipients.
+    orphan_stream_recipient_ids = set(
+        Stream.objects.filter(realm=realm)
+        .exclude(recipient__isnull=True)
+        .values_list("recipient_id", flat=True)
+    )
+
+    realm.delete()
+
+    # Recipient.delete() cascades Subscription and Message;
+    # DirectMessageGroup.recipient is SET_NULL, so the DMG row
+    # needs an explicit delete.
+    Recipient.objects.filter(id__in=orphan_dmg_recipient_ids | orphan_stream_recipient_ids).delete()
+    DirectMessageGroup.objects.filter(id__in=orphan_huddle_ids).delete()
 
 
 @transaction.atomic(durable=True)
