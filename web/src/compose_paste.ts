@@ -440,7 +440,7 @@ export function paste_handler_converter(
                         continue;
                     }
                     if (consecutive_empty_display_count === 0) {
-                        math_block_markdown += "\n\n\n";
+                        math_block_markdown += "\n".repeat(3);
                     } else {
                         math_block_markdown += "\n\n";
                     }

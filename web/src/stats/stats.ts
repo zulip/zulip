@@ -762,7 +762,7 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
                 annotations.values.push(plot_data.values[i]!);
                 annotations.labels.push(plot_data.labels[i]!);
                 annotations.text.push(
-                    "   " + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")",
+                    " ".repeat(3) + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")",
                 );
             }
         }
