@@ -179,7 +179,7 @@ export function by_conversation_and_time_url(message: Message): string {
         "//" +
         window.location.host +
         "/" +
-        window.location.pathname.split("/")[1];
+        window.location.pathname.split("/", 2)[1];
 
     const suffix = "/near/" + internal_url.encodeHashComponent(message.id.toString());
 
