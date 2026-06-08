@@ -29790,6 +29790,9 @@ components:
           description: |
             URL for the user's avatar.
 
+            If the client has the `user_avatar_url_field_optional` capability,
+            this will be missing at the server's sole discretion.
+
             Will be `null` if the `client_gravatar`
             query parameter was set to `true`, the current user has access to
             this user's real email address, and this user's avatar is hosted by
@@ -29799,9 +29802,8 @@ components:
             user's real email address was a realm-level setting. As of this
             feature level, `email_address_visibility` is a user setting.
 
-            In Zulip 3.0 (feature level 18), if the client has the
-            `user_avatar_url_field_optional` capability, this will be missing at
-            the server's sole discretion.
+            Before Zulip 3.0 (feature level 18), this field was always present;
+            the client capability `user_avatar_url_field_optional` did not exist.
         avatar_version:
           type: integer
           description: |
