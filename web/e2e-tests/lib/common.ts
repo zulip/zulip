@@ -118,7 +118,7 @@ export async function page_url_with_fragment(page: Page): Promise<string> {
 // replace it with the text.
 export async function clear_and_type(page: Page, selector: string, text: string): Promise<void> {
     // Select all text currently in the element.
-    await page.click(selector, {clickCount: 3});
+    await page.click(selector, {count: 3});
     await page.keyboard.press("Delete");
     await page.type(selector, text);
 }
