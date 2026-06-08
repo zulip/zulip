@@ -331,10 +331,12 @@ Transcoded images presented in Markdown image syntax are structured like this:
   src="/user_uploads/thumbnail/path/to/example.heic/840x560.webp">
 ```
 
-### Recommended client processing of image previews
+### Recommended client processing of inline images and image previews
 
-Clients are recommended to do the following when processing image
-previews:
+Clients are recommended to do the following when processing images,
+whether they appear as link-derived image previews or as images
+written with Markdown image syntax. Except where noted, these apply
+equally to both formats.
 
 - Images should be sized from their aspect ratio: choose a maximum
   height and derive the width from the aspect ratio (for very wide
@@ -356,8 +358,10 @@ previews:
   response. Clients should not make any assumptions about what format
   the server will use as the "default" thumbnail resolution, as it may
   change over time.
-- Download button type elements should provide the original image
-  (encoded via the `href` of the containing `a` tag).
+- Download button type elements should provide the original image. For
+  link-derived previews, this is the `href` of the containing `a` tag;
+  for images written with Markdown image syntax, it is the
+  `data-original-src` attribute.
 - The content-type of the original image is provided on a
   `data-original-content-type` attribute, so clients can decide if
   they are capable of rendering the original image.
