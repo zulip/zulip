@@ -1676,11 +1676,6 @@ textarea.new_message_textarea {
         }
     }
 
-    .fa-eye {
-        position: relative;
-        top: -0.7px;
-    }
-
     .divider {
         margin: 0 5px;
         /* Coordinate with the value of
