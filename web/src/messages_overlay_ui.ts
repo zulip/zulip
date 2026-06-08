@@ -57,8 +57,8 @@ export function focus_on_sibling_element(context: Context): void {
 
     const $new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
     if ($new_focus_element[0] !== undefined) {
-        assert($new_focus_element[0].children[0] instanceof HTMLElement);
-        activate_element($new_focus_element[0].children[0], context);
+        assert($new_focus_element[0].firstElementChild instanceof HTMLElement);
+        activate_element($new_focus_element[0].firstElementChild, context);
         scroll_util.scroll_element_into_container(
             $new_focus_element,
             $(`.${CSS.escape(context.items_list_selector)}`),
@@ -105,7 +105,7 @@ export function modals_handle_events(event_key: string, context: Context): void 
 export function set_initial_element(element_id: string | undefined, context: Context): void {
     if (element_id) {
         const current_element = util.the(get_element_by_id(element_id, context));
-        const focus_element = current_element.children[0];
+        const focus_element = current_element.firstElementChild;
         assert(focus_element instanceof HTMLElement);
         activate_element(focus_element, context);
         scroll_util.scroll_element_into_container(
@@ -177,7 +177,7 @@ function initialize_focus(event_name: string, context: Context): void {
     }
 
     const $element = get_element_by_id(id, context);
-    const focus_element = util.the($element).children[0];
+    const focus_element = util.the($element).firstElementChild;
     assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
     const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
@@ -238,11 +238,11 @@ function scroll_to_element($element: JQuery, context: Context): void {
     if ($element[0] === undefined) {
         return;
     }
-    if ($element[0].children[0] === undefined) {
+    if ($element[0].firstElementChild === undefined) {
         return;
     }
-    assert($element[0].children[0] instanceof HTMLElement);
-    activate_element($element[0].children[0], context);
+    assert($element[0].firstElementChild instanceof HTMLElement);
+    activate_element($element[0].firstElementChild, context);
 
     const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
     scroll_util.scroll_element_into_container($element, $items_list);
