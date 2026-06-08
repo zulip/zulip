@@ -2,6 +2,7 @@
 import hashlib
 import logging
 import os
+import pickle
 import re
 import secrets
 import sys
@@ -16,10 +17,15 @@ from bmemcached.exceptions import MemcachedException
 from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
+from django.db import connection
 from django.db.models import Q, QuerySet
-from typing_extensions import ParamSpec
+from psycopg2 import sql
+from typing_extensions import ParamSpec, override
 
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments
+from zerver.lib.cache_invalidation_buffer import PendingOp, get_buffer
+from zerver.lib.partial import partial
+from zerver.lib.snapshot_isolation import in_repeatable_read_transaction
 
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
@@ -27,6 +33,8 @@ if TYPE_CHECKING:
     from zerver.models import Attachment, Message, MutedUser, Realm, Stream, SubMessage, UserProfile
 
 MEMCACHED_MAX_KEY_LENGTH = 250
+# Printable ASCII (! through ~).
+_VALID_CACHE_KEY_RE = re.compile(r"[!-~]+")
 
 ParamT = ParamSpec("ParamT")
 ReturnT = TypeVar("ReturnT")
@@ -37,6 +45,16 @@ remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
 remote_cache_total_requests = 0
 
+# Counters for the read-through mark-then-fill path in read_through_cache().
+# These are in-process only; they match the existing
+# remote_cache_total_requests convention rather than introducing a separate
+# statsd pipeline.
+_cache_fill_hit = 0
+_cache_fill_won = 0
+_cache_fill_race_detected = 0
+_cache_fill_claim_lost = 0
+_cache_fill_saw_sentinel = 0
+
 
 def get_remote_cache_time() -> float:
     return remote_cache_total_time
@@ -44,6 +62,24 @@ def get_remote_cache_time() -> float:
 
 def get_remote_cache_requests() -> int:
     return remote_cache_total_requests
+
+
+def get_cache_fill_counts() -> dict[str, int]:
+    """Counters for read_through_cache outcomes.
+
+    race_detected counts misses where the reader's cas() failed (or the
+    sentinel disappeared between add and gets) -- i.e., a writer's
+    delete() landed during the fill.  A nonzero value here is the
+    point: it's a race that would previously have written a stale value
+    into the cache and is now being correctly rejected.
+    """
+    return {
+        "hit": _cache_fill_hit,
+        "won": _cache_fill_won,
+        "race_detected": _cache_fill_race_detected,
+        "claim_lost": _cache_fill_claim_lost,
+        "saw_sentinel": _cache_fill_saw_sentinel,
+    }
 
 
 def remote_cache_stats_start() -> None:
@@ -154,51 +190,137 @@ def get_cache_backend(cache_name: str | None) -> BaseCache:
     return caches[cache_name]
 
 
+def _no_queryset_returns(
+    func: Callable[ParamT, ReturnT],
+) -> Callable[ParamT, ReturnT]:
+    """Dev/test guard: assert a @cache_with_key-decorated function never
+    returns a QuerySet.  Production skips the check.
+    """
+
+    @wraps(func)
+    def wrapped(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
+        val = func(*args, **kwargs)
+        if isinstance(val, QuerySet):
+            raise AssertionError(
+                f"@cache_with_key {func.__qualname__} returned a QuerySet; "
+                f"materialize (e.g. list(qs)) before returning."
+            )
+        return val
+
+    return wrapped
+
+
+def _row_matching_filter_is_stale(model: type[Any], **filter_kwargs: Any) -> bool:
+    """True if any row in `model` matching `filter_kwargs` has been
+    updated since our snapshot started.  Same xmax / pg_xact_status
+    check as _detect_stale_pks, expressed via the ORM for callers
+    whose lookup key isn't the primary key (e.g., get_user looks up
+    by email + realm).
+    """
+    return (
+        model.objects.filter(**filter_kwargs)
+        .extra(where=["xmax != '0'::xid AND pg_xact_status(xmax::text::xid8) = 'committed'"])
+        .exists()
+    )
+
+
 def cache_with_key(
     keyfunc: Callable[ParamT, str],
     cache_name: str | None = None,
     timeout: int | None = None,
     pickled_tupled: bool = True,
+    model: type[Any] | None = None,
+    staleness_filter: Callable[ParamT, dict[str, Any]] | None = None,
+    aggregation: bool = False,
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
     Decorator argument is a function which computes a cache key
     from the original function's arguments.  You are responsible
     for avoiding collisions with other uses of this decorator or
-    other uses of caching."""
+    other uses of caching.
+
+    Inside repeatable_read_atomic the fetcher is opaque to this
+    wrapper, so it raises SnapshotIsolationError unless one of two
+    opt-ins declares how to keep the cache correct under snapshot
+    isolation (see zerver.lib.snapshot_isolation for the why):
+
+      * model + staleness_filter for per-row caches: after the
+        fetcher runs, an xmax / pg_xact_status check on the row
+        selected by `model.objects.filter(**staleness_filter(*args,
+        **kwargs))` decides whether to skip the cache write.  The
+        sentinel from cache_add expires on its short TTL.
+
+      * aggregation=True for SELECT-many caches: the per-row check
+        can't apply (an INSERT absent from our snapshot wouldn't be
+        in our result for xmax to vote on), so on a miss we run the
+        fetcher and return the value without writing the cache or
+        claiming a sentinel; non-RR callers fill the slot.
+    """
+    if model is not None or staleness_filter is not None:
+        assert model is not None and staleness_filter is not None, (
+            "cache_with_key: model and staleness_filter must be set together"
+        )
+        assert not aggregation, (
+            "cache_with_key: aggregation=True is mutually exclusive with model + staleness_filter"
+        )
+    snapshot_safe = model is not None or aggregation
 
     def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
+        if settings.TEST_SUITE or settings.DEBUG:
+            checked = _no_queryset_returns(func)
+        else:
+            checked = func
+
         @wraps(func)
         def func_with_caching(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
+            in_rr = in_repeatable_read_transaction()
+            if in_rr and not snapshot_safe:
+                # Lazy import to avoid a circular dependency at module
+                # load time -- cache.py is imported very early.
+                from zerver.lib.snapshot_isolation import SnapshotIsolationError
+
+                raise SnapshotIsolationError(
+                    f"@cache_with_key {func.__qualname__} reached from a "
+                    "REPEATABLE READ transaction without a snapshot-safe "
+                    "shape.  Pass model + staleness_filter for a per-row "
+                    "xmax check, or aggregation=True for SELECT-many "
+                    "caches that read-through-only inside RR."
+                )
+
             key = keyfunc(*args, **kwargs)
 
             try:
-                val = cache_get(key, cache_name=cache_name)
+                validate_cache_key(KEY_PREFIX + key)
             except InvalidCacheKeyError:
                 stack_trace = traceback.format_exc()
                 log_invalid_cache_keys(stack_trace, [key])
-                return func(*args, **kwargs)
+                return checked(*args, **kwargs)
 
-            # Values are singleton tuples so that we can distinguish a
-            # result of None from a missing key.  Setting
-            # pickled_tupled=False avoids pickling the result (if it's
-            # a raw string or bytes) at the cost of losing this
-            # distinction.
-            if val is not None and pickled_tupled:
-                return val[0]
+            if in_rr and aggregation:
+                # Read-through but never fill: a hit is fine (someone
+                # outside our snapshot put it there), a miss runs the
+                # fetcher and returns without writing, leaving the cache
+                # for a non-RR caller to fill correctly.
+                val = cache_get(key, cache_name=cache_name)
+                if val is not None:
+                    return val[0] if pickled_tupled else val
+                return checked(*args, **kwargs)
 
-            val = func(*args, **kwargs)
-            if isinstance(val, QuerySet):
-                logging.error(
-                    "cache_with_key attempted to store a full QuerySet object -- declining to cache",
-                    stack_info=True,
-                )
-            else:
-                cache_set(
-                    key, val, cache_name=cache_name, timeout=timeout, pickled_tupled=pickled_tupled
-                )
+            staleness_check_fn: Callable[[], bool] | None = None
+            if in_rr and model is not None:
+                assert staleness_filter is not None
+                filter_kwargs = staleness_filter(*args, **kwargs)
+                staleness_check_fn = partial(_row_matching_filter_is_stale, model, **filter_kwargs)
 
-            return val
+            return read_through_cache(
+                key,
+                lambda: checked(*args, **kwargs),
+                cache_name=cache_name,
+                timeout=timeout,
+                pickled_tupled=pickled_tupled,
+                staleness_check_fn=staleness_check_fn,
+            )
 
         return func_with_caching
 
@@ -229,7 +351,7 @@ def validate_cache_key(key: str, auto_prepend_prefix: bool = True) -> None:
     # the resulting keys fit the regex below.
     # The regex checks "all characters between ! and ~ in the ascii table",
     # which happens to be the set of all "nice" ascii characters.
-    if not bool(re.fullmatch(r"([!-~])+", key)):
+    if _VALID_CACHE_KEY_RE.fullmatch(key) is None:
         raise InvalidCacheKeyError("Invalid characters in the cache key: " + key)
     if len(key) > MEMCACHED_MAX_KEY_LENGTH:
         raise InvalidCacheKeyError(f"Cache key too long: {key} Length: {len(key)}")
@@ -244,11 +366,18 @@ def cache_set(
 ) -> None:
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
+    if pickled_tupled:
+        val = (val,)
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # Defer to commit-time so that a rollback leaves memcached
+        # untouched.  The buffered value is also returned to subsequent
+        # reads in the same transaction (read-your-writes).
+        buffer.record_set(key, val, timeout)
+        return
 
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
-    if pickled_tupled:
-        val = (val,)
     try:
         cache_backend.set(final_key, val, timeout=timeout)
     except MemcachedException as e:
@@ -257,6 +386,12 @@ def cache_set(
 
 
 def cache_get(key: str, cache_name: str | None = None) -> Any:
+    op = get_buffer().lookup(key)
+    if op is not None:
+        kind, val, _, _ = op
+        if kind == "delete" or isinstance(val, _CacheFillSentinel):
+            return None
+        return val
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
 
@@ -264,17 +399,39 @@ def cache_get(key: str, cache_name: str | None = None) -> Any:
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.get(final_key)
     remote_cache_stats_finish()
+    if isinstance(ret, _CacheFillSentinel):
+        # A read_through_cache fill is in progress (or recently aborted);
+        # the sentinel is an internal marker, not a value to return.
+        return None
     return ret
 
 
 def cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
-    keys = [KEY_PREFIX + key for key in keys]
+    buffer = get_buffer()
+    result: dict[str, Any] = {}
+    remaining: list[str] = []
     for key in keys:
-        validate_cache_key(key)
-    remote_cache_stats_start()
-    ret = get_cache_backend(cache_name).get_many(keys)
-    remote_cache_stats_finish()
-    return {key.removeprefix(KEY_PREFIX): value for key, value in ret.items()}
+        op = buffer.lookup(key)
+        if op is None:
+            remaining.append(key)
+            continue
+        kind, val, _, _ = op
+        if kind == "set" and not isinstance(val, _CacheFillSentinel):
+            result[key] = val
+        # 'delete' or sentinel: treated as a miss; don't fall through to
+        # memcached, since the buffered op overrides what memcached holds.
+    if remaining:
+        final_keys = [KEY_PREFIX + key for key in remaining]
+        for fk in final_keys:
+            validate_cache_key(fk)
+        remote_cache_stats_start()
+        raw = get_cache_backend(cache_name).get_many(final_keys)
+        remote_cache_stats_finish()
+        for fk, val in raw.items():
+            if isinstance(val, _CacheFillSentinel):
+                continue
+            result[fk.removeprefix(KEY_PREFIX)] = val
+    return result
 
 
 def safe_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
@@ -295,24 +452,32 @@ def safe_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[
 
 
 def cache_set_many(
-    items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
+    items: dict[str, Any],
+    cache_name: str | None = None,
+    timeout: int | None = None,
 ) -> None:
     new_items = {}
     for key, item in items.items():
         new_key = KEY_PREFIX + key
         validate_cache_key(new_key)
         new_items[new_key] = item
-    items = new_items
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        for key, val in items.items():
+            buffer.record_set(key, val, timeout)
+        return
     remote_cache_stats_start()
     try:
-        get_cache_backend(cache_name).set_many(items, timeout=timeout)
+        get_cache_backend(cache_name).set_many(new_items, timeout=timeout)
     except MemcachedException as e:
         logger.exception(e)
     remote_cache_stats_finish()
 
 
 def safe_cache_set_many(
-    items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
+    items: dict[str, Any],
+    cache_name: str | None = None,
+    timeout: int | None = None,
 ) -> None:
     """Variant of cache_set_many that drops saving any keys that fail
     validation, rather than throwing an exception visible to the
@@ -337,6 +502,20 @@ def cache_delete(key: str, cache_name: str | None = None) -> None:
 
 
 def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> None:
+    items_list = list(items)
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # Defer the memcached delete to commit-time so that a rollback
+        # leaves memcached untouched.  Within this transaction, reads of
+        # the buffered key are forced to miss (see cache_get / cache_gets).
+        for key in items_list:
+            validate_cache_key(KEY_PREFIX + key)
+            buffer.record_delete(key)
+        return
+    _do_cache_delete_many(items_list, cache_name)
+
+
+def _do_cache_delete_many(items: list[str], cache_name: str | None) -> None:
     remote_cache_stats_start()
     keys = iter(e[0] + e[1] for e in product(get_all_cache_key_prefixes(), items))
     while True:
@@ -347,6 +526,458 @@ def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> No
             validate_cache_key(key, auto_prepend_prefix=False)
         get_cache_backend(cache_name).delete_many(batch)
     remote_cache_stats_finish()
+
+
+def _flush_buffered_ops(ops: dict[str, PendingOp]) -> None:
+    """Apply a committed-frame's merged ops to memcached.
+
+    Called by the cache_invalidation_buffer module's Atomic exit hook
+    when the outermost atomic block commits.  Sets and deletes go
+    out as pipelined batches; sets are split into:
+
+      * write-through (mc_cas_id == 0) -- flushed via unconditional
+        set_many, grouped by timeout.
+      * fills (mc_cas_id != 0) -- flushed via cas-conditional
+        cas_multi keyed on the captured memcached cas_id, grouped by
+        timeout.  cas failures (a concurrent invalidation landed on
+        the slot during this transaction) silently leave memcached
+        alone, preserving the other writer's intent.
+    """
+    deletes: list[str] = []
+    write_through_by_timeout: dict[int | None, dict[str, Any]] = {}
+    fills_by_timeout: dict[int | None, dict[str, tuple[Any, int]]] = {}
+    for key, (kind, val_bytes, timeout, mc_cas_id) in ops.items():
+        if kind == "delete":
+            deletes.append(key)
+            continue
+        assert kind == "set"
+        # The buffer stores 'set' values as pickled bytes (see
+        # cache_invalidation_buffer.record_set); unpickle here so we
+        # can detect the sentinel and so set_many sees a Python value.
+        # bmemcached's serialize() auto-pickles non-bytes values on
+        # the way out, so we cannot skip the re-pickle by passing
+        # raw bytes -- that would set the wrong flag for other readers.
+        val = pickle.loads(val_bytes)  # noqa: S301
+        if isinstance(val, _CacheFillSentinel):
+            # A read-through fill claimed the slot via cache_add but
+            # the matching cache_cas never followed (e.g. the fetcher
+            # raised but an outer handler swallowed the exception and
+            # let the transaction commit anyway).  The sentinel is
+            # already in memcached -- don't re-cas it; let it expire
+            # on its short TTL so a future reader can refill normally.
+            continue
+        if mc_cas_id == 0:
+            write_through_by_timeout.setdefault(timeout, {})[key] = val
+        else:
+            fills_by_timeout.setdefault(timeout, {})[key] = (val, mc_cas_id)
+
+    if deletes:
+        _do_cache_delete_many(deletes, cache_name=None)
+    for timeout, items in write_through_by_timeout.items():
+        cache_set_many(items, timeout=timeout)
+    for timeout, items_with_cas in fills_by_timeout.items():
+        cache_cas_many(items_with_cas, timeout=timeout)
+
+
+def _get_cache_fill_sentinel() -> "_CacheFillSentinel":
+    return _CACHE_FILL_SENTINEL
+
+
+class _CacheFillSentinel:
+    """Marker stored during a read-through fill to detect concurrent invalidation.
+
+    read_through_cache() writes this value via add(get_cas=True), keeps the
+    cas id memcached returns, and later cas-commits the fetched value with
+    that cas id.  If a writer's delete() (or any other write) intervenes,
+    the slot's cas changes, and the cas-commit fails atomically -- so the
+    (potentially stale) value is not cached.  The cas id is the ownership
+    token; the sentinel value just needs to be a non-collidable placeholder.
+
+    The sentinel pickles to a stable singleton via _get_cache_fill_sentinel
+    so identity / isinstance checks work after a memcached round-trip.
+    """
+
+    __slots__ = ()
+
+    @override
+    def __reduce__(self) -> tuple[Any, tuple[Any, ...]]:
+        return (_get_cache_fill_sentinel, ())
+
+
+_CACHE_FILL_SENTINEL = _CacheFillSentinel()
+
+
+# Lifetime of the sentinel slot during a fill.  Must exceed any plausible
+# DB fetch; short enough that a crashed filler doesn't block the key for long.
+CACHE_FILL_SENTINEL_TIMEOUT = 30
+
+
+def _backend_gets(backend: BaseCache, pre_make_key: str) -> tuple[Any, int | None]:
+    """Memcached gets(); returns (None, None) on miss."""
+    if hasattr(backend, "gets"):
+        return backend.gets(pre_make_key)
+    raw_key = backend.make_key(pre_make_key)
+    return backend._cache.gets(raw_key)  # type: ignore[attr-defined] # not in stubs
+
+
+def _backend_cas(
+    backend: BaseCache, pre_make_key: str, value: Any, cas_id: int, timeout: int | None
+) -> bool:
+    """Memcached cas(): conditional set keyed on a matching cas_token."""
+    if hasattr(backend, "cas"):
+        return backend.cas(pre_make_key, value, cas_id, timeout)
+    raw_key = backend.make_key(pre_make_key)
+    return backend._cache.cas(  # type: ignore[attr-defined] # not in stubs
+        raw_key, value, cas_id, backend.get_backend_timeout(timeout)
+    )
+
+
+def _backend_add(
+    backend: BaseCache, pre_make_key: str, value: Any, timeout: int | None
+) -> tuple[bool, int | None]:
+    """Memcached add(); returns the new cas id on success."""
+    if hasattr(backend, "add_cas"):
+        return backend.add_cas(pre_make_key, value, timeout=timeout)
+    raw_key = backend.make_key(pre_make_key)
+    return backend._cache.add(  # type: ignore[attr-defined] # not in stubs
+        raw_key, value, backend.get_backend_timeout(timeout), get_cas=True
+    )
+
+
+def _backend_gets_multi(backend: BaseCache, pre_make_keys: list[str]) -> dict[str, tuple[Any, int]]:
+    """Pipelined gets across N keys in one round-trip; absent keys are omitted."""
+    if hasattr(backend, "gets_multi"):
+        return backend.gets_multi(pre_make_keys)
+    raw_to_orig = {backend.make_key(k): k for k in pre_make_keys}
+    raw = backend._cache.get_multi(  # type: ignore[attr-defined] # not in stubs
+        list(raw_to_orig), get_cas=True
+    )
+    return {raw_to_orig[rk]: (val, cas) for rk, (val, cas) in raw.items()}
+
+
+def _backend_add_multi(
+    backend: BaseCache, items: dict[str, Any], timeout: int | None
+) -> dict[str, int]:
+    """Pipelined add across N keys; returns cas ids of successful adds."""
+    if hasattr(backend, "add_multi_cas"):
+        return backend.add_multi_cas(items, timeout=timeout)
+    raw_to_orig = {backend.make_key(k): k for k in items}
+    # bmemcached.set_multi_cas with a (key, cas=0) mapping turns into a
+    # pipelined add, with per-key new cas ids returned for successful adds
+    # and None for keys that already existed.
+    raw_mappings = {(rk, 0): items[raw_to_orig[rk]] for rk in raw_to_orig}
+    raw_result: dict[str, int | None] = backend._cache.set_multi_cas(  # type: ignore[attr-defined] # not in stubs
+        raw_mappings, backend.get_backend_timeout(timeout)
+    )
+    return {raw_to_orig[rk]: cas for rk, cas in raw_result.items() if cas is not None}
+
+
+def _backend_cas_multi(
+    backend: BaseCache, items_with_cas: dict[str, tuple[Any, int]], timeout: int | None
+) -> set[str]:
+    """Pipelined cas across N keys; returns keys whose set committed."""
+    if hasattr(backend, "cas_multi"):
+        return backend.cas_multi(items_with_cas, timeout=timeout)
+    raw_to_orig = {backend.make_key(k): k for k in items_with_cas}
+    # bmemcached.set_multi treats a (key, cas != 0) mapping as a pipelined setq
+    # with the CAS field set, matching a single-key cas() call.
+    raw_mappings = {
+        (rk, items_with_cas[raw_to_orig[rk]][1]): items_with_cas[raw_to_orig[rk]][0]
+        for rk in raw_to_orig
+    }
+    failed_raw = backend._cache.set_multi(  # type: ignore[attr-defined] # not in stubs
+        raw_mappings, backend.get_backend_timeout(timeout)
+    )
+    failed_orig = {
+        raw_to_orig[entry[0] if isinstance(entry, tuple) else entry] for entry in failed_raw
+    }
+    return set(items_with_cas) - failed_orig
+
+
+def cache_gets(key: str, cache_name: str | None = None) -> tuple[Any, int | None]:
+    op = get_buffer().lookup(key)
+    if op is not None:
+        kind, val, _, _ = op
+        if kind == "delete":
+            return None, None
+        # Buffered 'set' from cache_set: read-your-writes for this tx.
+        # cas_id is unused for buffered hits (cache_cas goes to memcached
+        # directly, see cache_add); return 0 as a placeholder.
+        return val, 0
+    final_key = KEY_PREFIX + key
+    validate_cache_key(final_key)
+
+    remote_cache_stats_start()
+    ret = _backend_gets(get_cache_backend(cache_name), final_key)
+    remote_cache_stats_finish()
+    return ret
+
+
+def cache_add(
+    key: str, val: Any, timeout: int, cache_name: str | None = None
+) -> tuple[bool, int | None]:
+    """Add-if-absent that returns the cas id of the just-added value.
+
+    On success returns (True, cas_id); on failure (key already present)
+    returns (False, None).  The cas id can be passed to a later cache_cas()
+    to write conditionally on the value still being ours.
+
+    Inside a transaction we still hit memcached -- cache_add writes the
+    sentinel directly so it claims the slot from other connections via
+    memcached's own CAS, and we capture memcached's cas_id for the
+    matching cache_cas to flush against at commit.  See
+    cache_invalidation_buffer for the full semantics.
+    """
+    final_key = KEY_PREFIX + key
+    validate_cache_key(final_key)
+
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        op = buffer.lookup(key)
+        if op is not None and op[0] == "set":
+            # Slot already claimed in this transaction (by an in-progress
+            # fill or a previous cache_set).  Refuse the add without
+            # touching memcached, the same way memcached's own add would.
+            return False, None
+        if op is not None and op[0] == "delete":
+            # The writer has buffered an invalidation but is now
+            # refilling the slot (e.g. a post_save cache_delete
+            # followed by a @cache_with_key-decorated lookup in the
+            # same transaction).  Drop the delete to memcached
+            # eagerly so cache_add finds the slot empty; record_set
+            # below will overwrite the buffered delete with the
+            # sentinel.  Trades buffered-rollback-safety for in-tx-
+            # fill correctness; over-invalidating on rollback is
+            # benign.
+            try:
+                get_cache_backend(cache_name).delete(final_key)
+            except MemcachedException as e:
+                logger.exception(e)
+
+    remote_cache_stats_start()
+    try:
+        added, cas_id = _backend_add(get_cache_backend(cache_name), final_key, val, timeout)
+    except MemcachedException as e:
+        logger.exception(e)
+        added, cas_id = False, None
+    remote_cache_stats_finish()
+    if added and buffer.in_transaction():
+        # Stash the captured memcached cas_id alongside the sentinel; the
+        # matching cache_cas updates this entry to the fetched value, and
+        # the commit-time flush issues a cas-conditional set keyed on
+        # mc_cas_id so we don't clobber a concurrent invalidation.
+        assert cas_id is not None
+        buffer.record_set(key, val, timeout, mc_cas_id=cas_id)
+    return added, cas_id
+
+
+def cache_cas(
+    key: str,
+    val: Any,
+    cas_id: int,
+    timeout: int | None = None,
+    cache_name: str | None = None,
+) -> bool:
+    final_key = KEY_PREFIX + key
+    validate_cache_key(final_key)
+
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # CAS in the buffer: succeed iff the slot still holds the
+        # sentinel cache_add stashed under this mc_cas_id.  A buffered
+        # delete or a buffered cache_set would have overwritten the
+        # entry with mc_cas_id=0 and we'd correctly fail.  The cas
+        # only updates the buffer; memcached gets the value at commit
+        # via the cas-conditional flush keyed on the same mc_cas_id.
+        op = buffer.lookup(key)
+        if op is None or op[0] != "set" or op[3] != cas_id:
+            return False
+        buffer.record_set(key, val, timeout, mc_cas_id=cas_id)
+        return True
+
+    remote_cache_stats_start()
+    try:
+        ok = _backend_cas(get_cache_backend(cache_name), final_key, val, cas_id, timeout)
+    except MemcachedException as e:
+        logger.exception(e)
+        ok = False
+    remote_cache_stats_finish()
+    return ok
+
+
+def cache_gets_many(keys: list[str], cache_name: str | None = None) -> dict[str, tuple[Any, int]]:
+    """Pipelined gets_many returning (value, cas_id) for each present key."""
+    buffer = get_buffer()
+    result: dict[str, tuple[Any, int]] = {}
+    remaining: list[str] = []
+    for key in keys:
+        op = buffer.lookup(key)
+        if op is None:
+            remaining.append(key)
+            continue
+        kind, val, _, _ = op
+        if kind == "set":
+            result[key] = (val, 0)
+        # 'delete': skip; this transaction's view is "key absent".
+    if remaining:
+        final_keys = [KEY_PREFIX + k for k in remaining]
+        for fk in final_keys:
+            validate_cache_key(fk)
+        remote_cache_stats_start()
+        raw = _backend_gets_multi(get_cache_backend(cache_name), final_keys)
+        remote_cache_stats_finish()
+        for fk, v in raw.items():
+            result[fk.removeprefix(KEY_PREFIX)] = v
+    return result
+
+
+def cache_add_many(
+    items: dict[str, Any], timeout: int, cache_name: str | None = None
+) -> dict[str, int]:
+    """Pipelined add_many returning the new cas id for each successful add.
+
+    Like cache_add, the memcached add hits the server even inside a
+    transaction so the sentinel claims slots from other connections;
+    successful adds are also recorded in the buffer (with the captured
+    memcached cas_id) so the matching cache_cas_many can flush against
+    them at commit.
+    """
+    final_items = {KEY_PREFIX + k: v for k, v in items.items()}
+    for fk in final_items:
+        validate_cache_key(fk)
+
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # Drop keys whose slot is already buffered as a 'set' in this
+        # transaction, the same way cache_add would refuse them.
+        eligible_items = {
+            k: v for k, v in items.items() if (op := buffer.lookup(k)) is None or op[0] != "set"
+        }
+        eligible_final_items = {KEY_PREFIX + k: v for k, v in eligible_items.items()}
+    else:
+        eligible_items = items
+        eligible_final_items = final_items
+
+    remote_cache_stats_start()
+    try:
+        added_raw = _backend_add_multi(get_cache_backend(cache_name), eligible_final_items, timeout)
+    except MemcachedException as e:
+        logger.exception(e)
+        added_raw = {}
+    remote_cache_stats_finish()
+    added = {fk.removeprefix(KEY_PREFIX): cas for fk, cas in added_raw.items()}
+    if buffer.in_transaction():
+        for k, cas_id in added.items():
+            buffer.record_set(k, eligible_items[k], timeout, mc_cas_id=cas_id)
+    return added
+
+
+def cache_cas_many(
+    items_with_cas: dict[str, tuple[Any, int]],
+    timeout: int | None = None,
+    cache_name: str | None = None,
+) -> set[str]:
+    """Pipelined cas_many.  Returns the keys where the conditional set committed."""
+    final_items = {KEY_PREFIX + k: v for k, v in items_with_cas.items()}
+    for fk in final_items:
+        validate_cache_key(fk)
+
+    buffer = get_buffer()
+    if buffer.in_transaction():
+        # CAS in the buffer: per-key, succeed iff the slot still holds
+        # the sentinel cache_add_many stashed under this mc_cas_id.  See
+        # cache_cas for the single-key form.
+        committed: set[str] = set()
+        for key, (val, cas_id) in items_with_cas.items():
+            op = buffer.lookup(key)
+            if op is None or op[0] != "set" or op[3] != cas_id:
+                continue
+            buffer.record_set(key, val, timeout, mc_cas_id=cas_id)
+            committed.add(key)
+        return committed
+
+    remote_cache_stats_start()
+    try:
+        committed_raw = _backend_cas_multi(get_cache_backend(cache_name), final_items, timeout)
+    except MemcachedException as e:
+        logger.exception(e)
+        committed_raw = set()
+    remote_cache_stats_finish()
+    return {fk.removeprefix(KEY_PREFIX) for fk in committed_raw}
+
+
+def read_through_cache(
+    key: str,
+    fetcher: Callable[[], ReturnT],
+    *,
+    cache_name: str | None = None,
+    timeout: int | None = None,
+    pickled_tupled: bool = True,
+    staleness_check_fn: Callable[[], bool] | None = None,
+) -> ReturnT:
+    """Fetch a value through the cache, mark-then-fill to avoid stale writes.
+
+    On miss, we claim the fill slot with the _CACHE_FILL_SENTINEL via add(),
+    which gives us back the cas id of the just-added sentinel.  After the
+    DB fetch we cas-commit the value with that cas id; the cas succeeds
+    only if the slot has not been touched since (same value, same cas id).
+    A writer's delete() during the fetch -- or a delete followed by another
+    reader's add of their own sentinel -- changes the slot's cas, so the
+    cas-commit fails atomically and the (possibly stale) value is not
+    cached.  Callers that lose the initial add race -- or that see an
+    existing sentinel -- fall back to the DB directly and do not write to
+    the cache.
+
+    When pickled_tupled=True (the default), the value is wrapped in a
+    1-tuple on write and unwrapped on read, so that a cached None is
+    distinguishable from a missing key.  Setting pickled_tupled=False
+    skips the wrap (and the pickle it would force) -- a performance
+    optimization, reasonable when the value is a string or bytes that
+    cannot be None.  The sentinel class is separate, so
+    isinstance(val, _CacheFillSentinel) reliably distinguishes it from
+    any wrapped real value.
+
+    staleness_check_fn, if provided, is called between fetcher and
+    cache_cas: returning True returns the value without writing the
+    cache.  Used by snapshot-aware cache_with_key callers to drop
+    fills whose row was updated since the reader's snapshot started.
+    """
+    global _cache_fill_hit, _cache_fill_won, _cache_fill_race_detected
+    global _cache_fill_claim_lost, _cache_fill_saw_sentinel
+
+    val, _cas_id = cache_gets(key, cache_name=cache_name)
+
+    if isinstance(val, _CacheFillSentinel):
+        _cache_fill_saw_sentinel += 1
+        return fetcher()
+    if val is not None:
+        _cache_fill_hit += 1
+        return val[0] if pickled_tupled else val
+
+    # Genuine miss.  Claim the fill; the cas id we get back is our
+    # ownership token for the subsequent cas-commit.
+    claimed, our_cas = cache_add(
+        key, _CACHE_FILL_SENTINEL, CACHE_FILL_SENTINEL_TIMEOUT, cache_name=cache_name
+    )
+    if not claimed:
+        _cache_fill_claim_lost += 1
+        return fetcher()
+    assert our_cas is not None
+
+    value = fetcher()
+
+    if staleness_check_fn is not None and staleness_check_fn():
+        # Caller signaled snapshot staleness; return the value but
+        # don't write the cache.  The sentinel expires on its short TTL.
+        _cache_fill_race_detected += 1
+        return value
+
+    payload: Any = (value,) if pickled_tupled else value
+    if cache_cas(key, payload, our_cas, timeout=timeout, cache_name=cache_name):
+        _cache_fill_won += 1
+    else:
+        _cache_fill_race_detected += 1
+    return value
 
 
 def filter_good_and_bad_keys(keys: list[str]) -> tuple[list[str], list[str]]:
@@ -380,6 +1011,44 @@ CacheItemT = TypeVar("CacheItemT")
 CompressedItemT = TypeVar("CompressedItemT")
 
 
+def _detect_stale_pks(model: type[Any], pk_field: str, pk_values: list[Any]) -> set[Any]:
+    """Return the subset of `pk_values` whose row, as visible to our
+    snapshot, is stale relative to the latest committed state.
+
+    PostgreSQL stores hidden `xmin` (creating xid) and `xmax`
+    (deleting/updating xid) columns on every row version.  An UPDATE
+    creates a new row version with xmin=updater_xid and sets the OLD
+    version's xmax to that same xid.  A REPEATABLE READ snapshot
+    returns the version visible at the moment its snapshot was taken,
+    so an UPDATE that committed *after* our snapshot is invisible: we
+    see the old version, and that version's xmax names the updater.
+
+    `pg_xact_status(xid)` reports whether that xid is committed / in
+    progress / aborted (or NULL for transactions whose xact log has
+    been truncated).  If our row's xmax names a *committed*
+    transaction, a newer version exists and our snapshot's value is
+    stale -- that's the row PK we return here so the caller can skip
+    caching it.  An xmax of 0 (no updater) or a not-committed xmax
+    means our row is current.
+    """
+    if not pk_values:
+        return set()
+    # xmax is a 32-bit xid; pg_xact_status takes xid8 (added in PG 13).
+    # Cast via text since xid -> xid8 isn't a direct cast.
+    query = sql.SQL(
+        "SELECT {col} FROM {table} "
+        "WHERE {col} = ANY(%s) "
+        "AND xmax != '0'::xid "
+        "AND pg_xact_status(xmax::text::xid8) = 'committed'"
+    ).format(
+        col=sql.Identifier(pk_field),
+        table=sql.Identifier(model._meta.db_table),
+    )
+    with connection.cursor() as cur:
+        cur.execute(query, [list(pk_values)])
+        return {row[0] for row in cur.fetchall()}
+
+
 # Required arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
@@ -393,6 +1062,12 @@ CompressedItemT = TypeVar("CompressedItemT")
 # * cache_transformer: Function mapping an object from database =>
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
+#
+# Optional model + pk_field opt the call into snapshot safety: the
+# caller asserts that each entry in object_ids is the value of
+# pk_field on a row in model, and the helper drops fills for rows
+# that PostgreSQL says have been updated since our snapshot started.
+# Callers reached from inside repeatable_read_atomic must pass these.
 def generic_bulk_cached_fetch(
     cache_key_function: Callable[[ObjKT], str],
     query_function: Callable[[list[ObjKT]], Iterable[ItemT]],
@@ -403,7 +1078,21 @@ def generic_bulk_cached_fetch(
     id_fetcher: Callable[[ItemT], ObjKT],
     cache_transformer: Callable[[ItemT], CacheItemT],
     pickled_tupled: bool = True,
+    model: type[Any] | None = None,
+    pk_field: str | None = None,
 ) -> dict[ObjKT, CacheItemT]:
+    if model is None and in_repeatable_read_transaction():
+        from zerver.lib.snapshot_isolation import SnapshotIsolationError
+
+        raise SnapshotIsolationError(
+            f"generic_bulk_cached_fetch on {cache_key_function.__qualname__} "
+            "reached from a REPEATABLE READ transaction without "
+            "model+pk_field; the fill could cache rows whose committed "
+            "value already differs from our snapshot."
+        )
+    if model is not None:
+        assert pk_field is not None, "generic_bulk_cached_fetch: model requires pk_field"
+
     if len(object_ids) == 0:
         # Nothing to fetch.
         return {}
@@ -418,40 +1107,77 @@ def generic_bulk_cached_fetch(
             id_fetcher=id_fetcher,
             cache_transformer=cache_transformer,
             pickled_tupled=False,
+            model=model,
+            pk_field=pk_field,
         )
 
-    cache_keys: dict[ObjKT, str] = {}
-    for object_id in object_ids:
-        cache_keys[object_id] = cache_key_function(object_id)
+    global _cache_fill_hit, _cache_fill_won, _cache_fill_race_detected
+    global _cache_fill_claim_lost, _cache_fill_saw_sentinel
 
-    cached_objects_compressed: dict[str, CompressedItemT] = safe_cache_get_many(
-        [cache_keys[object_id] for object_id in object_ids],
-    )
+    cache_keys: dict[ObjKT, str] = {oid: cache_key_function(oid) for oid in object_ids}
 
-    cached_objects = {key: extractor(val) for key, val in cached_objects_compressed.items()}
-    needed_ids = [
-        object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects
+    # Initial read: one pipelined round-trip returning (value, cas_id) for every
+    # present key.
+    initial = cache_gets_many(list(cache_keys.values()))
+
+    # Drop sentinel entries -- a concurrent filler has written a sentinel we
+    # should not return to this caller.  These keys are treated as misses; our
+    # own add() below will fail, and we'll return the DB value without caching.
+    cached_objects: dict[str, CacheItemT] = {}
+    for key, (val, _cas) in initial.items():
+        if isinstance(val, _CacheFillSentinel):
+            _cache_fill_saw_sentinel += 1
+            continue
+        cached_objects[key] = extractor(val)
+    _cache_fill_hit += len(cached_objects)
+
+    needed: list[tuple[ObjKT, str]] = [
+        (oid, key) for oid, key in cache_keys.items() if key not in cached_objects
     ]
 
-    # Only call query_function if there are some ids to fetch from the database:
-    if len(needed_ids) > 0:
-        db_objects = query_function(needed_ids)
-    else:
-        db_objects = []
+    # Try to claim every missed key with the sentinel in a pipelined add_multi;
+    # we get back the new cas id for each successful add, which is our
+    # ownership token for the subsequent cas-commit.  Keys where we lose the
+    # add fell to another reader or already have a real value, and we won't
+    # write them.
+    owned_cas_ids: dict[str, int] = {}
+    if needed:
+        owned_cas_ids = cache_add_many(
+            {key: _CACHE_FILL_SENTINEL for _, key in needed},
+            CACHE_FILL_SENTINEL_TIMEOUT,
+        )
+        _cache_fill_claim_lost += len(needed) - len(owned_cas_ids)
 
-    items_for_remote_cache: dict[str, CompressedItemT] = {}
-    for obj in db_objects:
-        key = cache_keys[id_fetcher(obj)]
-        item = cache_transformer(obj)
-        items_for_remote_cache[key] = setter(item)
-        cached_objects[key] = item
-    if len(items_for_remote_cache) > 0:
-        safe_cache_set_many(items_for_remote_cache)
-    return {
-        object_id: cached_objects[cache_keys[object_id]]
-        for object_id in object_ids
-        if cache_keys[object_id] in cached_objects
-    }
+        # Collect values for pipelined cas writes.  Keys we don't own are still
+        # returned to the caller but never cached.
+        items_to_cas: dict[str, tuple[CompressedItemT, int]] = {}
+        key_to_oid: dict[str, ObjKT] = {key: oid for oid, key in needed}
+        for obj in query_function([oid for oid, _ in needed]):
+            key = cache_keys[id_fetcher(obj)]
+            item = cache_transformer(obj)
+            cached_objects[key] = item
+            if key in owned_cas_ids:
+                items_to_cas[key] = (setter(item), owned_cas_ids[key])
+
+        # Inside REPEATABLE READ, drop rows whose current committed
+        # version post-dates our snapshot.  READ COMMITTED takes a
+        # fresh snapshot per statement, so no check needed there.
+        if model is not None and items_to_cas and in_repeatable_read_transaction():
+            assert pk_field is not None
+            pk_values = [key_to_oid[key] for key in items_to_cas]
+            stale_pks = _detect_stale_pks(model, pk_field, pk_values)
+            if stale_pks:
+                items_to_cas = {
+                    key: v for key, v in items_to_cas.items() if key_to_oid[key] not in stale_pks
+                }
+
+        if items_to_cas:
+            committed = cache_cas_many(items_to_cas)
+            _cache_fill_won += len(committed)
+            # cas failures == writer's delete() landed during our DB fetch.
+            _cache_fill_race_detected += len(items_to_cas) - len(committed)
+
+    return {oid: cached_objects[key] for oid, key in cache_keys.items() if key in cached_objects}
 
 
 def bulk_cached_fetch(
@@ -460,6 +1186,8 @@ def bulk_cached_fetch(
     object_ids: Sequence[ObjKT],
     *,
     id_fetcher: Callable[[ItemT], ObjKT],
+    model: type[Any] | None = None,
+    pk_field: str | None = None,
 ) -> dict[ObjKT, ItemT]:
     return generic_bulk_cached_fetch(
         cache_key_function,
@@ -469,6 +1197,8 @@ def bulk_cached_fetch(
         extractor=lambda obj: obj,
         setter=lambda obj: obj,
         cache_transformer=lambda obj: obj,
+        model=model,
+        pk_field=pk_field,
     )
 
 

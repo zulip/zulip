@@ -84,6 +84,10 @@ def bulk_fetch_single_user_display_recipients(uids: list[int]) -> dict[int, User
         ),
         object_ids=uids,
         id_fetcher=user_dict_id_fetcher,
+        # Snapshot-safe under message_fetch's REPEATABLE READ block:
+        # drop fills for users edited since our snapshot started.
+        model=UserProfile,
+        pk_field="id",
     )
 
 
@@ -125,6 +129,12 @@ def bulk_fetch_stream_names(
         setter=lambda obj: obj,
         extractor=lambda obj: obj,
         pickled_tupled=False,
+        # Snapshot-safe under message_fetch's REPEATABLE READ block:
+        # drop fills for streams renamed since our snapshot started.
+        # ObjKT here is the stream's recipient_id, which Stream rows
+        # carry as a column.
+        model=Stream,
+        pk_field="recipient_id",
     )
 
     return stream_display_recipients
