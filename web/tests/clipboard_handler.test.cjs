@@ -4,8 +4,6 @@ const assert = require("node:assert/strict");
 
 const {JSDOM} = require("jsdom");
 
-const {make_stream} = require("./lib/example_stream.cjs");
-const {make_user} = require("./lib/example_user.cjs");
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -15,6 +13,10 @@ mock_esm("../src/user_settings", {
         web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
     },
 });
+
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cts");
+
 const clipboard_handler = zrequire("clipboard_handler");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");

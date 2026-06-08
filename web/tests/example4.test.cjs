@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {make_bot} = require("./lib/example_user.cjs");
+const {make_bot} = require("./lib/example_user.cts");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
