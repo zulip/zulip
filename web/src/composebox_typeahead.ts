@@ -1581,6 +1581,7 @@ export function initialize_topic_edit_typeahead(
     stream_name: string,
     dropup: boolean,
 ): Typeahead<string> {
+    const stream_id = stream_data.get_stream_id(stream_name);
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: form_field,
         type: "input",
@@ -1601,7 +1602,6 @@ export function initialize_topic_edit_typeahead(
             return get_topic_matcher(query);
         },
         sorter(items: string[], query: string): string[] {
-            const stream_id = stream_data.get_stream_id(stream_name);
             const sorted = typeahead_helper.sorter(query, items, (x) =>
                 util.get_final_topic_display_name(x),
             );
@@ -1616,7 +1616,6 @@ export function initialize_topic_edit_typeahead(
             return sorted;
         },
         source(): string[] {
-            const stream_id = stream_data.get_stream_id(stream_name);
             return topics_seen_for(stream_id);
         },
         items: max_num_items,
