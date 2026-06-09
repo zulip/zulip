@@ -104,6 +104,19 @@ export function last_prefix_match(prefix: string, words: string[]): number | nul
     return null;
 }
 
+// Scripts that don't typically use spaces for word separation.
+const UNSPACED_SCRIPT_NAMES = ["Han", "Hiragana", "Katakana", "Thai", "Lao"];
+
+// Constructs: /[\p{Script=Han}\p{Script=Hiragana}...]/u
+const unspaced_scripts_regex = new RegExp(
+    `[${UNSPACED_SCRIPT_NAMES.map((s) => `\\p{Script=${s}}`).join("")}]`,
+    "u",
+);
+
+export function has_unspaced_script(text: string): boolean {
+    return unspaced_scripts_regex.test(text);
+}
+
 export function query_matches_string_in_order(
     query: string,
     source_str: string,
