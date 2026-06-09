@@ -4,7 +4,7 @@ we only use parts of the marked API and are using a fork
 of the upstream library.
 */
 
-import type {Matcher, RE2JS} from "re2js";
+import type {Matcher, RE2JS} from "./re2js.d.ts";
 
 declare class Renderer {
     code: (code: string) => string;
