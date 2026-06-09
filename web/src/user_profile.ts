@@ -250,7 +250,9 @@ function change_state_of_subscribe_button(
 }
 
 function reset_subscribe_widget(): void {
-    $("#user-profile-modal .add-subscription-button").prop("disabled", true);
+    const $add_subscription_button = $("#user-profile-modal .add-subscription-button");
+    buttons.hide_button_loading_indicator($add_subscription_button);
+    $add_subscription_button.prop("disabled", true);
     $("#user_profile_subscribe_widget .dropdown_widget_value").text(
         $t({defaultMessage: "Select a channel"}),
     );
@@ -1413,6 +1415,9 @@ export function initialize(): void {
         assert(sub !== undefined);
         const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
         const $alert_box = $("#user-profile-streams-tab .stream_list_info");
+        const $add_subscription_button = $(e.currentTarget).closest(".add-subscription-button");
+        $add_subscription_button.prop("disabled", true);
+        buttons.show_button_loading_indicator($add_subscription_button);
         function addition_success(raw_data: unknown): void {
             const data = z
                 .object({
@@ -1437,6 +1442,8 @@ export function initialize(): void {
                     1200,
                 );
             } else {
+                buttons.hide_button_loading_indicator($add_subscription_button);
+                $add_subscription_button.prop("disabled", false);
                 banners.open_and_close(
                     {
                         intent: "success",
@@ -1452,6 +1459,8 @@ export function initialize(): void {
             }
         }
         function addition_failure(xhr: JQuery.jqXHR): void {
+            buttons.hide_button_loading_indicator($add_subscription_button);
+            $add_subscription_button.prop("disabled", false);
             const message = channel.xhr_error_message("", xhr);
             banners.open_and_close(
                 {
