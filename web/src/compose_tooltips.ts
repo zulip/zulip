@@ -36,7 +36,7 @@ type SingletonTooltips = {
 const compose_button_singleton_context_map = new Map<SingletonContext, SingletonTooltips>();
 
 // Ensure proper teardown of singleton instances, especially for "Save/Cancel" actions or when handling edit window time limits.
-// Reference: http://atomiks.github.io/tippyjs/v6/addons/#destroy
+// Reference: https://atomiks.github.io/tippyjs/v6/addons/#destroy
 export function clean_up_compose_singleton_tooltip(context: SingletonContext): void {
     const singleton_tooltips = compose_button_singleton_context_map.get(context);
     if (singleton_tooltips) {
