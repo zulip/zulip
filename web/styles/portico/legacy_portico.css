@@ -1354,6 +1354,129 @@ label.label-title {
     padding: 0;
 }
 
+/* === Error pages: dark "system surface" treatment. The page, header, and
+   footer share one dark tone; the error content sits on a darker inset band.
+   Scoped to error pages via `:has()`, following the
+   `html:has(.portico-landing.integrations)` pattern in integrations.css. === */
+html:has(.portico-page.error) {
+    --error-page-bg: hsl(238deg 28% 21%); /* page/header/footer surface */
+    --error-page-content-bg: hsl(240deg 30% 13%); /* content band */
+    --error-page-fg: hsl(240deg 6% 90%); /* foreground */
+
+    /* Flatten the shared marketing footer to the page surface via its own
+       variable (the #footer ID rule out-specifies element selectors). The
+       footer's link color variable already fits the dark design. */
+    --color-footer-background: var(--error-page-bg);
+
+    background-color: var(--error-page-bg);
+    /* No rubber-band/overscroll bounce past the top or bottom. */
+    overscroll-behavior: none;
+}
+
+body:has(.portico-page.error) {
+    background-color: var(--error-page-bg);
+    overscroll-behavior: none;
+}
+
+/* --- Header: the marketing `.portico-header` (template pages) and the simpler
+   `.header` used by the static webpack 5xx fallback pages. --- */
+body:has(.portico-page.error) .portico-header,
+body:has(.portico-page.error) .header {
+    background-color: var(--error-page-bg);
+    border: none;
+    box-shadow: none;
+}
+
+body:has(.portico-page.error) .portico-header a,
+body:has(.portico-page.error) .portico-header span,
+body:has(.portico-page.error) .header a,
+body:has(.portico-page.error) .header span {
+    color: var(--error-page-fg);
+}
+
+body:has(.portico-page.error) .portico-header img,
+body:has(.portico-page.error) .portico-header svg,
+body:has(.portico-page.error) .header img,
+body:has(.portico-page.error) .header svg {
+    filter: brightness(0) invert(1);
+}
+
+/* --- Content band --- */
+.portico-page.error,
+.portico-page.error .error_page {
+    background-color: var(--error-page-content-bg);
+}
+
+.portico-page.error .error_page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 64px;
+    padding: 80px 20px;
+}
+
+/* Per-page illustration: each error template supplies its own art SVG. */
+.portico-page.error .error_page img {
+    width: auto;
+    height: 120px;
+}
+
+/* No card — text sits directly on the surface, centered. */
+.portico-page.error .error_page .errorbox {
+    max-width: 600px;
+    margin: 0; /* reset the legacy `margin: auto`, which absorbs flex free space */
+    background: none;
+    border: none;
+    box-shadow: none;
+    font-size: 20px;
+}
+
+.portico-page.error .error_page .errorcontent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0;
+    /* On `.errorcontent` itself to override the legacy `text-align: left`
+       rule above, which would otherwise win on multi-line paragraphs. */
+    text-align: center;
+}
+
+/* Heading row — on the 404 this is the "404" badge + "Page not found". */
+.portico-page.error .error_page .lead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 0;
+    color: var(--error-page-fg);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.portico-page.error .error_page .error-code-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 12px;
+    border-radius: 6px;
+    background-color: hsl(239deg 27% 31%);
+    font-weight: 600;
+}
+
+.portico-page.error .error_page p {
+    margin: 0;
+    color: var(--error-page-fg);
+    font-size: 20px;
+}
+
+.portico-page.error .error_page a {
+    color: var(--error-page-fg);
+    text-decoration: underline;
+}
+
 #third-party-apps {
     margin-top: 20px;
     padding-right: 10px;
