@@ -297,6 +297,24 @@ const imported_user = {
     is_imported_stub: true,
 };
 
+const japanese_user = make_user({
+    email: "jpn@example.com",
+    user_id: 1206,
+    full_name: "田中　太郎",
+});
+
+const thai_user = make_user({
+    email: "thai@example.com",
+    user_id: 1207,
+    full_name: "สมชาย ใจดี",
+});
+
+const lao_user = make_user({
+    email: "lao@example.com",
+    user_id: 1208,
+    full_name: "ສົມຊາຍ ໃຈດີ",
+});
+
 function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
@@ -828,6 +846,9 @@ run_test("filtered_users", () => {
     people.add_active_user(linus);
     people.add_active_user(noah);
     people.add_active_user(plain_noah);
+    people.add_active_user(japanese_user);
+    people.add_active_user(thai_user);
+    people.add_active_user(lao_user);
 
     const search_term = "a";
     const users = people.get_realm_users();
@@ -838,7 +859,7 @@ run_test("filtered_users", () => {
     assert.ok(!filtered_people.has(charles.user_id));
 
     filtered_people = people.filter_people_by_search_terms(users, "");
-    assert.equal(filtered_people.size, 7);
+    assert.equal(filtered_people.size, 10);
 
     filtered_people = people.filter_people_by_search_terms(users, "ltorv");
     assert.equal(filtered_people.size, 1);
@@ -872,6 +893,45 @@ run_test("filtered_users", () => {
     filtered_people = people.filter_people_by_search_terms(users, "nöôáàh Ëme");
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(noah.user_id));
+
+    // Test unspaced scripts (Han) and full-width space normalization
+    filtered_people = people.filter_people_by_search_terms(users, "田中太郎");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(japanese_user.user_id));
+
+    filtered_people = people.filter_people_by_search_terms(users, "田中　太郎");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(japanese_user.user_id));
+
+    filtered_people = people.filter_people_by_search_terms(users, "郎");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(japanese_user.user_id));
+
+    // Test Thai (Unspaced script)
+    filtered_people = people.filter_people_by_search_terms(users, "สมชายใจ");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(thai_user.user_id));
+
+    filtered_people = people.filter_people_by_search_terms(users, "สมชาย ใจดี");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(thai_user.user_id));
+
+    filtered_people = people.filter_people_by_search_terms(users, "ดี");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(thai_user.user_id));
+
+    // Test Lao (Unspaced script)
+    filtered_people = people.filter_people_by_search_terms(users, "ສົມຊາຍໃຈດີ");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(lao_user.user_id));
+
+    filtered_people = people.filter_people_by_search_terms(users, "ສົມຊາຍ ໃຈດີ");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(lao_user.user_id));
+
+    filtered_people = people.filter_people_by_search_terms(users, "ດີ");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(lao_user.user_id));
 });
 
 run_test("dm_matches_search_string", () => {
