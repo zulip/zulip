@@ -1,7 +1,6 @@
-import type {Meta, UppyFile} from "@uppy/core";
+import type {Meta} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
-import {getSafeFileId} from "@uppy/utils";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -21,13 +20,15 @@ import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
 
-type ZulipMeta = {
-    zulip_url: string;
-} & Meta;
+// The server's response for a successful upload.
+type UploadResult = {
+    filename: string;
+    url: string;
+};
 
 let drag_drop_img: HTMLElement | null = null;
-let compose_upload_object: Uppy<ZulipMeta, TusBody>;
-const upload_objects_by_message_edit_row = new Map<number, Uppy<ZulipMeta, TusBody>>();
+let compose_upload_object: Uppy<Meta, TusBody>;
+const upload_objects_by_message_edit_row = new Map<number, Uppy<Meta, TusBody>>();
 
 // This list should be kept identical to the one defined as
 // THUMBNAIL_ACCEPT_IMAGE_TYPES in zerver/lib/thumbnail.py
@@ -203,7 +204,7 @@ export function edit_config(row: number): Config {
 }
 
 export let hide_upload_banner = (
-    uppy: Uppy<ZulipMeta, TusBody>,
+    uppy: Uppy<Meta, TusBody>,
     config: Config,
     file_id: string,
     delay = 0,
@@ -270,7 +271,7 @@ export function show_error_message(
 }
 
 export let upload_files = (
-    uppy: Uppy<ZulipMeta, TusBody>,
+    uppy: Uppy<Meta, TusBody>,
     config: Config,
     files: File[] | FileList,
 ): void => {
@@ -376,16 +377,54 @@ type PreviousUpload = {
     parallelUploadUrls: string[] | null;
 };
 
+// We attach our upload result to the entry that tus-js-client stores.
+//
+// We need to store it because a re-upload gives us nothing to insert.
+// tus recognizes the file from an earlier upload and answers with an
+// empty body, so no URL or filename comes back. Example: pasting the
+// same image twice. We save the result on the first upload and read it
+// back on the re-upload.
+//
+// It lives on the same entry whose fingerprint match is what
+// short-circuits the re-upload. tus ignores this extra field.
+type StoredUpload = PreviousUpload & {
+    zulip_result?: UploadResult;
+};
+
 // Parts of it are inspired from WebStorageUrlStorage at
 // https://github.com/tus/tus-js-client/blob/ca63ba254ea8766438b9d422f6f94284911f1fa5/lib/browser/urlStorage.js#L27
 // While there are no async actions happening in any of the methods in
 // this class, UrlStorage interface for tus-js-client requires a Promise
 // to be returned for each of these methods.
+//
+// The camelCase methods are the tus UrlStorage interface. tus calls
+// these. The snake_case methods are a Zulip extension. tus never calls
+// them. We use them to stash each upload's result on the entries this
+// class already owns, so the result survives cancelAll() and we can
+// recover it on a re-upload.
 class InMemoryUrlStorage {
-    urlStorage: Map<string, PreviousUpload>;
+    urlStorage: Map<string, StoredUpload>;
 
     constructor() {
         this.urlStorage = new Map();
+    }
+
+    set_result_for_upload_url(upload_url: string, result: UploadResult): void {
+        for (const upload of this.urlStorage.values()) {
+            if (upload.uploadUrl === upload_url) {
+                upload.zulip_result = result;
+                return;
+            }
+        }
+    }
+
+    get_result_for_upload_url(upload_url: string): UploadResult | undefined {
+        for (const upload of this.urlStorage.values()) {
+            if (upload.uploadUrl === upload_url) {
+                return upload.zulip_result;
+            }
+        }
+        return undefined;
     }
 
     async findAllUploads(): Promise<PreviousUpload[]> {
@@ -425,14 +464,17 @@ const zulip_upload_response_schema = z.object({
     filename: z.string(),
 });
 
-// Wrapped to work around https://github.com/transloadit/uppy/issues/6033
-const get_safe_file_id: <M extends Meta>(
-    file: UppyFile<M, TusBody>,
-    instance_id: string,
-) => string = getSafeFileId;
+export function setup_upload(config: Config): Uppy<Meta, TusBody> {
+    // tus-js-client keeps this fingerprint -> upload cache for the life
+    // of the uppy instance, and a match is what short-circuits a
+    // re-upload to an empty-body HEAD. We store each upload's result on
+    // its entry here, so it is available to recover from exactly when
+    // tus short-circuits. We can't use uppy's `files` state instead: it
+    // is wiped when the compose box is closed (cancelAll), which is what
+    // caused re-uploads to hang.
+    const url_storage = new InMemoryUrlStorage();
 
-export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
-    const uppy = new Uppy<ZulipMeta, TusBody>({
+    const uppy = new Uppy<Meta, TusBody>({
         debug: false,
         autoProceed: true,
         restrictions: {
@@ -451,20 +493,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
             },
             pluralize: (_n) => 0,
         },
-        onBeforeFileAdded(file, files) {
-            const file_id = get_safe_file_id(file, uppy.getID());
-
-            if (files[file_id]) {
-                // We have a duplicate file upload on our hands.
-                // Since we don't get a response with a body back from
-                // the server, pull the values that we got the last
-                // time around.
-                file.meta.zulip_url = files[file_id].meta.zulip_url!;
-                file.name = files[file_id].name!;
-            }
-
-            return file;
-        }, // Allow duplicate file uploads
+        onBeforeFileAdded: () => true, // Allow duplicate file uploads
     });
     uppy.use(Tus, {
         // https://uppy.io/docs/tus/#options
@@ -481,7 +510,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
         // in memory instead. We won't be able to retain this history
         // across reloads unlike local storage, which is a tradeoff we
         // are willing to make.
-        urlStorage: new InMemoryUrlStorage(),
+        urlStorage: url_storage,
         // Number of concurrent uploads
         limit: 5,
     });
@@ -591,40 +620,48 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
             return;
         }
 
+        // The tus `/api/v1/tus/...` URL (not the `/user_uploads/...` URL
+        // we insert), reported for both a fresh upload and a re-upload.
+        // We use it to find this upload's InMemoryUrlStorage entry.
+        const upload_url = response.uploadURL;
+
         // We do not receive response text if the file has already
         // been uploaded. For an existing upload, TUS js client sends
         // a HEAD request to the TUS server to check `Upload-Offset`
         // and if some part of the upload is left to be done -- and
         // when the upload offset is the same as the file length, it
         // will not send any further requests, meaning we will not
-        // have a response body.  See the beforeUpload hook, above.
+        // have a response body. In that case we recover the result we
+        // stored when this file was first uploaded.
+        let upload_result: UploadResult;
         if (response.body!.xhr.responseText === "") {
-            if (!file.meta.zulip_url) {
-                blueslip.warn("No zulip_url retrieved from previous upload", {file});
+            const previous_result =
+                upload_url === undefined
+                    ? undefined
+                    : url_storage.get_result_for_upload_url(upload_url);
+            if (previous_result === undefined) {
+                blueslip.warn("No upload result stored for re-uploaded file", {file});
                 return;
             }
+            upload_result = previous_result;
         } else {
             try {
-                const upload_response = zulip_upload_response_schema.parse(
+                upload_result = zulip_upload_response_schema.parse(
                     JSON.parse(response.body!.xhr.responseText),
                 );
-                uppy.setFileState(file.id, {
-                    name: upload_response.filename,
-                });
-                uppy.setFileMeta(file.id, {
-                    zulip_url: upload_response.url,
-                });
-                file = uppy.getFile(file.id);
             } catch {
                 blueslip.warn("Invalid JSON response from the tus server", {
                     body: response.body!.xhr.responseText,
                 });
                 return;
             }
+            if (upload_url !== undefined) {
+                url_storage.set_result_for_upload_url(upload_url, upload_result);
+            }
         }
 
-        const filtered_filename = file.name.replaceAll("[", "").replaceAll("]", "");
-        let syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
+        const filtered_filename = upload_result.filename.replaceAll("[", "").replaceAll("]", "");
+        let syntax_to_insert = "[" + filtered_filename + "](" + upload_result.url + ")";
         if (is_supported_image_type(file.type) || is_supported_audio_type(file.type)) {
             syntax_to_insert = "!" + syntax_to_insert;
         }
