@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.1
 
+**Feature level 500**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  The `require_e2ee_push_notifications` realm setting, when enabled,
+  now completely disables legacy push notifications rather than sending
+  them with redacted content.
+
 **Feature level 499**
 
 * [`GET /export/realm`](/api/get-realm-exports),

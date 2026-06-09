@@ -5922,7 +5922,7 @@ paths:
                                         sent. Only updated version of clients (which support E2EE
                                         push notifications) will receive push notifications.
 
-                                        **Changes**: In Zulip 12.0 (feature level ZF-cd878d), this
+                                        **Changes**: In Zulip 12.1 (feature level 500), this
                                         setting now completely disables legacy push notifications
                                         rather than sending them with redacted content.
 
@@ -20633,7 +20633,7 @@ paths:
                           sent. Only updated version of clients (which support E2EE
                           push notifications) will receive push notifications.
 
-                          **Changes**: In Zulip 12.0 (feature level ZF-cd878d), this
+                          **Changes**: In Zulip 12.1 (feature level 500), this
                           setting now completely disables legacy push notifications
                           rather than sending them with redacted content.
 
