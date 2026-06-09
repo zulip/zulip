@@ -367,7 +367,7 @@ def convert_users(
     users_list: list[MicrosoftTeamsFieldsT],
 ) -> MicrosoftTeamsUserIdToZulipUserIdT:
     zerver_user_profile: list[ZerverFieldsT] = []
-    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT = defaultdict(int)
+    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT = {}
     found_emails: dict[str, int] = {}
     has_owner = False
 
