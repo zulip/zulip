@@ -451,42 +451,28 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 
     const callbacks = {};
     let state = {};
+    let tus_options;
     const file = {
+        id: "uppy-copenhagen.png",
         name: "copenhagen.png",
         type: "image/png",
         meta: {
             name: "copenhagen.png",
         },
     };
-    let uppy_set_file_state_called = false;
-    let uppy_set_file_meta_called = false;
 
     uppy_stub = function () {
         return {
             setMeta() {},
-            use() {},
+            use(_plugin, options) {
+                tus_options = options;
+            },
             on(event_name, callback) {
                 callbacks[event_name] = callback;
             },
             removeFile() {},
             getFiles() {
                 return [];
-            },
-            // This is currently only called in
-            // on_upload_success_callback, we return the modified name
-            // keeping in mind only that case. Although this isn't
-            // ideal, it seems better than the alternative of creating
-            // a file store in the tests.
-            getFile() {
-                return {
-                    ...file,
-                    name: "modified-name-copenhagen.png",
-                    type: "image/png",
-                    meta: {
-                        ...file.meta,
-                        zulip_url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
-                    },
-                };
             },
             getState: () => ({
                 info: [
@@ -497,25 +483,29 @@ test("uppy_events", ({override_rewire, mock_template}) => {
                     },
                 ],
             }),
-            setFileState(_file_id, {name}) {
-                uppy_set_file_state_called = true;
-                assert.equal(name, "modified-name-copenhagen.png");
-            },
-            setFileMeta(_file_id, {zulip_url}) {
-                uppy_set_file_meta_called = true;
-                assert.equal(
-                    zulip_url,
-                    "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
-                );
-            },
         };
     };
     upload.setup_upload(upload.compose_config);
     assert.equal(Object.keys(callbacks).length, 6);
 
+    // Simulate tus-js-client having recorded this upload in our
+    // InMemoryUrlStorage, which it does while uploading -- keyed by its
+    // `/api/v1/tus/...` upload URL. That URL is what upload-success uses
+    // to find the entry and store/recover the result.
+    const tus_upload_url = "/api/v1/tus/rue1c-MlMUjDAUdkRrEM4BTJ";
+    tus_options.urlStorage.urlStorage.set("fingerprint::1", {
+        uploadUrl: tus_upload_url,
+        metadata: {},
+        size: null,
+        creationTime: "",
+        urlStorageKey: "fingerprint::1",
+        parallelUploadUrls: null,
+    });
+
     const on_upload_success_callback = callbacks["upload-success"];
     let response = {
         status: 200,
+        uploadURL: tus_upload_url,
         body: {
             xhr: {
                 responseText: JSON.stringify({
@@ -544,8 +534,24 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 
     assert.ok(compose_ui_replace_syntax_called);
     assert.ok(compose_ui_autosize_textarea_called);
-    assert.ok(uppy_set_file_state_called);
-    assert.ok(uppy_set_file_meta_called);
+
+    // Re-uploading the same file makes tus-js-client short-circuit to a
+    // HEAD request that returns no response body. We must still recover
+    // the URL and filename stored from the first upload above and insert
+    // the same syntax, rather than stalling on the placeholder. The
+    // replace_syntax override below continues to assert the same syntax.
+    compose_ui_replace_syntax_called = false;
+    const reupload_response = {
+        status: 200,
+        uploadURL: tus_upload_url,
+        body: {
+            xhr: {
+                responseText: "",
+            },
+        },
+    };
+    on_upload_success_callback(file, reupload_response);
+    assert.ok(compose_ui_replace_syntax_called);
 
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
@@ -594,28 +600,22 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     });
 
     const on_upload_error_callback = callbacks["upload-error"];
+    const $error_msg = upload.compose_config.upload_banner_message(file.id);
     compose_ui_replace_syntax_called = false;
     response = {
         body: {
             msg: "Response message",
         },
     };
-    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
-        assert.equal(data.banner_type, "error");
-        assert.equal(data.banner_text, "Response message");
-        return "<banner-stub>";
-    });
     on_upload_error_callback(file, null, response);
     assert.ok(compose_ui_replace_syntax_called);
+    assert.equal($error_msg.text(), "Response message");
 
+    // With no response body, we fall back to a generic error message.
     compose_ui_replace_syntax_called = false;
-    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
-        assert.equal(data.banner_type, "error");
-        assert.equal(data.banner_text, "translated: An unknown error occurred.");
-        return "<banner-stub>";
-    });
     on_upload_error_callback(file, null, undefined);
     assert.ok(compose_ui_replace_syntax_called);
+    assert.equal($error_msg.text(), "translated: An unknown error occurred.");
 
     assert.ok(hide_upload_banner_called);
     $("textarea#compose-textarea").val("user modified text");
