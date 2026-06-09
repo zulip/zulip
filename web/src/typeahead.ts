@@ -181,6 +181,12 @@ export function query_matches_string_in_any_order(
     query = query.toLowerCase();
     query = remove_diacritics(query);
 
+    if (has_unspaced_script(query)) {
+        const source_without_spaces = source_str.replaceAll(/\s+/g, "");
+        const search_words = query.split(/\s+/).filter(Boolean);
+        return search_words.every((search_word) => source_without_spaces.includes(search_word));
+    }
+
     const search_words = query.split(split_char).filter(Boolean);
     const source_words = source_str.split(split_char).filter(Boolean);
     if (search_words.length > source_words.length) {
