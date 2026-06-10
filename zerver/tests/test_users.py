@@ -2216,7 +2216,7 @@ class ActivateTest(ZulipTestCase):
         desdemona.is_mirror_dummy = True
         desdemona.save(update_fields=["is_mirror_dummy"])
 
-        # Cannot deactivate a user which is marked as "mirror dummy" from importing
+        # Cannot reactivate a user which is marked as "mirror dummy" from importing
         result = self.client_post(f"/json/users/{desdemona.id}/reactivate")
         self.assert_json_error(
             result, "Cannot activate a placeholder account; ask the user to sign up, instead."
