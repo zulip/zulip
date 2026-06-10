@@ -20,6 +20,7 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
     from corporate.lib.stripe_event_handler import (
         handle_checkout_session_completed_event,
         handle_invoice_paid_event,
+        handle_invoice_voided_event,
     )
 
     stripe_webhook_endpoint_secret = get_secret("stripe_webhook_endpoint_secret", "")
@@ -55,6 +56,7 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
     if stripe_event.type not in [
         "checkout.session.completed",
         "invoice.paid",
+        "invoice.voided",
     ]:
         return HttpResponse(status=200)
 
@@ -74,7 +76,7 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
         event.object_id = session.id
         event.save()
         handle_checkout_session_completed_event(stripe_session, event)
-    elif stripe_event.type == "invoice.paid":
+    elif stripe_event.type in ("invoice.paid", "invoice.voided"):
         stripe_invoice = stripe_event.data.object
         assert isinstance(stripe_invoice, stripe.Invoice)
         try:
@@ -84,7 +86,10 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
         event.content_type = ContentType.objects.get_for_model(Invoice)
         event.object_id = invoice.id
         event.save()
-        handle_invoice_paid_event(stripe_invoice, event)
+        if stripe_event.type == "invoice.paid":
+            handle_invoice_paid_event(stripe_invoice, event)
+        else:
+            handle_invoice_voided_event(stripe_invoice, event)
     # We don't need to process failed payments via webhooks since we directly charge users
     # when they click on "Purchase" button and immediately provide feedback for failed payments.
     # If the feedback is not immediate, our event_status handler checks for payment status and informs the user.
