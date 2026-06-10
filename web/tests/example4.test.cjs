@@ -99,6 +99,7 @@ run_test("add users with event", ({override}) => {
     // Keep reading to see how overriding works!
     override(settings_bots, "redraw_all_bots_list", noop);
     override(activity_ui, "check_should_redraw_new_user", noop);
+    override(pm_list, "update_private_messages", noop);
     // Let's simulate dispatching our event!
     server_events_dispatch.dispatch_normal_event(event);
 
@@ -109,10 +110,10 @@ run_test("add users with event", ({override}) => {
 /*
 
    It's actually a little surprising that adding a user does
-   not have side effects beyond the people object and the bots list.
-   I guess we don't immediately update the buddy list, but that's
-   because the buddy list gets updated on the next server
-   fetch.
+   not have side effects beyond the people object, the bots list,
+   and the direct messages list. I guess we don't immediately
+   update the buddy list, but that's because the buddy list gets
+   updated on the next server fetch.
 
    Let's try an update next.  To make this work, we will want
    to override some more of our stubs.

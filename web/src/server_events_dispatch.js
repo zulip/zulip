@@ -628,6 +628,11 @@ export function dispatch_normal_event(event) {
                         activity_ui.redraw_user(event.person.user_id);
                     }
 
+                    // The user may already appear in direct message
+                    // conversations, previously rendered with a
+                    // placeholder user record.
+                    pm_list.update_private_messages();
+
                     if (!event.person.is_bot) {
                         settings_exports.update_export_consent_data_and_redraw({
                             user_id: event.person.user_id,
@@ -651,6 +656,7 @@ export function dispatch_normal_event(event) {
                         user_id,
                         people.INACCESSIBLE_USER_NAME,
                     );
+                    pm_list.update_private_messages();
                     break;
                 }
                 default:
