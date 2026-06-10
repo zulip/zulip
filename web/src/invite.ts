@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import {add} from "date-fns";
 import Handlebars from "handlebars/runtime.js";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 

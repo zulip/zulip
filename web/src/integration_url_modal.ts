@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 

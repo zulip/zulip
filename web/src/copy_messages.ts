@@ -1,7 +1,7 @@
 // Because this logic is heavily focused around managing browser quirks,
 // this module is currently tested manually and via
 // by web/e2e-tests/copy_messages.test.ts, not with node tests.
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_copied_recipient_header from "../templates/copied_recipient_header.hbs";

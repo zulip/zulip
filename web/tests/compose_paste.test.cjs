@@ -10,7 +10,7 @@ const {parse} = require("../src/markdown.ts");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const {window} = new JSDOM();
 

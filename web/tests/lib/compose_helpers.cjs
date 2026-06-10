@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const $ = require("./zjquery.cjs");
+const {$} = require("./zjquery.cjs");
 
 class FakeComposeBox {
     constructor() {

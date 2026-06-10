@@ -1,5 +1,5 @@
 import Handlebars from "handlebars";
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_add_alert_word from "../templates/settings/add_alert_word.hbs";
 import render_alert_word_settings_item from "../templates/settings/alert_word_settings_item.hbs";

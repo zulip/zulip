@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import {SPAN_STATUS_OK} from "@sentry/core";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 

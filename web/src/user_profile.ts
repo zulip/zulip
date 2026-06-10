@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import {parseOneAddress} from "email-addresses";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";

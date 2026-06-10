@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";

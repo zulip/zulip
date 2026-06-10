@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 export function initialize(): void {
     $("#server-deactivate-form").validate({

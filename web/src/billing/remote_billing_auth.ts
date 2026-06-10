@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 function handle_submit_for_server_login_form(form: HTMLFormElement): void {
     // Get value of zulip_org_id.

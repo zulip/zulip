@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import type * as tippy from "tippy.js";
 
 import render_add_default_streams from "../templates/settings/add_default_streams.hbs";

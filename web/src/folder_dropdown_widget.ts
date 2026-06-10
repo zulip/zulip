@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as tippy from "tippy.js";
 
 import * as channel_folders from "./channel_folders.ts";

@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const focus_outline_util = zrequire("focus_outline_util");
 
