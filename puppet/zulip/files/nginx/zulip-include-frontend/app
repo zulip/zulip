@@ -20,6 +20,19 @@ location /static/ {
     # Set a nonexistent path, so we just serve the nice Django 404 page.
     error_page 404 /django_static_404.html;
 
+    # pdf.js and other ESM assets ship .mjs web-worker files. The system
+    # /etc/nginx/mime.types has no .mjs entry, so without this they are
+    # served as application/octet-stream and rejected by the browser's
+    # strict module-script MIME check. Set the type with default_type in
+    # a .mjs-only location rather than a types {} block, which would
+    # discard the inherited MIME map for every other static asset. This
+    # precedes the immutable-hash location and reuses its headers, since
+    # these hashed worker files are equally safe to cache aggressively.
+    location ~ \.mjs$ {
+        default_type text/javascript;
+        include /etc/nginx/zulip-include/immutable_headers;
+    }
+
     # These files are hashed and thus immutable; cache them aggressively.
     # Django adds 12 hex digits; Webpack adds 20.
     location ~ '\.[0-9a-f]{12}\.|[./][0-9a-f]{20}\.' {
