@@ -7368,6 +7368,7 @@ paths:
       operationId: get-drafts
       tags: ["drafts"]
       summary: Get drafts
+      x-pending-web-implementation: true
       description: |
         Fetch all drafts for the current user.
       responses:
@@ -7433,6 +7434,7 @@ paths:
       operationId: create-drafts
       tags: ["drafts"]
       summary: Create drafts
+      x-pending-web-implementation: true
       description: |
         Create one or more drafts on the server. These drafts will be automatically
         synchronized to other clients via `drafts` events.
@@ -7504,6 +7506,7 @@ paths:
       operationId: edit-draft
       tags: ["drafts"]
       summary: Edit a draft
+      x-pending-web-implementation: true
       description: |
         Edit a draft on the server. The edit will be automatically
         synchronized to other clients via `drafts` events.
@@ -7564,6 +7567,7 @@ paths:
       operationId: delete-draft
       tags: ["drafts"]
       summary: Delete a draft
+      x-pending-web-implementation: true
       description: |
         Delete a single draft from the server. The deletion will be automatically
         synchronized to other clients via a `drafts` event.
@@ -7600,6 +7604,7 @@ paths:
       operationId: get-navigation-views
       tags: ["navigation_views"]
       summary: Get all navigation views
+      x-pending-web-implementation: true
       description: |
         Fetch all configured custom navigation views for the current user.
 
@@ -7639,6 +7644,7 @@ paths:
       operationId: add-navigation-view
       tags: ["navigation_views"]
       summary: Add a navigation view
+      x-pending-web-implementation: true
       description: |
         Adds a new custom left sidebar navigation view configuration
         for the current user.
@@ -7684,6 +7690,7 @@ paths:
       operationId: edit-navigation-view
       tags: ["navigation_views"]
       summary: Update the navigation view
+      x-pending-web-implementation: true
       description: |
         Update the details of an existing configured navigation view,
         such as its name or whether it's pinned.
@@ -7772,6 +7779,7 @@ paths:
       operationId: remove-navigation-view
       tags: ["navigation_views"]
       summary: Remove a navigation view
+      x-pending-web-implementation: true
       description: |
         Remove a navigation view.
 
