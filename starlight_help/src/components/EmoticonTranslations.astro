@@ -4,17 +4,6 @@ import {getCollection} from "astro:content";
 const emoticons = (await getCollection("emoticons")).toSorted(
     (a, b) => a.data.order - b.data.order,
 );
-
-const rowHTML = (emoticon: string, emoji: string, imageSrc: string) => `
-<tr>
-    <td><code>${emoticon}</code></td>
-    <td><img src="${imageSrc}" alt="${emoji}" class="emoji-big"></td>
-</tr>
-`;
-let body = "";
-for (const entry of emoticons) {
-    body += rowHTML(entry.id, entry.data.emoji, entry.data.image.src);
-}
 ---
 
 <table>
@@ -25,6 +14,17 @@ for (const entry of emoticons) {
         </tr>
     </thead>
     <tbody>
-        <Fragment set:html={body} />
+        {
+            emoticons.map((entry) => (
+                <tr>
+                    <td>
+                        <code>{entry.id}</code>
+                    </td>
+                    <td>
+                        <img src={entry.data.image.src} alt={entry.data.emoji} class="emoji-big" />
+                    </td>
+                </tr>
+            ))
+        }
     </tbody>
 </table>
