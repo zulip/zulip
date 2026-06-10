@@ -2,10 +2,10 @@
   "account_country": "US",
   "account_name": "NORMALIZED",
   "account_tax_ids": null,
-  "amount_due": 119600,
+  "amount_due": 72000,
   "amount_overpaid": 0,
   "amount_paid": 0,
-  "amount_remaining": 119600,
+  "amount_remaining": 72000,
   "amount_shipping": 0,
   "application": null,
   "attempt_count": 0,
@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_NORMALIZED",
+  "customer": "switch_realm_from_standard_to_plus_plan--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -73,12 +74,13 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "pretax_credit_amounts": [],
         "pricing": {
@@ -90,6 +92,8 @@
           "unit_amount_decimal": "12000"
         },
         "quantity": 10,
+        "quantity_decimal": "10",
+        "subtotal": 120000,
         "taxes": []
       }
     ],
@@ -125,7 +129,7 @@
   },
   "shipping_cost": null,
   "shipping_details": null,
-  "starting_balance": -400,
+  "starting_balance": -48000,
   "statement_descriptor": "Zulip Cloud Plus",
   "status": "open",
   "status_transitions": {
@@ -142,5 +146,5 @@
   "total_excluding_tax": 120000,
   "total_pretax_credit_amounts": [],
   "total_taxes": [],
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

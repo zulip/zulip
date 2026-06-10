@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_NORMALIZED",
+  "customer": "invoice_scheduled_upgrade_realm_complimentary_access_plan--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -73,6 +74,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -90,6 +92,8 @@
           "unit_amount_decimal": "-24000"
         },
         "quantity": 1,
+        "quantity_decimal": "1",
+        "subtotal": -24000,
         "taxes": []
       },
       {
@@ -113,6 +117,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -130,6 +135,8 @@
           "unit_amount_decimal": "8000"
         },
         "quantity": 25,
+        "quantity_decimal": "25",
+        "subtotal": 200000,
         "taxes": []
       }
     ],
@@ -182,5 +189,5 @@
   "total_excluding_tax": 176000,
   "total_pretax_credit_amounts": [],
   "total_taxes": [],
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

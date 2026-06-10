@@ -65,6 +65,44 @@ function get_user_group_id_for_mention_button(elem: HTMLElement): number {
     return Number.parseInt(user_group_id, 10);
 }
 
+// We pass a minimal mock stream object in info_overlay for rendering stream links.
+type StreamInfo = {stream_id: number; name: string} | sub_store.StreamSubscription;
+
+export function update_stream_link_element($elem: JQuery, stream_info: StreamInfo): void {
+    $elem.html(render_decorated_channel_name({stream: stream_info, inline_with_text: true}));
+}
+
+export function update_topic_or_message_link_element(
+    $elem: JQuery,
+    stream_info: StreamInfo,
+    topic_name: string,
+    narrow_url: string,
+): void {
+    const topic_display_name = util.get_final_topic_display_name(topic_name);
+
+    const context = {
+        channel_name: stream_info.name,
+        topic_display_name,
+        is_empty_string_topic: topic_name === "",
+        href: narrow_url,
+    };
+
+    if ($elem.hasClass("stream-topic")) {
+        const topic_link_html = render_topic_link({
+            channel_id: stream_info.stream_id,
+            stream: stream_info,
+            ...context,
+        });
+        $elem.replaceWith($(topic_link_html));
+    } else {
+        const message_link_html = render_channel_message_link({
+            stream: stream_info,
+            ...context,
+        });
+        $elem.replaceWith($(message_link_html));
+    }
+}
+
 function get_message_for_message_content($content: JQuery): Message | undefined {
     // TODO: This selector is designed to exclude drafts/scheduled
     // messages. Arguably those settings should be unconditionally
@@ -232,7 +270,7 @@ export const update_elements = ($content: JQuery): void => {
                 // If the stream has been deleted, sub_store.get
                 // might return undefined.  Otherwise, display the
                 // current stream name.
-                $(this).html(render_decorated_channel_name({stream: sub, inline_with_text: true}));
+                update_stream_link_element($(this), sub);
             }
         }
     });
@@ -248,26 +286,13 @@ export const update_elements = ($content: JQuery): void => {
             // and not being displayed in search highlight.
             // TODO: Ideally, we should NOT skip this if only topic is highlighted,
             // but we are doing so currently.
-            const topic_name = channel_topic.topic_name;
-            assert(topic_name !== undefined);
-            const topic_display_name = util.get_final_topic_display_name(topic_name);
-            const context = {
-                channel_name: sub.name,
-                topic_display_name,
-                is_empty_string_topic: topic_name === "",
-                href: narrow_url,
-            };
-            if ($(this).hasClass("stream-topic")) {
-                const topic_link_html = render_topic_link({
-                    channel_id: channel_topic.stream_id,
-                    stream: sub,
-                    ...context,
-                });
-                $(this).replaceWith($(topic_link_html));
-            } else {
-                const message_link_html = render_channel_message_link({stream: sub, ...context});
-                $(this).replaceWith($(message_link_html));
-            }
+            assert(channel_topic.topic_name !== undefined);
+            update_topic_or_message_link_element(
+                $(this),
+                sub,
+                channel_topic.topic_name,
+                narrow_url,
+            );
         }
     });
 

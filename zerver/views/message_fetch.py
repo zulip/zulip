@@ -4,11 +4,10 @@ from typing import Annotated
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.db import connection, transaction
+from django.db.models import F, Func, TextField
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
-from sqlalchemy.sql import column, func
-from sqlalchemy.types import Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import (
@@ -29,9 +28,7 @@ from zerver.lib.narrow import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.topic import MATCH_TOPIC
-from zerver.lib.topic_sqlalchemy import topic_column_sa
+from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import UserMessage, UserProfile
 
@@ -347,15 +344,12 @@ def messages_in_narrow_backend(
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
-    query, inner_msg_id_col = get_base_query_for_search(
-        user_profile.realm_id, user_profile, need_user_message=True
-    )
-    query = query.where(column("message_id", Integer).in_(msg_ids))
+    query = get_base_query_for_search(user_profile.realm_id, user_profile, need_user_message=True)
+    query = query.filter(id__in=msg_ids)
 
     cleaned_narrow = clean_narrow_for_message_fetch(narrow, user_profile.realm, user_profile)
     query, is_search, _is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
-        inner_msg_id_col=inner_msg_id_col,
         query=query,
         narrow=cleaned_narrow,
         is_web_public_query=False,
@@ -364,24 +358,29 @@ def messages_in_narrow_backend(
 
     if not is_search:
         # `add_narrow_conditions` adds the following columns only if narrow has search operands.
-        query = query.add_columns(
-            func.escape_html(topic_column_sa(), type_=Text).label("escaped_topic_name"),
-            column("rendered_content", Text),
+        query = query.annotate(
+            escaped_topic_name=Func(
+                F(DB_TOPIC_NAME), function="escape_html", output_field=TextField()
+            ),
         )
 
     search_fields = {}
-    with get_sqlalchemy_connection() as sa_conn:
-        for row in sa_conn.execute(query).mappings():
-            message_id = row["message_id"]
-            escaped_topic_name: str = row["escaped_topic_name"]
-            rendered_content: str = row["rendered_content"]
-            content_matches = row.get("content_matches", [])
-            topic_matches = row.get("topic_matches", [])
-            search_fields[str(message_id)] = get_search_fields(
-                rendered_content,
-                escaped_topic_name,
-                content_matches,
-                topic_matches,
-            )
+    for row in query.values(
+        "id",
+        "escaped_topic_name",
+        "rendered_content",
+        *["content_matches", "topic_matches"] if is_search else [],
+    ):
+        message_id = row["id"]
+        escaped_topic_name: str = row["escaped_topic_name"]
+        rendered_content: str = row["rendered_content"]
+        content_matches = row.get("content_matches", [])
+        topic_matches = row.get("topic_matches", [])
+        search_fields[str(message_id)] = get_search_fields(
+            rendered_content,
+            escaped_topic_name,
+            content_matches,
+            topic_matches,
+        )
 
     return json_success(request, data={"messages": search_fields})

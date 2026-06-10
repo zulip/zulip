@@ -12,6 +12,8 @@ import * as message_user_ids from "./message_user_ids.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as reload_state from "./reload_state.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
+import * as server_events_state from "./server_events_state.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {CurrentUser, StateData, profile_datum_schema} from "./state_data.ts";
@@ -1521,12 +1523,16 @@ export function deactivate(person: User): void {
     non_active_user_dict.set(person.user_id, person);
 }
 
+function make_dummy_email(user_id: number): string {
+    return "user" + user_id + "@" + realm.realm_bot_domain;
+}
+
 export function remove_inaccessible_user(user_id: number): void {
     // We do not track inaccessible users in active_user_dict.
     active_user_dict.delete(user_id);
 
     // Create unknown user object for the inaccessible user.
-    const email = "user" + user_id + "@" + realm.realm_bot_domain;
+    const email = make_dummy_email(user_id);
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
 }
@@ -1536,9 +1542,17 @@ export function report_late_add(user_id: number, email: string): void {
     // we will fetch messages from the server that were sent by users
     // who don't exist in our users data set. This can happen because
     // we're in the middle of a reload (and thus stopped our event
-    // queue polling) or because we are a spectator and never had an
-    // event queue in the first place.
-    if (reload_state.is_in_progress() || page_params.is_spectator) {
+    // queue polling), because we are a spectator and never had an
+    // event queue in the first place, or because the first
+    // /json/events poll for this page's queue hasn't yet returned —
+    // in which case the message fetch may reference users created
+    // after the /register snapshot, and the corresponding
+    // realm_user/add event simply hasn't been delivered yet.
+    if (
+        reload_state.is_in_progress() ||
+        page_params.is_spectator ||
+        !server_events_state.has_received_first_events_response()
+    ) {
         blueslip.log("Added user late", {user_id, email});
     } else if (!settings_data.user_can_access_all_other_users()) {
         blueslip.log("Message was sent by an inaccessible user", {user_id});
@@ -1592,7 +1606,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
 }
 
 export function add_inaccessible_user(user_id: number): User {
-    const email = "user" + user_id + "@" + realm.realm_bot_domain;
+    const email = make_dummy_email(user_id);
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
     return unknown_user;
@@ -1659,7 +1673,7 @@ export function add_missing_people_for_message_reactions(reactions: {user_id: nu
             continue;
         }
 
-        const email = "user" + reaction.user_id + "@" + realm.realm_bot_domain;
+        const email = make_dummy_email(reaction.user_id);
         report_late_add(reaction.user_id, email);
         _add_user(make_user(reaction.user_id, email, INACCESSIBLE_USER_NAME));
     }
@@ -1948,7 +1962,7 @@ async function start_fetch_for_requested_users(): Promise<void> {
             break;
         } catch (error) {
             // Retry on error.
-            const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+            const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
 
             // Since users are in `valid_user_ids`, we expect
             // the fetch to eventually succeed, so we log a warning

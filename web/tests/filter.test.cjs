@@ -73,6 +73,32 @@ const annie = make_user({
     role: Role.GUEST,
 });
 
+// Multi-word names, to exercise resolving typed full names to user ids.
+const karl = make_user({
+    email: "karl@foo.com",
+    user_id: 36,
+    full_name: "Karl Stolley",
+});
+
+const shubham = make_user({
+    email: "shubham@foo.com",
+    user_id: 37,
+    full_name: "Shubham Padia",
+});
+
+// Two users sharing a full name, to exercise duplicate-name handling.
+const sam_one = make_user({
+    email: "sam1@foo.com",
+    user_id: 38,
+    full_name: "Sam Park",
+});
+
+const sam_two = make_user({
+    email: "sam2@foo.com",
+    user_id: 39,
+    full_name: "Sam Park",
+});
+
 // Add users to `valid_user_ids`.
 const source = "server_events";
 people.add_active_user(me, source);
@@ -81,6 +107,10 @@ people.add_active_user(steve, source);
 people.add_active_user(alice, source);
 people.add_active_user(jeff, source);
 people.add_active_user(annie, source);
+people.add_active_user(karl, source);
+people.add_active_user(shubham, source);
+people.add_active_user(sam_one, source);
+people.add_active_user(sam_two, source);
 people.initialize_current_user(me.user_id);
 state_data.set_current_user(me);
 muted_users.add_muted_user(jeff.user_id);
@@ -2275,12 +2305,48 @@ test("convert_suggestion_to_term", () => {
         ["mentions:me", true],
         ["mentions:-1", false],
         ["mentions:invalid", false],
+        // A typed full name resolves to a user id, matching the help center
+        // docs. Quotes keep a multi-word name a single operand through the
+        // parser. A third tuple element pins down the resolved term, so a
+        // name maps to the right user id and not merely to some valid term.
+        [`sender:"${karl.full_name}"`, true, {operator: "sender", operand: karl.user_id}],
+        [`mentions:"${karl.full_name}"`, true, {operator: "mentions", operand: karl.user_id}],
+        // dm and dm-including resolve a comma-separated list of names to the
+        // corresponding user ids.
+        [`dm:"${karl.full_name}"`, true, {operator: "dm", operand: [karl.user_id]}],
+        [
+            `dm:"${karl.full_name}, ${shubham.full_name}"`,
+            true,
+            {operator: "dm", operand: [karl.user_id, shubham.user_id]},
+        ],
+        [
+            `dm-including:"${karl.full_name}, ${shubham.full_name}"`,
+            true,
+            {operator: "dm-including", operand: [karl.user_id, shubham.user_id]},
+        ],
+        // A name that matches no user is invalid.
+        ['dm:"No Such Person"', false],
+        // An ambiguous (duplicate) full name is invalid on its own...
+        [`dm:"${sam_one.full_name}"`, false],
+        // ...but the `Full Name|user_id` form disambiguates it, resolving to
+        // exactly the requested user and not the other duplicate.
+        [
+            `dm:"${sam_one.full_name}|${sam_one.user_id}"`,
+            true,
+            {operator: "dm", operand: [sam_one.user_id]},
+        ],
+        [
+            `dm:"${sam_two.full_name}|${sam_two.user_id}"`,
+            true,
+            {operator: "dm", operand: [sam_two.user_id]},
+        ],
     ];
-    for (const [search_term_string, expected_is_valid] of test_data) {
-        assert.equal(
-            Filter.convert_suggestion_to_term(Filter.parse(search_term_string)[0]) !== undefined,
-            expected_is_valid,
-        );
+    for (const [search_term_string, expected_is_valid, expected_term] of test_data) {
+        const term = Filter.convert_suggestion_to_term(Filter.parse(search_term_string)[0]);
+        assert.equal(term !== undefined, expected_is_valid);
+        if (expected_term !== undefined) {
+            assert.deepEqual(term, {negated: false, ...expected_term});
+        }
     }
 
     // Invalid operator.

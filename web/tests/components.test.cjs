@@ -231,6 +231,7 @@ run_test("basics", () => {
     assert.equal(env.tabs[2].class, "last");
     assert.deepEqual(callback_args, ["translated: Keyboard shortcuts", "keyboard-shortcuts"]);
     assert.equal(widget.value(), "translated: Keyboard shortcuts");
+    assert.equal(widget.key(), "keyboard-shortcuts");
 
     callback_args = undefined;
 
@@ -241,6 +242,7 @@ run_test("basics", () => {
     assert.equal(env.tabs[2].class, "last");
     assert.deepEqual(callback_args, ["translated: Message formatting", "message-formatting"]);
     assert.equal(widget.value(), "translated: Message formatting");
+    assert.equal(widget.key(), "message-formatting");
 
     // Go to same tab twice and make sure we get callback.
     callback_args = undefined;

@@ -1967,6 +1967,10 @@ textarea.new_message_textarea {
 
 .saved_snippets-dropdown-list-container {
     width: 17.8571em; /* 250px at 14px/em */
+    .sticky-bottom-option-button {
+        width: calc(100% - 6px);
+        margin: 3px;
+    }
 
     .dropdown-list .dropdown-list-item-common-styles {
         padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
@@ -2057,6 +2061,13 @@ textarea.new_message_textarea {
            controls offscreen when previewing a very tall message. */
         height: 0;
         flex: 1;
+
+        /* Without this, .simplebar-wrapper has overflow: hidden and
+           height: 0, so Popper treats it as a zero-height clipping
+           ancestor and hides popovers anchored inside the preview. */
+        .simplebar-wrapper {
+            overflow: visible;
+        }
     }
 }
 

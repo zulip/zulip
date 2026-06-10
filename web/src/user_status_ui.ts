@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
@@ -165,6 +166,16 @@ function user_status_post_render(): void {
         update_button();
     });
 
+    $("#set-user-status-modal").on("keydown", "input.user-status, .user-status-value", (event) => {
+        if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
+            return;
+        }
+
+        event.preventDefault();
+        assert(event.currentTarget instanceof HTMLElement);
+        navigate_status_options($(event.currentTarget), event.key);
+    });
+
     input_field().on("keydown", (event) => {
         if (keydown_util.is_enter_event(event)) {
             event.preventDefault();
@@ -183,6 +194,15 @@ function user_status_post_render(): void {
         set_selected_emoji_info({});
         update_button();
     });
+}
+
+function navigate_status_options($focused_element: JQuery, key: "ArrowUp" | "ArrowDown"): void {
+    const $navigable_elements = input_field().add("#set-user-status-modal .user-status-value");
+    const current_index = $navigable_elements.index($focused_element);
+    const offset = key === "ArrowDown" ? 1 : -1;
+    const next_index =
+        (current_index + offset + $navigable_elements.length) % $navigable_elements.length;
+    $navigable_elements.eq(next_index).trigger("focus");
 }
 
 export function initialize(): void {

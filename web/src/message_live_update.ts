@@ -22,9 +22,19 @@ export function rerender_messages_view_by_message_ids(message_ids: number[]): vo
     }
 }
 
-function rerender_messages_view_for_user(user_id: number): void {
+function rerender_messages_sent_by_user(user_id: number): void {
     for (const list of message_lists.all_rendered_message_lists()) {
         const messages = list.data.get_messages_sent_by_user(user_id);
+        if (messages.length === 0) {
+            continue;
+        }
+        list.view.rerender_messages(messages);
+    }
+}
+
+function rerender_messages_involving_user(user_id: number): void {
+    for (const list of message_lists.all_rendered_message_lists()) {
+        const messages = list.data.get_messages_involving_user(user_id);
         if (messages.length === 0) {
             continue;
         }
@@ -76,12 +86,12 @@ export function update_stream_name(stream_id: number, new_name: string): void {
 
 export function update_user_full_name(user_id: number, full_name: string): void {
     message_store.update_sender_full_name(user_id, full_name);
-    rerender_messages_view_for_user(user_id);
+    rerender_messages_involving_user(user_id);
 }
 
 export function update_avatar(user_id: number, avatar_url: string | null): void {
     message_store.update_small_avatar_url(user_id, avatar_url);
-    rerender_messages_view_for_user(user_id);
+    rerender_messages_sent_by_user(user_id);
 }
 
 export function update_user_status_emoji(
@@ -89,7 +99,7 @@ export function update_user_status_emoji(
     status_emoji_info: UserStatusEmojiInfo | undefined,
 ): void {
     message_store.update_status_emoji_info(user_id, status_emoji_info);
-    rerender_messages_view_for_user(user_id);
+    rerender_messages_sent_by_user(user_id);
 }
 
 export function update_thumbnails(): void {

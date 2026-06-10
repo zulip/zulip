@@ -316,10 +316,10 @@
 {% if page_params.setup_payment_by_invoice %}
 <div id="confirm-send-invoice-modal" class="micromodal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
-        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="confirm-send-invoice-modal-label">
             <header class="modal__header">
                 <div class="modal__header-content">
-                    <h1 class="modal__title dialog_heading">
+                    <h1 id="confirm-send-invoice-modal-label" class="modal__title dialog_heading">
                         {% if page_params.free_trial_days %}
                         Start free trial for {{ plan }}
                         {% else %}

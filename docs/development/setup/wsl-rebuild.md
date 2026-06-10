@@ -39,4 +39,4 @@ $ ./tools/rebuild-dev-database
 ```
 
 For more details, see the [schema migration
-documentation](/subsystems/schema-migrations.md#schema-and-initial-data-changes).
+documentation](/subsystems/schema-migrations.md#local-schema-rebuilds).

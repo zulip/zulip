@@ -11,6 +11,7 @@ const buddy_list_presence = mock_esm("../src/buddy_list_presence");
 const scroll_util = mock_esm("../src/scroll_util");
 const pm_list = mock_esm("../src/pm_list");
 const util = mock_esm("../src/util");
+mock_esm("../src/sidebar_header_sticky_shadow", {initialize() {}});
 
 const state_data = zrequire("state_data");
 const activity_ui = zrequire("activity_ui");

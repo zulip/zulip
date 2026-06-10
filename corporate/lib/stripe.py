@@ -17,7 +17,7 @@ from django import forms
 from django.conf import settings
 from django.core import signing
 from django.core.signing import Signer
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -1632,28 +1632,40 @@ class BillingSession(ABC):
                     f"New plan for {self.billing_entity_display_name} cannot be scheduled until all the invoices of the current plan are processed."
                 )
 
-            self.create_customer_plan(
-                customer=customer,
-                tier=customer.required_plan_tier,
-                anchor_date=current_plan.end_date,
-                billing_schedule=current_plan.billing_schedule,
-                charge_automatically=current_plan.charge_automatically,
-                # Manual license management is not available for fixed-price plans.
-                automanage_licenses=True,
-                next_invoice_date=current_plan.end_date,
-                status=CustomerPlan.NEVER_STARTED,
-                invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
-                fixed_price=fixed_price_cents,
-                price_per_license=None,
-                end_date=add_months(
-                    current_plan.end_date, CustomerPlan.FIXED_PRICE_PLAN_DURATION_MONTHS
-                ),
-            )
+            with transaction.atomic(durable=True):
+                try:
+                    # There is a unique constraint on the database so that each Customer
+                    # can only be associated with one CustomerPlan with a status of
+                    # NEVER_STARTED at a time, so we try to create the plan before
+                    # making any updates to the current plan.
+                    self.create_customer_plan(
+                        customer=customer,
+                        tier=customer.required_plan_tier,
+                        anchor_date=current_plan.end_date,
+                        billing_schedule=current_plan.billing_schedule,
+                        charge_automatically=current_plan.charge_automatically,
+                        # Manual license management is not available for fixed-price plans.
+                        automanage_licenses=True,
+                        next_invoice_date=current_plan.end_date,
+                        status=CustomerPlan.NEVER_STARTED,
+                        invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
+                        fixed_price=fixed_price_cents,
+                        price_per_license=None,
+                        end_date=add_months(
+                            current_plan.end_date, CustomerPlan.FIXED_PRICE_PLAN_DURATION_MONTHS
+                        ),
+                    )
 
-            current_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
-            current_plan.next_invoice_date = current_plan.end_date
-            current_plan.save(update_fields=["status", "next_invoice_date"])
-            return f"Fixed price {required_plan_tier_name} plan scheduled to start on {current_plan.end_date.date()}."
+                    current_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+                    current_plan.next_invoice_date = current_plan.end_date
+                    current_plan.save(update_fields=["status", "next_invoice_date"])
+                    return f"Fixed price {required_plan_tier_name} plan scheduled to start on {current_plan.end_date.date()}."
+                except IntegrityError:
+                    raise SupportRequestError(
+                        "Customer already has a fixed-price plan renewal scheduled."
+                    )
+                except Exception as e:  # nocoverage
+                    raise SupportRequestError(str(e))
 
         # TODO: Use normal 'pay by invoice' flow for fixed-price plan offers,
         # which requires handling automated license management for these plan
@@ -1682,47 +1694,79 @@ class BillingSession(ABC):
             except Exception as e:
                 raise SupportRequestError(str(e))
 
-            if customer.stripe_customer_id is None:
-                # Note this is an exception to our normal support panel actions,
-                # which do not set any stripe billing information. Since these
-                # invoices are manually created first in stripe, it's important
-                # for our billing page to have our Customer object correctly
-                # linked to the customer in stripe.
-                self.link_stripe_customer_id(str(invoice_customer_id))
+        with transaction.atomic(durable=True):
+            try:
+                # There is a unique constraint on the database so that each Customer
+                # can only be associated with one CustomerPlanOffer with a status of
+                # CONFIGURED at a time, so we try to create the plan offer before
+                # making any other database and Stripe updates.
+                self.create_customer_plan_offer(
+                    customer=customer,
+                    fixed_price=fixed_price_cents,
+                    tier=customer.required_plan_tier,
+                    sent_invoice_id=sent_invoice_id,
+                )
 
-            Invoice.objects.create(
-                customer=customer,
-                stripe_invoice_id=sent_invoice_id,
-                status=Invoice.SENT,
-            )
+                if sent_invoice_id is not None:
+                    if customer.stripe_customer_id is None:
+                        # Note this is an exception to our normal support panel actions,
+                        # which do not set any stripe billing information. Since these
+                        # invoices are manually created first in stripe, it's important
+                        # for our billing page to have our Customer object correctly
+                        # linked to the customer in stripe.
+                        self.link_stripe_customer_id(str(invoice_customer_id))
 
-        self.create_customer_plan_offer(
-            customer=customer,
-            fixed_price=fixed_price_cents,
-            tier=customer.required_plan_tier,
-            sent_invoice_id=sent_invoice_id,
-        )
-        return f"Customer can now buy a fixed price {required_plan_tier_name} plan."
+                    Invoice.objects.create(
+                        customer=customer,
+                        stripe_invoice_id=sent_invoice_id,
+                        status=Invoice.SENT,
+                    )
+                return f"Customer can now buy a fixed price {required_plan_tier_name} plan."
+            except IntegrityError:
+                raise SupportRequestError(
+                    "Customer already has a configured fixed-price plan offer."
+                )
+            except Exception as e:  # nocoverage
+                raise SupportRequestError(str(e))
 
     def delete_fixed_price_plan(self) -> str:
-        # See configure_fixed_price_plan above for how these CustomerPlan
-        # and CustomerPlanOffer objects are created for fixed-price plans.
         customer = self.get_customer()
         assert customer is not None
-        current_plan = get_current_plan_by_customer(customer)
-        if current_plan is not None and self.check_plan_tier_is_billable(current_plan.tier):
-            fixed_price_next_plan = CustomerPlan.objects.filter(
-                customer=customer,
-                status=CustomerPlan.NEVER_STARTED,
-                fixed_price__isnull=False,
-            ).first()
-            assert fixed_price_next_plan is not None
+
+        # A NEVER_STARTED fixed-price CustomerPlan can be scheduled on top of
+        # any current plan whose status is SWITCH_PLAN_TIER_AT_PLAN_END, which
+        # includes complimentary access plans whose tier is not billable.
+        fixed_price_next_plan = CustomerPlan.objects.filter(
+            customer=customer,
+            status=CustomerPlan.NEVER_STARTED,
+            fixed_price__isnull=False,
+        ).first()
+        if fixed_price_next_plan is not None:
+            current_plan = get_current_plan_by_customer(customer)
+            assert current_plan is not None
+            assert current_plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
             fixed_price_next_plan.delete()
+            do_change_plan_status(current_plan, CustomerPlan.ACTIVE)
             return "Fixed-price scheduled plan deleted"
+
+        # Otherwise, we expect to have a configured CustomerPlanOffer for this
+        # customer.
         fixed_price_offer = CustomerPlanOffer.objects.filter(
             customer=customer, status=CustomerPlanOffer.CONFIGURED
         ).first()
         assert fixed_price_offer is not None
+        if fixed_price_offer.sent_invoice_id is not None:
+            # Void the Stripe invoice and local Invoice object associated
+            # with this CustomerPlanOffer.
+            stripe_invoice = stripe.Invoice.retrieve(fixed_price_offer.sent_invoice_id)
+            if stripe_invoice.status == "open":
+                stripe.Invoice.void_invoice(fixed_price_offer.sent_invoice_id)
+            local_invoice = Invoice.objects.get(
+                customer=customer,
+                stripe_invoice_id=fixed_price_offer.sent_invoice_id,
+            )
+            local_invoice.status = Invoice.VOID
+            local_invoice.save(update_fields=["status"])
         fixed_price_offer.delete()
         return "Fixed-price plan offer deleted"
 
@@ -2464,7 +2508,11 @@ class BillingSession(ABC):
                 # Check if user has already paid for the plan by invoice.
                 if not plan.charge_automatically:
                     last_sent_invoice = Invoice.objects.filter(plan=plan).order_by("-id").first()
-                    if last_sent_invoice and last_sent_invoice.status == Invoice.PAID:
+                    # An invoice-billed, free trial plan should have an invoice
+                    # created when it was created (see process_initial_upgrade).
+                    if last_sent_invoice is None:
+                        raise BillingError(f"Invoice-billed free trial has no invoice: {plan}.")
+                    if last_sent_invoice.status == Invoice.PAID:
                         # This will create invoice for any additional licenses that user has at the time of
                         # switching from free trial to paid plan since they already paid for the plan's this billing cycle.
                         is_renewal = False
@@ -5878,9 +5926,13 @@ def check_remote_server_audit_log_data(
                 plan, billing_session, next_invoice_date, last_audit_log_update
             )
 
-        # We still process free trial plans so that we can directly downgrade them.
-        if plan.is_free_trial() and not plan.charge_automatically:  # nocoverage
-            return True
+        # Process free trial plans that are billed by invoice if the sent
+        # invoice has not been paid, so that they can be automatically
+        # downgraded.
+        if plan.is_free_trial() and not plan.charge_automatically:
+            last_sent_invoice = Invoice.objects.filter(plan=plan).order_by("-id").first()
+            if last_sent_invoice is None or last_sent_invoice.status != Invoice.PAID:
+                return True
 
         # We don't have current audit log data from the remote server,
         # so we don't have enough information to invoice the plan.

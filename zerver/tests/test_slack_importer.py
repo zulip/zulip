@@ -5,6 +5,7 @@ import tempfile
 import zipfile
 from collections.abc import Iterator
 from io import BytesIO
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 from unittest import mock
 from unittest.mock import ANY
@@ -14,16 +15,19 @@ import orjson
 import responses
 from attr import dataclass
 from django.conf import settings
+from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
 
 from confirmation import settings as confirmation_settings
-from confirmation.models import Confirmation, get_object_from_key
+from confirmation.models import Confirmation, create_confirmation_link, get_object_from_key
 from zerver.actions.create_realm import do_create_realm, get_email_address_visibility_default
 from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
+from zerver.actions.users import do_deactivate_user
 from zerver.data_import.import_util import (
+    AttachmentRecordData,
     UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
@@ -35,6 +39,7 @@ from zerver.data_import.import_util import (
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
+    MAIN_SLACK_IMPORT_TOPIC,
     SLACK_IMPORT_TOKEN_SCOPES,
     AddedChannelsT,
     AddedDMsT,
@@ -42,6 +47,7 @@ from zerver.data_import.slack import (
     MessageConversionResult,
     SlackBotEmail,
     SlackBotNotFoundError,
+    SlackTokenValidationError,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
     check_slack_token_access,
@@ -67,6 +73,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.topic import EXPORT_TOPIC_NAME
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.models import Message, PreregistrationRealm, Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
@@ -164,6 +171,26 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
     except KeyError:
         return team_not_found
     return (200, {}, orjson.dumps({"ok": True, "team": {"id": team_id, "domain": team_domain}}))
+
+
+class FakeUniqueViolationError(Exception):
+    """Stand-in for the psycopg2 UniqueViolation that Django exposes as
+    IntegrityError.__cause__, carrying the diagnostics (diag.constraint_name)
+    that import_slack_data inspects."""
+
+    def __init__(self, message: str, constraint_name: str) -> None:
+        super().__init__(message)
+        self.diag = SimpleNamespace(constraint_name=constraint_name)
+
+
+def slack_import_integrity_error(constraint_name: str) -> IntegrityError:
+    """Build the IntegrityError Django raises when an INSERT violates a unique
+    constraint, so import_slack_data can recognize a taken subdomain from the
+    constraint name."""
+    message = f'duplicate key value violates unique constraint "{constraint_name}"'
+    error = IntegrityError(message)
+    error.__cause__ = FakeUniqueViolationError(message, constraint_name)
+    return error
 
 
 class SlackImporter(ZulipTestCase):
@@ -425,9 +452,12 @@ class SlackImporter(ZulipTestCase):
         )
 
         def exception_for(token: str, required_scopes: set[str] = SLACK_IMPORT_TOKEN_SCOPES) -> str:
-            with self.assertRaises(Exception) as invalid:
+            with self.assertRaises(SlackTokenValidationError) as invalid:
                 check_slack_token_access(token, required_scopes)
-            return invalid.exception.args[0]
+            message = invalid.exception.args[0]
+            # The user-facing message must never leak the token.
+            self.assertNotIn(token, message)
+            return message
 
         self.assertEqual(
             exception_for("xoxq-unknown"),
@@ -437,12 +467,12 @@ class SlackImporter(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             self.assertEqual(
                 exception_for("xoxb-invalid-token"),
-                "Invalid token: xoxb-invalid-token",
+                "Invalid token.",
             )
 
         self.assertEqual(
             exception_for("xoxb-broken-request"),
-            "Failed to fetch data (HTTP status 400) for Slack token: xoxb-broken-request",
+            "Failed to validate the token with Slack (HTTP status 400).",
         )
 
         self.assertEqual(
@@ -454,10 +484,10 @@ class SlackImporter(ZulipTestCase):
             "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
         )
 
-        self.assertEqual(
-            exception_for("xoxb-valid-token", set()),
-            "required_scopes shouldn't be empty!",
-        )
+        # An empty required_scopes is a caller bug, not a token problem.
+        with self.assertRaises(ValueError) as empty_scopes:
+            check_slack_token_access("xoxb-valid-token", set())
+        self.assertEqual(empty_scopes.exception.args[0], "required_scopes shouldn't be empty!")
 
         check_slack_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
 
@@ -1420,10 +1450,10 @@ class SlackImporter(ZulipTestCase):
         )
 
         self.assert_length(attachment, 1)
-        self.assertEqual(attachment[0]["file_name"], "apple.png")
-        self.assertEqual(attachment[0]["is_realm_public"], True)
-        self.assertEqual(attachment[0]["is_web_public"], False)
-        self.assertEqual(attachment[0]["content_type"], "image/png")
+        self.assertEqual(attachment[0].file_name, "apple.png")
+        self.assertEqual(attachment[0].is_realm_public, True)
+        self.assertEqual(attachment[0].is_web_public, False)
+        self.assertEqual(attachment[0].content_type, "image/png")
 
         self.assertEqual(zerver_message[9]["has_image"], True)
         self.assertEqual(zerver_message[9]["has_attachment"], True)
@@ -1447,7 +1477,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 3)
+        self.assert_length(zerver_message, 5)
 
         self.assert_length(uploads, 0)
         self.assert_length(attachment, 0)
@@ -1462,90 +1492,172 @@ class SlackImporter(ZulipTestCase):
 
         ### THREAD 1 CONVERSATION ###
         # Test thread topic name contains message snippet
-        expected_thread_1_message_1_content = "message body text"
         expected_thread_1_topic_name = "2015-06-12 message body text"
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_1_message_1_content = "message body text"
+        expected_thread_1_message_1_content = f"""
+{original_thread_1_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
         self.assertEqual(zerver_message[1]["content"], expected_thread_1_message_1_content)
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
 
         # Thread reply is in the correct thread topic
-        self.assertEqual(zerver_message[2]["content"], "random")
+        expected_thread_1_message_2_content = "random"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_1_message_2_content)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
+        ### THREAD 2 CONVERSATION ###
+        # Test thread topic name contains message snippet
+        expected_thread_2_topic_name = "2015-06-12 message body text"
+        thread_2_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_2_topic_name,
+        )
+        original_thread_2_message_1_content = "message body text"
+        expected_thread_2_message_1_content = f"""
+{original_thread_2_message_1_content}
+
+*1 reply in {thread_2_topic_link_syntax}*
+""".strip()
+
+        self.assertEqual(zerver_message[1]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+
+        # Thread reply is in the correct thread topic
+        expected_thread_2_message_2_content = "random"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_2_content)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+
     def test_convert_thread_topic_name_cut_off(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["thread_with_long_topic_name"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
 
         zerver_message = conversion_result.zerver_message
 
         self.assert_length(zerver_message, 4)
         # Test thread topic name cut off.
-        expected_thread_1_message_1_content = (
-            "random message but it is too long for the thread topic name"
-        )
         expected_thread_1_topic_name = (
             "2015-08-18 random message but it is too long for the thread…"
         )
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_1_message_1_content = (
+            "random message but it is too long for the thread topic name"
+        )
+        expected_thread_1_message_1_content = f"""
+{original_thread_1_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
+
         self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
-        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
         # Record that truncation should use the full maximum topic length.
-        self.assert_length(zerver_message[0][EXPORT_TOPIC_NAME], 60)
+        expected_thread_1_topic_name = (
+            "2015-08-18 random message but it is too long for the thread…"
+        )
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assert_length(zerver_message[1][EXPORT_TOPIC_NAME], 60)
 
         ### THREAD 2 CONVERSATION ###
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
         # Test that two different thread topics, despite having unique
         # original topic names, will collide if their truncated names
         # are identical.
-        expected_thread_2_message_1_content = (
-            "random message but it is too long for the thread two electric boogaloo"
-        )
         expected_thread_2_topic_name = (
             "2015-08-18 random message but it is too long for the th… (2)"
         )
-        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
-        # Record that truncation should use the full maximum topic length.
-        self.assert_length(zerver_message[2][EXPORT_TOPIC_NAME], 60)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        self.assert_length(zerver_message[3][EXPORT_TOPIC_NAME], 60)
 
     def test_convert_colliding_thread_topic_names(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["threads_with_colliding_topic_names"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
 
         zerver_message = conversion_result.zerver_message
 
         self.assert_length(zerver_message, 6)
         ### THREAD 1 CONVERSATION ###
-        expected_thread_1_message_1_content = "message body text"
         expected_thread_1_topic_name = "2015-06-12 message body text"
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_1_message_1_content = "message body text"
+        expected_thread_1_message_1_content = f"""
+{original_thread_1_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
         self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
-        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
         ### THREAD 2 CONVERSATION ###
         # Test thread topic name collision.
-        expected_thread_2_message_1_content = "message body text"
         expected_thread_2_topic_name = "2015-06-12 message body text (2)"
-        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
         ### THREAD 3 CONVERSATION ###
         # Test two thread topic names with the same message
         # snippet don't collide if they're on different days.
         expected_thread_3_topic_name = "1974-07-27 message body text"
-        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
 
     def test_convert_thread_topic_name_with_mention_syntax(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["thread_with_mention_syntax_in_topic_name"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
 
         zerver_message = conversion_result.zerver_message
 
         self.assert_length(zerver_message, 2)
         # Test mention syntax in thread topic name.
-        expected_thread_message_1_content = "@**Jon** please reply to this message"
         expected_thread_topic_name = "2015-07-17 @**Jon** please reply to this message"
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_topic_name,
+        )
+        original_thread_message_1_content = "@**Jon** please reply to this message"
+        expected_thread_message_1_content = f"""
+{original_thread_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
         self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
-        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
     def test_convert_thread_topic_name_with_file_link_formatting(self) -> None:
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
@@ -1561,21 +1673,41 @@ class SlackImporter(ZulipTestCase):
         expected_thread_message_1_content = "Look!\n[Apple](/user_uploads/"
         expected_thread_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
         self.assertTrue(zerver_message[0]["content"].startswith(expected_thread_message_1_content))
-        self.assertTrue(zerver_message[0][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertTrue(zerver_message[1][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
 
     def test_convert_thread_topic_name_with_text_formattings(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["thread_with_text_formattings_in_topic_name"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
 
         zerver_message = conversion_result.zerver_message
 
         self.assert_length(zerver_message, 2)
-        # Test various formatting syntaxes in thread topic name.
-        expected_thread_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
-        expected_thread_topic_name = "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+
+        expected_thread_1_topic_name = (
+            "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+        )
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
+        expected_thread_message_1_content = f"""
+{original_thread_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
+
         self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
-        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
@@ -1823,6 +1955,7 @@ class SlackImporter(ZulipTestCase):
                 "channel": "C06P6T3QGD7",
                 "event_ts": "1723609070.703489",
                 "channel_type": "channel",
+                "channel_name": "general",
             },
         ]
 
@@ -1946,7 +2079,7 @@ To Do
         realm: dict[str, Any] = {"zerver_subscription": []}
         user_list: list[dict[str, Any]] = []
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
-        attachments: list[dict[str, Any]] = []
+        attachments: list[AttachmentRecordData] = []
         uploads: list[UploadRecordData] = []
 
         zerver_usermessage = [{"id": 3}, {"id": 5}, {"id": 6}, {"id": 9}]
@@ -2145,6 +2278,17 @@ To Do
                 url_private="https://example.com/banana.zip",
                 title="banana",
             ),
+            # A Slack-hosted non-image after the image guards against
+            # has_image getting reassigned to False.
+            dict(
+                url_private="https://files.slack.com/notes.pdf",
+                title="Notes",
+                name="notes.pdf",
+                mimetype="application/pdf",
+                timestamp=9999,
+                created=8888,
+                size=1000,
+            ),
         ]
         message = dict(
             user=alice_id,
@@ -2159,7 +2303,7 @@ To Do
             "alice": alice_id,
         }
 
-        zerver_attachment: list[dict[str, Any]] = []
+        zerver_attachment: list[AttachmentRecordData] = []
         uploads_list: list[UploadRecordData] = []
 
         info = process_message_files(
@@ -2174,12 +2318,15 @@ To Do
             uploads_list=uploads_list,
             do_download_and_export_upload_file=lambda request: None,
         )
-        self.assert_length(zerver_attachment, 1)
-        self.assert_length(uploads_list, 1)
+        self.assert_length(zerver_attachment, 2)
+        self.assert_length(uploads_list, 2)
 
-        image_path = zerver_attachment[0]["path_id"]
+        image_path = zerver_attachment[0].path_id
+        pdf_path = zerver_attachment[1].path_id
         expected_content = (
-            f"[Apple](/user_uploads/{image_path})\n[banana](https://example.com/banana.zip)"
+            f"[Apple](/user_uploads/{image_path})\n"
+            f"[banana](https://example.com/banana.zip)\n"
+            f"[Notes](/user_uploads/{pdf_path})"
         )
         self.assertEqual(info["content"], expected_content)
 
@@ -2335,7 +2482,7 @@ To Do
         assert confirmation_key is not None
 
         # Check that the we show an error message if the token is invalid.
-        mock_check_slack_token_access.side_effect = ValueError("Invalid slack token")
+        mock_check_slack_token_access.side_effect = SlackTokenValidationError("Invalid slack token")
         result = self.client_post(
             "/new/import/slack/",
             {
@@ -2420,38 +2567,36 @@ To Do
 
         # We don't want to test to whole realm import process here but only that
         # realm import calls are made with correct arguments and different cases
-        # are handled well.
-        realm = do_create_realm(
-            string_id=prereg_realm.string_id,
-            name=prereg_realm.name,
-        )
+        # are handled well. do_import_realm creates the realm (and its users) as
+        # part of the import, so mock it to do so here -- matching production,
+        # where no realm with this subdomain exists until the import creates it.
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            realm = do_create_realm(
+                string_id=prereg_realm.string_id,
+                name=prereg_realm.name,
+            )
+            do_create_user("email1", "password", realm, "full_name", acting_user=None)
+            do_create_user(
+                "bot_email",
+                "password",
+                realm,
+                "bot_full_name",
+                bot_type=UserProfile.DEFAULT_BOT,
+                acting_user=None,
+            )
+            self.assertEqual(
+                get_email_address_visibility_default(realm.org_type),
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            )
+            return realm
 
-        test_user = do_create_user("email1", "password", realm, "full_name", acting_user=None)
-        test_bot_user = do_create_user(
-            "bot_email",
-            "password",
-            realm,
-            "bot_full_name",
-            bot_type=UserProfile.DEFAULT_BOT,
-            acting_user=None,
-        )
-        self.assertEqual(
-            get_email_address_visibility_default(realm.org_type),
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-        )
-        self.assertEqual(
-            test_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        )
-        self.assertEqual(
-            test_bot_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-        )
         with (
             mock.patch(
                 "zerver.actions.data_import.save_attachment_contents"
             ) as mocked_save_attachment,
             mock.patch("zerver.actions.data_import.do_convert_zipfile") as mocked_convert_zipfile,
             mock.patch(
-                "zerver.actions.data_import.do_import_realm", return_value=realm
+                "zerver.actions.data_import.do_import_realm", side_effect=fake_do_import_realm
             ) as mocked_import_realm,
         ):
             from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -2468,20 +2613,21 @@ To Do
         self.assertTrue(mocked_save_attachment.called)
         self.assertTrue(mocked_convert_zipfile.called)
         self.assertTrue(mocked_import_realm.called)
-        realm.refresh_from_db()
+        realm = Realm.objects.get(string_id=prereg_realm.string_id)
         self.assertEqual(realm.org_type, prereg_realm.org_type)
         self.assertEqual(realm.default_language, prereg_realm.default_language)
         prereg_realm.refresh_from_db()
         self.assertTrue(prereg_realm.data_import_metadata["need_select_realm_owner"])
 
-        # Check that imported users have user provided email visibility setting.
-        test_user.refresh_from_db()
+        # Check that imported non-bot users have the importer-provided email
+        # visibility setting.
+        test_user = UserProfile.objects.get(realm=realm, delivery_email="email1")
         self.assertEqual(
             test_user.email_address_visibility,
             importer_set_email_address_visibility,
         )
         # Check that bots were not impacted by this setting.
-        test_bot_user.refresh_from_db()
+        test_bot_user = UserProfile.objects.get(realm=realm, delivery_email="bot_email")
         self.assertEqual(
             test_bot_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         )
@@ -2579,16 +2725,22 @@ To Do
             email="test_import_slack_data_user@example.com",
             data_import_metadata={"import_from": "slack"},
         )
-        mock_realm = do_create_realm(
-            string_id=prereg_realm.string_id,
-            name=prereg_realm.name,
-        )
-        mock_do_import_realm.return_value = mock_realm
 
-        importing_user = UserProfile.objects.create(
-            realm=mock_realm,
-            delivery_email=prereg_realm.email,
-        )
+        # do_import_realm creates the realm (with the importing user) during
+        # the import; mock it to do so, matching production where the realm
+        # does not exist until the import creates it.
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            realm = do_create_realm(
+                string_id=prereg_realm.string_id,
+                name=prereg_realm.name,
+            )
+            UserProfile.objects.create(
+                realm=realm,
+                delivery_email=prereg_realm.email,
+            )
+            return realm
+
+        mock_do_import_realm.side_effect = fake_do_import_realm
 
         event = {
             "preregistration_realm_id": prereg_realm.id,
@@ -2602,17 +2754,122 @@ To Do
         mock_do_convert_zipfile.assert_called_once_with(
             mock.ANY, mock.ANY, event["slack_access_token"]
         )
-        mock_do_import_realm.assert_called_once_with(mock.ANY, prereg_realm.string_id)
+        mock_do_import_realm.assert_called_once_with(
+            mock.ANY, prereg_realm.string_id, on_realm_created=mock.ANY
+        )
 
         prereg_realm.refresh_from_db()
         self.assertEqual(prereg_realm.status, 1)  # STATUS_USED
-        self.assertEqual(prereg_realm.created_realm, mock_realm)
+        realm = prereg_realm.created_realm
+        assert realm is not None
+        self.assertEqual(realm.string_id, prereg_realm.string_id)
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
         self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
 
         # Check that the importing user was made the realm owner
-        importing_user.refresh_from_db()
+        importing_user = UserProfile.objects.get(realm=realm, delivery_email=prereg_realm.email)
         self.assertEqual(importing_user.role, UserProfile.ROLE_REALM_OWNER)
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_reactivates_deactivated_importing_user(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # If the importing user's account was deactivated in the export, the
+        # import must not fail at the end (throwing away the imported realm);
+        # instead reactivate the account and make it the realm owner.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm-inactive-owner",
+            name="Test Realm",
+            email="importer@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            importing_user = do_create_user(
+                prereg_realm.email,
+                "password",
+                realm,
+                "Importing user",
+                acting_user=None,
+            )
+            do_deactivate_user(importing_user, acting_user=None)
+            return realm
+
+        mock_do_import_realm.side_effect = fake_do_import_realm
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        import_slack_data(event)
+
+        prereg_realm.refresh_from_db()
+        realm = prereg_realm.created_realm
+        assert realm is not None
+        # The imported realm is preserved and its owner reactivated.
+        self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
+        self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
+        importing_user = UserProfile.objects.get(realm=realm, delivery_email=prereg_realm.email)
+        self.assertTrue(importing_user.is_active)
+        self.assertEqual(importing_user.role, UserProfile.ROLE_REALM_OWNER)
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_importing_user_is_bot_prompts_owner_selection(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # If the importer's email maps to a bot account, it cannot own the
+        # realm; fall back to the "select your account" flow rather than
+        # crashing and discarding the imported realm.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm-bot-owner",
+            name="Test Realm",
+            email="bot-importer@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            owner = do_create_user(
+                "human-owner@example.com", "password", realm, "Human", acting_user=None
+            )
+            do_create_user(
+                prereg_realm.email,
+                "password",
+                realm,
+                "Bot account",
+                bot_type=UserProfile.DEFAULT_BOT,
+                bot_owner=owner,
+                acting_user=None,
+            )
+            return realm
+
+        mock_do_import_realm.side_effect = fake_do_import_realm
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        import_slack_data(event)
+
+        prereg_realm.refresh_from_db()
+        realm = prereg_realm.created_realm
+        assert realm is not None
+        # The realm is preserved; the user is asked to select an owner.
+        self.assertTrue(prereg_realm.data_import_metadata["need_select_realm_owner"])
+        self.assertNotEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")
@@ -2641,11 +2898,17 @@ To Do
         confirmation_key = find_key_by_email(email)
         assert confirmation_key is not None
         prereg_realm = PreregistrationRealm.objects.get(email=email)
-        mock_realm = do_create_realm(
-            string_id=prereg_realm.string_id,
-            name=prereg_realm.name,
-        )
-        mock_do_import_realm.return_value = mock_realm
+
+        # do_import_realm creates the realm during the import; mock it to do
+        # so, matching production where the realm does not exist until the
+        # import creates it.
+        def fake_do_import_realm(*args: object, **kwargs: object) -> Realm:
+            return do_create_realm(
+                string_id=prereg_realm.string_id,
+                name=prereg_realm.name,
+            )
+
+        mock_do_import_realm.side_effect = fake_do_import_realm
 
         event = {
             "preregistration_realm_id": prereg_realm.id,
@@ -2659,7 +2922,9 @@ To Do
         mock_do_convert_zipfile.assert_called_once_with(
             mock.ANY, mock.ANY, event["slack_access_token"]
         )
-        mock_do_import_realm.assert_called_once_with(mock.ANY, prereg_realm.string_id)
+        mock_do_import_realm.assert_called_once_with(
+            mock.ANY, prereg_realm.string_id, on_realm_created=mock.ANY
+        )
 
         prereg_realm.refresh_from_db()
         self.assertTrue(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
@@ -2714,7 +2979,8 @@ To Do
 
         prereg_realm.refresh_from_db()
         self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
-        self.assertEqual(prereg_realm.created_realm, mock_realm)
+        assert prereg_realm.created_realm is not None
+        self.assertEqual(prereg_realm.created_realm.string_id, prereg_realm.string_id)
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
         self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
         self.assertIsNone(prereg_realm.data_import_metadata.get("user_activation_url"))
@@ -2765,18 +3031,21 @@ To Do
         mock_do_convert_zipfile: mock.Mock,
         mock_do_import_realm: mock.Mock,
     ) -> None:
+        # If do_import_realm durably creates the realm and then fails during a
+        # later step, the failure handler must delete the half-imported realm
+        # that this import created.
         prereg_realm = PreregistrationRealm.objects.create(
             string_id="test-realm",
             name="Test Realm",
             email="test@example.com",
             data_import_metadata={"import_from": "slack"},
         )
-        do_create_realm(
-            string_id=prereg_realm.string_id,
-            name=prereg_realm.name,
-        )
-        self.assertTrue(Realm.objects.filter(string_id=prereg_realm.string_id).exists())
-        mock_do_import_realm.side_effect = AssertionError("Import failed")
+
+        def create_realm_then_fail(*args: object, **kwargs: object) -> Realm:
+            do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            raise AssertionError("Import failed")
+
+        mock_do_import_realm.side_effect = create_realm_then_fail
         event = {
             "preregistration_realm_id": prereg_realm.id,
             "filename": "import/test/slack.zip",
@@ -2793,6 +3062,423 @@ To Do
         self.assertIsNone(prereg_realm.created_realm)
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
         self.assertFalse(Realm.objects.filter(string_id=prereg_realm.string_id).exists())
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_failure_keeps_concurrently_created_realm(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # A concurrent import of the same subdomain wins the race to create
+        # the realm while this import runs; do_import_realm then fails with an
+        # IntegrityError on the unique string_id. This import created nothing,
+        # so it must not delete the concurrently created realm -- doing so
+        # would destroy that realm's data and can deadlock against its
+        # in-progress work.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+
+        def create_realm_then_conflict(*args: object, **kwargs: object) -> Realm:
+            other_realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            UserProfile.objects.create(
+                realm=other_realm,
+                delivery_email="someone@example.com",
+                email="someone@example.com",
+            )
+            raise slack_import_integrity_error("zerver_realm_string_id_key")
+
+        mock_do_import_realm.side_effect = create_realm_then_conflict
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with (
+            self.assertLogs("zulip.registration", "ERROR") as logs,
+            self.assertRaises(IntegrityError),
+        ):
+            import_slack_data(event)
+        self.assertIn("zerver_realm_string_id_key", logs.output[0])
+
+        # The concurrently created realm and its data must be untouched.
+        other_realm = Realm.objects.get(string_id=prereg_realm.string_id)
+        self.assertTrue(
+            UserProfile.objects.filter(
+                realm=other_realm, delivery_email="someone@example.com"
+            ).exists()
+        )
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        # The conflict is recorded so the status poll can surface it.
+        self.assertTrue(prereg_realm.data_import_metadata["subdomain_unavailable"])
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_failure_unrelated_integrity_error(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # An IntegrityError that is not the unique violation on Realm.string_id
+        # -- e.g. a genuine bug in the import code hitting some other constraint
+        # -- must be treated like any other failure: the half-imported realm
+        # this import created is cleaned up, and the subdomain is not reported
+        # as unavailable.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+
+        def create_realm_then_unrelated_conflict(*args: object, **kwargs: object) -> Realm:
+            do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            raise slack_import_integrity_error("zerver_useractivityinterval_uniq")
+
+        mock_do_import_realm.side_effect = create_realm_then_unrelated_conflict
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with (
+            self.assertLogs("zulip.registration", "ERROR") as logs,
+            self.assertRaises(IntegrityError),
+        ):
+            import_slack_data(event)
+        self.assertIn("zerver_useractivityinterval_uniq", logs.output[0])
+
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        # The realm this import created is cleaned up, since this is not a
+        # subdomain conflict.
+        self.assertFalse(Realm.objects.filter(string_id=prereg_realm.string_id).exists())
+        # A non-string_id error must not be reported as a taken subdomain.
+        self.assertNotIn("subdomain_unavailable", prereg_realm.data_import_metadata)
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_aborts_when_subdomain_taken(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # If a realm with this subdomain already exists when the import job
+        # starts -- e.g. an earlier import of the same subdomain finished
+        # first -- abort without attempting the (doomed) import and without
+        # touching the existing realm.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack", "is_import_work_queued": True},
+        )
+        other_realm = do_create_realm(
+            string_id=prereg_realm.string_id,
+            name=prereg_realm.name,
+        )
+        other_user = UserProfile.objects.create(
+            realm=other_realm,
+            delivery_email="someone@example.com",
+            email="someone@example.com",
+        )
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with self.assertLogs("zulip.registration", "ERROR") as logs:
+            import_slack_data(event)
+        self.assertIn("subdomain is already in use", logs.output[0])
+
+        # The import was not attempted, and the existing realm is untouched.
+        mock_save_attachment_contents.assert_not_called()
+        mock_do_convert_zipfile.assert_not_called()
+        mock_do_import_realm.assert_not_called()
+        self.assertTrue(Realm.objects.filter(id=other_realm.id).exists())
+        self.assertTrue(UserProfile.objects.filter(id=other_user.id).exists())
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        # The conflict is recorded so the status poll can surface it.
+        self.assertTrue(prereg_realm.data_import_metadata["subdomain_unavailable"])
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_recovers_own_orphaned_realm_on_redelivery(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # do_import_realm durably commits the realm partway through, so a
+        # worker that dies before finishing leaves a half-imported realm; the
+        # event is then redelivered. On redelivery the import must recognize
+        # the realm as its own (via the import_created_realm_id stamp) and
+        # clean it up and re-import, rather than treating it as a foreign
+        # conflict and orphaning the realm forever.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack", "is_import_work_queued": True},
+        )
+        # The orphan left behind by the crashed prior attempt, stamped as ours.
+        orphan = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+        orphan_user = UserProfile.objects.create(
+            realm=orphan,
+            delivery_email="someone@example.com",
+            email="someone@example.com",
+        )
+        prereg_realm.data_import_metadata["import_created_realm_id"] = orphan.id
+        prereg_realm.save(update_fields=["data_import_metadata"])
+
+        def reimport(*args: object, on_realm_created: object = None, **kwargs: object) -> Realm:
+            new_realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+            assert callable(on_realm_created)
+            on_realm_created(new_realm)
+            return new_realm
+
+        mock_do_import_realm.side_effect = reimport
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with self.assertLogs("zulip.registration", "INFO") as logs:
+            import_slack_data(event)
+        self.assertIn(
+            "WARNING:zulip.registration:"
+            "(test-realm) Cleaning up our own orphaned realm from a prior import attempt",
+            logs.output,
+        )
+
+        # The orphan and its data are gone, and a fresh realm was imported in
+        # its place.
+        self.assertFalse(Realm.objects.filter(id=orphan.id).exists())
+        self.assertFalse(UserProfile.objects.filter(id=orphan_user.id).exists())
+        mock_do_import_realm.assert_called_once()
+        new_realm = Realm.objects.get(string_id=prereg_realm.string_id)
+        self.assertNotEqual(new_realm.id, orphan.id)
+        prereg_realm.refresh_from_db()
+        self.assertEqual(prereg_realm.created_realm_id, new_realm.id)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_skips_redelivery_after_success(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # If a successful import's event is redelivered (the worker died after
+        # the import finished but before acking), the import must be a no-op
+        # rather than re-running and clobbering the created realm.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={"import_from": "slack"},
+        )
+        created_realm = do_create_realm(string_id=prereg_realm.string_id, name=prereg_realm.name)
+        prereg_realm.created_realm = created_realm
+        prereg_realm.save(update_fields=["created_realm"])
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        with self.assertLogs("zulip.registration", "INFO") as logs:
+            import_slack_data(event)
+        self.assertEqual(
+            logs.output,
+            [
+                "INFO:zulip.registration:"
+                "(test-realm) Slack import already completed; skipping redelivery"
+            ],
+        )
+
+        mock_save_attachment_contents.assert_not_called()
+        mock_do_convert_zipfile.assert_not_called()
+        mock_do_import_realm.assert_not_called()
+        self.assertTrue(Realm.objects.filter(id=created_realm.id).exists())
+
+    def test_realm_import_status_failed_import_does_not_use_other_realm(self) -> None:
+        # A failed import must report its own failure, even when a
+        # different registration's realm happens to share the
+        # subdomain. Otherwise the failed import's status poll would
+        # read the other realm and report misleading progress (or even
+        # "Done").
+        other_realm = do_create_realm(string_id="shared-subdomain", name="Other realm")
+        self.assertFalse(other_realm.deactivated)
+
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="shared-subdomain",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={
+                "import_from": "slack",
+                "is_import_work_queued": False,
+                "subdomain_unavailable": True,
+            },
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        result = self.client_get(f"/json/realm/import/status/{confirmation_key}")
+        response_dict = self.assert_json_success(result)
+        self.assertIn("no longer available", response_dict["status"])
+        # The other realm must not be reported as this import's result.
+        self.assertNotIn("Done", response_dict["status"])
+
+    def test_realm_import_status_clears_stale_subdomain_unavailable_flag(self) -> None:
+        # If the import that won the race for the subdomain later failed and
+        # freed it, this import's stored subdomain_unavailable flag is stale.
+        # The status poll must clear the flag and report this import's own
+        # failure, rather than telling the user the URL is still taken.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="freed-subdomain",
+            name="Test Realm",
+            email="freed@example.com",
+            data_import_metadata={
+                "import_from": "slack",
+                "is_import_work_queued": False,
+                "subdomain_unavailable": True,
+            },
+        )
+        self.assertFalse(Realm.objects.filter(string_id="freed-subdomain").exists())
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        result = self.client_get(f"/json/realm/import/status/{confirmation_key}")
+        response_dict = self.assert_json_success(result)
+        # The freed subdomain is not reported as taken; this import's own
+        # failure surfaces instead.
+        self.assertNotIn("no longer available", response_dict["status"])
+        self.assertEqual(response_dict["status"], "unexpected_import_failure")
+        # The stale flag has been cleared from the stored metadata.
+        prereg_realm.refresh_from_db()
+        self.assertNotIn("subdomain_unavailable", prereg_realm.data_import_metadata)
+
+    def test_start_slack_import_without_uploaded_file_renders_page(self) -> None:
+        # POSTing "start import" before the export file finished uploading must
+        # re-render the import page, not 500 on an assertion.
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="start-no-file",
+            name="Test Realm",
+            email="nofile@zulip.com",
+            data_import_metadata={"import_from": "slack", "slack_access_token": "xoxb-token"},
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        with mock.patch(
+            "zerver.views.registration.queue_json_publish_rollback_unsafe"
+        ) as queue_mock:
+            result = self.client_post(
+                "/new/import/slack/",
+                {"key": confirmation_key, "start_slack_import": "true"},
+            )
+
+        self.assertEqual(result.status_code, 200)
+        queue_mock.assert_not_called()
+        prereg_realm.refresh_from_db()
+        self.assertIsNot(prereg_realm.data_import_metadata.get("is_import_work_queued"), True)
+
+    def test_start_slack_import_with_taken_subdomain_shows_error(self) -> None:
+        # Starting an import for a subdomain that has since been taken -- e.g.
+        # a concurrent import of the same subdomain finished first -- must show
+        # a clear error rather than enqueueing a doomed import.
+        do_create_realm(string_id="taken-subdomain", name="Existing realm")
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="taken-subdomain",
+            name="Test Realm",
+            email="taken@zulip.com",
+            data_import_metadata={
+                "import_from": "slack",
+                "slack_access_token": "xoxb-token",
+                "uploaded_import_file_name": "export.zip",
+            },
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        with mock.patch(
+            "zerver.views.registration.queue_json_publish_rollback_unsafe"
+        ) as queue_mock:
+            result = self.client_post(
+                "/new/import/slack/",
+                {"key": confirmation_key, "start_slack_import": "true"},
+            )
+
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("no longer available", result)
+        # The page offers a clear way out and hides the now-useless import form.
+        self.assert_in_response("Start over", result)
+        self.assert_not_in_success_response(["Slack bot user OAuth token"], result)
+        queue_mock.assert_not_called()
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertIsNot(prereg_realm.data_import_metadata.get("is_import_work_queued"), True)
+
+    def test_slack_import_page_warns_when_subdomain_taken(self) -> None:
+        # When the subdomain is already taken (e.g. a concurrent import of the
+        # same subdomain got there first), the import setup page itself shows
+        # the error, rather than leaving the user filling out a form for an
+        # import that can't succeed.
+        do_create_realm(string_id="taken-subdomain-2", name="Existing realm")
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="taken-subdomain-2",
+            name="Test Realm",
+            email="taken2@zulip.com",
+            data_import_metadata={"import_from": "slack", "slack_access_token": "xoxb-token"},
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        # Render the setup page (no start_slack_import).
+        result = self.client_post("/new/import/slack/", {"key": confirmation_key})
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("no longer available", result)
+        # The page offers a clear way out and hides the now-useless import form.
+        self.assert_in_response("Start over", result)
+        self.assert_not_in_success_response(["Slack bot user OAuth token"], result)
 
     @responses.activate
     def test_cancel_realm_import(self) -> None:

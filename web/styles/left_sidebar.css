@@ -5,6 +5,7 @@
     font-size: inherit;
     font-weight: var(--font-weight-sidebar-heading);
     letter-spacing: var(--letter-spacing-sidebar-heading);
+    line-height: 20px;
     /* Override heading margin from Bootstrap. */
     margin: 0;
     /* Show an ellipsis on a heading when
@@ -43,6 +44,20 @@
 .sidebar-topic-check,
 .topic-markers-and-unreads {
     cursor: pointer;
+}
+
+.visibility-policy-icon {
+    display: flex;
+    align-items: center;
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: 1px;
+    }
 }
 
 #left-sidebar-navigation-list .filter-icon i {
@@ -209,7 +224,8 @@
     }
 
     .stream-expanded {
-        .channel-new-topic-button {
+        .channel-new-topic-button,
+        .channel-search-topics-button {
             display: flex;
         }
 
@@ -300,10 +316,22 @@
     position: sticky;
     top: 0;
     z-index: 3;
+    transition: box-shadow 150ms ease-out;
 
     /* The active direct messages section has a different background color */
     &:not(.active-direct-messages-section) {
         background-color: var(--color-background);
+    }
+
+    &.sidebar-header-drop-shadow {
+        box-shadow: var(--box-shadow-sidebar-sticky-header-drop);
+    }
+
+    /* Combine hover border with drop shadow since CSS box-shadow doesn't stack. */
+    &:not(.zoom-in):hover.sidebar-header-drop-shadow {
+        box-shadow:
+            inset 0 0 0 1px var(--color-shadow-sidebar-row-hover),
+            var(--box-shadow-sidebar-sticky-header-drop);
     }
 
     #toggle-direct-messages-section-icon {
@@ -486,6 +514,11 @@
        being sticky, it's 0.5px below its actual position and thus overlaps the channel
        below. This extra margin prevents that overlap. */
     margin-bottom: 1px;
+    transition: box-shadow 150ms ease-out;
+
+    &.sidebar-header-drop-shadow {
+        box-shadow: var(--box-shadow-sidebar-sticky-header-drop);
+    }
 
     .markers-and-unreads {
         display: flex;
@@ -536,6 +569,13 @@
 
         .add_stream_icon {
             visibility: visible;
+        }
+
+        /* Combine hover border with drop shadow since CSS box-shadow doesn't stack. */
+        &.sidebar-header-drop-shadow {
+            box-shadow:
+                inset 0 0 0 1px var(--color-shadow-sidebar-row-hover),
+                var(--box-shadow-sidebar-sticky-header-drop);
         }
     }
 
@@ -1973,6 +2013,7 @@ li.active-sub-filter {
     /* We won't know in advance how many controls a given
        row has, but this allows grid to generate as many
        as needed, sized to a shared icon width. */
+    grid-auto-flow: column;
     grid-auto-columns: var(--left-sidebar-header-icon-width);
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     place-content: stretch stretch;
@@ -2075,7 +2116,8 @@ li.active-sub-filter {
     }
 }
 
-.channel-new-topic-button {
+.channel-new-topic-button,
+.channel-search-topics-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
     display: none;

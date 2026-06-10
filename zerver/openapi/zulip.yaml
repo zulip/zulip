@@ -4653,6 +4653,7 @@ paths:
                                         "deleted_timestamp": null,
                                         "failed_timestamp": 1594825444.4363360405,
                                         "pending": false,
+                                        "export_from_prior_server": false,
                                         "export_type": "public",
                                       },
                                     ],
@@ -5910,26 +5911,22 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether this realm is configured to disallow sending mobile
-                                        push notifications with message content through the legacy
-                                        mobile push notifications APIs. The new API uses end-to-end
-                                        encryption to protect message content and metadata from
-                                        being accessible to the push bouncer service, APNs, and
-                                        FCM. Clients that support the new E2EE API will use it
+                                        push notifications through the legacy mobile push
+                                        notifications APIs. The new API uses end-to-end encryption
+                                        to protect message content and metadata from being
+                                        accessible to the push bouncer service, APNs, and FCM.
+                                        Clients that support the new E2EE API will use it
                                         automatically regardless of this setting.
 
-                                        If `true`, mobile push notifications sent to clients that
-                                        lack support for E2EE push notifications will always have
-                                        "New message" as their content. Note that these legacy
-                                        mobile notifications will still contain metadata, which may
-                                        include the message's ID, the sender's name, email address,
-                                        and avatar.
+                                        If `true`, legacy mobile push notifications will not be
+                                        sent. Only updated version of clients (which support E2EE
+                                        push notifications) will receive push notifications.
 
-                                        In a future release, once the official mobile apps have
-                                        implemented fully validated their E2EE protocol support,
-                                        this setting will become strict, and disable the legacy
-                                        protocol entirely.
+                                        **Changes**: In Zulip 12.1 (feature levels 500-501, and 504+), this
+                                        setting now completely disables legacy push notifications
+                                        rather than sending them with redacted content.
 
-                                        **Changes**: New in Zulip 11.0 (feature level 409). Previously,
+                                        New in Zulip 11.0 (feature level 409). Previously,
                                         this behavior was available only via the
                                         `PUSH_NOTIFICATION_REDACT_CONTENT` global server setting.
                                     require_unique_names:
@@ -8656,7 +8653,7 @@ paths:
       summary: Get messages
       tags: ["messages"]
       description: |
-        This endpoint is the primary way to fetch a messages. It is used by all official
+        This endpoint is the primary way to fetch messages. It is used by all official
         Zulip clients (e.g. the web, desktop, mobile, and terminal clients) as well as
         many bots, API clients, backup scripts, etc.
 
@@ -10747,10 +10744,9 @@ paths:
                           }
                         description: |
                           A special failed JSON response (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`)
-                          for when the user has permission to move
-                          the target message, but asked to move all messages in a topic
-                          (`"propagate_mode": "change_all"`) and the user does not have permission
-                          to move the entire topic.
+                          for when the user asked to move all messages in a topic
+                          (`"propagate_mode": "change_all"`) and the user can move at least one message
+                          but does not have permission to move the entire topic.
 
                           This happens when the topic contains some messages that are older than an
                           applicable time limit for the requested topic move (see
@@ -10792,7 +10788,13 @@ paths:
                           of a topic that they have access to, without this error or any confirmation
                           dialog.
 
-                          **Changes**: New in Zulip 7.0 (feature level 172).
+                          **Changes**: Before Zulip 13.0 (feature level 505), this error
+                          response was only returned when the request's target message was
+                          itself within the time limit. As of this feature level, it is also
+                          returned when the target message is past the limit but at least one
+                          message in the topic is within it.
+
+                          New in Zulip 7.0 (feature level 172).
 
                           [private-channels]: /help/channel-permissions#private-channels
                   - allOf:
@@ -17017,10 +17019,11 @@ paths:
                               "deleted_timestamp": null,
                               "export_type": "public",
                               "export_time": 1722243168.134179,
-                              "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-p6yuxc45.tar.gz",
+                              "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-example-2024-07-29-10-12-48-p6yuxc45.tar.gz",
                               "id": 323,
                               "failed_timestamp": null,
                               "pending": false,
+                              "export_from_prior_server": false,
                             },
                           ],
                         "msg": "",
@@ -20624,26 +20627,22 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether this realm is configured to disallow sending mobile
-                          push notifications with message content through the legacy
-                          mobile push notifications APIs. The new API uses end-to-end
-                          encryption to protect message content and metadata from
-                          being accessible to the push bouncer service, APNs, and
-                          FCM. Clients that support the new E2EE API will use it
+                          push notifications through the legacy mobile push
+                          notifications APIs. The new API uses end-to-end encryption
+                          to protect message content and metadata from being
+                          accessible to the push bouncer service, APNs, and FCM.
+                          Clients that support the new E2EE API will use it
                           automatically regardless of this setting.
 
-                          If `true`, mobile push notifications sent to clients that
-                          lack support for E2EE push notifications will always have
-                          "New message" as their content. Note that these legacy
-                          mobile notifications will still contain metadata, which may
-                          include the message's ID, the sender's name, email address,
-                          and avatar.
+                          If `true`, legacy mobile push notifications will not be
+                          sent. Only updated version of clients (which support E2EE
+                          push notifications) will receive push notifications.
 
-                          In a future release, once the official mobile apps have
-                          implemented fully validated their E2EE protocol support,
-                          this setting will become strict, and disable the legacy
-                          protocol entirely.
+                          **Changes**: In Zulip 12.1 (feature levels 500-501, and 504+), this
+                          setting now completely disables legacy push notifications
+                          rather than sending them with redacted content.
 
-                          **Changes**: New in Zulip 11.0 (feature level 409). Previously,
+                          New in Zulip 11.0 (feature level 409). Previously,
                           this behavior was available only via the
                           `PUSH_NOTIFICATION_REDACT_CONTENT` global server setting.
                       realm_require_unique_names:
@@ -27973,8 +27972,13 @@ components:
           description: |
             The URL to download the generated data export.
 
-            Will be `null` if the data export failed, or if it's
-            still being generated.
+            Will be `null` if the data export failed, if it's
+            still being generated, or if this export happened
+            on a previous server.
+
+            **Changes**: Starting in Zulip 12.1 (feature levels 499-501, and
+            506+), this is also `null` for exports that happened on a previous
+            server.
         pending:
           type: boolean
           description: |
@@ -27985,6 +27989,16 @@ components:
             Depending on the size of the organization, it can take
             anywhere from seconds to an hour to generate the data
             export.
+        export_from_prior_server:
+          type: boolean
+          description: |
+            Whether this data export happened on a previous server,
+            and thus its tarball is no longer stored on this server.
+            This is `true` for records that were carried across a
+            realm import; the record is preserved for audit purposes
+            but its data is no longer available for download.
+
+            **Changes**: New in Zulip 12.1 (feature levels 499-501, and 506+).
         export_type:
           type: string
           enum:
@@ -30531,10 +30545,13 @@ components:
       description: |
         A list of user IDs (preferred) or Zulip API email
         addresses of the users to be subscribed to or unsubscribed
-        from the channels specified in the `subscriptions` parameter. If
-        not provided, then the requesting user/bot is subscribed.
+        from the channels specified in the `subscriptions` parameter.
 
-        **Changes**: The integer format is new in Zulip 3.0 (feature level 9).
+        If not provided, then the requesting user/bot will be
+        subscribed/unsubscribed from the specified channels.
+
+        **Changes**: Before Zulip 3.0 (feature level 9), only the
+        Zulip API email address string format was supported.
       oneOf:
         - type: array
           items:
@@ -30542,7 +30559,7 @@ components:
         - type: array
           items:
             type: integer
-      example: ["ZOE@zulip.com"]
+      example: [11]
     ReactionType:
       description: |
         A string indicating the type of emoji. Each emoji `reaction_type`

@@ -1,13 +1,14 @@
 {
   "amount": -24000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "stripe_billing_portal_urls_for_remote_realm--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "$20.00/month new customer discount",
   "discountable": false,
   "discounts": [],
-  "id": "stripe_billing_portal_urls_for_remote_realm--Event.list.2.json",
-  "invoice": "in_NORMALIZED",
+  "id": "stripe_billing_portal_urls_for_remote_realm--InvoiceItem.create.2.json",
+  "invoice": "stripe_billing_portal_urls_for_remote_realm--Event.list.1.json",
   "livemode": false,
   "metadata": {},
   "net_amount": -24000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 1,
+  "quantity_decimal": "1",
   "tax_rates": [],
   "test_clock": null
 }

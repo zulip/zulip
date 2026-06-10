@@ -568,7 +568,11 @@ export function get_dropdown_list_widget_setting_value($input_elem: JQuery): num
     return setting_value;
 }
 
-export function change_save_button_state($element: JQuery, state: string): void {
+export function change_save_button_state(
+    $element: JQuery,
+    state: string,
+    error_callback?: () => void,
+): void {
     function show_hide_element(
         $element: JQuery,
         show: boolean,
@@ -606,6 +610,14 @@ export function change_save_button_state($element: JQuery, state: string): void 
         return;
     }
 
+    if (state === "failed") {
+        assert(error_callback !== undefined);
+        show_hide_element($element, false, 0, () => {
+            error_callback();
+        });
+        return;
+    }
+
     if (state === "succeeded" && $save_button.attr("data-status") === "unsaved") {
         // We don't show the "saved" state if the save button is in the "unsaved"
         // state, as that would indicate that user has made some other changes
@@ -636,10 +648,6 @@ export function change_save_button_state($element: JQuery, state: string): void 
 
             $element.find(".discard-button").hide();
             buttons.show_button_loading_indicator($save_button);
-            break;
-        case "failed":
-            data_status = "failed";
-            is_show = true;
             break;
         case "succeeded":
             button_text = $t({defaultMessage: "Saved"});
@@ -1307,7 +1315,7 @@ function switching_to_private(properties_elements: HTMLElement[]): boolean {
 }
 
 export function save_discard_realm_settings_widget_status_handler($subsection: JQuery): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
@@ -1323,7 +1331,7 @@ export function save_discard_stream_settings_widget_status_handler(
     $subsection: JQuery,
     sub: StreamSubscription | undefined,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     let show_change_process_button = false;
@@ -1373,7 +1381,7 @@ export function save_discard_group_widget_status_handler(
     $subsection: JQuery,
     group: UserGroup,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
@@ -1387,7 +1395,7 @@ export function save_discard_group_widget_status_handler(
 export function save_discard_default_realm_settings_widget_status_handler(
     $subsection: JQuery,
 ): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>

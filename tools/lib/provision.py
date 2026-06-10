@@ -119,7 +119,11 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "redis-server",
     "hunspell-en-us",
     "puppet-lint",
-    "default-jre-headless",  # Required by vnu-jar
+    (
+        "openjdk-17-jre-headless"
+        if vendor == "ubuntu" and os_version == "22.04"
+        else "default-jre-headless"
+    ),  # Required by vnu-jar
     # Puppeteer dependencies from here
     "fonts-freefont-ttf",
     "libatk-bridge2.0-0",

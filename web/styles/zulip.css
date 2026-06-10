@@ -727,12 +727,6 @@ li,
     line-height: inherit;
 }
 
-.bootstrap-btn {
-    font-size: inherit;
-    height: auto;
-    line-height: 100%;
-}
-
 /* Classes which style copy buttons */
 .copy_button_base {
     outline-color: hsl(0deg 0% 73%);
@@ -1416,6 +1410,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     font-size: 1.5em;
     font-weight: 400;
     line-height: inherit;
+    margin: 10px 0;
     overflow-wrap: break-word;
 }
 
@@ -2458,7 +2453,8 @@ body:not(.spectator-view) {
         text-decoration: none;
     }
 
-    &:hover {
+    &:hover,
+    .navbar-item.active-navbar-menu & {
         background-color: var(--color-header-button-hover);
     }
 

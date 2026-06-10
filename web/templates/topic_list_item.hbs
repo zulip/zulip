@@ -12,7 +12,9 @@
                     @
                 </span>
             {{else if is_followed}}
-                <i class="zulip-icon zulip-icon-follow visibility-policy-icon" role="button" aria-hidden="true" data-tippy-content="{{t 'You follow this topic.'}}"></i>
+                <span class="visibility-policy-icon" role="button" tabindex="0" aria-label="{{t 'You follow this topic. Change visibility policy.' }}" data-tippy-content="{{t 'You follow this topic.'}}">
+                    <i class="zulip-icon zulip-icon-follow" aria-hidden="true"></i>
+                </span>
             {{/if}}
             <span class="unread_count normal-count {{#if is_zero}}zero_count{{/if}}">
                 {{unread}}

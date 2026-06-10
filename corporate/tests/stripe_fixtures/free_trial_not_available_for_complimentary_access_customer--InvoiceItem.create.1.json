@@ -1,13 +1,14 @@
 {
   "amount": 6300,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "free_trial_not_available_for_complimentary_access_customer--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Basic",
   "discountable": false,
   "discounts": [],
-  "id": "free_trial_not_available_for_complimentary_access_customer--Event.list.2.json",
-  "invoice": "in_NORMALIZED",
+  "id": "free_trial_not_available_for_complimentary_access_customer--InvoiceItem.create.1.json",
+  "invoice": "free_trial_not_available_for_complimentary_access_customer--Event.list.1.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 6300,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 18,
+  "quantity_decimal": "18",
   "tax_rates": [],
   "test_clock": null
 }

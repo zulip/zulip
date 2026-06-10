@@ -123,6 +123,8 @@ class MessageRenderingResult:
     user_ids_with_alert_words: set[int]
     potential_attachment_path_ids: list[str]
     thumbnail_spinners: set[str]
+    has_image: bool
+    has_link: bool
 
 
 @dataclass
@@ -635,8 +637,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         desc = desc if desc is not None else ""
 
         # Update message.has_image attribute.
-        if "message_inline_image" in class_attr and self.zmd.zulip_message:
-            self.zmd.zulip_message.has_image = True
+        if "message_inline_image" in class_attr:
+            self.zmd.zulip_rendering_result.has_image = True
 
         if insertion_index is not None:
             div = Element("div")
@@ -794,6 +796,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def dropbox_media(self, url: str) -> DropboxMediaInfo | None:
+        if not self.zmd.image_preview_enabled:
+            return None
         parsed_url = urlsplit(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
             # See https://www.dropboxforum.com/discussions/101001012/shared-link--scl-to-s/689070/replies/695266
@@ -1096,8 +1100,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         }
 
         # Update message.has_link attribute.
-        if len(found_urls) > 0 and self.zmd.zulip_message:
-            self.zmd.zulip_message.has_link = True
+        if len(found_urls) > 0:
+            self.zmd.zulip_rendering_result.has_link = True
 
         if self.zmd.zulip_message:
             for url in unique_urls:
@@ -1646,7 +1650,10 @@ def prepare_linkifier_pattern(source: str) -> str:
     # We use an extended definition of 'whitespace' which is
     # equivalent to \p{White_Space} -- since \s in re2 only matches
     # ASCII spaces, and re2 does not support \p{White_Space}.
-    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
+    #
+    # This implementation should be kept in sync with the one in
+    # web/src/linkifiers.ts.
+    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
 # We use maxsize of 10000. We need to prevent against admins
@@ -2181,8 +2188,7 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
             )
 
         # Update message.has_image attribute.
-        if self.zmd.zulip_message:
-            self.zmd.zulip_message.has_image = True
+        self.zmd.zulip_rendering_result.has_image = True
 
         return img
 
@@ -2630,15 +2636,9 @@ def do_convert(
         user_ids_with_alert_words=set(),
         potential_attachment_path_ids=[],
         thumbnail_spinners=set(),
+        has_image=False,
+        has_link=False,
     )
-
-    # Set has_image and has_link attributes on message to False before
-    # converting to Markdown each time a message's content is processed.
-    # This way if a message's content is edited these attributes are
-    # checked and set to True when the updated content is processed.
-    if message is not None:
-        message.has_image = False
-        message.has_link = False
 
     md_engine.zulip_message = message
     md_engine.zulip_rendering_result = rendering_result
@@ -2712,6 +2712,12 @@ def do_convert(
             rendering_result.thumbnail_spinners = thumbnail_spinners
             if content_with_thumbnails is not None:
                 rendering_result.rendered_content = content_with_thumbnails
+
+        # Update the has_link and has_image on message based on the rendering result.
+        # This way if a message's content is edited these attributes are still accurate.
+        if message is not None:
+            message.has_image = rendering_result.has_image
+            message.has_link = rendering_result.has_link
 
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
@@ -2827,12 +2833,13 @@ def render_message_markdown(
     return rendering_result
 
 
-def get_markdown_link_for_url(filename: str, url: str, inline_thumbnail: bool = False) -> str:
+def get_markdown_link_for_url(filename: str, url: str) -> str:
     # Our markdown has no escaping, so we cannot link any
     # text containing brackets; strip them from the
     # filename we're linking.
     filename = re.sub(r"\[|\]", "", filename)
-    markdown_link = f"[{filename}]({url})"
-    if inline_thumbnail:
-        markdown_link = "!" + markdown_link
-    return markdown_link
+    return f"[{filename}]({url})"
+
+
+def get_markdown_image_for_url(filename: str, url: str) -> str:
+    return f"!{get_markdown_link_for_url(filename, url)}"

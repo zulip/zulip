@@ -679,6 +679,8 @@
     .message_inline_video,
     .message_inline_animated_image_still,
     .youtube-video .media-anchor-element {
+        /* 32px at 14px/1em */
+        --play-button-length: 2.2857em;
         /* Once collections of thumbnails are set to render as
            flex items, this can be updated to use `display: grid`
            instead of `display: inline-grid`. */
@@ -706,12 +708,11 @@
             background-image: url("../images/play_button.svg");
             background-position: center center;
             background-repeat: no-repeat;
-            /* 32px at 14px/1em */
-            background-size: 2.2857em;
+            background-size: var(--play-button-length);
             /* Match the box to the play button's
                background-size value. */
-            width: 2.2857em;
-            height: 2.2857em;
+            width: var(--play-button-length);
+            height: var(--play-button-length);
             border-radius: 100%;
             transform: scale(0.8);
             transition: transform 0.2s;
@@ -727,6 +728,25 @@
             height: var(--media-preview-max-height);
             width: calc(var(--media-preview-max-height) * 1.5);
         }
+    }
+
+    /* For the sake of ultra-narrow or ultra-wide
+       animated stills, we want to keep the image
+       area at least as wide and tall as the play
+       button. */
+    .message_inline_animated_image_still {
+        min-width: var(--play-button-length);
+        min-height: var(--play-button-length);
+    }
+
+    /* We add an .animated-preview-hover class to hide
+       the play button and zero its width so the button
+       itself cannot be hovered. Users can still
+       click anywhere on the image to open it in the
+       lightbox. */
+    .message_inline_animated_image_still.animated-preview-hover::after {
+        background-image: none;
+        width: 0;
     }
 
     .message_inline_video.video-format-unsupported {

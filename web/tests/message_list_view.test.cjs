@@ -303,6 +303,52 @@ test("message_edited_vars", () => {
     })();
 });
 
+test("rerender_messages rebuilds every distinct recipient bar", () => {
+    // A user can show up in several recipient bars at once -- e.g. DMs
+    // with the same user spread through Combined feed or search views.
+    // When that user is renamed, rerender_messages gets all their
+    // messages together and must rebuild every one of those bars, not
+    // just the first. The bars share a recipient, so we identify each bar
+    // by its rendered group id rather than by recipient.
+    const view = new MessageListView({id: 1}, true, true);
+
+    const dm1 = {msg: {id: 1, type: "private", to_user_ids: "5"}};
+    const dm2 = {msg: {id: 2, type: "private", to_user_ids: "5"}};
+    // dm3 has a container but no rendered row (e.g. a muted stream or
+    // topic), so there is no recipient bar to rebuild for it.
+    const dm3 = {msg: {id: 3, type: "private", to_user_ids: "5"}};
+    view.message_containers = new Map([
+        [1, dm1],
+        [2, dm2],
+        [3, dm3],
+    ]);
+
+    // dm1 and dm2 share a recipient but render in different bars; dm3 has
+    // no row. The stub row mirrors how rows.get_message_recipient_row
+    // reads the bar id from the DOM, and returns an empty set (length 0)
+    // for the unrendered message -- which must be skipped before any DOM
+    // lookup.
+    const group_id_by_msg_id = {1: "group-A", 2: "group-B"};
+    view.get_row = (id) => {
+        const group_id = group_id_by_msg_id[id];
+        if (group_id === undefined) {
+            return {length: 0};
+        }
+        return {length: 1, parent: () => ({expectOne: () => ({attr: () => group_id})})};
+    };
+
+    view._rerender_message = () => [];
+    const rerendered_group_ids = [];
+    view._rerender_header = (message_group_id) => {
+        rerendered_group_ids.push(message_group_id);
+    };
+
+    view.rerender_messages([dm1.msg, dm2.msg, dm3.msg]);
+
+    // One header rerender per distinct bar; the rowless message is skipped.
+    assert.deepEqual(rerendered_group_ids, ["group-A", "group-B"]);
+});
+
 test("muted_message_vars", () => {
     // This verifies that the variables for muted/hidden messages are set
     // correctly.

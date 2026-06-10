@@ -1,9 +1,9 @@
 <div class="micromodal" id="user-profile-modal" data-user-id="{{user_id}}" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
-        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="user-profile-name-heading">
             <div class="modal__header">
                 <div class="modal__header-content">
-                    <h1 class="modal__title user-profile-name-heading" id="name">
+                    <h1 class="modal__title user-profile-name-heading" id="user-profile-name-heading">
                         {{#unless is_bot}}
                             {{#if is_active}}
                                 <span class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">

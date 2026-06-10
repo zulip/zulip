@@ -464,6 +464,20 @@ run_test("reverse_linkify_text", () => {
         compose_ui.reverse_linkify_text("https://realm.com/my_realm_filter/abc-ZUL-15"),
         "abc-ZUL-15",
     );
+
+    // When the reverse template produces text that does not match the
+    // linkifier pattern (here the reverse template omits the leading "#"
+    // required by the pattern), the URL is not shortened even though the
+    // URL template matches the input.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 11,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://example.com/issue/{id}",
+            reverse_template: "id-{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://example.com/issue/42"), null);
 });
 
 run_test("quote_message", ({override, override_rewire}) => {

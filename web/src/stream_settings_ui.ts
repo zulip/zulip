@@ -809,7 +809,7 @@ export function switch_stream_tab(tab_name: string): void {
     */
 
     switch (tab_name) {
-        case "all-streams": {
+        case "all": {
             stream_ui_updates.set_show_subscribed(false);
             stream_ui_updates.set_show_available(false);
             break;
@@ -986,7 +986,7 @@ function setup_page(callback: () => void): void {
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
                 {label: $t({defaultMessage: "Available"}), key: "available"},
-                {label: $t({defaultMessage: "All"}), key: "all-streams"},
+                {label: $t({defaultMessage: "All"}), key: "all"},
             ],
             callback(_value, key) {
                 switch_stream_tab(key);
@@ -996,7 +996,7 @@ function setup_page(callback: () => void): void {
         const $toggler_elem = toggler.get();
         $("#channels_overlay_container .list-toggler-container").prepend($toggler_elem);
         if (current_user.is_guest) {
-            toggler.disable_tab("all-streams");
+            toggler.disable_tab("all");
             toggler.disable_tab("available");
         }
     }
@@ -1120,87 +1120,91 @@ function show_right_section(): void {
     $("#subscription_overlay .two-pane-settings-header").addClass("slide-left");
 }
 
+// `right_panel` controls the right panel:
+//   - "new"               → show the create-channel form
+//   - a channel-ID number → show that channel's settings
+//   - undefined           → empty right panel
+// `left_side_tab` controls the left panel ("subscribed" / "available" /
+//   "all"). URLs that target the right panel instead (e.g.
+//   #channels/new) don't carry a left tab, so this is undefined in
+//   those cases.
+// `right_side_tab` is the in-channel tab (general / personal /
+//   subscribers / permissions); meaningful only when right_panel is a
+//   channel ID.
 export function change_state(
-    section: string,
+    right_panel: "new" | number | undefined,
     left_side_tab: string | undefined,
     right_side_tab: string | undefined,
     folder_id?: number,
 ): void {
     assert(toggler !== undefined);
-    // if in #channels/new form.
-    if (section === "new") {
+
+    // Right panel: create form.
+    if (right_panel === "new") {
         do_open_create_stream(folder_id);
         show_right_section();
+        // We don't change the left side tab when opening the
+        // channel creation flow.
+        assert(left_side_tab === undefined);
         return;
     }
 
-    if (section === "all") {
+    // Right panel: empty.
+    if (right_panel === undefined) {
+        assert(left_side_tab !== undefined);
+        // Filter the left list to a particular folder. Must run before
+        // toggler.goto so the left-panel redraw it triggers picks up
+        // the new folder filter.
         if (folder_id !== undefined) {
             stream_settings_components.set_folder_filter_dropdown_value(folder_id);
         }
-        toggler.goto("all-streams");
+        toggler.goto(left_side_tab);
         stream_edit.empty_right_panel();
         return;
     }
 
-    if (section === "available") {
-        toggler.goto("available");
-        stream_edit.empty_right_panel();
-        return;
+    // Right panel: stream-edit.
+    const stream_id = right_panel;
+    show_right_section();
+    assert(right_side_tab !== undefined);
+    stream_edit_toggler.set_select_tab(right_side_tab);
+
+    // If undefined, infer the left side tab depending on subscription status.
+    left_side_tab ??= stream_data.is_subscribed(stream_id) ? "subscribed" : "all";
+
+    // Callback to .goto() will update browser_history unless a
+    // stream is being edited. We are always editing a stream here
+    // so its safe to call
+    if (left_side_tab !== toggler.key()) {
+        toggler.goto(left_side_tab);
     }
+    switch_to_stream_row(stream_id);
 
-    // if the section is a valid number.
-    if (/\d+/.test(section)) {
-        const stream_id = Number.parseInt(section, 10);
-        show_right_section();
-        assert(right_side_tab !== undefined);
-        stream_edit_toggler.set_select_tab(right_side_tab);
-
-        if (left_side_tab === undefined) {
-            left_side_tab = "all-streams";
-            if (stream_data.is_subscribed(stream_id)) {
-                left_side_tab = "subscribed";
-            }
+    const sub = stream_data.get_sub_by_id(stream_id);
+    if (sub && !stream_settings_components.archived_status_filter_includes_channel(sub)) {
+        const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
+        let selected_filter;
+        if (sub.is_archived) {
+            selected_filter = FILTERS.ARCHIVED_CHANNELS;
+        } else {
+            selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
         }
-
-        // Callback to .goto() will update browser_history unless a
-        // stream is being edited. We are always editing a stream here
-        // so its safe to call
-        if (left_side_tab !== toggler.value()) {
-            toggler.goto(left_side_tab);
-        }
-        switch_to_stream_row(stream_id);
-
-        const sub = stream_data.get_sub_by_id(stream_id);
-        if (sub && !stream_settings_components.archived_status_filter_includes_channel(sub)) {
-            const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
-            let selected_filter;
-            if (sub.is_archived) {
-                selected_filter = FILTERS.ARCHIVED_CHANNELS;
-            } else {
-                selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
-            }
-            stream_settings_components.set_archived_status_filter_dropdown_value(selected_filter);
-        }
-        if (sub && !stream_settings_components.folder_filter_includes_channel(sub)) {
-            const folder_filters = folder_filter_dropdown_widget.FOLDER_FILTERS;
-            let selected_filter;
-            if (sub.folder_id === null) {
-                selected_filter = folder_filters.UNCATEGORIZED_DROPDOWN_OPTION;
-            } else {
-                selected_filter = sub.folder_id;
-            }
-            stream_settings_components.set_folder_filter_dropdown_value(selected_filter);
-        }
-        return;
+        stream_settings_components.set_archived_status_filter_dropdown_value(selected_filter);
     }
-
-    toggler.goto("subscribed");
-    stream_edit.empty_right_panel();
+    if (sub && !stream_settings_components.folder_filter_includes_channel(sub)) {
+        const folder_filters = folder_filter_dropdown_widget.FOLDER_FILTERS;
+        let selected_filter;
+        if (sub.folder_id === null) {
+            selected_filter = folder_filters.UNCATEGORIZED_DROPDOWN_OPTION;
+        } else {
+            selected_filter = sub.folder_id;
+        }
+        stream_settings_components.set_folder_filter_dropdown_value(selected_filter);
+    }
 }
 
 export function launch(
-    section: string,
+    right_panel: "new" | number | undefined,
     left_side_tab: string | undefined,
     right_side_tab: string | undefined,
     folder_id?: number,
@@ -1213,10 +1217,10 @@ export function launch(
                 browser_history.exit_overlay();
             },
         });
-        change_state(section, left_side_tab, right_side_tab, folder_id);
+        change_state(right_panel, left_side_tab, right_side_tab, folder_id);
         setTimeout(() => {
             if (!stream_settings_components.get_active_data().id) {
-                if (section === "new") {
+                if (right_panel === "new") {
                     $("#create_stream_name").trigger("focus");
                 } else {
                     $("#search_stream_name").trigger("focus");
@@ -1289,7 +1293,7 @@ export function toggle_view(event: string): void {
                     toggler.goto("available");
                     break;
                 case "available":
-                    toggler.goto("all-streams");
+                    toggler.goto("all");
                     break;
             }
             break;
@@ -1298,7 +1302,7 @@ export function toggle_view(event: string): void {
                 case "available":
                     toggler.goto("subscribed");
                     break;
-                case "all-streams":
+                case "all":
                     toggler.goto("available");
                     break;
             }

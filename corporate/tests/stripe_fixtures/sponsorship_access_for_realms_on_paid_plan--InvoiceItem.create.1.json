@@ -1,13 +1,14 @@
 {
   "amount": 48000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "sponsorship_access_for_realms_on_paid_plan--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "sponsorship_access_for_realms_on_paid_plan--Event.list.2.json",
-  "invoice": "in_NORMALIZED",
+  "id": "sponsorship_access_for_realms_on_paid_plan--InvoiceItem.create.1.json",
+  "invoice": "sponsorship_access_for_realms_on_paid_plan--Event.list.1.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 48000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 6,
+  "quantity_decimal": "6",
   "tax_rates": [],
   "test_clock": null
 }

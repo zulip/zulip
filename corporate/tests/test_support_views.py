@@ -1658,6 +1658,19 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(plan_offer.fixed_price, 36000)
         self.assertIsNone(plan_offer.sent_invoice_id)
 
+        # Trying to schedule a second fixed-price plan renewal fails.
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{lear_realm.id}", "fixed_price": 500}
+        )
+        self.assert_in_success_response(
+            ["Customer already has a configured fixed-price plan offer."],
+            result,
+        )
+        customer.refresh_from_db()
+        plan_offer = get_configured_fixed_price_plan_offer(customer, customer.required_plan_tier)
+        assert plan_offer is not None
+        self.assertEqual(plan_offer.fixed_price, 36000)
+
         # Test deleting the fixed-price plan offer via support.
         result = self.client_post(
             "/activity/support",
@@ -1816,20 +1829,42 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(next_plan.charge_automatically, plan.charge_automatically)
         self.assertTrue(next_plan.automanage_licenses)
 
-        # Test deleting the fixed-price next plan via support.
+        # Trying to schedule a second fixed-price plan renewal fails.
         result = self.client_post(
-            "/activity/support",
-            {
-                "realm_id": f"{lear_realm.id}",
-                "delete_fixed_price_next_plan": "true",
-            },
+            "/activity/support", {"realm_id": f"{lear_realm.id}", "fixed_price": 500}
         )
+        self.assert_in_success_response(
+            ["Customer already has a fixed-price plan renewal scheduled."],
+            result,
+        )
+        plan.refresh_from_db()
+        next_plan = billing_session.get_next_plan(plan)
+        assert next_plan is not None
+        self.assertEqual(next_plan.fixed_price, 36000)
+
+        # Test deleting the fixed-price next plan via support.
+        with (
+            self.assertLogs("corporate.stripe", "INFO") as m,
+        ):
+            result = self.client_post(
+                "/activity/support",
+                {
+                    "realm_id": f"{lear_realm.id}",
+                    "delete_fixed_price_next_plan": "true",
+                },
+            )
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.ACTIVE}"
+            self.assertEqual(m.output[0], expected_log)
         self.assert_in_success_response(
             ["Fixed-price scheduled plan deleted"],
             result,
         )
         next_plan = billing_session.get_next_plan(plan)
         self.assertIsNone(next_plan)
+
+        # Confirm that the existing plan's status has been reset to active.
+        plan.refresh_from_db()
+        self.assertEqual(plan.status, CustomerPlan.ACTIVE)
 
     def test_deactivated_realm_support_view_and_actions(self) -> None:
         support_admin = self.example_user("iago")

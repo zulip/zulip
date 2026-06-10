@@ -4,69 +4,283 @@ import fileinput
 import glob
 import os
 import re
+import subprocess
 import sys
+
+# When we need to backport migrations to a previous release, we
+# sometimes end up with multiple having the same ID number (which
+# isn't a problem; the migrations graph structure, not the IDs, is
+# what matters).
+MIGRATIONS_TO_SKIP = {"0209", "0261", "0501", "0001"}
 
 
 def validate_order(order: list[int], length: int) -> None:
-    if len(order) != length:
-        print("Please enter the sequence of all the conflicting files at once")
+    if sorted(order) != list(range(1, length + 1)):
+        print(f"Expected a permutation of 1..{length}; got: {order}")
         sys.exit(1)
 
-    for i in order:
-        if i > length or i < 1 or order.count(i) > 1:
-            print("Incorrect input")
+
+def renumber_one(
+    filename: str,
+    new_number: int,
+    new_predecessor: str,
+    migrations_dir: str,
+    app_label: str,
+) -> str:
+    """Rewrite the file's in-app dep tuples to point at new_predecessor, then rename it."""
+    path = os.path.join(migrations_dir, filename)
+    # Match only ("<app_label>", "NNNN_xxx") tuples, not things like
+    # `1_000` or cross-app deps. ruff-format always puts `, ` between
+    # the two tuple elements, so the replacement hardcodes that.
+    dep_pattern = re.compile(rf'"{re.escape(app_label)}"\s*,\s*"\d+(?:_[a-z0-9]+)+"')
+    # Don't touch migration-merge files: with two in-app deps in the
+    # same file, the substitution would collapse both to the same
+    # predecessor and produce a self-referential migration.
+    with open(path) as f:
+        if len(dep_pattern.findall(f.read())) > 1:
+            print(
+                f"Refusing to renumber {filename}: it has multiple "
+                f"in-app dependencies (a migration merge). Renumber it by hand."
+            )
             sys.exit(1)
+    replacement = f'"{app_label}", "{new_predecessor}"'
+    with fileinput.FileInput(path, inplace=True) as f:
+        for line in f:
+            print(dep_pattern.sub(replacement, line), end="")
+    new_name = f"{new_number:04}{filename[4:]}"
+    os.rename(path, os.path.join(migrations_dir, new_name))
+    return new_name
 
 
 def renumber_migration(
-    conflicts: list[str], order: list[int], last_correct_migration: str, migrations_dir: str
-) -> None:
-    stack: list[str] = []
+    conflicts: list[str],
+    order: list[int],
+    last_correct_migration: str,
+    migrations_dir: str,
+    app_label: str,
+) -> list[tuple[str, str]]:
+    renames: list[tuple[str, str]] = []
+    seen_prefixes: set[str] = set()
     for i in order:
-        if conflicts[i - 1][0:4] not in stack:
-            stack.append(conflicts[i - 1][0:4])
-        else:
-            # Replace dependencies with the last correct migration
-            with fileinput.FileInput(
-                os.path.join(migrations_dir, conflicts[i - 1]), inplace=True
-            ) as file:
-                for line in file:
-                    print(re.sub(r"[\d]+(_[a-z0-9]+)+", last_correct_migration, line), end="")
-
-            # Rename the migration indexing at the end
-            new_name = conflicts[i - 1].replace(
-                conflicts[i - 1][0:4], f"{int(last_correct_migration[0:4]) + 1:04}"
-            )
-            os.rename(
-                os.path.join(migrations_dir, conflicts[i - 1]),
-                os.path.join(migrations_dir, new_name),
-            )
-
-            last_correct_migration = new_name.replace(".py", "")
+        prefix = conflicts[i - 1][0:4]
+        if prefix not in seen_prefixes:
+            seen_prefixes.add(prefix)
+            continue
+        new_number = int(last_correct_migration[0:4]) + 1
+        old_name = conflicts[i - 1]
+        new_name = renumber_one(
+            old_name, new_number, last_correct_migration, migrations_dir, app_label
+        )
+        renames.append((old_name, new_name))
+        last_correct_migration = new_name.removesuffix(".py")
+    return renames
 
 
-def resolve_conflicts(conflicts: list[str], files_list: list[str], migrations_dir: str) -> None:
+def resolve_conflicts_interactive(
+    conflicts: list[str], migrations_dir: str, app_label: str
+) -> list[tuple[str, str]]:
     print("Conflicting migrations:")
-    for i in range(len(conflicts)):
-        print(str(i + 1) + ". " + conflicts[i])
+    for i, name in enumerate(conflicts, 1):
+        print(f"{i}. {name}")
 
     order_input = input("Enter the order in which these migrations should be arranged: ")
     order = list(map(int, order_input.split()))
     validate_order(order, len(conflicts))
 
-    last_correct_migration = conflicts[order[0] - 1]
-
-    last_correct_migration = last_correct_migration.replace(".py", "")
-    renumber_migration(conflicts, order, last_correct_migration, migrations_dir)
+    last_correct_migration = conflicts[order[0] - 1].removesuffix(".py")
+    return renumber_migration(conflicts, order, last_correct_migration, migrations_dir, app_label)
 
 
-if __name__ == "__main__":
+def get_upstream_files(app_label: str) -> set[str] | None:
+    """`NNNN_*.py` migration filenames on @{u}, or None if @{u} is unavailable.
+
+    Skips non-migration entries such as `__init__.py`.
+    """
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "ls-tree",
+                "-r",
+                "--name-only",
+                "@{u}",
+                "--",
+                f"{app_label}/migrations/",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except FileNotFoundError:
+        return None
+    except subprocess.CalledProcessError:
+        print(
+            "This branch has no upstream tracking branch (@{u} is not set).\n"
+            "Falling back to interactive prompts for each conflict group.\n"
+            "\n"
+            "For the faster auto-resolve flow, you can exit (Ctrl-C), then run:\n"
+            "    git branch --set-upstream-to=upstream/main\n"
+            "and re-run this script."
+        )
+        return None
+    return {
+        basename
+        for line in result.stdout.splitlines()
+        if re.fullmatch(r"\d{4}_.*\.py", basename := os.path.basename(line))
+    }
+
+
+def find_conflict_groups(files_list: list[str]) -> list[list[str]]:
+    """Return migration filenames grouped by NNNN prefix, only for groups in conflict."""
+    groups: dict[str, list[str]] = {}
+    for f in files_list:
+        groups.setdefault(f[0:4], []).append(f)
+    return [
+        sorted(group)
+        for prefix, group in sorted(groups.items())
+        if len(group) > 1 and prefix not in MIGRATIONS_TO_SKIP
+    ]
+
+
+def renumber_locals_past_tip(
+    files_list: list[str],
+    groups: list[list[str]],
+    upstream_files: set[str],
+    migrations_dir: str,
+    app_label: str,
+) -> list[tuple[str, str]]:
+    """Renumber every branch-local migration at-or-past the first conflict
+    contiguously past the upstream tip, in NNNN order.
+
+    The new NNNNs fill in from `upstream_tip + 1` and increment by 1, so
+    non-conflicting locals that sit between conflicts and the new tip (and
+    would otherwise be left with stale dependencies) get pulled into the
+    chain too.
+    """
+    min_conflict_nnnn = int(groups[0][0][0:4])
+    local_files = sorted(
+        (f for f in files_list if f not in upstream_files and int(f[0:4]) >= min_conflict_nnnn),
+        key=lambda f: int(f[0:4]),
+    )
+
+    # Use `upstream_files` directly here, not the intersection with the
+    # working tree: if the local checkout is missing one of the upstream
+    # migrations, we still need the new NNNN to land past where it would
+    # come back on the next pull.
+    upstream_tip = max(upstream_files, key=lambda f: int(f[0:4]))
+    new_predecessor = upstream_tip.removesuffix(".py")
+    new_number = int(upstream_tip[0:4]) + 1
+
+    print(f"Renumbering {len(local_files)} branch-local migration(s) past the tip of the graph:")
+    renames: list[tuple[str, str]] = []
+    for local_file in local_files:
+        new_name = renumber_one(local_file, new_number, new_predecessor, migrations_dir, app_label)
+        print(f"  {local_file} -> {new_name} (now follows {new_predecessor})")
+        renames.append((local_file, new_name))
+        new_predecessor = new_name.removesuffix(".py")
+        new_number += 1
+    return renames
+
+
+def find_introducing_commit(rel_path: str) -> str | None:
+    """Most recent commit between @{u} and HEAD that added rel_path."""
+    try:
+        result = subprocess.run(
+            ["git", "log", "--diff-filter=A", "--format=%H", "@{u}..HEAD", "--", rel_path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    lines = result.stdout.strip().splitlines()
+    return lines[0] if lines else None
+
+
+def has_merge_commits_since_upstream() -> bool:
+    """True if @{u}..HEAD contains any merge commit."""
+    result = subprocess.run(
+        ["git", "rev-list", "--merges", "@{u}..HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return bool(result.stdout.strip())
+
+
+def squash_renumbers_into_origin(renames: list[tuple[str, str]], migrations_dir: str) -> None:
+    """Build `fixup!` commits for each rename, then rebase to squash them
+    into the commits that originally added the migrations."""
+    if has_merge_commits_since_upstream():
+        # `git rebase -i --autosquash` would silently linearize merge
+        # commits, and `--autostash` makes recovery awkward. Bail out
+        # and let the user handle the squash by hand.
+        print(
+            "Refusing to rebase: @{u}..HEAD contains merge commit(s), which "
+            "would be linearized. Re-run with --no-rebase, or fold the renumbers "
+            "into the appropriate commits by hand."
+        )
+        sys.exit(1)
+
+    current_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    print(
+        "Starting rebase of renames into their original commits; if you need "
+        f"to reset to the old state, HEAD is currently at {current_head}"
+    )
+    fixups = 0
+    for old, new in renames:
+        old_path = os.path.join(migrations_dir, old)
+        new_path = os.path.join(migrations_dir, new)
+        target = find_introducing_commit(old_path)
+        if target is None:
+            print(f"  Leaving {old} -> {new} in your working tree (no in-branch commit added it).")
+            continue
+        subprocess.run(["git", "add", "--", old_path, new_path], check=True)
+        # Pass the paths to `git commit --only` so any unrelated changes
+        # the user had already staged don't get folded into the fixup.
+        subprocess.run(
+            [
+                "git",
+                "commit",
+                "--quiet",
+                f"--fixup={target}",
+                "--only",
+                "--",
+                old_path,
+                new_path,
+            ],
+            check=True,
+        )
+        fixups += 1
+    if fixups == 0:
+        return
+    print(f"Squashing {fixups} renumber(s) into the commits that introduced them...")
+    env = {**os.environ, "GIT_SEQUENCE_EDITOR": "true"}
+    subprocess.run(
+        ["git", "rebase", "-i", "--autosquash", "--autostash", "@{u}"],
+        check=True,
+        env=env,
+    )
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description="Renumber migration files.")
     parser.add_argument(
         "app_label",
         nargs="?",
         default="zerver",
         help="The Django app label to process (e.g. zerver, analytics)",
+    )
+    parser.add_argument(
+        "--no-rebase",
+        action="store_true",
+        help="Leave the renumbers as uncommitted changes instead of squashing "
+        "them into the commits that introduced each local migration.",
     )
     args = parser.parse_args()
 
@@ -75,37 +289,48 @@ if __name__ == "__main__":
         print(f"Error: Directory '{migrations_dir}' does not exist.")
         sys.exit(1)
 
-    MIGRATIONS_TO_SKIP = {"0209", "0261", "0501", "0001"}
-    while True:
-        conflicts: list[str] = []
-        stack: list[str] = []
-        files_list = [
+    upstream_files = get_upstream_files(args.app_label)
+    renames: list[tuple[str, str]] = []
+
+    if upstream_files is None:
+        # @{u} can't be resolved: fall back to one prompt per conflict group.
+        while True:
+            files_list = sorted(
+                os.path.basename(path)
+                for path in glob.glob(os.path.join(migrations_dir, "????_*.py"))
+            )
+            groups = find_conflict_groups(files_list)
+            if not groups:
+                break
+            renames.extend(resolve_conflicts_interactive(groups[0], migrations_dir, args.app_label))
+    else:
+        files_list = sorted(
             os.path.basename(path) for path in glob.glob(os.path.join(migrations_dir, "????_*.py"))
-        ]
-        file_index = [file[0:4] for file in files_list]
-
-        for file in file_index:
-            migration_number = file[0:4]
-            counter = file_index.count(migration_number)
-
-            if (
-                counter > 1
-                and file[0:4] not in stack
-                # When we need to backport migrations to a previous
-                # release, we sometimes end up with multiple having
-                # the same ID number (which isn't a problem; the
-                # migrations graph structure, not the IDs, is what
-                # matters).
-                and migration_number not in MIGRATIONS_TO_SKIP
-            ):
-                conflicts += [
-                    file_name for file_name in files_list if file_name.startswith(migration_number)
-                ]
-                stack.append(migration_number)
-
-        if len(conflicts) > 0:
-            resolve_conflicts(conflicts, files_list, migrations_dir)
-        else:
-            break
+        )
+        groups = find_conflict_groups(files_list)
+        if groups:
+            # Each conflict must have exactly one branch-local file; 0 means
+            # an all-upstream backport that belongs in MIGRATIONS_TO_SKIP, and
+            # 2+ means the user added the same NNNN twice locally and we
+            # can't pick a relative order for them.
+            for group in groups:
+                locals_in_group = [f for f in group if f not in upstream_files]
+                if len(locals_in_group) != 1:
+                    label = (
+                        "no local files (backport?)"
+                        if not locals_in_group
+                        else "multiple local files (order ambiguous)"
+                    )
+                    print(f"Conflict at {group[0][0:4]}: {label}; resolve by hand.")
+                    sys.exit(1)
+            renames = renumber_locals_past_tip(
+                files_list, groups, upstream_files, migrations_dir, args.app_label
+            )
 
     print("All conflicts resolved")
+    if renames and not args.no_rebase:
+        squash_renumbers_into_origin(renames, migrations_dir)
+
+
+if __name__ == "__main__":
+    main()

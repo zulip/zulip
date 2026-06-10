@@ -56,6 +56,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
+import {place_caret_at_end} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -83,7 +84,7 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
         return;
     }
     switch (tab_key_value) {
-        case "all-streams": {
+        case "all": {
             browser_history.update("#channels/all");
             break;
         }
@@ -101,7 +102,7 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     }
 }
 
-export function open_stream_edit_modal(stream_id: number): void {
+export function open_stream_edit_modal(stream_id: number, open_modal_button_id: string): void {
     const stream = sub_store.get(stream_id);
     assert(stream !== undefined);
 
@@ -140,6 +141,21 @@ export function open_stream_edit_modal(stream_id: number): void {
             $("#change_stream_info_modal .dialog_submit_button")
                 .addClass("save-button")
                 .attr("data-stream-id", stream_id);
+        },
+        on_shown() {
+            let $input: JQuery<HTMLInputElement | HTMLTextAreaElement> | undefined;
+            switch (open_modal_button_id) {
+                case "archived_stream_rename":
+                case "channel_title_open_channel_info_modal":
+                    $input = $("#change_stream_name");
+                    break;
+                case "open_stream_info_modal":
+                    $input = $("#change_stream_description");
+                    break;
+            }
+            if ($input) {
+                place_caret_at_end(util.the($input));
+            }
         },
         update_submit_disabled_state_on_change: true,
     });
@@ -491,7 +507,7 @@ export function show_settings_for(node: HTMLElement): void {
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
-    $("#subscription_overlay .stream_email_address_error").hide();
+    $("#subscription_overlay .channel-general-settings-status").hide();
     $("#id_topics_policy").val(sub.topics_policy);
 
     $edit_container.addClass("show");
@@ -745,29 +761,37 @@ export function initialize(): void {
             e.preventDefault();
             e.stopPropagation();
             const stream_id = get_stream_id(this);
-            open_stream_edit_modal(stream_id);
+            open_stream_edit_modal(stream_id, $(this).attr("id")!);
         },
     );
 
-    $("body").on("click", "#channel_title_open_channel_info_modal", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const $target = $(e.currentTarget).parents(".stream-title-buttons");
-        const stream_id = Number.parseInt($target.attr("data-stream-id")!, 10);
+    $("body").on(
+        "click",
+        "#channel_title_open_channel_info_modal",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const $target = $(e.currentTarget).parents(".stream-title-buttons");
+            const stream_id = Number.parseInt($target.attr("data-stream-id")!, 10);
 
-        dialog_widget.close();
-        open_stream_edit_modal(stream_id);
-    });
+            dialog_widget.close();
+            open_stream_edit_modal(stream_id, $(this).attr("id")!);
+        },
+    );
 
-    $("body").on("click", "#change_stream_info_modal #archived_stream_rename", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    $("body").on(
+        "click",
+        "#change_stream_info_modal #archived_stream_rename",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
+            const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
 
-        dialog_widget.close();
-        open_stream_edit_modal(stream_id);
-    });
+            dialog_widget.close();
+            open_stream_edit_modal(stream_id, $(this).attr("id")!);
+        },
+    );
 
     $("#channels_overlay_container").on("keydown", "#change_stream_description", (e) => {
         // Stream descriptions cannot be multiline, so disable enter key
@@ -824,7 +848,7 @@ export function initialize(): void {
                     ui_report.error(
                         $t_html({defaultMessage: "Failed"}),
                         xhr,
-                        $(".stream_email_address_error"),
+                        $(".channel-general-settings-status"),
                     );
                 },
             });

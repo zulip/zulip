@@ -574,6 +574,7 @@ class AttachmentRecordData:
     file_name: str
     id: int
     is_realm_public: bool
+    is_web_public: bool
     messages: list[int]
     owner: int
     path_id: str
@@ -582,13 +583,19 @@ class AttachmentRecordData:
     size: int
 
 
+@dataclass
+class ScrubbedRecords:
+    zerver_attachments: list[AttachmentRecordData]
+    upload_records: list[UploadRecordData]
+
+
 def build_attachment(
     realm_id: int,
     message_ids: set[int],
     user_id: int,
     fileinfo: ZerverFieldsT,
     s3_path: str,
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
 ) -> None:
     """
     This function should be passed a 'fileinfo' dictionary, which contains
@@ -611,7 +618,7 @@ def build_attachment(
     attachment_dict["messages"] = list(message_ids)
     attachment_dict["realm"] = realm_id
 
-    zerver_attachment.append(attachment_dict)
+    zerver_attachment.append(AttachmentRecordData(**attachment_dict))
 
 
 def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[str]) -> None:
@@ -625,8 +632,7 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[s
         avatar_url += size_url_suffix
 
     response = request_file_stream(avatar_url)
-    with open(image_path, "wb") as image_file:
-        shutil.copyfileobj(response.raw, image_file)
+    write_response_file_stream_to_path(response, image_path)
     shutil.copy(image_path, original_image_path)
 
 
@@ -721,6 +727,18 @@ def request_file_stream(
     return response
 
 
+WRITE_RESPONSE_FILE_STREAM_CHUNK_SIZE = 64 * 1024
+
+
+def write_response_file_stream_to_path(
+    response: requests.Response,
+    file_path: str,
+    chunk_size: int = WRITE_RESPONSE_FILE_STREAM_CHUNK_SIZE,
+) -> None:
+    with open(file_path, "wb") as file_destination:
+        file_destination.writelines(response.iter_content(chunk_size=chunk_size))
+
+
 def download_and_export_upload_file(
     output_dir: str, upload_file_request: UploadFileRequest
 ) -> None:
@@ -734,8 +752,7 @@ def download_and_export_upload_file(
     )
 
     os.makedirs(os.path.dirname(file_output_path), exist_ok=True)
-    with open(file_output_path, "wb") as upload_file:
-        shutil.copyfileobj(response.raw, upload_file)
+    write_response_file_stream_to_path(response, file_output_path)
 
 
 def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
@@ -762,7 +779,7 @@ def get_emojis(
     Raises `BadImageError` when the content-type is not guessable, or
     not in both `THUMBNAIL_ACCEPT_IMAGE_TYPES` and `INLINE_MIME_TYPES`.
     """
-    response = _data_import_session.get(emoji_url, stream=True)
+    response = request_file_stream(emoji_url)
     content_type_raw = response.headers.get("Content-Type")
     if content_type_raw is None:
         logging.warning(
@@ -785,10 +802,8 @@ def get_emojis(
     )
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
-    response = request_file_stream(emoji_url)
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
-    with open(upload_emoji_path, "wb") as emoji_file:
-        shutil.copyfileobj(response.raw, emoji_file)
+    write_response_file_stream_to_path(response, upload_emoji_path)
 
     return GetEmojiResult(path_id=emoji_path, filename=emoji_file_name)
 
@@ -997,3 +1012,26 @@ class ImportedBotEmail:
 
         cls.assigned_email[bot_id] = email
         return email
+
+
+def scrub_missing_upload_records_after_download(
+    output_dir: str,
+    zerver_attachments: list[AttachmentRecordData],
+    upload_records: list[UploadRecordData],
+) -> ScrubbedRecords:
+    """
+    This filters out any orphaned records in zerver_attachment and upload_record
+    due to failed parallel download.
+    """
+    return ScrubbedRecords(
+        zerver_attachments=[
+            attachment_record
+            for attachment_record in zerver_attachments
+            if os.path.isfile(os.path.join(output_dir, "uploads", attachment_record.path_id))
+        ],
+        upload_records=[
+            upload_record
+            for upload_record in upload_records
+            if os.path.isfile(os.path.join(output_dir, "uploads", upload_record.path))
+        ],
+    )

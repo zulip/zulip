@@ -85,8 +85,7 @@ function initialize_topic_list_cursor(): void {
 
 function is_topic_filter_active(): boolean {
     return (
-        get_left_sidebar_topic_search_term() !== "" ||
-        (topic_filter_pill_widget?.items().length ?? 0) > 0
+        get_zoomed_topic_search_term() !== "" || (topic_filter_pill_widget?.items().length ?? 0) > 0
     );
 }
 
@@ -449,7 +448,12 @@ export class TopicListWidget {
 }
 
 function filter_topics_left_sidebar(topic_names: string[]): string[] {
-    const search_term = get_left_sidebar_topic_search_term();
+    // This runs both for the zoomed-in topic list and the inline
+    // topic lists under streams, so we read the search term from
+    // whichever input is in use.
+    const search_term = zoomed
+        ? get_zoomed_topic_search_term()
+        : ui_util.get_left_sidebar_search_term();
     const stream_id = active_stream_id();
     if (stream_id === undefined) {
         return topic_names;
@@ -590,16 +594,10 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
 
 // For zooming, we only do topic-list stuff here...let stream_list
 // handle hiding/showing the non-narrowed streams
-export function zoom_in($stream_li: JQuery): void {
+export function zoom_in($stream_li: JQuery, stream_id: number): void {
     previous_search_term = "";
     pre_search_scroll_position = 0;
     ui_util.disable_left_sidebar_search();
-
-    const stream_id = active_stream_id();
-    if (stream_id === undefined) {
-        blueslip.error("Cannot find widget for topic history zooming.");
-        return;
-    }
 
     zoomed = true;
     zoomed_in_widget = new LeftSidebarTopicListWidget($stream_li, stream_id, true);
@@ -608,7 +606,7 @@ export function zoom_in($stream_li: JQuery): void {
     reset_topic_list_cursor({show_highlight: false});
 
     function on_success(): void {
-        if (!active_widgets.has(stream_id!)) {
+        if (!active_widgets.has(stream_id)) {
             blueslip.warn("User re-narrowed before topic history was returned.");
             return;
         }
@@ -622,7 +620,7 @@ export function zoom_in($stream_li: JQuery): void {
             return;
         }
 
-        rebuild_left_sidebar($stream_li, stream_id!);
+        rebuild_left_sidebar($stream_li, stream_id);
         // It is fine to force scroll here even if user has scrolled to a different
         // position since we just added some topics to the list which moved user
         // to a different position anyway.
@@ -635,11 +633,9 @@ export function zoom_in($stream_li: JQuery): void {
     left_sidebar_scroll_zoomed_in_topic_into_view();
 }
 
-export function get_left_sidebar_topic_search_term(): string {
-    if (zoomed) {
-        return $("#topic_filter_query").text().trim();
-    }
-    return ui_util.get_left_sidebar_search_term();
+function get_zoomed_topic_search_term(): string {
+    assert(zoomed);
+    return $("#topic_filter_query").text().trim();
 }
 
 export function get_typeahead_search_pills_syntax(): string {
@@ -713,7 +709,7 @@ export function setup_topic_search_typeahead(): void {
             topic_filter_pill_widget.appendValue(item.syntax);
             set_search_bar_text("");
             $input.trigger("focus");
-            return get_left_sidebar_topic_search_term();
+            return get_zoomed_topic_search_term();
         },
     };
 
@@ -832,7 +828,7 @@ export function initialize({
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
 
-        const search_term = get_left_sidebar_topic_search_term();
+        const search_term = get_zoomed_topic_search_term();
         const is_previous_search_term_empty = previous_search_term === "";
         previous_search_term = search_term;
         const topic_filter_active = is_topic_filter_active();

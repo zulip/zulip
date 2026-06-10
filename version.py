@@ -33,7 +33,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # https://zulip.readthedocs.io/en/latest/documentation/api.html#step-by-step-guide
 # Also available at docs/documentation/api.md.
 
-API_FEATURE_LEVEL = 503
+API_FEATURE_LEVEL = 506
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 503
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (380, 0)  # bumped 2026-05-12 to upgrade Python requirements
+PROVISION_VERSION = (382, 0)  # bumped 2026-05-21 to remove sqlalchemy

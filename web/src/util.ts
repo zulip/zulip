@@ -1,5 +1,4 @@
 import _ from "lodash";
-import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
@@ -145,6 +144,20 @@ export function make_strcmp(): (x: string, y: string) => number {
 }
 
 export const strcmp = make_strcmp();
+
+type StreamInfo = {
+    name: string;
+    is_archived: boolean;
+};
+
+export function compare_stream_by_archived_then_name(a: StreamInfo, b: StreamInfo): number {
+    // We show non-archived streams first
+    if (a.is_archived !== b.is_archived) {
+        return Number(a.is_archived) - Number(b.is_archived);
+    }
+
+    return strcmp(a.name, b.name);
+}
 
 export const array_compare = function util_array_compare<T>(a: T[], b: T[]): boolean {
     if (a.length !== b.length) {
@@ -531,46 +544,6 @@ export function is_topic_name_considered_empty(topic: string): boolean {
         return true;
     }
     return false;
-}
-
-export let get_retry_backoff_seconds = (
-    xhr: JQuery.jqXHR<unknown> | undefined,
-    attempts: number,
-    tighter_backoff = false,
-): number => {
-    // We need to respect the server's rate-limiting headers, but beyond
-    // that, we also want to avoid contributing to a thundering herd if
-    // the server is giving us 500/502 responses.
-    //
-    // We do the maximum of the retry-after header and an exponential
-    // backoff.
-    let backoff_scale: number;
-    if (tighter_backoff) {
-        // Starts at 1-2s and ends at 16-32s after enough failures.
-        backoff_scale = Math.min(2 ** attempts, 32);
-    } else {
-        // Starts at 1-2s and ends at 45-90s after enough failures.
-        backoff_scale = Math.min(2 ** ((attempts + 1) / 2), 90);
-    }
-    // Add a bit jitter to backoff scale.
-    const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
-    let rate_limit_delay_secs = 0;
-    const rate_limited_error_schema = z.object({
-        "retry-after": z.number(),
-        code: z.literal("RATE_LIMIT_HIT"),
-    });
-    const parsed = rate_limited_error_schema.safeParse(xhr?.responseJSON);
-    if (xhr?.status === 429 && parsed?.success && parsed?.data) {
-        // Add a bit of jitter to the required delay suggested by the
-        // server, because we may be racing with other copies of the web
-        // app.
-        rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
-    }
-    return Math.max(backoff_delay_secs, rate_limit_delay_secs);
-};
-
-export function rewire_get_retry_backoff_seconds(value: typeof get_retry_backoff_seconds): void {
-    get_retry_backoff_seconds = value;
 }
 
 export async function sha256_hash(text: string): Promise<string | undefined> {

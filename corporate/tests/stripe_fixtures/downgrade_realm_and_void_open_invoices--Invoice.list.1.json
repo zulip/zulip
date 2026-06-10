@@ -26,7 +26,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "downgrade_realm_and_void_open_invoices--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -75,6 +76,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -92,6 +94,8 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 123,
+            "quantity_decimal": "123",
+            "subtotal": 984000,
             "taxes": []
           }
         ],
@@ -144,7 +148,7 @@
       "total_excluding_tax": 984000,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     },
     {
       "account_country": "US",
@@ -172,7 +176,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "downgrade_realm_and_void_open_invoices--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -191,7 +196,7 @@
       "footer": null,
       "from_invoice": null,
       "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-      "id": "downgrade_realm_and_void_open_invoices--Event.list.2.json",
+      "id": "downgrade_realm_and_void_open_invoices--Event.list.1.json",
       "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
@@ -207,8 +212,8 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "downgrade_realm_and_void_open_invoices--Event.list.2.json",
-            "invoice": "downgrade_realm_and_void_open_invoices--Event.list.2.json",
+            "id": "downgrade_realm_and_void_open_invoices--Event.list.1.json",
+            "invoice": "downgrade_realm_and_void_open_invoices--Event.list.1.json",
             "livemode": false,
             "metadata": {},
             "object": "line_item",
@@ -221,6 +226,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -238,13 +244,15 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 123,
+            "quantity_decimal": "123",
+            "subtotal": 984000,
             "taxes": []
           }
         ],
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/downgrade_realm_and_void_open_invoices--Event.list.2.json/lines"
+        "url": "/v1/invoices/downgrade_realm_and_void_open_invoices--Event.list.1.json/lines"
       },
       "livemode": false,
       "metadata": {
@@ -298,7 +306,7 @@
       "total_excluding_tax": 984000,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     }
   ],
   "has_more": false,

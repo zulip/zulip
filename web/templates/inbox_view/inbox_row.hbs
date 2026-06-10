@@ -22,7 +22,7 @@
                           {{#unless has_unread_mention}}hidden{{/unless}}"
                           data-tippy-content="{{t 'You have unread mentions' }}">@</span>
                         <div class="unread-count-focus-outline" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}">
-                            <span class="unread_count tippy-zulip-tooltip on_hover_dm_read"
+                            <span class="unread_count tippy-zulip-delayed-tooltip on_hover_dm_read"
                               data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}"
                               aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                         </div>
@@ -35,7 +35,7 @@
                           data-tippy-content="{{t 'You have unread mentions'}}">@</span>
                         {{#unless (or (eq unread_count undefined) (eq unread_count 0))}}
                         <div class="unread-count-focus-outline" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}">
-                            <span class="unread_count tippy-zulip-tooltip on_hover_topic_read"
+                            <span class="unread_count tippy-zulip-delayed-tooltip on_hover_topic_read"
                               data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}"
                               data-tippy-content="{{t 'Mark as read' }}" aria-label="{{t 'Mark as read' }}">
                                 {{unread_count}}

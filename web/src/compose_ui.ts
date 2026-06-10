@@ -11,7 +11,6 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
-import type Template from "uri-template-lite";
 import * as z from "zod/mini";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
@@ -28,6 +27,7 @@ import {message_render_response_schema} from "./message_store.ts";
 import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as rtl from "./rtl.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -728,28 +728,11 @@ function expand_reverse_template(
     return output.join("");
 }
 
-function expand_url_template_from_match(
-    match: RegExpExecArray,
-    url_template: Template,
-    group_number_to_name: Record<number, string>,
-): string | null {
-    const context: Record<string, string> = {};
-    const capturing_groups = match.slice(1).entries();
-    for (const [index, capturing_group] of capturing_groups) {
-        const name = group_number_to_name[index + 1];
-        if (!name) {
-            return null;
-        }
-        context[name] = capturing_group;
-    }
-    return url_template.expand(context);
-}
-
 function reverse_linkify_segment(segment: string): string | null {
     const linkifier_map = linkifiers.get_linkifier_map();
     for (const [
         pattern,
-        {url_template, group_number_to_name, reverse_template, alternative_url_templates},
+        {url_template, reverse_template, alternative_url_templates},
     ] of linkifier_map) {
         if (!reverse_template) {
             continue;
@@ -763,18 +746,19 @@ function reverse_linkify_segment(segment: string): string | null {
             }
 
             const reversed_text = expand_reverse_template(reverse_template, template_context);
-            pattern.lastIndex = 0;
-            const match = pattern.exec(reversed_text);
-            if (!match) {
+            // Use the RE2JS matcher to verify the reversed text matches the pattern.
+            const matcher = pattern.matcher(reversed_text);
+            if (!matcher.find()) {
                 continue;
             }
 
             // Validate that expanding the captured groups round-trips to the original URL.
-            const expanded_url = expand_url_template_from_match(
-                match,
-                template,
-                group_number_to_name,
-            );
+            const named_groups = pattern.namedGroups();
+            const context: Record<string, string> = {};
+            for (const name of Object.keys(named_groups)) {
+                context[name] = matcher.group(name)!;
+            }
+            const expanded_url = template.expand(context);
             if (expanded_url !== segment) {
                 continue;
             }
@@ -1571,7 +1555,7 @@ async function poll_thumbnail_status(
         }
 
         if (pending_thumbnail_paths.size > 0) {
-            const retry_delay_secs = util.get_retry_backoff_seconds(undefined, attempt, true);
+            const retry_delay_secs = get_retry_backoff_seconds(undefined, attempt, true);
             thumbnail_poll_timeout = setTimeout(() => {
                 void poll_thumbnail_status(
                     $preview_container,

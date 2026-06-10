@@ -4,13 +4,43 @@ When choosing software that will be core to how one’s organization operates,
 such as a team chat platform, there is an important question: “Will this product
 still exist and be responsibly maintained in a few years?”
 
-We have designed our company, community, and technology with the explicit goal
-of Zulip being actively developed for many years to come.
-
-This theme cuts across many of the decisions described below. It is also
-reflected in our [history](/history/): Zulip's [earliest
+We have designed our governance, community, and technology with the explicit
+goal of Zulip being actively developed for many years to come. This theme cuts
+across many of the decisions described below. It is also reflected in our
+[history](/history/): Zulip's [earliest
 customers](/case-studies/recurse-center/) have enjoyed uninterrupted service
 since 2013.
+
+**We’re building software that is easy to maintain,** so it does
+not require a large team to keep the lights on. We have consistently emphasized
+high standards for codebase readability, code review, commit discipline,
+debuggability, automated testing, tooling, documentation, and all the other
+subtle details that together determine whether software is easy to understand,
+operate, and modify.
+
+## Commitment to the mission
+
+Zulip is stewarded by the [Zulip
+Foundation](https://blog.zulip.com/2026/05/15/announcing-zulip-foundation/),
+with a mission of developing the best possible team chat experience, with a
+particular focus on public-interest organizations and communities. The Zulip
+Foundation fully owns Kandra Labs, the company responsible for hosting,
+supporting, and improving Zulip for use across all industries.
+
+This structure, announced in May 2026, formalizes our [longtime
+commitment](https://blog.zulip.com/2021/12/17/why-zulip-will-stand-the-test-of-time/)
+to Zulip’s sustainability and independence. It allows us to fairly compensate a
+talented, dedicated team of core developers, without taking outside investment
+that could put pressure on us to compromise our values.
+
+## Doing right by our users
+
+We’re fully committed to being a trustworthy, transparent vendor for our
+customers. Kandra Labs has been public about its values for years — including
+our commitments to [protecting customer data
+privacy](https://blog.zulip.com/2024/05/23/self-hosting-keeps-your-private-data-out-of-ai-models/#a-note-on-zulips-approach-to-data-privacy),
+and to keeping our focus on the product, not on whatever’s [commercially
+fashionable](https://blog.zulip.com/2021/11/12/why-not-blockchain/).
 
 ## Keeping Zulip 100% open source
 
@@ -46,35 +76,6 @@ over 100 participants since 2016. Because of the thousands of hours our more
 senior contributors (including alumni of these programs!) have dedicated to
 mentorship, many of these participants have told us that they learned more
 contributing to Zulip than in their 4-year formal computer science education.
-
-## Building a sustainable business aligned with our values
-
-Guiding the Zulip community in developing a world-class organized team chat
-product with apps for every major desktop and mobile platform requires
-leadership from a talented, dedicated team. We believe that the only sustainable
-model is for our core team to be compensated fairly for their time. We have thus
-**founded a company (Kandra Labs) to steward and financially support Zulip’s
-development**.
-
-We are **growing our business sustainably**, without venture capital funding.
-VCs are incentivized to push companies to gamble for explosive growth. Often,
-the result is that a company with a useful product burns rapidly through its
-resources and goes out of business. We have built Zulip as a sustainable
-business (also supported by [SBIR grants](https://seedfund.nsf.gov/) from the US
-National Science Foundation), and are being thoughtful about our pace of
-spending.
-
-Funding our company without venture capital also allows us to **live by our
-values**, without investor pressure to compromise them when doing so might be
-“good business” or “what everyone does”.
-
-Finally, **we’re building software that is easy to maintain,** so it does
-not require a large team to keep the lights on. We have consistently emphasized
-high standards for codebase readability, code review, commit discipline,
-debuggability, automated testing, tooling, documentation, and all the other
-subtle details that together determine whether software is easy to understand,
-operate, and modify.
-
 
 ## Supporting other worthy organizations
 

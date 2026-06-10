@@ -16,10 +16,6 @@
     overflow-wrap: break-word;
 }
 
-.subscription_settings .bootstrap-btn {
-    border-radius: 2px;
-}
-
 .stream-email {
     display: flex;
     justify-content: space-between;
@@ -145,16 +141,17 @@ h3.user_group_setting_subsection_title {
     margin: 4px 0;
 }
 
-h4.stream_setting_subsection_title {
-    margin-bottom: 5px;
-}
-
 h4.stream_setting_subsection_title,
 h4.user_group_setting_subsection_title {
     display: inline-block;
     font-size: 1.35em;
     font-weight: normal;
     line-height: 1.5;
+    margin: 10px 0;
+}
+
+h4.stream_setting_subsection_title {
+    margin-bottom: 5px;
 }
 
 .subscriber_list_settings_container.no-display {
@@ -443,11 +440,24 @@ h4.user_group_setting_subsection_title {
 }
 
 .group-assigned-permissions {
+    /* Section title <h3>s in .realm-group-permissions /
+       .channel-group-permissions / .user-group-permissions. Was
+       supplied by the universal h1-h4 reset in bootstrap.app.css;
+       set explicitly so these section titles survive that reset's
+       removal. font-weight is left at the user-agent default
+       (bold). */
+    .group-permissions-section > h3 {
+        font-size: 1.5313em; /* 24.5px at 16px em */
+        line-height: var(--header-line-height);
+        margin: 10px 0;
+    }
+
     .subsection-header {
         h3 {
             font-size: 1.5em;
             font-weight: normal;
             line-height: 1.5;
+            margin: 10px 0;
             display: inline;
         }
     }
@@ -576,6 +586,31 @@ h4.user_group_setting_subsection_title {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
+                    /* Leave space between the channel/group name
+                       and its inset focus ring, and between that
+                       focus ring and the adjacent edit button's
+                       focus ring. */
+                    padding-right: 4px;
+                }
+
+                /* Focus outlines in this header are inset and forced
+                   to the regular focus blue. The ancestor
+                   .stream-info-title and .display-type both set
+                   `overflow: hidden`, which would otherwise clip an
+                   outside-drawn focus outline. */
+                .selected-stream:focus-visible {
+                    outline: 2px solid var(--color-outline-focus);
+                    outline-offset: -2px;
+                    text-decoration: none;
+                }
+
+                /* `!important` is required to win against the
+                   `.icon-button:focus-visible` and
+                   `.action-button:focus-visible` rules in
+                   buttons.css, which use `!important` themselves. */
+                .button-group :is(.icon-button, .action-button):focus-visible {
+                    outline: 2px solid var(--color-outline-focus) !important;
+                    outline-offset: -2px;
                 }
 
                 /* These contain two button groups, the left group should stick to the

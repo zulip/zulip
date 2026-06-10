@@ -15,7 +15,8 @@ class kandra::teleport::db {
     group   => 'root',
     mode    => '0644',
     content => template('kandra/teleport_db.yaml.template.erb'),
-    notify  => Service['teleport_db'],
+    before  => Kandra::Teleport::Part['db'],
+    notify  => Exec['reload teleport_db'],
   }
 
   kandra::teleport::part { 'db': }

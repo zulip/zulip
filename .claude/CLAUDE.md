@@ -47,7 +47,12 @@ This philosophy extends to every aspect of the product:
   comparisons that there are no unintended side effects.
 - **Every state matters.** UI must look correct in all its states:
   hover, active, disabled, focused, selected, empty, overflowing.
-  It must work in both light and dark themes.
+  Changes that could plausibly affect colors, contrast, or
+  theme-dependent imagery must work in both light and dark themes;
+  changes whose effect can't reasonably vary with theme (pure
+  geometry/typography — `font-size`, `line-height`, `margin`,
+  `padding`, `display`, `font-weight`, etc.) only need a single
+  theme verified.
 - **Every window size matters.** UI must look good from wide desktop
   (1920px) down to narrow phone screens (480px).
 - **Every language matters.** Translated strings can be 1.5x longer
@@ -344,7 +349,13 @@ before the change is ready.
   `git grep` to check if modified CSS is used elsewhere. CSS changes
   are notorious for unintended consequences — check every page and
   component that shares the selectors you modified.
-- Check all of the above in both light and dark themes.
+- Check all of the above in both light and dark themes when the
+  change could plausibly affect colors, contrast, or theme-dependent
+  imagery. Pure geometry/typography changes (`font-size`,
+  `line-height`, `margin`, `padding`, `display`, `font-weight`,
+  etc.) don't need a separate dark-theme pass —
+  `web/styles/dark_theme.css` only overrides colors, so a single
+  theme suffices for theme-invariant changes.
 
 **Responsiveness and internationalization:**
 

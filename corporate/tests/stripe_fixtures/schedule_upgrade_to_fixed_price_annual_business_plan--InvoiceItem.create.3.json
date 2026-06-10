@@ -1,13 +1,14 @@
 {
   "amount": 120000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "schedule_upgrade_to_fixed_price_annual_business_plan--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Business - renewal",
   "discountable": false,
   "discounts": [],
   "id": "schedule_upgrade_to_fixed_price_annual_business_plan--InvoiceItem.create.3.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "schedule_upgrade_to_fixed_price_annual_business_plan--Invoice.create.2.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 120000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 1,
+  "quantity_decimal": "1",
   "tax_rates": [],
   "test_clock": null
 }

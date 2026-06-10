@@ -4,7 +4,8 @@
   "cancellation_reason": null,
   "client_secret": "NORMALIZED",
   "created": 1000000000,
-  "customer": "cus_NORMALIZED",
+  "customer": "switch_now_free_trial_from_annual_to_monthly--Customer.create.1.json",
+  "customer_account": null,
   "description": null,
   "excluded_payment_method_types": null,
   "flow_directions": null,
@@ -12,12 +13,15 @@
   "last_setup_error": null,
   "latest_attempt": "setatt_NORMALIZED",
   "livemode": false,
+  "managed_payments": {
+    "enabled": false
+  },
   "mandate": null,
   "metadata": {},
   "next_action": null,
   "object": "setup_intent",
   "on_behalf_of": null,
-  "payment_method": "pm_NORMALIZED",
+  "payment_method": "switch_now_free_trial_from_annual_to_monthly--Customer.retrieve.1.json",
   "payment_method_configuration_details": null,
   "payment_method_options": {
     "card": {

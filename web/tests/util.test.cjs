@@ -17,6 +17,7 @@ set_realm(realm);
 
 set_global("document", {});
 const util = zrequire("util");
+const {get_retry_backoff_seconds} = zrequire("retry_backoff");
 
 initialize_user_settings({user_settings: {}});
 
@@ -125,6 +126,45 @@ run_test("dumb_strcmp", ({override}) => {
     assert.equal(strcmp("a", "b"), -1);
     assert.equal(strcmp("c", "c"), 0);
     assert.equal(strcmp("z", "y"), 1);
+});
+
+run_test("compare_stream_by_archived_then_name", () => {
+    const make_archived_stream = (name) => ({name, is_archived: true});
+    const make_non_archived_stream = (name) => ({name, is_archived: false});
+
+    let streams = [
+        make_non_archived_stream("beta"),
+        make_archived_stream("zeta"),
+        make_non_archived_stream("delta"),
+        make_archived_stream("alpha"),
+        make_non_archived_stream("alpha"),
+        make_archived_stream("beta"),
+    ];
+
+    const sorted_streams = streams.toSorted((a, b) =>
+        util.compare_stream_by_archived_then_name(a, b),
+    );
+
+    // archived streams are placed at the end after sorting.
+    assert.deepEqual(sorted_streams, [
+        make_non_archived_stream("alpha"),
+        make_non_archived_stream("beta"),
+        make_non_archived_stream("delta"),
+        make_archived_stream("alpha"),
+        make_archived_stream("beta"),
+        make_archived_stream("zeta"),
+    ]);
+
+    // Intl.Collator sorts "ä" near "a", placing "ärger" before "zeta".
+    streams = [make_non_archived_stream("zeta"), make_non_archived_stream("ärger")];
+
+    const sorted_locale_aware = streams.toSorted((a, b) =>
+        util.compare_stream_by_archived_then_name(a, b),
+    );
+    assert.deepEqual(sorted_locale_aware, [
+        make_non_archived_stream("ärger"),
+        make_non_archived_stream("zeta"),
+    ]);
 });
 
 run_test("get_edit_event_orig_topic", () => {
@@ -551,21 +591,31 @@ run_test("get_retry_backoff_seconds", () => {
 
     // Shorter backoff scale
     // First retry should be between 1-2 seconds.
-    let backoff = util.get_retry_backoff_seconds(xhr_500_error, 1, true);
+    let backoff = get_retry_backoff_seconds(xhr_500_error, 1, true);
     assert.ok(backoff >= 1);
     assert.ok(backoff < 3);
     // 100th retry should be between 16-32 seconds.
-    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100, true);
+    backoff = get_retry_backoff_seconds(xhr_500_error, 100, true);
     assert.ok(backoff >= 16);
     assert.ok(backoff <= 32);
 
     // Longer backoff scale
     // First retry should be between 1-2 seconds.
-    backoff = util.get_retry_backoff_seconds(xhr_500_error, 1);
+    backoff = get_retry_backoff_seconds(xhr_500_error, 1);
     assert.ok(backoff >= 1);
     assert.ok(backoff <= 3);
     // 100th retry should be between 45-90 seconds.
-    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100);
+    backoff = get_retry_backoff_seconds(xhr_500_error, 100);
+    assert.ok(backoff >= 45);
+    assert.ok(backoff <= 90);
+
+    // Slower backoff scale
+    // First retry should be between 2-4 seconds.
+    backoff = get_retry_backoff_seconds(xhr_500_error, 1, false, true);
+    assert.ok(backoff >= 2);
+    assert.ok(backoff <= 4);
+    // 100th retry should be between 45-90 seconds.
+    backoff = get_retry_backoff_seconds(xhr_500_error, 100, false, true);
     assert.ok(backoff >= 45);
     assert.ok(backoff <= 90);
 
@@ -579,10 +629,10 @@ run_test("get_retry_backoff_seconds", () => {
         },
     };
     // First retry should be greater than the retry-after value.
-    backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 1);
+    backoff = get_retry_backoff_seconds(xhr_rate_limit_error, 1);
     assert.ok(backoff >= 28.706807374954224);
     // 100th retry should be between 45-90 seconds.
-    backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 100);
+    backoff = get_retry_backoff_seconds(xhr_rate_limit_error, 100);
     assert.ok(backoff >= 45);
     assert.ok(backoff <= 90);
 });

@@ -21,6 +21,7 @@ import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
 import * as message_edit from "./message_edit.ts";
 import type {MessageList} from "./message_list.ts";
+import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
@@ -384,73 +385,44 @@ export function populate_group_from_message(
         assert(message.type === "stream");
         // stream messages have string display_recipient
         assert(typeof display_recipient === "string");
-        const color = stream_data.get_color(message.stream_id);
-        const recipient_bar_color = stream_color.get_recipient_bar_color(color);
-        const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
-        const invite_only = stream_data.is_invite_only_by_stream_id(message.stream_id);
-        const is_web_public = stream_data.is_web_public(message.stream_id);
+        const stream_id = message.stream_id;
         const topic = message.topic;
-        const topic_display_name = util.get_final_topic_display_name(topic);
-        const is_empty_string_topic = topic === "";
-        const match_topic_html = util.get_match_topic(message);
-        const stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
-        const is_archived = stream_data.is_stream_archived_by_id(message.stream_id);
-        const topic_url = internal_url.by_stream_topic_url(
-            message.stream_id,
-            message.topic,
-            sub_store.maybe_get_stream_name,
-            message.id,
-        );
-
-        const sub = sub_store.get(message.stream_id);
-        let stream_id;
-        if (sub === undefined) {
-            // Hack to handle unusual cases like the tutorial where
-            // the streams used don't actually exist in the subs
-            // module.  Ideally, we'd clean this up by making the
-            // tutorial populate stream_settings_ui.ts "properly".
-            stream_id = -1;
-        } else {
-            stream_id = sub.stream_id;
-        }
-
-        const is_subscribed = stream_data.is_subscribed(stream_id);
-        const topic_is_resolved = resolved_topic.is_resolved(topic);
-        const user_can_resolve_topic = stream_data.can_resolve_topics(sub);
-        const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic);
-        // The following field is not specific to this group, but this is the
-        // easiest way we've figured out for passing the data to the template rendering.
-        const all_visibility_policies = user_topics.all_visibility_policies;
-
-        const topic_links = message.topic_links;
-
+        const sub = sub_store.get(stream_id);
+        assert(sub !== undefined);
         return {
             message_group_id,
             message_containers: [],
             is_stream,
             ...get_topic_edit_properties(message),
-            user_can_resolve_topic,
+            user_can_resolve_topic: stream_data.can_resolve_topics(sub),
             ...subscription_markers,
             date_html,
             display_recipient,
             date_unchanged,
-            topic_links,
+            topic_links: message.topic_links,
             topic,
-            topic_display_name,
-            is_empty_string_topic,
-            recipient_bar_color,
-            stream_privacy_icon_color,
-            invite_only,
-            is_web_public,
-            match_topic_html,
-            stream_url,
-            is_archived,
-            topic_url,
+            topic_display_name: util.get_final_topic_display_name(topic),
+            is_empty_string_topic: topic === "",
+            recipient_bar_color: stream_color.get_recipient_bar_color(sub.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(sub.color),
+            invite_only: sub.invite_only,
+            is_web_public: sub.is_web_public,
+            match_topic_html: util.get_match_topic(message),
+            stream_url: hash_util.channel_url_by_user_setting(stream_id),
+            is_archived: sub.is_archived,
+            topic_url: internal_url.by_stream_topic_url(
+                stream_id,
+                topic,
+                sub_store.maybe_get_stream_name,
+                message.id,
+            ),
             stream_id,
-            is_subscribed,
-            topic_is_resolved,
-            visibility_policy,
-            all_visibility_policies,
+            is_subscribed: sub.subscribed,
+            topic_is_resolved: resolved_topic.is_resolved(topic),
+            visibility_policy: user_topics.get_topic_visibility_policy(stream_id, topic),
+            // The following field is not specific to this group, but this is the
+            // easiest way we've figured out for passing the data to the template rendering.
+            all_visibility_policies: user_topics.all_visibility_policies,
             always_display_date,
         };
     }
@@ -1633,36 +1605,19 @@ export class MessageListView {
         );
     }
 
-    _rerender_header(message_containers: MessageContainer[]): void {
-        // Given a list of messages that are in the **same** message group,
-        // rerender the header / recipient bar of the messages. This method
-        // should only be called with rerender_messages as the rerendered
-        // header may need to be updated for the "sticky_header" class.
-        if (message_containers.length === 0) {
-            return;
-        }
-
-        const $first_row = this.get_row(message_containers[0]!.msg.id);
-
-        // We may not have the row if the stream or topic was muted
-        if ($first_row.length === 0) {
-            return;
-        }
-
-        const $recipient_row = rows.get_message_recipient_row($first_row);
-        const $header = $recipient_row.find(".message_header");
-        const message_group_id = $recipient_row.attr("id")!;
-
-        // Since there might be multiple dates within the message
-        // group, it's important to look up the original/full message
-        // group rather than doing an artificial rerendering of the
-        // message header from the set of message containers passed in
-        // here.
+    _rerender_header(message_group_id: string): void {
+        // Rerender the header / recipient bar of the given message group,
+        // rebuilding it from the authoritative group looked up below. This
+        // method should only be called with rerender_messages as the
+        // rerendered header may need to be updated for the "sticky_header"
+        // class.
         const group = this._find_message_group(message_group_id);
         if (group === undefined) {
             blueslip.error("Could not find message group for rerendering headers");
             return;
         }
+
+        const $header = $(`#${CSS.escape(message_group_id)}`).find(".message_header");
 
         // TODO: It's possible that we no longer need this populate
         // call; it was introduced in an earlier version of this code
@@ -1694,7 +1649,7 @@ export class MessageListView {
     _rerender_message(
         message_container: MessageContainer,
         opts: {message_content_edited: boolean; is_revealed: boolean},
-    ): void {
+    ): JQuery {
         const {message_content_edited, is_revealed} = opts;
         const $row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
@@ -1717,10 +1672,14 @@ export class MessageListView {
         this._post_process($rendered_msg);
         $row.replaceWith($rendered_msg);
 
+        message_list_hover.reapply_hover_on_row_replace($row, $rendered_msg, message_container.msg);
+
         // If this list not currently displayed, we don't need to select the message.
         if (was_selected && this.list === message_lists.current) {
             this.list.reselect_selected_id();
         }
+
+        return $rendered_msg;
     }
 
     reveal_hidden_message(message_id: number): void {
@@ -1783,28 +1742,42 @@ export class MessageListView {
             }
         }
 
-        const message_groups = [];
-        let current_group = [];
-
+        // Rerender each message row, collecting the distinct recipient
+        // bars they belong to by their row's rendered group id. The
+        // messages can span several bars -- even bars that share a
+        // recipient -- so the group id is what distinguishes the bars.
+        const rerendered_elements: HTMLElement[] = [];
+        const rerendered_group_ids = new Set<string>();
         for (const message_container of message_containers) {
-            if (
-                current_group.length === 0 ||
-                same_recipient(current_group.at(-1), message_container)
-            ) {
-                current_group.push(message_container);
-            } else {
-                message_groups.push(current_group);
-                current_group = [];
+            const $rendered = this._rerender_message(message_container, {
+                message_content_edited,
+                is_revealed: false,
+            });
+            rerendered_elements.push(...$rendered);
+            const $row = this.get_row(message_container.msg.id);
+            // The row may be absent, e.g. for a muted stream or topic, in
+            // which case there is no recipient bar to rerender.
+            if ($row.length === 0) {
+                continue;
             }
-            this._rerender_message(message_container, {message_content_edited, is_revealed: false});
+            const message_group_id = rows.get_message_recipient_row($row).attr("id");
+            if (message_group_id !== undefined) {
+                rerendered_group_ids.add(message_group_id);
+            }
         }
 
-        if (current_group.length > 0) {
-            message_groups.push(current_group);
+        // Only the current message list needs its condense/collapse
+        // state refreshed here; non-current lists get
+        // `condense_and_collapse` reapplied via `restore_rendered_list`
+        // in `message_view` when they're brought back into view.
+        if (this.list === message_lists.current && rerendered_elements.length > 0) {
+            condense.condense_and_collapse($(rerendered_elements));
         }
 
-        for (const messages_in_group of message_groups) {
-            this._rerender_header(messages_in_group);
+        // Now that every row is rerendered, rerender each affected bar's
+        // header once.
+        for (const message_group_id of rerendered_group_ids) {
+            this._rerender_header(message_group_id);
         }
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {

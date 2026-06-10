@@ -281,6 +281,17 @@ h3,
         }
     }
 
+    /* Bare <h3> section titles in settings panels get their font-size,
+       font-weight, and line-height from the '#settings_page h3' rule
+       further down in this file; previously their margin came from the
+       universal h1-h4 reset in bootstrap.app.css. Set the margin
+       explicitly here so the spacing survives that reset's removal.
+       Specificity matches the existing '.admin-realm-form h3' margin
+       override, which appears later in this file and so still wins. */
+    & h3 {
+        margin: 10px 0;
+    }
+
     .table-sticky-headers {
         position: sticky;
         top: 0;
@@ -469,7 +480,7 @@ select.settings_select {
     But here the buttons have bottom padding of 0.375em and thus there is
     already some extra space between this and the section below it, so we
     reduce the bottom margin by 0.375em. */
-    margin-bottom: 0.875em;
+    margin-bottom: calc(1.25em - var(--icon-button-padding));
 
     .modal-field-label {
         margin-bottom: 0;
@@ -1618,6 +1629,7 @@ label.preferences-radio-choice-label {
         & h1 {
             text-align: center;
             font-size: 1.1em;
+            font-weight: bold;
             line-height: 1;
             text-transform: uppercase;
         }
@@ -1800,13 +1812,6 @@ label.preferences-radio-choice-label {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
     }
-}
-
-.subsection-failed-status p {
-    background-color: hsl(0deg 43% 91%);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin: 0 0 0 5px;
 }
 
 #muted_topics_table {
@@ -2019,10 +2024,6 @@ label.preferences-radio-choice-label {
     .user-avatar-section,
     .realm-icon-section {
         display: block;
-    }
-
-    .subsection-failed-status p {
-        margin: 5px 0 0;
     }
 }
 

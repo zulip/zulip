@@ -57,6 +57,7 @@ import type {StreamSubscription} from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import {anonymous_group_schema, group_setting_value_schema} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import {place_caret_at_end} from "./ui_util.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_group_create from "./user_group_create.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
@@ -634,7 +635,7 @@ function update_membership_status_text(group: UserGroup): void {
 }
 
 function save_discard_widget_handler_for_permissions_panel($subsection: JQuery): void {
-    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".alert-notification").hide();
     $subsection.find(".save-button").show();
     const properties_elements = settings_components.get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) => !$(elem).prop("checked"));
@@ -1658,7 +1659,7 @@ export function change_state(
         // Callback to .goto() will update browser_history unless a
         // group is being edited. We are always editing a group here
         // so its safe to call
-        if (left_side_tab !== group_list_toggler.value()) {
+        if (left_side_tab !== group_list_toggler.key()) {
             user_group_components.set_active_group_id(group.id);
             group_list_toggler.goto(left_side_tab);
         }
@@ -2085,6 +2086,7 @@ export function initialize(): void {
         function (this: HTMLElement, e) {
             e.preventDefault();
             e.stopPropagation();
+            const open_modal_button_id = $(this).attr("id");
             const user_group_id = get_user_group_id(this);
             const user_group = user_groups.get_user_group_from_id(user_group_id);
             const template_data = {
@@ -2107,6 +2109,20 @@ export function initialize(): void {
                     $("#change_group_info_modal .dialog_submit_button")
                         .addClass("save-button")
                         .attr("data-group-id", user_group_id);
+                },
+                on_shown() {
+                    let $input;
+                    switch (open_modal_button_id) {
+                        case "group_title_open_group_info_modal":
+                            $input = $("#change_user_group_name");
+                            break;
+                        case "open_group_info_modal":
+                            $input = $("#change_user_group_description");
+                            break;
+                    }
+                    if ($input) {
+                        place_caret_at_end(util.the($input));
+                    }
                 },
                 update_submit_disabled_state_on_change: true,
             });

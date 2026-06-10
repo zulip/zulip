@@ -257,7 +257,7 @@ export function paste_handler_converter(
 
     const has_single_child_with_valid_text = has_single_textful_child_node(copied_html_fragment);
 
-    const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
+    const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE", "TIME"];
     // If the entire selection copied is within a single HTML element (like an
     // `h1`), we don't want to retain its styling, except when it is needed to
     // identify the intended structure of the copied content.
@@ -301,6 +301,31 @@ export function paste_handler_converter(
         filter: ["del", "s", "strike"],
         replacement(content) {
             return "~~" + content + "~~";
+        },
+    });
+    turndownService.addRule("timestamp", {
+        filter(node) {
+            // Require .timestamp-content-wrapper to distinguish Zulip timestamps
+            // from arbitrary <time datetime> elements on other websites.
+            if (
+                node.nodeName === "TIME" &&
+                node.hasAttribute("datetime") &&
+                node.querySelector(".timestamp-content-wrapper") !== null
+            ) {
+                return true;
+            }
+            // Fallback when Chrome's clipboard serializer strips the
+            // <time> wrapper: the copy handler stashes the datetime on
+            // the .timestamp-content-wrapper span as `data-datetime`.
+            if (node.hasAttribute("data-datetime") && node.closest("time") === null) {
+                return true;
+            }
+            return false;
+        },
+        replacement(_content, node) {
+            assert(node instanceof HTMLElement);
+            const datetime = node.getAttribute("datetime") ?? node.getAttribute("data-datetime");
+            return `<time:${datetime}>`;
         },
     });
     turndownService.addRule("links", {
@@ -798,6 +823,13 @@ export function paste_handler(
                     // and also is required for undo, see above.
                     $banner.remove();
                 });
+                if (avoid_direct_paste) {
+                    // Using focus({focusVisible: true}) here ensures that :focus-visible
+                    // activates in Chrome.
+                    $banner
+                        .find(".main-view-banner-action-button.paste-to-compose")[0]
+                        ?.focus({focusVisible: true});
+                }
             }, 0);
         }
 

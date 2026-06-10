@@ -21,6 +21,11 @@ import * as avatar from "./avatar.ts";
 import * as banners from "./banners.ts";
 import * as bot_data from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
+import {
+    EMBEDDED_BOT_TYPE,
+    INCOMING_WEBHOOK_BOT_TYPE_INT,
+    OUTGOING_WEBHOOK_BOT_TYPE,
+} from "./bot_type_values.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as buttons from "./buttons.ts";
@@ -92,10 +97,6 @@ let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
 let original_values: (Record<string, unknown> & {user_id?: string | undefined}) | undefined;
-
-const INCOMING_WEBHOOK_BOT_TYPE = 2;
-const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-const EMBEDDED_BOT_TYPE = "4";
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
@@ -192,7 +193,7 @@ export function update_profile_modal_ui(
             name: user.full_name,
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         };
-        $("#name .user-profile-name").html(render_user_full_name(user_type));
+        $("#user-profile-name-heading .user-profile-name").html(render_user_full_name(user_type));
     }
 }
 
@@ -282,15 +283,7 @@ function get_fetched_user_unsub_streams(user_id: number): dropdown_widget.Option
             unique_id: stream.stream_id,
             stream,
         }))
-        .toSorted((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
+        .toSorted((a, b) => util.compare_stream_by_archived_then_name(a.stream, b.stream));
 }
 
 function format_user_stream_list_item_html(stream: StreamSubscription, user: User): string {
@@ -301,11 +294,7 @@ function format_user_stream_list_item_html(stream: StreamSubscription, user: Use
     const show_last_user_in_private_stream_unsub_tooltip =
         stream.invite_only && peer_data.get_subscriber_count(stream.stream_id) === 1;
     return render_channel_list_item({
-        name: stream.name,
-        stream_id: stream.stream_id,
-        stream_color: stream.color,
-        invite_only: stream.invite_only,
-        is_web_public: stream.is_web_public,
+        stream,
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
         show_last_user_in_private_stream_unsub_tooltip,
@@ -873,7 +862,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
-        is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT,
         max_bot_name_length: people.MAX_USER_NAME_LENGTH,
         realm_bot_domain: realm.realm_bot_domain,
     });
@@ -884,19 +873,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     const bot_type = bot.bot_type.toString();
     const services = bot_data.get_services(bot.user_id);
-    let service:
-        | {
-              config_data: Record<string, string>;
-              service_name: string;
-          }
-        | {
-              base_url: string;
-              interface: number;
-              token: string;
-          };
-    if (services?.[0] !== undefined) {
-        service = services[0];
-    }
+    const service = services?.[0];
     edit_bot_post_render();
     original_values = get_current_values($("#bot-edit-form"));
     $("#bot-edit-form").on("input", "input, select, button", (e) => {
@@ -1063,6 +1040,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            assert(service !== undefined && "interface" in service);
             $("#service_data").append(
                 $(
                     render_settings_edit_outgoing_webhook_service({
@@ -1070,7 +1048,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                     }),
                 ),
             );
-            assert(service && "interface" in service);
             $("#edit_service_interface").val(service.interface);
         }
         if (bot_type === EMBEDDED_BOT_TYPE) {
@@ -1667,20 +1644,28 @@ export function initialize(): void {
         add_user_to_groups(group_ids, user_id, $alert_box);
     });
 
-    $("body").on("click", "#user-profile-modal #name .user-profile-update-user-tab-button", (e) => {
-        show_manage_user_tab("manage-profile-tab");
-        e.stopPropagation();
-        e.preventDefault();
-    });
+    $("body").on(
+        "click",
+        "#user-profile-name-heading .user-profile-update-user-tab-button",
+        (e) => {
+            show_manage_user_tab("manage-profile-tab");
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
 
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
 
-    $("body").on("click", "#user-profile-modal #name .user-profile-profile-settings-button", () => {
-        hide_user_profile();
-        browser_history.go_to_location("#settings/profile");
-    });
+    $("body").on(
+        "click",
+        "#user-profile-name-heading .user-profile-profile-settings-button",
+        () => {
+            hide_user_profile();
+            browser_history.go_to_location("#settings/profile");
+        },
+    );
 
     $("body").on(
         "keydown",

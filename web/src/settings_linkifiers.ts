@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {RE2JSSyntaxException} from "re2js";
 import SortableJS from "sortablejs";
 import * as z from "zod/mini";
 
@@ -75,6 +76,30 @@ function read_alternative_url_templates_from_form($modal: JQuery): string[] {
     return templates;
 }
 
+// Compile the pattern client-side to catch regex syntax errors before
+// submitting to the server.  On failure, reports the error into
+// $pattern_status and returns false.
+function validate_linkifier_pattern(
+    pattern: string,
+    url_template: string,
+    $pattern_status: JQuery,
+): boolean {
+    try {
+        linkifiers.compile_linkifier(pattern, url_template);
+    } catch (error) {
+        const detail = error instanceof RE2JSSyntaxException ? error.getDescription() : undefined;
+        ui_report.error(
+            detail === undefined
+                ? $t_html({defaultMessage: "Failed: Bad regular expression"})
+                : $t_html({defaultMessage: "Failed: Bad regular expression: {detail}"}, {detail}),
+            undefined,
+            $pattern_status,
+        );
+        return false;
+    }
+    return true;
+}
+
 function open_linkifier_edit_form(linkifier_id: number): void {
     const linkifiers_list = realm.realm_linkifiers;
     const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
@@ -122,6 +147,12 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             .find("#linkifier-alternative-url-templates-status")
             .expectOne();
         const $dialog_error_element = $modal.find("#dialog_error").expectOne();
+
+        if (!validate_linkifier_pattern(pattern, url_template, $pattern_status)) {
+            $change_linkifier_button.prop("disabled", false);
+            return;
+        }
+
         const opts = {
             success_continuation() {
                 $change_linkifier_button.prop("disabled", false);
@@ -221,15 +252,8 @@ function open_linkifier_add_form(): void {
             .val()!
             .trim();
 
-        try {
-            linkifiers.python_to_js_linkifier(pattern, url_template);
-        } catch {
+        if (!validate_linkifier_pattern(pattern, url_template, $pattern_status)) {
             $add_linkifier_button.prop("disabled", false);
-            ui_report.error(
-                $t_html({defaultMessage: "Failed: Invalid Pattern"}),
-                undefined,
-                $pattern_status,
-            );
             return;
         }
 

@@ -339,6 +339,7 @@ export function initialize(): void {
         {
             ...popover_menus.left_sidebar_tippy_options,
             onMount(instance) {
+                popover_menus.popover_instances.top_left_sidebar = instance;
                 const $popper = $(instance.popper);
 
                 $popper.one(
@@ -384,8 +385,6 @@ export function initialize(): void {
         },
         {
             also_trigger_on_enter: true,
-            get_focus_return_element: (reference) =>
-                util.the($(reference).siblings(".left-sidebar-navigation-label-container")),
         },
     );
 

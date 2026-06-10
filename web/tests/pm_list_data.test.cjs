@@ -494,23 +494,21 @@ test("get_list_info_deactivated_users", ({override}) => {
 
     override(unread, "num_unread_for_user_ids_string", () => 1);
 
-    // Verify with unread messages that conversations with Bob are still
-    // not shown in the unzoomed case, and the unread count for more
-    // conversations is updated for those 2 conversations.
+    // Verify that with unread messages, conversations with Bob
+    // (deactivated) are shown in the unzoomed case.
     list_info = pm_list_data.get_list_info(false);
-    assert.deepEqual(list_info.conversations_to_be_shown.length, 11);
-    assert.deepEqual(list_info.more_conversations_unread_count, 2);
-    // Verify that Bob (deactivated) is not included.
-    check_list_info(list_info, 11, 2, [
+    check_list_info(list_info, 13, 0, [
         "Cardelio, Iago",
         "Alice, Zoe",
         "Iago",
         "Iago, Zoe",
         "Alice, Cardelio",
         "Alice, Iago",
+        "Bob, Cardelio",
         "Cardelio, Zoe",
         "Cardelio",
         "Zoe",
+        "Bob",
         "Me Myself",
         "Alice",
     ]);

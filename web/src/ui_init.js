@@ -65,6 +65,7 @@ import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigatio
 import * as left_sidebar_tooltips from "./left_sidebar_tooltips.ts";
 import * as lightbox from "./lightbox.ts";
 import * as linkifiers from "./linkifiers.ts";
+import * as loading_error from "./loading_error.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
 import * as markdown_config from "./markdown_config.ts";
@@ -110,6 +111,7 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
@@ -208,6 +210,7 @@ function initialize_navbar() {
         embedded: page_params.narrow_stream !== undefined,
         user_avatar: current_user.avatar_url_medium,
         realm_icon_url: realm.realm_icon_url,
+        realm_name: realm.realm_name,
     });
 
     $("#header-container").html(rendered_navbar);
@@ -422,7 +425,7 @@ function initialize_unread_ui() {
     );
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
-    unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
+    unread_ui.initialize({mark_narrow_as_read: unread_ops.mark_narrow_as_read});
 }
 
 export async function initialize_everything(state_data) {
@@ -458,6 +461,14 @@ export async function initialize_everything(state_data) {
     set_current_user(state_data.current_user);
     set_realm(state_data.realm);
     set_realm_billing(state_data.realm_billing);
+
+    if (page_params.narrow_stream !== undefined) {
+        // In the /?stream=X mini-window flow, the user's main Zulip
+        // window is the primary recipient of desktop notifications;
+        // suppress them here so the embedded window doesn't fire
+        // duplicate alerts.
+        state_data.user_settings.user_settings.enable_desktop_notifications = false;
+    }
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. Because information
@@ -883,17 +894,16 @@ $(() => {
                 error(xhr) {
                     register_failures += 1;
                     if (register_failures <= 5) {
-                        const retry_delay_secs = util.get_retry_backoff_seconds(
+                        const retry_delay_secs = get_retry_backoff_seconds(
                             xhr,
                             register_failures,
+                            false,
+                            true,
                         );
                         setTimeout(fetch_state_data, retry_delay_secs * 1000);
                         return;
                     }
-                    $("#app-loading-middle-content").hide();
-                    $("#app-loading-bottom-content").hide();
-                    $(".app").hide();
-                    $("#app-loading-error").css({visibility: "visible"});
+                    loading_error.show_loading_error();
                 },
             });
         }

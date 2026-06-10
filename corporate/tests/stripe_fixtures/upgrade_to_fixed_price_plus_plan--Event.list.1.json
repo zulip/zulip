@@ -8,15 +8,15 @@
           "account_country": "US",
           "account_name": "NORMALIZED",
           "account_tax_ids": null,
-          "amount_due": 2285250,
+          "amount_due": 984000,
           "amount_overpaid": 0,
-          "amount_paid": 0,
-          "amount_remaining": 2285250,
+          "amount_paid": 984000,
+          "amount_remaining": 0,
           "amount_shipping": 0,
           "application": null,
           "attempt_count": 0,
           "attempted": false,
-          "auto_advance": true,
+          "auto_advance": false,
           "automatic_tax": {
             "disabled_reason": null,
             "enabled": false,
@@ -26,11 +26,12 @@
           },
           "automatically_finalizes_at": null,
           "billing_reason": "manual",
-          "collection_method": "charge_automatically",
+          "collection_method": "send_invoice",
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "cus_NORMALIZED",
+          "customer": "upgrade_to_fixed_price_plus_plan--Customer.create.1.json",
+          "customer_account": null,
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -43,7 +44,7 @@
           "default_tax_rates": [],
           "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
-          "due_date": null,
+          "due_date": 1000000000,
           "effective_at": 1000000000,
           "ending_balance": 0,
           "footer": null,
@@ -59,9 +60,9 @@
           "lines": {
             "data": [
               {
-                "amount": 372700,
+                "amount": 984000,
                 "currency": "usd",
-                "description": "Additional Zulip Cloud Standard license",
+                "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -79,12 +80,13 @@
                     },
                     "subscription": null
                   },
+                  "license_fee_subscription_details": null,
                   "subscription_item_details": null,
                   "type": "invoice_item_details"
                 },
                 "period": {
                   "end": 1357095845,
-                  "start": 1327633465
+                  "start": 1325473445
                 },
                 "pretax_credit_amounts": [],
                 "pricing": {
@@ -93,140 +95,30 @@
                     "product": "prod_NORMALIZED"
                   },
                   "type": "price_details",
-                  "unit_amount_decimal": "7454"
+                  "unit_amount_decimal": "8000"
                 },
-                "quantity": 50,
-                "taxes": []
-              },
-              {
-                "amount": 756300,
-                "currency": "usd",
-                "description": "Additional Zulip Cloud Standard license",
-                "discount_amounts": [],
-                "discountable": false,
-                "discounts": [],
-                "id": "upgrade_to_fixed_price_plus_plan--Event.list.1.json",
-                "invoice": "upgrade_to_fixed_price_plus_plan--Event.list.1.json",
-                "livemode": false,
-                "metadata": {},
-                "object": "line_item",
-                "parent": {
-                  "invoice_item_details": {
-                    "invoice_item": "ii_NORMALIZED",
-                    "proration": false,
-                    "proration_details": {
-                      "credited_items": null
-                    },
-                    "subscription": null
-                  },
-                  "subscription_item_details": null,
-                  "type": "invoice_item_details"
-                },
-                "period": {
-                  "end": 1357095845,
-                  "start": 1327201445
-                },
-                "pretax_credit_amounts": [],
-                "pricing": {
-                  "price_details": {
-                    "price": "price_NORMALIZED",
-                    "product": "prod_NORMALIZED"
-                  },
-                  "type": "price_details",
-                  "unit_amount_decimal": "7563"
-                },
-                "quantity": 100,
-                "taxes": []
-              },
-              {
-                "amount": 767200,
-                "currency": "usd",
-                "description": "Additional Zulip Cloud Standard license",
-                "discount_amounts": [],
-                "discountable": false,
-                "discounts": [],
-                "id": "upgrade_to_fixed_price_plus_plan--Event.list.1.json",
-                "invoice": "upgrade_to_fixed_price_plus_plan--Event.list.1.json",
-                "livemode": false,
-                "metadata": {},
-                "object": "line_item",
-                "parent": {
-                  "invoice_item_details": {
-                    "invoice_item": "ii_NORMALIZED",
-                    "proration": false,
-                    "proration_details": {
-                      "credited_items": null
-                    },
-                    "subscription": null
-                  },
-                  "subscription_item_details": null,
-                  "type": "invoice_item_details"
-                },
-                "period": {
-                  "end": 1357095845,
-                  "start": 1326769445
-                },
-                "pretax_credit_amounts": [],
-                "pricing": {
-                  "price_details": {
-                    "price": "price_NORMALIZED",
-                    "product": "prod_NORMALIZED"
-                  },
-                  "type": "price_details",
-                  "unit_amount_decimal": "7672"
-                },
-                "quantity": 100,
-                "taxes": []
-              },
-              {
-                "amount": 389050,
-                "currency": "usd",
-                "description": "Additional Zulip Cloud Standard license",
-                "discount_amounts": [],
-                "discountable": false,
-                "discounts": [],
-                "id": "upgrade_to_fixed_price_plus_plan--Event.list.1.json",
-                "invoice": "upgrade_to_fixed_price_plus_plan--Event.list.1.json",
-                "livemode": false,
-                "metadata": {},
-                "object": "line_item",
-                "parent": {
-                  "invoice_item_details": {
-                    "invoice_item": "ii_NORMALIZED",
-                    "proration": false,
-                    "proration_details": {
-                      "credited_items": null
-                    },
-                    "subscription": null
-                  },
-                  "subscription_item_details": null,
-                  "type": "invoice_item_details"
-                },
-                "period": {
-                  "end": 1357095845,
-                  "start": 1326337445
-                },
-                "pretax_credit_amounts": [],
-                "pricing": {
-                  "price_details": {
-                    "price": "price_NORMALIZED",
-                    "product": "prod_NORMALIZED"
-                  },
-                  "type": "price_details",
-                  "unit_amount_decimal": "7781"
-                },
-                "quantity": 50,
+                "quantity": 123,
+                "quantity_decimal": "123",
+                "subtotal": 984000,
                 "taxes": []
               }
             ],
             "has_more": false,
             "object": "list",
-            "total_count": 4,
+            "total_count": 1,
             "url": "/v1/invoices/upgrade_to_fixed_price_plus_plan--Event.list.1.json/lines"
           },
           "livemode": false,
-          "metadata": {},
-          "next_payment_attempt": 1000000000,
+          "metadata": {
+            "billing_schedule": "1",
+            "current_plan_id": "None",
+            "license_management": "manual",
+            "licenses": "123",
+            "on_free_trial": "False",
+            "plan_tier": "1",
+            "user_id": "10"
+          },
+          "next_payment_attempt": null,
           "number": "NORMALIZED",
           "object": "invoice",
           "on_behalf_of": null,
@@ -253,22 +145,22 @@
           "shipping_details": null,
           "starting_balance": 0,
           "statement_descriptor": "Zulip Cloud Standard",
-          "status": "open",
+          "status": "paid",
           "status_transitions": {
             "finalized_at": 1000000000,
             "marked_uncollectible_at": null,
-            "paid_at": null,
+            "paid_at": 1000000000,
             "voided_at": null
           },
-          "subtotal": 2285250,
-          "subtotal_excluding_tax": 2285250,
+          "subtotal": 984000,
+          "subtotal_excluding_tax": 984000,
           "test_clock": null,
-          "total": 2285250,
+          "total": 984000,
           "total_discount_amounts": [],
-          "total_excluding_tax": 2285250,
+          "total_excluding_tax": 984000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_to_fixed_price_plus_plan--Event.list.1.json",
@@ -279,10 +171,10 @@
         "id": "upgrade_to_fixed_price_plus_plan--Event.list.1.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "invoice.finalized"
+      "type": "invoice.paid"
     }
   ],
-  "has_more": true,
+  "has_more": false,
   "object": "list",
   "url": "/v1/events"
 }

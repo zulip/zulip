@@ -34,6 +34,7 @@ set_global("getSelection", () => ({
 }));
 
 let typeahead_forced_open = false;
+let search_typeahead;
 
 const verona = make_stream({
     subscribed: true,
@@ -84,11 +85,16 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher("")(), true);
 
-        return {
+        search_typeahead = {
+            shown: false,
             lookup() {
                 typeahead_forced_open = true;
             },
+            hide() {
+                this.shown = false;
+            },
         };
+        return search_typeahead;
     });
 
     search.initialize({
@@ -103,7 +109,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for dm</div>\n    \n</div>\n`;
             assert.equal(opts.item_html("dm")(search_suggestions[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\ndm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\ndm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
             assert.equal(opts.item_html("dm")(search_suggestions[1]), expected_value);
 
             /* Test sorter */
@@ -119,9 +125,8 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             assert.equal(opts.item_html("ver")(search_suggestions[0]), expected_value);
 
             const search_string = "channel: Verona";
-            const verona_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">Verona</span></span>`;
-            description_html = `Messages in ${verona_decorated}`;
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
+            description_html = "Messages in #Verona";
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
             assert.equal(opts.item_html("ver")(search_suggestions[1]), expected_value);
 
             /* Test sorter */
@@ -143,16 +148,16 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             assert.equal(opts.item_html("zo")(search_suggestions[0]), expected_value);
 
             override(realm, "realm_enable_guest_user_indicator", true);
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">sender:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">sender:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
             assert.equal(opts.item_html("zo")(search_suggestions[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
             assert.equal(opts.item_html("zo")(search_suggestions[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
             assert.equal(opts.item_html("zo")(search_suggestions[3]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">mentions:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">mentions:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
             assert.equal(opts.item_html("zo")(search_suggestions[4]), expected_value);
 
             /* Test sorter */
@@ -312,6 +317,16 @@ run_test("initiate_search", ({override_rewire}) => {
     assert.ok(typeahead_forced_open);
     assert.ok(search_bar_opened);
     assert.equal($("#search_query").text(), "");
+});
+
+run_test("close_search", () => {
+    search_typeahead.shown = true;
+    $(".navbar-search").addClass("expanded");
+
+    search.close_search();
+
+    assert.equal(search_typeahead.shown, false);
+    assert.ok(!$(".navbar-search").hasClass("expanded"));
 });
 
 run_test("create_item_from_search_string with invalid string", () => {

@@ -110,7 +110,7 @@
                                     <img class="loader" alt="" src="" />
                                     <i class="zulip-icon zulip-icon-send"></i>
                                 </button>
-                                <button class="send-control-button send-related-action-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send options' }}">
+                                <button class="send-control-button send-related-action-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send options' }}" aria-label="{{t 'Send options' }}">
                                     <i class="zulip-icon zulip-icon-more-vertical"></i>
                                 </button>
                             </div>
@@ -118,10 +118,10 @@
 
                         <div id="message-formatting-controls-container" class="compose-scrolling-buttons-container">
                             {{> compose_control_buttons . }}
-                            <button type="button" class="formatting-control-scroller-button formatting-scroller-forward">
+                            <button type="button" class="formatting-control-scroller-button formatting-scroller-forward" aria-label="{{t 'Scroll forward' }}">
                                 <i class="scroller-forward-icon zulip-icon zulip-icon-compose-scroll-right"></i>
                             </button>
-                            <button type="button" class="formatting-control-scroller-button formatting-scroller-backward">
+                            <button type="button" class="formatting-control-scroller-button formatting-scroller-backward" aria-label="{{t 'Scroll backward' }}">
                                 <i class="scroller-backward-icon zulip-icon zulip-icon-compose-scroll-left"></i>
                             </button>
                         </div>
@@ -129,6 +129,6 @@
                 </div>
             </form>
         </div>
-        <button type="button" class="zulip-icon zulip-icon-close" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
+        <button type="button" class="zulip-icon zulip-icon-close" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template" aria-label="{{t 'Cancel compose' }}"></button>
     </div>
 </div>

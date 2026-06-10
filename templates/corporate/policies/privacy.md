@@ -610,7 +610,7 @@ regarding such collection and use, please do not hesitate to contact us at:
 
 - <https://zulip.com/support>
 - [privacy@zulip.com](mailto:privacy@zulip.com)
-- Kandra Labs, Inc., 450 Townsend Street, San Francisco, CA 94107
+- Kandra Labs, Inc., 584 Castro St #3175, San Francisco, CA 94114
 
 If you are located in the European Union or United Kingdom, you may use our
 contact information above, or contact our European-based representative:

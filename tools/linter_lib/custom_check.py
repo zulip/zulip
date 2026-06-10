@@ -11,7 +11,6 @@ from zulint.custom_rules import Rule, RuleList
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     "zerver/lib/topic.py",
-    "zerver/lib/topic_sqlalchemy.py",
     # This is tied to legacy events.
     "zerver/lib/event_types.py",
     # This is for backward compatibility.

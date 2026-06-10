@@ -11,6 +11,7 @@ from functools import wraps
 from typing import Any, Concatenate, TypeAlias
 from urllib.parse import parse_qs, urlsplit
 
+import orjson
 import responses
 from django.utils.timezone import now as timezone_now
 from requests import PreparedRequest
@@ -226,6 +227,12 @@ def mock_microsoft_graph_api_calls(
                 "microsoft_graph_api_response_fixtures",
             ),
         )
+        # Add one failed download to test scrub_uploads_records_after_download.
+        responses.add(
+            responses.GET,
+            "https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755003422344/hostedContents/aWQ9eF8wLXd1cy1kMi1iNGM5NjhiYmNhMDU1OWViYWFkMzdiMGUzMzBmMzY5MSx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kMi1iNGM5NjhiYmNhMDU1OWViYWFkMzdiMGUzMzBmMzY5MS92aWV3cy9pbWdv/$value",
+            status=400,
+        )
         responses.add(
             responses.GET,
             re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
@@ -265,13 +272,36 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         fixture_file_path = self.fixture_file_name(fixture_folder, "microsoft_teams_fixtures")
         if not os.path.isdir(fixture_file_path):
             raise AssertionError(f"Fixture file not found: {fixture_file_path}")
-        with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
+        with self.assertLogs(level="INFO") as log, self.settings(EXTERNAL_HOST="zulip.example.com"):
             do_convert_directory(
                 fixture_file_path,
                 self.converted_file_output_dir,
                 "MICROSOFT_GRAPH_API_TOKEN",
                 processes=1,
             )
+        with self.subTest("no records for failed downloads"):
+            self.assertIn("INFO:root:HTTP error: 400, Response: ", log.output)
+            uploads_records_path = os.path.join(
+                self.converted_file_output_dir, "uploads", "records.json"
+            )
+            with open(uploads_records_path, "rb") as f:
+                upload_records = orjson.loads(f.read())
+
+            for record in upload_records:
+                file_path = os.path.join(self.converted_file_output_dir, "uploads", record["path"])
+                self.assertTrue(os.path.isfile(file_path))
+
+            attachment_records_path = os.path.join(
+                self.converted_file_output_dir, "attachment.json"
+            )
+            with open(attachment_records_path, "rb") as f:
+                attachment_records = orjson.loads(f.read())
+
+            for record in attachment_records["zerver_attachment"]:
+                file_path = os.path.join(
+                    self.converted_file_output_dir, "uploads", record["path_id"]
+                )
+                self.assertTrue(os.path.isfile(file_path))
 
     def import_microsoft_teams_export_fixture(self, fixture_folder: str) -> None:
         self.convert_microsoft_teams_export_fixture(fixture_folder)
@@ -477,20 +507,19 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
                     message_with_attachment.has_image,
                     attachment.content_type in THUMBNAIL_ACCEPT_IMAGE_TYPES,
                 )
-                self.assertTrue(message_with_attachment.has_link)
                 assert isinstance(message_with_attachment.rendered_content, str)
                 self.assertIn(
                     f"/user_uploads/{attachment.path_id}", message_with_attachment.rendered_content
                 )
                 message_ids_with_attachment.add(message_with_attachment.id)
 
-        # Make sure no weird message conversion with wrong has_attachment, has_link
+        # Make sure no weird message conversion with wrong has_attachment
         # and has_image property.
         self.assertSetEqual(
             message_ids_with_attachment,
             set(
                 Message.objects.filter(
-                    realm=test_realm, has_link=True, has_attachment=True, has_image=True
+                    realm=test_realm, has_attachment=True, has_image=True
                 ).values_list("id", flat=True)
             ),
         )
@@ -755,16 +784,16 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             ),
             # Unprocessed converted html
             MessageFixture(
-                content="Normal text and an [image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)",
+                content="Normal text and an ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)",
                 hosted_content_count=1,
                 is_direct_message_type=False,
                 test_name="text and an image 2",
             ),
             MessageFixture(
                 content=(
-                    "First [image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)"
-                    "Second [image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/ABC/$value)"
-                    "Third [image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/DEF/$value)"
+                    "First ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)"
+                    "Second ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/ABC/$value)"
+                    "Third ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/DEF/$value)"
                 ),
                 hosted_content_count=3,
                 is_direct_message_type=False,
@@ -806,15 +835,15 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 test_name="text only",
             ),
             MessageFixture(
-                content="MS Sharepoint attachment URL [image](https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/wp12245700.jpg)",
+                content="MS Sharepoint attachment URL ![image](https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/wp12245700.jpg)",
                 hosted_content_count=0,
                 is_direct_message_type=False,
                 test_name="text and other URL",
             ),
             MessageFixture(
                 content=(
-                    "List all hosted content [invalid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/hostedContents)"
-                    "Get a hosted content [valid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/messages/BAR/hostedContents/QUX/$value)"
+                    "List all hosted content ![invalid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/hostedContents)"
+                    "Get a hosted content ![valid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/messages/BAR/hostedContents/QUX/$value)"
                 ),
                 hosted_content_count=1,
                 is_direct_message_type=False,
@@ -822,7 +851,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             ),
             MessageFixture(
                 content=(
-                    "DM [image](https://graph.microsoft.com/v1.0/chats/{chat-id}/messages/{message-id}/hostedContents/{hosted-content-id}/$value)"
+                    "DM ![image](https://graph.microsoft.com/v1.0/chats/{chat-id}/messages/{message-id}/hostedContents/{hosted-content-id}/$value)"
                 ),
                 hosted_content_count=0,
                 is_direct_message_type=True,

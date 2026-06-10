@@ -74,10 +74,7 @@ function createSaveButtons(subsection) {
     const $stub_save_button = $(".save-button");
     const $stub_discard_button = $(".discard-button");
     const $stub_save_button_text = $(".action-button-label");
-    $stub_save_button_header.set_find_results(
-        ".subsection-failed-status p",
-        $("<failed-status-stub>"),
-    );
+    $stub_save_button_header.set_find_results(".alert-notification", $("<failed-status-stub>"));
     $stub_save_button.set_closest_results(".settings-subsection-parent", $stub_save_button_header);
     $save_button_controls.set_parent($stub_save_button_header);
     $save_button_controls.set_find_results(".save-button", $stub_save_button);
@@ -207,10 +204,17 @@ function test_change_save_button_state() {
         assert.equal($save_button_text.text(), "translated: Saved");
     }
     {
-        settings_components.change_save_button_state($save_button_controls, "failed");
-        assert.equal($save_button_controls.visible(), true);
-        assert.equal($save_button.attr("data-status"), "failed");
-        assert.equal($save_button_text.text(), "translated: Save changes");
+        let error_callback_called = false;
+        function error_callback() {
+            error_callback_called = true;
+        }
+        settings_components.change_save_button_state(
+            $save_button_controls,
+            "failed",
+            error_callback,
+        );
+        assert.equal($save_button_controls.visible(), false);
+        assert.equal(error_callback_called, true);
     }
 }
 

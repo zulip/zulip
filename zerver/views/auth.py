@@ -264,10 +264,45 @@ def maybe_send_to_registration(
     else:
         invited_as = PreregistrationUser.INVITE_AS["MEMBER"]
 
+    try:
+        # If there's an existing, valid PreregistrationUser for this
+        # user, we want to fetch it since some values from it will be used
+        # as defaults for creating the signed up user.
+        existing_prereg_user = filter_to_valid_prereg_users(
+            PreregistrationUser.objects.filter(email__iexact=email, realm=realm)
+        ).latest("invited_at")
+    except PreregistrationUser.DoesNotExist:
+        existing_prereg_user = None
+
+    if multiuse_obj is None and existing_prereg_user is not None:
+        # When the user is not signing up via a multiuse invite link,
+        # the existing PreregistrationUser tells us the role they were
+        # intended to have, when they were invited.
+        invited_as = existing_prereg_user.invited_as
+
+    # A valid pending email invitation for this user permits them to
+    # sign up even if the organization requires invitations to join;
+    # PreregistrationUser rows left over from the user's own earlier
+    # signup attempts are not invitations, and must not bypass the
+    # invite_required check.
+    has_pending_invitation = filter_to_valid_prereg_users(
+        PreregistrationUser.objects.filter(
+            email__iexact=email,
+            realm=realm,
+            # Only invitations have referred_by set. This condition is
+            # redundant with invitations_only below; we keep both as
+            # defense in depth to ensure we only look at the intended
+            # PreregistrationUser set.
+            referred_by__isnull=False,
+        ),
+        invitations_only=True,
+    ).exists()
+
     form = HomepageForm(
         {"email": email},
         realm=realm,
         from_multiuse_invite=from_multiuse_invite,
+        has_pending_invitation=has_pending_invitation,
         invited_as=role or invited_as,
     )
     if form.is_valid():
@@ -276,19 +311,10 @@ def maybe_send_to_registration(
         # Confirmation objects, and then send the user to account
         # creation or confirm-continue-registration depending on
         # is_signup.
-        try:
-            # If there's an existing, valid PreregistrationUser for this
-            # user, we want to fetch it since some values from it will be used
-            # as defaults for creating the signed up user.
-            existing_prereg_user = filter_to_valid_prereg_users(
-                PreregistrationUser.objects.filter(email__iexact=email, realm=realm)
-            ).latest("invited_at")
-        except PreregistrationUser.DoesNotExist:
-            existing_prereg_user = None
-
+        #
         # full_name data passed here as argument should take precedence
-        # over the defaults with which the existing PreregistrationUser that we've just fetched
-        # was created.
+        # over the defaults with which the existing PreregistrationUser
+        # fetched above was created.
         prereg_user = create_preregistration_user(
             email,
             realm,
@@ -316,7 +342,6 @@ def maybe_send_to_registration(
             include_realm_default_subscriptions = (
                 existing_prereg_user.include_realm_default_subscriptions
             )
-            invited_as = existing_prereg_user.invited_as
 
         if streams_to_subscribe:
             prereg_user.streams.set(streams_to_subscribe)

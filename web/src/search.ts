@@ -269,11 +269,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             exit_search({keep_search_narrow_open: false});
         },
         tabIsEnter: true,
-        openInputFieldOnKeyUp(): void {
-            if ($(".navbar-search.expanded").length === 0) {
-                open_search_bar_and_close_narrow_description();
-            }
-        },
         // This is here so that we can close the search bar
         // when a user opens it and immediately changes their
         // mind and clicks away.
@@ -423,7 +418,7 @@ export let exit_search = (opts: {keep_search_narrow_open: boolean}): void => {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
-        close_search_bar_and_open_narrow_description();
+        close_search();
     } else if (opts.keep_search_narrow_open) {
         // If the user is in a search narrow and we don't want to redirect,
         // we just keep the search bar open and don't do anything.
@@ -453,12 +448,20 @@ export function rewire_open_search_bar_and_close_narrow_description(
     open_search_bar_and_close_narrow_description = value;
 }
 
-export function close_search_bar_and_open_narrow_description(): void {
-    // Hide the dropdown before closing the search bar. We do this
-    // to avoid being in a situation where the typeahead gets narrow
-    // in width as the search bar closes, which doesn't look great.
-    $("#searchbox_form .dropdown-menu").hide();
+// Close the search UI by hiding the active typeahead instance,
+// collapsing the search bar, and restoring the narrow description
+// header if it was previously hidden.
+export function close_search(): void {
+    search_typeahead?.hide();
+    // closeInputFieldOnHide may have already closed the bar via
+    // close_search_bar_and_open_narrow_description during the hide() call
+    // above. Close it if the bar is still open.
+    if ($(".navbar-search").hasClass("expanded")) {
+        close_search_bar_and_open_narrow_description();
+    }
+}
 
+export function close_search_bar_and_open_narrow_description(): void {
     if (search_pill_widget !== null) {
         search_pill_widget.clear(true);
     }

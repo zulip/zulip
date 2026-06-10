@@ -651,7 +651,7 @@ def deport(netloc: str) -> str:
     return "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
 
 
-def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentParser:
+def start_script_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(add_help=add_help)
     parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
     parser.add_argument(
@@ -679,6 +679,48 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
             action="store_true",
             help="Restart with more concern for expediency than minimizing availability interruption",
         )
+    return parser
+
+
+def upgrade_script_arg_parser() -> argparse.ArgumentParser:
+    """Options shared by upgrade-zulip-stage-3 and its wrapper scripts.
+
+    Wrappers like upgrade-zulip-from-git use this as a parent parser so
+    that --help advertises the same options stage-3 accepts, and forward
+    the parsed values through to stage-3.
+    """
+    parser = argparse.ArgumentParser(
+        add_help=False, parents=[start_script_arg_parser(action="restart", add_help=False)]
+    )
+    parser.add_argument(
+        "--skip-restart",
+        action="store_true",
+        help="Configure, but do not restart into, the new version; aborts if any system-wide changes would happen.",
+    )
+    parser.add_argument(
+        "--skip-puppet", action="store_true", help="Skip doing puppet/apt upgrades."
+    )
+    parser.add_argument("--skip-migrations", action="store_true", help="Skip doing migrations.")
+    parser.add_argument(
+        "--skip-downgrade-check",
+        action="store_true",
+        help="Skip the safety check to prevent database downgrades.",
+    )
+    parser.add_argument(
+        "--ignore-static-assets",
+        action="store_true",
+        help="Do not attempt to copy/manage static assets.",
+    )
+    parser.add_argument(
+        "--skip-purge-old-deployments",
+        action="store_true",
+        help="Skip purging old deployments.",
+    )
+    parser.add_argument(
+        "--audit-fts-indexes",
+        action="store_true",
+        help="Audit and fix full text search indexes.",
+    )
     return parser
 
 

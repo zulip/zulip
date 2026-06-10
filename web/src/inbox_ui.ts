@@ -2475,39 +2475,35 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         focus_clicked_list_element($elt);
     });
 
-    $("body").on("click", "#inbox-list .on_hover_dm_read", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const $elt = $(this);
-        col_focus = COLUMNS.UNREAD_COUNT;
-        focus_clicked_list_element($elt);
-        const user_ids_string = $elt.attr("data-user-ids-string");
-        if (user_ids_string) {
-            // direct message row
-            unread_ops.mark_pm_as_read(user_ids_string);
-        }
-    });
-
-    $("body").on("click", "#inbox-list .on_hover_topic_read", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const $elt = $(this);
-        col_focus = COLUMNS.UNREAD_COUNT;
-        focus_clicked_list_element($elt);
-        const user_ids_string = $elt.attr("data-user-ids-string");
-        if (user_ids_string) {
-            // direct message row
-            unread_ops.mark_pm_as_read(user_ids_string);
-            return;
-        }
-        const stream_id = Number($elt.attr("data-stream-id"));
-        const topic = $elt.attr("data-topic-name");
-        if (topic !== undefined) {
-            unread_ops.mark_topic_as_read(stream_id, topic);
-        } else {
-            unread_ops.mark_stream_as_read(stream_id);
-        }
-    });
+    // Bound to the row-tall wrapper so the full vertical area of the
+    // unread-count column acts as a "mark as read" click target. Data
+    // attributes live on the inner badge.
+    $("body").on(
+        "click",
+        "#inbox-list .unread-count-focus-outline",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const $badge = $(this).find(".unread_count");
+            if ($badge.length === 0) {
+                return;
+            }
+            col_focus = COLUMNS.UNREAD_COUNT;
+            focus_clicked_list_element($(this));
+            const user_ids_string = $badge.attr("data-user-ids-string");
+            if (user_ids_string) {
+                unread_ops.mark_pm_as_read(user_ids_string);
+                return;
+            }
+            const stream_id = Number($badge.attr("data-stream-id"));
+            const topic = $badge.attr("data-topic-name");
+            if (topic !== undefined) {
+                unread_ops.mark_topic_as_read(stream_id, topic);
+            } else {
+                unread_ops.mark_stream_as_read(stream_id);
+            }
+        },
+    );
 
     $("body").on("click", "#inbox-list .change_visibility_policy", function (this: HTMLElement) {
         const $elt = $(this);

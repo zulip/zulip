@@ -49,7 +49,7 @@ def download_worker(base_path: str) -> NoReturn:
             download_queue.task_done()
             continue
 
-        print(f"({download_queue.qsize()} Downloading {path_id}")
+        print(f"Downloading {path_id} ({download_queue.qsize()} remaining in queue)")
         write_attachment(base_path, path_id, check_lock)
         download_queue.task_done()
 

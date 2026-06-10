@@ -48,12 +48,12 @@
     </span>
     {{#if show_expand_button}}
     <div class="expand">
-        <a role="button" class="zulip-icon zulip-icon-expand-both-diagonals pill-expand-button"></a>
+        <a role="button" class="zulip-icon zulip-icon-expand-both-diagonals pill-expand-button" aria-label="{{t 'Expand' }}"></a>
     </div>
     {{/if}}
     {{#unless disabled}}
     <div class="exit">
-        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>
+        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="{{t 'Remove' }}"></a>
     </div>
     {{/unless}}
 </div>

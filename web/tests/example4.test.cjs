@@ -63,6 +63,12 @@ const pm_list = mock_esm("../src/pm_list");
 const settings_bots = mock_esm("../src/settings_bots");
 const settings_users = mock_esm("../src/settings_users");
 const user_profile = mock_esm("../src/user_profile");
+mock_esm("../src/compose_recipient", {
+    update_user_name_in_compose() {},
+});
+mock_esm("../src/message_view_header", {
+    maybe_update_navbar_title_for_user() {},
+});
 
 // Use real versions of these modules.
 const bot_data = zrequire("bot_data");

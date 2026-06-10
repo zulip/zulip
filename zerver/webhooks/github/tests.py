@@ -906,3 +906,7 @@ class GitHubSponsorsHookTests(WebhookTestCase):
             TOPIC_SPONSORS,
             expected_message,
         )
+
+    def test_ping_message(self) -> None:
+        expected_message = "GitHub webhook has been successfully configured by marcphilipp."
+        self.check_webhook("ping__sponsors", TOPIC_SPONSORS, expected_message)

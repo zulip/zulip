@@ -19,14 +19,14 @@
         "background_color": "#dbedff",
         "border_style": "rounded",
         "button_color": "#3e6bfe",
-        "display_name": "Violet Beam",
+        "display_name": "STRIPE SANDBOX",
         "font_family": "source_sans_pro",
         "icon": {
-          "file": "file_1RxpnoDwzgQ85STgf3bBl5KY",
+          "file": "file_NORMALIZED",
           "type": "file"
         },
         "logo": {
-          "file": "file_1RxpnoDwzgQ85STgvEm4ntJu",
+          "file": "file_NORMALIZED",
           "type": "file"
         }
       },
@@ -50,7 +50,8 @@
         "submit": null,
         "terms_of_service_acceptance": null
       },
-      "customer": "cus_NORMALIZED",
+      "customer": "invoice_plans_as_needed_server--Customer.create.1.json",
+      "customer_account": null,
       "customer_creation": null,
       "customer_details": {
         "address": null,
@@ -66,12 +67,14 @@
       "discounts": null,
       "expires_at": 1000000000,
       "id": "invoice_plans_as_needed_server--checkout.Session.create.1.json",
+      "integration_identifier": null,
       "invoice": null,
       "invoice_creation": null,
       "livemode": false,
       "locale": null,
+      "managed_payments": null,
       "metadata": {
-        "remote_server_user_id": "6",
+        "remote_server_user_id": "7",
         "type": "card_update"
       },
       "mode": "setup",
@@ -96,7 +99,7 @@
       },
       "recovered_from": null,
       "saved_payment_method_options": null,
-      "setup_intent": "seti_NORMALIZED",
+      "setup_intent": "invoice_plans_as_needed_server--SetupIntent.list.1.json",
       "shipping_address_collection": null,
       "shipping_cost": null,
       "shipping_options": [],

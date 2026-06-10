@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as about_zulip from "./about_zulip.ts";
@@ -70,6 +71,29 @@ function is_somebody_else_profile_open(): boolean {
         user_profile.get_user_id_if_user_profile_modal_open() !== undefined &&
         user_profile.get_user_id_if_user_profile_modal_open() !== people.my_current_user_id()
     );
+}
+
+// The first slot of a channels-settings hash is overloaded:
+//   - "subscribed" / "available" / "all" → left-panel tab
+//   - "new"                              → create-channel form
+//   - a stream-id string                 → that channel's settings
+// Disentangle it into the right-panel state and the left-side tab key
+// that stream_settings_ui expects.
+function channels_overlay_state_from_hash(): {
+    right_panel: "new" | number | undefined;
+    left_side_tab: string | undefined;
+} {
+    const hash_section = hash_parser.get_current_hash_section();
+    if (hash_section === "new") {
+        return {right_panel: "new", left_side_tab: undefined};
+    }
+    if (/^\d+$/.test(hash_section)) {
+        return {right_panel: Number.parseInt(hash_section, 10), left_side_tab: undefined};
+    }
+    // validate_channels_settings_hash has already constrained
+    // hash_section, so anything else is one of "subscribed" /
+    // "available" / "all".
+    return {right_panel: undefined, left_side_tab: hash_section};
 }
 
 function get_settings_tab(section: string): string | undefined {
@@ -328,18 +352,20 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         if (base === "channels") {
             if (hash_parser.get_current_nth_hash_section(1) === "folders") {
                 const folder_id = hash_parser.get_current_nth_hash_section(2);
+                // Folder-create: show create form; left tab unchanged.
                 stream_settings_ui.change_state(
                     "new",
                     undefined,
-                    "",
+                    undefined,
                     Number.parseInt(folder_id, 10),
                 );
                 return;
             }
 
             // e.g. #channels/29/social/subscribers
+            const {right_panel, left_side_tab} = channels_overlay_state_from_hash();
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
-            stream_settings_ui.change_state(section, undefined, right_side_tab);
+            stream_settings_ui.change_state(right_panel, left_side_tab, right_side_tab);
             return;
         }
 
@@ -427,23 +453,25 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base === "channels") {
         if (hash_parser.get_current_nth_hash_section(1) === "folders") {
             const folder_id = hash_parser.get_current_nth_hash_section(2);
-            stream_settings_ui.launch("new", undefined, "", Number.parseInt(folder_id, 10));
+            stream_settings_ui.launch("new", undefined, undefined, Number.parseInt(folder_id, 10));
             return;
         }
 
         // e.g. #channels/29/social/subscribers
+        const {right_panel, left_side_tab} = channels_overlay_state_from_hash();
         const right_side_tab = hash_parser.get_current_nth_hash_section(3);
 
-        if (is_somebody_else_profile_open()) {
-            stream_settings_ui.launch(section, "all-streams", right_side_tab);
+        // When somebody else's profile is open and we're navigating to
+        // a specific channel, default the left tab to "All" instead of
+        // inferring from subscription. URLs with a channel ID never
+        // carry an explicit left tab, so this overrides nothing.
+        if (is_somebody_else_profile_open() && typeof right_panel === "number") {
+            assert(left_side_tab === undefined);
+            stream_settings_ui.launch(right_panel, "all", right_side_tab);
             return;
         }
 
-        // We pass left_side_tab as undefined in change_state to
-        // select the tab based on user's subscriptions. "Subscribed" is
-        // selected if user is subscribed to the stream being edited.
-        // Otherwise "All streams" is selected.
-        stream_settings_ui.launch(section, undefined, right_side_tab);
+        stream_settings_ui.launch(right_panel, left_side_tab, right_side_tab);
         return;
     }
 

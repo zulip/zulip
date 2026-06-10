@@ -7,7 +7,7 @@ import {group_setting_value_schema} from "./types.ts";
 import {user_settings_schema} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
-const NOT_TYPED_YET = z.unknown();
+const NOT_TYPED_YET = z.optional(z.unknown());
 
 const group_permission_setting_schema = z.object({
     require_system_group: z.boolean(),

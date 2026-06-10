@@ -35,6 +35,16 @@
                     </div>
                 </div>
                 {% else %}
+                {% if slack_import_error %}
+                <div class="input-box">
+                    <p id="slack-import-error" class="help-inline text-error">{{ slack_import_error }}</p>
+                </div>
+                <div class="input-box">
+                    <button type="button" id="slack-import-start-over" class="register-button">
+                        {{ _("Start over") }}
+                    </button>
+                </div>
+                {% else %}
                 <form method="post" class="form-inline" action="{{ url('import_realm_from_slack') }}">
                     {{ csrf_input }}
                     <div class="input-box no-validation">
@@ -120,6 +130,7 @@
                 </form>
                 {% endif %}
                 {% endif %}
+                {% endif %}
             </div>
             {% if poll_for_import_completion %}
             <div id="bottom-hint-slack-import-page">
@@ -131,7 +142,7 @@
                     {% endtrans %}
                 </span>
             </div>
-            {% else %}
+            {% elif not slack_import_error %}
             <form method="post" class="hidden" id="cancel-slack-import-form" action="{{ url('import_realm_from_slack') }}">
                 {{ csrf_input }}
                 <input type='hidden' name='key' value="{{ key }}" />

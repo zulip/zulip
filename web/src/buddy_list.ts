@@ -24,6 +24,7 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
+import * as sidebar_header_sticky_shadow from "./sidebar_header_sticky_shadow.ts";
 import {disconnect_toggle_class, observe_toggle_class} from "./sidebar_tooltip_helpers.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -1208,6 +1209,8 @@ export class BuddyList extends BuddyListConf {
         $scroll_container.on("scroll", () => {
             this.fill_screen_with_content();
         });
+
+        sidebar_header_sticky_shadow.initialize($scroll_container, ".buddy-list-subsection-header");
     }
 
     update_padding(): void {

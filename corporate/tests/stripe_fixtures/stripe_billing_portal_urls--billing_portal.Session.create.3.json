@@ -1,7 +1,8 @@
 {
-  "configuration": "bpc_NORMALIZED",
+  "configuration": "stripe_billing_portal_urls--billing_portal.Configuration.create.3.json",
   "created": 1000000000,
-  "customer": "cus_NORMALIZED",
+  "customer": "stripe_billing_portal_urls--Customer.create.1.json",
+  "customer_account": null,
   "flow": null,
   "id": "stripe_billing_portal_urls--billing_portal.Session.create.3.json",
   "livemode": false,

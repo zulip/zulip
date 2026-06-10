@@ -417,9 +417,10 @@ exports.FakeJQuery = class extends RejectMissing {
         }
         return this;
     }
-    fadeOut() {
+    fadeOut(_duration, callback) {
         for (const element of this) {
             fake_element_state.get(element).shown = false;
+            callback.call();
         }
         return this;
     }

@@ -391,6 +391,7 @@ run_test("insert_local_message direct message", ({override}) => {
     override(markdown, "render", () => {
         render_called = true;
     });
+    override(markdown, "get_topic_links", () => []);
 
     const message_request = {
         private_message_recipient: "cordelia@zulip.com",

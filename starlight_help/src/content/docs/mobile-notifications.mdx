@@ -31,17 +31,19 @@ topics](/help/follow-a-topic#configure-notifications-for-followed-topics).
 ## End-to-end encryption (E2EE) for mobile push notifications
 
 Zulip Server 12.0+ and Zulip Cloud support end-to-end encrypted (E2EE) mobile
-push notifications. E2EE ensures that message **content** and **metadata**
+push notifications. All push notifications sent from an up-to-date version of
+the server to an updated version of the app (30.0.271+ on Android, 30.0.272+ on iOS)
+will be end-to-end encrypted. E2EE ensures that message **content** and **metadata**
 (including the sender's and recipient's names, or channel and topic where the
 message was sent) are not visible to Apple, Google, or Zulip's
 [Mobile Push Notification
 Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
 
 Organization administrators can require end-to-end encryption for
-message content in mobile push notifications. When this setting is
-enabled, message content will be omitted when sending notifications to
-an app that doesn't support end-to-end encryption. Users will see “New
-message” in place of message text.
+mobile push notifications. When this setting is enabled, push
+notifications will only be sent to updated version of the apps that
+support end-to-end encryption. Older apps that don't support E2EE
+will not receive any push notifications.
 
 See [technical
 documentation](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#security-and-privacy)
@@ -55,7 +57,7 @@ for encryption protocol details.
   <NavigationSteps target="settings/organization-settings" />
 
   1. Under **Notifications security**, toggle
-     **Require end-to-end encryption for push notification content**.
+     **Require end-to-end encryption for push notifications**.
 </FlattenedSteps>
 
 ## Mobile notifications while online

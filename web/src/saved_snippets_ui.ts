@@ -223,17 +223,21 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         sticky_bottom_option: $t({
             defaultMessage: "Create a new saved snippet",
         }),
+        no_items_text: $t({defaultMessage: "No saved snippets"}),
         on_show_callback(dropdown: tippy.Instance) {
             saved_snippets_dropdown = dropdown;
         },
         on_exit_with_escape_callback: () => get_dropdown_target_textarea()?.trigger("focus"),
         focus_target_on_hidden: false,
         prefer_top_start_placement: true,
+        on_mount_callback(instance: tippy.Instance) {
+            const ref_rect = instance.reference.getBoundingClientRect();
+            const popper_rect = instance.popper.getBoundingClientRect();
+            const x_offset = -(popper_rect.width / 2 - ref_rect.width / 2);
+            instance.setProps({offset: [x_offset, 5]});
+        },
         tippy_props: {
-            // Using -100 as x offset makes saved snippet icon be in the center
-            // of the dropdown widget and 5 as y offset is what we use in compose
-            // recipient dropdown widget.
-            offset: [-100, 5],
+            arrow: true,
         },
     });
     saved_snippets_widget.setup();

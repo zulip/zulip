@@ -307,6 +307,19 @@ export function possibly_update_stream_name_in_compose(stream_id: number): void 
     }
 }
 
+export function update_user_name_in_compose(user_id: number, full_name: string): void {
+    // Only a current DM recipient's rename affects this compose box, so
+    // ignore renames of anyone else.
+    if (!compose_pm_pill.get_user_ids().includes(user_id)) {
+        return;
+    }
+    // DM pills carry their own captured full_name and aren't rebuilt by
+    // on_compose_select_recipient_update, so we update the pill in place
+    // and refresh the textarea placeholder text.
+    compose_pm_pill.update_user_pill_full_name(user_id, full_name);
+    update_compose_area_placeholder_text();
+}
+
 function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
     const recipient_id_str = $(event.currentTarget).attr("data-unique-id");
     assert(recipient_id_str !== undefined);

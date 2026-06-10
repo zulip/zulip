@@ -579,16 +579,24 @@ function closest_index(cumulative: number[], target: number): number {
 // Algorithm: divide the message volume into equal slices, then
 // for each slice boundary, prefer a nearby date with a long
 // silence before it (the start of a new conversation burst).
-export function get_scroll_to_date_suggestions(messages: Message[]): ScrollToDateSuggestion[] {
+export function get_scroll_to_date_suggestions(
+    messages: Message[],
+    clicked_timestamp?: number,
+): ScrollToDateSuggestion[] {
     if (messages.length === 0) {
         return [];
     }
 
     const date_groups = build_date_groups(messages);
 
-    // Exclude today — the user is likely already there.
+    // Exclude today (the user is likely already there) and the
+    // clicked date if any (the user just signaled it isn't useful).
     const today_key = get_date_key(Date.now() / 1000);
-    const filtered_groups = date_groups.filter((group) => group.date_string !== today_key);
+    const clicked_key =
+        clicked_timestamp === undefined ? undefined : get_date_key(clicked_timestamp);
+    const filtered_groups = date_groups.filter(
+        (group) => group.date_string !== today_key && group.date_string !== clicked_key,
+    );
 
     if (filtered_groups.length === 0) {
         return [];

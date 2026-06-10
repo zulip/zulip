@@ -31,6 +31,7 @@ import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import * as sidebar_header_sticky_shadow from "./sidebar_header_sticky_shadow.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
@@ -50,6 +51,7 @@ import {user_settings} from "./user_settings.ts";
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
 let update_inbox_channel_view_callback: (channel_id: number) => void;
+let show_channel_feed_callback: (stream_id: number, trigger: string) => void;
 
 export function set_update_inbox_channel_view_callback(value: (channel_id: number) => void): void {
     update_inbox_channel_view_callback = value;
@@ -155,16 +157,17 @@ export function update_streams_sidebar_for_messages(messages: Message[]): void {
     }
 }
 
-function zoom_in(): void {
-    zoomed_in = true;
-    const stream_id = topic_list.active_stream_id();
-    assert(stream_id !== undefined);
+function zoom_in(stream_id: number): void {
+    if (narrow_state.stream_id() !== stream_id) {
+        show_channel_feed_callback(stream_id, "sidebar");
+    }
 
+    zoomed_in = true;
     $("#direct-messages-modal").toggleClass("no-display", true);
     popovers.hide_all();
     pm_list.close();
     zoom_in_topics(stream_id);
-    topic_list.zoom_in(get_stream_li(stream_id)!);
+    topic_list.zoom_in(get_stream_li(stream_id)!, stream_id);
     $("#left-sidebar").addClass("zoom-in");
     $("#left-sidebar").addClass("zoom-in-topics");
     $("#left-sidebar-modal").addClass("zoom-in-topics");
@@ -1280,7 +1283,9 @@ export function handle_narrow_activated(
 
     const $stream_li = update_stream_sidebar_for_narrow(filter);
     if ($stream_li && !change_hash && !is_zoomed_in() && show_more_topics) {
-        zoom_in();
+        const info = get_sidebar_stream_topic_info(filter);
+        assert(info.stream_id !== undefined);
+        zoom_in(info.stream_id);
     }
 
     // Do not auto scroll when switching topics in an already expanded channel.
@@ -1303,6 +1308,7 @@ export function initialize({
     update_inbox_channel_view: (channel_id: number) => void;
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
+    show_channel_feed_callback = show_channel_feed;
     restore_collapsed_sections_state();
     create_initial_sidebar_rows();
 
@@ -1317,7 +1323,8 @@ export function initialize({
     set_event_handlers({show_channel_feed});
 
     function on_show_more_topics(e: JQuery.ClickEvent | JQuery.KeyDownEvent): void {
-        zoom_in();
+        const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
+        zoom_in(stream_id);
         // We define the focus behavior for the topic list search box
         // outside of the `zoom_in` method, since we want the focus
         // to only happen when the user clicks on the "SHOW ALL TOPICS"
@@ -1334,6 +1341,16 @@ export function initialize({
     });
 
     $("#stream_filters").on("keydown", ".show-more-topics", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            on_show_more_topics(e);
+        }
+    });
+
+    $("#stream_filters").on("click", ".channel-search-topics-button", (e) => {
+        on_show_more_topics(e);
+    });
+
+    $("#stream_filters").on("keydown", ".channel-search-topics-button", (e) => {
         if (keydown_util.is_enter_event(e)) {
             on_show_more_topics(e);
         }
@@ -1612,6 +1629,11 @@ export function set_event_handlers({
             pm_list.set_temporarily_collapsed(false);
         }
     }
+
+    sidebar_header_sticky_shadow.initialize(
+        scroll_util.get_left_sidebar_scroll_container(),
+        "#direct-messages-section-header, .stream-list-subsection-header",
+    );
 
     let mark_scroll_inactive_timeout: ReturnType<typeof setTimeout> | undefined;
     // check for user scrolls on streams list for first time

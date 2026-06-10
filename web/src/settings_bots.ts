@@ -10,6 +10,13 @@ import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
 import type {Bot} from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
+import {
+    EMBEDDED_BOT_TYPE,
+    GENERIC_BOT_TYPE,
+    INCOMING_WEBHOOK_BOT_TYPE_INT,
+    OUTGOING_WEBHOOK_BOT_TYPE,
+    OUTGOING_WEBHOOK_BOT_TYPE_INT,
+} from "./bot_type_values.ts";
 import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import {csrf_token} from "./csrf.ts";
@@ -34,12 +41,6 @@ import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_sort from "./user_sort.ts";
 import * as util from "./util.ts";
-
-const GENERIC_BOT_TYPE = 1;
-const INCOMING_WEBHOOK_BOT_TYPE = 2;
-const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
-const EMBEDDED_BOT_TYPE = "4";
 
 export const org_all_bots_list_dropdown_widget_name = "org_all_bots_list_select_bot_status";
 export const org_your_bots_list_dropdown_widget_name = "org_your_bots_list_select_bot_status";
@@ -291,21 +292,25 @@ export function add_a_new_bot(): void {
         formData.append("full_name", full_name);
         formData.append("short_name", short_name);
 
-        // If the selected bot_type is Outgoing webhook
-        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-            formData.append("payload_url", JSON.stringify(payload_url));
-            formData.append("interface_type", interface_type);
-        } else if (bot_type === EMBEDDED_BOT_TYPE) {
-            formData.append("service_name", service_name);
-            const config_data: Record<string, string> = {};
-            $<HTMLInputElement>(
-                `#config_inputbox [name*='${CSS.escape(service_name)}'] input`,
-            ).each(function () {
-                const key = $(this).attr("name")!;
-                const value = $(this).val()!;
-                config_data[key] = value;
-            });
-            formData.append("config_data", JSON.stringify(config_data));
+        switch (bot_type) {
+            case OUTGOING_WEBHOOK_BOT_TYPE: {
+                formData.append("payload_url", JSON.stringify(payload_url));
+                formData.append("interface_type", interface_type);
+                break;
+            }
+            case EMBEDDED_BOT_TYPE: {
+                formData.append("service_name", service_name);
+                const config_data: Record<string, string> = {};
+                $<HTMLInputElement>(
+                    `#config_inputbox [name*='${CSS.escape(service_name)}'] input`,
+                ).each(function () {
+                    const key = $(this).attr("name")!;
+                    const value = $(this).val()!;
+                    config_data[key] = value;
+                });
+                formData.append("config_data", JSON.stringify(config_data));
+                break;
+            }
         }
         const files = $<HTMLInputElement>("input#bot_avatar_file_input")[0]!.files;
         assert(files !== null);
@@ -331,7 +336,7 @@ export function add_a_new_bot(): void {
     }
 
     function set_up_form_fields(): void {
-        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE_INT);
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
@@ -357,14 +362,19 @@ export function add_a_new_bot(): void {
 
             $("#payload_url_inputbox").hide();
             $("#create_payload_url").removeClass("required");
-            if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                $("#payload_url_inputbox").show();
-                $("#create_payload_url").addClass("required");
-            } else if (bot_type === EMBEDDED_BOT_TYPE) {
-                $("#service_name_list").show();
-                $("#select_service_name").addClass("required");
-                $("#select_service_name").trigger("change");
-                $("#config_inputbox").show();
+            switch (bot_type) {
+                case OUTGOING_WEBHOOK_BOT_TYPE: {
+                    $("#payload_url_inputbox").show();
+                    $("#create_payload_url").addClass("required");
+                    break;
+                }
+                case EMBEDDED_BOT_TYPE: {
+                    $("#service_name_list").show();
+                    $("#select_service_name").addClass("required");
+                    $("#select_service_name").trigger("change");
+                    $("#config_inputbox").show();
+                    break;
+                }
             }
         });
 
@@ -447,7 +457,7 @@ function bot_info(bot_user_id: number): BotInfo {
               }),
         show_download_zuliprc_button: is_bot_owner && bot_user.bot_type === GENERIC_BOT_TYPE,
         show_generate_integration_url_button:
-            can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+            can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT,
     };
 }
 

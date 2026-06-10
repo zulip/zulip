@@ -276,6 +276,50 @@ def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
     return registration_helper(*args, **kwargs)
 
 
+def render_slack_import_page(
+    request: HttpRequest,
+    prereg_realm: PreregistrationRealm,
+    key: str,
+    *,
+    slack_import_error: str = "",
+    slack_access_token_validation_error: str = "",
+) -> HttpResponse:
+    # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it
+    # doesn't overflow the select box in the slack import page.
+    email_address_visibility_options = []
+    for visibility_id, name in RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items():
+        if visibility_id == RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+            name = gettext_lazy("Everyone")
+        email_address_visibility_options.append((visibility_id, name))
+
+    metadata = prereg_realm.data_import_metadata
+    context: dict[str, Any] = {
+        "key": key,
+        "max_file_size": settings.MAX_WEB_DATA_IMPORT_SIZE_MB,
+        "email_address_visibility_options": email_address_visibility_options,
+        "email_address_visibility_default": get_email_address_visibility_default(
+            prereg_realm.org_type
+        ),
+        "slack_access_token": metadata.get("slack_access_token"),
+        "uploaded_import_file_name": metadata.get("uploaded_import_file_name"),
+        "invalid_file_error_message": metadata.get("invalid_file_error_message", ""),
+        "slack_access_token_validation_error": slack_access_token_validation_error,
+        "slack_import_error": slack_import_error,
+    }
+    return TemplateResponse(request, "zerver/slack_import.html", context)
+
+
+def check_for_slack_import_subdomain_unavailable_error(
+    prereg_realm: PreregistrationRealm,
+) -> str | None:
+    if Realm.objects.filter(string_id=prereg_realm.string_id).exists():
+        return _(
+            "This organization URL is no longer available. "
+            "Please start over and choose a different URL."
+        )
+    return None
+
+
 @never_cache
 @require_post
 def import_realm_from_slack(*args: Any, **kwargs: Any) -> HttpResponse:
@@ -371,10 +415,32 @@ def registration_helper(
 
         if start_slack_import:
             assert is_realm_import_enabled()
-            assert prereg_realm.data_import_metadata.get("slack_access_token") is not None
-            assert prereg_realm.data_import_metadata.get("uploaded_import_file_name") is not None
-            assert prereg_realm.data_import_metadata.get("is_import_work_queued") is not True
+            # check_prereg_key guarantees this: a prereg whose import already
+            # created a realm only validates with need_select_realm_owner set,
+            # which is handled above.
             assert prereg_realm.created_realm is None
+
+            subdomain_unavailable_error = check_for_slack_import_subdomain_unavailable_error(
+                prereg_realm
+            )
+            if subdomain_unavailable_error is not None:
+                # The subdomain was taken since registration -- e.g. a
+                # concurrent import of the same subdomain finished first.
+                # Importing would fail on the unique string_id, so don't
+                # start a doomed import; tell the user to start over with a
+                # different URL.
+                return render_slack_import_page(
+                    request, prereg_realm, key, slack_import_error=subdomain_unavailable_error
+                )
+
+            if (
+                prereg_realm.data_import_metadata.get("slack_access_token") is None
+                or prereg_realm.data_import_metadata.get("uploaded_import_file_name") is None
+            ):
+                # The Slack token and export file must be provided before the
+                # import can start. The UI gates this, but re-render the page
+                # rather than erroring if the form is somehow submitted early.
+                return render_slack_import_page(request, prereg_realm, key)
 
             prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
             prereg_realm.save(update_fields=["data_import_metadata"])
@@ -403,66 +469,43 @@ def registration_helper(
             )
 
         elif prereg_realm.data_import_metadata.get("import_from") == "slack":
-            # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it doesn't overflow the
-            # select box in the slack import page.
-            email_address_visibility_options = []
-
-            for id, name in RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items():
-                if id == RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-                    name = gettext_lazy("Everyone")
-                email_address_visibility_options.append((id, name))
-
             assert is_realm_import_enabled()
-            context: dict[str, Any] = {
-                "key": key,
-                "max_file_size": settings.MAX_WEB_DATA_IMPORT_SIZE_MB,
-                "email_address_visibility_options": email_address_visibility_options,
-                "email_address_visibility_default": get_email_address_visibility_default(
-                    prereg_realm.org_type
-                ),
-            }
+
+            # Warn up front if the subdomain has been taken (e.g. by a
+            # concurrent import of the same subdomain) so the user isn't left
+            # filling out the form for an import that can't succeed.
+            subdomain_unavailable_error = check_for_slack_import_subdomain_unavailable_error(
+                prereg_realm
+            )
 
             saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
-            if saved_slack_access_token or slack_access_token is not None:
-                if (
-                    slack_access_token is not None
-                    and slack_access_token != saved_slack_access_token
-                ):
-                    # Verify slack token access.
-                    from zerver.data_import.slack import (
-                        SLACK_IMPORT_TOKEN_SCOPES,
-                        check_slack_token_access,
+            if slack_access_token is not None and slack_access_token != saved_slack_access_token:
+                # Verify slack token access.
+                from zerver.data_import.slack import (
+                    SLACK_IMPORT_TOKEN_SCOPES,
+                    SlackTokenValidationError,
+                    check_slack_token_access,
+                )
+
+                try:
+                    check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
+                except SlackTokenValidationError as e:
+                    logger.info(
+                        "(%s) Slack token failed validation: %s", prereg_realm.string_id, str(e)
+                    )
+                    return render_slack_import_page(
+                        request,
+                        prereg_realm,
+                        key,
+                        slack_import_error=subdomain_unavailable_error or "",
+                        slack_access_token_validation_error=str(e),
                     )
 
-                    try:
-                        check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
-                    except Exception as e:
-                        context["slack_access_token_validation_error"] = str(e)
-                        logger.info(
-                            "(%s) Slack token failed validation: %s", prereg_realm.string_id, str(e)
-                        )
-                        return TemplateResponse(
-                            request,
-                            "zerver/slack_import.html",
-                            context,
-                        )
+                prereg_realm.data_import_metadata["slack_access_token"] = slack_access_token
+                prereg_realm.save(update_fields=["data_import_metadata"])
 
-                    saved_slack_access_token = slack_access_token
-                    prereg_realm.data_import_metadata["slack_access_token"] = slack_access_token
-                    prereg_realm.save(update_fields=["data_import_metadata"])
-
-                context["slack_access_token"] = saved_slack_access_token
-                context["uploaded_import_file_name"] = prereg_realm.data_import_metadata.get(
-                    "uploaded_import_file_name"
-                )
-                context["invalid_file_error_message"] = prereg_realm.data_import_metadata.get(
-                    "invalid_file_error_message", ""
-                )
-
-            return TemplateResponse(
-                request,
-                "zerver/slack_import.html",
-                context,
+            return render_slack_import_page(
+                request, prereg_realm, key, slack_import_error=subdomain_unavailable_error or ""
             )
 
         password_required = True
@@ -584,7 +627,13 @@ def registration_helper(
                     # requires that LDAP accounts enter their LDAP
                     # password to register, or ZulipLDAPUserPopulator,
                     # which just populates UserProfile fields (no auth).
-                    require_ldap_password = isinstance(backend, ZulipLDAPAuthBackend)
+                    #
+                    # If the user is signing up via an external auth method,
+                    # their identity has already been verified and password_required
+                    # is set to False.
+                    require_ldap_password = (
+                        isinstance(backend, ZulipLDAPAuthBackend) and password_required
+                    )
                     break
 
         initial_data = {}
@@ -743,49 +792,46 @@ def registration_helper(
                 # with LDAP and we need to carefully decide whether they should be permitted to proceed
                 # with account creation anyway or be stopped. There are three scenarios to consider:
                 #
-                # 1. EmailAuthBackend is enabled for the realm. That explicitly means that a user
+                # 1. The user came here through one of the ExternalAuthMethods. Their identity has
+                #    already been verified by the external authentication method, so LDAP password
+                #    verification is not applicable and account creation can proceed.
+                # 2. EmailAuthBackend is enabled for the realm. That explicitly means that a user
                 #    with a valid confirmation link should be able to create an account, because
                 #    they were invited or organization permissions allowed sign up.
-                # 2. EmailAuthBackend is disabled - that means the organization wants to be authenticating
-                #    users with an external source (LDAP or one of the ExternalAuthMethods). If the user
-                #    came here through one of the ExternalAuthMethods, their identity can be considered
-                #    verified and account creation can proceed.
                 # 3. EmailAuthBackend is disabled and the user did not come here through an ExternalAuthMethod.
                 #    That means they came here by entering their email address on the registration page
                 #    and clicking the confirmation link received. That means their identity needs to be
                 #    verified with LDAP - and that has just failed above. Thus the account should NOT be
                 #    created.
                 #
-                if email_auth_enabled(realm):
-                    can_use_different_backend = True
                 # We can identify the user came here through an ExternalAuthMethod by password_required
                 # being set to False on the PreregistrationUser object.
-                elif len(get_external_method_dicts(realm)) > 0 and not password_required:
-                    can_use_different_backend = True
-                else:
-                    can_use_different_backend = False
-
-                if settings.LDAP_APPEND_DOMAIN:
-                    # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-LDAP account
-                    # if the email matches the ldap domain.
-                    can_use_different_backend = can_use_different_backend and (
-                        not email_belongs_to_ldap(realm, email)
-                    )
-                if return_data.get("no_matching_ldap_user") and can_use_different_backend:
-                    # If both the LDAP and Email or Social auth backends are
-                    # enabled, and there's no matching user in the LDAP
-                    # directory then the intent is to create a user in the
-                    # realm with their email outside the LDAP organization
-                    # (with e.g. a password stored in the Zulip database,
-                    # not LDAP).  So we fall through and create the new
-                    # account.
+                if len(get_external_method_dicts(realm)) > 0 and not password_required:
+                    # Scenario 1: fall through and create the new account.
                     pass
                 else:
-                    # TODO: This probably isn't going to give a
-                    # user-friendly error message, but it doesn't
-                    # particularly matter, because the registration form
-                    # is hidden for most users.
-                    return HttpResponseRedirect(reverse("login", query={"email": email}))
+                    can_use_different_backend = email_auth_enabled(realm)
+                    if settings.LDAP_APPEND_DOMAIN:
+                        # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-LDAP account
+                        # if the email matches the ldap domain.
+                        can_use_different_backend = can_use_different_backend and (
+                            not email_belongs_to_ldap(realm, email)
+                        )
+                    if return_data.get("no_matching_ldap_user") and can_use_different_backend:
+                        # Scenario 2: If both the LDAP and Email auth backends are
+                        # enabled, and there's no matching user in the LDAP
+                        # directory then the intent is to create a user in the
+                        # realm with their email outside the LDAP organization
+                        # (with e.g. a password stored in the Zulip database,
+                        # not LDAP).  So we fall through and create the new
+                        # account.
+                        pass
+                    else:
+                        # TODO: This probably isn't going to give a
+                        # user-friendly error message, but it doesn't
+                        # particularly matter, because the registration form
+                        # is hidden for most users.
+                        return HttpResponseRedirect(reverse("login", query={"email": email}))
             else:
                 assert isinstance(user, UserProfile)
                 user_profile = user
@@ -1121,13 +1167,25 @@ def realm_import_status(
         raise JsonableError(_("Unauthenticated"))
 
     assert isinstance(preregistration_realm, PreregistrationRealm)
-    try:
-        realm = Realm.objects.get(string_id=preregistration_realm.string_id)
-    except Realm.DoesNotExist:
-        # TODO: Either store the path to the temporary conversion directory on
-        # preregistration_realm.data_import_metadata, or have the conversion
-        # process support writing updates to this for a better progress indicator.
-        if preregistration_realm.data_import_metadata.get("is_import_work_queued"):
+    metadata = preregistration_realm.data_import_metadata
+
+    if metadata.get("is_import_work_queued"):
+        # This preregistration's import job is still running; report its
+        # progress. We find the realm being imported by its subdomain;
+        # in the rare case that a concurrent import of the same
+        # subdomain is further along, the progress shown may briefly
+        # reflect that import, but this resolves once this job finishes.
+        #
+        # TODO: The progress below is inferred from the observed state of
+        # the Realm (whether it exists yet, is still deactivated, has
+        # messages or attachments). A cleaner design would have
+        # import_slack_data record explicit status strings on
+        # data_import_metadata as it advances ("queued", "converting",
+        # "importing converted data", "finalizing") so this endpoint reads
+        # the status directly instead of reverse-engineering it.
+        try:
+            realm = Realm.objects.get(string_id=preregistration_realm.string_id)
+        except Realm.DoesNotExist:
             return json_success(
                 request,
                 {
@@ -1138,24 +1196,70 @@ def realm_import_status(
                     )
                 },
             )
-        elif preregistration_realm.data_import_metadata.get("invalid_file_error_message"):
+
+        if realm.deactivated:
+            # These "if" cases are in the inverse order than they're done
+            # in the import process, so we get the latest step that it's
+            # on.
+            if Message.objects.filter(realm_id=realm.id).exists():
+                return json_success(request, {"status": _("Importing messages…")})
+            try:
+                next(all_message_attachments(prefix=f"{realm.id}/"))
+                return json_success(request, {"status": _("Importing attachment data…")})
+            except StopIteration:
+                pass
+            return json_success(request, {"status": _("Importing converted Slack data…")})
+
+        # The realm has been reactivated, but the import job is still
+        # running its post-import steps.
+        return json_success(request, {"status": _("Finalizing import…")})
+
+    # The import job is no longer running. A successful import always
+    # links preregistration_realm.created_realm, so if it is unset the
+    # import failed. We deliberately key on this preregistration's own
+    # created_realm rather than a subdomain lookup, so that a failed
+    # import isn't reported using a different registration's realm that
+    # happens to share the subdomain.
+    if preregistration_realm.created_realm is None:
+        if metadata.get("subdomain_unavailable"):
+            if Realm.objects.filter(string_id=preregistration_realm.string_id).exists():
+                # A realm still holds this subdomain. Send the user back to
+                # registration to choose a different one.
+                return json_success(
+                    request,
+                    {
+                        "status": _(
+                            "This organization URL is no longer available. "
+                            "Please choose a different URL."
+                        ),
+                        "redirect": reverse(
+                            "get_prereg_key_and_redirect",
+                            kwargs={"confirmation_key": confirmation_key},
+                        ),
+                    },
+                )
+            # The subdomain has since been freed, so the stored flag is stale;
+            # clear it and report this import's own failure below.
+            del metadata["subdomain_unavailable"]
+            preregistration_realm.save(update_fields=["data_import_metadata"])
+        if metadata.get("invalid_file_error_message"):
             # Redirect user the file upload page if we have an error message to display.
-            result = {
-                "status": preregistration_realm.data_import_metadata.get(
-                    "invalid_file_error_message"
-                ),
-                "redirect": reverse(
-                    "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
-                ),
-            }
-            return json_success(request, result)
+            return json_success(
+                request,
+                {
+                    "status": metadata.get("invalid_file_error_message"),
+                    "redirect": reverse(
+                        "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
+                    ),
+                },
+            )
         else:
             # The import failed due to an unexpected reason. Ask user to email
             # support with the import file so that we can do the import manually
             # and investigate the failure.
             # If there was an error during import, it would have already been logged by Sentry.
             # We don't have access to the exception here.
-            preregistration_realm.data_import_metadata["unexpected_import_failure"] = True
+            metadata["unexpected_import_failure"] = True
             preregistration_realm.save(update_fields=["data_import_metadata"])
             return json_success(
                 request,
@@ -1164,26 +1268,10 @@ def realm_import_status(
                 },
             )
 
-    if realm.deactivated:
-        # These "if" cases are in the inverse order than they're done
-        # in the import process, so we get the latest step that it's
-        # on.
-        if Message.objects.filter(realm_id=realm.id).exists():
-            return json_success(request, {"status": _("Importing messages…")})
-        try:
-            next(all_message_attachments(prefix=f"{realm.id}/"))
-            return json_success(request, {"status": _("Importing attachment data…")})
-        except StopIteration:
-            pass
-        return json_success(request, {"status": _("Importing converted Slack data…")})
+    # The import succeeded; created_realm is this preregistration's own realm.
+    realm = preregistration_realm.created_realm
+    need_select_realm_owner = metadata.get("need_select_realm_owner", False)
 
-    need_select_realm_owner = preregistration_realm.data_import_metadata.get(
-        "need_select_realm_owner", False
-    )
-    if not need_select_realm_owner and preregistration_realm.created_realm is None:
-        return json_success(request, {"status": _("Finalizing import…")})
-
-    # We have a non-deactivated realm and it's linked to the prereg key
     result = {"status": _("Done!")}
     if not need_select_realm_owner:
         importing_user = get_user_by_delivery_email(preregistration_realm.email, realm)

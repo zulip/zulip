@@ -67,10 +67,26 @@ export function restore_sidebar_toggle_status(): void {
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
 
+export function update_sidebar_aria_expanded(): void {
+    // Reflect current sidebar visibility on the toggle buttons. State is
+    // tracked differently per viewport: at wide viewports the body's
+    // hide-*-sidebar classes are authoritative; at narrow viewports the
+    // overlay flags are.
+    const left_expanded = ui_util.matches_viewport_state("gte_md_min")
+        ? !$("body").hasClass("hide-left-sidebar")
+        : left_sidebar_expanded_as_overlay;
+    const right_expanded = ui_util.matches_viewport_state("gte_xl_min")
+        ? !$("body").hasClass("hide-right-sidebar")
+        : right_sidebar_expanded_as_overlay;
+    $(".left-sidebar-toggle-button").attr("aria-expanded", String(left_expanded));
+    $("#userlist-toggle-button").attr("aria-expanded", String(right_expanded));
+}
+
 export function hide_userlist_sidebar(): void {
     const $userlist_sidebar = $(".app-main .column-right");
     $userlist_sidebar.removeClass("expanded topmost-overlay");
     right_sidebar_expanded_as_overlay = false;
+    update_sidebar_aria_expanded();
 }
 
 export function show_userlist_sidebar(): void {
@@ -84,6 +100,7 @@ export function show_userlist_sidebar(): void {
     if (ui_util.matches_viewport_state("gte_xl_min")) {
         $("body").removeClass("hide-right-sidebar");
         fix_invite_user_button_flicker();
+        update_sidebar_aria_expanded();
         return;
     }
 
@@ -95,6 +112,7 @@ export function show_userlist_sidebar(): void {
     fix_invite_user_button_flicker();
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
+    update_sidebar_aria_expanded();
 }
 
 export function show_streamlist_sidebar(): void {
@@ -108,6 +126,7 @@ export function show_streamlist_sidebar(): void {
     }
     resize.resize_stream_filters_container();
     left_sidebar_expanded_as_overlay = true;
+    update_sidebar_aria_expanded();
 }
 
 // We use this to display left sidebar without setting
@@ -122,6 +141,7 @@ export function show_left_sidebar(): void {
         show_streamlist_sidebar();
     } else if (!left_sidebar_expanded_as_overlay) {
         $("body").removeClass("hide-left-sidebar");
+        update_sidebar_aria_expanded();
     }
 }
 
@@ -130,6 +150,7 @@ export function hide_streamlist_sidebar(): void {
     $(".app-main .column-left, #navbar-middle").removeClass("expanded");
     $streamlist_sidebar.removeClass("topmost-overlay");
     left_sidebar_expanded_as_overlay = false;
+    update_sidebar_aria_expanded();
 }
 
 export function any_sidebar_expanded_as_overlay(): boolean {
@@ -195,6 +216,7 @@ export function initialize(): void {
                 "#message-formatting-controls-container",
             );
             save_sidebar_toggle_status();
+            update_sidebar_aria_expanded();
             return;
         }
 
@@ -226,6 +248,7 @@ export function initialize(): void {
                 "#message-formatting-controls-container",
             );
             save_sidebar_toggle_status();
+            update_sidebar_aria_expanded();
             return;
         }
 
@@ -235,6 +258,11 @@ export function initialize(): void {
         }
         show_streamlist_sidebar();
     });
+
+    // Set initial state once handlers are registered, since the
+    // template defaults to aria-expanded="true" but the actual state
+    // depends on viewport and restored localStorage settings.
+    update_sidebar_aria_expanded();
 
     // Hide left / right sidebar on click outside.
     document.addEventListener(

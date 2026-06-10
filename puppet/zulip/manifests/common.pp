@@ -194,6 +194,15 @@ class zulip::common {
       },
     },
 
+    # https://github.com/alexmv/teleport-sd/releases
+    'teleport-sd' => {
+      'version' => '0.1.0',
+      'sha256' => {
+        'amd64'   => '2128d78dd602c6a24c13fbd759bf19d0c3cebaa732ad0824019ced53163cf455',
+        'aarch64' => 'df93ba9510cb8898ba0f15b293d7c6877173a8d06b1f284dcc42ffc7ff32978e',
+      },
+    },
+
     # https://github.com/timonwong/uwsgi_exporter/releases
     'uwsgi_exporter' => {
       'version' => '1.3.0',

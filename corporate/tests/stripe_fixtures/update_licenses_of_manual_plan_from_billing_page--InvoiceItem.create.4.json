@@ -1,13 +1,14 @@
 {
   "amount": 960000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "update_licenses_of_manual_plan_from_billing_page--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard - renewal",
   "discountable": false,
   "discounts": [],
   "id": "update_licenses_of_manual_plan_from_billing_page--InvoiceItem.create.4.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "update_licenses_of_manual_plan_from_billing_page--Invoice.create.4.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 960000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 120,
+  "quantity_decimal": "120",
   "tax_rates": [],
   "test_clock": null
 }

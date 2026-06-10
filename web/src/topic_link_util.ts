@@ -126,7 +126,6 @@ export function get_fallback_markdown_link(
     stream_name: string,
     topic_name?: string,
     message_id?: string,
-    only_link_text = false,
 ): string {
     // Helper that should only be called by other methods in this file.
 
@@ -138,25 +137,30 @@ export function get_fallback_markdown_link(
         topic_name,
         message_id,
     });
-    return only_link_text ? label_text_markdown : as_markdown_link_syntax(label_text_markdown, url);
+    return as_markdown_link_syntax(label_text_markdown, url);
 }
 
 export function get_stream_topic_link_syntax(
     stream_name: string,
     topic_name: string,
-    only_link_text = false,
+    message_id?: string,
 ): string {
     // If the topic/stream name would produce an invalid #**stream>topic** syntax, fall back
-    // to markdown link syntax. If only_link_text is true, only the link label is returned.
+    // to markdown link syntax.
     if (
         will_produce_broken_stream_topic_link(topic_name) ||
         will_produce_broken_stream_topic_link(stream_name)
     ) {
-        return get_fallback_markdown_link(stream_name, topic_name, undefined, only_link_text);
-    }
-
-    if (only_link_text) {
-        return `#${stream_name} > ${topic_name}`;
+        if (message_id !== undefined) {
+            const stream = stream_data.get_sub(stream_name);
+            assert(stream !== undefined);
+            const stream_topic_url = hash_util.by_stream_topic_url(stream.stream_id, topic_name);
+            const topic_display_name = util.get_final_topic_display_name(topic_name);
+            const escape = html_escape_markdown_syntax_characters;
+            const label = `#${escape(stream_name)} > ${escape(topic_display_name)}`;
+            return as_markdown_link_syntax(label, `${stream_topic_url}/with/${message_id}`);
+        }
+        return get_fallback_markdown_link(stream_name, topic_name);
     }
     return `#**${stream_name}>${topic_name}**`;
 }

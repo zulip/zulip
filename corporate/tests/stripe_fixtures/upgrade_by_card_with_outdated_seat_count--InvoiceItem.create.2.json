@@ -1,13 +1,14 @@
 {
   "amount": 136000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "upgrade_by_card_with_outdated_seat_count--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Additional Zulip Cloud Standard license",
   "discountable": false,
   "discounts": [],
-  "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
-  "invoice": "in_NORMALIZED",
+  "id": "upgrade_by_card_with_outdated_seat_count--InvoiceItem.create.2.json",
+  "invoice": "upgrade_by_card_with_outdated_seat_count--Invoice.create.2.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 136000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 17,
+  "quantity_decimal": "17",
   "tax_rates": [],
   "test_clock": null
 }

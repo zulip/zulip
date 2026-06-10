@@ -1,0 +1,6 @@
+[program:teleport-sd]
+command=<%= @bin %> --listen 127.0.0.1:9092 --proxy teleport.zulipchat.net:443 --identity /var/lib/teleport/bot-identity/identity
+priority=15
+autostart=true
+autorestart=true
+user=teleport

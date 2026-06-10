@@ -1,15 +1,18 @@
 import os
+from datetime import datetime, timezone
 from unittest.mock import patch
 from urllib.parse import urlsplit
 
 import botocore.exceptions
 import orjson
+import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import RealmCount
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.export import export_tarball_prefix
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -48,6 +51,7 @@ class RealmExportTest(ZulipTestCase):
         tarball_path = create_dummy_file("test-export.tar.gz")
 
         # Test the export logic.
+        export_time = datetime(2026, 5, 25, 10, 11, 16, tzinfo=timezone.utc)
         with patch(
             "zerver.lib.export.do_export_realm", return_value=(tarball_path, dict())
         ) as mock_export:
@@ -55,6 +59,7 @@ class RealmExportTest(ZulipTestCase):
                 self.settings(LOCAL_UPLOADS_DIR=None),
                 stdout_suppressed(),
                 self.assertLogs(level="INFO") as info_logs,
+                time_machine.travel(export_time, tick=False),
                 self.captureOnCommitCallbacks(execute=True),
             ):
                 result = self.client_post("/json/export/realm")
@@ -64,7 +69,11 @@ class RealmExportTest(ZulipTestCase):
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
         self.assertEqual(args["export_type"], RealmExport.EXPORT_PUBLIC)
-        self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
+        self.assertTrue(
+            os.path.basename(args["output_dir"]).startswith(
+                "zulip-export-zulip-2026-05-25-10-11-16-"
+            )
+        )
         self.assertEqual(args["processes"], 6)
 
         # Get the entry and test that iago initiated it.
@@ -130,7 +139,9 @@ class RealmExportTest(ZulipTestCase):
         ) -> tuple[str, dict[str, int | dict[str, int]]]:
             self.assertEqual(realm, admin.realm)
             self.assertEqual(export_type, RealmExport.EXPORT_PUBLIC)
-            self.assertTrue(os.path.basename(output_dir).startswith("zulip-export-"))
+            self.assertTrue(
+                os.path.basename(output_dir).startswith("zulip-export-zulip-2026-05-25-10-11-16-")
+            )
             self.assertEqual(processes, 6)
 
             # Check that the export shows up as in progress
@@ -151,12 +162,14 @@ class RealmExportTest(ZulipTestCase):
 
             return tarball_path, dict()
 
+        export_time = datetime(2026, 5, 25, 10, 11, 16, tzinfo=timezone.utc)
         with patch(
             "zerver.lib.export.do_export_realm", side_effect=fake_export_realm
         ) as mock_export:
             with (
                 stdout_suppressed(),
                 self.assertLogs(level="INFO") as info_logs,
+                time_machine.travel(export_time, tick=False),
                 self.captureOnCommitCallbacks(execute=True),
             ):
                 result = self.client_post("/json/export/realm")
@@ -205,6 +218,17 @@ class RealmExportTest(ZulipTestCase):
         # Now try to delete a non-existent export.
         result = self.client_delete("/json/export/realm/0")
         self.assert_json_error(result, "Invalid data export ID")
+
+    def test_export_tarball_prefix(self) -> None:
+        realm = self.example_user("iago").realm
+        with time_machine.travel(
+            datetime(2026, 5, 25, 10, 11, 16, tzinfo=timezone.utc), tick=False
+        ):
+            self.assertEqual(
+                export_tarball_prefix(realm), "zulip-export-zulip-2026-05-25-10-11-16-"
+            )
+            realm.string_id = ""
+            self.assertEqual(export_tarball_prefix(realm), "zulip-export-2026-05-25-10-11-16-")
 
     def test_export_failure(self) -> None:
         admin = self.example_user("iago")
@@ -270,6 +294,39 @@ class RealmExportTest(ZulipTestCase):
                 )
             ],
         )
+
+    def test_export_from_prior_server_status_in_api(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        # A RealmExport row whose tarball is no longer stored on this
+        # server - the result of the record being carried
+        # across a realm export->import.
+        prior_server_export = RealmExport.objects.create(
+            realm=admin.realm,
+            type=RealmExport.EXPORT_PUBLIC,
+            status=RealmExport.EXPORT_FROM_PRIOR_SERVER,
+            date_requested=timezone_now(),
+            date_succeeded=timezone_now(),
+            acting_user=admin,
+            export_path=None,
+        )
+
+        result = self.client_get("/json/export/realm")
+        response_dict = self.assert_json_success(result)
+        export_dict = response_dict["exports"]
+        self.assert_length(export_dict, 1)
+        self.assertEqual(export_dict[0]["id"], prior_server_export.id)
+        self.assertIsNone(export_dict[0]["export_url"])
+        self.assertEqual(export_dict[0]["pending"], False)
+        self.assertIsNone(export_dict[0]["deleted_timestamp"])
+        self.assertIsNone(export_dict[0]["failed_timestamp"])
+        self.assertEqual(export_dict[0]["export_from_prior_server"], True)
+        self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
+
+        # Trying to delete such a row reports it as already deleted.
+        result = self.client_delete(f"/json/export/realm/{prior_server_export.id}")
+        self.assert_json_error(result, "Export already deleted")
 
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user("iago")

@@ -26,7 +26,7 @@
       "captured": true,
       "created": 1000000000,
       "currency": "usd",
-      "customer": "cus_NORMALIZED",
+      "customer": "cus_UNRECORDED",
       "description": "Payment for Invoice",
       "destination": null,
       "dispute": null,
@@ -58,7 +58,7 @@
       "payment_method_details": {
         "card": {
           "amount_authorized": 120000,
-          "authorization_code": "488881",
+          "authorization_code": "000000",
           "brand": "visa",
           "checks": {
             "address_line1_check": "pass",
@@ -66,6 +66,7 @@
             "cvc_check": "pass"
           },
           "country": "US",
+          "ds_transaction_id": null,
           "exp_month": 1,
           "exp_year": 9999,
           "extended_authorization": {
@@ -86,13 +87,14 @@
           "network_token": {
             "used": false
           },
-          "network_transaction_id": "749857738210088",
+          "network_transaction_id": "000000000000000",
           "overcapture": {
             "maximum_amount_capturable": 120000,
             "status": "unavailable"
           },
           "regulated_status": "unregulated",
           "three_d_secure": null,
+          "transaction_link_id": null,
           "wallet": null
         },
         "type": "card"

@@ -26,7 +26,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -75,6 +76,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -92,6 +94,8 @@
               "unit_amount_decimal": "7366"
             },
             "quantity": 5,
+            "quantity_decimal": "5",
+            "subtotal": 36830,
             "taxes": []
           }
         ],
@@ -144,7 +148,7 @@
       "total_excluding_tax": 36830,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     },
     {
       "account_country": "US",
@@ -172,7 +176,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -221,6 +226,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -238,6 +244,8 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 5,
+            "quantity_decimal": "5",
+            "subtotal": 40000,
             "taxes": []
           },
           {
@@ -261,6 +269,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -278,6 +287,8 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 20,
+            "quantity_decimal": "20",
+            "subtotal": 160000,
             "taxes": []
           }
         ],
@@ -330,7 +341,7 @@
       "total_excluding_tax": 200000,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     },
     {
       "account_country": "US",
@@ -358,7 +369,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -407,6 +419,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -424,6 +437,8 @@
               "unit_amount_decimal": "800"
             },
             "quantity": 14,
+            "quantity_decimal": "14",
+            "subtotal": 11200,
             "taxes": []
           }
         ],
@@ -476,7 +491,7 @@
       "total_excluding_tax": 11200,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     },
     {
       "account_country": "US",
@@ -504,7 +519,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -523,7 +539,7 @@
       "footer": null,
       "from_invoice": null,
       "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-      "id": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.2.json",
+      "id": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.1.json",
       "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
@@ -539,8 +555,8 @@
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.2.json",
-            "invoice": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.2.json",
+            "id": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.1.json",
+            "invoice": "switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.1.json",
             "livemode": false,
             "metadata": {},
             "object": "line_item",
@@ -553,6 +569,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -570,13 +587,15 @@
               "unit_amount_decimal": "800"
             },
             "quantity": 6,
+            "quantity_decimal": "6",
+            "subtotal": 4800,
             "taxes": []
           }
         ],
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.2.json/lines"
+        "url": "/v1/invoices/switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Event.list.1.json/lines"
       },
       "livemode": false,
       "metadata": {
@@ -630,7 +649,7 @@
       "total_excluding_tax": 4800,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     }
   ],
   "has_more": false,

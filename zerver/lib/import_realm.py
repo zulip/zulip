@@ -2,6 +2,7 @@ import collections
 import logging
 import os
 import shutil
+from collections.abc import Callable
 from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -267,6 +268,9 @@ def validate_and_resolve_relative_path(
     if os.path.commonpath([safe_base_dir, safe_resolved_path]) != safe_base_dir:
         raise AssertionError(f"Invalid path outside import dir: {path}")
 
+    if not os.path.isfile(safe_resolved_path):
+        raise FileNotFoundError(f"{field_name_for_error} not found: {path}")
+
     return path, safe_resolved_path
 
 
@@ -484,7 +488,7 @@ def fix_customprofilefield(data: ImportedTableData) -> None:
             item["value"] = orjson.dumps(new_id_list).decode()
 
 
-def fix_message_rendered_content(
+def fix_message_content_attributes(
     realm: Realm,
     sender_map: dict[int, Record],
     messages: list[Record],
@@ -493,6 +497,8 @@ def fix_message_rendered_content(
 ) -> None:
     """
     This function sets the rendered_content of the messages we're importing.
+    For messages imported from a third-party export, it also corrects the
+    has_link and has_image attributes.
     """
     for message in messages:
         if content_key not in message:
@@ -573,13 +579,16 @@ def fix_message_rendered_content(
             realm_alert_words_automaton = None
 
             # This also enqueues thumbnailing for images that are referenced
-            rendered_content = markdown_convert(
+            rendering_result = markdown_convert(
                 content=content,
                 realm_alert_words_automaton=realm_alert_words_automaton,
                 message_realm=realm,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
-            ).rendered_content
+            )
+            rendered_content = rendering_result.rendered_content
+            message["has_image"] = rendering_result.has_image
+            message["has_link"] = rendering_result.has_link
 
             message[rendered_content_key] = rendered_content
             if "scheduled_timestamp" not in message:
@@ -610,7 +619,7 @@ def fix_message_edit_history(
         for edit_history_message_dict in edit_history:
             edit_history_message_dict["user_id"] = user_id_map[edit_history_message_dict["user_id"]]
 
-        fix_message_rendered_content(
+        fix_message_content_attributes(
             realm,
             sender_map,
             messages=edit_history,
@@ -1337,7 +1346,18 @@ def disable_restricted_authentication_methods(data: ImportedTableData) -> None:
 # Because the Python object => JSON conversion process is not fully
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
 # and foreign keys) to do the import correctly.
-def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Realm:
+def do_import_realm(
+    import_dir: Path,
+    subdomain: str,
+    processes: int = 1,
+    *,
+    on_realm_created: Callable[[Realm], None] | None = None,
+) -> Realm:
+    # on_realm_created, if given, is called with the freshly-created (still
+    # deactivated) Realm inside the same durable transaction that creates it.
+    # The self-serve Slack import uses this to record which realm an import
+    # owns, atomically with its creation, so a redelivered import can later
+    # recognize and clean up its own half-imported realm.
     logging.info("Importing realm dump %s", import_dir)
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
@@ -1448,6 +1468,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
                 setattr(realm, setting_name + "_id", -1)
 
         realm.save()
+
+        if on_realm_created is not None:
+            on_realm_created(realm)
 
         if "zerver_presencesequence" in data:
             re_map_foreign_keys(data, "zerver_presencesequence", "realm", related_table="realm")
@@ -1897,7 +1920,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # is deterministically generated using a combination of user ID and realm UUID
     # as input value. Since user ID possibly changes on import, the resulting
     # Jdenticon would differ. We regenerate it here using the current user ID.
-    for user_profile in UserProfile.objects.filter(avatar_source=UserProfile.AVATAR_FROM_JDENTICON):
+    for user_profile in UserProfile.objects.filter(
+        avatar_source=UserProfile.AVATAR_FROM_JDENTICON, realm=realm
+    ):
         generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
 
     # We need to have this check as the emoji files may not
@@ -1982,7 +2007,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         fix_upload_links(data, "zerver_scheduledmessage")
 
-        fix_message_rendered_content(
+        fix_message_content_attributes(
             realm=realm,
             sender_map=sender_map,
             messages=data["zerver_scheduledmessage"],
@@ -2321,7 +2346,7 @@ def _process_message_file(
     for row in data["zerver_usermessage"]:
         assert row["message"] in message_id_map
 
-    fix_message_rendered_content(
+    fix_message_content_attributes(
         realm=realm,
         sender_map=sender_map,
         messages=data["zerver_message"],

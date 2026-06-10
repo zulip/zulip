@@ -13,6 +13,7 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 
 from zerver.data_import.import_util import (
+    AttachmentRecordData,
     SubscriberHandler,
     UploadRecordData,
     ZerverFieldsT,
@@ -495,7 +496,7 @@ def process_message_attachment(
     realm_id: int,
     message_id: int,
     user_id: int,
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
     uploads_list: list[UploadRecordData],
     attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
     output_dir: str,
@@ -580,7 +581,7 @@ def process_raw_message_batch(
     zerver_realmemoji: list[ZerverFieldsT],
     total_reactions: list[ZerverFieldsT],
     uploads_list: list[UploadRecordData],
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
     attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
 ) -> None:
     def fix_mentions(
@@ -737,7 +738,7 @@ def process_messages(
     zerver_realmemoji: list[ZerverFieldsT],
     total_reactions: list[ZerverFieldsT],
     uploads_list: list[UploadRecordData],
-    zerver_attachment: list[ZerverFieldsT],
+    zerver_attachment: list[AttachmentRecordData],
     attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
     output_dir: str,
 ) -> None:
@@ -1216,7 +1217,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
 
     total_reactions: list[ZerverFieldsT] = []
     uploads_list: list[UploadRecordData] = []
-    zerver_attachment: list[ZerverFieldsT] = []
+    zerver_attachment: list[AttachmentRecordData] = []
 
     def message_stream() -> Iterator[dict[str, Any]]:
         with open(f"{rocketchat_data_dir}/rocketchat_message.bson", "rb") as message_file:

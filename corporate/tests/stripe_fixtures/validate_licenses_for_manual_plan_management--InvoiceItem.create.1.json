@@ -1,13 +1,14 @@
 {
   "amount": 56000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "validate_licenses_for_manual_plan_management--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "validate_licenses_for_manual_plan_management--Event.list.2.json",
-  "invoice": "in_NORMALIZED",
+  "id": "validate_licenses_for_manual_plan_management--InvoiceItem.create.1.json",
+  "invoice": "validate_licenses_for_manual_plan_management--Event.list.1.json",
   "livemode": false,
   "metadata": {},
   "net_amount": 56000,
@@ -27,6 +28,7 @@
   },
   "proration": false,
   "quantity": 7,
+  "quantity_decimal": "7",
   "tax_rates": [],
   "test_clock": null
 }

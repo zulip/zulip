@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_NORMALIZED",
+  "customer": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -43,7 +44,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
-  "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.2.json",
+  "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.1.json",
   "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
   "issuer": {
     "type": "self"
@@ -59,8 +60,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.2.json",
-        "invoice": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.2.json",
+        "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.1.json",
+        "invoice": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.1.json",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
@@ -73,6 +74,7 @@
             },
             "subscription": null
           },
+          "license_fee_subscription_details": null,
           "subscription_item_details": null,
           "type": "invoice_item_details"
         },
@@ -90,18 +92,20 @@
           "unit_amount_decimal": "8000"
         },
         "quantity": 123,
+        "quantity_decimal": "123",
+        "subtotal": 984000,
         "taxes": []
       }
     ],
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.2.json/lines"
+    "url": "/v1/invoices/free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.1.json/lines"
   },
   "livemode": false,
   "metadata": {
     "billing_schedule": "1",
-    "current_plan_id": "2",
+    "current_plan_id": "46",
     "license_management": "manual",
     "licenses": "123",
     "on_free_trial": "True",
@@ -150,5 +154,5 @@
   "total_excluding_tax": 984000,
   "total_pretax_credit_amounts": [],
   "total_taxes": [],
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

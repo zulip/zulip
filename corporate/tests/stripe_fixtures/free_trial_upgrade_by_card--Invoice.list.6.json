@@ -26,7 +26,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "free_trial_upgrade_by_card--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -75,6 +76,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -92,6 +94,8 @@
               "unit_amount_decimal": "1293"
             },
             "quantity": 4,
+            "quantity_decimal": "4",
+            "subtotal": 5172,
             "taxes": []
           }
         ],
@@ -144,7 +148,7 @@
       "total_excluding_tax": 5172,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     },
     {
       "account_country": "US",
@@ -172,7 +176,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "free_trial_upgrade_by_card--Customer.create.1.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "hamlet@zulip.com",
       "customer_name": null,
@@ -221,6 +226,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -238,6 +244,8 @@
               "unit_amount_decimal": "8000"
             },
             "quantity": 15,
+            "quantity_decimal": "15",
+            "subtotal": 120000,
             "taxes": []
           }
         ],
@@ -290,7 +298,7 @@
       "total_excluding_tax": 120000,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     }
   ],
   "has_more": false,

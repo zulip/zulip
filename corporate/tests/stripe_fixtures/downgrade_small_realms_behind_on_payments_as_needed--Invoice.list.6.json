@@ -26,7 +26,8 @@
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED",
+      "customer": "downgrade_small_realms_behind_on_payments_as_needed--Customer.create.4.json",
+      "customer_account": null,
       "customer_address": null,
       "customer_email": "user-0-test-realm-5@zulip.com",
       "customer_name": null,
@@ -75,6 +76,7 @@
                 },
                 "subscription": null
               },
+              "license_fee_subscription_details": null,
               "subscription_item_details": null,
               "type": "invoice_item_details"
             },
@@ -92,6 +94,8 @@
               "unit_amount_decimal": "10000"
             },
             "quantity": 1,
+            "quantity_decimal": "1",
+            "subtotal": 10000,
             "taxes": []
           }
         ],
@@ -144,7 +148,7 @@
       "total_excluding_tax": 10000,
       "total_pretax_credit_amounts": [],
       "total_taxes": [],
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     }
   ],
   "has_more": false,
