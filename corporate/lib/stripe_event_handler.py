@@ -214,3 +214,9 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             complimentary_access_plan=complimentary_access_plan,
             stripe_invoice_paid=True,
         )
+
+
+@stripe_event_handler_decorator
+def handle_invoice_voided_event(stripe_invoice: stripe.Invoice, invoice: Invoice) -> None:
+    invoice.status = Invoice.VOID
+    invoice.save(update_fields=["status"])
