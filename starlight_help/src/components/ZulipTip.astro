@@ -10,11 +10,9 @@ import lightbulb_svg from "../../../web/icons/lightbulb.svg?raw";
 const lightbulb_icon_fragment = fromHtml(lightbulb_svg, {fragment: true});
 const lightbulb_icon_first_child = lightbulb_icon_fragment.children[0]!;
 assert.ok(
-    lightbulb_icon_first_child.type === "element" &&
-        lightbulb_icon_first_child.tagName === "svg",
+    lightbulb_icon_first_child.type === "element" && lightbulb_icon_first_child.tagName === "svg",
 );
-lightbulb_icon_first_child.properties.class =
-    "zulip-unplugin-icon aside-icon-lightbulb";
+lightbulb_icon_first_child.properties.class = "zulip-unplugin-icon aside-icon-lightbulb";
 
 // We want to add the `Tip: ` prefix without a line break or wrapping
 // it in a paragraph. If we write `Tip: <slot />`, slot will be wrapped
