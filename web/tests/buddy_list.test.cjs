@@ -16,7 +16,7 @@ const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const padded_widget = mock_esm("../src/padded_widget");
 const message_viewport = mock_esm("../src/message_viewport");

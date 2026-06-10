@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import render_giphy_footer from "../templates/giphy_footer.hbs";

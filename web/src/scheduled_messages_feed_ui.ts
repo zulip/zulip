@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_scheduled_messages_indicator from "../templates/scheduled_messages_indicator.hbs";
 

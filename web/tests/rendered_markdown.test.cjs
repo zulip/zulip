@@ -10,7 +10,7 @@ const {$t} = require("./lib/i18n.cjs");
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const message_store = zrequire("message_store");
 

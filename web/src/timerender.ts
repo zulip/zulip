@@ -9,7 +9,7 @@ import {
     parseISO,
     startOfToday,
 } from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 

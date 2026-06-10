@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 export function update_padding(opts: {
     content_selector: string;

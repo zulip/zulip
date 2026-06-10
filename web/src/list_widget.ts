@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";

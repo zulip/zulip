@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 

@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import {isSameDay} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 

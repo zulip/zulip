@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as channel from "./channel.ts";
 import * as settings_data from "./settings_data.ts";

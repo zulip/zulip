@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
 import * as tippy from "tippy.js";

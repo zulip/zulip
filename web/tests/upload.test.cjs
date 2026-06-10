@@ -6,7 +6,7 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 class ClipboardEvent {
     constructor({clipboardData}) {

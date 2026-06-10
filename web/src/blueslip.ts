@@ -7,7 +7,7 @@
 // execution.
 
 import * as Sentry from "@sentry/browser";
-import $ from "jquery";
+import {$} from "jquery";
 
 import {BlueslipError, display_stacktrace} from "./blueslip_stacktrace.ts";
 

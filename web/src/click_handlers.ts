@@ -1,6 +1,6 @@
 // You won't find every click handler here, but it's a good place to start!
 
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";

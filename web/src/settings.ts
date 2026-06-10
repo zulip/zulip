@@ -1,5 +1,5 @@
 import {parseISO} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import timezones from "../generated/timezones.json";

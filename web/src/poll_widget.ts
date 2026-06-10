@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";

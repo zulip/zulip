@@ -1,7 +1,7 @@
 import {formatISO} from "date-fns";
 import flatpickr from "flatpickr";
 import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {$t} from "./i18n.ts";

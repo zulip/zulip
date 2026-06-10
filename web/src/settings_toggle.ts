@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";

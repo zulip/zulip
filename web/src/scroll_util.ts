@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import SimpleBar from "simplebar";
 
 import * as util from "./util.ts";
