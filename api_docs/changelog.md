@@ -48,7 +48,8 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
   The `require_e2ee_push_notifications` realm setting, when enabled,
   now completely disables legacy push notifications rather than sending
-  them with redacted content.
+  them with redacted content. This change was also backported to the Zulip
+  12.x series, at feature level 500.
 
 **Feature level 503**
 
@@ -59,10 +60,17 @@ format used by the Zulip server that they are interacting with.
 
 No changes; start of Zulip 13.0 development branch.
 
-Feature levels 500-501 reserved for future use in 12.x maintenance
+Feature level 501 reserved for future use in 12.x maintenance
 releases.
 
 ## Changes in Zulip 12.1
+
+**Feature level 500**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  The `require_e2ee_push_notifications` realm setting, when enabled,
+  now completely disables legacy push notifications rather than sending
+  them with redacted content. Backported change from feature level 504.
 
 **Feature level 499**
 
