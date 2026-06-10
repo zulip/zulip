@@ -121,6 +121,7 @@ class TestBuildEmail(ZulipTestCase):
         # @media rules cannot be expressed as inline styles, so they reach
         # the recipient only if the <style> element survives inlining.
         self.assertIn("@media only screen and (max-width: 620px)", html_message)
+        self.assertIn("@media (prefers-color-scheme: dark)", html_message)
 
 
 class TestSendEmail(ZulipTestCase):
