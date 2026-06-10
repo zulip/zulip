@@ -51,7 +51,10 @@ log_to_file(logger, settings.EMAIL_LOG_PATH)
 
 
 def get_inliner_instance() -> css_inline.CSSInliner:
-    return css_inline.CSSInliner()
+    # keep_style_tags retains the original <style> element, whose
+    # @media rules (responsive layout, dark color scheme) cannot be
+    # inlined and would otherwise be dropped from the sent email.
+    return css_inline.CSSInliner(keep_style_tags=True)
 
 
 class FromAddress:
