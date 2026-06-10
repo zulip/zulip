@@ -10,10 +10,22 @@ from zerver.models.scheduled_jobs import (
 
 
 def access_scheduled_message(
-    user_profile: UserProfile, scheduled_message_id: int
+    user_profile: UserProfile,
+    scheduled_message_id: int,
+    lock_message: bool = False,
 ) -> ScheduledMessage:
+    base_query = ScheduledMessage.objects.all()
+    if lock_message:
+        # The delivery worker (try_deliver_one_scheduled_message) locks
+        # the row with FOR NO KEY UPDATE before sending. Callers that
+        # are going to modify the row must take the same lock, so that
+        # they block on (rather than race with) an in-progress delivery;
+        # otherwise a stale read could overwrite the worker's
+        # delivered=True write and cause a duplicate send. Callers must
+        # only pass lock_message when inside a @transaction.atomic block.
+        base_query = base_query.select_for_update(no_key=True)
     try:
-        return ScheduledMessage.objects.get(
+        return base_query.get(
             id=scheduled_message_id, sender=user_profile, delivery_type=ScheduledMessage.SEND_LATER
         )
     except ScheduledMessage.DoesNotExist:
