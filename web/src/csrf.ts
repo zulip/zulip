@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 export let csrf_token: string | undefined;
 

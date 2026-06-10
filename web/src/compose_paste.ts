@@ -1,5 +1,5 @@
 import isUrl from "is-url";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";

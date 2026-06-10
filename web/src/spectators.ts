@@ -5,7 +5,7 @@
 // spectators, this modal is useful for everything that doesn't make
 // sense to remove from a design perspective.
 
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_login_to_access_modal from "../templates/login_to_access.hbs";
 

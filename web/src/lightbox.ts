@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import panzoom from "panzoom";
 import type {PanZoom} from "panzoom";

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_muted_user_ui_row from "../templates/muted_user_ui_row.hbs";
 

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as compose_ui from "./compose_ui.ts";
 import * as condense from "./condense.ts";

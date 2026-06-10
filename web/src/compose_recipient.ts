@@ -1,6 +1,6 @@
 /* Compose box module responsible for the message's recipient */
 
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as tippy from "tippy.js";
 
 export function any_active(): boolean {

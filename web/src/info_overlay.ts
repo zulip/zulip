@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";

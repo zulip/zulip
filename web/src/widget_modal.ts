@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import SortableJS from "sortablejs";
 
 import render_poll_modal_option from "../templates/poll_modal_option.hbs";

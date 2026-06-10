@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_navbar_help_menu from "../templates/popovers/navbar/navbar_help_menu_popover.hbs";
 

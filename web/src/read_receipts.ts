@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
 import * as z from "zod/mini";

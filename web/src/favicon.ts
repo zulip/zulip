@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import static_favicon_image from "../../static/images/favicon.svg";
 import render_favicon_svg from "../templates/favicon.svg.hbs";

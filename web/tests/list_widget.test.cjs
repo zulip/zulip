@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, mock_jquery, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects

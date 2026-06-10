@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as alert_words from "./alert_words.ts";

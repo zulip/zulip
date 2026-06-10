@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 const list_selectors = [
     "#stream_filters",

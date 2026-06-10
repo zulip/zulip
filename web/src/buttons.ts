@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as loading from "./loading.ts";
 import {COMPONENT_INTENT_VALUES} from "./types.ts";

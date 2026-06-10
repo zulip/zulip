@@ -1,5 +1,5 @@
 import autosize from "autosize";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as activity_ui from "./activity_ui.ts";

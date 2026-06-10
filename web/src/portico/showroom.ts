@@ -1,5 +1,5 @@
 import Handlebars from "handlebars/runtime.js";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_banner from "../../templates/components/banner.hbs";

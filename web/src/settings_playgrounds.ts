@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 

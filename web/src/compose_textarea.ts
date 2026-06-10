@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 // Save the compose content cursor position and restore when we
 // shift-tab back in (see hotkey.ts).
