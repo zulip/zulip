@@ -169,6 +169,22 @@ class SlackWebhookTests(WebhookTestCase):
         )
         self.assertJSONEqual(result.content.decode("utf-8"), expected_challenge_response)
 
+    def test_app_rate_limited(self) -> None:
+        payload = self.get_body("app_rate_limited")
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assert_json_success(result)
+        self.assert_in_response(
+            "The 'app_rate_limited' event isn't currently supported by the Slack webhook; ignoring",
+            result,
+        )
+
+    def test_anomalous_webhook_payload_error(self) -> None:
+        payload = self.get_body("example_anomalous_payload")
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assert_json_error(
+            result, "Unable to parse request: Did Slack generate this event?", 400
+        )
+
     @mock_slack_api_calls
     def test_block_message_from_slack_bridge_bot(self) -> None:
         self.check_webhook(
