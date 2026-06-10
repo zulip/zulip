@@ -383,11 +383,11 @@ function zoom_in(): void {
     zoomed = true;
     previous_search_term = "";
     pre_search_scroll_position = 0;
-    ui_util.disable_left_sidebar_search();
-    update_private_messages();
     $("#left-sidebar").addClass("zoom-in");
     $("#left-sidebar").addClass("zoom-in-conversations");
     $("#direct-messages-modal").toggleClass("no-display", false);
+    ui_util.disable_left_sidebar_search();
+    update_private_messages();
 
     const $filter = $(".direct-messages-list-filter").expectOne();
     $filter.trigger("focus");
