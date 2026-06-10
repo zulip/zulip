@@ -82,6 +82,7 @@ function createRedirectPlugin() {
 // https://astro.build/config
 export default defineConfig({
     base: "help",
+    compressHTML: "jsx",
     trailingSlash: "never",
     vite: {
         plugins: [
