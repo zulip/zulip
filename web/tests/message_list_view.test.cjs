@@ -337,10 +337,12 @@ test("rerender_messages rebuilds every distinct recipient bar", () => {
         return {length: 1, parent: () => ({expectOne: () => ({attr: () => group_id})})};
     };
 
+    view._message_groups = [{message_group_id: "group-A"}, {message_group_id: "group-B"}];
+
     view._rerender_message = () => [];
     const rerendered_group_ids = [];
-    view._rerender_header = (message_group_id) => {
-        rerendered_group_ids.push(message_group_id);
+    view._rerender_header = (group) => {
+        rerendered_group_ids.push(group.message_group_id);
     };
 
     view.rerender_messages([dm1.msg, dm2.msg, dm3.msg]);

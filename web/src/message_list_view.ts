@@ -1605,19 +1605,13 @@ export class MessageListView {
         );
     }
 
-    _rerender_header(message_group_id: string): void {
+    _rerender_header(group: MessageGroup): void {
         // Rerender the header / recipient bar of the given message group,
-        // rebuilding it from the authoritative group looked up below. This
+        // rebuilding it from the authoritative group passed in. This
         // method should only be called with rerender_messages as the
         // rerendered header may need to be updated for the "sticky_header"
         // class.
-        const group = this._find_message_group(message_group_id);
-        if (group === undefined) {
-            blueslip.error("Could not find message group for rerendering headers");
-            return;
-        }
-
-        const $header = $(`#${CSS.escape(message_group_id)}`).find(".message_header");
+        const $header = $(`#${CSS.escape(group.message_group_id)}`).find(".message_header");
 
         // TODO: It's possible that we no longer need this populate
         // call; it was introduced in an earlier version of this code
@@ -1775,9 +1769,19 @@ export class MessageListView {
         }
 
         // Now that every row is rerendered, rerender each affected bar's
-        // header once.
+        // header once. We build a lookup map here rather than calling
+        // _find_message_group in the loop, since the latter does a
+        // linear search.
+        const message_groups_by_id = new Map(
+            this._message_groups.map((group) => [group.message_group_id, group]),
+        );
         for (const message_group_id of rerendered_group_ids) {
-            this._rerender_header(message_group_id);
+            const group = message_groups_by_id.get(message_group_id);
+            if (group === undefined) {
+                blueslip.error("Could not find message group for rerendering headers");
+                continue;
+            }
+            this._rerender_header(group);
         }
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
