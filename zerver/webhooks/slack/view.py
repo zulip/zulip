@@ -15,7 +15,11 @@ from zerver.data_import.slack_message_conversion import (
     replace_links,
 )
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
+from zerver.lib.exceptions import (
+    AnomalousWebhookPayloadError,
+    JsonableError,
+    UnsupportedWebhookEventTypeError,
+)
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
@@ -258,8 +262,15 @@ def api_slack_webhook(
         return json_success(request)
 
     event_dict = payload.get("event", {})
-    event_type = event_dict.get("type").tame(check_string)
+    if not event_dict:
+        event_type = payload.get("type").tame(check_none_or(check_string))
+        if event_type == "app_rate_limited":
+            # Slack dispatches this event type when the user's Slack app is rate limited.
+            # https://docs.slack.dev/reference/events/app_rate_limited
+            raise UnsupportedWebhookEventTypeError(event_type)
+        raise AnomalousWebhookPayloadError
 
+    event_type = event_dict.get("type").tame(check_string)
     if event_type != "message":
         raise UnsupportedWebhookEventTypeError(event_type)
 

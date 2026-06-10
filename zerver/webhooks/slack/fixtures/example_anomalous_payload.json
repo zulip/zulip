@@ -1,0 +1,23 @@
+{
+  "createdAt": 1780754580717,
+  "id": "REDACTED",
+  "payload": {
+    "groupId": "REDACTED",
+    "level": "critical",
+    "project": {
+      "id": "REDACTED"
+    },
+    "projectId": "REDACTED",
+    "projectSlug": "REDACTED",
+    "startedAt": 1780754580717,
+    "team": {
+      "id": "REDACTED"
+    },
+    "teamId": "REDACTED",
+    "teamSlug": "REDACTED",
+    "user": {
+      "id": "REDACTED"
+    }
+  },
+  "type": "observability.usage-anomaly"
+}
