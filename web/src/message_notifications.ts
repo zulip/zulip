@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";

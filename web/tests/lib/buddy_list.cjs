@@ -1,6 +1,6 @@
 "use strict";
 
-const $ = require("./zjquery.cjs");
+const {$} = require("./zjquery.cjs");
 
 let users_matching_view = [];
 exports.buddy_list_add_user_matching_view = (user_id, $stub) => {

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as gear_menu from "./gear_menu.ts";
 import * as navbar_help_menu from "./navbar_help_menu.ts";

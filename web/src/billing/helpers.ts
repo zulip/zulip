@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as z from "zod/mini";
 
 import * as loading from "../loading.ts";

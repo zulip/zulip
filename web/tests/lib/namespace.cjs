@@ -7,7 +7,7 @@ const path = require("node:path");
 const FakeTimers = require("@sinonjs/fake-timers");
 const {default: callsites} = require("callsites");
 
-const $ = require("./zjquery.cjs");
+const {$} = require("./zjquery.cjs");
 
 const new_globals = new Set();
 let old_globals = {};
@@ -34,7 +34,7 @@ function load(request, parent, isMain) {
         const actual_render = actual_load(request, parent, isMain);
         return template_stub({filename, actual_render});
     } else if (filename === jquery_path) {
-        return jquery_function || $;
+        return {$: jquery_function ?? $};
     }
 
     const module = actual_load(request, parent, isMain);

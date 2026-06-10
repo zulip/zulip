@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_stream_card_popover from "../templates/popovers/stream_card_popover.hbs";

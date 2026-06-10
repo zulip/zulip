@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import type {InputPillConfig} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";

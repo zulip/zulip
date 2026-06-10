@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
 

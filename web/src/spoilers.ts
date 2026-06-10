@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as mouse_drag from "./mouse_drag.ts";
 import * as util from "./util.ts";

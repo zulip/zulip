@@ -95,5 +95,4 @@ function make_zjquery() {
     return zjquery;
 }
 
-const $ = Object.freeze(make_zjquery());
-module.exports = $; // eslint-disable-line no-jquery/variable-pattern
+exports.$ = Object.freeze(make_zjquery());

@@ -151,7 +151,7 @@
  *   when a pill is deleted using the backspace key.
  * ============================================================ */
 
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";

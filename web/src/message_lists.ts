@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as inbox_util from "./inbox_util.ts";
 import type {MessageList} from "./message_list.ts";

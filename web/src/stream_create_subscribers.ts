@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_new_stream_user from "../templates/stream_settings/new_stream_user.hbs";
 import render_new_stream_users from "../templates/stream_settings/new_stream_users.hbs";

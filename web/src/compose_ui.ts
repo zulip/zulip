@@ -2,7 +2,7 @@
    textarea correctly. */
 
 import autosize from "autosize";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import {

@@ -1,5 +1,5 @@
 import ErrorStackParser from "error-stack-parser";
-import $ from "jquery";
+import {$} from "jquery";
 import type StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 

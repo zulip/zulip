@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";

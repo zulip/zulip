@@ -1,7 +1,7 @@
 /* Module primarily for opening/closing the compose box. */
 
 import autosize from "autosize";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip.ts";

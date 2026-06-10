@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import type {GenericWidget, PostToServerFunction} from "./generic_widget.ts";
 import {

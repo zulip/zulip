@@ -2,7 +2,7 @@
    TippyJS/Popper popover library from the legacy Bootstrap
    popovers system in popovers.js. */
 
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 

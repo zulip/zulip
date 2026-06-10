@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 export function disable_scrolling(): void {
     // Why disable scrolling?

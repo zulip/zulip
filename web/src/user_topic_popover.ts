@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_change_visibility_policy_popover from "../templates/popovers/change_visibility_policy_popover.hbs";

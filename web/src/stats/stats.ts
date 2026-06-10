@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";

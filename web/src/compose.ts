@@ -1,7 +1,7 @@
 /* Main compose box module for sending messages. */
 
 import autosize from "autosize";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 

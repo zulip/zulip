@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 const EXTRA_SUBMENU_BOTTOM_PADDING = 16;
 

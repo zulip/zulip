@@ -2,7 +2,7 @@
 
 const namespace = require("./namespace.cjs");
 const zblueslip = require("./zblueslip.cjs");
-const $ = require("./zjquery.cjs");
+const {$} = require("./zjquery.cjs");
 const zpage_billing_params = require("./zpage_billing_params.cjs");
 const zpage_params = require("./zpage_params.cjs");
 
