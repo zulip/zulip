@@ -1,5 +1,5 @@
 import {getUnixTime, isValid} from "date-fns";
-import katex from "katex";
+import * as katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type {Matcher, RE2JS} from "re2js";

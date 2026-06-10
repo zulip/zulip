@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-const {default: katex} = mock_esm("katex", {default: {}});
+const katex = mock_esm("katex");
 
 const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
