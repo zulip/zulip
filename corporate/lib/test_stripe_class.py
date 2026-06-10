@@ -488,6 +488,7 @@ HANDLED_STRIPE_EVENT_TYPES: frozenset[str] = frozenset(
     {
         "checkout.session.completed",
         "invoice.paid",
+        "invoice.voided",
     }
 )
 
