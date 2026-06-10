@@ -163,7 +163,7 @@ function zoom_in(stream_id: number): void {
     }
 
     zoomed_in = true;
-    $("#direct-messages-modal").toggleClass("no-display", true);
+    pm_list.zoom_out();
     popovers.hide_all();
     pm_list.close();
     zoom_in_topics(stream_id);

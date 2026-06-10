@@ -393,7 +393,7 @@ function zoom_in(): void {
     $filter.trigger("focus");
 }
 
-function zoom_out(): void {
+export function zoom_out(): void {
     if (!zoomed) {
         return;
     }
