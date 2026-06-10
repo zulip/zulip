@@ -672,26 +672,35 @@
                spans align with channel and topic text in rows. Sort
                arrows are inside the spans, so 3 columns suffice.
                1em = 16px at 16px/1em, matching the 1em (16px
-               at 16px/1em) privacy icon width in data rows. */
+               at 16px/1em) privacy icon width in data rows.
+
+               The first column is floored to the "Channel" header's
+               JS-measured width so the label never overlaps the next
+               column when channel names are short or absent. */
             display: grid;
             grid-template-columns:
-                calc(
-                    min(
-                            calc(
-                                var(--longest-subscribed-channel-name-width) +
-                                    1em + 8px
-                            ),
-                            calc(
+                max(
+                    var(--recent-view-channel-header-min-width, 0px),
+                    calc(
+                        min(
                                 calc(
-                                        100% -
-                                            var(
-                                                --recent-view-channel-row-header-minus-body
-                                            )
-                                    ) /
-                                    3
-                            )
-                        ) +
-                        var(--recent-view-channel-row-header-minus-body)
+                                    var(
+                                            --longest-subscribed-channel-name-width
+                                        ) +
+                                        1em + 8px
+                                ),
+                                calc(
+                                    calc(
+                                            100% -
+                                                var(
+                                                    --recent-view-channel-row-header-minus-body
+                                                )
+                                        ) /
+                                        3
+                                )
+                            ) +
+                            var(--recent-view-channel-row-header-minus-body)
+                    )
                 )
                 auto 1fr auto;
             align-items: stretch;
@@ -807,13 +816,21 @@
                 ".                 .             conversation-name .";
             width: 100%;
             /* We add 1em for the privacy icon and 8px for the flexbox
-               gap between the icon and the channel name. */
+               gap between the icon and the channel name. Floored to
+               match the header grid's "Channel" floor. */
             grid-template-columns:
-                min(
+                max(
                     calc(
-                        var(--longest-subscribed-channel-name-width) + 1em + 8px
+                        var(--recent-view-channel-header-min-width, 0px) -
+                            var(--recent-view-channel-row-header-minus-body)
                     ),
-                    calc(100% / 3)
+                    min(
+                        calc(
+                            var(--longest-subscribed-channel-name-width) + 1em +
+                                8px
+                        ),
+                        calc(100% / 3)
+                    )
                 )
                 auto 1fr auto;
             align-items: center;
