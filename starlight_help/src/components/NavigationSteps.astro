@@ -341,19 +341,14 @@ const getSettingsMarkdown = (
 `;
 
 const getSettingsHTML = (setting_key: string): string => {
-    const {setting_type, setting_name, setting_link} =
-        setting_link_mapping[setting_key]!;
+    const {setting_type, setting_name, setting_link} = setting_link_mapping[setting_key]!;
 
     if (!SHOW_RELATIVE_LINKS) {
         const setting_type_icon =
             setting_type === ORGANIZATION_SETTINGS_TYPE
                 ? `${RawBuildingIcon}`.trim()
                 : `${RawToolIcon}`.trim();
-        return getSettingsMarkdown(
-            setting_type,
-            setting_type_icon,
-            setting_name,
-        );
+        return getSettingsMarkdown(setting_type, setting_type_icon, setting_name);
     }
 
     const relativeLink = `<a href="${setting_link}">${setting_name}</a>`;
@@ -374,10 +369,7 @@ const getSettingsHTML = (setting_key: string): string => {
             </ol>`;
 };
 
-const RELATIVE_NAVIGATION_HANDLERS_BY_TYPE: Record<
-    string,
-    (key: string) => string
-> = {};
+const RELATIVE_NAVIGATION_HANDLERS_BY_TYPE: Record<string, (key: string) => string> = {};
 
 for (const type of Object.keys(relative_link_mapping)) {
     const {data, template, is_link_relative} = relative_link_mapping[type]!;
@@ -399,13 +391,8 @@ for (const type of Object.keys(relative_link_mapping)) {
 const {target} = Astro.props;
 const navigation_link_type = target.split("/")[0];
 
-if (
-    navigation_link_type !== "settings" &&
-    navigation_link_type !== "relative"
-) {
-    throw new Error(
-        "Invalid navigation link type. Only `settings` or `relative` is allowed.",
-    );
+if (navigation_link_type !== "settings" && navigation_link_type !== "relative") {
+    throw new Error("Invalid navigation link type. Only `settings` or `relative` is allowed.");
 }
 
 let resultHTML: string | undefined;

@@ -10,8 +10,7 @@ import keyboard_svg from "../../../web/icons/keyboard.svg?raw";
 const keyboard_icon_fragment = fromHtml(keyboard_svg, {fragment: true});
 const keyboard_icon_first_child = keyboard_icon_fragment.children[0]!;
 assert.ok(
-    keyboard_icon_first_child.type === "element" &&
-        keyboard_icon_first_child.tagName === "svg",
+    keyboard_icon_first_child.type === "element" && keyboard_icon_first_child.tagName === "svg",
 );
 keyboard_icon_first_child.properties.class = "zulip-unplugin-icon";
 
@@ -37,10 +36,7 @@ first_element.children = [...prefix_element_list, ...first_element.children];
 tree.children[0] = first_element;
 ---
 
-<aside
-    aria-label="Keyboard tip"
-    class=`starlight-aside starlight-aside--tip keyboard-tip`
->
+<aside aria-label="Keyboard tip" class=`starlight-aside starlight-aside--tip keyboard-tip`>
     <div class="starlight-aside__content">
         <Fragment set:html={toHtml(tree)} />
     </div>
