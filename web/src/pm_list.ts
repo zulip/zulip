@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import * as z from "zod/mini";
 
+import * as blueslip from "./blueslip.ts";
 import type {Filter} from "./filter.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -36,6 +37,9 @@ let last_direct_message_count: number | undefined;
 // The direct messages section can be zoomed in to view more messages.
 // This keeps track of if we're zoomed in or not.
 let zoomed = false;
+
+// Limits reporting in update_private_messages to once per page load.
+let reported_zoomed_render_with_hidden_modal = false;
 
 // Scroll position before user started searching.
 let pre_search_scroll_position = 0;
@@ -154,6 +158,19 @@ function set_dom_to(new_dom: vdom.Tag<PMNode>, for_modal: boolean): void {
 }
 
 export function update_private_messages(): void {
+    if (
+        zoomed &&
+        !reported_zoomed_render_with_hidden_modal &&
+        $("#direct-messages-modal").hasClass("no-display")
+    ) {
+        // This render targets the zoomed modal, but the modal isn't
+        // visible, so the sidebar list the user sees will go stale.
+        // No known code path reaches this state; report it so that
+        // error reports can identify any path that does.
+        reported_zoomed_render_with_hidden_modal = true;
+        blueslip.error("Rendering zoomed DM list while its modal is hidden");
+    }
+
     const is_left_sidebar_search_active = ui_util.get_left_sidebar_search_term() !== "";
     const is_dm_section_expanded = is_left_sidebar_search_active || !private_messages_collapsed;
     if (!temporarily_collapsed) {
