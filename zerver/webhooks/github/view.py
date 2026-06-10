@@ -1232,6 +1232,7 @@ def api_github_webhook(
     ignore_private_repositories: Json[bool] = False,
     include_repository_name: Json[bool] = False,
     include_emoji_indicators: Json[bool] = True,
+    enable_topic_rename: Json[bool] = True,
     stream: str | None = None,
 ) -> HttpResponse:
     """
@@ -1287,6 +1288,7 @@ def api_github_webhook(
     # Handle topic renaming for PRs and Issues with edited titles
     if (
         sent_message_id is not None
+        and enable_topic_rename
         and stream is not None
         and user_specified_topic is None
         and header_event in ("pull_request", "issues")

@@ -236,6 +236,23 @@ class GitHubWebhookTest(WebhookTestCase):
             ).exists()
         )
 
+    def test_title_edit_with_topic_rename_disabled(self) -> None:
+        # With enable_topic_rename turned off, a title edit leaves the
+        # original topic and its history in place instead of moving it.
+        self.url = self.build_webhook_url(enable_topic_rename="false")
+        old_topic = "public-repo / PR #1 This is a very long Pull request titl..."
+        opened_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n``` quote\nThis is a pretty simple change that we need to pull into master.\n```"
+        edited_message = (
+            "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        )
+        self.check_webhook("pull_request__opened", old_topic, opened_message)
+        self.check_webhook(
+            "pull_request__edited_title", "public-repo / PR #1 New Short Title", edited_message
+        )
+        self.assertTrue(
+            Message.objects.filter(realm=self.test_user.realm, subject=old_topic).exists()
+        )
+
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
