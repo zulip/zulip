@@ -1,7 +1,9 @@
 from collections.abc import Iterable
 from typing import TypedDict
 
+from django.db import connection
 from django.db.models import Q
+from psycopg2 import sql
 from pydantic import BaseModel
 
 from zerver.lib import retention
@@ -35,15 +37,40 @@ def check_update_first_message_id(
     assert stream.recipient_id is not None
     if stream.first_message_id not in message_ids:
         return
-    current_first_message_id = (
-        Message.objects.filter(realm_id=realm.id, recipient_id=stream.recipient_id)
-        .values_list("id", flat=True)
-        .order_by("id")
-        .first()
+
+    # Look up the new first message id and write it
+    # back to the stream row in a single query.
+    query = sql.SQL(
+        """
+        UPDATE {stream_table}
+        SET first_message_id = (
+            SELECT id
+            FROM {message_table}
+            WHERE realm_id = %(realm_id)s AND recipient_id = %(recipient_id)s
+            ORDER BY id
+            LIMIT 1
+        )
+        WHERE {stream_table}.id = %(stream_id)s
+        RETURNING first_message_id;
+        """
+    ).format(
+        stream_table=sql.Identifier(Stream._meta.db_table),
+        message_table=sql.Identifier(Message._meta.db_table),
     )
 
-    stream.first_message_id = current_first_message_id
-    stream.save(update_fields=["first_message_id"])
+    with connection.cursor() as cursor:
+        cursor.execute(
+            query,
+            {
+                "realm_id": realm.id,
+                "recipient_id": stream.recipient_id,
+                "stream_id": stream.id,
+            },
+        )
+        result = cursor.fetchone()
+        if result is not None:
+            result = result[0]
+        stream.first_message_id = result
 
     stream_event = dict(
         type="stream",
