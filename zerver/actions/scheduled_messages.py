@@ -172,9 +172,12 @@ def edit_scheduled_message(
     deliver_at: datetime | None,
     realm: Realm,
 ) -> None:
-    scheduled_message_object = access_scheduled_message(sender, scheduled_message_id)
+    scheduled_message_object = access_scheduled_message(
+        sender, scheduled_message_id, lock_message=True
+    )
 
-    # Handles the race between us initiating this transaction and user sending us the edit request.
+    # We locked the row above, so a concurrent delivery has already
+    # committed and this guard reliably observes its delivered=True.
     if scheduled_message_object.delivered is True:
         raise JsonableError(_("Scheduled message was already sent"))
 
