@@ -970,6 +970,7 @@ run_test("add_realm_user_redraw_logic", ({override}) => {
 
     override(settings_account, "maybe_update_deactivate_account_button", noop);
     override(settings_exports, "update_export_consent_data_and_redraw", noop);
+    override(pm_list, "update_private_messages", noop);
 
     const check_should_redraw_new_user_stub = make_stub();
     // make_stub().f returns true by default, so it's already doing what we want.
@@ -989,8 +990,11 @@ run_test("realm_user", ({override}) => {
     override(settings_account, "maybe_update_deactivate_account_button", noop);
     override(activity_ui, "check_should_redraw_new_user", noop);
     override(settings_exports, "update_export_consent_data_and_redraw", noop);
+    const pm_list_stub = make_stub();
+    override(pm_list, "update_private_messages", pm_list_stub.f);
     let event = event_fixtures.realm_user__add;
     dispatch({...event});
+    assert.equal(pm_list_stub.num_calls, 1);
     const added_person = people.get_by_user_id(event.person.user_id);
     // sanity check a few individual fields
     assert.equal(added_person.full_name, "Test User");
@@ -1027,7 +1031,10 @@ run_test("realm_user", ({override}) => {
 
     override(settings_data, "user_can_access_all_other_users", () => false);
     event = event_fixtures.realm_user__remove;
+    // The second and third update_private_messages calls are from
+    // dispatching realm_user__add_bot above and this remove event.
     dispatch(event);
+    assert.equal(pm_list_stub.num_calls, 3);
     const removed_person = people.get_by_user_id(event.person.user_id);
     assert.equal(removed_person.full_name, "translated: Unknown user");
 });
