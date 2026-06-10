@@ -25,6 +25,6 @@ rabbitmqctl delete_user guest || true
 rabbitmqctl add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
 rabbitmqctl set_user_tags "$RABBITMQ_USERNAME" administrator
 if ! rabbitmqctl list_vhosts --no-table-headers --quiet | grep -qx "$RABBITMQ_VHOST"; then
-    rabbitmqcql add_vhost "$RABBITMQ_VHOST"
+    rabbitmqctl add_vhost "$RABBITMQ_VHOST"
 fi
 rabbitmqctl set_permissions -p "$RABBITMQ_VHOST" "$RABBITMQ_USERNAME" '.*' '.*' '.*'
