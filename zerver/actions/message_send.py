@@ -127,7 +127,12 @@ from zerver.models.streams import (
     get_realm_stream,
     get_stream_by_id_in_realm,
 )
-from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
+from zerver.models.users import (
+    active_guest_user_ids,
+    get_system_bot,
+    get_user_by_delivery_email,
+    is_cross_realm_bot_email,
+)
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -1255,8 +1260,16 @@ def do_send_messages(
             if send_request.stream.is_public():
                 event["realm_id"] = send_request.stream.realm_id
                 event["stream_name"] = send_request.stream.name
+                # Tornado uses these to exclude guest users' clients
+                # registered for all public channels from receiving the
+                # events for unsubscribed non web-public channel
+                # messages, since guests can only access such channels
+                # when subscribed.
+                event["realm_guest_user_ids"] = active_guest_user_ids(send_request.stream.realm_id)
             if send_request.stream.invite_only:
                 event["invite_only"] = True
+            if send_request.stream.is_web_public:
+                event["is_web_public"] = True
             if send_request.stream.first_message_id is None:
                 send_request.stream.first_message_id = send_request.message.id
                 stream_update_fields.append("first_message_id")

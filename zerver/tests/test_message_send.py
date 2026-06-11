@@ -1785,7 +1785,7 @@ class StreamMessagesTest(ZulipTestCase):
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
         )
-        with self.assert_database_query_count(14):
+        with self.assert_database_query_count(15):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1805,7 +1805,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 5 queries: 1 to check if it is the first message in the topic +
         # 1 to check if the topic is already followed + 3 to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1825,7 +1825,7 @@ class StreamMessagesTest(ZulipTestCase):
         # a message to a topic with visibility policy other than FOLLOWED.
         # 1 to check if the topic is already followed + 3 queries to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(19):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1836,7 +1836,7 @@ class StreamMessagesTest(ZulipTestCase):
         # If the topic is already FOLLOWED, there will be an increase in the query
         # count of 1 to check if the topic is already followed.
         flush_per_request_caches()
-        with self.assert_database_query_count(15):
+        with self.assert_database_query_count(16):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1861,7 +1861,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 1 to get the user_id of the mentioned user + 1 to check if the topic
         # is already followed + 3 queries to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(24):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1874,7 +1874,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 1 to get the user_id of the mentioned user + 1 to check if the topic is
         # already followed.
         flush_per_request_caches()
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(21):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1884,7 +1884,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
 
         flush_per_request_caches()
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(18):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1907,7 +1907,7 @@ class StreamMessagesTest(ZulipTestCase):
         )
         flush_per_request_caches()
 
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(19):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1989,6 +1989,47 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_personal_message(self.example_user("hamlet"), user_profile, content="test")
         message = most_recent_message(user_profile)
         self.assertFalse(message.is_channel_message)
+
+    def test_realm_guest_user_ids_in_message_event(self) -> None:
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        # Events for public channel messages include all active guest
+        # users in the realm, whether or not they are subscribed.
+        stream_name = "Test stream"
+        self.subscribe(hamlet, stream_name)
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_stream_message(
+                hamlet,
+                stream_name,
+                content="test",
+                skip_capture_on_commit_callbacks=True,
+            )
+        self.assertEqual(events[0]["event"]["realm_guest_user_ids"], [polonius.id])
+
+        # The field is not attached to events for private channel
+        # messages or direct messages as we do not send events to
+        # clients in realm_clients_all_streams for these messages.
+        private_stream_name = "Private test stream"
+        self.make_stream(private_stream_name, invite_only=True)
+        self.subscribe(hamlet, private_stream_name)
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_stream_message(
+                hamlet,
+                private_stream_name,
+                content="test",
+                skip_capture_on_commit_callbacks=True,
+            )
+        self.assertNotIn("realm_guest_user_ids", events[0]["event"])
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_personal_message(
+                hamlet,
+                polonius,
+                content="test",
+                skip_capture_on_commit_callbacks=True,
+            )
+        self.assertNotIn("realm_guest_user_ids", events[0]["event"])
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> set[int]:
         with self.capture_send_event_calls(expected_num_events=1) as events:
