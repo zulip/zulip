@@ -147,6 +147,7 @@ type BillingInfo = {
 
 export function get_actions_popover_content_context(message_id: number): ActionPopoverContext {
     assert(message_lists.current !== undefined);
+    const $message_row = message_lists.current.get_row(message_id);
     const message = message_lists.current.get(message_id);
     assert(message !== undefined);
     const not_spectator = !page_params.is_spectator;
@@ -223,9 +224,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         return true;
     };
 
-    function is_add_reaction_icon_visible(): boolean {
-        assert(message_lists.current !== undefined);
-        const $message_row = message_lists.current.get_row(message_id);
+    function is_add_reaction_icon_visible($message_row: JQuery): boolean {
         const $reaction_button = $message_row.find(".message_controls .reaction_button");
         return $reaction_button.length === 1 && $reaction_button.css("display") !== "none";
     }
@@ -235,7 +234,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     // popover if it is not displayed.
     const should_display_add_reaction_option =
         !message.is_me_message &&
-        !is_add_reaction_icon_visible() &&
+        !is_add_reaction_icon_visible($message_row) &&
         not_spectator &&
         !(stream_id && stream_data.is_stream_archived_by_id(stream_id));
 
