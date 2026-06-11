@@ -768,8 +768,11 @@
     }
 
     &.recent-view-participants-hidden {
+        --recent-view-row-left-padding: 0.5em; /* 8px at 16px/1em */
+
         td {
-            padding: 0.375em 0.5em; /* 6px 8px at 16px/1em */
+            /* 6px 8px at 16px/1em */
+            padding: 0.375em 0.5em 0.375em var(--recent-view-row-left-padding);
         }
 
         .recent_topic_users,
