@@ -15,6 +15,7 @@ from zerver.lib.streams import (
     access_stream_to_remove_visibility_policy_by_name,
     check_for_exactly_one_stream_arg,
 )
+from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.models import UserProfile, UserTopic
@@ -74,6 +75,11 @@ def update_muted_topic(
 ) -> HttpResponse:
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
 
+    # Apply the same normalization and validation as topics of actual
+    # messages, so that the policy ends up on a matchable topic name.
+    topic = topic.strip()
+    check_stream_topic(topic)
+
     if op == "add":
         mute_topic(
             user_profile=user_profile,
@@ -103,6 +109,11 @@ def update_user_topic(
         Annotated[int, check_int_in_validator(UserTopic.VisibilityPolicy.values)]
     ],
 ) -> HttpResponse:
+    # Apply the same normalization and validation as topics of actual
+    # messages, so that the policy ends up on a matchable topic name.
+    topic = topic.strip()
+    check_stream_topic(topic)
+
     if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
         error = _("Invalid channel ID")
         stream = access_stream_to_remove_visibility_policy_by_id(user_profile, stream_id, error)

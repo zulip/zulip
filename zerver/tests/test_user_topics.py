@@ -692,6 +692,46 @@ class UnmutedTopicsTests(ZulipTestCase):
 
 
 class UserTopicsTests(ZulipTestCase):
+    def test_topic_name_validation(self) -> None:
+        # The endpoint applies the same normalization and validation to
+        # topic names as sending a message does: surrounding whitespace
+        # is stripped, and unprintable characters are rejected (rather
+        # than creating a policy row that no real topic can match, or,
+        # for the NUL byte, a database-level error).
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        stream = get_stream("Verona", user.realm)
+
+        url = "/api/v1/user_topics"
+        data = {
+            "stream_id": stream.id,
+            "topic": "invalid\x00topic",
+            "visibility_policy": UserTopic.VisibilityPolicy.MUTED,
+        }
+        result = self.api_post(user, url, data)
+        self.assert_json_error(result, "Invalid character in topic, at position 8!")
+
+        data["topic"] = " Verona3 "
+        result = self.api_post(user, url, data)
+        self.assert_json_success(result)
+        self.assertEqual(
+            list(
+                UserTopic.objects.filter(user_profile=user, stream_id=stream.id).values_list(
+                    "topic_name", flat=True
+                )
+            ),
+            ["Verona3"],
+        )
+
+        deprecated_url = "/api/v1/users/me/subscriptions/muted_topics"
+        deprecated_data = {
+            "stream_id": stream.id,
+            "topic": "invalid\x00topic",
+            "op": "add",
+        }
+        result = self.api_patch(user, deprecated_url, deprecated_data)
+        self.assert_json_error(result, "Invalid character in topic, at position 8!")
+
     def test_policy_update_adopts_requested_topic_casing(self) -> None:
         # Updating the policy of a topic whose UserTopic row was stored
         # under different casing must adopt the casing of the request,
