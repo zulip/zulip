@@ -247,3 +247,8 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         response = dict(text="test_content")
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, OutgoingWebhookResult(content="test_content"))
+
+def test_slack_compatible_webhook_with_mention_parsing(self) -> None:
+    mock_message_content = "@**Test Bot** check_system_metrics --verbose"
+    self.assertEqual(final_payload["command"], "/testbot")
+    self.assertEqual(final_payload["text"], "check_system_metrics --verbose")
