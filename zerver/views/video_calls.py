@@ -11,7 +11,7 @@ from urllib.parse import quote, urlencode, urljoin, urlsplit
 import requests
 from defusedxml import ElementTree
 from django.conf import settings
-from django.core.signing import Signer
+from django.core.signing import BadSignature, Signer
 from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
@@ -43,6 +43,7 @@ from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.lib.users import is_moderator_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
@@ -66,6 +67,13 @@ class CreateVideoCallFailedError(JsonableError):
     def __init__(self, provider_name: str) -> None:
         super().__init__(
             _("Failed to create {provider_name} call").format(provider_name=provider_name)
+        )
+
+
+class JoinVideoCallFailedError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Failed to create {provider_name} invite").format(provider_name=provider_name)
         )
 
 
@@ -763,3 +771,181 @@ def create_nextcloud_talk_url(
 
     call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
     return json_success(request, data={"url": call_url})
+
+
+@typed_endpoint
+def create_galene_call(
+    request: HttpRequest, user: UserProfile, *, channel: str | None = None, topic: str | None = None
+) -> HttpResponse:
+    """
+    For a Galène (https://galene.org) instance, create a /calls/galene/join link,
+    setting up the necessary preconditions.
+
+    Naming:
+
+    - For normal topics, the link is always the same {GALENE_URL}/group/{channel}/{topic}.
+    - For "General Chat" (topic==""), it is {GALENE_URL}/group/{channel}.
+    - For DMs, {GALENE_URL}/group/dm/{comma_separated_participant_ids}.
+
+    Calls are ephemeral, because we use Galène's auto-subgroups feature. The only
+    creation here is to make the base {GALENE_URL}/group/{channel} or
+    {GALENE_URL}/dm, the actual call isn't stored on disk by Galène and
+    doesn't know about it until someone joins it.
+
+    Permissions:
+
+    - Zulip moderators (including admins and owners) become Galène operators.
+    - Zulip members become Galène presenters (meaning they can turn on their camera)
+    - Zulip guests also become presenters.
+    """
+    if (
+        settings.GALENE_URL is None
+        or settings.GALENE_ADMIN_USERNAME is None
+        or settings.GALENE_ADMIN_PASSWORD is None
+    ):
+        raise VideoCallProviderNotConfiguredError("Galène")
+
+    if not channel:
+        channel = "dm"
+        if topic:
+            topic = f"{topic}-group"
+
+    # https://github.com/jech/galene/blob/master/galene-api.md
+    parent_url = urljoin(settings.GALENE_URL, f"/galene-api/v0/.groups/{channel}")
+
+    username = str(settings.GALENE_ADMIN_USERNAME)
+    password = str(settings.GALENE_ADMIN_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    # This greatly reduces the number of calls Galène has to track on disk
+    # (one per Zulip channel instead of one per topic).
+    payload = {
+        "auto-subgroups": True,
+    }
+
+    try:
+        response = VideoCallSession().put(parent_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+        if response.status_code not in [201, 204]:
+            logging.error(
+                "Galène API request to %s failed with status %s", parent_url, response.status_code
+            )
+            raise CreateVideoCallFailedError("Galène")
+    except requests.RequestException as e:
+        if e.response is not None:
+            logging.error(
+                "Galène API request to %s failed with status %s", parent_url, e.response.status_code
+            )
+        else:
+            logging.error("Galène API request to %s failed", parent_url)
+        raise CreateVideoCallFailedError("Galène")
+
+    if topic:
+        group_name = f"{channel}/{topic}"
+    else:
+        group_name = channel
+
+    signed = Signer().sign_object(
+        {
+            "name": group_name,
+        }
+    )
+    url = append_url_query_string("/calls/galene/join", "galene_call_join_details=" + signed)
+    return json_success(request, {"url": url})
+
+
+@zulip_login_required
+@never_cache
+@typed_endpoint
+def join_galene_call(request: HttpRequest, *, galene_call_join_details: str) -> HttpResponse:
+    if (
+        settings.GALENE_URL is None
+        or settings.GALENE_ADMIN_USERNAME is None
+        or settings.GALENE_ADMIN_PASSWORD is None
+    ):
+        raise VideoCallProviderNotConfiguredError("Galène")
+
+    assert request.user.is_authenticated
+
+    try:
+        galene_call_join_details_data = Signer().unsign_object(galene_call_join_details)
+    except BadSignature:
+        raise JsonableError(_("Invalid signature."))
+
+    group_name = galene_call_join_details_data["name"]
+
+    # https://github.com/jech/galene/blob/b40dcd2/galene-api.md
+    # # note the trailing slash: https://github.com/jech/galene/issues/305
+    token_url = urljoin(settings.GALENE_URL, f"/galene-api/v0/.groups/{group_name}/.tokens/")
+
+    username = str(settings.GALENE_ADMIN_USERNAME)
+    password = str(settings.GALENE_ADMIN_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    username = request.user.full_name or getattr(request.user, request.user.USERNAME_FIELD)
+
+    # https://github.com/jech/galene/blob/b40dcd2/galene.md#group-moderation
+    if is_moderator_role(request.user.role) or group_name.startswith("dm/"):
+        # Zulip mods are Galène mods, except in direct-message calls where everyone is equal.
+        permission = "op"
+    else:
+        permission = "present"
+
+    # workaround https://github.com/jech/galene/issues/313
+    permissions = []
+    if permission == "op":
+        permissions = ["op", "present", "message", "caption", "token"]
+    elif permission == "present":
+        permissions = ["present", "message"]
+
+    # invite link expires in 13 minutes, since it should be used immediately (but network problems might delay)
+    # (to get a new one, the user just clicks the /calls/galene/join link again)
+    expires = (
+        (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=13))
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
+
+    payload = {
+        "username": username,
+        "permissions": permissions,
+        "expires": expires,
+    }
+
+    try:
+        response = VideoCallSession().post(token_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        if e.response is not None:
+            logging.error(
+                "Galène API request to %s failed with status %s", token_url, e.response.status_code
+            )
+        else:
+            logging.error("Galène API request to %s failed", token_url)
+        raise JoinVideoCallFailedError("Galène")
+
+    try:
+        # weirdly, the token comes back in the location header instead of
+        # this feels like it will not last
+        token = response.headers["location"]
+        if not token:
+            # treat empty tokens as missing tokens
+            raise KeyError("location")
+    except (AttributeError, KeyError):
+        logging.error("Galène invite token not provided by %s", token_url)
+        raise JoinVideoCallFailedError("Galène")
+
+    call_url = urljoin(settings.GALENE_URL, f"/group/{group_name}/")
+    return redirect(append_url_query_string(call_url, f"token={token}"))
