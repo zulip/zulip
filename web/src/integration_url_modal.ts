@@ -45,6 +45,16 @@ const PresetUrlOption = {
     CHANNEL_MAPPING: "mapping",
 };
 
+export function get_options_for_integration_input_dropdown_widget(): Option[] {
+    const options = realm.realm_incoming_webhook_bots
+        .toSorted((a, b) => util.strcmp(a.display_name, b.display_name))
+        .map((bot) => ({
+            name: bot.display_name,
+            unique_id: bot.name,
+        }));
+    return options;
+}
+
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
@@ -390,16 +400,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
             unique_id_type: "string",
         });
         integration_input_dropdown_widget.setup();
-
-        function get_options_for_integration_input_dropdown_widget(): Option[] {
-            const options = realm.realm_incoming_webhook_bots
-                .toSorted((a, b) => util.strcmp(a.display_name, b.display_name))
-                .map((bot) => ({
-                    name: bot.display_name,
-                    unique_id: bot.name,
-                }));
-            return options;
-        }
 
         function integration_item_click_callback(
             event: JQuery.ClickEvent,
