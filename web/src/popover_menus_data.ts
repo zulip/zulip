@@ -187,14 +187,13 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     // To work around #22893, we also only offer the option if the
     // fetch_status data structure means we'll be able to mark
     // everything below the current message as read correctly.
-    const not_stream_message = message.type !== "stream";
-    const subscribed_to_stream =
-        message.type === "stream" && stream_data.is_subscribed(message.stream_id);
+    const stream_message = message.type === "stream";
+    const subscribed_to_stream = stream_message && stream_data.is_subscribed(message.stream_id);
     const should_display_mark_as_unread =
-        !message.unread && not_spectator && (not_stream_message || subscribed_to_stream);
+        !message.unread && not_spectator && (!stream_message || subscribed_to_stream);
 
     let stream_id;
-    if (!not_stream_message) {
+    if (stream_message) {
         stream_id = message.stream_id;
     }
 
