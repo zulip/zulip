@@ -286,8 +286,7 @@ def send_typing(request: HttpRequest) -> HttpResponse:
             )
 
             logger.debug(
-                f"[nodl-typing] Sent DM {op} notification for user {user_profile.id} "
-                f"to users {to}"
+                f"[nodl-typing] Sent DM {op} notification for user {user_profile.id} to users {to}"
             )
             return json_success(request)
 

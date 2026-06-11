@@ -239,18 +239,16 @@ def list_streams(request: HttpRequest) -> HttpResponse:
 
     task_stream_lookup = {
         extension.zulip_stream_id: extension
-        for extension in NodlTaskStreamExtension.objects.filter(
-            zulip_realm_id=user.realm_id
-        )
+        for extension in NodlTaskStreamExtension.objects.filter(zulip_realm_id=user.realm_id)
     }
     task_stream_ids = set(task_stream_lookup)
 
     task_realm_streams = [
-        s for s in streams
-        if s.realm_id == user.realm_id and s.id in task_stream_ids
+        s for s in streams if s.realm_id == user.realm_id and s.id in task_stream_ids
     ]
     normal_realm_streams = [
-        s for s in streams
+        s
+        for s in streams
         if (
             s.realm_id == user.realm_id
             and s.id not in task_stream_ids
@@ -287,13 +285,10 @@ def list_streams(request: HttpRequest) -> HttpResponse:
             )
             extension = task_stream_lookup.get(stream.id) if is_task_stream else None
             task_title = (
-                extension.task_title.strip()
-                if extension and extension.task_title
-                else None
+                extension.task_title.strip() if extension and extension.task_title else None
             )
             is_archived = bool(
-                (extension and extension.archived_at)
-                or getattr(stream, "deactivated", False)
+                (extension and extension.archived_at) or getattr(stream, "deactivated", False)
             )
             serializer = StreamListSerializer.from_stream_with_unread(
                 stream,
@@ -316,9 +311,7 @@ def list_streams(request: HttpRequest) -> HttpResponse:
     paginated_streams = realm_streams[offset : offset + limit]
     stream_data = serialize_streams(paginated_streams, is_task_stream=False)
     task_stream_data = (
-        serialize_streams(task_realm_streams, is_task_stream=True)
-        if include_task_streams
-        else []
+        serialize_streams(task_realm_streams, is_task_stream=True) if include_task_streams else []
     )
 
     return JsonResponse(
@@ -471,16 +464,12 @@ def get_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
     subscribers = _get_subscribers_for_stream(stream)
 
     if task_extension is None:
-        task_extension = (
-            NodlTaskStreamExtension.objects.filter(
-                zulip_realm_id=user.realm_id,
-                zulip_stream_id=stream.id,
-            ).first()
-        )
+        task_extension = NodlTaskStreamExtension.objects.filter(
+            zulip_realm_id=user.realm_id,
+            zulip_stream_id=stream.id,
+        ).first()
     task_title = (
-        task_extension.task_title.strip()
-        if task_extension and task_extension.task_title
-        else None
+        task_extension.task_title.strip() if task_extension and task_extension.task_title else None
     )
     serializer = StreamSerializer.from_stream(
         stream,
@@ -489,8 +478,7 @@ def get_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
         is_task_stream=task_extension is not None,
         task_id=str(task_extension.nodl_task_id) if task_extension else None,
         is_archived=bool(
-            (task_extension and task_extension.archived_at)
-            or getattr(stream, "deactivated", False)
+            (task_extension and task_extension.archived_at) or getattr(stream, "deactivated", False)
         ),
     )
     return JsonResponse(

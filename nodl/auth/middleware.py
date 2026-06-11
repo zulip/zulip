@@ -129,8 +129,7 @@ class SupabaseJWTMiddleware:
                         request._dont_enforce_csrf_checks = True
                         request.supabase_user_id = f"api_key:{user_profile.id}"
                         logger.info(
-                            f"[nodl-auth] Optional Basic auth success for {email} "
-                            f"on {request.path}"
+                            f"[nodl-auth] Optional Basic auth success for {email} on {request.path}"
                         )
                     except Exception:
                         pass  # Basic auth failed — fall through to anonymous access

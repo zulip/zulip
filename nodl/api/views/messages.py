@@ -64,10 +64,13 @@ def _access_stream_or_archived_task_stream(user: UserProfile, stream_id: int):
             )
             .first()
         )
-        if not task_extension or not Subscription.objects.filter(
-            user_profile=user,
-            recipient=task_extension.zulip_stream.recipient,
-        ).exists():
+        if (
+            not task_extension
+            or not Subscription.objects.filter(
+                user_profile=user,
+                recipient=task_extension.zulip_stream.recipient,
+            ).exists()
+        ):
             raise
         return task_extension.zulip_stream
 
@@ -1615,9 +1618,7 @@ def update_flags_narrow(request: HttpRequest) -> HttpResponse:
             if key in body and key not in request.POST:
                 val = body[key]
                 request.POST[key] = (
-                    json.dumps(val)
-                    if isinstance(val, list | dict | bool)
-                    else str(val)
+                    json.dumps(val) if isinstance(val, list | dict | bool) else str(val)
                 )
 
     from zerver.views.message_flags import update_message_flags_for_narrow
