@@ -36,6 +36,13 @@
 }
 
 #recent_view {
+    /* How much farther right the row grid starts than the header
+       grid; the header widens its first column by this to align. */
+    --recent-view-channel-row-header-minus-body: calc(
+        var(--recent-view-row-left-padding) +
+            var(--recent-view-body-border-width) -
+            var(--recent-view-header-border-width)
+    );
     display: none;
     padding-top: var(--navbar-fixed-height);
     /* Add bottom padding equal to `#bottom-whitespace`. This helps us keep #compose visible
@@ -661,11 +668,6 @@
         cursor: default;
 
         .recent-view-header-wrapper {
-            --recent-view-channel-row-header-minus-body: calc(
-                var(--recent-view-row-left-padding) +
-                    var(--recent-view-body-border-width) -
-                    var(--recent-view-header-border-width)
-            );
             /* Match the row grid so "Channel" and "Conversation" sort
                spans align with channel and topic text in rows. Sort
                arrows are inside the spans, so 3 columns suffice.
