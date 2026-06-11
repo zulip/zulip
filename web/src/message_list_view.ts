@@ -757,6 +757,15 @@ export class MessageListView {
         return undefined;
     }
 
+    get_last_message_historical(): boolean | undefined {
+        // The `historical` flag of the newest rendered message whose flag
+        // is meaningful in this channel, or undefined if there is none.
+        return this._message_groups
+            .flatMap((message_group) => message_group.message_containers)
+            .findLast((message_container) => !was_moved_from_another_channel(message_container.msg))
+            ?.msg.historical;
+    }
+
     build_message_groups(messages: Message[]): MessageGroup[] {
         const new_message_groups: MessageGroup[] = [];
 
@@ -1309,12 +1318,6 @@ export class MessageListView {
 
         restore_scroll_position();
 
-        const last_message_group = this._message_groups.at(-1);
-        if (last_message_group !== undefined) {
-            list.last_message_historical =
-                last_message_group.message_containers.at(-1)!.msg.historical;
-        }
-
         list.update_trailing_bookend();
 
         if (list === message_lists.current) {
@@ -1493,7 +1496,6 @@ export class MessageListView {
         if (clear_table) {
             this.clear_table();
         }
-        this.list.last_message_historical = false;
 
         this._render_win_start = 0;
         this._render_win_end = 0;

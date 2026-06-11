@@ -948,6 +948,74 @@ test("merge_message_groups", ({mock_template}) => {
     })();
 });
 
+test("last_message_historical", () => {
+    // get_last_message_historical() feeds the trailing bookend, which
+    // must infer subscription status from the newest message whose
+    // `historical` flag is meaningful in this channel, skipping
+    // messages moved here from another channel.
+    function build_message_container(message = {}) {
+        return {
+            msg: {
+                id: _.uniqueId("test_message_"),
+                type: "stream",
+                stream_id: 2,
+                ...message,
+            },
+        };
+    }
+
+    function build_list(message_groups) {
+        const list = new MessageListView({id: 1}, true, true);
+        list._message_groups = message_groups;
+        return list;
+    }
+
+    // The newest message's flag is used directly when it is meaningful.
+    let list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: false}),
+                build_message_container({historical: true}),
+            ],
+        },
+    ]);
+    assert.equal(list.get_last_message_historical(), true);
+
+    // Moved messages are skipped, across group boundaries.
+    list = build_list([
+        {message_containers: [build_message_container({historical: false})]},
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 999}]}),
+            ],
+        },
+    ]);
+    assert.equal(list.get_last_message_historical(), false);
+
+    // A message moved back to its original channel has a meaningful flag.
+    list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 2}]}),
+            ],
+        },
+    ]);
+    assert.equal(list.get_last_message_historical(), true);
+
+    // With no meaningful flag at all, the status is unknown.
+    list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 999}]}),
+            ],
+        },
+    ]);
+    assert.equal(list.get_last_message_historical(), undefined);
+
+    list = build_list([]);
+    assert.equal(list.get_last_message_historical(), undefined);
+});
+
 test("render_windows", ({mock_template}) => {
     mock_template("message_list.hbs", false, () => "<message-list-stub>");
     // We only render up to 400 messages at a time in our message list,

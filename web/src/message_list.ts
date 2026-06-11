@@ -115,7 +115,6 @@ export class MessageList {
     near_view_reading_gate_pending: boolean;
 
     // TODO: Clean up these monkey-patched properties somehow.
-    last_message_historical?: boolean;
     should_trigger_message_selected_event?: boolean;
 
     constructor(opts: {
@@ -537,10 +536,11 @@ export class MessageList {
             return;
         }
 
+        const last_message_historical = this.view.get_last_message_historical();
         if (
             sub &&
             sub.subscribed &&
-            !this.last_message_historical &&
+            !last_message_historical &&
             !page_params.is_spectator &&
             !force_render
         ) {
@@ -554,7 +554,7 @@ export class MessageList {
         const is_web_public = sub?.is_web_public;
         if (sub === undefined || sub.is_archived) {
             deactivated = true;
-        } else if (!subscribed && !this.last_message_historical && !this.empty()) {
+        } else if (!subscribed && last_message_historical === false && !this.empty()) {
             just_unsubscribed = true;
         }
 
