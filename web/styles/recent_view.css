@@ -200,7 +200,8 @@
 
     .table_fix_head {
         padding: 0 !important;
-        border: 1px solid var(--color-border-recent-view-table);
+        border: var(--recent-view-header-border-width) solid
+            var(--color-border-recent-view-table);
         border-radius: 5px 5px 0 0;
         overflow: hidden;
     }
@@ -522,7 +523,7 @@
         /* Extra left padding to make room for the unread marker bar
            alongside the keyboard selection outline, applied to all
            rows so content aligns between read and unread rows. */
-        padding-left: 0.75em; /* 12px at 16px/1em */
+        padding-left: var(--recent-view-row-left-padding);
     }
 
     .unread_topic {
@@ -660,9 +661,10 @@
         cursor: default;
 
         .recent-view-header-wrapper {
-            /* 0.75em left padding, 1px header width */
             --recent-view-channel-row-header-minus-body: calc(
-                0.75em + var(--recent-view-body-border-width) - 1px
+                var(--recent-view-row-left-padding) +
+                    var(--recent-view-body-border-width) -
+                    var(--recent-view-header-border-width)
             );
             /* Match the row grid so "Channel" and "Conversation" sort
                spans align with channel and topic text in rows. Sort
