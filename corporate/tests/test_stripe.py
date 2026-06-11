@@ -1029,6 +1029,10 @@ class StripeTest(StripeTestCase):
                 response = self.client_get("/billing/")
 
             self.assert_in_success_response(["You have no outstanding invoices."], response)
+            self.assert_in_success_response(
+                [f"An invoice will be sent to <b>{user.delivery_email}</b> on the same day."],
+                response,
+            )
 
             invoice_plans_as_needed(free_trial_end_date)
             last_renewal_ledger.refresh_from_db()
