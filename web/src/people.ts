@@ -1205,9 +1205,19 @@ export function build_termlet_matcher(termlet: string): (user: User) => boolean 
     // Note: termlets are required to be lower case.
     termlet = termlet.trim();
     const should_remove_diacritics = !typeahead.contains_diacritics(termlet);
+    const is_unspaced = typeahead.has_unspaced_script(termlet);
 
     return function (user: User): boolean {
-        const full_name = maybe_remove_diacritics_from_name(user, should_remove_diacritics);
+        const full_name = maybe_remove_diacritics_from_name(
+            user,
+            should_remove_diacritics,
+        ).toLowerCase();
+
+        // For unspaced scripts (e.g., Han), ignore word boundaries and perform a pure substring match
+        if (is_unspaced) {
+            const name_without_spaces = full_name.replaceAll(/\s+/g, "");
+            return name_without_spaces.includes(termlet);
+        }
 
         const names = full_name.toLowerCase().split(" ");
 
