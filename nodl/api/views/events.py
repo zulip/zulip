@@ -11,6 +11,7 @@ These endpoints must be registered BEFORE Zulip's patterns in urls.py
 so they take precedence over Zulip's HTTP Basic Auth protected endpoints.
 """
 
+import contextlib
 import json
 import logging
 
@@ -208,14 +209,12 @@ def send_typing(request: HttpRequest) -> HttpResponse:
     # Parse parameters from JSON body or form-encoded data (Flutter client)
     body = _get_json_body(request)
     if not body:
-        body = {k: v for k, v in request.POST.items()}
+        body = dict(request.POST.items())
         # Parse JSON-encoded values in form data (e.g., "to" is a JSON array)
         for key in ("to", "stream_id"):
             if key in body and isinstance(body[key], str):
-                try:
+                with contextlib.suppress(json.JSONDecodeError, ValueError):
                     body[key] = json.loads(body[key])
-                except (json.JSONDecodeError, ValueError):
-                    pass
     op = body.get("op")  # 'start' or 'stop'
     msg_type = body.get("type", "stream")  # 'stream' or 'direct'
     stream_id = body.get("stream_id")

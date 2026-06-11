@@ -3,7 +3,7 @@
 import json
 import logging
 import uuid
-from typing import Annotated, TypeVar, cast
+from typing import Annotated, cast
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils import timezone
@@ -27,7 +27,6 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.models import Realm, Stream, Subscription, UserProfile
 
 logger = logging.getLogger(__name__)
-PayloadT = TypeVar("PayloadT", bound=BaseModel)
 
 
 class TaskStreamMemberPayload(BaseModel):
@@ -62,7 +61,9 @@ class TaskStreamArchivePayload(BaseModel):
     task_title: str | None = None
 
 
-def _parse_payload(request: HttpRequest, payload_type: type[PayloadT]) -> PayloadT | JsonResponse:
+def _parse_payload[PayloadT: BaseModel](
+    request: HttpRequest, payload_type: type[PayloadT]
+) -> PayloadT | JsonResponse:
     try:
         body = json.loads(request.body)
         return payload_type(**body)
