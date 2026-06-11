@@ -336,7 +336,7 @@ def build_get_topic_visibility_policy(
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
         visibility_policy = row["visibility_policy"]
-        topic_to_visibility_policy[(recipient_id, topic_name)] = visibility_policy
+        topic_to_visibility_policy[(recipient_id, topic_name.lower())] = visibility_policy
 
     def get_topic_visibility_policy(recipient_id: int, topic_name: str) -> int:
         return topic_to_visibility_policy[(recipient_id, topic_name.lower())]
