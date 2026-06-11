@@ -17,7 +17,6 @@ import {ListCursor} from "./list_cursor.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
-import * as message_viewport from "./message_viewport.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -38,6 +37,25 @@ import * as util from "./util.ts";
 const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
+
+// Toggling a sidebar changes the message feed's max-width, which
+// rewraps text and shifts every row's vertical position. Capture the
+// selected row's viewport offset before the class change and restore
+// it afterwards, so the user's reading position is preserved.
+function preserve_selected_row_offset(toggle: () => void): void {
+    let saved_selected_row_offset: number | undefined;
+    if (message_lists.current !== undefined) {
+        const $selected_row = message_lists.current.selected_row();
+        if ($selected_row.length > 0) {
+            saved_selected_row_offset = $selected_row.get_offset_to_window().top;
+        }
+    }
+    toggle();
+    if (saved_selected_row_offset !== undefined) {
+        assert(message_lists.current !== undefined);
+        message_lists.current.view.set_message_offset(saved_selected_row_offset);
+    }
+}
 
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();
@@ -232,15 +250,9 @@ export function initialize(): void {
         e.stopPropagation();
 
         if (ui_util.matches_viewport_state("gte_md_min")) {
-            $("body").toggleClass("hide-left-sidebar");
-            if (
-                message_lists.current !== undefined &&
-                !ui_util.matches_viewport_state("gte_xl_min")
-            ) {
-                // We expand the middle column width between md and xl breakpoints when the
-                // left sidebar is hidden. This can cause the pointer to move out of view.
-                message_viewport.scroll_to_selected();
-            }
+            preserve_selected_row_offset(() => {
+                $("body").toggleClass("hide-left-sidebar");
+            });
             // We recheck the scrolling-button status of the compose
             // box, which may change for users who've chosen to
             // use full width on wide screens.
