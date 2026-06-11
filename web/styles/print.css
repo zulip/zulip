@@ -1,3 +1,11 @@
+/* The container used by info_overlay.print_current_pane() to print
+   an informational overlay's full scrollable content. Hidden on
+   screen; the @media print rules below display only it. This rule
+   must precede them so that they win in the cascade. */
+#zulip-print-container {
+    display: none;
+}
+
 @media print {
     /* Hide unnecessary blocks. */
     #navbar_alerts_wrapper,
@@ -103,5 +111,37 @@
     .emoji {
         color-adjust: exact;
         print-color-adjust: exact;
+    }
+
+    /* When a print container has been injected, print only it and
+       hide the rest of the app UI. Use :not() to exclude the
+       container itself, since the `display: none !important` here
+       would otherwise beat the container's `display: block` below,
+       regardless of selector specificity. */
+    body:has(#zulip-print-container) > *:not(#zulip-print-container) {
+        display: none !important;
+    }
+
+    #zulip-print-container {
+        display: block;
+
+        /* Print the pane with its on-screen colors. Dark theme is
+           scoped to `@media screen` (see dark_theme.css), so these
+           resolve to light-theme colors regardless of the user's
+           theme. */
+        color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Keep each row's keys and description together across a page
+       break. This also avoids a Firefox bug where a row's borders
+       disappear when it starts at the top of a new printed page. */
+    #zulip-print-container tr {
+        break-inside: avoid;
+    }
+
+    .zulip-print-title {
+        font-size: 1.5714em; /* 22px at 14px/1em */
+        margin: 0 0 12px;
     }
 }
