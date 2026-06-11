@@ -3,11 +3,13 @@ import assert from "minimalistic-assert";
 
 import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
+import render_print_info_overlay from "../templates/print_info_overlay.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 import render_status_message_example from "../templates/status_message_example.hbs";
 import render_poll_widget_example from "../templates/widgets/poll_widget_example.hbs";
 import render_todo_widget_example from "../templates/widgets/todo_widget_example.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
 import * as components from "./components.ts";
@@ -29,6 +31,36 @@ export let toggler: Toggle | undefined;
 
 const mock_sub = {stream_id: 0, name: $t({defaultMessage: "channel name"})};
 const mock_topic = $t({defaultMessage: "topic name"});
+
+export function print_current_pane(): void {
+    const pane_key = toggler?.key();
+    const title = toggler?.value();
+    if (pane_key === undefined || title === undefined) {
+        blueslip.warn("print_current_pane: no active pane found");
+        return;
+    }
+
+    const $pane = $(`#${CSS.escape(pane_key)} .overlay-scroll-container`);
+    if ($pane.length === 0) {
+        blueslip.warn("print_current_pane: scroll container not found", {pane_key});
+        return;
+    }
+
+    // Extract just the pane's content, leaving SimpleBar's wrapper and
+    // scrollbar elements out of the printed DOM.
+    const body_html = scroll_util.get_content_element($pane).html() ?? "";
+    const html = render_print_info_overlay({title, body_html});
+    const $container = $(html);
+    $("body").append($container);
+
+    const after_print = (): void => {
+        $container.remove();
+        window.removeEventListener("afterprint", after_print);
+    };
+    window.addEventListener("afterprint", after_print);
+
+    window.print();
+}
 
 function format_usage_html(...keys: string[]): string {
     return $t_html(
