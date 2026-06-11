@@ -88,6 +88,16 @@ class NodlRealmExtension(models.Model):
     # Reference to nodl workspace (source of truth)
     nodl_workspace_id = models.UUIDField(unique=True)
 
+    # Realm-scoped "nodl Assistant" bot used by the backend to post
+    # AI-generated cards into task streams (Epic 2, Story 2.1 AC3).
+    assistant_bot = models.ForeignKey(
+        UserProfile,
+        on_delete=models.SET_NULL,
+        related_name="assistant_bot_realm_extensions",
+        null=True,
+        blank=True,
+    )
+
     # Telegram configuration
     telegram_enabled = models.BooleanField(default=False)
     telegram_bot_token_encrypted = models.TextField(blank=True, null=True)

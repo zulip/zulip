@@ -80,6 +80,11 @@ class WorkspaceSyncService:
             if is_new_realm:
                 self._create_default_stream(realm)
 
+            # Provision the realm's nodl Assistant bot (idempotent; existing
+            # realms pick it up on their next sync, and the assistant send
+            # endpoint also creates it lazily — no backfill needed).
+            self._ensure_assistant_bot(realm, extension)
+
             # Sync members if provided
             if request.members:
                 self.sync_workspace_members(realm, request.members)
@@ -180,6 +185,18 @@ class WorkspaceSyncService:
             )
 
         return realm
+
+    def _ensure_assistant_bot(self, realm: Realm, extension: NodlRealmExtension) -> None:
+        """Provision the realm's assistant bot; never fail the sync over it."""
+        from nodl.api.views.assistant import ensure_assistant_bot
+
+        try:
+            ensure_assistant_bot(realm, extension)
+        except Exception:
+            logger.exception(
+                "Failed to provision assistant bot for realm %d (sync continues)",
+                realm.id,
+            )
 
     def _create_default_stream(self, realm: Realm) -> None:
         """Create #general stream for new realm.

@@ -3,6 +3,10 @@
 from django.urls import path
 
 from nodl.api.views import deactivate_realm, sync_realm, sync_user
+from nodl.api.views.assistant import (
+    get_task_stream_messages,
+    send_assistant_message,
+)
 from nodl.api.views.events import (
     events_view,
     register_queue,
@@ -72,6 +76,16 @@ urlpatterns = [
         "api/v1/internal/task-streams/archive",
         archive_task_stream,
         name="nodl_archive_task_stream",
+    ),
+    path(
+        "api/v1/internal/task-streams/<uuid:task_id>/messages",
+        get_task_stream_messages,
+        name="nodl_assistant_task_stream_messages",
+    ),
+    path(
+        "api/v1/internal/messages/send",
+        send_assistant_message,
+        name="nodl_assistant_send_message",
     ),
     # User REST API endpoints - authenticated via JWT
     # Presence endpoint - authenticated via JWT
