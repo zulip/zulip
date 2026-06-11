@@ -33,7 +33,6 @@ from zerver.data_import.import_util import (
     build_stream_subscriptions,
     build_user_profile,
     build_zerver_realm,
-    convert_html_to_text,
     create_converted_data_files,
     get_attachment_path_and_content,
     get_domain_name_for_import,
@@ -541,12 +540,6 @@ def process_raw_message_batch(
             content=raw_message["content"],
             mention_user_ids=mention_user_ids,
         )
-
-        try:
-            content = convert_html_to_text(content)
-        except Exception:  # nocoverage
-            logging.warning("Error converting HTML to text for message: '%s'; continuing", content)
-            logging.warning(str(raw_message))
 
         date_sent = raw_message["date_sent"]
         sender_user_id = raw_message["sender_id"]
