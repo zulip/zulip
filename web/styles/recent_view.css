@@ -704,10 +704,8 @@
             align-items: center;
             gap: 4px;
             cursor: pointer;
-            /* Negative margin compensates the padding so the pill hover
-               highlight doesn't push adjacent elements out of alignment. */
+            /* Padding gives the hover pill its size. */
             padding: 0.25em; /* 4px at 16px/1em */
-            margin: 0;
             border-radius: 3px;
             transition: background-color 100ms ease-in-out;
 
@@ -732,10 +730,12 @@
 
         .recent-view-channel-sort-header {
             padding-left: 1em;
-            margin-left: 0;
         }
 
         .recent-view-conversation-sort-header {
+            /* Cancel the pill padding so the label aligns with topic
+               text in rows. */
+            margin-left: -0.25em; /* -4px at 16px/1em */
             /* Prevent hover pill highlight from extending into
                the adjacent unread sort column. */
             margin-right: 0.3125em; /* 5px at 16px/1em */
