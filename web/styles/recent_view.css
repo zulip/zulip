@@ -654,11 +654,6 @@
         cursor: default;
 
         .recent-view-header-wrapper {
-            --recent-view-channel-row-header-minus-body: calc(
-                var(--recent-view-row-left-padding) +
-                    var(--recent-view-body-border-width) -
-                    var(--recent-view-header-border-width)
-            );
             /* Match the row grid so "Channel" and "Conversation" sort
                spans align with channel and topic text in rows. Sort
                arrows are inside the spans, so 3 columns suffice.
@@ -676,13 +671,13 @@
                                 calc(
                                         100% -
                                             var(
-                                                --recent-view-channel-row-header-minus-body
+                                                --recent-view-header-channel-column-adjustment
                                             )
                                     ) /
                                     3
                             )
                         ) +
-                        var(--recent-view-channel-row-header-minus-body)
+                        var(--recent-view-header-channel-column-adjustment)
                 )
                 auto 1fr auto;
             align-items: stretch;
