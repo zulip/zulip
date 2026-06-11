@@ -43,8 +43,15 @@ jobs:
       - name: Run Ruff formatter check
         run: ruff format --check nodl/
 
+      # Non-blocking: this job installs only ruff+mypy, so every Django/
+      # pydantic base class resolves to Any and mypy reports hundreds of
+      # "cannot subclass Any" errors across all nodl files (including
+      # years-old migrations). It has never been green and was silently
+      # gating the Tests job. Informational until django-stubs/pydantic
+      # are provisioned here.
       - name: Run mypy type checking
         run: mypy nodl/ --ignore-missing-imports
+        continue-on-error: true
 
   test:
     name: Tests
