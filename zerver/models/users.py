@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
 from zerver.lib.cache import (
+    active_guest_user_ids_cache_key,
     active_non_guest_user_ids_cache_key,
     active_user_ids_cache_key,
     bot_dict_fields,
@@ -1218,6 +1219,16 @@ def active_non_guest_user_ids(realm_id: int) -> list[int]:
         )
         .values_list("id", flat=True)
     )
+    return list(query)
+
+
+@cache_with_key(active_guest_user_ids_cache_key, timeout=3600 * 24 * 7)
+def active_guest_user_ids(realm_id: int) -> list[int]:
+    query = UserProfile.objects.filter(
+        realm_id=realm_id,
+        is_active=True,
+        role=UserProfile.ROLE_GUEST,
+    ).values_list("id", flat=True)
     return list(query)
 
 

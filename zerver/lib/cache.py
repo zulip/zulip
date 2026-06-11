@@ -564,6 +564,10 @@ def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
     return f"active_non_guest_user_ids:{realm_id}"
 
 
+def active_guest_user_ids_cache_key(realm_id: int) -> str:
+    return f"active_guest_user_ids:{realm_id}"
+
+
 def get_realm_system_groups_cache_key(realm_id: int) -> str:
     return f"realm_system_groups:{realm_id}"
 
@@ -645,9 +649,11 @@ def bulk_flush_users(
     if changed(update_fields, ["is_active"]):
         cache_keys_to_delete.add(active_user_ids_cache_key(realm.id))
         cache_keys_to_delete.add(active_non_guest_user_ids_cache_key(realm.id))
+        cache_keys_to_delete.add(active_guest_user_ids_cache_key(realm.id))
 
     if changed(update_fields, ["role"]):
         cache_keys_to_delete.add(active_non_guest_user_ids_cache_key(realm.id))
+        cache_keys_to_delete.add(active_guest_user_ids_cache_key(realm.id))
 
     # Invalidate our bots_in_realm info dict if any bot has
     # changed the fields in the dict or become (in)active
@@ -706,6 +712,7 @@ def flush_realm(
         cache_delete(realm_alert_words_cache_key(realm.id))
         cache_delete(realm_alert_words_automaton_cache_key(realm.id))
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
+        cache_delete(active_guest_user_ids_cache_key(realm.id))
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
     elif changed(update_fields, ["description"]):

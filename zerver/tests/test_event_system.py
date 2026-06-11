@@ -17,6 +17,7 @@ from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
+from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
@@ -608,6 +609,166 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertEqual(message["avatar_url"], None)
 
+    def test_get_events_guest_narrow_unsubscribed_stream(self) -> None:
+        guest = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        self.login_user(guest)
+
+        stream_name = "public_events_stream"
+        self.subscribe(hamlet, stream_name)
+
+        result = self.tornado_call(
+            get_events,
+            guest,
+            dict(
+                apply_markdown=orjson.dumps(True).decode(),
+                client_gravatar=orjson.dumps(True).decode(),
+                event_types=orjson.dumps(["message"]).decode(),
+                narrow=orjson.dumps([["stream", stream_name]]).decode(),
+                user_client="website",
+                dont_block=orjson.dumps(True).decode(),
+            ),
+        )
+        self.assert_json_success(result)
+        queue_id = orjson.loads(result.content)["queue_id"]
+
+        def get_events_for_queue() -> list[dict[str, Any]]:
+            result = self.tornado_call(
+                get_events,
+                guest,
+                {
+                    "queue_id": queue_id,
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+            self.assert_json_success(result)
+            return orjson.loads(result.content)["events"]
+
+        # A guest does not receive events for messages in a public
+        # channel they are not subscribed to, even with a narrow
+        # matching the message.
+        self.send_stream_message(hamlet, stream_name, "secret message")
+        self.assert_length(get_events_for_queue(), 0)
+
+        # Once subscribed, the guest receives message events.
+        self.subscribe(guest, stream_name)
+        self.send_stream_message(hamlet, stream_name, "public message")
+        events = get_events_for_queue()
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["content"], "<p>public message</p>")
+
+    def test_get_events_guest_narrow_unsubscribed_web_public_stream(self) -> None:
+        guest = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        self.login_user(guest)
+
+        stream_name = "web_public_events_stream"
+        self.make_stream(stream_name, guest.realm, is_web_public=True)
+        self.subscribe(hamlet, stream_name)
+
+        result = self.tornado_call(
+            get_events,
+            guest,
+            dict(
+                apply_markdown=orjson.dumps(True).decode(),
+                client_gravatar=orjson.dumps(True).decode(),
+                event_types=orjson.dumps(["message"]).decode(),
+                narrow=orjson.dumps([["stream", stream_name]]).decode(),
+                user_client="website",
+                dont_block=orjson.dumps(True).decode(),
+            ),
+        )
+        self.assert_json_success(result)
+        queue_id = orjson.loads(result.content)["queue_id"]
+
+        # A guest can read web-public channels without subscribing.
+        self.send_stream_message(hamlet, stream_name, "web-public message")
+        result = self.tornado_call(
+            get_events,
+            guest,
+            {
+                "queue_id": queue_id,
+                "user_client": "website",
+                "last_event_id": -1,
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        events = orjson.loads(result.content)["events"]
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["content"], "<p>web-public message</p>")
+
+    def test_get_events_all_public_streams_after_guest_demotion(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        self.assertFalse(hamlet.is_guest)
+        self.login_user(hamlet)
+
+        stream_name = "public_events_stream"
+        self.subscribe(iago, stream_name)
+
+        result = self.tornado_call(
+            get_events,
+            hamlet,
+            dict(
+                apply_markdown=orjson.dumps(True).decode(),
+                client_gravatar=orjson.dumps(True).decode(),
+                event_types=orjson.dumps(["message"]).decode(),
+                all_public_streams=orjson.dumps(True).decode(),
+                user_client="website",
+                dont_block=orjson.dumps(True).decode(),
+            ),
+        )
+        self.assert_json_success(result)
+        queue_id = orjson.loads(result.content)["queue_id"]
+
+        last_event_id = -1
+
+        def get_new_events() -> list[dict[str, Any]]:
+            nonlocal last_event_id
+            result = self.tornado_call(
+                get_events,
+                hamlet,
+                {
+                    "queue_id": queue_id,
+                    "user_client": "website",
+                    "last_event_id": last_event_id,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+            self.assert_json_success(result)
+            events = orjson.loads(result.content)["events"]
+            if events:
+                last_event_id = events[-1]["id"]
+            return events
+
+        # As a member with an `all_public_streams` queue, hamlet
+        # receives messages for public channels he is not subscribed
+        # to.
+        self.send_stream_message(iago, stream_name, "member message")
+        events = get_new_events()
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]["message"]["content"], "<p>member message</p>")
+
+        # After hamlet's role is changed to guest, the same queue no
+        # longer receives messages for public channels he is not
+        # subscribed to.
+        do_change_user_role(hamlet, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
+        self.send_stream_message(iago, stream_name, "secret message")
+        self.assert_length(get_new_events(), 0)
+
+        # Once subscribed, the guest receives message events again.
+        self.subscribe(hamlet, stream_name)
+        self.send_stream_message(iago, stream_name, "subscribed message")
+        events = get_new_events()
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["content"], "<p>subscribed message</p>")
+
     def test_bogus_queue_id(self) -> None:
         user = self.example_user("hamlet")
 
@@ -973,6 +1134,127 @@ class ClientDescriptorsTest(ZulipTestCase):
         )
         dct = client_info[client.event_queue.id]
         self.assertEqual(dct["is_sender"], True)
+
+    def test_get_client_info_for_narrow_guest(self) -> None:
+        polonius = self.example_user("polonius")
+        realm = polonius.realm
+
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=polonius.id,
+            narrow=[["stream", "whatever"]],
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        # A guest's client in realm_clients_all_streams is skipped,
+        # identified via `realm_guest_user_ids`.
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name="whatever",
+            realm_guest_user_ids=[polonius.id],
+        )
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+        self.assert_length(client_info, 0)
+
+        # As a subscriber, the guest user instead receives the event
+        # via `users`, with their user-specific flags.
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[dict(id=polonius.id, flags=["mentioned"])],
+        )
+        self.assert_length(client_info, 1)
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct["client"].user_profile_id, polonius.id)
+        self.assertEqual(dct["flags"], ["mentioned"])
+
+    def test_get_client_info_for_all_public_streams_guest(self) -> None:
+        polonius = self.example_user("polonius")
+        realm = polonius.realm
+
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=polonius.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        # A guest's client in realm_clients_all_streams is skipped,
+        # identified via `realm_guest_user_ids`.
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name="whatever",
+            realm_guest_user_ids=[polonius.id],
+        )
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+        self.assert_length(client_info, 0)
+
+        # As a subscriber, the guest user instead receives the event
+        # via `users`, with their user-specific flags.
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[dict(id=polonius.id, flags=["mentioned"])],
+        )
+        self.assert_length(client_info, 1)
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct["client"].user_profile_id, polonius.id)
+        self.assertEqual(dct["flags"], ["mentioned"])
+
+    def test_get_client_info_for_all_public_streams_guest_web_public(self) -> None:
+        polonius = self.example_user("polonius")
+        realm = polonius.realm
+
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=polonius.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        # For a web-public channel, a guest's client in
+        # realm_clients_all_streams is not skipped, since guests can
+        # read web-public channels without subscribing.
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name="whatever",
+            is_web_public=True,
+            realm_guest_user_ids=[polonius.id],
+        )
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+        self.assert_length(client_info, 1)
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct["client"].user_profile_id, polonius.id)
+        self.assertEqual(dct["flags"], [])
 
     def test_get_client_info_for_normal_users(self) -> None:
         hamlet = self.example_user("hamlet")
