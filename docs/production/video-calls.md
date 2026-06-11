@@ -10,6 +10,7 @@ supported by Zulip are:
 - [Zoom](https://zulip.com/integrations/zoom)
 - [BigBlueButton](https://zulip.com/integrations/big-blue-button)
 - [Constructor Groups](https://zulip.com/integrations/constructor-groups)
+- [Galene](https://zulip.com/integrations/galene)
 - [Nextcloud Talk](https://zulip.com/integrations/nextcloud-talk)
 - [Webex](https://zulip.com/integrations/category/video-calling)
 
@@ -188,6 +189,12 @@ To use the [Constructor Groups](https://constructor.tech/products/learning/group
 video call integration on a self-hosted Zulip installation, you'll need to
 have a Constructor Groups account. See documentation to configure the Constructor
 Groups video call integration [here](https://zulip.com/integrations/constructor-groups).
+
+## Galène
+
+To use the [Galène](https://galene.org) video call integration on a self-hosted
+Zulip installation, you'll need to have an admin password to a Galène instance.
+See the guide [here](https://zulip.com/integrations/galene).
 
 ## Nextcloud Talk
 
