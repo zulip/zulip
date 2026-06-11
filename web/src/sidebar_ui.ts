@@ -564,9 +564,6 @@ function all_rows(): JQuery {
     const $collapsed_channels = $(
         ".stream-list-section-container.collapsed .narrow-filter:not(.stream-expanded) .bottom_left_row",
     );
-    const $hidden_topic_rows = $(
-        ".stream-list-section-container.collapsed .topic-list-item:not(.active-sub-filter).bottom_left_row",
-    );
 
     // Exclude toggle inactive / muted channels row from the list of rows if user is searching.
     const $toggle_inactive_or_muted_channels_row = $(
@@ -577,7 +574,6 @@ function all_rows(): JQuery {
         .not($inactive_or_muted_rows)
         .not($collapsed_views)
         .not($collapsed_channels)
-        .not($hidden_topic_rows)
         .not($toggle_inactive_or_muted_channels_row);
 }
 
