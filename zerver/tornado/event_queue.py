@@ -1109,7 +1109,13 @@ def get_client_info_for_message_event(
     # bots) that are registered to get events for ALL streams.
     if "stream_name" in event_template and not event_template.get("invite_only"):
         realm_id = event_template["realm_id"]
+        is_web_public = event_template.get("is_web_public", False)
+        realm_guest_user_ids = set(event_template.get("realm_guest_user_ids", []))
         for client in get_client_descriptors_for_realm_all_streams(realm_id):
+            # Guest users cannot access non-subscribed non web-public
+            # channels.
+            if not is_web_public and client.user_profile_id in realm_guest_user_ids:
+                continue
             send_to_clients[client.event_queue.id] = dict(
                 client=client,
                 flags=[],
