@@ -6,6 +6,7 @@ from nodl.api.views import deactivate_realm, sync_realm, sync_user
 from nodl.api.views.assistant import (
     get_task_stream_messages,
     send_assistant_message,
+    update_assistant_card,
 )
 from nodl.api.views.events import (
     events_view,
@@ -86,6 +87,11 @@ urlpatterns = [
         "api/v1/internal/messages/send",
         send_assistant_message,
         name="nodl_assistant_send_message",
+    ),
+    path(
+        "api/v1/internal/messages/<int:message_id>/update-card",
+        update_assistant_card,
+        name="nodl_assistant_update_card",
     ),
     # User REST API endpoints - authenticated via JWT
     # Presence endpoint - authenticated via JWT

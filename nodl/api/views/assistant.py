@@ -18,6 +18,7 @@ import logging
 import uuid
 from typing import Any, cast
 
+from django.db import transaction
 from django.db.models import Max
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -34,9 +35,13 @@ from nodl.extensions.models import (
     NodlTaskStreamExtension,
 )
 from zerver.actions.create_user import do_create_user
+from zerver.actions.message_edit import do_update_message
 from zerver.actions.message_send import check_send_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.markdown import render_message_markdown
+from zerver.lib.mention import MentionBackend, MentionData
+from zerver.lib.types import StreamMessageEditRequest
 from zerver.models import Message, Realm, Subscription, UserProfile
 from zerver.models.clients import get_client
 
@@ -53,6 +58,14 @@ class AssistantSendPayload(BaseModel):
     content: str
     card_type: str | None = None
     card_payload: dict[str, Any] | None = None
+
+
+class AssistantUpdateCardPayload(BaseModel):
+    workspace_id: str
+    task_id: str
+    content: str
+    card_type: str
+    card_payload: dict[str, Any]
 
 
 def _assistant_bot_email(realm: Realm) -> str:
@@ -195,10 +208,12 @@ def get_task_stream_messages(request: HttpRequest, task_id: uuid.UUID) -> HttpRe
         for message in page
     ]
 
-    latest_human_anchor = (
-        stream_messages.exclude(sender__is_bot=True).aggregate(Max("id"))["id__max"] or 0
-    )
-    last_edit_time = stream_messages.aggregate(Max("last_edit_time"))["last_edit_time__max"]
+    human_messages = stream_messages.exclude(sender__is_bot=True)
+    latest_human_anchor = human_messages.aggregate(Max("id"))["id__max"] or 0
+    # Human messages only, like the anchor: bot card rewrites (e.g. a
+    # check-in flipping to its answered state) are system bookkeeping and
+    # must not look like pre-anchor edits to AD-10 staleness checks.
+    last_edit_time = human_messages.aggregate(Max("last_edit_time"))["last_edit_time__max"]
 
     return JsonResponse(
         {
@@ -328,5 +343,150 @@ def send_assistant_message(request: HttpRequest) -> HttpResponse:
         logger.exception("assistant_send_failed")
         return JsonResponse(
             {"result": "error", "code": "SEND_FAILED", "msg": str(exc)},
+            status=500,
+        )
+
+
+@csrf_exempt  # type: ignore[untyped-decorator]
+@require_service_auth  # type: ignore[untyped-decorator]
+def update_assistant_card(request: HttpRequest, message_id: int) -> HttpResponse:
+    """Re-encode an assistant card message in place (review fix #2).
+
+    POST /api/v1/internal/messages/<message_id>/update-card
+    Body: {workspace_id, task_id, content, card_type, card_payload}
+
+    Used to make check-in cards durable: after a participant responds, the
+    backend rewrites the original card payload (status=responded) so every
+    client renders the answered state after reload — not just the local
+    component that clicked the button. Only messages sent by the realm's
+    assistant bot in the task's own stream can be updated.
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
+            status=405,
+        )
+
+    try:
+        payload = AssistantUpdateCardPayload(**json.loads(request.body))
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"result": "error", "code": "INVALID_JSON", "msg": "Invalid JSON body"},
+            status=400,
+        )
+    except ValidationError as exc:
+        return JsonResponse(
+            {"result": "error", "code": "VALIDATION_ERROR", "msg": str(exc)},
+            status=400,
+        )
+
+    try:
+        task_uuid = uuid.UUID(payload.task_id)
+    except ValueError:
+        return JsonResponse(
+            {"result": "error", "code": "VALIDATION_ERROR", "msg": "Invalid task_id"},
+            status=400,
+        )
+
+    extension = _get_task_stream_extension(task_uuid, payload.workspace_id)
+    if extension is None:
+        return JsonResponse(
+            {"result": "error", "code": "TASK_STREAM_NOT_FOUND", "msg": "Task stream not found"},
+            status=404,
+        )
+
+    try:
+        content = build_card_message_content(
+            payload.card_type, payload.card_payload, payload.content
+        )
+    except (UnknownCardTypeError, ValidationError) as exc:
+        return JsonResponse(
+            {"result": "error", "code": "INVALID_CARD", "msg": str(exc)},
+            status=400,
+        )
+
+    try:
+        realm = extension.zulip_realm
+        stream = extension.zulip_stream
+        realm_extension = NodlRealmExtension.objects.select_related("assistant_bot").get(
+            zulip_realm=realm
+        )
+        bot = ensure_assistant_bot(realm, realm_extension)
+
+        with transaction.atomic():
+            message = (
+                Message.objects.select_for_update()
+                .select_related("sender", "recipient")
+                .filter(
+                    id=message_id,
+                    realm_id=realm.id,
+                    recipient_id=stream.recipient_id,
+                )
+                .first()
+            )
+            if message is None:
+                return JsonResponse(
+                    {"result": "error", "code": "MESSAGE_NOT_FOUND", "msg": "Message not found"},
+                    status=404,
+                )
+            if message.sender_id != bot.id:
+                return JsonResponse(
+                    {
+                        "result": "error",
+                        "code": "FORBIDDEN",
+                        "msg": "Only assistant bot messages can be updated",
+                    },
+                    status=403,
+                )
+
+            rendering_result = render_message_markdown(
+                message=message,
+                content=content,
+                realm=realm,
+            )
+            edit_request = StreamMessageEditRequest(
+                is_content_edited=True,
+                is_topic_edited=False,
+                is_stream_edited=False,
+                is_message_moved=False,
+                topic_resolved=False,
+                topic_unresolved=False,
+                content=content,
+                target_topic_name=message.topic_name(),
+                target_stream=stream,
+                orig_content=message.content,
+                orig_topic_name=message.topic_name(),
+                orig_stream=stream,
+                propagate_mode="change_one",
+            )
+            mention_backend = MentionBackend(realm.id)
+            mention_data = MentionData(mention_backend, content, bot)
+
+            do_update_message(
+                user_profile=bot,
+                target_message=message,
+                message_edit_request=edit_request,
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                rendering_result=rendering_result,
+                prior_mention_user_ids=set(),
+                mention_data=mention_data,
+            )
+
+        return JsonResponse({"result": "success", "message_id": message_id}, status=200)
+    except NodlRealmExtension.DoesNotExist:
+        return JsonResponse(
+            {"result": "error", "code": "REALM_NOT_FOUND", "msg": "Workspace realm not found"},
+            status=404,
+        )
+    except JsonableError as exc:
+        return JsonResponse(
+            {"result": "error", "code": "UPDATE_FAILED", "msg": str(exc)},
+            status=400,
+        )
+    except Exception as exc:
+        logger.exception("assistant_card_update_failed")
+        return JsonResponse(
+            {"result": "error", "code": "UPDATE_FAILED", "msg": str(exc)},
             status=500,
         )

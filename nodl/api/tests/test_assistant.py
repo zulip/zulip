@@ -264,3 +264,120 @@ class TestSendAssistantMessage(TestCase):
         self.assertIn("Assessment: on track.", sent_content)
         self.assertEqual(mock_send.call_args.kwargs["sender"], bot)
         self.assertEqual(mock_send.call_args.kwargs["message_to"], [42])
+
+
+class TestUpdateAssistantCard(TestCase):
+    def setUp(self) -> None:
+        self.factory = RequestFactory()
+        self.payload = {
+            "workspace_id": str(uuid.uuid4()),
+            "task_id": str(uuid.uuid4()),
+            "content": "**Check-in**: answered",
+            "card_type": "checkin",
+            "card_payload": {
+                "checkin_id": str(uuid.uuid4()),
+                "task_id": str(uuid.uuid4()),
+                "workspace_id": str(uuid.uuid4()),
+                "rule": "deadline_approaching",
+                "question": "Is this task on track?",
+                "status": "responded",
+                "response": "blocked",
+            },
+        }
+
+    def _request(self, payload: dict, message_id: int = 77):
+        request = self.factory.post(
+            f"/api/v1/internal/messages/{message_id}/update-card",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        request.is_service_request = True
+        return request
+
+    def test_requires_service_auth(self) -> None:
+        from nodl.api.views.assistant import update_assistant_card
+
+        request = self.factory.post("/api/v1/internal/messages/77/update-card")
+        request.is_service_request = False
+
+        self.assertEqual(update_assistant_card(request, 77).status_code, 401)
+
+    @patch("nodl.api.views.assistant._get_task_stream_extension", return_value=None)
+    def test_unknown_task_is_404(self, _mock_ext: MagicMock) -> None:
+        from nodl.api.views.assistant import update_assistant_card
+
+        response = update_assistant_card(self._request(self.payload), 77)
+
+        self.assertEqual(response.status_code, 404)
+
+    @patch("nodl.api.views.assistant.do_update_message")
+    @patch("nodl.api.views.assistant.MentionData")
+    @patch("nodl.api.views.assistant.MentionBackend")
+    @patch("nodl.api.views.assistant.render_message_markdown")
+    @patch("nodl.api.views.assistant.Message.objects")
+    @patch("nodl.api.views.assistant.ensure_assistant_bot")
+    @patch("nodl.api.views.assistant.NodlRealmExtension.objects")
+    @patch("nodl.api.views.assistant.transaction.atomic")
+    @patch("nodl.api.views.assistant._get_task_stream_extension")
+    def test_rewrites_card_as_bot(
+        self,
+        mock_get_extension: MagicMock,
+        mock_atomic: MagicMock,
+        mock_realm_ext_objects: MagicMock,
+        mock_ensure_bot: MagicMock,
+        mock_message_objects: MagicMock,
+        mock_render: MagicMock,
+        _mock_backend: MagicMock,
+        _mock_mention: MagicMock,
+        mock_update: MagicMock,
+    ) -> None:
+        from nodl.api.views.assistant import update_assistant_card
+
+        mock_atomic.return_value.__enter__ = MagicMock()
+        mock_atomic.return_value.__exit__ = MagicMock(return_value=False)
+        extension = MagicMock()
+        extension.zulip_stream = MagicMock(recipient_id=7)
+        mock_get_extension.return_value = extension
+        bot = MagicMock(id=99)
+        mock_ensure_bot.return_value = bot
+        message = MagicMock(sender_id=99, content="old")
+        message.topic_name.return_value = "task"
+        lookup = mock_message_objects.select_for_update.return_value.select_related.return_value.filter.return_value
+        lookup.first.return_value = message
+
+        response = update_assistant_card(self._request(self.payload), 77)
+
+        self.assertEqual(response.status_code, 200, response.content)
+        sent_content = mock_update.call_args.kwargs["message_edit_request"].content
+        self.assertTrue(sent_content.startswith("<!-- nodl-card:v1:"))
+        self.assertIn("**Check-in**: answered", sent_content)
+        self.assertEqual(mock_update.call_args.kwargs["user_profile"], bot)
+
+    @patch("nodl.api.views.assistant.transaction.atomic")
+    @patch("nodl.api.views.assistant.NodlRealmExtension.objects")
+    @patch("nodl.api.views.assistant.ensure_assistant_bot")
+    @patch("nodl.api.views.assistant.Message.objects")
+    @patch("nodl.api.views.assistant._get_task_stream_extension")
+    def test_rejects_non_bot_messages(
+        self,
+        mock_get_extension: MagicMock,
+        mock_message_objects: MagicMock,
+        mock_ensure_bot: MagicMock,
+        _mock_realm_ext: MagicMock,
+        mock_atomic: MagicMock,
+    ) -> None:
+        from nodl.api.views.assistant import update_assistant_card
+
+        mock_atomic.return_value.__enter__ = MagicMock()
+        mock_atomic.return_value.__exit__ = MagicMock(return_value=False)
+        extension = MagicMock()
+        extension.zulip_stream = MagicMock(recipient_id=7)
+        mock_get_extension.return_value = extension
+        mock_ensure_bot.return_value = MagicMock(id=99)
+        human_message = MagicMock(sender_id=11)
+        lookup = mock_message_objects.select_for_update.return_value.select_related.return_value.filter.return_value
+        lookup.first.return_value = human_message
+
+        response = update_assistant_card(self._request(self.payload), 77)
+
+        self.assertEqual(response.status_code, 403)
