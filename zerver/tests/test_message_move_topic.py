@@ -424,6 +424,97 @@ class MessageMoveTopicTest(ZulipTestCase):
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
     @mock.patch("zerver.actions.user_topics.send_event_on_commit")
+    def test_case_only_topic_rename_preserves_visibility_policy(
+        self, mock_send_event_on_commit: mock.MagicMock
+    ) -> None:
+        # Renaming a topic with only a case change is, for matching
+        # purposes, the same topic; each user's visibility policy must
+        # survive the rename rather than being reset to inherit.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        stream = self.make_stream("case rename stream")
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(cordelia, stream.name)
+        self.login_user(hamlet)
+
+        message_id = self.send_stream_message(hamlet, stream.name, topic_name="Test Topic")
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, "Test Topic", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, "Test Topic", visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        mock_send_event_on_commit.reset_mock()
+
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {"topic": "test topic", "propagate_mode": "change_all"},
+        )
+        self.assert_json_success(result)
+
+        # Each affected user is notified just like for a regular move: a
+        # user_topic event removing the old row, one adding the row under
+        # the new casing, and a muted_topics event with the full updated
+        # set of muted topics.
+        user_topic_events: dict[int, list[tuple[str, int]]] = {hamlet.id: [], cordelia.id: []}
+        muted_topics_events: dict[int, list[list[list[str | int]]]] = {
+            hamlet.id: [],
+            cordelia.id: [],
+        }
+        for call_args in mock_send_event_on_commit.call_args_list:
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
+            [notified_user_id] = arg_notified_users
+            if arg_event["type"] == "user_topic":
+                self.assertEqual(arg_event["stream_id"], stream.id)
+                user_topic_events[notified_user_id].append(
+                    (arg_event["topic_name"], arg_event["visibility_policy"])
+                )
+            elif arg_event["type"] == "muted_topics":
+                muted_topics_events[notified_user_id].append(arg_event["muted_topics"])
+        self.assertEqual(
+            user_topic_events[hamlet.id],
+            [
+                ("Test Topic", UserTopic.VisibilityPolicy.INHERIT),
+                ("test topic", UserTopic.VisibilityPolicy.MUTED),
+            ],
+        )
+        self.assertEqual(
+            user_topic_events[cordelia.id],
+            [
+                ("Test Topic", UserTopic.VisibilityPolicy.INHERIT),
+                ("test topic", UserTopic.VisibilityPolicy.FOLLOWED),
+            ],
+        )
+        self.assertEqual(muted_topics_events[hamlet.id], [[[stream.name, "test topic", mock.ANY]]])
+        self.assertEqual(muted_topics_events[cordelia.id], [[]])
+
+        # The policies survive and still apply to the renamed topic
+        # (matched case-insensitively).
+        self.assertTrue(
+            topic_has_visibility_policy(
+                hamlet, stream.id, "test topic", UserTopic.VisibilityPolicy.MUTED
+            )
+        )
+        self.assertTrue(
+            topic_has_visibility_policy(
+                cordelia, stream.id, "test topic", UserTopic.VisibilityPolicy.FOLLOWED
+            )
+        )
+        # The stored topic name is updated to the new casing, and no row
+        # is duplicated or lost.
+        self.assertEqual(
+            sorted(
+                UserTopic.objects.filter(stream_id=stream.id).values_list(
+                    "topic_name", "visibility_policy"
+                )
+            ),
+            [
+                ("test topic", UserTopic.VisibilityPolicy.MUTED),
+                ("test topic", UserTopic.VisibilityPolicy.FOLLOWED),
+            ],
+        )
+
+    @mock.patch("zerver.actions.user_topics.send_event_on_commit")
     def test_edit_muted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
