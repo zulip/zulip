@@ -24,6 +24,26 @@ import type {Filter} from "./filter";
 import * as focus_outline_util from "./focus_outline_util.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import {
+    COLUMNS,
+    CONVERSATION_ID_PREFIX,
+    type ChannelFolderContext,
+    type DirectMessageContext,
+    type FolderStreamRowsContext,
+    OTHER_CHANNELS_FOLDER_ID,
+    PINNED_CHANNEL_FOLDER_ID,
+    STREAM_HEADER_PREFIX,
+    type StreamContext,
+    type TopicContext,
+    channel_folder_context_properties,
+    direct_message_context_properties,
+    get_channel_folder_header_id,
+    get_channel_folder_id,
+    get_stream_key,
+    get_topic_key,
+    stream_context_properties,
+    topic_context_properties,
+} from "./inbox_data.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
@@ -54,163 +74,13 @@ import * as user_topics_ui from "./user_topics_ui.ts";
 import * as util from "./util.ts";
 import * as views_util from "./views_util.ts";
 
-type DirectMessageContext = {
-    conversation_key: string;
-    is_direct: boolean;
-    rendered_dm_with_html: string;
-    is_group: boolean;
-    user_circle_class: string | false | undefined;
-    is_bot: boolean;
-    dm_url: string;
-    user_ids_string: string;
-    unread_count: number;
-    is_hidden: boolean;
-    is_collapsed: boolean;
-    latest_msg_id: number;
-    column_indexes: typeof COLUMNS;
-    has_unread_mention: boolean;
-};
-
-const direct_message_context_properties: (keyof DirectMessageContext)[] = [
-    "conversation_key",
-    "is_direct",
-    "rendered_dm_with_html",
-    "is_group",
-    "user_circle_class",
-    "is_bot",
-    "dm_url",
-    "user_ids_string",
-    "unread_count",
-    "is_hidden",
-    "is_collapsed",
-    "latest_msg_id",
-    "column_indexes",
-];
-
-type StreamContext = {
-    is_stream: boolean;
-    is_archived: boolean;
-    invite_only: boolean;
-    is_web_public: boolean;
-    stream_name: string;
-    pin_to_top: boolean;
-    is_muted: boolean;
-    stream_color: string;
-    stream_header_color: string;
-    stream_url: string;
-    stream_id: number;
-    is_hidden: boolean;
-    is_collapsed: boolean;
-    mention_in_unread: boolean;
-    unread_count?: number;
-    column_indexes: typeof COLUMNS;
-    folder_id: number;
-};
-
-const stream_context_properties: (keyof StreamContext)[] = [
-    "is_stream",
-    "invite_only",
-    "is_web_public",
-    "stream_name",
-    "pin_to_top",
-    "is_muted",
-    "stream_color",
-    "stream_header_color",
-    "stream_url",
-    "stream_id",
-    "is_hidden",
-    "is_collapsed",
-    "mention_in_unread",
-    "unread_count",
-    "column_indexes",
-];
-
-type TopicContext = {
-    is_topic: boolean;
-    stream_id: number;
-    stream_archived: boolean;
-    topic_name: string;
-    topic_display_name: string;
-    is_empty_string_topic: boolean;
-    unread_count: number;
-    conversation_key: string;
-    topic_url: string;
-    is_hidden: boolean;
-    is_collapsed: boolean;
-    mention_in_unread: boolean;
-    latest_msg_id: number;
-    all_visibility_policies: typeof user_topics.all_visibility_policies;
-    visibility_policy: number | false;
-    column_indexes: typeof COLUMNS;
-    channel_folder_id?: number;
-};
-
-const topic_context_properties: (keyof TopicContext)[] = [
-    "is_topic",
-    "stream_id",
-    "stream_archived",
-    "topic_name",
-    "topic_display_name",
-    "is_empty_string_topic",
-    "unread_count",
-    "conversation_key",
-    "topic_url",
-    "is_hidden",
-    "is_collapsed",
-    "mention_in_unread",
-    "latest_msg_id",
-    "all_visibility_policies",
-    "visibility_policy",
-    "column_indexes",
-    "channel_folder_id",
-];
-
-type ChannelFolderContext = {
-    header_id: string;
-    is_header_visible: boolean;
-    name: string;
-    id: number;
-    unread_count: number | undefined;
-    is_collapsed: boolean;
-    has_unread_mention: boolean;
-    order: number;
-};
-
-type FolderStreamRowsContext = {
-    stream_key: string;
-    stream_row: StreamContext;
-    topic_rows: TopicContext[];
-};
-
-const channel_folder_context_properties: (keyof ChannelFolderContext)[] = [
-    "header_id",
-    "is_header_visible",
-    "name",
-    "id",
-    "unread_count",
-    "is_collapsed",
-    "has_unread_mention",
-];
-
 let dms_dict = new Map<string, DirectMessageContext>();
 let topics_dict = new Map<string, Map<string, TopicContext>>();
 let streams_dict = new Map<string, StreamContext>();
-const OTHER_CHANNELS_FOLDER_ID = -1;
-const OTHER_CHANNEL_HEADER_ID = "inbox-channels-no-folder-header";
-const CHANNEL_FOLDER_HEADER_ID_PREFIX = "inbox-channel-folder-header-";
-const PINNED_CHANNEL_FOLDER_ID = -2;
-const PINNED_CHANNEL_HEADER_ID = "inbox-channels-pinned-folder-header";
 let channel_folders_dict = new Map<number, ChannelFolderContext>();
 let update_triggered_by_user = false;
 let filters_dropdown_widget;
 let channel_view_topic_widget: InboxTopicListWidget | undefined;
-
-const COLUMNS = {
-    FULL_ROW: 0,
-    UNREAD_COUNT: 1,
-    TOPIC_VISIBILITY: 2,
-    ACTION_MENU: 3,
-};
 
 const DEFAULT_ROW_FOCUS = 0;
 const DEFAULT_COL_FOCUS = COLUMNS.FULL_ROW;
@@ -251,9 +121,6 @@ const INBOX_FILTERS_DROPDOWN_ID = "inbox-filter_widget";
 // This tracks the current navigation element / area
 // that user is in, it may not be the same as the focused element.
 export let current_navigated_id: string | undefined;
-
-const STREAM_HEADER_PREFIX = "inbox-stream-header-";
-const CONVERSATION_ID_PREFIX = "inbox-row-conversation-";
 
 const LEFT_NAVIGATION_KEYS = ["left_arrow", "vim_left"];
 const RIGHT_NAVIGATION_KEYS = ["right_arrow", "vim_right"];
@@ -427,17 +294,6 @@ export function hide(): void {
     inbox_util.set_filter(undefined);
 }
 
-function get_topic_key(stream_id: number, topic: string): string {
-    // Topic names are case-preserving for display, but case insensitive
-    // otherwise. We convert the topic key to lowercase to ensure that
-    // topic keys with different casing are not treated differently.
-    return stream_id + ":" + topic.toLowerCase();
-}
-
-function get_stream_key(stream_id: number): string {
-    return "stream_" + stream_id;
-}
-
 function get_stream_container(stream_key: string): JQuery {
     return $(`#${CSS.escape(stream_key)}`);
 }
@@ -572,19 +428,6 @@ function rerender_dm_inbox_row_if_needed(
     }
 }
 
-function get_channel_folder_id(info: {folder_id: number | null; is_pinned: boolean}): number {
-    if (info.is_pinned) {
-        return PINNED_CHANNEL_FOLDER_ID;
-    }
-    if (info.folder_id === null) {
-        return OTHER_CHANNELS_FOLDER_ID;
-    }
-    if (!user_settings.web_inbox_show_channel_folders) {
-        return OTHER_CHANNELS_FOLDER_ID;
-    }
-    return info.folder_id;
-}
-
 function format_stream(stream_id: number): StreamContext {
     // NOTE: Unread count is not included in this function as it is more
     // efficient for the callers to calculate it based on filters.
@@ -657,15 +500,6 @@ function rerender_stream_inbox_header_if_needed(
             return;
         }
     }
-}
-
-function get_channel_folder_header_id(folder_id: number): string {
-    if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
-        return OTHER_CHANNEL_HEADER_ID;
-    } else if (folder_id === PINNED_CHANNEL_FOLDER_ID) {
-        return PINNED_CHANNEL_HEADER_ID;
-    }
-    return CHANNEL_FOLDER_HEADER_ID_PREFIX + folder_id;
 }
 
 function rerender_channel_folder_header_if_needed(

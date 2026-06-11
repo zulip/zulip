@@ -5,6 +5,14 @@
                 <input type="text" class="input-element left-sidebar-search-input" autocomplete="off" placeholder="{{t 'Filter left sidebar' }}" />
             {{/components/input_wrapper}}
         </div>
+        <div class="sidebar-view-toggle hidden-for-spectators" role="radiogroup" aria-label="{{t 'Left sidebar view'}}">
+            <span class="sidebar-view-toggle-option tippy-left-sidebar-tooltip-no-label-delay" role="radio" data-view="channels" aria-checked="{{#if (eq web_left_sidebar_view 'channels')}}true{{else}}false{{/if}}" tabindex="{{#if (eq web_left_sidebar_view 'channels')}}0{{else}}-1{{/if}}" data-tooltip-template-id="sidebar-view-toggle-channels-template">
+                <i class="zulip-icon zulip-icon-hash" aria-hidden="true"></i>
+            </span>
+            <span class="sidebar-view-toggle-option tippy-left-sidebar-tooltip-no-label-delay" role="radio" data-view="inbox" aria-checked="{{#if (eq web_left_sidebar_view 'inbox')}}true{{else}}false{{/if}}" tabindex="{{#if (eq web_left_sidebar_view 'inbox')}}0{{else}}-1{{/if}}" data-tooltip-template-id="sidebar-view-toggle-inbox-template">
+                <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
+            </span>
+        </div>
         <span id="add_streams_button" class="add-stream-icon-container hidden-for-spectators" tabindex="0">
             <i id="streams_inline_icon" class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
         </span>

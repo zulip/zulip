@@ -374,6 +374,7 @@ export function initialize_left_sidebar(): void {
         is_spectator: page_params.is_spectator,
         primary_condensed_views,
         expanded_views,
+        web_left_sidebar_view: user_settings.web_left_sidebar_view,
         LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
         LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE: pm_list.LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
     });
@@ -673,6 +674,11 @@ function actually_update_left_sidebar_for_search(): void {
 let pre_search_scroll_position = 0;
 let previous_search_term = "";
 
+// True while a PATCH for the sidebar-view toggle is in flight; prevents
+// a double-click from issuing a second redundant PATCH before the
+// dispatch flips user_settings.web_left_sidebar_view.
+let sidebar_view_toggle_in_flight = false;
+
 const update_left_sidebar_for_search = _.throttle(() => {
     const search_term = ui_util.get_left_sidebar_search_term();
     const is_previous_search_term_empty = previous_search_term === "";
@@ -894,6 +900,65 @@ export function set_event_handlers(): void {
     // Handle arrow key navigation when a sidebar element has Tab
     // focus, so that Tab and arrow key navigation stay in sync.
     $("#left-sidebar").on("keydown", handle_left_sidebar_arrow_navigation);
+
+    function activate_sidebar_view_toggle(this: HTMLElement): void {
+        const view = $(this).attr("data-view");
+        if (view === undefined || user_settings.web_left_sidebar_view === view) {
+            return;
+        }
+        // user_settings only flips after the dispatch round-trip lands,
+        // so without this guard a Space keyrepeat or double-click would
+        // race a second PATCH against the first.
+        if (sidebar_view_toggle_in_flight) {
+            return;
+        }
+        sidebar_view_toggle_in_flight = true;
+        void channel.patch({
+            url: "/json/settings",
+            data: {web_left_sidebar_view: view},
+            success() {
+                sidebar_view_toggle_in_flight = false;
+            },
+            error(xhr) {
+                sidebar_view_toggle_in_flight = false;
+                blueslip.error("Failed to update web_left_sidebar_view setting", {
+                    status: xhr.status,
+                    response_text: xhr.responseText,
+                });
+            },
+        });
+    }
+
+    function focus_sibling_sidebar_view_option(current: HTMLElement): void {
+        // Two options total (channels, inbox); the modulo cycles between
+        // them. If a third view mode is added, replace this with explicit
+        // index arithmetic so the cycle still covers every option.
+        const $options = $("#left-sidebar-search .sidebar-view-toggle-option");
+        const index = $options.index(current);
+        const $sibling = $options.eq((index + 1) % $options.length);
+        $sibling.trigger("focus");
+    }
+
+    $("#left-sidebar-search").on(
+        "click",
+        ".sidebar-view-toggle-option",
+        activate_sidebar_view_toggle,
+    );
+    $("#left-sidebar-search").on(
+        "keydown",
+        ".sidebar-view-toggle-option",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e) || e.key === " ") {
+                e.preventDefault();
+                activate_sidebar_view_toggle.call(this);
+                return;
+            }
+            if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                e.preventDefault();
+                focus_sibling_sidebar_view_option(this);
+            }
+        },
+    );
 }
 
 export function initiate_search(): void {

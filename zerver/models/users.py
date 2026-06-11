@@ -116,6 +116,12 @@ class UserBaseSettings(models.Model):
     # of the Zulip web app.
     web_left_sidebar_show_channel_folders = models.BooleanField(default=True, db_default=True)
 
+    # UI setting controlling whether the Zulip web app's left sidebar
+    # renders the default channel list or an inbox-style summary of
+    # conversations with unread messages.  See web_home_view for the
+    # related setting that controls the center-pane home view.
+    web_left_sidebar_view = models.TextField(default="channels", db_default="channels")
+
     # UI setting controlling whether or not the Zulip web app will
     # mark messages as read as it scrolls through the feed.
 
@@ -387,6 +393,7 @@ class UserBaseSettings(models.Model):
         web_inbox_show_channel_folders=bool,
         web_left_sidebar_show_channel_folders=bool,
         web_left_sidebar_unreads_count_summary=bool,
+        web_left_sidebar_view=str,
         web_line_height_percent=int,
         web_mark_read_on_scroll_policy=int,
         web_navigate_to_sent_message=bool,

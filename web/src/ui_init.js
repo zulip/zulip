@@ -420,6 +420,7 @@ function initialize_unread_ui() {
         pm_list.update_dom_with_unread_counts(counts, skip_animations),
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
+    unread_ui.register_update_unread_counts_hook(() => stream_list.expand_inbox_topic_lists());
     unread_ui.register_update_unread_counts_hook((counts) =>
         narrow_title.update_unread_counts(counts),
     );

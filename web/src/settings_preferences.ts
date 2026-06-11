@@ -152,6 +152,7 @@ export function set_up(settings_panel: SettingsPanel): void {
     $container
         .find(".setting_web_channel_default_view")
         .val(settings_object.web_channel_default_view);
+    $container.find(".setting_web_left_sidebar_view").val(settings_object.web_left_sidebar_view);
     $container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);

@@ -1,0 +1,20 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+
+You can configure whether the [left sidebar](/help/left-sidebar) shows the
+list of channels you're subscribed to, or an [inbox](/help/inbox) view that
+expands every channel with unread messages so you can see unread topics
+without clicking into each channel.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/preferences" />
+
+      1. Under **Navigation**, select your preferred option from the
+         **Left sidebar shows** dropdown.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

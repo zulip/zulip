@@ -12,6 +12,7 @@ import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import {ListCursor} from "./list_cursor.ts";
 import * as mouse_drag from "./mouse_drag.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -27,9 +28,11 @@ import type {TopicInfo} from "./topic_list_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as vdom from "./vdom.ts";
 
-/* Track all active widgets with a Map by stream_id. We have at max
-   one for now, but we may eventually allow multiple streams to be
-   expanded. */
+/* Track all active widgets with a Map by stream_id. The map contains
+   one entry per stream whose topic list is expanded inline in the
+   left sidebar. Channels-view typically has at most one entry — the
+   currently-narrowed channel — but the inbox left-sidebar view holds
+   one entry per visible channel that has unreads. */
 const active_widgets = new Map<number, LeftSidebarTopicListWidget>();
 let zoomed_in_widget: LeftSidebarTopicListWidget | undefined;
 export let topic_filter_pill_widget: TopicFilterPillWidget | null = null;
@@ -341,6 +344,7 @@ export class TopicListWidget {
     $stream_li: JQuery;
     my_stream_id: number;
     for_modal: boolean;
+    unread_only: boolean;
     filter_topics: (topic_names: string[]) => string[];
 
     constructor(
@@ -348,10 +352,12 @@ export class TopicListWidget {
         my_stream_id: number,
         for_modal: boolean,
         filter_topics: (topic_names: string[]) => string[],
+        unread_only = false,
     ) {
         this.$stream_li = $stream_li;
         this.my_stream_id = my_stream_id;
         this.for_modal = for_modal;
+        this.unread_only = unread_only;
         this.filter_topics = filter_topics;
     }
 
@@ -363,6 +369,7 @@ export class TopicListWidget {
             this.my_stream_id,
             this.for_modal,
             this.filter_topics,
+            this.unread_only,
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -467,8 +474,8 @@ function filter_topics_left_sidebar(topic_names: string[]): string[] {
 }
 
 export class LeftSidebarTopicListWidget extends TopicListWidget {
-    constructor($stream_li: JQuery, my_stream_id: number, for_modal: boolean) {
-        super($stream_li, my_stream_id, for_modal, filter_topics_left_sidebar);
+    constructor($stream_li: JQuery, my_stream_id: number, for_modal: boolean, unread_only = false) {
+        super($stream_li, my_stream_id, for_modal, filter_topics_left_sidebar, unread_only);
     }
 
     override build(spinner = false): void {
@@ -502,11 +509,22 @@ export function active_stream_id(): number | undefined {
 
     const stream_ids = [...active_widgets.keys()];
 
-    if (stream_ids.length !== 1) {
-        return undefined;
+    if (stream_ids.length === 1) {
+        return stream_ids[0];
     }
 
-    return stream_ids[0];
+    if (stream_ids.length > 1) {
+        // Several streams have their topic lists expanded simultaneously
+        // (the inbox left-sidebar view). Treat the stream the user is
+        // currently narrowed to as the active one for the purposes of
+        // typeahead, search, and keyboard navigation.
+        const narrowed_stream_id = narrow_state.stream_id();
+        if (narrowed_stream_id !== undefined && active_widgets.has(narrowed_stream_id)) {
+            return narrowed_stream_id;
+        }
+    }
+
+    return undefined;
 }
 
 export function get_stream_li(): JQuery | undefined {
@@ -514,17 +532,40 @@ export function get_stream_li(): JQuery | undefined {
         return zoomed_in_widget?.get_stream_li();
     }
 
-    const widgets = [...active_widgets.values()];
-
-    if (widgets.length !== 1 || widgets[0] === undefined) {
+    const stream_id = active_stream_id();
+    if (stream_id === undefined) {
         return undefined;
     }
 
-    const $stream_li = widgets[0].get_stream_li();
-    return $stream_li;
+    return active_widgets.get(stream_id)?.get_stream_li();
 }
 
-export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): void {
+function clear_widget_for_stream(stream_id: number): void {
+    const widget = active_widgets.get(stream_id);
+    if (widget === undefined) {
+        return;
+    }
+    widget.remove();
+    active_widgets.delete(stream_id);
+}
+
+export type RebuildLeftSidebarOptions = {
+    // When true, the existing widgets for other streams are left in
+    // place. When false (default), other widgets are cleared so that
+    // only one channel is expanded at a time.
+    keep_other_widgets?: boolean;
+    // When true, the topic list under this channel surfaces only
+    // topics with unread messages (the inbox left-sidebar view).
+    unread_only?: boolean;
+};
+
+export function rebuild_left_sidebar(
+    $stream_li: JQuery,
+    stream_id: number,
+    options: RebuildLeftSidebarOptions = {},
+): void {
+    const {keep_other_widgets = false, unread_only = false} = options;
+
     if (zoomed) {
         if (zoomed_in_widget?.my_stream_id !== stream_id) {
             clear_zoomed();
@@ -537,16 +578,33 @@ export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): voi
     zoomed_in_widget?.remove();
     const active_widget = active_widgets.get(stream_id);
 
-    if (active_widget) {
+    if (active_widget?.unread_only === unread_only) {
         active_widget.build();
         return;
     }
 
-    clear();
-    const widget = new LeftSidebarTopicListWidget($stream_li, stream_id, false);
+    if (keep_other_widgets) {
+        // Drop only the widget for this stream; preserve the others
+        // because they are also expanded (inbox left-sidebar view).
+        clear_widget_for_stream(stream_id);
+    } else {
+        clear();
+    }
+    const widget = new LeftSidebarTopicListWidget($stream_li, stream_id, false, unread_only);
     widget.build();
 
     active_widgets.set(stream_id, widget);
+}
+
+// Remove every active topic-list widget except those whose stream id
+// is in `keep_stream_ids`. Used when switching out of inbox left-sidebar
+// view or when the set of channels with unreads shrinks.
+export function clear_widgets_except(keep_stream_ids: Set<number>): void {
+    for (const stream_id of active_widgets.keys()) {
+        if (!keep_stream_ids.has(stream_id)) {
+            clear_widget_for_stream(stream_id);
+        }
+    }
 }
 
 export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {

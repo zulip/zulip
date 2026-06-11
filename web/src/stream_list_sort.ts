@@ -9,6 +9,7 @@ import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import * as typeahead from "./typeahead.ts";
+import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -67,6 +68,27 @@ function compare_function(a: number, b: number): number {
     const stream_name_b = stream_b ? stream_b.name : "";
 
     return util.strcmp(stream_name_a, stream_name_b);
+}
+
+function has_any_unread_for_inbox_sort(stream_id: number): boolean {
+    const counts = unread.unread_count_info_for_stream(stream_id);
+    return counts.unmuted_count > 0 || counts.followed_count > 0 || counts.muted_count > 0;
+}
+
+function inbox_view_compare_function(a: number, b: number): number {
+    const a_has_unreads = has_any_unread_for_inbox_sort(a);
+    const b_has_unreads = has_any_unread_for_inbox_sort(b);
+    if (a_has_unreads !== b_has_unreads) {
+        return a_has_unreads ? -1 : 1;
+    }
+    return compare_function(a, b);
+}
+
+function get_compare_function(): (a: number, b: number) => number {
+    if (user_settings.web_left_sidebar_view === "inbox") {
+        return inbox_view_compare_function;
+    }
+    return compare_function;
 }
 
 export function set_filter_out_inactives(): void {
@@ -321,10 +343,11 @@ export function sort_groups(
         ...demoted_folder_sections,
     ];
 
+    const sort_streams = get_compare_function();
     for (const section of new_sections) {
-        section.default_visible_streams.sort(compare_function);
-        section.muted_streams.sort(compare_function);
-        section.inactive_streams.sort(compare_function);
+        section.default_visible_streams.sort(sort_streams);
+        section.muted_streams.sort(sort_streams);
+        section.inactive_streams.sort(sort_streams);
     }
 
     const same_as_before =

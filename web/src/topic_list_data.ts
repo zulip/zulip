@@ -44,6 +44,7 @@ function choose_topics(
     topic_names: string[],
     zoomed: boolean,
     topic_choice_state: TopicChoiceState,
+    unread_only: boolean,
 ): void {
     for (const topic_name of topic_names) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
@@ -81,6 +82,14 @@ function choose_topics(
                 // messages.
                 if (is_topic_muted) {
                     return false;
+                }
+
+                // In the inbox left-sidebar view, the topic list under
+                // each channel only surfaces topics with unread messages
+                // (up to MAX_TOPICS_WITH_UNREAD); read topics are
+                // available behind the "show all topics" affordance.
+                if (unread_only) {
+                    return num_unread > 0 && topics_selected < MAX_TOPICS_WITH_UNREAD;
                 }
 
                 // We include the most recent, unmuted MAX_TOPICS topics,
@@ -222,6 +231,7 @@ export function get_list_info(
     stream_id: number,
     zoomed: boolean,
     filter_topics: (topic_names: string[]) => string[],
+    unread_only = false,
 ): TopicListInfo {
     const topic_choice_state: TopicChoiceState = {
         items: [],
@@ -248,9 +258,9 @@ export function get_list_info(
             (topic) => !user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
         const reordered_topics = [...unmuted_or_followed_topics, ...other_topics];
-        choose_topics(stream_id, reordered_topics, zoomed, topic_choice_state);
+        choose_topics(stream_id, reordered_topics, zoomed, topic_choice_state, unread_only);
     } else {
-        choose_topics(stream_id, topic_names, zoomed, topic_choice_state);
+        choose_topics(stream_id, topic_names, zoomed, topic_choice_state, unread_only);
     }
 
     if (

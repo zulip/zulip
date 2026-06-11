@@ -362,6 +362,7 @@ class ChangeSettingsTest(ZulipTestCase):
             web_channel_default_view=2,
             user_list_style=2,
             web_animate_image_previews="on_hover",
+            web_left_sidebar_view="inbox",
             web_stream_unreads_count_display_policy=2,
             web_font_size_px=14,
             web_line_height_percent=122,
@@ -472,6 +473,11 @@ class ChangeSettingsTest(ZulipTestCase):
                 "setting_name": "web_animate_image_previews",
                 "value": "invalid_value",
                 "error_msg": "Invalid web_animate_image_previews: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_left_sidebar_view",
+                "value": "channels_v2",
+                "error_msg": "Invalid web_left_sidebar_view: Value error, Not in the list of possible values",
             },
             {
                 "setting_name": "web_stream_unreads_count_display_policy",

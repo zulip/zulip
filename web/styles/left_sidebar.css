@@ -442,9 +442,9 @@
 
 #left-sidebar-search {
     display: grid;
-    grid-template-areas: "filter-container add-channel channel-folders-option";
+    grid-template-areas: "filter-container view-toggle add-channel channel-folders-option";
     grid-template-columns:
-        minmax(0, 1fr) var(--left-sidebar-header-icon-width)
+        minmax(0, 1fr) auto var(--left-sidebar-header-icon-width)
         auto;
     position: sticky;
     top: 0;
@@ -455,6 +455,49 @@
 
     &.no-display {
         display: none;
+    }
+
+    .sidebar-view-toggle {
+        grid-area: view-toggle;
+        display: inline-flex;
+        align-items: center;
+        margin: 2px 4px 2px 2px;
+        padding: 1px;
+        border-radius: 5px;
+        /* A subtle track ties the two options together as a single
+           segmented control, so they don't read as unrelated icons. */
+        background-color: var(--color-background-navigation-item-hover);
+
+        .sidebar-view-toggle-option {
+            display: grid;
+            place-items: center center;
+            width: var(--left-sidebar-header-icon-width);
+            cursor: pointer;
+            border-radius: 4px;
+            color: var(--color-sidebar-action);
+            transition:
+                background-color 140ms ease,
+                color 140ms ease;
+
+            & i.zulip-icon {
+                font-size: 1.0625em;
+            }
+
+            &:hover {
+                color: var(--color-sidebar-action-hover);
+                background-color: var(--color-background-sidebar-action-hover);
+            }
+
+            &[aria-checked="true"] {
+                color: var(--color-sidebar-action-hover);
+                background-color: var(--color-background-active-narrow-filter);
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--color-outline-focus);
+                outline-offset: -2px;
+            }
+        }
     }
 
     .channel-folders-sidebar-menu-icon {

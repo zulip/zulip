@@ -209,6 +209,7 @@ def confirm_email_change(request: HttpRequest, *, key: str) -> HttpResponse:
 emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
 web_home_view_options = ["recent", "inbox", "all_messages"]
 web_animate_image_previews_options = ["always", "on_hover", "never"]
+web_left_sidebar_view_options = ["channels", "inbox"]
 
 
 def check_settings_values(
@@ -366,6 +367,8 @@ def json_change_settings(
     web_inbox_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
+    web_left_sidebar_view: Annotated[str, check_string_in_validator(web_left_sidebar_view_options)]
+    | None = None,
     web_line_height_percent: Json[int] | None = None,
     web_mark_read_on_scroll_policy: Annotated[
         Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)

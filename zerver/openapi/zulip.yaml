@@ -15665,6 +15665,20 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 398).
                   type: boolean
                   example: true
+                web_left_sidebar_view:
+                  type: string
+                  enum: [channels, inbox]
+                  description: |
+                    Controls the content of the web/desktop application's left
+                    sidebar.
+
+                    - `"channels"` - The standard subscribed-channels list.
+                    - `"inbox"` - An inbox-style summary of conversations
+                      with unread messages, mirroring the data shown in the
+                      [Inbox](/help/inbox) view.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-8681a9).
+                  example: channels
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for channel messages.
@@ -19589,6 +19603,19 @@ paths:
                               the unread message count summary.
 
                               **Changes**: New in Zulip 11.0 (feature level 398).
+                          web_left_sidebar_view:
+                            type: string
+                            enum: [channels, inbox]
+                            description: |
+                              Controls the content of the web/desktop application's left
+                              sidebar.
+
+                              - `"channels"` - The standard subscribed-channels list.
+                              - `"inbox"` - An inbox-style summary of conversations
+                                with unread messages, mirroring the data shown in the
+                                [Inbox](/help/inbox) view.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-8681a9).
                           timezone:
                             type: string
                             description: |
@@ -21998,6 +22025,19 @@ paths:
                               the unread message count summary.
 
                               **Changes**: New in Zulip 11.0 (feature level 398).
+                          web_left_sidebar_view:
+                            type: string
+                            enum: [channels, inbox]
+                            description: |
+                              Controls the content of the web/desktop application's left
+                              sidebar.
+
+                              - `"channels"` - The standard subscribed-channels list.
+                              - `"inbox"` - An inbox-style summary of conversations
+                                with unread messages, mirroring the data shown in the
+                                [Inbox](/help/inbox) view.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-8681a9).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -23370,6 +23410,20 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 398).
                   type: boolean
                   example: true
+                web_left_sidebar_view:
+                  type: string
+                  enum: [channels, inbox]
+                  description: |
+                    Controls the content of the web/desktop application's left
+                    sidebar.
+
+                    - `"channels"` - The standard subscribed-channels list.
+                    - `"inbox"` - An inbox-style summary of conversations
+                      with unread messages, mirroring the data shown in the
+                      [Inbox](/help/inbox) view.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-8681a9).
+                  example: channels
                 timezone:
                   description: |
                     The IANA identifier of the user's [profile time zone](/help/change-your-timezone),

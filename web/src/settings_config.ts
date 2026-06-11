@@ -113,6 +113,20 @@ export const user_list_style_values: {
     },
 };
 
+export const web_left_sidebar_view_values: Record<
+    "channels" | "inbox",
+    SettingDescription<string>
+> = {
+    channels: {
+        code: "channels",
+        description: $t({defaultMessage: "Channel list"}),
+    },
+    inbox: {
+        code: "inbox",
+        description: $t({defaultMessage: "Inbox"}),
+    },
+};
+
 export const web_animate_image_previews_values: Record<
     "always" | "on_hover" | "never",
     SettingDescription<string>

@@ -116,6 +116,7 @@ export function build_page(): void {
         web_mark_read_on_scroll_policy_values:
             settings_config.web_mark_read_on_scroll_policy_values,
         web_channel_default_view_values: settings_config.web_channel_default_view_values,
+        web_left_sidebar_view_values: settings_config.web_left_sidebar_view_values,
         user_list_style_values: settings_config.user_list_style_values,
         web_animate_image_previews_values: settings_config.web_animate_image_previews_values,
         resolved_topic_notice_auto_read_policy_values:

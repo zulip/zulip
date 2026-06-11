@@ -529,6 +529,76 @@ export function build_stream_list(force_rerender: boolean): void {
     set_sections_states();
     // Show inactive channels when user starts typing.
     $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
+    expand_inbox_topic_lists();
+}
+
+function channel_should_be_expanded_in_inbox_view(stream_id: number): boolean {
+    const counts = unread.unread_count_info_for_stream(stream_id);
+    if (counts.unmuted_count > 0 || counts.followed_count > 0 || counts.muted_count > 0) {
+        return true;
+    }
+    // Always keep the channel the user is currently narrowed to expanded,
+    // so that they can see its topic list even after clearing all unreads.
+    return narrow_state.stream_id() === stream_id;
+}
+
+// Called when the user toggles between the channels view and the inbox
+// view via the web_left_sidebar_view preference. Switching directions
+// requires a full sidebar rebuild because the channel sort order
+// changes (unread-channels-first in inbox view) and the set of
+// expanded topic widgets changes (one vs. all). The active narrow's
+// scroll position is preserved across the rebuild so the user does
+// not lose their place when the sort reorders many channels.
+export function handle_left_sidebar_view_change(): void {
+    capture_left_sidebar_selection_anchor();
+    if (user_settings.web_left_sidebar_view !== "inbox") {
+        // Drop every expanded topic widget from inbox view so that
+        // channels view returns to its single-active-channel
+        // invariant. update_streams_sidebar() will rebuild for the
+        // current narrow if any.
+        topic_list.clear_widgets_except(new Set());
+    }
+    update_streams_sidebar(true);
+    update_sidebar_view_toggle_state();
+    restore_left_sidebar_scroll_state();
+}
+
+function update_sidebar_view_toggle_state(): void {
+    const current = user_settings.web_left_sidebar_view;
+    $("#left-sidebar-search .sidebar-view-toggle-option").each(function () {
+        const $option = $(this);
+        const is_active = $option.attr("data-view") === current;
+        $option.attr("aria-checked", is_active ? "true" : "false");
+        // Roving tabindex: only the active radio is in the tab order.
+        $option.attr("tabindex", is_active ? "0" : "-1");
+    });
+}
+
+// When the user has chosen the inbox left-sidebar view, every visible
+// channel that has unreads (and the channel the user is currently
+// narrowed to) gets its topic list expanded inline, filtered to topics
+// with unreads. In the channels view this is a no-op; topic_list
+// continues to be rebuilt on narrow change for the single active channel.
+export function expand_inbox_topic_lists(): void {
+    if (user_settings.web_left_sidebar_view !== "inbox") {
+        return;
+    }
+    const stream_ids_to_expand = new Set<number>();
+    for (const stream_id of stream_list_sort.get_stream_ids()) {
+        if (!channel_should_be_expanded_in_inbox_view(stream_id)) {
+            continue;
+        }
+        const $stream_li = get_stream_li(stream_id);
+        if ($stream_li === undefined) {
+            continue;
+        }
+        stream_ids_to_expand.add(stream_id);
+        topic_list.rebuild_left_sidebar($stream_li, stream_id, {
+            keep_other_widgets: true,
+            unread_only: true,
+        });
+    }
+    topic_list.clear_widgets_except(stream_ids_to_expand);
 }
 
 export function mention_counts_by_section(): Map<
@@ -1240,14 +1310,23 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // masked unread counts.
     $stream_li.addClass("stream-expanded");
 
-    if (stream_id !== topic_list.active_stream_id()) {
+    const inbox_view = user_settings.web_left_sidebar_view === "inbox";
+    if (!inbox_view && stream_id !== topic_list.active_stream_id()) {
         clear_topics();
     }
 
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
-    topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    topic_list.rebuild_left_sidebar($stream_li, stream_id, {
+        keep_other_widgets: inbox_view,
+        unread_only: inbox_view,
+    });
+    if (inbox_view) {
+        // Make sure every other channel-with-unreads is also expanded
+        // when the user switches narrows in inbox view.
+        expand_inbox_topic_lists();
+    }
     topic_list.topic_state_typeahead?.lookup(true);
 
     // If we're updating a view for a highlighted stream, it's possible

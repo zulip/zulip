@@ -1282,6 +1282,13 @@ exports.fixtures = {
         value: false,
     },
 
+    user_settings__web_left_sidebar_view: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_view",
+        value: "inbox",
+    },
+
     user_settings__web_line_height_percent: {
         type: "user_settings",
         op: "update",
