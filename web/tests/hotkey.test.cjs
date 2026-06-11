@@ -47,6 +47,7 @@ const emoji_picker = mock_esm("../src/emoji_picker", {
     start_picker_for_message_reaction() {},
 });
 const gear_menu = mock_esm("../src/gear_menu");
+const info_overlay = mock_esm("../src/info_overlay");
 const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
 const message_actions_popover = mock_esm("../src/message_actions_popover");
@@ -206,6 +207,7 @@ run_test("mappings", () => {
     assert.equal(map_down("@", true, true).name, "open_mentions_view");
     assert.equal(map_down("s", false, true).name, "star_message");
     assert.equal(map_down(".", false, true).name, "narrow_to_compose_target");
+    assert.equal(map_down("p", false, true).name, "print");
 
     assert.equal(map_down("p", false, false, false, true).name, "toggle_compose_preview"); // Alt + P
     assert.equal(map_down("+", false).name, "thumbs_up_emoji");
@@ -218,7 +220,6 @@ run_test("mappings", () => {
     assert.equal(map_down("t", false, true), undefined);
     assert.equal(map_down("r", false, true), undefined);
     assert.equal(map_down("o", false, true), undefined);
-    assert.equal(map_down("p", false, true), undefined);
     assert.equal(map_down("a", false, true), undefined);
     assert.equal(map_down("f", false, true), undefined);
     assert.equal(map_down("h", false, true), undefined);
@@ -228,8 +229,12 @@ run_test("mappings", () => {
     assert.equal(map_down("c", false, false, true), undefined);
     assert.equal(map_down("k", false, false, true), undefined);
     assert.equal(map_down("s", false, false, true), undefined);
+    assert.equal(map_down("p", false, false, true), undefined);
     assert.equal(map_down("K", true, true), undefined);
     assert.equal(map_down("S", true, true), undefined);
+    // Ctrl+Shift+P is not intercepted; in Firefox it opens a
+    // private browsing window.
+    assert.equal(map_down("P", true, true), undefined);
     assert.equal(map_down("[", true, true, false), undefined);
     assert.equal(map_down("P", true, false, false, true), undefined);
     assert.equal(map_down("+", false, true), undefined);
@@ -260,6 +265,8 @@ run_test("mappings", () => {
     assert.equal(map_down("s", false, true, false), undefined);
     assert.equal(map_down(".", false, false, true).name, "narrow_to_compose_target");
     assert.equal(map_down(".", false, true, false), undefined);
+    assert.equal(map_down("p", false, false, true).name, "print");
+    assert.equal(map_down("p", false, true, false), undefined);
     // Reset platform
     navigator.platform = "";
 
@@ -300,6 +307,7 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("л", "KeyK", false, true).name, "search_with_k");
     assert.equal(map_down("@", "Digit2", true, true).name, "open_mentions_view");
     assert.equal(map_down("ы", "KeyS", false, true).name, "star_message");
+    assert.equal(map_down("з", "KeyP", false, true).name, "print");
     assert.equal(map_down("з", "KeyP", false, false, false, true).name, "toggle_compose_preview");
 
     // More negative tests.
@@ -308,7 +316,6 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("е", "KeyT", false, true), undefined);
     assert.equal(map_down("к", "KeyR", false, true), undefined);
     assert.equal(map_down("щ", "KeyO", false, true), undefined);
-    assert.equal(map_down("з", "KeyP", false, true), undefined);
     assert.equal(map_down("ф", "KeyA", false, true), undefined);
     assert.equal(map_down("а", "KeyF", false, true), undefined);
     assert.equal(map_down("р", "KeyH", false, true), undefined);
@@ -318,8 +325,12 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("с", "KeyC", false, false, true), undefined);
     assert.equal(map_down("л", "KeyK", false, false, true), undefined);
     assert.equal(map_down("ы", "KeyS", false, false, true), undefined);
+    assert.equal(map_down("з", "KeyP", false, false, true), undefined);
     assert.equal(map_down("Л", "KeyK", true, true), undefined);
     assert.equal(map_down("Ы", "KeyS", true, true), undefined);
+    // Ctrl+Shift+P is not intercepted; in Firefox it opens a
+    // private browsing window.
+    assert.equal(map_down("З", "KeyP", true, true), undefined);
     assert.equal(map_down("Х", "BracketLeft", true, true, false), undefined);
     assert.equal(map_down("З", "KeyP", true, false, false, true), undefined);
 
@@ -336,6 +347,8 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("@", "Digit2", true, true, false), undefined);
     assert.equal(map_down("ы", "KeyS", false, false, true).name, "star_message");
     assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
+    assert.equal(map_down("з", "KeyP", false, false, true).name, "print");
+    assert.equal(map_down("з", "KeyP", false, true, false), undefined);
     // Reset platform
     navigator.platform = "";
 
@@ -474,6 +487,20 @@ test_while_not_editing_text("drafts closed w/other overlay", ({override}) => {
 test_while_not_editing_text("drafts closed launch", ({override}) => {
     override(overlays, "any_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
+});
+
+run_test("print hotkey", ({override}) => {
+    // With an informational overlay open, Ctrl+P prints the full
+    // contents of the overlay's current pane.
+    override(overlays, "info_overlay_open", () => true);
+    stubbing(info_overlay, "print_current_pane", (stub) => {
+        assert.ok(hotkey.process_keydown({key: "p", ctrlKey: true}));
+        assert.equal(stub.num_calls, 1);
+    });
+
+    // Everywhere else, the browser's print dialog is not intercepted.
+    override(overlays, "info_overlay_open", () => false);
+    assert.equal(hotkey.process_keydown({key: "p", ctrlKey: true}), false);
 });
 
 run_test("modal open", ({override}) => {

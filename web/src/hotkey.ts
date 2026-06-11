@@ -30,6 +30,7 @@ import * as hashchange from "./hashchange.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
+import * as info_overlay from "./info_overlay.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
@@ -143,6 +144,7 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Cmd+Enter": {name: "action_with_enter", message_view_only: true},
     "Cmd+C": {name: "copy_with_c", message_view_only: false},
     "Cmd+K": {name: "search_with_k", message_view_only: false},
+    "Cmd+P": {name: "print", message_view_only: false},
     "Cmd+@": {name: "open_mentions_view", message_view_only: true},
     "Cmd+S": {name: "star_message", message_view_only: true},
     "Cmd+.": {name: "narrow_to_compose_target", message_view_only: true},
@@ -150,6 +152,7 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Ctrl+Enter": {name: "action_with_enter", message_view_only: true},
     "Ctrl+C": {name: "copy_with_c", message_view_only: false},
     "Ctrl+K": {name: "search_with_k", message_view_only: false},
+    "Ctrl+P": {name: "print", message_view_only: false},
     "Ctrl+@": {name: "open_mentions_view", message_view_only: true},
     "Ctrl+S": {name: "star_message", message_view_only: true},
     "Ctrl+.": {name: "narrow_to_compose_target", message_view_only: true},
@@ -955,6 +958,17 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             overlays.close_active();
             return true;
         }
+        if (event_name === "print") {
+            info_overlay.print_current_pane();
+            return true;
+        }
+        return false;
+    }
+
+    if (event_name === "print") {
+        // Only the informational overlays have special print
+        // handling; everywhere else, the browser's print of the
+        // current page (styled by print.css) is what we want.
         return false;
     }
 
