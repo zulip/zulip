@@ -266,7 +266,7 @@
                             {% else %}
                             {% if free_trial %}
                             {% if has_paid_invoice_for_free_trial %}
-                            You have no outstanding invoices. Your next plan renewal date is <b>{{ free_trial_next_renewal_date_after_invoice_paid }}</b>. An invoice will be sent to <b>user-23@zulip.com</b> on the same day.
+                            You have no outstanding invoices. Your next plan renewal date is <b>{{ free_trial_next_renewal_date_after_invoice_paid }}</b>. An invoice will be sent to <b>{{ stripe_email }}</b> on the same day.
                             {% else %}
                             To ensure continuous access to {{ plan_name }}, please pay your <a href="{{ billing_base_url }}/invoices/">invoice</a> before the end of your trial.
                             Your free trial ends on <br /><strong>{{ renewal_date }}</strong>.
