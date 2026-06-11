@@ -692,6 +692,39 @@ class UnmutedTopicsTests(ZulipTestCase):
 
 
 class UserTopicsTests(ZulipTestCase):
+    def test_policy_update_adopts_requested_topic_casing(self) -> None:
+        # Updating the policy of a topic whose UserTopic row was stored
+        # under different casing must adopt the casing of the request,
+        # so that the stored row agrees with the casing broadcast in the
+        # user_topic event.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream = get_stream("Verona", user.realm)
+        do_set_user_topic_visibility_policy(
+            user,
+            stream,
+            "Test Topic",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+
+        url = "/api/v1/user_topics"
+        data = {
+            "stream_id": stream.id,
+            "topic": "test topic",
+            "visibility_policy": UserTopic.VisibilityPolicy.FOLLOWED,
+        }
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            result = self.api_post(user, url, data)
+            self.assert_json_success(result)
+
+        self.assertEqual(events[1]["event"]["topic_name"], "test topic")
+        rows = UserTopic.objects.filter(user_profile=user, stream_id=stream.id)
+        self.assertEqual(
+            [(row.topic_name, row.visibility_policy) for row in rows],
+            [("test topic", UserTopic.VisibilityPolicy.FOLLOWED)],
+        )
+
     def test_invalid_visibility_policy(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)

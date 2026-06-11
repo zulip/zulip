@@ -192,6 +192,7 @@ def bulk_set_user_topic_visibility_policy_in_database(
             CROSS JOIN (VALUES ({stream_id}, {recipient_id}, {topic_name}, {last_updated}, {visibility_policy}))
             AS other_values(stream_id, recipient_id, topic_name, last_updated, visibility_policy)
             ON CONFLICT (user_profile_id, stream_id, lower(topic_name)) DO UPDATE SET
+            topic_name = EXCLUDED.topic_name,
             last_updated = EXCLUDED.last_updated,
             visibility_policy = EXCLUDED.visibility_policy;
         """).format(
