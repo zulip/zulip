@@ -117,6 +117,28 @@ function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
     return {title: NO_SEARCH_RESULTS_TITLE};
 }
 
+// Returns a banner describing why direct messages to these users are
+// not allowed, or undefined if they are permitted.
+function dm_permission_error_banner(user_ids_string: string): NarrowBannerData | undefined {
+    const direct_message_error_string =
+        compose_validate.check_dm_permissions_and_get_error_string(user_ids_string);
+    if (direct_message_error_string === "") {
+        return undefined;
+    }
+    return {
+        title: direct_message_error_string,
+        html: $t_html(
+            {
+                defaultMessage: "<z-link>Learn more.</z-link>",
+            },
+            {
+                "z-link": (content_html) =>
+                    `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
+            },
+        ),
+    };
+}
+
 export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerData {
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
@@ -368,21 +390,9 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             const user_ids = first_term.operand;
             assert(user_ids?.[0] !== undefined);
             const user_ids_string = util.sorted_ids(user_ids).join(",");
-            const direct_message_error_string =
-                compose_validate.check_dm_permissions_and_get_error_string(user_ids_string);
-            if (direct_message_error_string) {
-                return {
-                    title: direct_message_error_string,
-                    html: $t_html(
-                        {
-                            defaultMessage: "<z-link>Learn more.</z-link>",
-                        },
-                        {
-                            "z-link": (content_html) =>
-                                `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
-                        },
-                    ),
-                };
+            const dm_permission_error = dm_permission_error_banner(user_ids_string);
+            if (dm_permission_error) {
+                return dm_permission_error;
             }
             if (user_ids.length === 1) {
                 const user_id = user_ids[0];
@@ -493,21 +503,9 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 valid_people_in_dms.push(user);
             }
             const person_id_string = valid_people_in_dms.map((user) => user.user_id).join(",");
-            const direct_message_error_string =
-                compose_validate.check_dm_permissions_and_get_error_string(person_id_string);
-            if (direct_message_error_string) {
-                return {
-                    title: direct_message_error_string,
-                    html: $t_html(
-                        {
-                            defaultMessage: "<z-link>Learn more.</z-link>",
-                        },
-                        {
-                            "z-link": (content_html) =>
-                                `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
-                        },
-                    ),
-                };
+            const dm_permission_error = dm_permission_error_banner(person_id_string);
+            if (dm_permission_error) {
+                return dm_permission_error;
             }
             if (
                 valid_people_in_dms.length === 1 &&
