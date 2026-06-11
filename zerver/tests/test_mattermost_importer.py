@@ -2,7 +2,6 @@ import filecmp
 import json
 import os
 import shutil
-import sys
 import tempfile
 from collections import defaultdict
 from collections.abc import Sequence
@@ -1087,15 +1086,6 @@ class MatterMostImporter(MattermostImportTestBase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
-                *(
-                    [
-                        # Check error log when trying to process a message with faulty HTML.
-                        "WARNING:root:Error converting HTML to text for message: 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>'; continuing",
-                        "WARNING:root:{'sender_id': 2, 'content': 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
-                    ]
-                    if sys.version_info < (3, 13)
-                    else []
-                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -1306,7 +1296,7 @@ class MatterMostImporter(MattermostImportTestBase):
 
         self.assertEqual(group_direct_messages[1].sender.email, "ginny@zulip.com")
         self.assertEqual(
-            group_direct_messages[1].content, "Who is going to Hogsmeade this weekend?\n\n"
+            group_direct_messages[1].content, "Who is going to Hogsmeade this weekend?"
         )
         self.assertEqual(group_direct_messages[1].topic_name(), Message.DM_TOPIC)
 
@@ -1325,14 +1315,6 @@ class MatterMostImporter(MattermostImportTestBase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
-                *(
-                    [
-                        "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
-                        "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
-                    ]
-                    if sys.version_info < (3, 13)
-                    else []
-                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -1356,14 +1338,6 @@ class MatterMostImporter(MattermostImportTestBase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
-                *(
-                    [
-                        "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
-                        "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
-                    ]
-                    if sys.version_info < (3, 13)
-                    else []
-                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
