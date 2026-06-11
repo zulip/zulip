@@ -230,6 +230,7 @@ export function initialize_profile_user_type_pills(user_id: number): void {
                 is_active: people.is_person_active(user.user_id),
                 is_current_user: people.is_my_user_id(user.user_id),
                 is_bot: user.is_bot,
+                is_placeholder_user: user.is_placeholder_user ?? false,
             });
 
             $pill_container.append($(pill_html));

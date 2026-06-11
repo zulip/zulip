@@ -1,3 +1,6 @@
+{{#if is_placeholder_user}}
+<span class="user-name"><span class="loading-shimmer"></span></span>
+{{else}}
 {{#if should_add_guest_user_indicator}}
 <span class="user-name">{{name}}</span>&nbsp;<i class="guest-indicator">({{t 'guest' }})</i>
 {{else}}
@@ -7,3 +10,4 @@
 {{/if}}
 {{/if}}
 {{#if is_current_user}}&nbsp;<span class="my_user_status">{{t '(you)'}}</span>{{/if}}
+{{/if}}

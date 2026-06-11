@@ -56,6 +56,7 @@ function format_member_list_elem(person: User, user_can_remove_subscribers: bool
         for_user_group_members: false,
         img_src: people.small_avatar_url_for_person(person),
         is_bot: person.is_bot,
+        is_placeholder_user: person.is_placeholder_user ?? false,
     });
 }
 
@@ -519,6 +520,17 @@ function update_subscribers_list_widget(subscriber_ids: number[]): void {
     people.sort_but_pin_current_user_on_top(users);
     subscribers_list_widget.replace_list_data(users);
     $(".subscriber_list_settings_container").show();
+}
+
+export function refresh_after_users_fetched(): void {
+    if (subscribers_list_widget === undefined) {
+        return;
+    }
+    if (!hash_parser.is_editing_stream(current_stream_id)) {
+        return;
+    }
+    const subscriber_ids = peer_data.get_subscriber_ids_assert_loaded(current_stream_id);
+    update_subscribers_list_widget(subscriber_ids);
 }
 
 export function rerender_subscribers_list(sub: sub_store.StreamSubscription): void {

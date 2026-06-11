@@ -29,6 +29,7 @@ export type UserPill = {
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
     is_bot?: boolean;
+    is_placeholder_user?: boolean;
 };
 
 export type UserPillWidget = InputPillContainer<UserPill>;
@@ -67,6 +68,7 @@ export function create_item_from_user_id(
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         is_bot: user.is_bot,
+        is_placeholder_user: user.is_placeholder_user ?? false,
     };
 
     // We pass deactivated true for a deactivated user
@@ -107,6 +109,7 @@ export function append_person(
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
         is_bot: person.is_bot,
+        is_placeholder_user: person.is_placeholder_user ?? false,
         deactivated: !people.is_person_active(person.user_id) && !person.is_inaccessible_user,
     };
 
@@ -217,6 +220,7 @@ export function generate_pill_html(item: UserPill, show_user_status_emoji = fals
         has_status,
         status_emoji_info,
         is_bot: item.is_bot,
+        is_placeholder_user: item.is_placeholder_user,
     });
 }
 

@@ -10,19 +10,29 @@ import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
+import * as inbox_ui from "./inbox_ui.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view_header from "./message_view_header.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
+import * as read_receipts from "./read_receipts.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
+import * as search from "./search.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";
+import * as settings_invites from "./settings_invites.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -32,8 +42,10 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_events from "./stream_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
+import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_profile from "./user_profile.ts";
 
 export const user_update_schema = z.intersection(
@@ -301,3 +313,45 @@ export const update_person = function update(event: UserUpdate): void {
         settings_panel_menu.update_imported_users_tab(true, true);
     }
 };
+
+export function initialize(): void {
+    people.set_users_fetched_callback((user_ids) => {
+        pm_list.update_private_messages();
+        message_view_header.refresh_after_users_fetched();
+        for (const user_id of user_ids) {
+            const user = people.maybe_get_user_by_id(user_id);
+            if (user) {
+                message_live_update.update_user_full_name(user_id, user.full_name);
+                message_live_update.update_avatar(user_id, user.avatar_url ?? null);
+            }
+            reactions.update_user_full_name(user_id);
+            if (user?.is_bot) {
+                settings_bots.update_bot_data(user_id);
+            }
+            compose_pm_pill.update_placeholder_user_pill(user_id);
+        }
+        buddy_list.insert_or_move(user_ids);
+
+        inbox_ui.refresh_after_users_fetched();
+        recent_view_ui.refresh_after_users_fetched();
+        scheduled_messages_overlay_ui.refresh_after_users_fetched();
+        settings_panel_menu.refresh_users_panel_after_fetch();
+        read_receipts.refresh_after_users_fetched();
+        drafts_overlay_ui.refresh_after_users_fetched();
+        search.refresh_after_users_fetched();
+        composebox_typeahead.refresh_after_users_fetched();
+        stream_edit_subscribers.refresh_after_users_fetched();
+        user_group_edit_members.refresh_after_users_fetched();
+        settings_invites.refresh_after_users_fetched();
+        if (narrow_state.filter()?.contains_only_private_messages()) {
+            compose_closed_ui.update_recipient_text_for_reply_button();
+        }
+
+        // If the user profile modal is open for a fetched placeholder
+        // user, re-render it with the real data.
+        const profile_user_id = user_profile.get_user_id_if_user_profile_modal_open();
+        if (profile_user_id !== undefined && user_ids.includes(profile_user_id)) {
+            user_profile.show_user_profile(profile_user_id);
+        }
+    });
+}

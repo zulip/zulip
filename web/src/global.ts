@@ -27,4 +27,5 @@ declare global {
 
     const DEVELOPMENT: boolean;
     const ZULIP_VERSION: string;
+    const SHIMMER_DURATION: string | null;
 }

@@ -711,8 +711,8 @@ test("test_filter_pm", ({mock_template}) => {
     };
 
     const expected_users_with_icons = [
-        {name: "Spike Spiegel", status_emoji_info: undefined},
-        {name: "translated: Muted user", status_emoji_info: undefined},
+        {name: "Spike Spiegel", status_emoji_info: undefined, is_placeholder_user: false},
+        {name: "translated: Muted user", status_emoji_info: undefined, is_placeholder_user: false},
     ];
 
     mock_template("recent_view_table.hbs", false, (data) => {

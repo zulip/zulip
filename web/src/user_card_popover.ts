@@ -295,6 +295,9 @@ export let fetch_presence_for_popover = (user_id: number): void => {
             // account creation, to avoid uselessly asking the server
             // again in this session.
             const user = people.get_by_user_id(user_id);
+            if (user.is_missing_server_data) {
+                return;
+            }
             presence.presence_info.set(user_id, {
                 status: "offline",
                 last_active: new Date(user.date_joined).getTime() / 1000,
@@ -419,6 +422,12 @@ function show_user_card_popover(
     show_as_overlay = false,
     on_mount?: (instance: tippy.Instance) => void,
 ): void {
+    // There's not much point in showing a user card for placeholder user
+    // and it is a lot of work to live-update the card after showing a
+    // loading screen, so we choose to just not show the user card popover.
+    if (user.is_placeholder_user) {
+        return;
+    }
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {

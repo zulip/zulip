@@ -513,6 +513,13 @@ run_test("check_active_non_active_users", ({override}) => {
     // If user cannot access a user, that user will be treated as active.
     override(settings_data, "user_can_access_all_other_users", () => false);
     assert.equal(people.is_person_active(99), true);
+
+    // Placeholder users are treated as active until their real data
+    // arrives, so that we don't render them as deactivated in the UI.
+    override(settings_data, "user_can_access_all_other_users", () => true);
+    const placeholder_user_id = 97;
+    people.add_placeholder_user(placeholder_user_id);
+    assert.equal(people.is_person_active(placeholder_user_id), true);
 });
 
 run_test("pm_lookup_key", () => {
@@ -1633,6 +1640,42 @@ run_test("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.email, charles.email);
 });
 
+run_test("add_placeholder_user", ({override}) => {
+    initialize();
+    override(realm, "realm_bot_domain", "zulipdev.com");
+
+    const placeholder_user_id = 98;
+    const user = people.add_placeholder_user(placeholder_user_id);
+    assert.equal(user.full_name, "translated: Loading…");
+    assert.equal(user.user_id, placeholder_user_id);
+    assert.equal(user.email, "user98@zulipdev.com");
+    assert.ok(user.is_missing_server_data);
+    assert.ok(user.is_placeholder_user);
+
+    // Placeholder user should be retrievable via get_by_user_id.
+    const retrieved = people.get_by_user_id(placeholder_user_id);
+    assert.equal(retrieved.user_id, placeholder_user_id);
+    assert.equal(retrieved.full_name, "translated: Loading…");
+});
+
+run_test("set_users_fetched_callback and notify_users_fetched", () => {
+    initialize();
+
+    const notified_ids = [];
+    people.set_users_fetched_callback((user_ids) => {
+        notified_ids.push(...user_ids);
+    });
+
+    // Callback fires with the provided user IDs.
+    people.notify_users_fetched([10, 20]);
+    assert.deepEqual(notified_ids, [10, 20]);
+
+    // init() clears the callback.
+    people.init();
+    people.notify_users_fetched([30]);
+    assert.deepEqual(notified_ids, [10, 20]);
+});
+
 run_test("user_can_initiate_direct_message_thread", ({override}) => {
     initialize();
     people.add_active_user(welcome_bot);
@@ -1840,7 +1883,15 @@ run_test("fetch_users", async ({override}) => {
         const promise = people.fetch_users_from_ids_internal([15]);
         assert.ok(promise instanceof Promise);
     };
-    await people.initialize(my_user_id, params, user_group_params);
+    people.initialize(my_user_id, params, user_group_params);
+
+    // After initialize, missing users are placeholders while the
+    // background fetch is in flight.
+    assert.equal(people.get_by_user_id(15).is_placeholder_user, true);
+    assert.equal(people.get_by_user_id(16).is_placeholder_user, true);
+
+    // Wait for the background fetch to complete.
+    await people.get_or_fetch_users_from_ids([15, 16]);
     await promise_for_user_already_in_transit;
     assert.equal(user_GET_request_calls, 1);
 
@@ -2024,6 +2075,86 @@ run_test("fetch inaccessible user", async ({override, override_rewire}) => {
     const [inaccessible_user] = await people.get_or_fetch_users_from_ids([1]);
     assert.equal(inaccessible_user.user_id, 1);
     assert.equal(inaccessible_user.is_inaccessible_user, true);
+});
+
+run_test("fetch_user_for_profile", async ({override}) => {
+    initialize();
+
+    // Fetching a user we already have complete data for is a no-op.
+    people.add_active_user({
+        ...me,
+        user_id: 60,
+        email: "sixty@example.com",
+        full_name: "Sixty",
+    });
+    await people.fetch_user_for_profile(60);
+
+    // Set up two placeholders to exercise the active and non-active branches.
+    people.add_valid_user_id(61);
+    people.add_valid_user_id(62);
+    people.add_placeholder_user(61);
+    people.add_placeholder_user(62);
+
+    const fetched_notifications = [];
+    people.set_users_fetched_callback((user_ids) => {
+        fetched_notifications.push([...user_ids]);
+    });
+
+    const user_template = {
+        delivery_email: "",
+        date_joined: "",
+        is_owner: false,
+        is_admin: false,
+        is_guest: false,
+        role: 1,
+        avatar_url: "",
+        avatar_version: 1,
+        is_bot: false,
+        is_imported_stub: false,
+    };
+
+    override(channel, "get", ({url, data, success}) => {
+        assert.equal(url, "/json/users");
+        const requested_user_id = JSON.parse(data.user_ids)[0];
+        if (requested_user_id === 61) {
+            success({
+                members: [
+                    {
+                        ...user_template,
+                        email: "sixtyone@example.com",
+                        user_id: 61,
+                        full_name: "SixtyOne",
+                        is_active: true,
+                    },
+                ],
+                result: "success",
+                msg: "",
+            });
+        } else {
+            success({
+                members: [
+                    {
+                        ...user_template,
+                        email: "sixtytwo@example.com",
+                        user_id: 62,
+                        full_name: "SixtyTwo",
+                        is_active: false,
+                    },
+                ],
+                result: "success",
+                msg: "",
+            });
+        }
+    });
+
+    await people.fetch_user_for_profile(61);
+    assert.equal(people.get_by_user_id(61).full_name, "SixtyOne");
+    assert.deepEqual(fetched_notifications, [[61]]);
+
+    await people.fetch_user_for_profile(62);
+    assert.equal(people.get_by_user_id(62).full_name, "SixtyTwo");
+    assert.ok(people.get_non_active_realm_users().some((u) => u.user_id === 62));
+    assert.deepEqual(fetched_notifications, [[61], [62]]);
 });
 
 run_test("get_by_user_id", () => {

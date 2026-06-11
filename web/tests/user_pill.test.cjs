@@ -43,6 +43,7 @@ const isaac_item = {
     deactivated: false,
     img_src: `/avatar/${isaac.user_id}`,
     is_bot: false,
+    is_placeholder_user: false,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -61,6 +62,7 @@ const deactivated_user_item = {
     deactivated: true,
     img_src: `/avatar/${deactivated_user.user_id}`,
     is_bot: undefined,
+    is_placeholder_user: false,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -75,6 +77,7 @@ const inaccessible_user_item = {
     deactivated: false,
     img_src: `/avatar/${inaccessible_user_id}`,
     is_bot: false,
+    is_placeholder_user: false,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };

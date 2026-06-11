@@ -1,8 +1,10 @@
 <tr data-subscriber-id="{{user_id}}" class="hidden-remove-button-row">
     <td class="subscriber-name panel_user_list">
-        {{> ../user_display_only_pill . display_value=name is_active=true}}
+        {{> ../user_display_only_pill . display_value=name is_active=true is_placeholder_user=is_placeholder_user}}
     </td>
-    {{#if email}}
+    {{#if is_placeholder_user}}
+    <td class="subscriber-email settings-email-column"><span class="loading-shimmer"></span></td>
+    {{else if email}}
     <td class="subscriber-email settings-email-column">{{email}}</td>
     {{else}}
     <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>

@@ -487,6 +487,8 @@ function format_dm(
             .map((recipient_id) => ({
                 name: people.get_display_full_name(recipient_id),
                 status_emoji_info: user_status.get_status_emoji(recipient_id),
+                is_placeholder_user:
+                    people.get_by_user_id(recipient_id).is_placeholder_user ?? false,
             }))
             .toSorted((a, b) => util.strcmp(a.name, b.name)),
     });
@@ -1266,6 +1268,10 @@ function inbox_view_dropdown_options(
     current_value: string | number | undefined,
 ): dropdown_widget.Option[] {
     return views_util.filters_dropdown_options(current_value, inbox_util.is_channel_view());
+}
+
+export function refresh_after_users_fetched(): void {
+    complete_rerender();
 }
 
 export function complete_rerender(coming_from_other_views = false): void {

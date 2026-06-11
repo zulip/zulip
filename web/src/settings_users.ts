@@ -380,7 +380,10 @@ function reset_scrollbar($sel: JQuery): () => void {
 function get_last_active(user: User): string {
     const last_active_date = presence.last_active_date(user.user_id);
     if (!last_active_date && presence_data_fetched) {
-        return timerender.render_now(new Date(user.date_joined)).time_str;
+        if (user.date_joined) {
+            return timerender.render_now(new Date(user.date_joined)).time_str;
+        }
+        return "";
     }
     if (!last_active_date) {
         setTimeout(() => {
@@ -401,32 +404,38 @@ function human_info(person: User): {
     is_active: boolean;
     user_id: number;
     full_name: string;
+    is_placeholder_user: boolean;
     bot_owner_id: number | null;
     can_modify: boolean;
     is_current_user: boolean;
     cannot_deactivate: boolean;
+    cannot_edit: boolean;
     display_email: string | null;
     img_src: string;
     last_active_date: string;
 } {
+    const is_placeholder = person.is_placeholder_user ?? false;
     return {
         is_bot: false,
-        user_role_text: people.get_user_type(person.user_id),
+        user_role_text: is_placeholder ? undefined : people.get_user_type(person.user_id),
         is_active: people.is_person_active(person.user_id),
         user_id: person.user_id,
         full_name: person.full_name,
+        is_placeholder_user: is_placeholder,
         bot_owner_id: person.is_bot ? person.bot_owner_id : null,
         can_modify: current_user.is_admin,
         is_current_user: people.is_my_user_id(person.user_id),
-        cannot_deactivate:
-            person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner()),
-        display_email: person.delivery_email,
+        cannot_deactivate: is_placeholder
+            ? true
+            : person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner()),
+        cannot_edit: is_placeholder,
+        display_email: is_placeholder ? null : person.delivery_email,
         img_src: people.small_avatar_url_for_person(person),
         // TODO: This is not shown in deactivated users table and it is
         // controlled by `display_last_active_column` We might just want
         // to show this for deactivated users, too, even though it might
         // usually just be undefined.
-        last_active_date: get_last_active(person),
+        last_active_date: is_placeholder ? "" : get_last_active(person),
     };
 }
 
@@ -613,6 +622,15 @@ export function redraw_imported_users_list(force_update = false): void {
     // This is needed to make sure that the imported user is shown
     // in "Users" tab.
     should_redraw_active_users_list = true;
+}
+
+export function redraw_users_lists(): void {
+    should_redraw_active_users_list = true;
+    should_redraw_deactivated_users_list = true;
+    should_redraw_imported_users_list = true;
+    redraw_active_users_list();
+    redraw_deactivated_users_list();
+    redraw_imported_users_list();
 }
 
 function start_data_load(): void {

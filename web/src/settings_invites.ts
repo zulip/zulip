@@ -11,7 +11,9 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -48,12 +50,15 @@ type Invite = z.output<typeof invite_schema> & {
     disable_buttons?: boolean;
     referrer_name?: string;
     img_src?: string;
+    referrer_is_placeholder_user?: boolean;
     notify_referrer_on_join?: boolean;
 };
 
 const meta = {
     loaded: false,
 };
+
+let invites_list_widget: ListWidgetType<Invite, Invite> | undefined;
 
 export function reset(): void {
     meta.loaded = false;
@@ -92,7 +97,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
     add_invited_as_text(invites_data.invites);
 
     const $invites_table = $("#admin_invites_table").expectOne();
-    ListWidget.create($invites_table, invites_data.invites, {
+    invites_list_widget = ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
@@ -104,8 +109,10 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
             item.disable_buttons =
                 item.invited_as === settings_config.user_role_values.owner.code &&
                 !current_user.is_owner;
+            const referrer = people.maybe_get_user_by_id(item.invited_by_user_id, true);
             item.referrer_name = people.get_full_name(item.invited_by_user_id);
             item.img_src = people.small_avatar_url_for_user_id(item.invited_by_user_id);
+            item.referrer_is_placeholder_user = referrer?.is_placeholder_user ?? false;
             return render_admin_invites_list({invite: item});
         },
         filter: {
@@ -343,4 +350,14 @@ export function update_invite_user_panel(): void {
     } else {
         $("#admin-invites-list .invite-user-link").show();
     }
+}
+
+export function refresh_after_users_fetched(): void {
+    if (invites_list_widget === undefined) {
+        return;
+    }
+    if (!overlays.settings_open()) {
+        return;
+    }
+    invites_list_widget.hard_redraw();
 }

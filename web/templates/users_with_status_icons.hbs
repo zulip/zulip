@@ -1,7 +1,7 @@
 {{#list_each users ~}}
 <span class="user_status_icon_wrapper">
     <span class="user-status-microlayout">
-        <span class="user-name">{{name}}</span>
+        <span class="user-name">{{#if is_placeholder_user}}<span class="loading-shimmer"></span>{{else}}{{name}}{{/if}}</span>
         {{~!-- --~}}
         {{~> status_emoji status_emoji_info ~}}
     </span>

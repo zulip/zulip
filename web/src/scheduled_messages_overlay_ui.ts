@@ -34,7 +34,7 @@ type ScheduledMessageRenderContext = ScheduledMessage &
               is_stream: false;
               is_dm_with_self: boolean;
               formatted_send_at_time: string;
-              recipients: string;
+              recipient_users: {full_name: string; is_placeholder_user: boolean}[];
           }
     );
 
@@ -116,13 +116,21 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
                 is_empty_string_topic: scheduled_msg.topic === "",
             };
         } else {
-            const user_ids_string = scheduled_msg.to.join(",");
-            const recipients = people.format_recipients(user_ids_string, "long");
+            const recipient_users = scheduled_msg.to
+                .filter((id) => !people.is_my_user_id(id) || scheduled_msg.to.length === 1)
+                .map((user_id) => {
+                    const person = people.get_by_user_id(user_id);
+                    return {
+                        full_name: person.full_name,
+                        is_placeholder_user: person.is_placeholder_user ?? false,
+                    };
+                })
+                .toSorted((a, b) => util.strcmp(a.full_name, b.full_name));
             scheduled_msg_render_context = {
                 ...scheduled_msg,
                 is_stream: false as const,
                 is_dm_with_self: people.is_direct_message_conversation_with_self(scheduled_msg.to),
-                recipients,
+                recipient_users,
                 formatted_send_at_time,
             };
         }
@@ -167,6 +175,10 @@ export function rerender(): void {
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.find(".scheduled-message-row").remove();
     $messages_list.append($(rendered_list));
+}
+
+export function refresh_after_users_fetched(): void {
+    rerender();
 }
 
 export function remove_scheduled_message_id(scheduled_msg_id: number): void {

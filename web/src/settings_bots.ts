@@ -61,6 +61,7 @@ type BotInfo = {
     is_active: boolean;
     user_id: number;
     full_name: string;
+    is_placeholder_user: boolean;
     user_role_text: string | undefined;
     img_src: string;
     bot_type: string | undefined;
@@ -77,6 +78,7 @@ type BotInfo = {
     | {
           bot_owner_id: number;
           is_bot_owner_active: boolean;
+          is_bot_owner_placeholder: boolean;
           owner_img_src: string;
       }
     | {
@@ -434,6 +436,7 @@ function bot_info(bot_user_id: number): BotInfo {
         status_code: people.is_person_active(bot_user.user_id) ? 0 : 1,
         user_id: bot_user.user_id,
         full_name: bot_user.full_name,
+        is_placeholder_user: bot_user.is_placeholder_user ?? false,
         user_role_text: people.get_user_type(bot_user_id),
         img_src: people.small_avatar_url_for_person(bot_user),
         // Convert bot type id to string for viewing to the users.
@@ -450,6 +453,8 @@ function bot_info(bot_user_id: number): BotInfo {
             ? {
                   bot_owner_id: owner_id,
                   is_bot_owner_active: people.is_person_active(owner_id),
+                  is_bot_owner_placeholder:
+                      people.get_by_user_id(owner_id).is_placeholder_user ?? false,
                   owner_img_src: people.small_avatar_url_for_user_id(owner_id),
               }
             : {

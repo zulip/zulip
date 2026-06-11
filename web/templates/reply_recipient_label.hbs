@@ -8,6 +8,8 @@
     {{#*inline "z-recipient-label"}}
         {{#if has_empty_string_topic~}}
         #{{channel_name}} &gt; <span class="empty-topic-display">{{empty_string_topic_display_name}}</span>
+        {{~else if has_placeholder_user~}}
+        <span class="loading-shimmer"></span>
         {{~else~}}
         {{label_text}}
         {{~/if}}

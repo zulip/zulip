@@ -56,14 +56,14 @@
     }
 
     &.sender_info_hovered {
-        .sender_name {
+        .sender_name:not(.is-placeholder-user) {
             cursor: pointer;
             /* TODO: Refactor the teetering nested classes
                above so that !important can be removed. */
             color: var(--color-text-sender-name-hover) !important;
         }
 
-        .message-avatar {
+        .message-avatar:not(.is-placeholder-user) {
             cursor: pointer;
         }
     }

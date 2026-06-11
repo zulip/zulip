@@ -29,10 +29,12 @@ const settings_preferences = mock_esm("../src/settings_preferences", {
 const settings_bots = mock_esm("../src/settings_bots", {
     redraw_your_bots_list() {},
     toggle_bot_config_download_container() {},
+    update_bot_data() {},
 });
 mock_esm("../src/settings_panel_menu", {
     hide_default_streams_list_for_guest() {},
     update_imported_users_tab() {},
+    refresh_users_panel_after_fetch() {},
 });
 mock_esm("../src/settings_users", {
     update_user_data() {},
@@ -42,6 +44,7 @@ mock_esm("../src/settings_users", {
 mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
+    get_user_id_if_user_profile_modal_open: () => undefined,
 });
 
 const buddy_list = mock_esm("../src/buddy_list", {
@@ -84,6 +87,46 @@ mock_esm("../src/settings_realm_user_settings_defaults", {
 });
 mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
+});
+mock_esm("../src/inbox_ui", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/recent_view_ui", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/scheduled_messages_overlay_ui", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/reactions", {
+    update_user_full_name() {},
+});
+mock_esm("../src/read_receipts", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/drafts_overlay_ui", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/search", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/composebox_typeahead", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/stream_edit_subscribers", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/user_group_edit_members", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/settings_invites", {
+    refresh_after_users_fetched() {},
+});
+const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
+    update_recipient_text_for_reply_button() {},
+});
+mock_esm("../src/narrow_state", {
+    filter: () => message_lists.current?.data.filter,
+    pm_ids_set: (filter) => new Set(filter?.terms_with_operator("dm")[0]?.operand),
 });
 
 const bot_data = zrequire("bot_data");
@@ -432,4 +475,55 @@ run_test("updates", ({override}) => {
     user_events.update_person({user_id: isaac.user_id, full_name: "Sir Isaac Newton"});
     assert.equal($navbar_title.text(), "placeholder");
     message_lists.set_current(undefined);
+});
+
+run_test("initialize registers users_fetched callback", ({override}) => {
+    initialize();
+
+    let pm_list_updated = false;
+    const full_name_updates = [];
+    const avatar_updates = [];
+    let buddy_list_user_ids;
+
+    override(pm_list, "update_private_messages", () => {
+        pm_list_updated = true;
+    });
+    override(message_live_update, "update_user_full_name", (user_id, full_name) => {
+        full_name_updates.push({user_id, full_name});
+    });
+    override(message_live_update, "update_avatar", (user_id, avatar_url) => {
+        avatar_updates.push({user_id, avatar_url});
+    });
+    buddy_data.insert_or_move = (user_ids) => {
+        buddy_list_user_ids = user_ids;
+    };
+    override(compose_pm_pill, "update_placeholder_user_pill", noop);
+    let reply_button_updated = false;
+    override(compose_closed_ui, "update_recipient_text_for_reply_button", () => {
+        reply_button_updated = true;
+    });
+
+    const isaac = make_user({
+        email: "isaac@example.com",
+        user_id: 32,
+        full_name: "Isaac Newton",
+        avatar_url: "isaac-avatar-url",
+    });
+    people.add_active_user(isaac);
+    people.add_valid_user_id(isaac.user_id);
+
+    // Narrow to a DM with the fetched user so the callback refreshes the
+    // reply button; keep the header hidden so it doesn't re-render into
+    // DOM the test doesn't set up.
+    $("#message_view_header").addClass("hidden");
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [isaac.user_id]}]));
+
+    user_events.initialize();
+    people.notify_users_fetched([isaac.user_id]);
+
+    assert.ok(pm_list_updated);
+    assert.ok(reply_button_updated);
+    assert.deepEqual(full_name_updates, [{user_id: 32, full_name: "Isaac Newton"}]);
+    assert.deepEqual(avatar_updates, [{user_id: 32, avatar_url: "isaac-avatar-url"}]);
+    assert.deepEqual(buddy_list_user_ids, [isaac.user_id]);
 });

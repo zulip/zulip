@@ -21,6 +21,7 @@ type RecipientLabel = {
     has_empty_string_topic?: boolean;
     stream_name?: string;
     is_dm_with_self?: boolean;
+    has_placeholder_user?: boolean;
 };
 
 function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
@@ -45,9 +46,13 @@ function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel 
     } else {
         label_text = message_store.get_pm_full_names(user_ids);
     }
+    const has_placeholder_user = user_ids.some(
+        (id) => people.get_by_user_id(id).is_placeholder_user ?? false,
+    );
     const recipient_label: RecipientLabel = {
         label_text,
         is_dm_with_self,
+        has_placeholder_user,
     };
     return recipient_label;
 }
@@ -249,6 +254,7 @@ export function update_recipient_text_for_reply_button(
             has_empty_string_topic: recipient_label.has_empty_string_topic,
             channel_name: recipient_label.stream_name,
             is_dm_with_self: recipient_label.is_dm_with_self,
+            has_placeholder_user: recipient_label.has_placeholder_user,
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
         });

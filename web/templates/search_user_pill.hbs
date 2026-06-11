@@ -4,7 +4,7 @@
         {{ operator }}:
     </span>
     {{#each users}}
-        <div class="pill{{#if deactivated}} deactivated-pill{{/if}}" data-user-id="{{this.user_id}}">
+        <div class="pill{{#if deactivated}} deactivated-pill{{/if}}{{#if this.is_placeholder_user}} pill-loading-shimmer{{/if}}" data-user-id="{{this.user_id}}">
             <img class="pill-image" src="{{this.img_src}}" />
             <div class="pill-image-border"></div>
             {{#if deactivated}}
@@ -12,10 +12,12 @@
             {{/if}}
             <span class="pill-label">
                 <span class="pill-value">{{ this.full_name }}</span>
+                {{#unless this.is_placeholder_user}}
                 {{~#if this.should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
                 {{~#if this.status_emoji_info~}}
                     {{~> status_emoji this.status_emoji_info~}}
                 {{~/if~}}
+                {{/unless}}
             </span>
             <div class="exit">
                 <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="{{t 'Remove' }}"></a>

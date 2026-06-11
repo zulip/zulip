@@ -77,7 +77,10 @@ let fetch_users_storage: {
     >;
 };
 
+let users_fetched_callback: ((user_ids: number[]) => void) | undefined;
+
 export let INACCESSIBLE_USER_NAME: string;
+export let PLACEHOLDER_USER_NAME: string;
 export let WELCOME_BOT: User;
 export let EMAIL_GATEWAY_BOT: User;
 
@@ -107,6 +110,7 @@ export function init(): void {
     duplicate_full_name_data = new FoldDict();
 
     INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
+    PLACEHOLDER_USER_NAME = $t({defaultMessage: "Loading…"});
 
     fetch_users_storage = {
         pending_user_ids: new Set(),
@@ -116,6 +120,8 @@ export function init(): void {
         promise_for_requested: new Map(),
         promise_for_in_transit: new Map(),
     };
+
+    users_fetched_callback = undefined;
 }
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -924,6 +930,8 @@ export function is_active_user_or_system_bot(user_id: number): boolean {
     }
 
     const user = people_by_user_id_dict.get(user_id)!;
+    // Placeholder users go through add_active_user, so they're already
+    // handled by the active_user_dict.has check above.
     if (user.is_inaccessible_user) {
         return true;
     }
@@ -1612,6 +1620,25 @@ export function add_inaccessible_user(user_id: number): User {
     return unknown_user;
 }
 
+export function add_placeholder_user(user_id: number): User {
+    const email = make_dummy_email(user_id);
+    const placeholder = make_user(user_id, email, PLACEHOLDER_USER_NAME);
+    placeholder.is_placeholder_user = true;
+    // Placeholder users are known to be accessible (they're in
+    // valid_user_ids); we just haven't loaded their data yet.
+    placeholder.is_inaccessible_user = false;
+    add_active_user(placeholder);
+    return placeholder;
+}
+
+export function set_users_fetched_callback(callback: (user_ids: number[]) => void): void {
+    users_fetched_callback = callback;
+}
+
+export function notify_users_fetched(user_ids: number[]): void {
+    users_fetched_callback?.(user_ids);
+}
+
 export function get_user_by_id_assert_valid(
     user_id: number,
     allow_missing_user = !settings_data.user_can_access_all_other_users(),
@@ -1887,6 +1914,11 @@ export function populate_valid_user_ids(
     }
 }
 
+function has_fetched_user(user_id: number): boolean {
+    const existing = people_by_user_id_dict.get(user_id);
+    return existing !== undefined && !existing.is_placeholder_user;
+}
+
 function get_combined_promise_for_user_ids(user_ids: Set<number>): {
     promise_for_all_requested_users: Promise<unknown>;
     user_ids_pending_fetch: Set<number>;
@@ -1895,7 +1927,7 @@ function get_combined_promise_for_user_ids(user_ids: Set<number>): {
     // Since start_fetch_for_requested_users is called after a `setTimeout`,
     // it is possible that some users have already been fetched.
     for (const user_id of user_ids) {
-        if (people_by_user_id_dict.has(user_id)) {
+        if (has_fetched_user(user_id)) {
             /* istanbul ignore next */
             user_ids.delete(user_id);
         }
@@ -1977,16 +2009,7 @@ async function start_fetch_for_requested_users(): Promise<void> {
         }
     }
 
-    for (const user of fetched_users) {
-        if (user.is_active) {
-            add_active_user(user);
-        } else {
-            if (!user.is_deleted) {
-                non_active_user_dict.set(user.user_id, user);
-            }
-            _add_user(user);
-        }
-    }
+    apply_fetched_users(fetched_users);
 
     // Resolve promises waiting on this fetch after updating the data locally.
     fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
@@ -2002,12 +2025,49 @@ async function start_fetch_for_requested_users(): Promise<void> {
     fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
 }
 
+// Apply a batch of fetched users to the local people store and
+// notify any registered callback about the IDs that were
+// placeholders before this update.
+function apply_fetched_users(fetched_users: UsersFetchResponse["members"]): void {
+    const fetched_placeholder_user_ids: number[] = [];
+    for (const user of fetched_users) {
+        const existing = people_by_user_id_dict.get(user.user_id);
+        if (existing?.is_placeholder_user) {
+            fetched_placeholder_user_ids.push(user.user_id);
+        }
+    }
+
+    for (const user of fetched_users) {
+        if (user.is_active) {
+            add_active_user(user);
+        } else {
+            if (!user.is_deleted) {
+                non_active_user_dict.set(user.user_id, user);
+            }
+            _add_user(user);
+        }
+    }
+
+    if (fetched_placeholder_user_ids.length > 0) {
+        notify_users_fetched(fetched_placeholder_user_ids);
+    }
+}
+
+// Direct fetch for a single user, bypassing the batch queue.
+// Used when the user explicitly views a placeholder user's profile
+// and we don't want to wait for a large background fetch to complete.
+export async function fetch_user_for_profile(user_id: number): Promise<void> {
+    if (has_fetched_user(user_id)) {
+        return;
+    }
+    const fetched_users = await fetch_users(new Set([user_id]));
+    apply_fetched_users(fetched_users);
+}
+
 export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<unknown> => {
     // NOTE: NEVER USE THIS FUNCTION DIRECTLY.
     // Call get_or_fetch_users_from_ids instead.
-    const unknown_user_ids = new Set(
-        user_ids.filter((user_id) => !people_by_user_id_dict.has(user_id)),
-    );
+    const unknown_user_ids = new Set(user_ids.filter((user_id) => !has_fetched_user(user_id)));
 
     // We already have data for all requested users.
     if (unknown_user_ids.size === 0) {
@@ -2153,11 +2213,11 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
     });
 }
 
-export async function initialize(
+export function initialize(
     my_user_id: number,
     people_params: StateData["people"],
     user_group_params: StateData["user_groups"],
-): Promise<void> {
+): void {
     initialize_current_user(my_user_id);
     populate_valid_user_ids(
         user_group_params,
@@ -2186,8 +2246,11 @@ export async function initialize(
         user_ids_to_fetch.delete(person.user_id);
     }
 
-    // Fetch all the missing users. This code path is temporary: We
-    // plan to move to a model where the web app expects to have an
-    // incomplete users dataset in large organizations.
-    await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
+    // Add placeholder users for missing user IDs so the UI can
+    // render immediately with "Loading…" names, and kick off
+    // a background fetch for the real data.
+    for (const user_id of user_ids_to_fetch) {
+        add_placeholder_user(user_id);
+    }
+    void get_or_fetch_users_from_ids([...user_ids_to_fetch]);
 }

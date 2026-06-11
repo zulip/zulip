@@ -147,7 +147,7 @@ run_test("get_stream_ids", () => {
 run_test("generate_pill_html", () => {
     assert.deepEqual(
         stream_pill.generate_pill_html(denmark_pill),
-        "<div class='pill 'data-stream-id=\"101\" tabindex=0>\n" +
+        "<div class='pill'data-stream-id=\"101\" tabindex=0>\n" +
             '    <span class="pill-label">\n' +
             '        <span class="pill-value">\n' +
             '                <span class="decorated-channel-name-wrapper"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">Denmark</span></span>        </span></span>\n' +

@@ -681,6 +681,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1001,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_placeholder_user: false,
         },
         {
             href: "#narrow/dm/1002-Alice-Smith",
@@ -695,6 +696,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1002,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_placeholder_user: false,
         },
         {
             href: "#narrow/dm/1003-Fred-Flintstone",
@@ -709,6 +711,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1003,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_placeholder_user: false,
         },
     ]);
 });

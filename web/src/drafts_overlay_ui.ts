@@ -238,6 +238,12 @@ function get_header_for_narrow_drafts(): string {
                 return $t({defaultMessage: "Drafts from conversation with yourself"});
             }
         }
+        const has_placeholder_user = private_recipient_ids.some(
+            (id) => people.get_by_user_id(id).is_placeholder_user ?? false,
+        );
+        if (has_placeholder_user) {
+            return $t({defaultMessage: "Drafts from conversation"});
+        }
         return $t(
             {defaultMessage: "Drafts from conversation with {recipient}"},
             {
@@ -438,6 +444,12 @@ function rerender_drafts(): void {
     const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
     render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
     setup_event_handlers();
+}
+
+export function refresh_after_users_fetched(): void {
+    if (overlays.drafts_open()) {
+        rerender_drafts();
+    }
 }
 
 export function launch(): void {

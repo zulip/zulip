@@ -75,6 +75,7 @@ export function fetch_read_receipts(message_id: number): void {
                     user_id: user.user_id,
                     full_name: user.full_name,
                     avatar_url: people.small_avatar_url_for_person(user),
+                    is_placeholder_user: user.is_placeholder_user ?? false,
                 })),
             };
 
@@ -140,4 +141,16 @@ export function show_user_list(message_id: number): void {
 
 export function hide_user_list(): void {
     modals.close_if_open("read_receipts_modal");
+}
+
+// If the read receipts modal is open, re-trigger its existing
+// fetch+render path after placeholder users are replaced by real data.
+// The modal already polls every 60s; this avoids waiting for the next poll.
+export function refresh_after_users_fetched(): void {
+    if (modals.is_active("read_receipts_modal")) {
+        const message_id = Number($("#read_receipts_modal").attr("data-message-id"));
+        if (message_id) {
+            fetch_read_receipts(message_id);
+        }
+    }
 }

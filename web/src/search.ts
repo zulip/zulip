@@ -26,6 +26,15 @@ let search_input_has_changed = false;
 let search_typeahead: Typeahead<string>;
 let on_narrow_search: OnNarrowSearch;
 
+export function refresh_after_users_fetched(): void {
+    if (search_pill_widget !== null) {
+        search_pill.refresh_user_pill_data(search_pill_widget);
+    }
+    if (search_typeahead?.shown) {
+        search_typeahead.lookup(false);
+    }
+}
+
 function set_search_bar_text(text: string): void {
     $("#search_query").text(text);
     const current_selection = window.getSelection()!;

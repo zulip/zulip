@@ -41,6 +41,7 @@ const config = (
         new webpack.DefinePlugin({
             DEVELOPMENT: JSON.stringify(!production),
             ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
+            SHIMMER_DURATION: JSON.stringify(process.env["SHIMMER_DURATION"] ?? null),
         }),
         new DebugRequirePlugin(),
         new BundleTracker({

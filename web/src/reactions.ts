@@ -700,6 +700,9 @@ function check_should_display_reactors(
     let total_reactions = 0;
     for (const {count, user_ids} of reaction_counts_and_user_ids) {
         total_reactions += count ?? user_ids.length;
+        if (user_ids.some((user_id) => people.get_by_user_id(user_id).is_placeholder_user)) {
+            return false;
+        }
     }
     return total_reactions <= 3;
 }
