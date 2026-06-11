@@ -336,7 +336,10 @@ def build_get_topic_visibility_policy(
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
         visibility_policy = row["visibility_policy"]
-        topic_to_visibility_policy[(recipient_id, topic_name)] = visibility_policy
+        # Topic matching is case-insensitive, and stored topic names
+        # preserve the original casing, so we canonicalize the key to
+        # match the lowercased lookup in get_topic_visibility_policy.
+        topic_to_visibility_policy[(recipient_id, topic_name.lower())] = visibility_policy
 
     def get_topic_visibility_policy(recipient_id: int, topic_name: str) -> int:
         return topic_to_visibility_policy[(recipient_id, topic_name.lower())]

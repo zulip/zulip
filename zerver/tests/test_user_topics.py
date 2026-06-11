@@ -12,7 +12,11 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
-from zerver.lib.user_topics import get_topic_mutes, topic_has_visibility_policy
+from zerver.lib.user_topics import (
+    build_get_topic_visibility_policy,
+    get_topic_mutes,
+    topic_has_visibility_policy,
+)
 from zerver.models import Message, Reaction, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.streams import get_stream
@@ -705,6 +709,30 @@ class UserTopicsTests(ZulipTestCase):
         self.assert_json_error(
             result, "Invalid visibility_policy: Value error, Not in the list of possible values"
         )
+
+    def test_prefetched_visibility_policy_is_case_insensitive(self) -> None:
+        # build_get_topic_visibility_policy prefetches policies for use
+        # in unread-data computation. Since topic matching is
+        # case-insensitive, it must return the configured policy
+        # regardless of how the queried topic name is cased relative to
+        # the stored UserTopic row.
+        user = self.example_user("hamlet")
+        stream = get_stream("Verona", user.realm)
+        assert stream.recipient_id is not None
+
+        do_set_user_topic_visibility_policy(
+            user,
+            stream,
+            "Test Topic",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+
+        get_topic_visibility_policy = build_get_topic_visibility_policy(user)
+        for queried_topic_name in ["Test Topic", "test topic", "TEST TOPIC"]:
+            self.assertEqual(
+                get_topic_visibility_policy(stream.recipient_id, queried_topic_name),
+                UserTopic.VisibilityPolicy.MUTED,
+            )
 
 
 class AutomaticallyFollowTopicsTests(ZulipTestCase):
