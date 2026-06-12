@@ -2816,6 +2816,85 @@ class EditMessageTest(ZulipTestCase):
             True,
         )
 
+    def test_move_message_does_not_override_explicit_visibility_policy(self) -> None:
+        # An existing visibility policy on the target topic means the
+        # move is not topic initiation for the sender: the ON_INITIATION
+        # policies must not override an explicit MUTED choice, nor
+        # downgrade FOLLOWED to UNMUTED in a muted channel.
+        self.login("iago")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        stream = self.make_stream("new_stream")
+        for user in [iago, hamlet, cordelia]:
+            self.subscribe(user, stream.name)
+
+        # Keep the original topic non-empty so that these are partial
+        # moves, the code path that applies the ON_INITIATION policies.
+        self.send_stream_message(iago, stream.name, topic_name="original")
+
+        do_change_user_setting(
+            hamlet,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+        hamlet_msg_id = self.send_stream_message(hamlet, stream.name, topic_name="original")
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, "muted target", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        result = self.client_patch(f"/json/messages/{hamlet_msg_id}", {"topic": "muted target"})
+        self.assert_json_success(result)
+
+        muted_target = StreamTopicTarget(stream_id=stream.id, topic_name="muted target")
+        self.assertEqual(
+            muted_target.user_ids_with_visibility_policy(UserTopic.VisibilityPolicy.MUTED),
+            {hamlet.id},
+        )
+        self.assertEqual(
+            muted_target.user_ids_with_visibility_policy(UserTopic.VisibilityPolicy.FOLLOWED),
+            set(),
+        )
+
+        do_change_user_setting(
+            cordelia,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+            acting_user=None,
+        )
+        do_change_user_setting(
+            cordelia,
+            "automatically_unmute_topics_in_muted_streams_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+        subscription = Subscription.objects.get(recipient=stream.recipient, user_profile=cordelia)
+        subscription.is_muted = True
+        subscription.save()
+
+        cordelia_msg_id = self.send_stream_message(cordelia, stream.name, topic_name="original")
+        do_set_user_topic_visibility_policy(
+            cordelia,
+            stream,
+            "followed target",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        result = self.client_patch(
+            f"/json/messages/{cordelia_msg_id}", {"topic": "followed target"}
+        )
+        self.assert_json_success(result)
+
+        followed_target = StreamTopicTarget(stream_id=stream.id, topic_name="followed target")
+        self.assertEqual(
+            followed_target.user_ids_with_visibility_policy(UserTopic.VisibilityPolicy.FOLLOWED),
+            {cordelia.id},
+        )
+        self.assertEqual(
+            followed_target.user_ids_with_visibility_policy(UserTopic.VisibilityPolicy.UNMUTED),
+            set(),
+        )
+
     def test_automatic_follow_policy_in_channel_with_protected_history(self) -> None:
         self.login("iago")
         iago = self.example_user("iago")

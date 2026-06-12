@@ -85,7 +85,10 @@ from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamM
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.user_message import bulk_insert_all_ums
-from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
+from zerver.lib.user_topics import (
+    get_topic_visibility_policy,
+    get_users_with_user_topic_visibility_policy,
+)
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -839,6 +842,16 @@ def apply_automatic_unmute_follow_topics_policy(
     target_stream: Stream,
     target_topic_name: str,
 ) -> None:
+    # Like the message-send path, an existing visibility policy for the
+    # target topic means this is not topic initiation for the user; in
+    # particular, the ON_INITIATION policies must not override an
+    # explicit MUTED choice or downgrade FOLLOWED to UNMUTED.
+    current_visibility_policy = get_topic_visibility_policy(
+        user_profile, target_stream.id, target_topic_name
+    )
+    if current_visibility_policy != UserTopic.VisibilityPolicy.INHERIT:
+        return
+
     if (
         user_profile.automatically_follow_topics_policy
         == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
