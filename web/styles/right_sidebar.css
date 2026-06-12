@@ -579,11 +579,24 @@
 }
 
 .buddy-list-user-link {
+    text-decoration: none;
+    display: block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    
     &:focus-within {
         outline: 2px solid var(--color-outline-focus);
         outline-offset: -2px;
         background-color: var(--color-background-hover-narrow-filter);
+        text-decoration: none;
     }
+}
+
+#user-list.with_avatars
+    .buddy-list-user-link
+    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-with-avatar);
 }
 
 .invite-user-shortcut {
