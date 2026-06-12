@@ -19,6 +19,7 @@ import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
@@ -70,6 +71,12 @@ const left_sidebar_scroll_state: {
 const collapsed_sections = new Set<string>();
 const sections_with_only_inactive_or_muted = new Set<string>();
 const sections_showing_inactive_or_muted = new Set<string>();
+
+// The channel whose sidebar topic list the user last expanded or
+// collapsed with its expand chevron, and which of the two they did.
+// This overrides the default that `is_topic_list_expanded` computes
+// for that channel, until the user narrows away from it.
+let topic_list_expanded_override: {stream_id: number; is_expanded: boolean} | undefined;
 
 // Persistence for collapsed sections state
 const collapsed_sections_ls_key = "left_sidebar_collapsed_stream_sections";
@@ -318,6 +325,9 @@ export function add_sidebar_row(sub: StreamSubscription): void {
 
 export function remove_sidebar_row(stream_id: number): void {
     stream_sidebar.remove_row(stream_id);
+    if (topic_list_expanded_override?.stream_id === stream_id) {
+        topic_list_expanded_override = undefined;
+    }
     const force_rerender = stream_id === topic_list.active_stream_id();
     update_streams_sidebar(force_rerender);
 }
@@ -841,6 +851,7 @@ function build_stream_sidebar_li(sub: StreamSubscription, for_modal = false): JQ
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
     const url = hash_util.channel_url_by_user_setting(sub.stream_id);
+    const is_empty_topic_only_channel = stream_data.is_empty_topic_only_channel(sub.stream_id);
     const args = {
         name,
         id: sub.stream_id,
@@ -854,7 +865,12 @@ function build_stream_sidebar_li(sub: StreamSubscription, for_modal = false): JQ
         cannot_create_topics_in_channel: !stream_data.can_create_new_topics_in_stream(
             sub.stream_id,
         ),
-        is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
+        is_empty_topic_only_channel,
+        // Only under this setting does a channel row have an expanded
+        // state of its own to report, since it is the only one where
+        // the first click navigates without expanding.
+        show_expand_topics_chevron:
+            channel_links_to_list_of_topics() && !is_empty_topic_only_channel && !for_modal,
         for_modal,
     };
     const $list_item = $(render_stream_sidebar_row(args));
@@ -1187,7 +1203,10 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
 }
 
 function deselect_stream_items(): void {
-    $("ul#stream_filters li").removeClass("active-filter stream-expanded");
+    $("ul#stream_filters li").removeClass(
+        "active-filter stream-expanded topic-list-expanded hide-expand-topics-chevron",
+    );
+    $("ul#stream_filters .subscription_block[aria-expanded]").attr("aria-expanded", "false");
 }
 
 export function update_stream_sidebar_for_topic_search(): void {
@@ -1243,10 +1262,6 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
         return undefined;
     }
 
-    if (!info.topic_selected && !zoomed_in) {
-        $stream_li.addClass("active-filter");
-    }
-
     // Always add 'stream-expanded' class irrespective of whether
     // topic is selected or not. This is required for proper styling
     // masked unread counts.
@@ -1259,6 +1274,25 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
+
+    const is_expanded = is_topic_list_expanded(stream_id);
+    if (channel_links_to_list_of_topics()) {
+        // Only these channel rows have an expand chevron to update.
+        update_topic_list_expanded_ui($stream_li, is_expanded);
+        // A "topic:" search replaces the sidebar topic lists with its
+        // results, leaving the chevron nothing to control.
+        $stream_li.toggleClass("hide-expand-topics-chevron", rerender_topics_for_search);
+    }
+    update_channel_row_active_filter($stream_li, info.topic_selected, is_expanded);
+
+    if (!is_expanded && !rerender_topics_for_search) {
+        // The clear is for a list built by an earlier narrow into this
+        // same channel, which the check above leaves in place.
+        clear_topics();
+        maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
+        return $stream_li;
+    }
+
     if (!rerender_topics_for_search) {
         topic_list.rebuild_left_sidebar($stream_li, stream_id);
     }
@@ -1270,6 +1304,77 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
 
     return $stream_li;
+}
+
+// The row itself is the control, so it carries the expanded state for
+// screen readers; the attribute is only rendered on the rows that show
+// a chevron, which are the only ones the state means anything for.
+function update_topic_list_expanded_ui($stream_li: JQuery, is_expanded: boolean): void {
+    $stream_li.toggleClass("topic-list-expanded", is_expanded);
+    $stream_li
+        .find(".subscription_block[aria-expanded]")
+        .attr("aria-expanded", is_expanded ? "true" : "false");
+}
+
+// The current topic's own row takes over the selection when visible
+// below, since `capture_left_sidebar_selection_anchor` needs exactly
+// one selected row to anchor sidebar scrolling to.
+function update_channel_row_active_filter(
+    $stream_li: JQuery,
+    topic_selected: boolean,
+    is_expanded: boolean,
+): void {
+    $stream_li.toggleClass("active-filter", !zoomed_in && !(topic_selected && is_expanded));
+}
+
+function channel_links_to_list_of_topics(): boolean {
+    return (
+        user_settings.web_channel_default_view ===
+        web_channel_default_view_values.list_of_topics.code
+    );
+}
+
+// Whether the middle pane is already showing this channel's own
+// "List of topics" view, which the inbox code renders.
+function is_viewing_channel_topic_list(stream_id: number): boolean {
+    return inbox_util.is_channel_view() && inbox_util.get_channel_id() === stream_id;
+}
+
+// The sidebar topic list is how one navigates between a channel's
+// topics, so it's shown for whichever channel the user is reading.
+// The exception, and the only case with a chevron to override it, is
+// that channel's own "List of topics" view, which already shows the
+// same list in the middle pane.
+function is_topic_list_expanded(stream_id: number): boolean {
+    if (!channel_links_to_list_of_topics()) {
+        return true;
+    }
+    if (topic_list_expanded_override?.stream_id === stream_id) {
+        return topic_list_expanded_override.is_expanded;
+    }
+    return !is_viewing_channel_topic_list(stream_id);
+}
+
+export function toggle_topic_list_expanded(stream_id: number): void {
+    const $stream_li = get_stream_li(stream_id);
+    if (!$stream_li) {
+        blueslip.error("No stream_li for subscribed stream", {stream_id});
+        return;
+    }
+
+    const is_expanded = !is_topic_list_expanded(stream_id);
+    topic_list_expanded_override = {stream_id, is_expanded};
+    if (is_expanded) {
+        topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    } else if (topic_list.active_stream_id() === stream_id) {
+        clear_topics();
+    }
+
+    update_topic_list_expanded_ui($stream_li, is_expanded);
+    const topic_selected =
+        narrow_state.stream_id() === stream_id && narrow_state.topic() !== undefined;
+    update_channel_row_active_filter($stream_li, topic_selected, is_expanded);
+    maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
 }
 
 export let get_section_id_for_stream_li = function ($stream_li: JQuery): string {
@@ -1288,6 +1393,11 @@ export function handle_narrow_activated(
     show_more_topics: boolean,
 ): void {
     const previously_expanded_stream_id = topic_list.active_stream_id();
+    const info = get_sidebar_stream_topic_info(filter);
+
+    if (topic_list_expanded_override?.stream_id !== info.stream_id) {
+        topic_list_expanded_override = undefined;
+    }
 
     // Zoom out, if needed, so that get_stream_li returns the correct
     // value when calling update_stream_sidebar_for_narrow.
@@ -1297,13 +1407,11 @@ export function handle_narrow_activated(
 
     const $stream_li = update_stream_sidebar_for_narrow(filter);
     if ($stream_li && !change_hash && !is_zoomed_in() && show_more_topics) {
-        const info = get_sidebar_stream_topic_info(filter);
         assert(info.stream_id !== undefined);
         zoom_in(info.stream_id);
     }
 
     // Do not auto scroll when switching topics in an already expanded channel.
-    const info = get_sidebar_stream_topic_info(filter);
     if (info.stream_id !== previously_expanded_stream_id) {
         scroll_stream_into_view();
     }
@@ -1311,6 +1419,7 @@ export function handle_narrow_activated(
 
 export function handle_message_view_deactivated(): void {
     deselect_stream_items();
+    topic_list_expanded_override = undefined;
     clear_topics();
 }
 
@@ -1392,6 +1501,27 @@ export function initialize({
 }
 
 export function initialize_tippy_tooltips(): void {
+    tippy.delegate("body", {
+        target: "#stream_filters .channel-expand-topics-chevron",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const stream_id = stream_id_for_elt($(instance.reference).parents("li.narrow-filter"));
+            if (!is_viewing_channel_topic_list(stream_id)) {
+                // Clicking this row still has somewhere to navigate
+                // to, so it won't toggle anything; the chevron is only
+                // reporting that the topic list is expanded.
+                return false;
+            }
+            instance.setContent(
+                is_topic_list_expanded(stream_id)
+                    ? $t({defaultMessage: "Collapse topic list"})
+                    : $t({defaultMessage: "Expand topic list"}),
+            );
+            return undefined;
+        },
+        appendTo: () => document.body,
+    });
+
     for (const parent_class of ["#stream_filters li", "#left-sidebar-modal"]) {
         tippy.delegate("body", {
             target: `${parent_class} .subscription_block .stream-name`,
@@ -1469,10 +1599,15 @@ export function on_sidebar_channel_click(
         return;
     }
 
-    if (
-        user_settings.web_channel_default_view ===
-        web_channel_default_view_values.list_of_topics.code
-    ) {
+    if (channel_links_to_list_of_topics()) {
+        if (is_viewing_channel_topic_list(stream_id)) {
+            // This click has nowhere to navigate to, so the row itself
+            // expands and collapses the sidebar topic list. That gives
+            // the chevron's job a target you don't have to aim for,
+            // leaving the chevron to indicate the state.
+            toggle_topic_list_expanded(stream_id);
+            return;
+        }
         browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
         return;
     }
