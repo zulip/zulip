@@ -1998,19 +1998,22 @@ def apply_event(
 
         state["user_status"] = user_status
     elif event["type"] == "user_topic":
-        if event["visibility_policy"] == UserTopic.VisibilityPolicy.INHERIT:
-            user_topics_state = state["user_topics"]
-            for i in range(len(user_topics_state)):
-                topic_name = maybe_rename_general_chat_to_empty_topic(event["topic_name"])
-                if (
-                    user_topics_state[i]["stream_id"] == event["stream_id"]
-                    and user_topics_state[i]["topic_name"] == topic_name
-                ):
-                    del user_topics_state[i]
-                    break
-        else:
+        # An event replaces any existing entry for its topic; topic
+        # names are matched case-insensitively, like the unique index
+        # on lower(topic_name) that the database enforces.
+        topic_name = maybe_rename_general_chat_to_empty_topic(event["topic_name"])
+        user_topics_state = [
+            user_topic
+            for user_topic in state["user_topics"]
+            if not (
+                user_topic["stream_id"] == event["stream_id"]
+                and user_topic["topic_name"].lower() == topic_name.lower()
+            )
+        ]
+        if event["visibility_policy"] != UserTopic.VisibilityPolicy.INHERIT:
             fields = ["stream_id", "topic_name", "visibility_policy", "last_updated"]
-            state["user_topics"].append({x: event[x] for x in fields})
+            user_topics_state.append({x: event[x] for x in fields})
+        state["user_topics"] = user_topics_state
     elif event["type"] == "channel_folder":
         if event["op"] == "add":
             state["channel_folders"].append(event["channel_folder"])

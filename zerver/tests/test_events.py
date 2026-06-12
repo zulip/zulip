@@ -2590,6 +2590,37 @@ class NormalActionsTest(BaseAction):
             )
         check_user_topic("events[0]", events[0])
 
+    def test_user_topic_events_replace_state_entry(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            stream,
+            "topic",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+
+        # Updating the policy of a topic must replace the existing
+        # entry in the user_topics state, not append a duplicate.
+        with self.verify_action(num_events=2) as events:
+            do_set_user_topic_visibility_policy(
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            )
+        check_user_topic("events[1]", events[1])
+
+        # Topic names match case-insensitively: removing the policy
+        # using a different casing must remove the entry.
+        with self.verify_action(num_events=2) as events:
+            do_set_user_topic_visibility_policy(
+                self.user_profile,
+                stream,
+                "TOPIC",
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+            )
+        check_user_topic("events[1]", events[1])
+
     def test_unmuted_topics_events(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         with self.verify_action(num_events=2) as events:
