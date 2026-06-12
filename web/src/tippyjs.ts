@@ -983,7 +983,7 @@ export function initialize(): void {
                         "Notification message cannot be sent when subscribing more than {max_users} users.",
                 },
                 {
-                    max_users: realm.max_bulk_new_subscription_messages,
+                    max_users: realm.max_bulk_subscription_messages,
                 },
             );
             instance.setContent(content);
