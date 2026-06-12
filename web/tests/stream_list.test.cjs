@@ -428,6 +428,134 @@ test_ui("narrowing", ({override_rewire}) => {
     assert.ok(topics_closed);
 });
 
+test_ui("list_of_topics_expand_collapse", ({override, override_rewire}) => {
+    override(
+        user_settings,
+        "web_channel_default_view",
+        settings_config.web_channel_default_view_values.list_of_topics.code,
+    );
+
+    topic_list.get_stream_li = noop;
+    override_rewire(stream_list, "scroll_stream_into_view", noop);
+    override_rewire(stream_list, "get_section_id_for_stream_li", () => "normal");
+    override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
+
+    let active_stream_id;
+    topic_list.active_stream_id = () => active_stream_id;
+    topic_list.rebuild_left_sidebar = (_$stream_li, stream_id) => {
+        active_stream_id = stream_id;
+    };
+    topic_list.close = () => {
+        active_stream_id = undefined;
+    };
+
+    initialize_stream_data();
+
+    const $devel_sidebar = $("<devel-sidebar-row-stub>");
+    const $devel_expand_button = $.create("devel-expand-topics-button");
+    $devel_sidebar.set_find_results(".channel-expand-topics-button", $devel_expand_button);
+    const $rome_sidebar = $("<Rome-sidebar-row-stub>");
+    const $rome_expand_button = $.create("rome-expand-topics-button");
+    $rome_sidebar.set_find_results(".channel-expand-topics-button", $rome_expand_button);
+
+    let filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok($devel_sidebar.hasClass("active-filter"));
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, undefined);
+
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert.ok($devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal($devel_expand_button.attr("aria-expanded"), "true");
+    assert.equal(active_stream_id, develSub.stream_id);
+
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal($devel_expand_button.attr("aria-expanded"), "false");
+    assert.equal(active_stream_id, undefined);
+
+    filter = new Filter([
+        {operator: "stream", operand: develSub.stream_id.toString()},
+        {operator: "topic", operand: "python"},
+    ]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok($devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, develSub.stream_id);
+
+    filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok($devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, develSub.stream_id);
+
+    filter = new Filter([{operator: "stream", operand: RomeSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.ok(!$rome_sidebar.hasClass("topic-list-expanded"));
+
+    filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, undefined);
+
+    // Deactivating the message view collapses an expanded sidebar
+    // topic list, so it doesn't linger with no narrowed channel.
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert.ok($devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, develSub.stream_id);
+
+    stream_list.handle_message_view_deactivated();
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal($devel_expand_button.attr("aria-expanded"), "false");
+    assert.equal(active_stream_id, undefined);
+});
+
+test_ui("list_of_topics_expand_button_visibility", ({override, mock_template}) => {
+    override(
+        user_settings,
+        "web_channel_default_view",
+        settings_config.web_channel_default_view_values.list_of_topics.code,
+    );
+
+    function show_expand_topics_button_for(sub) {
+        const $sidebar_row = $("<" + sub.name + "-sidebar-row-stub>");
+        const $subscription_block = $.create(sub.name + "-block");
+        const $unread_count = $.create(sub.name + "-count");
+        const $unread_mention_info = $.create(sub.name + "-mention-info");
+        $sidebar_row.set_find_results(".subscription_block", $subscription_block);
+        $subscription_block.set_find_results(".unread_count", $unread_count);
+        $subscription_block.set_find_results(".unread_mention_info", $unread_mention_info);
+
+        let show_expand_topics_button;
+        mock_template("stream_sidebar_row.hbs", false, (data) => {
+            show_expand_topics_button = data.show_expand_topics_button;
+            return "<" + sub.name + "-sidebar-row-stub>";
+        });
+
+        stream_data.add_sub_for_tests(sub);
+        stream_list.create_sidebar_row(sub);
+        return show_expand_topics_button;
+    }
+
+    const normal = make_stream({
+        name: "normal",
+        stream_id: 7000,
+        subscribed: true,
+        can_create_topic_group: everyone_group.id,
+        can_send_message_group: everyone_group.id,
+    });
+    assert.equal(show_expand_topics_button_for(normal), true);
+
+    const empty_topic_only = make_stream({
+        name: "general",
+        stream_id: 7001,
+        subscribed: true,
+        topics_policy: "empty_topic_only",
+        can_create_topic_group: everyone_group.id,
+        can_send_message_group: everyone_group.id,
+    });
+    assert.equal(show_expand_topics_button_for(empty_topic_only), false);
+});
+
 test_ui("sort_streams", ({override_rewire, mock_template}) => {
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
@@ -585,6 +713,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
             can_post_messages: true,
             is_empty_topic_only_channel: false,
             cannot_create_topics_in_channel: false,
+            show_expand_topics_button: false,
         });
         return "<li-stub>";
     });

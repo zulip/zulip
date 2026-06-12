@@ -71,6 +71,12 @@ const collapsed_sections = new Set<string>();
 const sections_with_only_inactive_or_muted = new Set<string>();
 const sections_showing_inactive_or_muted = new Set<string>();
 
+// The channel whose sidebar topic list the user has expanded via the
+// expand chevron, under the "List of topics" channel-link setting.
+// Only the channel the user is narrowed to can be expanded; the state
+// is intentionally reset when narrowing away from the channel.
+let expanded_topic_list_stream_id: number | undefined;
+
 // Persistence for collapsed sections state
 const collapsed_sections_ls_key = "left_sidebar_collapsed_stream_sections";
 const collapsed_sections_ls_schema = z._default(z.array(z.string()), []);
@@ -323,6 +329,9 @@ export function add_sidebar_row(sub: StreamSubscription): void {
 
 export function remove_sidebar_row(stream_id: number): void {
     stream_sidebar.remove_row(stream_id);
+    if (expanded_topic_list_stream_id === stream_id) {
+        expanded_topic_list_stream_id = undefined;
+    }
     const force_rerender = stream_id === topic_list.active_stream_id();
     update_streams_sidebar(force_rerender);
 }
@@ -847,6 +856,7 @@ function build_stream_sidebar_li(sub: StreamSubscription, for_modal = false): JQ
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
     const url = hash_util.channel_url_by_user_setting(sub.stream_id);
+    const is_empty_topic_only_channel = stream_data.is_empty_topic_only_channel(sub.stream_id);
     const args = {
         name,
         id: sub.stream_id,
@@ -860,7 +870,15 @@ function build_stream_sidebar_li(sub: StreamSubscription, for_modal = false): JQ
         cannot_create_topics_in_channel: !stream_data.can_create_new_topics_in_stream(
             sub.stream_id,
         ),
-        is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
+        is_empty_topic_only_channel,
+        // With the "List of topics" channel-link setting, clicking a
+        // channel always navigates, and a dedicated chevron expands
+        // the sidebar topic list instead.
+        show_expand_topics_button:
+            user_settings.web_channel_default_view ===
+                web_channel_default_view_values.list_of_topics.code &&
+            !is_empty_topic_only_channel &&
+            !for_modal,
         for_modal,
     };
     const $list_item = $(render_stream_sidebar_row(args));
@@ -1260,6 +1278,7 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     }
 
     if (!stream_id) {
+        reset_topic_list_expanded();
         clear_topics_if_not_searching();
         return undefined;
     }
@@ -1289,6 +1308,31 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
+
+    if (
+        user_settings.web_channel_default_view ===
+        web_channel_default_view_values.list_of_topics.code
+    ) {
+        if (expanded_topic_list_stream_id !== stream_id) {
+            reset_topic_list_expanded();
+        }
+        if (info.topic_selected) {
+            // Narrowing to a topic hides the channel's topic list from
+            // the middle pane, so expand it in the sidebar for
+            // navigating between sibling topics.
+            expanded_topic_list_stream_id = stream_id;
+        }
+        const is_expanded = expanded_topic_list_stream_id === stream_id;
+        update_topic_list_expanded_ui($stream_li, is_expanded);
+        if (!is_expanded && !rerender_topics_for_search) {
+            // The middle pane already shows the channel's topic list,
+            // so keep the redundant sidebar topic list collapsed until
+            // the user expands it via the chevron.
+            maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
+            return $stream_li;
+        }
+    }
+
     if (!rerender_topics_for_search) {
         topic_list.rebuild_left_sidebar($stream_li, stream_id);
     }
@@ -1300,6 +1344,52 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
 
     return $stream_li;
+}
+
+function update_topic_list_expanded_ui($stream_li: JQuery, is_expanded: boolean): void {
+    $stream_li.toggleClass("topic-list-expanded", is_expanded);
+    $stream_li
+        .find(".channel-expand-topics-button")
+        .attr("aria-expanded", is_expanded ? "true" : "false");
+}
+
+function reset_topic_list_expanded(): void {
+    if (expanded_topic_list_stream_id === undefined) {
+        return;
+    }
+    const $stream_li = get_stream_li(expanded_topic_list_stream_id, false);
+    if ($stream_li) {
+        update_topic_list_expanded_ui($stream_li, false);
+    }
+    expanded_topic_list_stream_id = undefined;
+}
+
+export function toggle_topic_list_expanded(stream_id: number): void {
+    if (zoomed_in || ui_util.is_topic_search()) {
+        // In these states, the sidebar topic list display is
+        // controlled by the zoomed-in view or the topic search
+        // results, so the expand chevron does nothing.
+        return;
+    }
+
+    const $stream_li = get_stream_li(stream_id);
+    if (!$stream_li) {
+        blueslip.error("No stream_li for subscribed stream", {stream_id});
+        return;
+    }
+
+    const is_expanded = expanded_topic_list_stream_id !== stream_id;
+    if (is_expanded) {
+        expanded_topic_list_stream_id = stream_id;
+        topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    } else {
+        expanded_topic_list_stream_id = undefined;
+        if (topic_list.active_stream_id() === stream_id) {
+            clear_topics();
+        }
+    }
+    update_topic_list_expanded_ui($stream_li, is_expanded);
+    maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
 }
 
 export let get_section_id_for_stream_li = function ($stream_li: JQuery): string {
@@ -1341,6 +1431,7 @@ export function handle_narrow_activated(
 
 export function handle_message_view_deactivated(): void {
     deselect_stream_items();
+    reset_topic_list_expanded();
     clear_topics();
 }
 
@@ -1422,6 +1513,21 @@ export function initialize({
 }
 
 export function initialize_tippy_tooltips(): void {
+    tippy.delegate("body", {
+        target: "#stream_filters .channel-expand-topics-button",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const stream_id = stream_id_for_elt($(instance.reference).parents("li.narrow-filter"));
+            instance.setContent(
+                expanded_topic_list_stream_id === stream_id
+                    ? $t({defaultMessage: "Collapse topic list"})
+                    : $t({defaultMessage: "Expand topic list"}),
+            );
+            return undefined;
+        },
+        appendTo: () => document.body,
+    });
+
     for (const parent_class of ["#stream_filters li", "#left-sidebar-modal"]) {
         tippy.delegate("body", {
             target: `${parent_class} .subscription_block .stream-name`,
@@ -1619,6 +1725,35 @@ export function set_event_handlers({
             keep_composebox_empty: true,
         });
     }
+
+    function on_expand_topics_press(
+        element: HTMLElement,
+        e: JQuery.ClickEvent | JQuery.KeyDownEvent,
+    ): void {
+        e.stopPropagation();
+        e.preventDefault();
+        const stream_id = Number.parseInt(element.getAttribute("data-stream-id")!, 10);
+        toggle_topic_list_expanded(stream_id);
+    }
+
+    $("#stream_filters").on(
+        "click",
+        ".channel-expand-topics-button",
+        function (this: HTMLElement, e) {
+            on_expand_topics_press(this, e);
+            $(this).trigger("blur");
+        },
+    );
+
+    $("#stream_filters").on(
+        "keydown",
+        ".channel-expand-topics-button",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                on_expand_topics_press(this, e);
+            }
+        },
+    );
 
     $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
         on_new_topic_press(this, e);
