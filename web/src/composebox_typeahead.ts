@@ -716,11 +716,10 @@ function filter_persons<T>(
 
 export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
     query = typeahead.clean_query_lowercase(query, false);
-    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     const filterer = (person_items: UserPillData[]): UserPillData[] =>
         person_items.filter((item) =>
-            typeahead_helper.query_matches_person_name(query, item, should_remove_diacritics, true),
+            typeahead_helper.query_matches_person_name(query, item, true),
         );
 
     const current_narrow_participant_ids = message_lists.current?.data.participants.visible();

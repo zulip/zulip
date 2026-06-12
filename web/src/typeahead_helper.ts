@@ -498,11 +498,6 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     worst_users: () => UserType[];
 } => {
     const users_name_results = typeahead.triage_raw(query, users, (p) => [p.user.full_name]);
-    const users_name_good_matches = [
-        ...users_name_results.exact_matches,
-        ...users_name_results.begins_with_case_sensitive_matches,
-        ...users_name_results.begins_with_case_insensitive_matches,
-    ];
     const users_name_okay_matches = [...users_name_results.word_boundary_matches];
 
     const email_results = typeahead.triage_raw(query, users_name_results.no_matches, (p) => [
@@ -510,19 +505,52 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     ]);
     const email_good_matches = [
         ...email_results.exact_matches,
+        ...email_results.begins_with_case_insensitive_diacritic_matches,
         ...email_results.begins_with_case_sensitive_matches,
         ...email_results.begins_with_case_insensitive_matches,
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
-    const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
-    ];
+
+    const query_has_diacritics = typeahead.contains_diacritics(query);
+
+    const best_users = (): UserType[] => {
+        if (query_has_diacritics) {
+            // Sort exact and diacritic-prefix matches together as one tier, and
+            // case-sensitive + case-insensitive (including normalized fallback)
+            // as a second tier. The separate sort calls ensure recency in the
+            // second tier can't bubble a normalized fallback above a diacritic
+            // prefix match.
+            return [
+                ...sort_relevance([
+                    ...users_name_results.exact_matches,
+                    ...users_name_results.begins_with_case_insensitive_diacritic_matches,
+                ]),
+                ...sort_relevance([
+                    ...users_name_results.begins_with_case_sensitive_matches,
+                    ...users_name_results.begins_with_case_insensitive_matches,
+                ]),
+                ...sort_relevance(users_name_okay_matches),
+            ];
+        }
+
+        const users_name_good_matches = [
+            ...users_name_results.exact_matches,
+            ...users_name_results.begins_with_case_sensitive_matches,
+            ...users_name_results.begins_with_case_insensitive_matches,
+        ];
+        return [
+            ...sort_relevance(users_name_good_matches),
+            ...sort_relevance(users_name_okay_matches),
+        ];
+    };
+
     const ok_users = (): UserType[] => [
         ...sort_relevance(email_good_matches),
         ...sort_relevance(email_okay_matches),
     ];
+
     const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
+
     return {best_users, ok_users, worst_users};
 };
 
@@ -575,6 +603,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     });
     const groups_good_matches = [
         ...groups_results.exact_matches,
+        ...groups_results.begins_with_case_insensitive_diacritic_matches,
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
     ];
@@ -805,6 +834,9 @@ export const sort_users_and_groups_options = ({
     ]);
 
     const prefix_matches = sort_items([
+        ...groups_results.begins_with_case_insensitive_diacritic_matches,
+        ...users_name_results.begins_with_case_insensitive_diacritic_matches,
+        ...email_results.begins_with_case_insensitive_diacritic_matches,
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -1092,19 +1124,15 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
 export function query_matches_person_name(
     query: string,
     person: UserPillData,
-    should_remove_diacritics: boolean,
     match_prefix?: boolean,
 ): boolean {
-    query = query.toLowerCase();
-
-    const full_name = people.maybe_remove_diacritics_from_name(
-        person.user,
-        should_remove_diacritics,
-    );
-
+    const normalized_query = typeahead.remove_diacritics(query.toLowerCase());
+    const normalized_name = people
+        .maybe_remove_diacritics_from_name(person.user, true)
+        .toLowerCase();
     return typeahead.query_matches_string_in_order_assume_canonicalized(
-        query,
-        full_name.toLowerCase(),
+        normalized_query,
+        normalized_name,
         " ",
         match_prefix,
     );
@@ -1130,7 +1158,7 @@ export function query_matches_person(
     }
 
     if (person.type === "user") {
-        if (query_matches_person_name(query, person, should_remove_diacritics, match_prefix)) {
+        if (query_matches_person_name(query, person, match_prefix)) {
             return true;
         }
 
@@ -1142,10 +1170,10 @@ export function query_matches_person(
                         people.get_custom_profile_data(person.user.user_id, field.id)?.value ?? "";
                     if (
                         typeahead.query_matches_string_in_order(
-                            query,
+                            typeahead.remove_diacritics(query),
                             field_value,
                             " ",
-                            should_remove_diacritics,
+                            true,
                         )
                     ) {
                         return true;
@@ -1156,10 +1184,10 @@ export function query_matches_person(
 
         if (person.user.delivery_email) {
             return typeahead.query_matches_string_in_order(
-                query,
+                typeahead.remove_diacritics(query),
                 people.get_visible_email(person.user),
                 " ",
-                should_remove_diacritics,
+                true,
             );
         }
     }
