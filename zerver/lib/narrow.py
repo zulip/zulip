@@ -812,7 +812,9 @@ def get_channel_from_narrow_access_unchecked(
 ) -> Stream | None:
     if narrow is not None:
         for term in narrow:
-            if term.operator in channel_operators:
+            # A negated channel term spans every channel except its
+            # operand, rather than scoping the narrow to a channel.
+            if term.operator in channel_operators and not term.negated:
                 return get_stream_by_narrow_operand_access_unchecked(term.operand, realm)
     return None
 

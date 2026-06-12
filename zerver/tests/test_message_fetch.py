@@ -5179,6 +5179,16 @@ AND NOT ("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel_m
             ),
         )
 
+        # A negated channel term spans every channel except its
+        # operand, so it does not scope the narrow to that channel:
+        # all muting conditions apply, exactly as with no channel term
+        # at all.
+        negated_narrow = [
+            NarrowParameter(operator="channel", operand="Scotland", negated=True),
+        ]
+        muting_conditions = exclude_muting_conditions(user_profile, negated_narrow)
+        self.assertEqual(muting_conditions, exclude_muting_conditions(user_profile, None))
+
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
 
