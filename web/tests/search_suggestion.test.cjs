@@ -643,6 +643,7 @@ test("check_is_suggestions", ({override}) => {
 
 test("sent_by_me_suggestions", ({override}) => {
     override(narrow_state, "stream_id", noop);
+    override(stream_topic_history_util, "get_server_history", noop);
 
     let query = "";
     let suggestions = get_suggestions(query);
@@ -694,11 +695,14 @@ test("sent_by_me_suggestions", ({override}) => {
         stream_id: denmark_id,
     });
     stream_data.add_sub_for_tests(sub);
+    // `sent` is an exact keyword shorthand for the sent-by-me
+    // suggestion (`get_sent_by_me_suggestions` → `sender:me`), which
+    // tier 2 surfaces above the literal-input row.
     query = `channel:${denmark_id} topic:Denmark1 sent`;
     suggestions = get_suggestions(query);
     expected = [
-        `channel:${denmark_id} topic:Denmark1 sent`,
         `channel:${denmark_id} topic:Denmark1 sender:${me.user_id}`,
+        `channel:${denmark_id} topic:Denmark1 sent`,
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -1224,6 +1228,109 @@ test("channel_multi_word_name_starting_with_id", ({override}) => {
 
     const suggestions = get_suggestions("channel:15 test");
     const expected = [`channel:${fifteen_test_id}`, "channel:15 test"];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("topic_multi_word_completion", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+
+    const releases_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: releases_id, name: "releases", subscribed: true}),
+    );
+    stream_topic_history.add_message({stream_id: releases_id, topic_name: "release notes"});
+    stream_topic_history.add_message({
+        stream_id: releases_id,
+        message_id: 1,
+        topic_name: "release hotfix",
+    });
+
+    // Strong multi-word topic match (cross-channel, since no channel
+    // pill) ranks above the pinned default-row.
+    let query = "topic:release notes";
+    let suggestions = get_suggestions(query);
+    let expected = [`channel:${releases_id} topic:release+notes`, "topic:release notes"];
+    assert.deepEqual(suggestions, expected);
+
+    // When the trailing fragment is both a strong multi-word match and
+    // an operator prefix ("h" prefixes `has:*`), the multi-word topic
+    // match ("release hotfix") ranks above the operator completions,
+    // which precede the literal-input row.
+    query = "topic:release h";
+    suggestions = get_suggestions(query);
+    expected = [
+        `channel:${releases_id} topic:release+hotfix`,
+        "topic:release has:link",
+        "topic:release has:image",
+        "topic:release has:attachment",
+        "topic:release has:reaction",
+        "topic:release h",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // An `is:dm` pill is incompatible with topic terms, so no
+    // multi-word topic matches are offered; only the literal input
+    // row remains.
+    query = "topic:release notes";
+    suggestions = get_suggestions(query, "is:dm");
+    expected = ["is:dm topic:release notes"];
+    assert.deepEqual(suggestions, expected);
+
+    // A resolved topic ranks as a strong match: classification ignores
+    // the resolved-topic prefix, like the sort key does.
+    stream_topic_history.add_message({
+        stream_id: releases_id,
+        message_id: 2,
+        topic_name: "✔ release docs",
+    });
+    query = "topic:release docs";
+    suggestions = get_suggestions(query);
+    expected = [`channel:${releases_id} topic:✔+release+docs`, "topic:release docs"];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("topic_multi_word_match_budget", ({override}) => {
+    override(stream_topic_history_util, "get_server_history", noop);
+
+    const narrow_stream_id = new_stream_id();
+    override(narrow_state, "stream_id", () => narrow_stream_id);
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: narrow_stream_id, name: "core team", subscribed: true}),
+    );
+
+    const releases_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: releases_id, name: "releases", subscribed: true}),
+    );
+
+    // Enough weak matches in the narrowed channel to exhaust a
+    // 10-topic match budget on their own.
+    for (let i = 1; i <= 10; i += 1) {
+        stream_topic_history.add_message({
+            stream_id: narrow_stream_id,
+            message_id: i,
+            topic_name: `old release notes ${i}`,
+        });
+    }
+    stream_topic_history.add_message({
+        stream_id: releases_id,
+        message_id: 100,
+        topic_name: "release notes",
+    });
+
+    // The narrowed channel's topics and other channels' topics each
+    // get their own match budget, so the strong match from another
+    // channel still surfaces; the narrowed channel's weak matches
+    // follow in recency order.
+    const suggestions = get_suggestions("topic:release notes");
+    const expected = [
+        `channel:${releases_id} topic:release+notes`,
+        "topic:release notes",
+        ...Array.from(
+            {length: 10},
+            (_, i) => `channel:${narrow_stream_id} topic:old+release+notes+${10 - i}`,
+        ),
+    ];
     assert.deepEqual(suggestions, expected);
 });
 
