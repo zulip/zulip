@@ -1731,6 +1731,30 @@ def process_stream_deletion_event(event: Mapping[str, Any], users: Iterable[int]
                 client.add_event(stream_delete_event)
 
 
+def process_muted_topics_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    empty_topic_name_fallback_event: Mapping[str, Any] | dict[str, Any] = event
+    if any(topic_name == "" for _stream_name, topic_name, _ts in event["muted_topics"]):
+        empty_topic_name_fallback_event = dict(event)
+        empty_topic_name_fallback_event["muted_topics"] = [
+            [
+                stream_name,
+                Message.EMPTY_TOPIC_FALLBACK_NAME if topic_name == "" else topic_name,
+                ts,
+            ]
+            for stream_name, topic_name, ts in event["muted_topics"]
+        ]
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
+
+
 def process_user_topic_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     empty_topic_name_fallback_event: Mapping[str, Any] | dict[str, Any]
     if event.get("topic_name") == "":
@@ -1814,6 +1838,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_user_group_name_update_event(event, cast(list[int], users))
     elif event["type"] == "user_group" and event["op"] == "add":
         process_user_group_creation_event(event, cast(list[int], users))
+    elif event["type"] == "muted_topics":
+        process_muted_topics_event(event, cast(list[int], users))
     elif event["type"] == "user_topic":
         process_user_topic_event(event, cast(list[int], users))
     elif event["type"] == "typing" and event["message_type"] == "stream":

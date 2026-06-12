@@ -2621,6 +2621,27 @@ class NormalActionsTest(BaseAction):
             )
         check_user_topic("events[1]", events[1])
 
+    def test_muted_topics_events_empty_topic_name_fallback(self) -> None:
+        # Clients without the empty_topic_name capability must receive
+        # the fallback name instead of "" on the legacy muted_topics
+        # surfaces (both the event and the register payload), like they
+        # do on every other topic-bearing payload.
+        stream = get_stream("Denmark", self.user_profile.realm)
+        with self.verify_action(num_events=2, allow_empty_topic_name=False) as events:
+            do_set_user_topic_visibility_policy(
+                self.user_profile,
+                stream,
+                "",
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            )
+        check_muted_topics("events[0]", events[0])
+        check_user_topic("events[1]", events[1])
+        self.assert_length(events[0]["muted_topics"], 1)
+        self.assertEqual(
+            events[0]["muted_topics"][0][:2], ["Denmark", Message.EMPTY_TOPIC_FALLBACK_NAME]
+        )
+        self.assertEqual(events[1]["topic_name"], Message.EMPTY_TOPIC_FALLBACK_NAME)
+
     def test_unmuted_topics_events(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         with self.verify_action(num_events=2) as events:

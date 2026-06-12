@@ -2364,3 +2364,9 @@ def post_process_state(
         for user_topic in ret["user_topics"]:
             if user_topic["topic_name"] == "":
                 user_topic["topic_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
+    if not allow_empty_topic_name and "muted_topics" in ret:
+        ret["muted_topics"] = [
+            [stream_name, Message.EMPTY_TOPIC_FALLBACK_NAME if topic_name == "" else topic_name, ts]
+            for stream_name, topic_name, ts in ret["muted_topics"]
+        ]
