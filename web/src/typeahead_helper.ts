@@ -498,11 +498,6 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     worst_users: () => UserType[];
 } => {
     const users_name_results = typeahead.triage_raw(query, users, (p) => [p.user.full_name]);
-    const users_name_good_matches = [
-        ...users_name_results.exact_matches,
-        ...users_name_results.begins_with_case_sensitive_matches,
-        ...users_name_results.begins_with_case_insensitive_matches,
-    ];
     const users_name_okay_matches = [...users_name_results.word_boundary_matches];
 
     const email_results = typeahead.triage_raw(query, users_name_results.no_matches, (p) => [
@@ -510,14 +505,42 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     ]);
     const email_good_matches = [
         ...email_results.exact_matches,
+        ...email_results.begins_with_case_insensitive_diacritic_matches,
         ...email_results.begins_with_case_sensitive_matches,
         ...email_results.begins_with_case_insensitive_matches,
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
-    const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
-    ];
+    const query_has_diacritics = typeahead.contains_diacritics(query);
+    const best_users = (): UserType[] => {
+        if (query_has_diacritics) {
+            // Sort exact and diacritic-prefix matches together as one tier, and
+            // case-sensitive + case-insensitive (including the diacritic-stripped
+            // fallback) as a second tier. The separate sort calls ensure recency
+            // in the second tier can't bubble a diacritic-stripped fallback above
+            // a diacritic prefix match.
+            return [
+                ...sort_relevance([
+                    ...users_name_results.exact_matches,
+                    ...users_name_results.begins_with_case_insensitive_diacritic_matches,
+                ]),
+                ...sort_relevance([
+                    ...users_name_results.begins_with_case_sensitive_matches,
+                    ...users_name_results.begins_with_case_insensitive_matches,
+                ]),
+                ...sort_relevance(users_name_okay_matches),
+            ];
+        }
+
+        const users_name_good_matches = [
+            ...users_name_results.exact_matches,
+            ...users_name_results.begins_with_case_sensitive_matches,
+            ...users_name_results.begins_with_case_insensitive_matches,
+        ];
+        return [
+            ...sort_relevance(users_name_good_matches),
+            ...sort_relevance(users_name_okay_matches),
+        ];
+    };
     const ok_users = (): UserType[] => [
         ...sort_relevance(email_good_matches),
         ...sort_relevance(email_okay_matches),
@@ -575,6 +598,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     });
     const groups_good_matches = [
         ...groups_results.exact_matches,
+        ...groups_results.begins_with_case_insensitive_diacritic_matches,
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
     ];
@@ -805,6 +829,9 @@ export const sort_users_and_groups_options = ({
     ]);
 
     const prefix_matches = sort_items([
+        ...groups_results.begins_with_case_insensitive_diacritic_matches,
+        ...users_name_results.begins_with_case_insensitive_diacritic_matches,
+        ...email_results.begins_with_case_insensitive_diacritic_matches,
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -1092,19 +1119,19 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
 export function query_matches_person_name(
     query: string,
     person: UserPillData,
-    should_remove_diacritics: boolean,
     match_prefix?: boolean,
 ): boolean {
-    query = query.toLowerCase();
-
-    const full_name = people.maybe_remove_diacritics_from_name(
-        person.user,
-        should_remove_diacritics,
-    );
-
+    // Filtering is diacritics-agnostic: we strip diacritics from both the query
+    // and the name so ASCII and diacritic spellings match each other. Ranking is
+    // not -- triage_raw/sort_recipients keep exact diacritic-prefix matches above
+    // the diacritic-stripped ones.
+    const diacritic_stripped_query = typeahead.remove_diacritics(query.toLowerCase());
+    const diacritic_stripped_name = people
+        .maybe_remove_diacritics_from_name(person.user, true)
+        .toLowerCase();
     return typeahead.query_matches_string_in_order_assume_canonicalized(
-        query,
-        full_name.toLowerCase(),
+        diacritic_stripped_query,
+        diacritic_stripped_name,
         " ",
         match_prefix,
     );
@@ -1130,7 +1157,7 @@ export function query_matches_person(
     }
 
     if (person.type === "user") {
-        if (query_matches_person_name(query, person, should_remove_diacritics, match_prefix)) {
+        if (query_matches_person_name(query, person, match_prefix)) {
             return true;
         }
 
@@ -1142,10 +1169,10 @@ export function query_matches_person(
                         people.get_custom_profile_data(person.user.user_id, field.id)?.value ?? "";
                     if (
                         typeahead.query_matches_string_in_order(
-                            query,
+                            typeahead.remove_diacritics(query),
                             field_value,
                             " ",
-                            should_remove_diacritics,
+                            true,
                         )
                     ) {
                         return true;
@@ -1156,10 +1183,10 @@ export function query_matches_person(
 
         if (person.user.delivery_email) {
             return typeahead.query_matches_string_in_order(
-                query,
+                typeahead.remove_diacritics(query),
                 people.get_visible_email(person.user),
                 " ",
-                should_remove_diacritics,
+                true,
             );
         }
     }
@@ -1179,31 +1206,23 @@ export function query_matches_stream_name(
     );
 }
 
-export function query_matches_group_name(
-    query: string,
-    user_group: UserGroupPillData,
-    should_remove_diacritics: boolean,
-): boolean {
+export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {
+    // Filtering is diacritics-agnostic, like query_matches_person_name: we
+    // strip diacritics from both the query and the group name so ASCII and
+    // diacritic spellings match each other. Ranking (sort_recipients) stays
+    // diacritic-aware.
+    const diacritic_stripped_query = typeahead.remove_diacritics(query.toLowerCase());
+    const matches_group_name = (group_name: string): boolean =>
+        typeahead.query_matches_string_in_order_assume_canonicalized(
+            diacritic_stripped_query,
+            typeahead.remove_diacritics(group_name.toLowerCase()),
+            "",
+        );
     if (user_group.name === "role:members") {
         return (
-            typeahead.query_matches_string_in_order(
-                query,
-                user_groups.get_display_group_name(user_group.name),
-                "",
-                should_remove_diacritics,
-            ) ||
-            typeahead.query_matches_string_in_order(
-                query,
-                settings_config.alternate_members_group_typeahead_matching_name,
-                "",
-                should_remove_diacritics,
-            )
+            matches_group_name(user_groups.get_display_group_name(user_group.name)) ||
+            matches_group_name(settings_config.alternate_members_group_typeahead_matching_name)
         );
     }
-    return typeahead.query_matches_string_in_order(
-        query,
-        user_groups.get_display_group_name(user_group.name),
-        "",
-        should_remove_diacritics,
-    );
+    return matches_group_name(user_groups.get_display_group_name(user_group.name));
 }
