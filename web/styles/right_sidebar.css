@@ -578,16 +578,12 @@
     }
 }
 
-#user-list.with_avatars
-    .buddy-list-user-link
-    .right-sidebar-wrappable-text-container,
-#user-list.with_avatars .buddy-list-section .empty-list-message {
-    margin-left: var(--right-sidebar-text-indent-with-avatar);
-}
-
-.buddy-list-user-link .right-sidebar-wrappable-text-container,
-.buddy-list-section .empty-list-message {
-    margin-left: var(--right-sidebar-text-indent-without-avatar);
+.buddy-list-user-link {
+    &:focus-within {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
 }
 
 .invite-user-shortcut {
@@ -598,12 +594,42 @@
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-bottom: var(--sidebar-bottom-spacing);
 
+    &:focus-within {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
     .invite-user-link {
         /* TODO: We should eventually change the grid to use the correct
            --right-sidebar-presence-circle-width with left spacing, and
            share that left spacing value here. */
         padding-left: calc(var(--right-sidebar-toggle-width-offset) + 0.3em);
+        text-decoration: none;
+
+        &:hover,
+        &:focus,
+        &:focus-visible,
+        &:active {
+            text-decoration: none;
+        }
+
+        &:focus-visible {
+            outline: none;
+        }
     }
+}
+
+#user-list.with_avatars
+    .buddy-list-user-link
+    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-with-avatar);
+}
+
+.buddy-list-user-link .right-sidebar-wrappable-text-container,
+.buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-without-avatar);
 }
 
 #user-list.with_avatars .invite-user-link {
