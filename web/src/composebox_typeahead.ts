@@ -713,11 +713,10 @@ function filter_persons<T>(
 
 export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
     query = typeahead.clean_query_lowercase(query, false);
-    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     const filterer = (person_items: UserPillData[]): UserPillData[] =>
         person_items.filter((item) =>
-            typeahead_helper.query_matches_person_name(query, item, should_remove_diacritics, true),
+            typeahead_helper.query_matches_person_name(query, item, true),
         );
 
     const current_narrow_participant_ids = message_lists.current?.data.participants.visible();
@@ -785,7 +784,6 @@ export function get_person_suggestions(
     exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
     query = typeahead.clean_query_lowercase(query, false);
-    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     let groups: UserGroup[];
     if (opts.filter_groups_for_mention) {
@@ -824,7 +822,7 @@ export function get_person_suggestions(
     }));
 
     const filtered_groups = group_pill_data.filter((item) =>
-        typeahead_helper.query_matches_group_name(query, item, should_remove_diacritics),
+        typeahead_helper.query_matches_group_name(query, item),
     );
 
     const user = people.get_from_unique_full_name(query);
@@ -881,7 +879,6 @@ export function get_person_suggestions(
             typeahead_helper.query_matches_person(
                 query,
                 item,
-                should_remove_diacritics,
                 undefined,
                 opts.allow_custom_profile_field_matching,
             ),

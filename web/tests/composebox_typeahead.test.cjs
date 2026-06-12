@@ -1603,12 +1603,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 function matcher(query, person) {
                     query = typeahead.clean_query_lowercase(query, false);
-                    const should_remove_diacritics = !typeahead.contains_diacritics(query);
-                    return typeahead_helper.query_matches_person(
-                        query,
-                        person,
-                        should_remove_diacritics,
-                    );
+                    return typeahead_helper.query_matches_person(query, person);
                 }
 
                 let query;
@@ -2272,6 +2267,33 @@ test("get_person_suggestion_for_topic_typeahead respects DM permissions", ({over
     });
     results = ct.get_person_suggestion_for_topic_typeahead("lear");
     assert.deepEqual(results, []);
+});
+
+test("get_person_suggestion_for_topic_typeahead: diacritic query prioritizes exact diacritic matches", ({
+    override,
+}) => {
+    // "Gael" has the shorter name, so the within-bucket tiebreaker would rank
+    // it above "Gaël Twin" -- only the diacritic-prefix bucket puts "Gaël
+    // Twin" first.
+    const gael_ascii = make_user({
+        full_name: "Gael",
+        user_id: 112,
+        email: "gael@zulip.com",
+    });
+    people.add_active_user(gael_ascii);
+
+    message_lists.current = undefined;
+    override(pm_conversations, "get_partners", () => [
+        gael.user_id,
+        gael_ascii.user_id,
+        lear.user_id,
+    ]);
+
+    const results = ct.get_person_suggestion_for_topic_typeahead("gaë");
+    assert.deepEqual(
+        results.map((result) => result.user.user_id),
+        [gael.user_id, gael_ascii.user_id],
+    );
 });
 
 test("begins_typeahead", ({override, override_rewire}) => {

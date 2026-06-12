@@ -190,6 +190,7 @@ function build_page(): void {
 
             const {
                 exact_matches,
+                begins_with_case_insensitive_diacritic_matches,
                 begins_with_case_sensitive_matches,
                 begins_with_case_insensitive_matches,
             } = typeahead.triage_raw(q, items, (item) => [
@@ -199,6 +200,7 @@ function build_page(): void {
 
             const begins_with = [
                 ...exact_matches,
+                ...begins_with_case_insensitive_diacritic_matches,
                 ...begins_with_case_sensitive_matches,
                 ...begins_with_case_insensitive_matches,
             ];
