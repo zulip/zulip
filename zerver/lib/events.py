@@ -1432,6 +1432,25 @@ def apply_event(
         if event["op"] == "delete":
             deleted_stream_ids = {stream["stream_id"] for stream in event["streams"]}
 
+            # The legacy muted_topics data is keyed by stream name, so
+            # resolve the names before filtering the stream data below.
+            if "muted_topics" in state:
+                deleted_stream_names = {
+                    stream["name"]
+                    for stream in [
+                        *state["subscriptions"],
+                        *state["unsubscribed"],
+                        *state["never_subscribed"],
+                        *state.get("streams", []),
+                    ]
+                    if stream["stream_id"] in deleted_stream_ids
+                }
+                state["muted_topics"] = [
+                    muted_topic
+                    for muted_topic in state["muted_topics"]
+                    if muted_topic[0] not in deleted_stream_names
+                ]
+
             state["subscriptions"] = [
                 stream
                 for stream in state["subscriptions"]
@@ -1453,6 +1472,17 @@ def apply_event(
             if "streams" in state:
                 state["streams"] = [
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
+                ]
+
+            # Clients receiving stream deletion events lack the
+            # archived_channels capability, and for those,
+            # fetch_initial_state_data excludes the user_topics
+            # entries of archived channels.
+            if "user_topics" in state:
+                state["user_topics"] = [
+                    user_topic
+                    for user_topic in state["user_topics"]
+                    if user_topic["stream_id"] not in deleted_stream_ids
                 ]
 
         if event["op"] == "update":

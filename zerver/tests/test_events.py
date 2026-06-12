@@ -4047,6 +4047,23 @@ class NormalActionsTest(BaseAction):
             check_stream_delete("events[0]", events[0])
             self.assertEqual(events[0]["stream_ids"], [stream.id])
 
+    def test_deactivate_stream_removes_user_topics_from_state(self) -> None:
+        stream = self.make_stream("user topics archive test")
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            stream,
+            "boo",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+
+        # Clients without the archived_channels capability receive a
+        # stream deletion event on archiving; applying it must remove
+        # the channel's user_topics entries, since a fresh fetch
+        # excludes archived channels' entries for such clients.
+        with self.verify_action(archived_channels=False) as events:
+            do_deactivate_stream(stream, acting_user=None)
+        check_stream_delete("events[0]", events[0])
+
     def test_admin_deactivate_unsubscribed_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
         stream = self.make_stream("test_stream")
