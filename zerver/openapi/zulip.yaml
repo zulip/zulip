@@ -26875,31 +26875,29 @@ paths:
                       The full name of the bot user.
                   command:
                     type: string
-                    description: "The slash command that triggered the webhook."
+                    description: |
+                      The slash command that triggered the webhook.
                   data:
                     type: string
                     description: |
                       The message content, in raw [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format (not rendered to HTML).
                   message:
                     type: object
-                    description: "The full message object associated with the trigger."
+                    description: |
+                      The full message object associated with the trigger.
                   text:
                     type: string
-                    description: "The text content of the command arguments."
+                    description: |
+                      The text content of the command arguments.
+                  token:
+                    type: string
+                    description: |
+                      The authentication token for the webhook.
                   trigger:
                     type: string
                     description: |
                       What aspect of the message triggered the outgoing webhook notification.
                       Possible values include `direct_message` and `mention`.
-
-                      **Changes**: In Zulip 8.0 (feature level 201), renamed the trigger
-                      `private_message` to `direct_message`.
-                  token:
-                    type: string
-                    description: |
-                      A string of alphanumeric characters that can be used to authenticate the
-                      webhook request (each bot user uses a fixed token). You can get the token used by a given outgoing webhook bot
-                      in the `zuliprc` file downloaded when creating the bot.
                   message:
                     description: |
                       A dictionary containing details on the message that triggered the
