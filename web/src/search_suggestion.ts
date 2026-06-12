@@ -313,7 +313,26 @@ function get_channel_suggestions(
 
     assert(last.operator === "channel" || last.operator === "search" || last.operator === "");
 
-    const query = last.operand;
+    // `Filter.parse` resolves an exact-match channel name to its
+    // `stream_id`, so by the time we get here a "channel:" operand
+    // may be the id string rather than the name the user typed.
+    // Look the name back up so we can still phrase-match it against
+    // other channel names — this lets "channel:core" also surface
+    // "channel: core team" as a possible interpretation.
+    //
+    // Note: This means if a user types "channel:123" (and 123 is
+    // the stream_id of the "core" channel), "channel: core team"
+    // will show up as a suggestion, which is a bit strange. We
+    // could consider parsing differently during search queries,
+    // or call `Filter.parse` at a different time, but that would
+    // be a much bigger refactor and probably isn't worth it.
+    let query = last.operand;
+    if (last.operator === "channel") {
+        const sub = stream_data.get_sub_by_id_string(last.operand);
+        if (sub !== undefined) {
+            query = sub.name;
+        }
+    }
     const channel_names = stream_data.subscribed_stream_names();
     let matching_channel_names = channel_names.filter((channel_name) =>
         channel_matches_query(channel_name, query),

@@ -996,6 +996,36 @@ test("channel_completion", ({override}) => {
     assert.deepEqual(suggestions, expected);
 });
 
+test("channel_exact_name_surfaces_siblings", ({override}) => {
+    override(stream_topic_history_util, "get_server_history", noop);
+
+    const core_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: core_id, name: "core", subscribed: true}),
+    );
+    const core_team_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: core_team_id, name: "core team", subscribed: true}),
+    );
+
+    // Typing the exact name "core" resolves to its stream_id via
+    // `Filter.parse`, but we still phrase-match the name so the
+    // sibling channel "core team" surfaces as an alternative
+    // interpretation, just as it would for the still-incomplete
+    // "channel:cor".
+    let query = "channel:core";
+    let suggestions = get_suggestions(query);
+    let expected = [`channel:${core_id}`, `channel:${core_team_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    // The still-incomplete name behaves identically, confirming the
+    // exact-match case isn't a special-cased regression.
+    query = "channel:cor";
+    suggestions = get_suggestions(query);
+    expected = [`channel:${core_id}`, `channel:${core_team_id}`];
+    assert.deepEqual(suggestions, expected);
+});
+
 test("channel_multi_word_completion", ({override}) => {
     override(narrow_state, "stream_id", noop);
     override(stream_topic_history_util, "get_server_history", noop);
