@@ -313,7 +313,7 @@ function sorted_channel_name_matches(query: string): string[] {
     return typeahead_helper.sorter(query, unsorted, (x) => x);
 }
 
-function channel_name_suggestion(channel_name: string, negated: boolean): Suggestion {
+function channel_name_suggestion(channel_name: string, negated: boolean | undefined): Suggestion {
     const channel = stream_data.get_sub_by_name(channel_name);
     assert(channel !== undefined);
     return Filter.unparse([{operator: "channel", operand: channel.stream_id.toString(), negated}]);
@@ -332,23 +332,28 @@ function get_channel_suggestions(
 
     assert(last.operator === "channel" || last.operator === "search" || last.operator === "");
 
-    const query = last.operand;
-    const channel_names = stream_data.subscribed_stream_names();
-    let matching_channel_names = channel_names.filter((channel_name) =>
-        channel_matches_query(channel_name, query),
+    // `Filter.parse` may have resolved an exact channel name to its
+    // `stream_id`, so match both the resolved name (surfacing siblings,
+    // e.g. "channel:core" → "core team") and the operand as literally
+    // typed (keeping a digit-named "7th floor" reachable via
+    // "channel:7"). Name first, so a real sibling outranks a channel
+    // that merely starts with the operand's id digits.
+    const queries = [last.operand];
+    if (last.operator === "channel") {
+        const sub = stream_data.get_sub_by_id_string(last.operand);
+        if (sub !== undefined) {
+            queries.unshift(sub.name);
+        }
+    }
+    const matching_channel_names = new Set<string>();
+    for (const channel_query of queries) {
+        for (const channel_name of sorted_channel_name_matches(channel_query)) {
+            matching_channel_names.add(channel_name);
+        }
+    }
+    return [...matching_channel_names].map((channel_name) =>
+        channel_name_suggestion(channel_name, last.negated),
     );
-    matching_channel_names = typeahead_helper.sorter(query, matching_channel_names, (x) => x);
-    return matching_channel_names.map((channel_name) => {
-        const channel = stream_data.get_sub_by_name(channel_name);
-        assert(channel !== undefined);
-        const term: NarrowTerm = {
-            operator: "channel",
-            operand: channel.stream_id.toString(),
-            negated: last.negated,
-        };
-        const search_string = Filter.unparse([term]);
-        return search_string;
-    });
 }
 
 // Find subscribed channels whose name matches the multi-word `query`,
