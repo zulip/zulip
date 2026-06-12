@@ -84,7 +84,7 @@ export function handle_topic_updates(
         const visibility_policy = user_topic_event.visibility_policy;
 
         // Find the row with the specified stream_id and topic_name
-        const $row = $('tr[data-stream-id="' + stream_id + '"][data-topic="' + topic_name + '"]');
+        const $row = $(`tr[data-stream-id="${stream_id}"][data-topic="${CSS.escape(topic_name)}"]`);
 
         if ($row.length > 0) {
             // If the row exists, update the status only.
