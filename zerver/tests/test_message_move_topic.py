@@ -515,6 +515,51 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
 
     @mock.patch("zerver.actions.user_topics.send_event_on_commit")
+    def test_merge_into_topic_with_same_policy_sends_muted_topics_event(
+        self, mock_send_event_on_commit: mock.MagicMock
+    ) -> None:
+        # Merging a muted topic into another muted topic deletes the
+        # original topic's UserTopic row without changing the target's
+        # policy; legacy clients still need a muted_topics event for
+        # the removed row.
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("merge events stream")
+        self.subscribe(hamlet, stream.name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(hamlet, stream.name, topic_name="Topic A")
+        self.send_stream_message(hamlet, stream.name, topic_name="topic b")
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, "Topic A", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, "topic b", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        mock_send_event_on_commit.reset_mock()
+
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {"topic": "topic b", "propagate_mode": "change_all"},
+        )
+        self.assert_json_success(result)
+
+        muted_topics_payloads = []
+        user_topic_payloads = []
+        for call_args in mock_send_event_on_commit.call_args_list:
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
+            self.assertEqual(list(arg_notified_users), [hamlet.id])
+            if arg_event["type"] == "muted_topics":
+                muted_topics_payloads.append(arg_event["muted_topics"])
+            elif arg_event["type"] == "user_topic":
+                user_topic_payloads.append(
+                    (arg_event["topic_name"], arg_event["visibility_policy"])
+                )
+
+        # The removal of the original topic's row is announced to both
+        # modern and legacy clients.
+        self.assertEqual(user_topic_payloads, [("Topic A", UserTopic.VisibilityPolicy.INHERIT)])
+        self.assertEqual(muted_topics_payloads, [[[stream.name, "topic b", mock.ANY]]])
+
+    @mock.patch("zerver.actions.user_topics.send_event_on_commit")
     def test_edit_muted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)

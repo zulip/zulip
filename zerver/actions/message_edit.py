@@ -756,46 +756,38 @@ def update_user_topic_visibility_policies_on_move(
     ) in user_profiles_for_visibility_policy_pair.items():
         orig_topic_visibility_policy, target_topic_visibility_policy = visibility_policy_pair
 
-        if orig_topic_visibility_policy != UserTopic.VisibilityPolicy.INHERIT:
-            bulk_do_set_user_topic_visibility_policy(
-                user_profiles,
-                stream_being_edited,
-                orig_topic_name,
-                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
-                # bulk_do_set_user_topic_visibility_policy with visibility_policy
-                # set to 'new_visibility_policy' will send an updated muted topic
-                # event, which contains the full set of muted
-                # topics, just after this.
-                skip_muted_topics_event=True,
-            )
-
         new_visibility_policy = orig_topic_visibility_policy
 
         if target_topic_has_messages:
             # Here, we handle the complex case when target_topic already has
             # some messages. We determine the resultant visibility_policy
             # based on the visibility_policy of the orig_topic + target_topic.
-            # Finally, bulk_update the user_topic rows with the new visibility_policy.
             new_visibility_policy = get_visibility_policy_after_merge(
                 orig_topic_visibility_policy, target_topic_visibility_policy
             )
-            if new_visibility_policy == target_topic_visibility_policy:
-                continue
+        # Otherwise, the messages are being moved to a stream-topic
+        # pair that didn't exist, and the orig_topic policy carries
+        # over. There can still be UserTopic rows for such a pair if
+        # the messages in that topic had been deleted.
+
+        # When the target topic already has the merged policy, skip
+        # updating it; this avoids unnecessary db operations and INFO
+        # logs.
+        will_update_target_topic = new_visibility_policy != target_topic_visibility_policy
+
+        if orig_topic_visibility_policy != UserTopic.VisibilityPolicy.INHERIT:
             bulk_do_set_user_topic_visibility_policy(
                 user_profiles,
-                target_stream,
-                target_topic_name,
-                visibility_policy=new_visibility_policy,
+                stream_being_edited,
+                orig_topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+                # The target-topic update below sends the muted_topics
+                # event; when it's skipped, send it here so legacy clients
+                # learn the original row was removed.
+                skip_muted_topics_event=will_update_target_topic,
             )
-        else:
-            # This corresponds to the case when messages are moved
-            # to a stream-topic pair that didn't exist. There can
-            # still be UserTopic rows for the stream-topic pair
-            # that didn't exist if the messages in that topic had
-            # been deleted.
-            if new_visibility_policy == target_topic_visibility_policy:
-                # This avoids unnecessary db operations and INFO logs.
-                continue
+
+        if will_update_target_topic:
             bulk_do_set_user_topic_visibility_policy(
                 user_profiles,
                 target_stream,
