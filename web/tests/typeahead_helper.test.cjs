@@ -1843,6 +1843,25 @@ test("render_person with matching custom profile field but email hidden", ({
     assert.ok(rendered);
 });
 
+test("query_matches_person_name keeps diacritics when the query has them", () => {
+    // When should_remove_diacritics is false (used when the query itself has
+    // diacritics), the name keeps its diacritics, so a diacritic query matches
+    // a name with the same diacritics but not its ASCII counterpart.
+    const adam_diacritic = make_user({
+        email: "adam_name_diacritic@zulip.com",
+        full_name: "Ądam",
+        user_id: 101,
+    });
+    const adam_ascii = make_user({
+        email: "adam_name_ascii@zulip.com",
+        full_name: "adam",
+        user_id: 102,
+    });
+
+    assert.equal(th.query_matches_person_name("ądam", user_item(adam_diacritic), false), true);
+    assert.equal(th.query_matches_person_name("ądam", user_item(adam_ascii), false), false);
+});
+
 test("query_matches_person matches custom profile fields when they are enabled for user matching ", ({
     override,
 }) => {
