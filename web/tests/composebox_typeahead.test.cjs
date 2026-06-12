@@ -2271,6 +2271,17 @@ test("get_person_suggestion_for_topic_typeahead respects DM permissions", ({over
     assert.deepEqual(results, []);
 });
 
+test("get_person_suggestion_for_topic_typeahead: diacritic query prioritizes exact diacritic matches", ({
+    override,
+}) => {
+    message_lists.current = undefined;
+    override(pm_conversations, "get_partners", () => [gael.user_id, lear.user_id]);
+
+    const results = ct.get_person_suggestion_for_topic_typeahead("gaë");
+    assert.ok(results.length > 0);
+    assert.ok(results[0].user.user_id === gael.user_id);
+});
+
 test("begins_typeahead", ({override, override_rewire}) => {
     override(stream_topic_history_util, "get_server_history", noop);
 

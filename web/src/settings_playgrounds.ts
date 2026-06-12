@@ -192,7 +192,7 @@ function build_page(): void {
                 exact_matches,
                 begins_with_case_sensitive_matches,
                 begins_with_case_insensitive_matches,
-            } = typeahead.triage_raw_with_multiple_items(q, items, (item) => [
+            } = typeahead.triage_raw(q, items, (item) => [
                 item,
                 ...realm_playground.get_aliases_for_pretty_name(item),
             ]);
