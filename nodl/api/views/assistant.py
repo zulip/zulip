@@ -47,7 +47,7 @@ from zerver.models.clients import get_client
 
 logger = logging.getLogger(__name__)
 
-ASSISTANT_BOT_NAME = "nodl Assistant"
+ASSISTANT_BOT_NAME = "Nodle Assistant"
 MAX_MESSAGES_PER_PAGE = 500
 
 

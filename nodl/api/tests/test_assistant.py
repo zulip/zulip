@@ -142,7 +142,7 @@ class TestReadTaskStreamMessages(TestCase):
             date_sent=datetime(2026, 6, 11, 12, 5, tzinfo=UTC),
             content="<!-- nodl-card:v1:abc -->\n\nAssessment",
         )
-        bot.sender.full_name = "nodl Assistant"
+        bot.sender.full_name = "Nodle Assistant"
         bot.sender.is_bot = True
         bot.topic_name.return_value = "task"
 
@@ -342,7 +342,8 @@ class TestUpdateAssistantCard(TestCase):
         mock_ensure_bot.return_value = bot
         message = MagicMock(sender_id=99, content="old")
         message.topic_name.return_value = "task"
-        lookup = mock_message_objects.select_for_update.return_value.select_related.return_value.filter.return_value
+        locked_qs = mock_message_objects.select_for_update.return_value
+        lookup = locked_qs.select_related.return_value.filter.return_value
         lookup.first.return_value = message
 
         response = update_assistant_card(self._request(self.payload), 77)
@@ -375,7 +376,8 @@ class TestUpdateAssistantCard(TestCase):
         mock_get_extension.return_value = extension
         mock_ensure_bot.return_value = MagicMock(id=99)
         human_message = MagicMock(sender_id=11)
-        lookup = mock_message_objects.select_for_update.return_value.select_related.return_value.filter.return_value
+        locked_qs = mock_message_objects.select_for_update.return_value
+        lookup = locked_qs.select_related.return_value.filter.return_value
         lookup.first.return_value = human_message
 
         response = update_assistant_card(self._request(self.payload), 77)
