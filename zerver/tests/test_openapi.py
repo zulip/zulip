@@ -223,7 +223,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
         #### These personal settings endpoints have modest value to document:
-        "/users/me/avatar",
         #### Should be documented as part of interactive bots documentation
         "/submessage",
         "/zcommand",

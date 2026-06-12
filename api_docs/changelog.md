@@ -552,6 +552,10 @@ element to plain escaped text.
 * [`PATCH /messages/{message_id}`](/api/update-message): The `create_time` and
   `date_sent` fields in `detached_uploads` object will now return UNIX timestamps
   in seconds. Previously, these values were returned in milliseconds.
+* [`DELETE /users/me/avatar`](/api/delete-avatar): This endpoint is now
+  idempotent. Previously, calling it for a user who was already using the
+  organization's default profile picture would still increment the user's
+  avatar version and send a redundant user update event to clients.
 
 **Feature level 442**
 
