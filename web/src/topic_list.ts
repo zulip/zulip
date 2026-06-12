@@ -157,13 +157,18 @@ export function zoom_out(): void {
     }
     zoomed_in_widget = undefined;
 
-    const widget = active_widgets.get(stream_id);
-    assert(widget !== undefined);
-    const $stream_li = widget.get_stream_li();
-
     // Reset the resolved topic filter since we moved away
     // from the view.
     topic_filter_pill_widget?.clear(true);
+
+    const widget = active_widgets.get(stream_id);
+    if (widget === undefined) {
+        // There is no inline sidebar topic list to rebuild; with the
+        // "List of topics" channel-link setting, the sidebar topic
+        // list may be collapsed for the zoomed channel.
+        return;
+    }
+    const $stream_li = widget.get_stream_li();
 
     rebuild_left_sidebar($stream_li, stream_id);
 }
@@ -616,18 +621,25 @@ export function zoom_in($stream_li: JQuery, stream_id: number): void {
     zoomed_in_widget.build(spinner);
     reset_topic_list_cursor({show_highlight: false});
 
-    function on_success(): void {
-        if (!active_widgets.has(stream_id)) {
-            blueslip.warn("User re-narrowed before topic history was returned.");
-            return;
-        }
+    // Capture the widget this zoom created, so that the success
+    // callback can tell whether the user has since zoomed into a
+    // different channel. We can't use active_widgets for this check,
+    // since with the "List of topics" channel-link setting, the inline
+    // sidebar topic list may be collapsed, with no active widget.
+    const my_zoomed_in_widget = zoomed_in_widget;
 
+    function on_success(): void {
         if (!zoomed) {
             blueslip.warn("User zoomed out before topic history was returned.");
             // Note that we could attempt to re-draw the zoomed out topic list
             // here, given that we have more history, but that might be more
             // confusing than helpful to a user who is likely trying to browse
             // other streams.
+            return;
+        }
+
+        if (zoomed_in_widget !== my_zoomed_in_widget) {
+            blueslip.warn("User re-narrowed before topic history was returned.");
             return;
         }
 

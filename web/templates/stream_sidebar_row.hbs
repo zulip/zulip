@@ -18,6 +18,11 @@
                     <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                 </div>
                 {{/if}}
+                {{#if show_expand_topics_button}}
+                <div class="channel-expand-topics-button" tabindex="0" role="button" aria-label="{{t 'Toggle topic list' }}" aria-expanded="false" data-stream-id="{{id}}">
+                    <i class="zulip-icon zulip-icon-chevron-right" aria-hidden="true"></i>
+                </div>
+                {{/if}}
             </div>
 
             <div class="stream-markers-and-unreads">
