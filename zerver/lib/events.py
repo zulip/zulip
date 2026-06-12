@@ -938,7 +938,14 @@ def fetch_initial_state_data(
         )
 
     if want("user_topic"):
-        state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
+        # Clients tracking archived channels need these rows: the server
+        # still honors them (in unread counts, and fully on unarchive),
+        # and archiving/unarchiving sends no event to reconcile them later.
+        state["user_topics"] = (
+            []
+            if user_profile is None
+            else get_user_topics(user_profile, include_deactivated=archived_channels)
+        )
 
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.third_party_api_state.get("zoom") is not None

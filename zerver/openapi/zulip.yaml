@@ -19863,7 +19863,13 @@ paths:
                         description: |
                           Present if `user_topic` is present in `fetch_event_types`.
 
-                          **Changes**: New in Zulip 6.0 (feature level 134), deprecating and
+                          **Changes**: As of Zulip 12.0 (feature level ZF-d9af1a), includes
+                          entries for topics in archived channels for clients that declared
+                          the `archived_channels`
+                          [client capability](/api/register-queue#parameter-client_capabilities);
+                          previously, such entries were always excluded.
+
+                          New in Zulip 6.0 (feature level 134), deprecating and
                           replacing the previous `muted_topics` structure.
                         items:
                           type: object

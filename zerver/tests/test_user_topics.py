@@ -9,6 +9,7 @@ from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
@@ -764,6 +765,39 @@ class UserTopicsTests(ZulipTestCase):
             [(row.topic_name, row.visibility_policy) for row in rows],
             [("test topic", UserTopic.VisibilityPolicy.FOLLOWED)],
         )
+
+    def test_register_includes_archived_channel_user_topics(self) -> None:
+        # Clients with the archived_channels capability keep archived
+        # channels in their state, and the server keeps honoring
+        # visibility policies in them (in unread counts, and fully if
+        # the channel is unarchived), so /register must include those
+        # rows for such clients. No events are sent on archiving or
+        # unarchiving that would let clients reconcile them later.
+        user = self.example_user("hamlet")
+        stream = self.make_stream("archived channel audit")
+        self.subscribe(user, stream.name)
+        do_set_user_topic_visibility_policy(
+            user, stream, "test topic", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_deactivate_stream(stream, acting_user=None)
+
+        state = fetch_initial_state_data(
+            user, realm=user.realm, event_types=["user_topic"], archived_channels=True
+        )
+        self.assertEqual(
+            [
+                (user_topic["stream_id"], user_topic["topic_name"], user_topic["visibility_policy"])
+                for user_topic in state["user_topics"]
+            ],
+            [(stream.id, "test topic", UserTopic.VisibilityPolicy.MUTED)],
+        )
+
+        # Clients without the capability don't know about archived
+        # channels, and continue not receiving their policies.
+        state = fetch_initial_state_data(
+            user, realm=user.realm, event_types=["user_topic"], archived_channels=False
+        )
+        self.assertEqual(state["user_topics"], [])
 
     def test_invalid_visibility_policy(self) -> None:
         user = self.example_user("hamlet")
