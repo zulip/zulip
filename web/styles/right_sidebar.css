@@ -339,7 +339,7 @@
         "starting-anchor-element row-content markers-and-controls" var(
             --line-height-sidebar-row
         )
-        ".                       row-content ." auto / var(
+        ".                        row-content ." auto / var(
             --right-sidebar-presence-circle-width
         )
         minmax(0, 1fr)
