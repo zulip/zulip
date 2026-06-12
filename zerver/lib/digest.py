@@ -37,6 +37,7 @@ from zerver.models import (
     UserActivityInterval,
     UserMessage,
     UserProfile,
+    UserTopic,
 )
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import get_active_streams
@@ -67,6 +68,9 @@ class DigestTopic:
     def stream_id(self) -> int:
         # topic_key is (stream_id, topic_name)
         return self.topic_key[0]
+
+    def topic_name(self) -> str:
+        return self.topic_key[1]
 
     def add_message(self, message: Message) -> None:
         if len(self.sample_messages) < 2:
@@ -356,6 +360,21 @@ def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int,
     return dct
 
 
+def get_user_muted_topics_map(user_ids: list[int]) -> dict[int, set[tuple[int, str]]]:
+    # maps user_id -> {(stream_id, lowercased topic_name), ...};
+    # topic names are matched case-insensitively.
+    rows = UserTopic.objects.filter(
+        user_profile_id__in=user_ids,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+    ).values("user_profile_id", "stream_id", "topic_name")
+
+    dct: dict[int, set[tuple[int, str]]] = defaultdict(set)
+    for row in rows:
+        dct[row["user_profile_id"]].add((row["stream_id"], row["topic_name"].lower()))
+
+    return dct
+
+
 def get_slim_stream_id_map(stream_ids: set[int]) -> dict[int, Stream]:
     # "slim" because it only fetches the names of the stream objects,
     # suitable for passing into build_message_list.
@@ -383,6 +402,7 @@ def bulk_get_digest_context(
     user_stream_map = get_user_stream_map(user_ids, cutoff_date)
     stream_ids = set().union(*user_stream_map.values())
     stream_id_map = get_slim_stream_id_map(stream_ids)
+    user_muted_topics_map = get_user_muted_topics_map(user_ids)
 
     for user in users:
         context = common_context(user)
@@ -414,9 +434,17 @@ def bulk_get_digest_context(
         else:
             # Otherwise, get context data for hot conversations.
             stream_ids = user_stream_map[user.id]
+            muted_topics = user_muted_topics_map[user.id]
             recent_topics = []
             for stream_id in stream_ids:
-                recent_topics += get_recent_topics(realm.id, stream_id, cutoff_date)
+                recent_topics += [
+                    digest_topic
+                    for digest_topic in get_recent_topics(realm.id, stream_id, cutoff_date)
+                    # Topics the user has muted should not be featured
+                    # in their digest.
+                    if (digest_topic.stream_id(), digest_topic.topic_name().lower())
+                    not in muted_topics
+                ]
             hot_topics = get_hot_topics(recent_topics, stream_ids)
 
             context["hot_conversations"] = [
