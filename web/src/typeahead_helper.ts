@@ -497,7 +497,7 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     ok_users: () => UserType[];
     worst_users: () => UserType[];
 } => {
-    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
+    const users_name_results = typeahead.triage_raw(query, users, (p) => [p.user.full_name]);
     const users_name_good_matches = [
         ...users_name_results.exact_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -505,11 +505,9 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     ];
     const users_name_okay_matches = [...users_name_results.word_boundary_matches];
 
-    const email_results = typeahead.triage_raw(
-        query,
-        users_name_results.no_matches,
-        (p) => p.user.email,
-    );
+    const email_results = typeahead.triage_raw(query, users_name_results.no_matches, (p) => [
+        p.user.email,
+    ]);
     const email_good_matches = [
         ...email_results.exact_matches,
         ...email_results.begins_with_case_sensitive_matches,
@@ -566,7 +564,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         worst_users: worst_bots,
     } = get_user_matches_with_quality(bots, query, sort_relevance);
 
-    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+    const groups_results = typeahead.triage_raw(query, groups, (g) => {
         if (g.name === "role:members") {
             return [
                 user_groups.get_display_group_name(g.name),
@@ -786,13 +784,11 @@ export const sort_users_and_groups_options = ({
         return objs;
     }
 
-    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
-    const email_results = typeahead.triage_raw(
-        query,
-        users_name_results.no_matches,
-        (p) => p.user.email,
-    );
-    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+    const users_name_results = typeahead.triage_raw(query, users, (p) => [p.user.full_name]);
+    const email_results = typeahead.triage_raw(query, users_name_results.no_matches, (p) => [
+        p.user.email,
+    ]);
+    const groups_results = typeahead.triage_raw(query, groups, (g) => {
         if (g.name === "role:members") {
             return [
                 user_groups.get_display_group_name(g.name),
