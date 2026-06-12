@@ -47,13 +47,8 @@ DELETE_BATCH_SIZE = 1000
 # "file name" is the original filename provided by the user run
 # through a sanitization function.
 
-
-# https://github.com/boto/botocore/issues/2644 means that the IMDS
-# request _always_ pulls from the environment.  Monkey-patch the
-# `should_bypass_proxies` function if we need to skip them, based
-# on S3_SKIP_PROXY.
-if settings.S3_SKIP_PROXY is True:  # nocoverage
-    botocore.utils.should_bypass_proxies = lambda url: True
+# Note: boto3 is configured to bypass the Smokescreen outgoing proxy in
+# zerver.apps, making sure the setup runs at process startup.
 
 
 def get_bucket(bucket_name: str, authed: bool = True) -> "Bucket":
