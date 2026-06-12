@@ -248,3 +248,97 @@ run_test(
         assert.deepEqual(rendered_msgs, [original_message]);
     },
 );
+
+run_test(
+    "update_messages move with case-only topic name change updates the topic name",
+    ({override, override_rewire}) => {
+        override_rewire(message_events, "update_views_filtered_on_message_property", () => {}, {
+            unused: false,
+        });
+        linkifiers.initialize([]);
+        markdown.initialize({
+            get_linkifier_map: linkifiers.get_linkifier_map,
+        });
+
+        const verona = make_stream({
+            subscribed: true,
+            name: "Verona",
+            stream_id: 102,
+        });
+        stream_data.add_sub_for_tests(verona);
+
+        const old_topic = "CI failures";
+        const new_topic = "ci failures";
+        const raw_message = {
+            id: 333,
+            display_recipient: denmark.name,
+            flags: [],
+            sender_id: alice.user_id,
+            stream_id: denmark.stream_id,
+            topic: old_topic,
+            topic_links: markdown.get_topic_links(old_topic),
+            type: "stream",
+            reactions: [],
+            submessages: [],
+            avatar_url: `/avatar/${alice.user_id}`,
+        };
+
+        const original_message = message_helper.process_new_message({
+            type: "server_message",
+            raw_message,
+        }).message;
+
+        stream_topic_history.set_update_topic_last_message_id(noop);
+        message_lists.current.view = {};
+        message_lists.current.view.rerender_messages = noop;
+        message_lists.current.selected_id = () => -1;
+        message_lists.current.data = {
+            filter: {can_apply_locally: () => true},
+            remove: noop,
+            add_messages: noop,
+        };
+        message_lists.current.rerender = noop;
+
+        const events = [
+            {
+                message_id: original_message.id,
+                message_ids: [original_message.id],
+                user_id: alice.user_id,
+                flags: [],
+                edit_timestamp: 1700000000,
+                stream_id: denmark.stream_id,
+                new_stream_id: verona.stream_id,
+                propagate_mode: "change_all",
+                orig_subject: old_topic,
+                subject: new_topic,
+                topic_links: markdown.get_topic_links(new_topic),
+                rendering_only: false,
+            },
+        ];
+
+        override(
+            realm,
+            "realm_message_edit_history_visibility_policy",
+            settings_config.message_edit_history_visibility_policy_values.always.code,
+        );
+
+        $("#message-edit-history").set_parents_result(".micromodal", $.create("modal-stub"));
+
+        message_events.update_messages(events);
+
+        // The moved message reflects both the new channel and the new
+        // topic casing.
+        assert.equal(original_message.stream_id, verona.stream_id);
+        assert.equal(original_message.topic, new_topic);
+        assert.deepEqual(original_message.edit_history[0], {
+            user_id: alice.user_id,
+            timestamp: 1700000000,
+            stream: verona.stream_id,
+            prev_stream: denmark.stream_id,
+            topic: new_topic,
+            prev_topic: old_topic,
+        });
+        const topic_names = stream_topic_history.get_recent_topic_names(verona.stream_id);
+        assert.equal(topic_names[0], new_topic);
+    },
+);

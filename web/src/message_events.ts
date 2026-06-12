@@ -653,7 +653,9 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         edit_history_entry.stream = new_stream_id;
                         edit_history_entry.prev_stream = old_stream_id;
                     }
-                    if (topic_edited) {
+                    // A move can change the topic only by case; the
+                    // server records that as a topic change too.
+                    if (new_topic !== undefined) {
                         edit_history_entry.topic = new_topic;
                         edit_history_entry.prev_topic = orig_topic;
                     }
@@ -676,8 +678,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 // before we modify the topic field on the message.
                 unread.update_unread_topics(moved_message, event);
 
-                // Now edit the attributes of our message object.
-                if (topic_edited) {
+                // Now edit the attributes of our message object. The
+                // topic may have changed only by case when the message
+                // also moved between channels.
+                if (new_topic !== undefined) {
                     moved_message.topic = new_topic;
                     assert(event.topic_links !== undefined);
                     moved_message.topic_links = event.topic_links;
