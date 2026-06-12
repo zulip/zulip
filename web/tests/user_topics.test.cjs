@@ -241,6 +241,26 @@ test("get_mutes", () => {
     ]);
 });
 
+test("get_mutes_after_stream_rename", () => {
+    user_topics.update_user_topics(
+        office.stream_id,
+        office.name,
+        "gossip",
+        all_visibility_policies.MUTED,
+        1577836800,
+    );
+
+    // Settings > Topics reflects a channel rename immediately, rather
+    // than showing the name cached when the policy was set.
+    const old_name = office.name;
+    office.name = "new office";
+    const all_muted_topics = user_topics.get_user_topics_for_visibility_policy(
+        user_topics.all_visibility_policies.MUTED,
+    );
+    assert.equal(all_muted_topics[0].stream, "new office");
+    office.name = old_name;
+});
+
 test("get_unmutes", () => {
     assert.deepEqual(
         user_topics.get_user_topics_for_visibility_policy(

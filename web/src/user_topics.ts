@@ -103,9 +103,13 @@ export function get_user_topics_for_visibility_policy(visibility_policy: number)
                 const topic_dict = sub_dict.get(topic)!;
                 const date_updated = topic_dict.date_updated;
                 const date_updated_str = timerender.render_now(new Date(date_updated)).time_str;
+                // Prefer the channel's current name: the cached
+                // snapshot goes stale when a channel is renamed.
+                const stream_name =
+                    sub_store.maybe_get_stream_name(stream_id) ?? topic_dict.stream_name;
                 topics.push({
                     stream_id,
-                    stream: topic_dict.stream_name,
+                    stream: stream_name,
                     topic,
                     date_updated,
                     date_updated_str,
