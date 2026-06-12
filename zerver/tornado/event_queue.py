@@ -1445,6 +1445,10 @@ def process_message_update_event(
     # Extract the parameters passed via the event object that don't
     # belong in the actual events.
     event_template = dict(orig_event)
+    # Only content edits attach the mention-notification data (in
+    # update_message_content). A pure move makes nobody's mention new,
+    # so it must not re-trigger notifications.
+    content_edited = "prior_mention_user_ids" in event_template
     prior_mention_user_ids = set(event_template.pop("prior_mention_user_ids", []))
     presence_idle_user_ids = set(event_template.pop("presence_idle_user_ids", []))
 
@@ -1527,8 +1531,9 @@ def process_message_update_event(
         # do_update_embedded_data code path, and represent rendering
         # previews; there should be no real content changes.
         # Therefore, we know only events where `rendering_only_update`
-        # is False possibly send notifications.
-        if not rendering_only_update:
+        # is False and the content was edited possibly send
+        # notifications.
+        if not rendering_only_update and content_edited:
             # The user we'll get here will be the sender if the message's
             # content was edited, and the editor for topic edits. That's
             # the correct "acting_user" for both cases.

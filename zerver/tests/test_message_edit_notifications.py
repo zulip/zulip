@@ -188,6 +188,25 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             info=info,
         )
 
+    def test_move_does_not_renotify_mention(self) -> None:
+        # Moving a message without editing its content must not
+        # re-trigger mention notifications: nobody's mention is new,
+        # and recipients were already notified when the message was
+        # sent (or its content last edited).
+        message_id = self._login_and_send_original_stream_message(
+            content="Hello @**Cordelia, Lear's daughter**",
+        )
+
+        url = "/json/messages/" + str(message_id)
+        request = dict(topic="moved topic", propagate_mode="change_all")
+        with (
+            mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_patch(url, request)
+        self.assert_json_success(result)
+        self.assert_length(m.call_args_list, 0)
+
     def test_updates_with_stream_mention(self) -> None:
         original_content = "no mention"
         updated_content = "now we mention @**Cordelia, Lear's daughter**"
