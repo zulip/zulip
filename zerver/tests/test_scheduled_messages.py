@@ -14,13 +14,25 @@ from zerver.actions.scheduled_messages import (
     SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES,
     try_deliver_one_scheduled_message,
 )
+from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import change_user_is_active
 from zerver.lib.message import is_message_to_self
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
+from zerver.lib.user_topics import topic_has_visibility_policy
+from zerver.models import (
+    Attachment,
+    Message,
+    Recipient,
+    ScheduledMessage,
+    UserMessage,
+    UserProfile,
+    UserTopic,
+)
 from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 
 if TYPE_CHECKING:
@@ -223,6 +235,88 @@ class ScheduledMessageTest(ZulipTestCase):
 
         self.assert_scheduled_message_delivered(
             scheduled_message, recipient=direct_message_group.recipient
+        )
+
+    def deliver_scheduled_message(self, scheduled_message: ScheduledMessage) -> None:
+        with (
+            time_machine.travel(
+                scheduled_message.scheduled_timestamp + timedelta(minutes=1), tick=False
+            ),
+            self.assertLogs(level="INFO"),
+        ):
+            self.assertTrue(try_deliver_one_scheduled_message())
+
+    def test_delivery_does_not_override_explicit_visibility_policy(self) -> None:
+        # A scheduled-message delivery reflects engagement at scheduling
+        # time: it must not override a visibility policy the sender
+        # configured between scheduling and delivery.
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        verona = get_stream("Verona", hamlet.realm)
+        do_change_user_setting(
+            hamlet,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+            acting_user=None,
+        )
+        # The topic already has a message, so the delivery is a reply.
+        self.send_stream_message(othello, "Verona", topic_name="Test topic")
+
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        result = self.do_schedule_message(
+            "channel", verona.id, "Test message", scheduled_delivery_timestamp
+        )
+        self.assert_json_success(result)
+
+        # After scheduling, the sender explicitly mutes the topic.
+        do_set_user_topic_visibility_policy(
+            hamlet, verona, "Test topic", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+
+        self.deliver_scheduled_message(self.last_scheduled_message())
+        self.assertTrue(
+            topic_has_visibility_policy(
+                hamlet, verona.id, "Test topic", UserTopic.VisibilityPolicy.MUTED
+            )
+        )
+
+    def test_delivery_is_not_topic_initiation(self) -> None:
+        # With the ON_INITIATION follow policy, delivering a scheduled
+        # reply into a topic whose conversation was renamed away in the
+        # meantime (e.g., moved or resolved) must not count as
+        # initiating the topic that the delivery recreates.
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        verona = get_stream("Verona", hamlet.realm)
+        do_change_user_setting(
+            hamlet,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+        message_id = self.send_stream_message(othello, "Verona", topic_name="Test topic")
+
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        result = self.do_schedule_message(
+            "channel", verona.id, "Test message", scheduled_delivery_timestamp
+        )
+        self.assert_json_success(result)
+
+        # The conversation is renamed away before delivery.
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {"topic": "Renamed topic", "propagate_mode": "change_all"},
+        )
+        self.assert_json_success(result)
+
+        # The delivery recreates the old topic, but the sender does not
+        # silently start following it.
+        self.deliver_scheduled_message(self.last_scheduled_message())
+        self.assertTrue(
+            topic_has_visibility_policy(
+                hamlet, verona.id, "Test topic", UserTopic.VisibilityPolicy.INHERIT
+            )
         )
 
     def verify_deliver_scheduled_message_failure(

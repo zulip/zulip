@@ -1066,6 +1066,7 @@ def do_send_messages(
                     send_request.stream,
                     send_request.sender_muted_stream,
                     visibility_policy,
+                    is_scheduled_message_delivery=send_request.scheduled_message_delivery,
                 )
                 if new_visibility_policy:
                     do_set_user_topic_visibility_policy(

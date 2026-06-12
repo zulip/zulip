@@ -381,6 +381,7 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
         scheduled_message.content,
         scheduled_message.realm,
     )
+    send_request.scheduled_message_delivery = True
 
     sent_message_result = do_send_messages(
         [send_request],

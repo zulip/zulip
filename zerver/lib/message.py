@@ -181,6 +181,9 @@ class SendMessageRequest:
     limit_unread_user_ids: set[int] | None = None
     service_queue_events: dict[str, list[dict[str, Any]]] | None = None
     disable_external_notifications: bool = False
+    # Whether this request is the delayed delivery of a scheduled
+    # message, as opposed to an interactive send.
+    scheduled_message_delivery: bool = False
     automatic_new_visibility_policy: int | None = None
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
     reminder_target_message_id: int | None = None
@@ -1644,6 +1647,7 @@ def visibility_policy_for_send_message(
     stream: Stream,
     is_stream_muted: bool | None,
     current_visibility_policy: int,
+    is_scheduled_message_delivery: bool = False,
 ) -> int | None:
     """
     This function determines the visibility policy to set when a message
@@ -1652,6 +1656,14 @@ def visibility_policy_for_send_message(
 
     It returns None when the policies can't make it more visible than the
     current visibility policy.
+
+    For a scheduled-message delivery, the sender's engagement with the
+    topic happened at scheduling time, not at delivery time, so the
+    policies are applied more conservatively: an existing visibility
+    policy (possibly an explicit mute configured since scheduling) is
+    never modified, and the delayed delivery is not treated as topic
+    initiation, since the conversation the message replied to may have
+    been moved or resolved in the meantime.
     """
     # We prioritize 'FOLLOW' over 'UNMUTE' in muted streams.
     # We need to carefully handle the following two cases:
@@ -1671,6 +1683,12 @@ def visibility_policy_for_send_message(
     visibility_policy = None
 
     if current_visibility_policy == UserTopic.VisibilityPolicy.FOLLOWED:
+        return visibility_policy
+
+    if (
+        is_scheduled_message_delivery
+        and current_visibility_policy != UserTopic.VisibilityPolicy.INHERIT
+    ):
         return visibility_policy
 
     visibility_policy_participation = visibility_policy_for_participation(sender, is_stream_muted)
@@ -1693,6 +1711,9 @@ def visibility_policy_for_send_message(
     if current_visibility_policy != UserTopic.VisibilityPolicy.INHERIT:
         if visibility_policy and current_visibility_policy == visibility_policy:
             return None
+        return visibility_policy
+
+    if is_scheduled_message_delivery:
         return visibility_policy
 
     # Now we need to check if the user initiated the topic.
