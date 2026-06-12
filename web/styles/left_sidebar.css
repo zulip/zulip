@@ -225,7 +225,8 @@
 
     .stream-expanded {
         .channel-new-topic-button,
-        .channel-search-topics-button {
+        .channel-search-topics-button,
+        .channel-expand-topics-button {
             display: flex;
         }
 
@@ -2171,7 +2172,8 @@ li.active-sub-filter {
 }
 
 .channel-new-topic-button,
-.channel-search-topics-button {
+.channel-search-topics-button,
+.channel-expand-topics-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
     display: none;
@@ -2185,6 +2187,22 @@ li.active-sub-filter {
         color: var(--color-sidebar-action-hover);
         background-color: var(--color-background-sidebar-action-hover);
     }
+}
+
+.channel-expand-topics-button {
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+
+    .zulip-icon-chevron-right {
+        transition: rotate 140ms linear;
+    }
+}
+
+.narrow-filter.topic-list-expanded
+    .channel-expand-topics-button
+    .zulip-icon-chevron-right {
+    rotate: 90deg;
 }
 
 .narrow-filter:hover {

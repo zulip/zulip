@@ -428,6 +428,88 @@ test_ui("narrowing", ({override_rewire}) => {
     assert.ok(topics_closed);
 });
 
+test_ui("list_of_topics_expand_collapse", ({override, override_rewire}) => {
+    override(
+        user_settings,
+        "web_channel_default_view",
+        settings_config.web_channel_default_view_values.list_of_topics.code,
+    );
+
+    topic_list.get_stream_li = noop;
+    override_rewire(stream_list, "scroll_stream_into_view", noop);
+    override_rewire(stream_list, "get_section_id_for_stream_li", () => "normal");
+    override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
+
+    // Track the stream whose topic list is currently rendered in the
+    // sidebar, mirroring the real topic_list module's behavior.
+    let active_stream_id;
+    topic_list.active_stream_id = () => active_stream_id;
+    topic_list.rebuild_left_sidebar = (_$stream_li, stream_id) => {
+        active_stream_id = stream_id;
+    };
+    topic_list.close = () => {
+        active_stream_id = undefined;
+    };
+
+    initialize_stream_data();
+
+    const $devel_sidebar = $("<devel-sidebar-row-stub>");
+    const $devel_expand_button = $.create("devel-expand-topics-button");
+    $devel_sidebar.set_find_results(".channel-expand-topics-button", $devel_expand_button);
+    const $rome_sidebar = $("<Rome-sidebar-row-stub>");
+    const $rome_expand_button = $.create("rome-expand-topics-button");
+    $rome_sidebar.set_find_results(".channel-expand-topics-button", $rome_expand_button);
+
+    // With the "List of topics" channel-link setting, narrowing to a
+    // channel does not expand the sidebar topic list; the middle pane
+    // already shows it.
+    let filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok($devel_sidebar.hasClass("active-filter"));
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, undefined);
+
+    // The expand chevron toggles the sidebar topic list.
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert.ok($devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal($devel_expand_button.attr("aria-expanded"), "true");
+    assert.equal(active_stream_id, develSub.stream_id);
+
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal($devel_expand_button.attr("aria-expanded"), "false");
+    assert.equal(active_stream_id, undefined);
+
+    // Narrowing to a topic expands the sidebar topic list, for
+    // navigating between sibling topics.
+    filter = new Filter([
+        {operator: "stream", operand: develSub.stream_id.toString()},
+        {operator: "topic", operand: "python"},
+    ]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok($devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, develSub.stream_id);
+
+    // The channel stays expanded while navigating within it, e.g.
+    // from a topic back to its topic-list view.
+    filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok($devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, develSub.stream_id);
+
+    // Narrowing away from the channel resets its expanded state, so
+    // revisiting it starts collapsed again.
+    filter = new Filter([{operator: "stream", operand: RomeSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.ok(!$rome_sidebar.hasClass("topic-list-expanded"));
+
+    filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter);
+    assert.ok(!$devel_sidebar.hasClass("topic-list-expanded"));
+    assert.equal(active_stream_id, undefined);
+});
+
 test_ui("sort_streams", ({override_rewire, mock_template}) => {
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
@@ -585,6 +667,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
             can_post_messages: true,
             is_empty_topic_only_channel: false,
             cannot_create_topics_in_channel: false,
+            show_expand_topics_button: false,
         });
         return "<li-stub>";
     });
