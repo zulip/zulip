@@ -54,7 +54,12 @@ from zerver.lib.export import (
     do_export_user,
     get_consented_user_ids,
 )
-from zerver.lib.import_realm import do_import_realm, get_db_table, get_incoming_message_ids
+from zerver.lib.import_realm import (
+    deduplicate_user_topics_for_import,
+    do_import_realm,
+    get_db_table,
+    get_incoming_message_ids,
+)
 from zerver.lib.migration_status import STALE_MIGRATIONS, AppMigrations, MigrationStatusJson
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -3800,3 +3805,49 @@ class GetFKFieldNameTest(ZulipTestCase):
         self.assertEqual(get_fk_field_name(UserProfile, Realm), "realm")
         self.assertEqual(get_fk_field_name(Reaction, Stream), None)
         self.assertEqual(get_fk_field_name(Message, UserProfile), "sender")
+
+
+class DeduplicateUserTopicsForImportTest(ZulipTestCase):
+    def test_deduplicate_user_topics_for_import(self) -> None:
+        # An export created under a database locale that case-folds
+        # fewer characters than ours can contain UserTopic rows that
+        # this database's unique index on (user_profile, stream,
+        # lower(topic_name)) considers duplicates; only the most
+        # recently updated row of each group must survive, so that
+        # importing cannot abort with an IntegrityError.
+        older = timezone_now() - timedelta(minutes=10)
+        newer = timezone_now()
+        rows = [
+            dict(
+                id=1,
+                user_profile_id=11,
+                stream_id=21,
+                recipient_id=31,
+                topic_name="Weekly sync",
+                last_updated=older,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            ),
+            dict(
+                id=2,
+                user_profile_id=11,
+                stream_id=21,
+                recipient_id=31,
+                topic_name="WEEKLY SYNC",
+                last_updated=newer,
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            ),
+            # Same topic name, but a different user; not a duplicate.
+            dict(
+                id=3,
+                user_profile_id=12,
+                stream_id=21,
+                recipient_id=31,
+                topic_name="weekly sync",
+                last_updated=older,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            ),
+        ]
+        deduplicated = deduplicate_user_topics_for_import(rows)
+        self.assertEqual(sorted(row["id"] for row in deduplicated), [2, 3])
+
+        self.assertEqual(deduplicate_user_topics_for_import([]), [])

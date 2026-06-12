@@ -949,6 +949,40 @@ def bulk_import_model(data: ImportedTableData, model: Any, dump_file_id: str | N
         logging.info("Successfully imported %s from %s[%s].", model, table, dump_file_id)
 
 
+def deduplicate_user_topics_for_import(rows: list[Record]) -> list[Record]:
+    """The unique index on (user_profile, stream, lower(topic_name))
+    folds topic-name case using the locale of this server's database,
+    which may consider equal a pair of topic names that the source
+    server's locale treated as distinct. Keep only the most recently
+    updated row for each key as this database computes it, so that the
+    bulk insert cannot abort the import with an IntegrityError.
+    """
+    if not rows:
+        return rows
+
+    # Use the database's own case-folding; Python's str.lower()
+    # disagrees with it in both directions (e.g., for non-ASCII
+    # characters under the C.UTF-8 locale).
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT lower(t.topic_name) FROM unnest(%s::text[])"
+            " WITH ORDINALITY AS t(topic_name, i) ORDER BY t.i",
+            [[row["topic_name"] for row in rows]],
+        )
+        lowered_topic_names = [lowered for (lowered,) in cursor.fetchall()]
+
+    latest_rows: dict[tuple[int, int, str], Record] = {}
+    for row, lowered_topic_name in zip(rows, lowered_topic_names, strict=True):
+        key = (row["user_profile_id"], row["stream_id"], lowered_topic_name)
+        existing = latest_rows.get(key)
+        if existing is None or (row["last_updated"], row["id"]) > (
+            existing["last_updated"],
+            existing["id"],
+        ):
+            latest_rows[key] = row
+    return list(latest_rows.values())
+
+
 def bulk_import_named_user_groups(data: ImportedTableData) -> None:
     vals = [
         (
@@ -1801,6 +1835,7 @@ def do_import_realm(
         re_map_foreign_keys(data, "zerver_usertopic", "user_profile", related_table="user_profile")
         re_map_foreign_keys(data, "zerver_usertopic", "stream", related_table="stream")
         re_map_foreign_keys(data, "zerver_usertopic", "recipient", related_table="recipient")
+        data["zerver_usertopic"] = deduplicate_user_topics_for_import(data["zerver_usertopic"])
         update_model_ids(UserTopic, data, "usertopic")
         bulk_import_model(data, UserTopic)
 
