@@ -217,7 +217,7 @@ export function condense_and_collapse(elems: JQuery): void {
         0.65 * message_viewport.height(),
     );
 
-    const rows_to_resize = [];
+    const candidate_rows = [];
     for (const elem of elems) {
         const $content = $(elem).find(".message_content");
 
@@ -238,20 +238,24 @@ export function condense_and_collapse(elems: JQuery): void {
             continue;
         }
 
-        const message_height = get_message_height(elem);
+        // Toggle this before measuring heights below, since hiding a
+        // link preview changes the message's rendered height.
+        $content.toggleClass("hide-link-previews", message.hide_link_previews);
 
-        rows_to_resize.push({
-            elem,
-            $content,
-            message,
-            message_height,
-        });
+        candidate_rows.push({elem, $content, message});
     }
 
     // Note that we resize all the rows *after* we calculate if we should
     // resize them or not. This allows us to do all measurements before
     // changing the layout of the page, which is more performanant.
     // More information here: https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/#avoid-layout-thrashing
+    const rows_to_resize = candidate_rows.map(({elem, $content, message}) => ({
+        elem,
+        $content,
+        message,
+        message_height: get_message_height(elem),
+    }));
+
     for (const {elem, $content, message, message_height} of rows_to_resize) {
         // Track which messages were unread when initially rendered so that subsequent
         // re-renders don't collapse the message while user is reading it.

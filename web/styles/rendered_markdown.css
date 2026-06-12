@@ -1038,6 +1038,10 @@
     }
 }
 
+.message_content.hide-link-previews .message_embed {
+    display: none;
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
