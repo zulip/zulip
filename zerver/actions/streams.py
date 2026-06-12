@@ -13,6 +13,7 @@ from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_streams_from_default_stream_group,
 )
+from zerver.actions.message_edit import update_user_topic_visibility_policies_on_move
 from zerver.actions.message_send import maybe_send_channel_events_notice
 from zerver.lib.cache import (
     cache_delete_many,
@@ -49,7 +50,7 @@ from zerver.lib.streams import (
     stream_to_dict,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info, get_subscribers_query
-from zerver.lib.topic import get_topic_display_name
+from zerver.lib.topic import get_topic_display_name, messages_for_topic
 from zerver.lib.types import APISubscriptionDict, UserGroupMembersData
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
@@ -76,6 +77,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserProfile,
+    UserTopic,
 )
 from zerver.models.groups import NamedUserGroup, UserGroup
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -366,6 +368,28 @@ def merge_streams(
 
     if len(users_to_activate) > 0:
         bulk_add_subscriptions(realm, [stream_to_keep], users_to_activate, acting_user=None)
+
+    # Must run before moving the messages, so target_topic_has_messages
+    # only sees topics that already existed in stream_to_keep.
+    case_insensitive_topic_names = {
+        topic_name.lower(): topic_name
+        for topic_name in UserTopic.objects.filter(stream=stream_to_destroy).values_list(
+            "topic_name", flat=True
+        )
+    }.values()
+    for topic_name in case_insensitive_topic_names:
+        target_topic_has_messages = messages_for_topic(
+            realm.id, recipient_to_keep.id, topic_name
+        ).exists()
+        update_user_topic_visibility_policies_on_move(
+            is_stream_edited=True,
+            stream_being_edited=stream_to_destroy,
+            orig_topic_name=topic_name,
+            target_stream=stream_to_keep,
+            target_topic_name=topic_name,
+            target_topic_has_messages=target_topic_has_messages,
+            remove_orig_topic_visibility_policy=True,
+        )
 
     # Move the messages, and delete the old copies from caches. We do
     # this before removing the subscription objects, to avoid messages
