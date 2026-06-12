@@ -1034,6 +1034,63 @@ test("channel_completion", ({override}) => {
     assert.deepEqual(suggestions, expected);
 });
 
+test("channel_exact_name_surfaces_siblings", ({override}) => {
+    override(stream_topic_history_util, "get_server_history", noop);
+
+    const core_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: core_id, name: "core", subscribed: true}),
+    );
+    const core_team_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: core_team_id, name: "core team", subscribed: true}),
+    );
+
+    // Typing the exact name "core" resolves to its stream_id via
+    // `Filter.parse`, but we still phrase-match the name so the
+    // sibling channel "core team" surfaces as an alternative
+    // interpretation, just as it would for the still-incomplete
+    // "channel:cor".
+    let query = "channel:core";
+    let suggestions = get_suggestions(query);
+    let expected = [`channel:${core_id}`, `channel:${core_team_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    // The still-incomplete name behaves identically, confirming the
+    // exact-match case isn't a special-cased regression.
+    query = "channel:cor";
+    suggestions = get_suggestions(query);
+    expected = [`channel:${core_id}`, `channel:${core_team_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    // A numeric operand resolves to that stream_id's channel, but we
+    // also match it as literally typed, so `channel:7` surfaces both
+    // #Venice (id 7) and a channel whose name starts with "7".
+    stream_data.add_sub_for_tests(make_stream({stream_id: 7, name: "Venice", subscribed: true}));
+    const seventh_floor_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: seventh_floor_id, name: "7th floor", subscribed: true}),
+    );
+    query = "channel:7";
+    suggestions = get_suggestions(query);
+    expected = ["channel:7", `channel:${seventh_floor_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    // "Venice" (id 7) has a genuine sibling "Venice beach". Typing the
+    // exact name resolves the operand to the id "7", so we match both
+    // the name "Venice" and the literal "7". The genuine sibling
+    // "Venice beach" (a name match) must rank above "7th floor" (only a
+    // coincidental match on the id-7 literal).
+    const venice_beach_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: venice_beach_id, name: "Venice beach", subscribed: true}),
+    );
+    query = "channel:Venice";
+    suggestions = get_suggestions(query);
+    expected = ["channel:7", `channel:${venice_beach_id}`, `channel:${seventh_floor_id}`];
+    assert.deepEqual(suggestions, expected);
+});
+
 test("channel_multi_word_completion", ({override}) => {
     override(narrow_state, "stream_id", noop);
     override(stream_topic_history_util, "get_server_history", noop);
