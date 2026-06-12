@@ -48,6 +48,7 @@ from zerver.lib.message import (
     get_raw_unread_data,
     get_recent_private_conversations,
     get_starred_message_ids,
+    reclassify_unread_messages_for_muting_change,
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
@@ -1753,6 +1754,24 @@ def apply_event(
             for sub in state["subscriptions"]:
                 if sub["stream_id"] == event["stream_id"]:
                     sub[event["property"]] = event["value"]
+
+            if event["property"] == "is_muted" and "raw_unread_msgs" in state:
+                # Muting or unmuting the channel changes whether its
+                # unread messages count toward the aggregate unread
+                # count.
+                raw_unread_msgs = state["raw_unread_msgs"]
+                if event["value"]:
+                    raw_unread_msgs["muted_stream_ids"].add(event["stream_id"])
+                else:
+                    raw_unread_msgs["muted_stream_ids"].discard(event["stream_id"])
+                affected_message_ids = [
+                    message_id
+                    for message_id, row in raw_unread_msgs["stream_dict"].items()
+                    if row["stream_id"] == event["stream_id"]
+                ]
+                reclassify_unread_messages_for_muting_change(
+                    user_profile, raw_unread_msgs, affected_message_ids
+                )
         elif event["op"] == "peer_add":
             # Note: We don't update subscriber_count here, since we
             # have no way to know whether the added subscriber is
@@ -1832,6 +1851,14 @@ def apply_event(
             for message_id in event["message_ids"]:
                 if message_id in stream_dict:
                     stream_dict[message_id]["topic"] = topic_name
+
+        if "raw_unread_msgs" in state and ("new_stream_id" in event or TOPIC_NAME in event):
+            # The moved messages may now be in a muted (or no longer
+            # muted) location, changing whether they count toward the
+            # aggregate unread count.
+            reclassify_unread_messages_for_muting_change(
+                user_profile, state["raw_unread_msgs"], event["message_ids"]
+            )
     elif event["type"] == "delete_message":
         if "message_id" in event:
             message_ids = [event["message_id"]]
@@ -2051,6 +2078,20 @@ def apply_event(
             fields = ["stream_id", "topic_name", "visibility_policy", "last_updated"]
             user_topics_state.append({x: event[x] for x in fields})
         state["user_topics"] = user_topics_state
+
+        if "raw_unread_msgs" in state:
+            # The new visibility policy may change whether the topic's
+            # unread messages count toward the aggregate unread count.
+            stream_dict = state["raw_unread_msgs"]["stream_dict"]
+            affected_message_ids = [
+                message_id
+                for message_id, row in stream_dict.items()
+                if row["stream_id"] == event["stream_id"]
+                and row["topic"].lower() == topic_name.lower()
+            ]
+            reclassify_unread_messages_for_muting_change(
+                user_profile, state["raw_unread_msgs"], affected_message_ids
+            )
     elif event["type"] == "channel_folder":
         if event["op"] == "add":
             state["channel_folders"].append(event["channel_folder"])

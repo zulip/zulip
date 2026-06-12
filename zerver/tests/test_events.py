@@ -2642,6 +2642,54 @@ class NormalActionsTest(BaseAction):
         )
         self.assertEqual(events[1]["topic_name"], Message.EMPTY_TOPIC_FALLBACK_NAME)
 
+    def test_unread_reclassification_on_muting_changes(self) -> None:
+        hamlet = self.user_profile
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        stream = self.make_stream("muting unreads")
+        original_stream = self.make_stream("origin")
+        for user in [hamlet, cordelia, iago]:
+            self.subscribe(user, stream.name)
+            self.subscribe(user, original_stream.name)
+
+        self.send_stream_message(cordelia, stream.name, "hello", topic_name="lunch")
+        self.send_stream_message(cordelia, stream.name, "@**all** hello", topic_name="lunch")
+
+        # Muting a topic with unread messages removes them (including
+        # the wildcard mention) from the aggregate unread counts.
+        with self.verify_action(num_events=2):
+            do_set_user_topic_visibility_policy(
+                hamlet, stream, "lunch", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+            )
+
+        # Unmuting restores them.
+        with self.verify_action(num_events=2):
+            do_set_user_topic_visibility_policy(
+                hamlet, stream, "lunch", visibility_policy=UserTopic.VisibilityPolicy.INHERIT
+            )
+
+        # Muting the whole channel reclassifies its unread messages.
+        sub = get_subscription(stream.name, hamlet)
+        with self.verify_action(num_events=2):
+            do_change_subscription_property(hamlet, sub, stream, "is_muted", True, acting_user=None)
+
+        # Moving unread messages into the muted channel reclassifies
+        # them as well.
+        message_id = self.send_stream_message(
+            cordelia, original_stream.name, "hi", topic_name="moving"
+        )
+        with self.verify_action(num_events=1):
+            result = self.api_patch(
+                iago,
+                f"/api/v1/messages/{message_id}",
+                {
+                    "stream_id": stream.id,
+                    "propagate_mode": "change_all",
+                    "send_notification_to_new_thread": "false",
+                },
+            )
+            self.assert_json_success(result)
+
     def test_unmuted_topics_events(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         with self.verify_action(num_events=2) as events:

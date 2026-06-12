@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from collections.abc import Callable, Collection, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Literal, TypedDict
@@ -1199,6 +1199,68 @@ def aggregate_unread_data(
     return result
 
 
+def unread_stream_message_is_unmuted(
+    user_profile: UserProfile,
+    state: RawUnreadMessagesResult,
+    stream_id: int,
+    topic_name: str,
+) -> bool:
+    stream_muted = stream_id in state["muted_stream_ids"]
+    visibility_policy = get_topic_visibility_policy(
+        user_profile, stream_id, topic_name=maybe_rename_general_chat_to_empty_topic(topic_name)
+    )
+    # A stream message is unmuted if it belongs to:
+    # * a not muted topic in a normal stream
+    # * an unmuted or followed topic in a muted stream
+    return (not stream_muted and visibility_policy != UserTopic.VisibilityPolicy.MUTED) or (
+        stream_muted
+        and visibility_policy
+        in [UserTopic.VisibilityPolicy.UNMUTED, UserTopic.VisibilityPolicy.FOLLOWED]
+    )
+
+
+def reclassify_unread_messages_for_muting_change(
+    user_profile: UserProfile,
+    state: RawUnreadMessagesResult,
+    message_ids: Iterable[int],
+) -> None:
+    """Recompute, after a change to the user's muting state (a channel
+    mute or unmute, a visibility policy change, or a message move),
+    whether the given unread channel messages count toward the
+    aggregate unread count and whether their wildcard mentions count
+    as mentions, matching what a fresh fetch would compute.
+    """
+    transitioned_message_ids = []
+    for message_id in message_ids:
+        row = state["stream_dict"].get(message_id)
+        if row is None:
+            continue
+        if unread_stream_message_is_unmuted(user_profile, state, row["stream_id"], row["topic"]):
+            if message_id not in state["unmuted_stream_msgs"]:
+                state["unmuted_stream_msgs"].add(message_id)
+                transitioned_message_ids.append(message_id)
+        elif message_id in state["unmuted_stream_msgs"]:
+            state["unmuted_stream_msgs"].discard(message_id)
+            transitioned_message_ids.append(message_id)
+
+    if not transitioned_message_ids:
+        return
+
+    # Wildcard mentions count as mentions only while the message is
+    # unmuted; personal mentions always count.
+    wildcard_mentioned_rows = UserMessage.objects.filter(
+        user_profile=user_profile,
+        message_id__in=transitioned_message_ids,
+        flags__andnz=UserMessage.flags.stream_wildcard_mentioned
+        | UserMessage.flags.topic_wildcard_mentioned,
+    ).values_list("message_id", "flags")
+    for message_id, flags in wildcard_mentioned_rows:
+        if message_id in state["unmuted_stream_msgs"]:
+            state["mentions"].add(message_id)
+        elif (flags & UserMessage.flags.mentioned) == 0:
+            state["mentions"].discard(message_id)
+
+
 def apply_unread_message_event(
     user_profile: UserProfile,
     state: RawUnreadMessagesResult,
@@ -1225,18 +1287,7 @@ def apply_unread_message_event(
             topic=topic_name,
         )
 
-        stream_muted = stream_id in state["muted_stream_ids"]
-        visibility_policy = get_topic_visibility_policy(
-            user_profile, stream_id, topic_name=maybe_rename_general_chat_to_empty_topic(topic_name)
-        )
-        # A stream message is unmuted if it belongs to:
-        # * a not muted topic in a normal stream
-        # * an unmuted or followed topic in a muted stream
-        if (not stream_muted and visibility_policy != UserTopic.VisibilityPolicy.MUTED) or (
-            stream_muted
-            and visibility_policy
-            in [UserTopic.VisibilityPolicy.UNMUTED, UserTopic.VisibilityPolicy.FOLLOWED]
-        ):
+        if unread_stream_message_is_unmuted(user_profile, state, stream_id, topic_name):
             state["unmuted_stream_msgs"].add(message_id)
 
     elif recipient_type == "private":
