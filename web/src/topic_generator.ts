@@ -7,6 +7,7 @@ import * as stream_list_sort from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as unread from "./unread.ts";
 import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 // If there are any unreads in the current topic,
 // user likely wants to avoid reading them right now.
@@ -42,7 +43,11 @@ export function next_topic(
     if (curr_stream_index >= 0) {
         const {channel_id} = sorted_channels_info[curr_stream_index]!;
         const topics = get_topics(channel_id);
-        const curr_topic_index = curr_topic !== undefined ? topics.indexOf(curr_topic) : -1; // -1 if not found
+        const curr_topic_index =
+            curr_topic === undefined
+                ? -1 // -1 if not found
+                : // Topic names are matched case-insensitively.
+                  topics.findIndex((topic) => util.lower_same(topic, curr_topic));
 
         // 1. Find any unreads in the current channel after the current topic.
         for (let i = curr_topic_index + 1; i < topics.length; i += 1) {
@@ -93,7 +98,8 @@ export function next_topic(
                 curr_stream_id !== undefined &&
                 channel_info.channel_id === curr_stream_id
             ) {
-                reached_current_narrow_state = curr_topic === undefined || curr_topic === topic;
+                reached_current_narrow_state =
+                    curr_topic === undefined || util.lower_same(curr_topic, topic);
 
                 if (reached_current_narrow_state) {
                     // We already processed topic in the current channel above.

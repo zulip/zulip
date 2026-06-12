@@ -89,6 +89,20 @@ run_test("topics", () => {
         assert.equal(next(1, "t3"), undefined);
     }
 
+    // Case 1b: the current topic is matched case-insensitively, so a
+    // narrow whose casing differs from the channel's topic list does
+    // not restart the cycle from the beginning.
+    {
+        const sorted_channels_info = [{channel_id: 1, is_collapsed: false}];
+        const topics_by_stream = new Map([[1, ["t1", "t2", "t3"]]]);
+        const unread_topic_names = new Set(["t1", "t2", "t3"]);
+
+        const next = make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names);
+
+        assert.deepEqual(next(1, "T1"), {stream_id: 1, topic: "t2"});
+        assert.deepEqual(next(1, "T3"), {stream_id: 1, topic: "t1"});
+    }
+
     // Case 2: multiple uncollapsed channels, wrapping across channels
     {
         const sorted_channels_info = [
