@@ -87,7 +87,6 @@ export type CustomProfileFieldData = {
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
 let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
-let user_widget_current_user_id: number | undefined;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
@@ -221,7 +220,7 @@ function initialize_bot_owner(
     return user_pills;
 }
 
-function render_user_profile_subscribe_widget(user_id: number): void {
+function render_user_profile_subscribe_widget(): void {
     const opts: DropdownWidgetOptions = {
         widget_name: "user_profile_subscribe",
         // The stream data should already be fetched before calling the render
@@ -232,7 +231,6 @@ function render_user_profile_subscribe_widget(user_id: number): void {
         unique_id_type: "number",
     };
     user_profile_subscribe_widget = new dropdown_widget.DropdownWidget(opts);
-    user_widget_current_user_id = user_id;
     user_profile_subscribe_widget.setup();
 }
 
@@ -348,9 +346,12 @@ async function render_or_update_user_streams_tab(user: User): Promise<void> {
     }
     const user_streams = (await stream_data.get_streams_for_user(user.user_id)).subscribed;
     const user_unsub_streams = await get_user_unsub_streams(user.user_id);
-    // If a modal for another user was opened while we were fetching data, there's
-    // nothing for us to do here.
-    if (user_widget_current_user_id !== undefined && user_widget_current_user_id !== user.user_id) {
+    // If the modal was switched to another user (or closed) while we were
+    // fetching, its data-user-id no longer matches and there's nothing to
+    // render. We read the attribute directly rather than through
+    // get_user_id_if_user_profile_modal_open(), whose modals.any_active()
+    // check is false until the modal's open animation finishes.
+    if ($("#user-profile-modal").attr("data-user-id") !== user.user_id.toString()) {
         return;
     }
 
@@ -380,7 +381,7 @@ async function render_or_update_user_streams_tab(user: User): Promise<void> {
 
     if (show_user_subscribe_widget && user_profile_subscribe_widget === undefined) {
         reset_subscribe_widget();
-        render_user_profile_subscribe_widget(user.user_id);
+        render_user_profile_subscribe_widget();
     }
 
     if (show_user_subscribe_widget) {
@@ -394,7 +395,6 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
     streams.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-stream-list");
     $container.empty();
-    user_widget_current_user_id = user.user_id;
     user_streams_list_widget = ListWidget.create($container, streams, {
         name: `user-${user.user_id}-stream-list`,
         get_item: ListWidget.default_get_item,
@@ -439,7 +439,6 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
-    user_widget_current_user_id = user.user_id;
     user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
@@ -696,7 +695,6 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
     user_streams_list_widget = undefined;
     user_groups_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
-    user_widget_current_user_id = undefined;
 
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
