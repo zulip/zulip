@@ -208,6 +208,84 @@ run_test("triage: prioritise word boundary matches to arbitrary substring matche
     );
 });
 
+run_test("triage: prioritize exact diacritic matches over diacritic-stripped matches", () => {
+    const exact_a = {name: "a"};
+    const exact_diacritic = {name: "ą"};
+    const aaron = {name: "aaron"};
+    const aa = {name: "Aa"};
+    const adam_diacritic = {name: "Ądam"};
+    const john_a = {name: "John a"};
+    const zoe = {name: "Zoe"};
+
+    const users = [exact_a, exact_diacritic, aaron, aa, adam_diacritic, john_a, zoe];
+
+    assert.deepEqual(
+        typeahead.triage("a", users, (r) => r.name),
+        {
+            matches: [exact_a, aaron, aa, john_a],
+            rest: [exact_diacritic, adam_diacritic, zoe],
+        },
+    );
+
+    assert.deepEqual(
+        typeahead.triage("A", users, (r) => r.name),
+        {
+            matches: [exact_a, aa, aaron, john_a],
+            rest: [exact_diacritic, adam_diacritic, zoe],
+        },
+    );
+
+    assert.deepEqual(
+        typeahead.triage("ą", users, (r) => r.name),
+        {
+            matches: [exact_diacritic, adam_diacritic, exact_a, aaron, aa, john_a],
+            rest: [zoe],
+        },
+    );
+
+    assert.deepEqual(
+        typeahead.triage("Ą", users, (r) => r.name),
+        {
+            matches: [exact_diacritic, adam_diacritic, exact_a, aaron, aa, john_a],
+            rest: [zoe],
+        },
+    );
+});
+
+run_test("triage: ASCII query matches diacritic item via word boundary", () => {
+    const luke_adam = {name: "Łuke adam"};
+    const zoe = {name: "Zoe"};
+    const users = [luke_adam, zoe];
+
+    assert.deepEqual(
+        typeahead.triage("a", users, (r) => r.name),
+        {
+            matches: [luke_adam],
+            rest: [zoe],
+        },
+    );
+});
+
+run_test("triage_raw: diacritic-prefix and diacritic-stripped fallback", () => {
+    const adam_diacritic = {names: ["Ądam"]};
+    const joe_ascii = {names: ["Joe Maria"]};
+    const alex_joe = {names: ["Alex joe"]};
+    const zoe = {names: ["Zoe"]};
+    const items = [adam_diacritic, joe_ascii, alex_joe, zoe];
+
+    const diacritic_result = typeahead.triage_raw("ą", items, (item) => item.names);
+    assert.deepEqual(diacritic_result.begins_with_case_insensitive_diacritic_matches, [
+        adam_diacritic,
+    ]);
+    // The query has diacritics, so the diacritic-stripped fallback still lets an
+    // ASCII candidate ("Alex joe") land in the case-insensitive bucket.
+    assert.deepEqual(diacritic_result.begins_with_case_insensitive_matches, [alex_joe]);
+
+    const fallback_result = typeahead.triage_raw("joé", items, (item) => item.names);
+    assert.deepEqual(fallback_result.begins_with_case_insensitive_matches, [joe_ascii]);
+    assert.deepEqual(fallback_result.word_boundary_matches, [alex_joe]);
+});
+
 function sort_emojis(emojis, query) {
     return typeahead.sort_emojis(emojis, query).map((emoji) => emoji.emoji_name);
 }
