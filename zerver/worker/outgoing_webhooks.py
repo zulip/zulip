@@ -4,7 +4,7 @@ from typing import Any
 
 from typing_extensions import override
 
-from zerver.lib.bot_lib import do_flag_service_bots_messages_as_processed
+from zerver.lib.bot_lib import do_flag_message_handling_bots_messages_as_processed
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models.bots import get_bot_services
 from zerver.models.users import get_user_profile_by_id
@@ -27,4 +27,4 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
             service_handler = get_outgoing_webhook_service_handler(service)
             do_rest_call(service.base_url, event, service_handler)
 
-        do_flag_service_bots_messages_as_processed(bot_profile, [message["id"]])
+        do_flag_message_handling_bots_messages_as_processed(bot_profile, [message["id"]])
