@@ -269,7 +269,6 @@ python_rules = RuleList(
         },
         {
             "pattern": "msgid|MSGID",
-            "exclude": {"tools/check-capitalization"},
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
