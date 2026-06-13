@@ -708,13 +708,13 @@ def do_activate_mirror_dummy_user(
 @transaction.atomic(savepoint=False)
 def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
     """Reactivate a user that had previously been deactivated"""
+    if user_profile.is_deleted:
+        raise JsonableError(_("Cannot reactivate a deleted user"))
+
     if user_profile.is_mirror_dummy:
         raise JsonableError(
             _("Cannot activate a placeholder account; ask the user to sign up, instead.")
         )
-
-    if user_profile.is_deleted:  # nocoverage
-        raise JsonableError(_("Cannot reactivate a deleted user"))
 
     change_user_is_active(user_profile, True)
 
