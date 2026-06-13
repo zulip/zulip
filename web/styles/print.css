@@ -1,3 +1,11 @@
+/* The container used by info_overlay.print_current_pane() to print
+   an informational overlay's full scrollable content. Hidden on
+   screen; the @media print rules below display only it. This rule
+   must precede them so that they win in the cascade. */
+#zulip-print-container {
+    display: none;
+}
+
 @media print {
     /* Hide unnecessary blocks. */
     #navbar_alerts_wrapper,
@@ -103,5 +111,64 @@
     .emoji {
         color-adjust: exact;
         print-color-adjust: exact;
+    }
+
+    /* When a print container has been injected, print only it and
+       hide the rest of the app UI. Use :not() to exclude the
+       container itself, since the `display: none !important` here
+       would otherwise beat the container's `display: block` below,
+       regardless of selector specificity. */
+    body:has(#zulip-print-container) > *:not(#zulip-print-container) {
+        display: none !important;
+    }
+
+    #zulip-print-container {
+        display: block;
+    }
+
+    #zulip-print-container table {
+        /* Use separate borders instead of collapsed to work
+           around a Firefox bug where borders disappear on rows
+           that start on a new printed page. With separate
+           borders each cell owns its borders independently, so
+           they survive page breaks. */
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        margin-bottom: 8px;
+        table-layout: fixed;
+    }
+
+    #zulip-print-container tr {
+        break-inside: avoid;
+    }
+
+    #zulip-print-container th,
+    #zulip-print-container td {
+        border: 1px solid hsl(232deg 12% 81%);
+        padding: 8px;
+        text-align: left;
+        vertical-align: top;
+        color: hsl(233deg 38% 9%);
+    }
+
+    #zulip-print-container th {
+        background-color: hsl(232deg 24% 96%);
+        font-weight: 600;
+    }
+
+    #zulip-print-container kbd {
+        background: hsl(232deg 24% 96%);
+        border: 1px solid hsl(231deg 8% 60%);
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.95em;
+        color: hsl(233deg 38% 9%);
+    }
+
+    .zulip-print-title {
+        font-size: 1.5714em; /* 22px at 14px/1em */
+        margin: 0 0 12px;
+        color: hsl(233deg 38% 9%);
     }
 }
