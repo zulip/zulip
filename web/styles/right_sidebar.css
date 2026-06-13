@@ -237,6 +237,13 @@
             background-color: inherit;
             color: var(--color-text-url-hover);
         }
+
+        &:focus,
+        &:focus-visible,
+        &:active {
+            text-decoration: none;
+            outline: none;
+        }
     }
 }
 
@@ -351,7 +358,7 @@
         "starting-anchor-element row-content markers-and-controls" var(
             --line-height-sidebar-row
         )
-        ".                       row-content ." auto / var(
+        ".                        row-content ." auto / var(
             --right-sidebar-presence-circle-width
         )
         minmax(0, 1fr)
@@ -590,6 +597,23 @@
     }
 }
 
+.buddy-list-user-link {
+    &:focus-within {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    a {
+        &:focus,
+        &:focus-visible,
+        &:active {
+            outline: none;
+            text-decoration: none;
+        }
+    }
+}
+
 #user-list.with_avatars
     .buddy-list-user-link
     .right-sidebar-wrappable-text-container,
@@ -610,11 +634,29 @@
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-bottom: var(--sidebar-bottom-spacing);
 
+    &:focus-within {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
     .invite-user-link {
         /* TODO: We should eventually change the grid to use the correct
            --right-sidebar-presence-circle-width with left spacing, and
            share that left spacing value here. */
         padding-left: calc(var(--right-sidebar-toggle-width-offset) + 0.3em);
+        text-decoration: none;
+
+        &:hover,
+        &:focus,
+        &:focus-visible,
+        &:active {
+            text-decoration: none;
+        }
+
+        &:focus-visible {
+            outline: none;
+        }
     }
 }
 
