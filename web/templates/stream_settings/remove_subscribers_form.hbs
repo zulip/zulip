@@ -1,0 +1,26 @@
+<div class="remove_subscribers_container add-button-container">
+    <div class="subscriber-input-scrollable-container" data-simplebar>
+        <div class="pill-container person_picker">
+            <div class="input" contenteditable="true"
+              data-placeholder="{{t 'Remove subscribers.' }}">
+                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+            </div>
+        </div>
+    </div>
+    <div class="remove_subscriber_button_wrapper add-users-button-wrapper inline-block">
+        {{> ../components/action_button
+          label=(t "Remove")
+          custom_classes="remove-subscriber-button-bulk add-users-button"
+          variant="subtle"
+          intent="danger"
+          type="submit"
+          }}
+
+        {{> ../components/icon_button
+          icon="check"
+          intent="success"
+          custom_classes="check hidden-below"
+          disabled=true
+          }}
+    </div>
+</div>

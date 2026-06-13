@@ -43,6 +43,7 @@ const add_user_ids_api_response_schema = z.object({
 });
 
 export let pill_widget: CombinedPillContainer;
+export let remove_pill_widget: CombinedPillContainer | undefined;
 let current_stream_id: number;
 let subscribers_list_widget: ListWidgetType<User, User>;
 
@@ -79,6 +80,49 @@ function show_stream_subscription_request_error_result(error_message: string): v
     scroll_util
         .get_content_element($stream_subscription_req_result_elem)
         .html(rendered_error_banner);
+}
+
+function show_stream_unsubscription_request_error_result(error_message: string): void {
+    const $stream_unsubscription_req_result_elem = $(
+        ".stream_unsubscription_request_result",
+    ).expectOne();
+    const rendered_error_banner = render_subscription_banner({
+        error_message,
+        intent: "danger",
+    });
+    scroll_util
+        .get_content_element($stream_unsubscription_req_result_elem)
+        .html(rendered_error_banner);
+}
+
+function show_stream_unsubscription_request_success_result({
+    unsubscribed_users,
+    already_not_subscribed_users,
+}: {
+    unsubscribed_users: User[];
+    already_not_subscribed_users: User[];
+}): void {
+    const unsubscribed_users_count = unsubscribed_users.length;
+    const already_not_subscribed_users_count = already_not_subscribed_users.length;
+    const is_total_user_count_more_than_five =
+        unsubscribed_users_count + already_not_subscribed_users_count > 5;
+
+    const $stream_unsubscription_req_result_elem = $(
+        ".stream_unsubscription_request_result",
+    ).expectOne();
+
+    const rendered_success_banner = render_subscription_banner({
+        intent: "success",
+        is_unsubscribe: true,
+        unsubscribed_users,
+        already_not_subscribed_users,
+        unsubscribed_users_count,
+        already_not_subscribed_users_count,
+        is_total_user_count_more_than_five,
+    });
+    scroll_util
+        .get_content_element($stream_unsubscription_req_result_elem)
+        .html(rendered_success_banner);
 }
 
 function show_stream_subscription_request_success_result({
@@ -147,7 +191,7 @@ export function enable_subscriber_management({
 }): void {
     const stream_id = sub.stream_id;
 
-    const $pill_container = $parent_container.find(".pill-container");
+    const $pill_container = $parent_container.find(".add_subscribers_container .pill-container");
 
     // current_stream_id and pill_widget are module-level variables
     current_stream_id = stream_id;
@@ -174,6 +218,30 @@ export function enable_subscriber_management({
     });
 
     const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
+
+    remove_pill_widget = undefined;
+    if (user_can_remove_subscribers) {
+        const $remove_pill_container = $parent_container.find(
+            ".remove_subscribers_container .pill-container",
+        );
+
+        function get_current_subscribers(): User[] {
+            const subscriber_ids = peer_data.get_subscriber_ids_assert_loaded(stream_id);
+            return people.get_users_from_ids(subscriber_ids);
+        }
+
+        remove_pill_widget = add_subscribers_pill.create({
+            $pill_container: $remove_pill_container,
+            get_potential_subscribers: get_current_subscribers,
+            get_user_groups: user_groups.get_all_realm_user_groups,
+            with_add_button: true,
+        });
+
+        $remove_pill_container.find(".input").on("input", () => {
+            $parent_container.find(".stream_unsubscription_request_result").empty();
+        });
+    }
+
     void render_subscriber_list_widget(sub, user_can_remove_subscribers, $parent_container);
 }
 
@@ -361,6 +429,205 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         invite_success,
         invite_failure,
     );
+}
+
+export type BulkUnsubscribeModalProps = {
+    needs_modal: boolean;
+    unsubscribing_other_user: boolean;
+    organization_will_lose_content_access: boolean;
+};
+
+export function compute_bulk_unsubscribe_modal_props({
+    invite_only,
+    subscribed_target_ids,
+    sub_count,
+    self_user_id,
+    self_can_rejoin,
+    nobody_can_subscribe,
+}: {
+    invite_only: boolean;
+    subscribed_target_ids: number[];
+    sub_count: number;
+    self_user_id: number;
+    self_can_rejoin: boolean;
+    nobody_can_subscribe: boolean;
+}): BulkUnsubscribeModalProps {
+    if (!invite_only || subscribed_target_ids.length === 0) {
+        return {
+            needs_modal: false,
+            unsubscribing_other_user: true,
+            organization_will_lose_content_access: false,
+        };
+    }
+
+    const unsubscribing_self = subscribed_target_ids.includes(self_user_id);
+    const self_without_rejoin = unsubscribing_self && !self_can_rejoin;
+    const will_empty_channel = subscribed_target_ids.length === sub_count;
+
+    return {
+        needs_modal: self_without_rejoin || will_empty_channel,
+        unsubscribing_other_user: !self_without_rejoin,
+        organization_will_lose_content_access: will_empty_channel && nobody_can_subscribe,
+    };
+}
+
+function unsubscribe_users({pill_user_ids}: {pill_user_ids: number[]}): void {
+    const sub = get_sub(current_stream_id);
+    if (!sub) {
+        return;
+    }
+
+    assert(remove_pill_widget !== undefined);
+    const widget = remove_pill_widget;
+
+    const subscriber_ids = new Set(peer_data.get_subscriber_ids_assert_loaded(current_stream_id));
+    const user_id_set = new Set(pill_user_ids);
+
+    const subscribed_target_ids: number[] = [];
+    const already_not_subscribed_ids: number[] = [];
+    for (const user_id of user_id_set) {
+        if (subscriber_ids.has(user_id)) {
+            subscribed_target_ids.push(user_id);
+        } else {
+            already_not_subscribed_ids.push(user_id);
+        }
+    }
+
+    const already_not_subscribed_users = already_not_subscribed_ids.map((user_id) =>
+        people.get_by_user_id(user_id),
+    );
+
+    if (subscribed_target_ids.length === 0) {
+        widget.clear();
+        show_stream_unsubscription_request_success_result({
+            unsubscribed_users: [],
+            already_not_subscribed_users,
+        });
+        return;
+    }
+
+    function do_unsubscribe(): void {
+        assert(sub !== undefined);
+        const stream_sub = sub;
+        const $pill_widget_button_wrapper = $(".remove_subscriber_button_wrapper");
+        const $remove_button = $pill_widget_button_wrapper.find(".remove-subscriber-button-bulk");
+        $remove_button.prop("disabled", true);
+        $(".remove_subscribers_container").addClass("remove_subscribers_disabled");
+        buttons.show_button_loading_indicator($remove_button);
+
+        function removal_success(raw_data: unknown): void {
+            $(".remove_subscribers_container").removeClass("remove_subscribers_disabled");
+            // The API response is per-stream, not per-user, so we report
+            // our client-side intersection in the banner.
+            const data = remove_user_id_api_response_schema.parse(raw_data);
+            widget.clear();
+
+            // Apply the removal locally so the subscriber list updates
+            // without waiting for the peer_remove server event.
+            if (data.removed.includes(stream_sub.name)) {
+                peer_data.bulk_remove_subscribers({
+                    stream_ids: [current_stream_id],
+                    user_ids: subscribed_target_ids,
+                });
+                update_subscribers_list(stream_sub);
+            }
+
+            const unsubscribed_users = subscribed_target_ids.map((user_id) =>
+                people.get_by_user_id(user_id),
+            );
+
+            const $check_icon = $pill_widget_button_wrapper.find(".check");
+            $check_icon.removeClass("hidden-below");
+            $remove_button.addClass("hidden-below");
+            setTimeout(() => {
+                $check_icon.addClass("hidden-below");
+                $remove_button.removeClass("hidden-below");
+                buttons.hide_button_loading_indicator($remove_button);
+                $remove_button.prop("disabled", true);
+            }, 1000);
+
+            show_stream_unsubscription_request_success_result({
+                unsubscribed_users,
+                already_not_subscribed_users,
+            });
+        }
+
+        function removal_failure(xhr: JQuery.jqXHR): void {
+            buttons.hide_button_loading_indicator($remove_button);
+            $(".remove_subscribers_container").removeClass("remove_subscribers_disabled");
+
+            let error_message = $t({defaultMessage: "Error removing users from this channel."});
+            const parsed = z
+                .object({
+                    result: z.literal("error"),
+                    msg: z.string(),
+                    code: z.string(),
+                })
+                .safeParse(xhr.responseJSON);
+
+            if (parsed.success) {
+                error_message = parsed.data.msg;
+            }
+            show_stream_unsubscription_request_error_result(error_message);
+        }
+
+        subscriber_api.remove_user_ids_from_stream(
+            subscribed_target_ids,
+            stream_sub,
+            removal_success,
+            removal_failure,
+        );
+    }
+
+    const nobody_can_subscribe =
+        user_groups.is_setting_group_set_to_nobody_group(sub.can_subscribe_group) &&
+        user_groups.is_setting_group_set_to_nobody_group(sub.can_add_subscribers_group);
+    const modal_props = compute_bulk_unsubscribe_modal_props({
+        invite_only: sub.invite_only,
+        subscribed_target_ids,
+        sub_count: peer_data.get_subscriber_count(current_stream_id),
+        self_user_id: current_user.user_id,
+        self_can_rejoin: stream_data.has_content_access_via_group_permissions(sub),
+        nobody_can_subscribe,
+    });
+
+    if (!modal_props.needs_modal) {
+        do_unsubscribe();
+        return;
+    }
+
+    const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+        inline_with_text: true,
+        stream: sub,
+    });
+    const modal_content_html = render_unsubscribe_private_stream_modal({
+        unsubscribing_other_user: modal_props.unsubscribing_other_user,
+        organization_will_lose_content_access: modal_props.organization_will_lose_content_access,
+    });
+
+    const unsubscribing_self_only =
+        subscribed_target_ids.length === 1 && subscribed_target_ids[0] === current_user.user_id;
+    const modal_title_html = unsubscribing_self_only
+        ? $t_html(
+              {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
+              {"z-link": () => stream_name_with_privacy_symbol_html},
+          )
+        : $t_html(
+              {
+                  defaultMessage:
+                      "Unsubscribe {count, plural, one {# user} other {# users}} from <z-link></z-link>?",
+              },
+              {
+                  count: subscribed_target_ids.length,
+                  "z-link": () => stream_name_with_privacy_symbol_html,
+              },
+          );
+
+    confirm_dialog.launch({
+        modal_title_html,
+        modal_content_html,
+        on_click: do_unsubscribe,
+    });
 }
 
 function remove_subscriber({
@@ -554,9 +821,20 @@ export function initialize(): void {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
         $parent_container: $("#channels_overlay_container"),
-        pill_selector: ".edit_subscribers_for_stream .pill-container",
+        pill_selector: ".edit_subscribers_for_stream .add_subscribers_container .pill-container",
         button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
         action: subscribe_new_users,
+    });
+
+    add_subscribers_pill.set_up_handlers({
+        get_pill_widget() {
+            assert(remove_pill_widget !== undefined);
+            return remove_pill_widget;
+        },
+        $parent_container: $("#channels_overlay_container"),
+        pill_selector: ".edit_subscribers_for_stream .remove_subscribers_container .pill-container",
+        button_selector: ".edit_subscribers_for_stream .remove-subscriber-button-bulk",
+        action: unsubscribe_users,
     });
 
     $("#channels_overlay_container").on(
