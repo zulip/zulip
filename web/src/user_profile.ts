@@ -79,6 +79,7 @@ export type CustomProfileFieldData = {
     is_user_field: boolean;
     is_link: boolean;
     is_external_account: boolean;
+    is_checkboxes_field: boolean;
     type: number;
     display_in_profile_summary: boolean | undefined;
     required: boolean;
@@ -478,6 +479,7 @@ export function get_custom_profile_field_data(
         is_user_field: false,
         is_link: field_type === field_types.URL.id,
         is_external_account: field_type === field_types.EXTERNAL_ACCOUNT.id,
+        is_checkboxes_field: field_type === field_types.CHECKBOXES.id,
         is_long_text: field_type === field_types.PARAGRAPH.id,
         type: field_type,
         display_in_profile_summary: field.display_in_profile_summary,
@@ -500,6 +502,20 @@ export function get_custom_profile_field_data(
                 JSON.parse(field.field_data),
             );
             profile_field.value = field_choice_dict[field_value.value]!.text;
+            break;
+        }
+        case field_types.CHECKBOXES.id: {
+            const field_data = settings_components.select_field_data_schema.parse(
+                JSON.parse(field.field_data),
+            );
+            const selected_ids = z.array(z.string()).parse(JSON.parse(field_value.value));
+
+            const readable_values: string[] = [];
+            for (const id of selected_ids) {
+                readable_values.push(field_data[id]!.text);
+            }
+
+            profile_field.value = readable_values.join(", ");
             break;
         }
         case field_types.SHORT_TEXT.id:
@@ -1134,7 +1150,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
 function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPillWidget>): {
     id: number;
-    value: number[];
+    value: string | number[] | string[];
 }[] {
     /*
         This formats custom profile field data to send to the server.
@@ -1144,12 +1160,25 @@ function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPil
         TODO: Ideally, this logic would be cleaned up or deduplicated with
         the settings_account.ts logic.
     */
-    const new_profile_data = [];
+    const new_profile_data: {id: number; value: string | number[] | string[]}[] = [];
     $("#edit-user-form .custom_user_field_value").each(function () {
+        const value = $(this).val();
+        assert(typeof value === "string");
         new_profile_data.push({
             id: Number.parseInt($(this).closest(".custom_user_field").attr("data-field-id")!, 10),
-            value: $(this).val(),
+            value,
         });
+    });
+    $("#edit-user-form .custom_user_field_value_multiple_container").each(function () {
+        const field_id = Number.parseInt(
+            $(this).closest(".custom_user_field").attr("data-field-id")!,
+            10,
+        );
+        const values = $(this)
+            .find<HTMLInputElement>("input:checked")
+            .map((_i, elem) => elem.value)
+            .get();
+        new_profile_data.push({id: field_id, value: values});
     });
     // Append user type field values also
     for (const [field_id, field_pills] of fields_user_pills) {
@@ -1169,8 +1198,17 @@ function get_current_values(
     $edit_form: JQuery,
 ): Record<string, unknown> & {user_id?: string | undefined} {
     const raw_current_values = dialog_widget.get_current_values(
-        $edit_form.find("input:not(.datepicker), select, textarea, button, .pill-container"),
+        $edit_form.find(
+            "input:not(.datepicker, .custom_user_field_value_multiple), select, textarea, button, .pill-container",
+        ),
     );
+    $edit_form.find(".custom_user_field_value_multiple_container").each(function () {
+        const name = $(this).find("input").attr("name")!;
+        raw_current_values[name] = $(this)
+            .find<HTMLInputElement>("input:checked")
+            .map((_i, elem) => elem.value)
+            .get();
+    });
     const schema = z.intersection(
         z.object({
             user_id: z.optional(z.string()),

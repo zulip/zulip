@@ -390,7 +390,7 @@ def validate_select_field_data(field_data: ProfileFieldData) -> dict[str, dict[s
     """
     validator = check_dict_only(
         [
-            ("text", check_required_string),
+            ("text", check_short_string),
             ("order", check_required_string),
         ]
     )
@@ -585,6 +585,19 @@ def check_string_or_int(var_name: str, val: object) -> str | int:
         return val
 
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
+
+
+def validate_checkboxes_field(var_name: str, field_data: str, value: object) -> list[str]:
+    items = check_list(check_string)(var_name, value)
+
+    field_data_dict = orjson.loads(field_data)
+
+    for item in items:
+        if item not in field_data_dict:
+            msg = _("'{value}' is not a valid choice for '{field_name}'.")
+            raise ValidationError(msg.format(value=item, field_name=var_name))
+
+    return items
 
 
 @dataclass(eq=False)
