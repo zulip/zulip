@@ -153,6 +153,44 @@ def run() -> None:
         description="Python linter",
     )
     linter_config.external_linter(
+        "codespell",
+        [
+            "codespell",
+            "--ignore-words=.codespellignore",
+            "--skip=*.asc,*.svg,*/fixtures/*,locale/*,*/locale/*,docs/THIRDPARTY,"
+            "docs/translating/*,postgresql.conf.template.erb,"
+            "tools/build-demo-organization-wordlist,"
+            "tools/setup/emoji/emoji_map.json,tools/setup/emoji/emoji_names.py,"
+            "pnpm-lock.yaml,zerver/management/data/unified_reactions.json,web/third",
+        ],
+        [
+            "astro",
+            "bash",
+            "cjs",
+            "css",
+            "cts",
+            "hbs",
+            "html",
+            "js",
+            "json",
+            "md",
+            "mdx",
+            "mjs",
+            "mts",
+            "pp",
+            "py",
+            "pyi",
+            "sh",
+            "text",
+            "ts",
+            "txt",
+            "yaml",
+            "yml",
+        ],
+        fix_arg="--write-changes",
+        description="Checks code and prose for common misspellings (config: .codespellignore)",
+    )
+    linter_config.external_linter(
         "tsc",
         ["tools/run-tsc"],
         ["ts"],
