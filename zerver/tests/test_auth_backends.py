@@ -4433,8 +4433,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
         hamlet.refresh_from_db()
         # Email should NOT have changed.
         self.assertEqual(hamlet.delivery_email, self.email)
-        self.assertTrue(
-            any("Can't sync email" in output for output in m.output),
+        self.assertIn(
+            f"Can't sync email for user {hamlet.id}: "
+            f"another user exists with target email {othello_email}",
+            m.output[1],
         )
 
     def test_external_auth_id_saml_cross_realm_bot_email(self) -> None:
@@ -4480,8 +4482,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
         hamlet.refresh_from_db()
         # Email should NOT have changed.
         self.assertEqual(hamlet.delivery_email, self.email)
-        self.assertTrue(
-            any("reserved for system bots" in output for output in m.output),
+        self.assertIn(
+            f"Can't sync email for user {hamlet.id}: {bot_email} is reserved for system bots",
+            m.output[1],
         )
 
     def test_external_auth_id_saml_deactivated_user(self) -> None:
