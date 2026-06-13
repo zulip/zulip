@@ -3,7 +3,7 @@ from collections.abc import Collection, Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from email.utils import format_datetime as email_format_datetime
-from typing import Any
+from typing import Any, TypedDict
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -23,6 +23,7 @@ from confirmation.models import (
     create_confirmation_object,
 )
 from zerver.context_processors import common_context
+from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_validation import (
     get_existing_user_errors,
     get_realm_email_validator,
@@ -47,6 +48,33 @@ from zerver.models import (
 )
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realm_audit_logs import AuditLogEventType
+
+
+class EmailInviteDetailsDict(TypedDict):
+    email: str
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    invited_as: int
+    is_multiuse: bool
+    notify_referrer_on_join: bool
+    welcome_message_custom_text: str | None
+    stream_ids: list[int]
+    group_ids: list[int]
+
+
+class MultiuseInviteDetailsDict(TypedDict):
+    link_url: str
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    invited_as: int
+    is_multiuse: bool
+    welcome_message_custom_text: str | None
+    stream_ids: list[int]
+    group_ids: list[int]
 
 
 def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days: int) -> int:
@@ -413,6 +441,63 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
             )
         )
     return [asdict(invite) for invite in invites]
+
+
+def get_invite_details_dict(
+    prereg_user: PreregistrationUser, user_profile: UserProfile
+) -> EmailInviteDetailsDict:
+    """Return email invite details including stream IDs and group IDs."""
+    explicit_stream_ids = set(prereg_user.streams.values_list("id", flat=True))
+    if prereg_user.include_realm_default_subscriptions:
+        stream_ids = list(
+            explicit_stream_ids | get_default_stream_ids_for_realm(user_profile.realm.id)
+        )
+    else:
+        stream_ids = list(explicit_stream_ids)
+    group_ids = list(prereg_user.groups.values_list("id", flat=True))
+    assert prereg_user.referred_by is not None
+    return {
+        "email": prereg_user.email,
+        "invited_by_user_id": prereg_user.referred_by.id,
+        "invited": datetime_to_timestamp(prereg_user.invited_at),
+        "expiry_date": get_invitation_expiry_date(prereg_user.confirmation.get()),
+        "id": prereg_user.id,
+        "invited_as": prereg_user.invited_as,
+        "is_multiuse": False,
+        "notify_referrer_on_join": prereg_user.notify_referrer_on_join,
+        "welcome_message_custom_text": prereg_user.welcome_message_custom_text,
+        "stream_ids": stream_ids,
+        "group_ids": group_ids,
+    }
+
+
+def get_multiuse_invite_details_dict(
+    invite: MultiuseInvite, user_profile: UserProfile
+) -> MultiuseInviteDetailsDict:
+    """Return multiuse invite details including stream IDs and group IDs."""
+    confirmation_obj = Confirmation.objects.get(
+        type=Confirmation.MULTIUSE_INVITE,
+        content_type=ContentType.objects.get_for_model(MultiuseInvite),
+        object_id=invite.id,
+    )
+    explicit_stream_ids = set(invite.streams.values_list("id", flat=True))
+    if invite.include_realm_default_subscriptions:
+        stream_ids = list(explicit_stream_ids | get_default_stream_ids_for_realm(invite.realm_id))
+    else:
+        stream_ids = list(explicit_stream_ids)
+    group_ids = list(invite.groups.values_list("id", flat=True))
+    return {
+        "link_url": confirmation_url_for(confirmation_obj),
+        "invited_by_user_id": invite.referred_by.id,
+        "invited": datetime_to_timestamp(confirmation_obj.date_sent),
+        "expiry_date": get_invitation_expiry_date(confirmation_obj),
+        "id": invite.id,
+        "invited_as": invite.invited_as,
+        "is_multiuse": True,
+        "welcome_message_custom_text": invite.welcome_message_custom_text,
+        "stream_ids": stream_ids,
+        "group_ids": group_ids,
+    }
 
 
 @transaction.atomic(durable=True)
