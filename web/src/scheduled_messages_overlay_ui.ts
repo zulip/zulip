@@ -217,7 +217,11 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    $("body").on("focus", ".scheduled-message-info-box", function (this: HTMLElement) {
+    $("body").on("focus", ".scheduled-message-info-box", function (this: HTMLElement, e) {
+        if (e.target !== this) {
+            return;
+        }
+
         messages_overlay_ui.activate_element(this, keyboard_handling_context);
     });
 }

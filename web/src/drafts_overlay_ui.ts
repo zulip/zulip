@@ -400,9 +400,10 @@ function setup_event_handlers(): void {
         update_bulk_delete_ui();
     });
 
-    $("#drafts_table .overlay_message_controls .draft-selection-checkbox").on("click", (e) => {
-        const is_checked = is_checkbox_icon_checked($(e.target));
-        toggle_checkbox_icon_state($(e.target), !is_checked);
+    $("#drafts_table .overlay_message_controls .draft-selection-tooltip").on("click", (e) => {
+        const $checkbox = $(e.currentTarget).find(".draft-selection-checkbox");
+        const is_checked = is_checkbox_icon_checked($checkbox);
+        toggle_checkbox_icon_state($checkbox, !is_checked);
         update_bulk_delete_ui();
     });
 
@@ -534,9 +535,17 @@ export function toggle_checkbox_icon_state($checkbox: JQuery, checked: boolean):
 }
 
 export function initialize(): void {
-    $("body").on("focus", "#drafts_table .overlay-message-info-box", function (this: HTMLElement) {
-        messages_overlay_ui.activate_element(this, keyboard_handling_context);
-    });
+    $("body").on(
+        "focus",
+        "#drafts_table .overlay-message-info-box",
+        function (this: HTMLElement, e) {
+            if (e.target !== this) {
+                return;
+            }
+
+            messages_overlay_ui.activate_element(this, keyboard_handling_context);
+        },
+    );
     $("body").on(
         "click",
         "#draft_overlay_banner_container .draft-delete-banner-undo-button",

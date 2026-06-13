@@ -335,6 +335,28 @@ test("initialize", ({override_rewire}) => {
     drafts_overlay_ui.initialize();
 });
 
+test("draft row focus ignores child controls", ({override}) => {
+    drafts_overlay_ui.initialize();
+
+    let activated_element;
+    override(messages_overlay_ui, "activate_element", (element) => {
+        activated_element = element;
+    });
+
+    const $draft_row = $.create("draft-message-info-box");
+    const $draft_child_control = $.create("draft-child-control");
+    const focus_handler = $("body").get_on_handler(
+        "focus",
+        "#drafts_table .overlay-message-info-box",
+    );
+
+    focus_handler.call($draft_row[0], {target: $draft_child_control[0]});
+    assert.equal(activated_element, undefined);
+
+    focus_handler.call($draft_row[0], {target: $draft_row[0]});
+    assert.equal(activated_element, $draft_row[0]);
+});
+
 test("update_draft", ({override}) => {
     compose_state.set_message_type(undefined);
     let draft_id = drafts.update_draft();
