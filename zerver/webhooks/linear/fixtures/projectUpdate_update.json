@@ -1,0 +1,44 @@
+{
+    "action": "update",
+    "actor": {
+        "id": "e825c109-f691-4716-a85f-b68a2626531c",
+        "name": "Dhruv Shetty",
+        "email": "dhruvshetty2203@gmail.com",
+        "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
+        "type": "user"
+    },
+    "createdAt": "2026-05-30T08:07:17.110Z",
+    "data": {
+        "id": "4a0814c9-2d39-4c2e-8cbb-947c1bfc61cd",
+        "createdAt": "2026-05-28T18:28:25.827Z",
+        "updatedAt": "2026-05-30T08:07:17.109Z",
+        "body": "There is a risk",
+        "reactionData": [],
+        "bodyData": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"There is a risk\"}]}]}",
+        "slugId": "4a0814c9",
+        "projectId": "b0cfc985-0196-4ef5-925f-11c3d7aa8d14",
+        "health": "offTrack",
+        "userId": "e825c109-f691-4716-a85f-b68a2626531c",
+        "project": {
+            "id": "b0cfc985-0196-4ef5-925f-11c3d7aa8d14",
+            "name": "Project Zulip",
+            "url": "https://linear.app/zulipdhruv/project/project-zulip-c65c2156ca87"
+        },
+        "user": {
+            "id": "e825c109-f691-4716-a85f-b68a2626531c",
+            "name": "Dhruv Shetty",
+            "email": "dhruvshetty2203@gmail.com",
+            "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203"
+        },
+        "diffMarkdown": "**Priority**: Medium"
+    },
+    "updatedFrom": {
+        "health": "atRisk",
+        "updatedAt": "2026-05-28T18:28:27.463Z"
+    },
+    "url": "https://linear.app/zulipdhruv/project/project-zulip-c65c2156ca87/activity#project-update-4a0814c9",
+    "type": "ProjectUpdate",
+    "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
+    "webhookTimestamp": 1780128437657,
+    "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
+}

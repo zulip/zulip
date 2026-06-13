@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -72,10 +74,123 @@ class LinearHookTests(WebhookTestCase):
         self.check_webhook("issue_update", expected_topic_name, expected_message)
 
     def test_project_create(self) -> None:
-        payload = self.get_body("project_create")
-        result = self.client_post(
-            self.url,
-            payload,
-            content_type="application/json",
+        expected_topic_name = "Project: Project-Zulip"
+        expected_message = "Dhruv Shetty created project [Project-Zulip](https://linear.app/zulipdhruv/project/project-zulip-a98782de01a9):\n~~~ quote\nThis is a project for zulip\n~~~\n**Status:** Backlog"
+        self.check_webhook("project_create", expected_topic_name, expected_message)
+
+    def test_project_create_complex(self) -> None:
+        expected_topic_name = "Project: Zulip-Project"
+        expected_message = "Dhruv Shetty created project [Zulip-Project](https://linear.app/zulipdhruv/project/zulip-project-532c1333013b):\n~~~ quote\nSummary for the Project\n**Start date:** 2026-05-28 – **Target date:** 2026-05-30\n~~~\n**Status:** Planned · **Lead:** Dhruv Shetty · **Priority:** Urgent\n- **Milestone:** Phase 1"
+        self.check_webhook("project_create_complex", expected_topic_name, expected_message)
+
+    def test_project_create_without_description(self) -> None:
+        expected_topic_name = "Project: Project-Manhattan"
+        expected_message = "Dhruv Shetty created project [Project-Manhattan](https://linear.app/zulipdhruv/project/project-manhattan-9719af1a1893)\n**Status:** Backlog"
+        self.check_webhook(
+            "project_create_without_description", expected_topic_name, expected_message
         )
+
+    def test_project_create_without_description_with_dates(self) -> None:
+        expected_topic_name = "Project: Zulip-terminal"
+        expected_message = "Dhruv Shetty created project [Zulip-terminal](https://linear.app/zulipdhruv/project/zulip-terminal-5bfd1327f54b)\n**Status:** Backlog\n- **Start date:** 2026-06-01\n- **Target date:** 2026-06-03"
+        self.check_webhook(
+            "project_create_without_description_with_dates", expected_topic_name, expected_message
+        )
+
+    def test_project_update_priority(self) -> None:
+        expected_topic_name = "Project: Zulip-Project"
+        expected_message = "Dhruv Shetty updated project [Zulip-Project](https://linear.app/zulipdhruv/project/zulip-project-532c1333013b).\nPriority is now set to High."
+        self.check_webhook("project_update_priority", expected_topic_name, expected_message)
+
+    def test_project_update_target_date(self) -> None:
+        expected_topic_name = "Project: Zulip-Project"
+        expected_message = "Dhruv Shetty updated project [Zulip-Project](https://linear.app/zulipdhruv/project/zulip-project-532c1333013b).\nTarget date is postponed to 2026-06-02."
+        self.check_webhook("project_update_target_date", expected_topic_name, expected_message)
+
+    def test_project_update_rename(self) -> None:
+        expected_topic_name = "Project: Zulip-Test-Project"
+        expected_message = "Dhruv Shetty updated project [Zulip-Test-Project](https://linear.app/zulipdhruv/project/zulip-test-project-532c1333013b).\nRenamed to Zulip-Test-Project."
+        self.check_webhook("project_update_rename", expected_topic_name, expected_message)
+
+    def test_project_update_status(self) -> None:
+        expected_topic_name = "Project: Zulip-Test-Project"
+        expected_message = "Dhruv Shetty updated project [Zulip-Test-Project](https://linear.app/zulipdhruv/project/zulip-test-project-532c1333013b).\nProject status is now In Progress."
+        self.check_webhook("project_update_status", expected_topic_name, expected_message)
+
+    def test_project_update_lead_set(self) -> None:
+        expected_topic_name = "Project: Zulip-Test-Project"
+        expected_message = "Dhruv Shetty updated project [Zulip-Test-Project](https://linear.app/zulipdhruv/project/zulip-test-project-532c1333013b).\nDhruv Shetty is now the project lead."
+        self.check_webhook("project_update_lead_set", expected_topic_name, expected_message)
+
+    def test_project_update_target_date_preponed(self) -> None:
+        expected_topic_name = "Project: Zulip-Test-Project"
+        expected_message = "Dhruv Shetty updated project [Zulip-Test-Project](https://linear.app/zulipdhruv/project/zulip-test-project-532c1333013b).\nTarget date is preponed to 2026-05-29."
+        self.check_webhook(
+            "project_update_target_date_preponed", expected_topic_name, expected_message
+        )
+
+    def test_project_update_target_date_set(self) -> None:
+        expected_topic_name = "Project: Project Zulip"
+        expected_message = "Dhruv Shetty updated project [Project Zulip](https://linear.app/zulipdhruv/project/project-zulip-c65c2156ca87).\nTarget date is set to 2026-05-30."
+        self.check_webhook("project_update_target_date_set", expected_topic_name, expected_message)
+
+    def test_project_update_description(self) -> None:
+        expected_topic_name = "Project: Zulip-Test-Project"
+        expected_message = "Dhruv Shetty updated project [Zulip-Test-Project](https://linear.app/zulipdhruv/project/zulip-test-project-532c1333013b).\nDescription is updated."
+        self.check_webhook("project_update_description", expected_topic_name, expected_message)
+
+    def test_project_remove(self) -> None:
+        expected_topic_name = "Project: Project-Zulip"
+        expected_message = "Dhruv Shetty removed project **Project-Zulip**."
+        self.check_webhook("project_remove", expected_topic_name, expected_message)
+
+    def test_projectUpdate_create(self) -> None:
+        expected_topic_name = "Project: Zulip-terminal"
+        expected_message = "Dhruv Shetty [posted](https://linear.app/zulipdhruv/project/zulip-terminal-5bfd1327f54b/activity#project-update-bd310e45) a status update on **Zulip-terminal** (health: At Risk):\n~~~ quote\nThis is a project status update\n**Imported User**[7:03 AM](<http://localhost:9991/#narrow/channel/10-design/topic/.E2.9C.94.20NEW.20router.20wasn.27t.20de-duping.20slowly/near/88>)\n\nExisting robust and atomic methodologies use suffix trees to evaluate trainable theory. The basic tenet of this approach is the development of checksums. Despite the fact that conventional wisdom states that this obstacle is regularly overcame by the deployment of the World Wide Web, we believe that a different approach is necessary.\n~~~"
+        self.check_webhook("projectUpdate_create", expected_topic_name, expected_message)
+
+    def test_projectUpdate_update(self) -> None:
+        expected_topic_name = "Project: Project Zulip"
+        expected_message = "Dhruv Shetty [edited](https://linear.app/zulipdhruv/project/project-zulip-c65c2156ca87/activity#project-update-4a0814c9) a status update on **Project Zulip** (health: Off Track):\n~~~ quote\nThere is a risk\n~~~\n\n**Priority**: Medium"
+        self.check_webhook("projectUpdate_update", expected_topic_name, expected_message)
+
+    def test_projectUpdate_remove(self) -> None:
+        expected_topic_name = "Project: Project-Zulip"
+        expected_message = "Dhruv Shetty removed a status update on **Project-Zulip**."
+        self.check_webhook("projectUpdate_remove", expected_topic_name, expected_message)
+
+    def test_projectUpdate_auto_update_after_create_is_suppressed(self) -> None:
+        # Linear's auto-fire after a ProjectUpdate post (lastUpdateId in
+        # updatedFrom) must not produce a duplicate Zulip message.
+        with patch("zerver.webhooks.linear.view.check_send_webhook_message") as m:
+            result = self.client_post(
+                self.url,
+                self.get_body("projectUpdate_auto_update_after_create"),
+                content_type="application/json",
+            )
+        self.assertFalse(m.called)
+        self.assert_json_success(result)
+
+    def test_projectUpdate_auto_update_after_edit_is_suppressed(self) -> None:
+        # Linear's auto-fire after editing a ProjectUpdate (health-only in
+        # updatedFrom) must not produce a duplicate Zulip message.
+        with patch("zerver.webhooks.linear.view.check_send_webhook_message") as m:
+            result = self.client_post(
+                self.url,
+                self.get_body("projectUpdate_auto_update_after_edit"),
+                content_type="application/json",
+            )
+        self.assertFalse(m.called)
+        self.assert_json_success(result)
+
+    def test_project_auto_update_after_create_is_suppressed(self) -> None:
+        # Linear's auto-fire after Project.create (empty updatedFrom) must
+        # not produce a Zulip message.
+        with patch("zerver.webhooks.linear.view.check_send_webhook_message") as m:
+            result = self.client_post(
+                self.url,
+                self.get_body("project_auto_update_after_create"),
+                content_type="application/json",
+            )
+        self.assertFalse(m.called)
         self.assert_json_success(result)
