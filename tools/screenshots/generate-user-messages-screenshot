@@ -42,6 +42,7 @@ from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.message import SendMessageRequest, access_message
+from zerver.lib.mime_types import guess_type
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.streams import access_stream_by_id, ensure_stream
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -97,8 +98,10 @@ def create_user(full_name: str, avatar_filename: str | None) -> None:
 
 
 def set_avatar(user: UserProfile, filename: str) -> None:
+    content_type, _ = guess_type(filename)
+    assert content_type is not None
     with open(filename, "rb") as f:
-        upload_avatar_image(f, user)
+        upload_avatar_image(f, user, content_type=content_type)
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER, acting_user=DEFAULT_USER)
 
 

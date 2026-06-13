@@ -3620,7 +3620,7 @@ class ScrubRealmTest(ZulipTestCase):
                 do_change_avatar_fields(iago, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=iago)
                 continue
             with get_test_image_file("img.png") as img_file:
-                upload_avatar_image(img_file, iago)
+                upload_avatar_image(img_file, iago, content_type="image/png")
                 do_change_avatar_fields(iago, UserProfile.AVATAR_FROM_USER, acting_user=iago)
         avatar_files = [
             *glob.glob(f"{settings.LOCAL_AVATARS_DIR}/{zulip.id}/*.original"),
