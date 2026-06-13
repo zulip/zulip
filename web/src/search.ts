@@ -58,6 +58,14 @@ function full_search_query_in_terms(): NarrowCanonicalTerm[] | undefined {
     return [...search_pill.get_current_search_pill_terms(search_pill_widget), ...search_terms];
 }
 
+function reopen_search_bar_if_collapsed(): void {
+    if ($(".navbar-search.expanded").length === 0) {
+        open_search_bar_and_close_narrow_description();
+        focus_search_input_at_end();
+        search_input_has_changed = true;
+    }
+}
+
 function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): void {
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -84,13 +92,9 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     );
     on_narrow_search(terms, {trigger: "search"});
 
-    // It's sort of annoying that this is not in a position to
-    // blur the search box, because it means that Esc won't
-    // unnarrow, it'll leave the searchbox.
-
-    // Narrowing will have already put some terms in the search box,
-    // so leave the current text in.
-    $("#search_query").trigger("blur");
+    // Reopen the search bar if the narrow collapsed it (which happens
+    // for common narrows)
+    reopen_search_bar_if_collapsed();
     return;
 }
 
@@ -137,16 +141,9 @@ function narrow_to_search_contents_with_search_bar_open(): void {
 
     on_narrow_search(terms, {trigger: "search"});
 
-    // We want to keep the search bar open here, not show the
-    // message header. But here we'll let the message header
-    // get rendered first, so that it's up to date with the
-    // new narrow, and then reopen search if it got closed.
-    if ($(".navbar-search.expanded").length === 0) {
-        open_search_bar_and_close_narrow_description();
-        focus_search_input_at_end();
-        search_typeahead.lookup(false);
-        search_input_has_changed = true;
-    }
+    // Reopen the search bar if the narrow collapsed it (which happens
+    // for common narrows)
+    reopen_search_bar_if_collapsed();
 }
 
 export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
@@ -184,10 +181,12 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     search_pill_widget = search_pill.create_pills($pill_container);
     search_pill_widget.onPillRemove(() => {
         search_input_has_changed = true;
-    });
 
-    $search_query_box.on("change", () => {
-        search_typeahead.lookup(false);
+        if (search_typeahead.shown) {
+            // Update the typeahead with the current search content
+            // if it is visible
+            search_typeahead.lookup(false);
+        }
     });
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
@@ -291,7 +290,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         is_using_input_method = true;
     });
 
-    let typeahead_was_open_on_enter = false;
+    let typeahead_item_was_selected_on_enter = false;
     $searchbox_form
         .on("keydown", (e: JQuery.KeyDownEvent): void => {
             if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
@@ -303,7 +302,10 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
 
             // Record this on keydown before the typeahead code closes the
             // typeahead, so we can use this information on keyup.
-            typeahead_was_open_on_enter = keydown_util.is_enter_event(e) && search_typeahead.shown;
+            typeahead_item_was_selected_on_enter =
+                keydown_util.is_enter_event(e) &&
+                search_typeahead.shown &&
+                search_typeahead.has_active_item();
         })
         .on("keyup", (e: JQuery.KeyUpEvent): void => {
             if (is_using_input_method) {
@@ -316,13 +318,11 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             } else if (
                 keydown_util.is_enter_event(e) &&
                 $search_query_box.is(":focus") &&
-                !typeahead_was_open_on_enter
+                !typeahead_item_was_selected_on_enter
             ) {
-                // If the typeahead was just open, the Enter event was selecting an item
-                // from the typeahead. When that's the case, we don't want to call
-                // narrow_or_search_for_term which exits the search bar, since the user
-                // might have more terms to add still.
                 if (convert_search_text_to_terms() === undefined) {
+                    // We just return and don't narrow if the search bar
+                    // contains any invalid term.
                     return;
                 }
                 narrow_or_search_for_term({on_narrow_search});

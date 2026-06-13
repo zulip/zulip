@@ -358,6 +358,7 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         $container: $pill_container,
         create_item_from_text: create_item_from_search_string,
         get_text_from_item: get_search_string_from_item,
+        focus_input_on_pill_remove: true,
         split_text_on_comma: false,
         convert_to_pill_on_enter: false,
         generate_pill_html(item) {
