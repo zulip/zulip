@@ -1,0 +1,36 @@
+{
+  "id": "ea6b8136-1db6-4f2e-b157-84a532437f62",
+  "timestamp": "2024-12-05T23:59:31.215Z",
+  "workspace_id": "13950b26-c203-4f3b-b97d-93ec06319565",
+  "workspace_name": "Quantify Labs",
+  "subscription_id": "29d75c0d-5546-4414-8459-7b7a92f1fc4b",
+  "integration_id": "0ef2e755-4912-8096-91c1-00376a88a5ca",
+  "type": "page.deleted",
+  "authors": [
+    {
+      "id": "c7c11cca-1d73-471d-9b6e-bdef51470190",
+      "type": "person"
+    }
+  ],
+  "accessible_by": [
+    {
+      "id": "556a1abf-4f08-40c6-878a-75890d2a88ba",
+      "type": "person"
+    },
+    {
+      "id": "1edc05f6-2702-81b5-8408-00279347f034",
+      "type": "bot"
+    }
+  ],
+  "attempt_number": 1,
+  "entity": {
+    "id": "153104cd-477e-8001-935c-c4b11828dfbd",
+    "type": "page"
+  },
+  "data": {
+    "parent": {
+      "id": "0ef104cd-477e-80e1-8571-cfd10e92339a",
+      "type": "page"
+    }
+  }
+}
