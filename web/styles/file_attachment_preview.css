@@ -1,0 +1,605 @@
+/* Light-mode styles for rendered markdown, code, and CSV within the preview overlay */
+%file-preview-light-theme {
+    #file-attachment-preview-overlay {
+        .file-preview-rendered {
+            color: hsl(0deg 0% 20%);
+
+            /* Source code / plain text pre block */
+            pre {
+                background-color: hsl(0deg 0% 100%);
+                border-color: hsl(0deg 0% 85%);
+                color: hsl(210deg 12% 16%);
+            }
+
+            /* highlight.js token colors (GitHub Light theme) */
+            .hljs {
+                background: hsl(0deg 0% 100%);
+                color: hsl(210deg 12% 16%);
+            }
+
+            .hljs-comment,
+            .hljs-quote {
+                color: hsl(210deg 10% 47%);
+                font-style: italic;
+            }
+
+            .hljs-keyword,
+            .hljs-selector-tag,
+            .hljs-type {
+                color: hsl(349deg 74% 42%);
+            }
+
+            .hljs-string,
+            .hljs-doctag,
+            .hljs-regexp {
+                color: hsl(219deg 96% 19%);
+            }
+
+            .hljs-number,
+            .hljs-literal,
+            .hljs-built_in,
+            .hljs-attr {
+                color: hsl(217deg 100% 39%);
+            }
+
+            .hljs-title,
+            .hljs-section {
+                color: hsl(271deg 61% 50%);
+            }
+
+            .hljs-variable {
+                color: hsl(22deg 82% 46%);
+            }
+
+            .hljs-meta {
+                color: hsl(44deg 74% 26%);
+            }
+
+            .hljs-addition {
+                color: hsl(137deg 69% 24%);
+                background-color: hsl(137deg 50% 92%);
+            }
+
+            .hljs-deletion {
+                color: hsl(349deg 74% 42%);
+                background-color: hsl(349deg 50% 95%);
+            }
+
+            &.rendered-markdown {
+                background-color: hsl(0deg 0% 100%);
+
+                h1,
+                h2,
+                h3,
+                h4,
+                h5,
+                h6 {
+                    color: hsl(0deg 0% 13%);
+                }
+
+                a {
+                    color: hsl(200deg 100% 40%);
+                }
+
+                blockquote {
+                    border-left-color: hsl(0deg 0% 80%);
+                    color: hsl(0deg 0% 40%);
+                }
+
+                code {
+                    background-color: hsl(0deg 0% 95%);
+                    color: hsl(210deg 12% 16%);
+                }
+
+                pre {
+                    background-color: hsl(0deg 0% 96%);
+                    border-color: hsl(0deg 0% 87%);
+
+                    code {
+                        background-color: transparent;
+                    }
+                }
+            }
+        }
+
+        .file-preview-csv-wrapper {
+            border-color: hsl(0deg 0% 0% / 15%);
+            background-color: hsl(0deg 0% 100%);
+        }
+
+        .file-preview-csv-table {
+            th {
+                background-color: hsl(0deg 0% 93%);
+                color: hsl(0deg 0% 20%);
+            }
+
+            td {
+                color: hsl(0deg 0% 20%);
+            }
+
+            th,
+            td {
+                border-bottom-color: hsl(0deg 0% 85%);
+            }
+
+            tbody tr:nth-child(even) {
+                background-color: hsl(0deg 0% 96%);
+            }
+
+            tbody tr:hover {
+                background-color: hsl(200deg 50% 92%);
+            }
+        }
+    }
+}
+
+/* Dark-mode styles for rendered markdown, code, and CSV within the preview overlay */
+%file-preview-dark-theme {
+    #file-attachment-preview-overlay {
+        .file-preview-rendered {
+            color: hsl(0deg 0% 93%);
+
+            /* Source code / plain text pre block */
+            pre {
+                background-color: hsl(227deg 40% 12%);
+                border-color: hsl(0deg 0% 100% / 10%);
+                color: hsl(212deg 19% 77%);
+            }
+
+            /* highlight.js token colors (GitHub Dark Dimmed theme) */
+            .hljs {
+                background: hsl(227deg 40% 12%);
+                color: hsl(212deg 19% 77%);
+            }
+
+            .hljs-comment,
+            .hljs-quote {
+                color: hsl(210deg 10% 49%);
+                font-style: italic;
+            }
+
+            .hljs-keyword,
+            .hljs-selector-tag,
+            .hljs-type {
+                color: hsl(4deg 84% 67%);
+            }
+
+            .hljs-string,
+            .hljs-doctag,
+            .hljs-regexp {
+                color: hsl(207deg 100% 79%);
+            }
+
+            .hljs-number,
+            .hljs-literal,
+            .hljs-built_in,
+            .hljs-attr {
+                color: hsl(207deg 100% 79%);
+            }
+
+            .hljs-title,
+            .hljs-section {
+                color: hsl(271deg 82% 72%);
+            }
+
+            .hljs-variable {
+                color: hsl(26deg 100% 69%);
+            }
+
+            .hljs-meta {
+                color: hsl(44deg 100% 73%);
+            }
+
+            .hljs-addition {
+                color: hsl(137deg 62% 55%);
+                background-color: hsl(137deg 60% 14%);
+            }
+
+            .hljs-deletion {
+                color: hsl(4deg 84% 67%);
+                background-color: hsl(4deg 60% 17%);
+            }
+
+            &.rendered-markdown {
+                background-color: hsl(227deg 30% 14%);
+
+                h1,
+                h2,
+                h3,
+                h4,
+                h5,
+                h6 {
+                    color: hsl(0deg 0% 93%);
+                }
+
+                a {
+                    color: hsl(200deg 100% 65%);
+                }
+
+                blockquote {
+                    border-left-color: hsl(0deg 0% 40%);
+                    color: hsl(0deg 0% 70%);
+                }
+
+                code {
+                    background-color: hsl(227deg 30% 20%);
+                    color: hsl(212deg 19% 77%);
+                }
+
+                pre {
+                    background-color: hsl(227deg 30% 11%);
+                    border-color: hsl(0deg 0% 100% / 10%);
+
+                    code {
+                        background-color: transparent;
+                    }
+                }
+            }
+        }
+
+        .file-preview-csv-wrapper {
+            border-color: hsl(0deg 0% 100% / 15%);
+            background-color: hsl(227deg 40% 12%);
+        }
+
+        .file-preview-csv-table {
+            th {
+                background-color: hsl(227deg 40% 20%);
+                color: hsl(0deg 0% 100%);
+            }
+
+            td {
+                color: hsl(0deg 0% 90%);
+            }
+
+            th,
+            td {
+                border-bottom-color: hsl(0deg 0% 100% / 10%);
+            }
+
+            tbody tr:nth-child(even) {
+                background-color: hsl(227deg 40% 15%);
+            }
+
+            tbody tr:hover {
+                background-color: hsl(227deg 40% 22%);
+            }
+        }
+    }
+}
+
+@media screen {
+    :root:not(.color-scheme-automatic, .dark-theme) {
+        @extend %file-preview-light-theme;
+    }
+}
+
+@media screen and (not (prefers-color-scheme: dark)) {
+    :root.color-scheme-automatic {
+        @extend %file-preview-light-theme;
+    }
+}
+
+@media not screen {
+    :root {
+        @extend %file-preview-light-theme;
+    }
+}
+
+@media screen {
+    :root.dark-theme {
+        @extend %file-preview-dark-theme;
+    }
+}
+
+@media screen and (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic {
+        @extend %file-preview-dark-theme;
+    }
+}
+
+#file-attachment-preview-overlay {
+    background-color: hsl(227deg 40% 16%);
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+
+    /* Reuse lightbox header structure */
+    .media-info-wrapper {
+        display: flex;
+        justify-content: end;
+        align-items: start;
+        gap: 20px;
+        padding: 20px;
+        background-color: transparent;
+    }
+
+    .media-description {
+        flex: 1;
+        min-width: 0;
+        font-size: 1.1rem;
+        color: hsl(0deg 0% 100%);
+
+        .title {
+            font-weight: 400;
+            line-height: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .media-actions {
+        display: flex;
+        flex-shrink: 0;
+        gap: 10px;
+
+        .lightbox-media-action {
+            font-size: 0.9rem;
+            min-width: inherit;
+            padding: 4px 10px;
+            border: 1px solid hsl(0deg 0% 100% / 60%);
+            background-color: transparent;
+            color: hsl(0deg 0% 100%);
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+
+            &:hover {
+                background-color: hsl(0deg 0% 100%);
+                border-color: hsl(0deg 0% 100%);
+                color: hsl(227deg 40% 16%);
+            }
+        }
+    }
+
+    .exit {
+        flex-shrink: 0;
+        color: hsl(0deg 0% 100% / 80%);
+        font-size: 14px;
+        line-height: 31px;
+        opacity: 0;
+        pointer-events: none;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+
+    &.show .exit {
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    .file-preview-content {
+        flex: 1;
+        overflow: hidden;
+        padding: 0 0 24px;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        min-height: 0;
+    }
+
+    .file-preview-main {
+        flex: 1;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding: 0 24px;
+    }
+
+    .file-preview-nav-arrow {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        flex-shrink: 0;
+        cursor: pointer;
+        color: hsl(0deg 0% 100% / 60%);
+        font-size: 28px;
+        transition:
+            color 0.2s ease,
+            background-color 0.2s ease;
+        user-select: none;
+
+        &:hover {
+            color: hsl(0deg 0% 100%);
+            background-color: hsl(0deg 0% 100% / 8%);
+        }
+
+        &.visible {
+            display: flex;
+        }
+    }
+
+    .file-preview-pdf-container {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        gap: 8px;
+    }
+
+    .file-preview-pdf-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 6px 0;
+        flex-shrink: 0;
+    }
+
+    .file-preview-pdf-controls button {
+        background: none;
+        border: 1px solid hsl(0deg 0% 80%);
+        border-radius: 4px;
+        font-size: 20px;
+        line-height: 1;
+        padding: 2px 10px;
+        cursor: pointer;
+        color: inherit;
+
+        &:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        &:hover:not(:disabled) {
+            background-color: hsl(0deg 0% 0% / 8%);
+        }
+    }
+
+    .file-preview-pdf-page-indicator {
+        font-size: 14px;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .file-preview-pdf-canvas-wrapper {
+        flex: 1;
+        overflow: auto;
+        display: flex;
+        justify-content: center;
+        min-height: 0;
+        border-radius: 6px;
+    }
+
+    .file-preview-pdf-canvas {
+        display: block;
+        max-width: 100%;
+    }
+
+    .file-preview-loading {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+    }
+
+    .file-preview-loading.show {
+        display: flex;
+    }
+
+    .file-preview-rendered {
+        display: none;
+        flex: 1;
+        min-height: 0;
+
+        &.show {
+            display: flex;
+            flex-direction: column;
+        }
+
+        &.rendered-markdown {
+            line-height: 1.6;
+            border-radius: 6px;
+            padding: 24px;
+            overflow: auto;
+
+            blockquote {
+                border-left: 3px solid;
+                padding-left: 12px;
+            }
+
+            code {
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-size: 0.9em;
+            }
+
+            pre {
+                border-radius: 6px;
+                border: 1px solid;
+                padding: 12px;
+                overflow-x: auto;
+
+                code {
+                    padding: 0;
+                }
+            }
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid;
+            flex: 1;
+            min-height: 0;
+        }
+
+        code {
+            font-family: "Source Code Pro", monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    }
+
+    .file-preview-csv-wrapper {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        border-radius: 6px;
+        border: 1px solid;
+    }
+
+    .file-preview-csv-table {
+        border-collapse: collapse;
+        font-family: "Source Code Pro", monospace;
+        font-size: 13px;
+
+        th,
+        td {
+            padding: 6px 12px;
+            text-align: left;
+            border-bottom: 1px solid;
+            white-space: nowrap;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+        }
+    }
+
+    .file-preview-error {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 16px;
+        text-align: center;
+
+        &.show {
+            display: flex;
+        }
+
+        .lightbox-media-action {
+            font-size: 0.9rem;
+            min-width: inherit;
+            padding: 4px 10px;
+            border: 1px solid hsl(0deg 0% 100% / 60%);
+            background-color: transparent;
+            color: hsl(0deg 0% 100%);
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+
+            &:hover {
+                background-color: hsl(0deg 0% 100%);
+                border-color: hsl(0deg 0% 100%);
+                color: hsl(227deg 40% 16%);
+            }
+        }
+    }
+
+    .file-preview-error-message {
+        color: hsl(0deg 0% 100%);
+        font-size: 16px;
+    }
+}

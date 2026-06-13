@@ -15389,6 +15389,16 @@ paths:
                     messages](/help/star-a-message#display-the-number-of-starred-messages).
                   type: boolean
                   example: true
+                file_preview_extensions:
+                  description: |
+                    A comma-separated list of additional file extensions (without dots)
+                    to preview in the text attachment modal, beyond the built-in set
+                    (txt, md, csv, pdf, and 50+ source code types). Empty string means
+                    only built-in types. Set to "none" to disable all previews.
+
+                    **Changes**: New in Zulip 10.0 (feature level TBD).
+                  type: string
+                  example: "log,conf,env"
                 receives_typing_notifications:
                   description: |
                     Whether the user is configured to receive typing notifications from other users.
@@ -19395,6 +19405,15 @@ paths:
                             description: |
                               Whether clients should display the [number of starred
                               messages](/help/star-a-message#display-the-number-of-starred-messages).
+                          file_preview_extensions:
+                            type: string
+                            description: |
+                              A comma-separated list of additional file extensions (without dots)
+                              to preview in the text attachment modal, beyond the built-in set
+                              (txt, md, csv, pdf, and 50+ source code types). Empty string means
+                              only built-in types. Set to "none" to disable all previews.
+
+                              **Changes**: New in Zulip 10.0 (feature level TBD).
                           receives_typing_notifications:
                             type: boolean
                             description: |
@@ -21804,6 +21823,15 @@ paths:
                             description: |
                               Whether clients should display the [number of starred
                               messages](/help/star-a-message#display-the-number-of-starred-messages).
+                          file_preview_extensions:
+                            type: string
+                            description: |
+                              A comma-separated list of additional file extensions (without dots)
+                              to preview in the text attachment modal, beyond the built-in set
+                              (txt, md, csv, pdf, and 50+ source code types). Empty string means
+                              only built-in types. Set to "none" to disable all previews.
+
+                              **Changes**: New in Zulip 10.0 (feature level TBD).
                           receives_typing_notifications:
                             type: boolean
                             description: |
@@ -23091,6 +23119,16 @@ paths:
                     the `PATCH /settings/display` endpoint.
                   type: boolean
                   example: true
+                file_preview_extensions:
+                  description: |
+                    A comma-separated list of additional file extensions (without dots)
+                    to preview in the text attachment modal, beyond the built-in set
+                    (txt, md, csv, pdf, and 50+ source code types). Empty string means
+                    only built-in types. Set to "none" to disable all previews.
+
+                    **Changes**: New in Zulip 10.0 (feature level TBD).
+                  type: string
+                  example: "log,conf,env"
                 receives_typing_notifications:
                   description: |
                     Whether the user is configured to receive typing notifications from other users.
