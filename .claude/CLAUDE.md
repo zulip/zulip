@@ -506,6 +506,10 @@ faster and easier to just plan and write them well the first time.
   foos = {f.id: f for f in Foo.objects.filter(id__in=[b.foo_id for b in bars])}
   ```
 
+- In tests, don't assert on `assertLogs` output with
+  `any(phrase in line for line in mock_log.output)`; pin the full line
+  against `mock_log.output`, or a substring to a specific `mock_log.output[i]`.
+
 ### Process:
 
 - Always check if you're working on top of the latest upstream/main, and
