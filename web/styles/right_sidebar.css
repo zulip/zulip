@@ -610,6 +610,12 @@
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-bottom: var(--sidebar-bottom-spacing);
 
+    &:has(.invite-user-link:focus-visible) {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
     .invite-user-link {
         /* TODO: We should eventually change the grid to use the correct
            --right-sidebar-presence-circle-width with left spacing, and
