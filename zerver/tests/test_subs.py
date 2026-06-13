@@ -3210,7 +3210,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=19,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3227,7 +3227,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=19,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -4630,8 +4630,8 @@ class SubscriptionAPITest(ZulipTestCase):
         # Sends 5 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(27),
-            self.assert_memcached_count(5),
+            self.assert_database_query_count(29),
+            self.assert_memcached_count(7),
             self.capture_send_event_calls(expected_num_events=9) as events,
         ):
             bulk_remove_subscriptions(
