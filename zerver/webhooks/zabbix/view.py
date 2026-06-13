@@ -12,6 +12,15 @@ from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+ZABBIX_SEVERITY_EMOJI_MAP = {
+    "Not classified": ":white_circle:",
+    "Information": ":blue_circle:",
+    "Warning": ":yellow_circle:",
+    "Average": ":orange_circle:",
+    "High": ":red_circle:",
+    "Disaster": ":red_circle:",
+}
+
 MISCONFIGURED_PAYLOAD_ERROR_MESSAGE = """
 Hi there! Your bot {bot_name} just received a Zabbix payload that is missing
 some data that Zulip requires. This usually indicates a configuration issue
@@ -60,6 +69,7 @@ def get_topic_for_http_request(payload: WildValue) -> str:
 def get_body_for_http_request(payload: WildValue) -> str:
     hostname = payload["hostname"].tame(check_string)
     severity = payload["severity"].tame(check_string)
+    severity_emoji = ZABBIX_SEVERITY_EMOJI_MAP.get(severity, ":white_circle:")
     status = payload["status"].tame(check_string)
     item = payload["item"].tame(check_string)
     trigger = payload["trigger"].tame(check_string)
@@ -67,7 +77,7 @@ def get_body_for_http_request(payload: WildValue) -> str:
 
     data = {
         "hostname": hostname,
-        "severity": severity,
+        "severity": f"{severity_emoji} {severity}",
         "status": status,
         "item": item,
         "trigger": trigger,
