@@ -9,7 +9,7 @@ from typing import Any, TypedDict
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import Q, QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.db.models.functions import Upper
 from django.utils.translation import gettext as _
 from django_otp.middleware import is_verified
@@ -28,7 +28,6 @@ from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
-    DirectMessageGroup,
     Message,
     Realm,
     Recipient,
@@ -900,39 +899,41 @@ def get_subscribers_of_target_user_subscriptions(
 def get_users_involved_in_dms_with_target_users(
     target_users: list[UserProfile], realm: Realm, include_deactivated_users: bool = False
 ) -> dict[int, set[int]]:
-    # Find DM partners via 1:1 DM groups with message history.
-    # Push the message-existence check into the subscription query
-    # as a subquery, so we only fetch DMGs that actually have messages.
-    target_dmg_subs = Subscription.objects.filter(
-        user_profile_id__in=[user.id for user in target_users],
-        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-        recipient__type_id__in=DirectMessageGroup.objects.filter(
-            group_size__lte=2,
-        ),
-        recipient_id__in=Message.objects.filter(realm=realm).values("recipient_id"),
-    ).values_list("user_profile_id", "recipient_id")
+    """
+    Find DM partners via 1:1 DM groups with message history.
+    """
+    target_user_ids = {user.id for user in target_users}
 
-    dmg_to_targets: dict[int, set[int]] = defaultdict(set)
-    for target_id, recipient_id in target_dmg_subs:
-        dmg_to_targets[recipient_id].add(target_id)
-
-    if not dmg_to_targets:
-        return defaultdict(set)
-
-    # Now that we know the set of relevant recipients, and which of
-    # users we care about are in each, we pull the full subscription
-    # set to map user -> recipient -> full list of other users
-    partner_query = Subscription.objects.filter(
-        recipient_id__in=dmg_to_targets.keys(),
+    # Fetch every subscription of 1:1 DM groups belonging to any target user.
+    # This results in the subscriptions of all target_users and their possible partners.
+    targets_and_partners_subs = list(
+        Subscription.objects.filter(
+            # Only DMGs that have at least one message.
+            Exists(Message.objects.filter(realm=realm, recipient_id=OuterRef("recipient_id"))),
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            recipient__directmessagegroup__group_size__lte=2,
+            recipient_id__in=Subscription.objects.filter(
+                user_profile_id__in=target_user_ids,
+            ).values("recipient_id"),
+        ).values_list("user_profile_id", "recipient_id", "is_user_active")
     )
-    if not include_deactivated_users:
-        partner_query = partner_query.filter(is_user_active=True)
 
+    # Subscribers eligible to be partners.
+    recipient_to_partners: dict[int, set[int]] = defaultdict(set)
+    for user_id, recipient_id, is_user_active in targets_and_partners_subs:
+        if include_deactivated_users or is_user_active:
+            recipient_to_partners[recipient_id].add(user_id)
+
+    # Map each target user to their actual partners.
     direct_message_participants_dict: dict[int, set[int]] = defaultdict(set)
-    for recipient_id, user_id in partner_query.values_list("recipient_id", "user_profile_id"):
-        for target_id in dmg_to_targets[recipient_id]:
-            if user_id != target_id:
-                direct_message_participants_dict[target_id].add(user_id)
+    for target_id, recipient_id, _is_user_active in targets_and_partners_subs:
+        if target_id not in target_user_ids:
+            continue
+
+        # A user is not a partner with themself.
+        partner_ids = recipient_to_partners.get(recipient_id, set()) - {target_id}
+        if partner_ids:
+            direct_message_participants_dict[target_id] |= partner_ids
 
     return direct_message_participants_dict
 
