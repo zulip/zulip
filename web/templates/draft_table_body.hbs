@@ -7,15 +7,19 @@
                     <span class="exit-sign">&times;</span>
                 </div>
                 <div id="draft_overlay_banner_container" class="banner-container banner-wrapper"></div>
+                <div id="draft-overlay-tab-switcher"></div>
                 <div class="header-body">
                     <div class="drafts-header-note">
-                        <div class="overlay-keyboard-shortcuts">
-                            {{#tr}}
-                                To restore a draft, click on it or press <z-shortcut></z-shortcut>.
-                                {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Enter"}}{{/inline}}
-                            {{/tr}}
+                        <div class="drafts-instruction-note">
+                            <div class="overlay-keyboard-shortcuts">
+                                {{#tr}}
+                                    To restore a draft, click on it or press <z-shortcut></z-shortcut>.
+                                    {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Enter"}}{{/inline}}
+                                {{/tr}}
+                            </div>
+                            <div>{{t "Drafts are not synced to other devices and browsers." }}</div>
                         </div>
-                        <div>{{t "Drafts are not synced to other devices and browsers." }}</div>
+                        <div class="outbox-instruction-note" style="display: none;">{{t "Messages that failed to send appear here. You can resend or cancel them."}}</div>
                     </div>
                     <div class="delete-drafts-group">
                         <div class="delete-selected-drafts-button-container">
@@ -26,9 +30,28 @@
                             <i class="fa fa-square-o select-state-indicator" aria-hidden="true"></i>
                         </button>
                     </div>
+                    <div class="outbox-actions-group" style="display: none;">
+                        <div class="outbox-bulk-action-icons">
+                            <div class="resend-selected-outbox-button-container">
+                                {{> ./components/icon_button intent="neutral" custom_classes="resend-selected-outbox-button" icon="refresh-cw" aria-label=(t "Resend all selected messages") disabled=true }}
+                            </div>
+                            <div class="cancel-selected-outbox-button-container">
+                                {{> ./components/icon_button intent="danger" custom_classes="cancel-selected-outbox-button" icon="circle-x" aria-label=(t "Cancel all selected messages") disabled=true }}
+                            </div>
+                        </div>
+                        <button class="action-button action-button-subtle-neutral select-outbox-button" role="checkbox" aria-checked="false">
+                            <span>{{t "Select all messages" }}</span>
+                            <i class="fa fa-square-o select-state-indicator" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-            {{> drafts_list context }}
+            <div class="drafts-tab-pane">
+                {{> drafts_list context }}
+            </div>
+            <div class="outbox-tab-pane" style="display: none;">
+                {{> outbox_list context }}
+            </div>
         </div>
     </div>
 </div>
