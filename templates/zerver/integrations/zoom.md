@@ -42,3 +42,4 @@ in order to use this integration.
 - [Constructor Groups integration](/integrations/constructor-groups)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
 - [Webex integration](/integrations/webex)
+- [Livekit integration](/integrations/livekit)

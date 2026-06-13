@@ -50,3 +50,4 @@ as your call provider instead.
 * [BigBlueButton server configuration](https://docs.bigbluebutton.org/administration/customize/#other-configuration-changes)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
 - [Webex integration](/integrations/webex)
+- [Livekit integration](/integrations/livekit)

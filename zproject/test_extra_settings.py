@@ -215,6 +215,11 @@ NEXTCLOUD_SERVER = "https://nextcloud.example.com"
 NEXTCLOUD_TALK_USERNAME = "username"
 NEXTCLOUD_TALK_PASSWORD = "password"
 
+LIVEKIT_URL = "ws://localhost:7880"
+LIVEKIT_API_KEY = "devkey"
+# JWT signing is not exercised in unit tests; any 32-byte string works.
+LIVEKIT_API_SECRET = "0" * 32
+
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False

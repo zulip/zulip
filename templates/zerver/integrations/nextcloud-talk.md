@@ -64,3 +64,4 @@ Talk as your call provider instead.
 - [BigBlueButton integration](/integrations/big-blue-button)
 - [Constructor Groups integration](/integrations/constructor-groups)
 - [Webex integration](/integrations/webex)
+- [Livekit integration](/integrations/livekit)
