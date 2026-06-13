@@ -133,7 +133,7 @@
             height: var(--length-input-pill-exit);
             display: flex;
             justify-content: center;
-            margin-right: 2px;
+            margin-right: var(--length-input-pill-exit-margin);
             border-radius: 2px;
 
             &:hover {

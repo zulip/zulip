@@ -335,10 +335,21 @@
                 display: grid;
                 grid-template-columns:
                     var(--length-search-pill-image) minmax(0, 1fr)
-                    var(--length-input-pill-exit);
+                    calc(
+                        var(--length-input-pill-exit) +
+                            var(--length-input-pill-exit-margin)
+                    );
                 align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
                 line-height: 1.1;
+
+                .exit {
+                    /* Needed in Chrome to keep the X centered;
+                       Firefox renders correctly without it. */
+                    .pill-close-button::before {
+                        line-height: 1;
+                    }
+                }
             }
         }
     }
