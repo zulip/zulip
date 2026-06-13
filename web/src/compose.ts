@@ -11,12 +11,14 @@ import render_wildcard_mention_not_allowed_error from "../templates/compose_bann
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {PostMessageAPIData} from "./echo.ts";
+import {$t} from "./i18n.ts";
 import * as message_events from "./message_events.ts";
 import type {LocalMessage} from "./message_helper.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -110,6 +112,8 @@ export function clear_compose_box(): void {
     clear_preview_area();
     $("textarea#compose-textarea").val("").trigger("focus");
     compose_ui.compose_textarea_typeahead?.hide();
+    compose_split_messages.set_split_messages_enabled(false);
+    compose_banner.clear_split_messages_info_banner();
     compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
     drafts.set_compose_draft_id(undefined);
@@ -131,21 +135,27 @@ export type SentMessageData = SendMessageData & {
 export function send_message_success(
     sent_message: SentMessageData | LocalMessage,
     data: PostMessageAPIData,
+    is_partial_send = false,
 ): void {
-    if (!sent_message.locally_echoed) {
+    if (!sent_message.locally_echoed && !is_partial_send) {
         clear_compose_box();
     }
 
     echo.reify_message_id(sent_message.local_id, data.id);
     drafts.draft_model.deleteDrafts([sent_message.draft_id]);
 
+    if (is_partial_send) {
+        // Skip post-send side effects (visibility-policy notifications,
+        // auto-unmute prompts, etc.) until the final part lands, so a
+        // multi-part send doesn't fire them N times.
+        return;
+    }
+
     if (sent_message.type === "stream") {
         if (data.automatic_new_visibility_policy) {
             if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
                 return;
             }
-            // topic has been automatically unmuted or followed. No need to
-            // suggest the user to unmute. Show the banner and return.
             compose_notifications.notify_automatic_new_visibility_policy(sent_message, {
                 ...data,
                 automatic_new_visibility_policy: data.automatic_new_visibility_policy,
@@ -164,74 +174,130 @@ export function send_message_success(
     }
 }
 
-export let send_message = (): void => {
-    // Changes here must also be kept in sync with echo.try_deliver_locally
+export function toggle_split_messages(): void {
+    const state = compose_split_messages.is_split_messages_enabled();
+    compose_split_messages.set_split_messages_enabled(!state);
+    // preview area and compose banner should be updated with the new setting
+    if ($("#compose .preview_message_area").css("display") !== "none") {
+        // re-render the preview area if it is currently visible
+        clear_preview_area();
+        show_preview_area();
+    }
+    compose_banner.update_split_messages_info_banner();
+    compose_validate.check_overflow_text($("#send_message_form"));
+    compose_validate.validate_and_update_send_button_status();
+}
+
+type CapturedRecipient =
+    | {
+          type: "private";
+          recipient_emails: string;
+          recipient_ids: number[];
+      }
+    | {
+          type: "stream";
+          stream_id: number;
+          topic: string;
+      };
+
+function capture_current_recipient(): CapturedRecipient {
+    const message_type = compose_state.get_message_type();
+    assert(message_type !== undefined);
+    if (message_type === "private") {
+        return {
+            type: "private",
+            recipient_emails: compose_state.private_message_recipient_emails(),
+            recipient_ids: compose_state.private_message_recipient_ids(),
+        };
+    }
+    const stream_id = compose_state.stream_id();
+    assert(stream_id !== undefined);
+    return {
+        type: "stream",
+        stream_id,
+        topic: compose_state.topic(),
+    };
+}
+
+export let send_message = (
+    message_content: string = compose_state.message_content(),
+    captured_recipient: CapturedRecipient = capture_current_recipient(),
+    sent_count = 0,
+): void => {
+    const is_recursive_call = sent_count > 0;
+
+    if (!is_recursive_call) {
+        const part_count = compose_split_messages.get_all_split_parts(message_content).length;
+        if (part_count > compose_split_messages.MAX_SPLIT_PARTS) {
+            compose_banner.show_error_message(
+                $t(
+                    {
+                        defaultMessage:
+                            "Cannot send more than {max} messages at once. Please remove some blank-line separators or split your message manually.",
+                    },
+                    {max: compose_split_messages.MAX_SPLIT_PARTS},
+                ),
+                compose_banner.CLASSNAMES.generic_compose_error,
+                $("#compose_banners"),
+            );
+            compose_ui.hide_compose_spinner();
+            return;
+        }
+    }
+
+    const [content_to_send, rest_of_the_content] =
+        compose_split_messages.split_message(message_content);
+    const is_content_to_send_split = rest_of_the_content !== "";
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
 
-    // Silently save / update a draft to ensure the message is not lost in case send fails.
-    // We delete the draft on successful send.
     const draft_id = drafts.update_draft({
         no_notify: true,
         update_count: false,
         is_sending_saving: true,
-        // Even 2-character messages that you actually tried to send
-        // should be saved as a draft, since it's confusing if a
-        // message can just disappear into the void.
         force_save: true,
     });
     assert(draft_id !== undefined);
 
-    const message_type = compose_state.get_message_type();
-    assert(message_type !== undefined);
     let message_data: SendMessageData;
-    if (message_type === "private") {
-        const recipient_emails = compose_state.private_message_recipient_emails();
-        const recipient_ids = compose_state.private_message_recipient_ids();
+    if (captured_recipient.type === "private") {
         message_data = {
-            type: message_type,
-            content: compose_state.message_content(),
+            type: "private",
+            content: content_to_send,
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: "",
-            to: JSON.stringify(recipient_ids),
-            reply_to: recipient_emails,
-            private_message_recipient: recipient_emails,
-            to_user_ids: util.sorted_ids(recipient_ids).join(","),
+            to: JSON.stringify(captured_recipient.recipient_ids),
+            reply_to: captured_recipient.recipient_emails,
+            private_message_recipient: captured_recipient.recipient_emails,
+            to_user_ids: util.sorted_ids(captured_recipient.recipient_ids).join(","),
             draft_id,
             stream_id: undefined,
         };
     } else {
-        const stream_id = compose_state.stream_id();
-        assert(stream_id !== undefined);
-        const topic = compose_state.topic();
+        const topic = captured_recipient.topic;
         message_data = {
-            type: message_type,
-            content: compose_state.message_content(),
+            type: "stream",
+            content: content_to_send,
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: util.is_topic_name_considered_empty(topic) ? "" : topic,
-            stream_id,
-            to: JSON.stringify([stream_id]),
+            stream_id: captured_recipient.stream_id,
+            to: JSON.stringify([captured_recipient.stream_id]),
             draft_id,
         };
     }
 
     let local_id: string;
 
-    const message = echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+    const message = !is_content_to_send_split
+        ? echo.try_deliver_locally(message_data, message_events.insert_new_messages)
+        : undefined;
     const locally_echoed = Boolean(message);
     if (message) {
-        // We are rendering this message locally with an id
-        // like 92l99.01 that corresponds to a reasonable
-        // approximation of the id we'll get from the server
-        // in terms of sorting messages.
         assert(message.local_id !== undefined);
         local_id = message.local_id;
     } else {
-        // We are not rendering this message locally, but we
-        // track the message's life cycle with an id like
-        // loc-1, loc-2, loc-3,etc.
         local_id = sent_messages.get_new_local_id();
     }
 
@@ -250,15 +316,19 @@ export let send_message = (): void => {
                 resend: false,
             },
             parsed_data,
+            is_content_to_send_split,
         );
+        if (is_content_to_send_split) {
+            send_message(rest_of_the_content, captured_recipient, sent_count + 1);
+        } else {
+            compose_banner.clear_split_messages_info_banner();
+            compose_ui.hide_compose_spinner();
+        }
     }
 
     function error(response: string, server_error_code: string): void {
-        // Error callback for failed message send attempts.
         if (!locally_echoed) {
             if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
-                // The topic wildcard mention permission code path has
-                // a special error.
                 const new_row_html = render_wildcard_mention_not_allowed_error({
                     banner_type: compose_banner.ERROR,
                     classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
@@ -275,29 +345,33 @@ export let send_message = (): void => {
                     $("textarea#compose-textarea"),
                 );
             }
-
-            // For messages that were not locally echoed, we're
-            // responsible for hiding the compose spinner to restore
-            // the compose box so one can send a next message.
-            //
-            // (Restoring this state is handled by clear_compose_box
-            // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
-            return;
+        } else {
+            assert(message !== undefined);
+            echo.message_send_error(message.id, response);
+            drafts.sync_count();
+            assert(draft_id !== undefined);
+            const draft = drafts.draft_model.getDraft(draft_id);
+            assert(draft !== false);
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(draft_id, draft);
         }
 
-        assert(message !== undefined);
-        echo.message_send_error(message.id, response);
+        // Restore the textarea to only what still needs to be sent.
+        if (sent_count > 0 || is_content_to_send_split) {
+            const remaining = is_content_to_send_split
+                ? content_to_send +
+                  compose_split_messages.SPLIT_DELIMITER +
+                  compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content)
+                : content_to_send;
+            compose_state.message_content(remaining);
+            $("textarea#compose-textarea").trigger("input");
+            compose_ui.autosize_textarea($("textarea#compose-textarea"));
+        }
 
-        // We might not have updated the draft count because we assumed the
-        // message would send. Ensure that the displayed count is correct.
-        drafts.sync_count();
-
-        assert(draft_id !== undefined);
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        if (sent_count > 0) {
+            compose_banner.show_partial_send_failure(sent_count);
+        }
     }
 
     transmit.send_message(
@@ -312,8 +386,6 @@ export let send_message = (): void => {
     if (locally_echoed) {
         clear_compose_box();
         assert(message !== undefined);
-        // Schedule a timer to display a spinner when the message is
-        // taking a longtime to send.
         setTimeout(() => {
             echo.display_slow_send_loading_spinner(message);
         }, 5000);
@@ -393,6 +465,22 @@ export function do_post_send_tasks(): void {
 }
 
 function schedule_message_to_custom_date(): void {
+    if (
+        compose_split_messages.is_split_messages_enabled() &&
+        compose_split_messages.will_split_into_multiple_messages()
+    ) {
+        compose_ui.hide_compose_spinner();
+        compose_banner.show_error_message(
+            $t({
+                defaultMessage:
+                    "Scheduling is not supported for split messages yet. Turn off splitting from the send-later menu, or send now.",
+            }),
+            compose_banner.CLASSNAMES.generic_compose_error,
+            $("#compose_banners"),
+        );
+        return;
+    }
+
     const deliver_at = scheduled_messages.get_formatted_selected_send_later_time();
     const scheduled_delivery_timestamp = scheduled_messages.get_selected_send_later_timestamp();
 
