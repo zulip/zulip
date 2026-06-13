@@ -107,7 +107,7 @@ def get_tag_push_event_body(payload: WildValue, include_title: bool, realm: Real
     )
 
 
-def get_issue_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+def get_work_item_description(payload: WildValue) -> str | None:
     description = payload["object_attributes"].get("description")
     # Filter out multiline hidden comments
     if description:
@@ -118,6 +118,11 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool, realm:
         stringified_description = stringified_description.rstrip()
     else:
         stringified_description = None
+    return stringified_description
+
+
+def get_issue_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+    stringified_description = get_work_item_description(payload)
 
     return get_issue_event_message(
         user_name=get_user_name(payload, realm),
@@ -136,6 +141,34 @@ def get_issue_event_body(action: str, payload: WildValue, include_title: bool, r
         action=action,
         url=get_object_url(payload),
         number=payload["object_attributes"]["iid"].tame(check_int),
+        title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_work_item_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+    stringified_description = get_work_item_description(payload)
+
+    return get_pull_request_event_message(
+        user_name=get_user_name(payload, realm),
+        action="created",
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
+        message=stringified_description,
+        assignees=replace_assignees_username_with_name(get_assignees(payload)),
+        type=payload["object_attributes"]["type"].tame(check_string).lower(),
+        title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_work_item_event_body(
+    action: str, payload: WildValue, include_title: bool, realm: Realm
+) -> str:
+    return get_pull_request_event_message(
+        user_name=get_user_name(payload, realm),
+        action=action,
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
+        type=payload["object_attributes"]["type"].tame(check_string).lower(),
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
 
@@ -603,6 +636,10 @@ def get_emoji_event_body(action: str, payload: WildValue, include_title: bool, r
 
 
 def get_repo_name(payload: WildValue) -> str:
+    if payload.get("object_attributes", {}).get("type").tame(check_none_or(check_string)) == "Epic":
+        # Epics are group-level entities, but their payloads don't have a `group` section.
+        return payload["object_attributes"]["url"].tame(check_string).split("/")[-4]
+
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
 
@@ -637,6 +674,9 @@ def get_user_name(payload: WildValue, realm: Realm) -> str:
 
 
 def get_project_homepage(payload: WildValue) -> str:
+    if payload.get("object_attributes", {}).get("type").tame(check_none_or(check_string)) == "Epic":
+        # Epics are group-level but their payload don't have a `group` section.
+        return payload["object_attributes"]["url"].tame(check_string).split("/-/")[0]
     if "project" in payload:
         return payload["project"]["web_url"].tame(check_string)
     if "repository" in payload:
@@ -683,10 +723,62 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Issue Hook close": partial(get_issue_event_body, "closed"),
     "Issue Hook reopen": partial(get_issue_event_body, "reopened"),
     "Issue Hook update": partial(get_issue_event_body, "updated"),
+    "Issue Hook Incident open": get_work_item_created_event_body,
+    "Issue Hook Incident close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Incident reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Incident update": partial(get_work_item_event_body, "updated"),
+    "Issue Hook Task open": get_work_item_created_event_body,
+    "Issue Hook Task close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Task reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Task update": partial(get_work_item_event_body, "updated"),
+    "Issue Hook Key Result open": get_work_item_created_event_body,
+    "Issue Hook Key Result close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Key Result reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Key Result update": partial(get_work_item_event_body, "updated"),
+    "Issue Hook Objective open": get_work_item_created_event_body,
+    "Issue Hook Objective close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Objective reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Objective update": partial(get_work_item_event_body, "updated"),
+    "Issue Hook Test Case open": get_work_item_created_event_body,
+    "Issue Hook Test Case close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Test Case reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Test Case update": partial(get_work_item_event_body, "updated"),
+    "Issue Hook Requirement open": get_work_item_created_event_body,
+    "Issue Hook Requirement close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Requirement reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Requirement update": partial(get_work_item_event_body, "updated"),
+    "Issue Hook Epic open": get_work_item_created_event_body,
+    "Issue Hook Epic close": partial(get_work_item_event_body, "closed"),
+    "Issue Hook Epic reopen": partial(get_work_item_event_body, "reopened"),
+    "Issue Hook Epic update": partial(get_work_item_event_body, "updated"),
     "Confidential Issue Hook open": get_issue_created_event_body,
     "Confidential Issue Hook close": partial(get_issue_event_body, "closed"),
     "Confidential Issue Hook reopen": partial(get_issue_event_body, "reopened"),
     "Confidential Issue Hook update": partial(get_issue_event_body, "updated"),
+    "Confidential Issue Hook Incident open": get_work_item_created_event_body,
+    "Confidential Issue Hook Incident close": partial(get_work_item_event_body, "closed"),
+    "Confidential Issue Hook Incident reopen": partial(get_work_item_event_body, "reopened"),
+    "Confidential Issue Hook Incident update": partial(get_work_item_event_body, "updated"),
+    "Confidential Issue Hook Task open": get_work_item_created_event_body,
+    "Confidential Issue Hook Task close": partial(get_work_item_event_body, "closed"),
+    "Confidential Issue Hook Task reopen": partial(get_work_item_event_body, "reopened"),
+    "Confidential Issue Hook Task update": partial(get_work_item_event_body, "updated"),
+    "Confidential Issue Hook Key Result open": get_work_item_created_event_body,
+    "Confidential Issue Hook Key Result close": partial(get_work_item_event_body, "closed"),
+    "Confidential Issue Hook Key Result reopen": partial(get_work_item_event_body, "reopened"),
+    "Confidential Issue Hook Key Result update": partial(get_work_item_event_body, "updated"),
+    "Confidential Issue Hook Objective open": get_work_item_created_event_body,
+    "Confidential Issue Hook Objective close": partial(get_work_item_event_body, "closed"),
+    "Confidential Issue Hook Objective reopen": partial(get_work_item_event_body, "reopened"),
+    "Confidential Issue Hook Objective update": partial(get_work_item_event_body, "updated"),
+    "Confidential Issue Hook Test Case open": get_work_item_created_event_body,
+    "Confidential Issue Hook Test Case close": partial(get_work_item_event_body, "closed"),
+    "Confidential Issue Hook Test Case reopen": partial(get_work_item_event_body, "reopened"),
+    "Confidential Issue Hook Test Case update": partial(get_work_item_event_body, "updated"),
+    "Confidential Issue Hook Epic open": get_work_item_created_event_body,
+    "Confidential Issue Hook Epic close": partial(get_work_item_event_body, "closed"),
+    "Confidential Issue Hook Epic reopen": partial(get_work_item_event_body, "reopened"),
+    "Confidential Issue Hook Epic update": partial(get_work_item_event_body, "updated"),
     "Note Hook Commit": get_commented_commit_event_body,
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
@@ -736,11 +828,9 @@ def api_gitlab_webhook(
     event = get_event(request, payload, branches)
 
     # Ignore events from private projects if the URL option is set
-    if (
-        "project" in payload
-        and payload["project"]["visibility_level"].tame(check_int) == 0
-        and ignore_private_projects
-    ):
+    # Epics belongs to groups and send `project` as null.
+    project = payload.get("project")
+    if project and project["visibility_level"].tame(check_int) == 0 and ignore_private_projects:
         return json_success(request)
 
     if event is not None:
@@ -793,7 +883,7 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
     elif event.startswith(("Issue Hook", "Confidential Issue Hook")):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
-            type="issue",
+            type=payload["object_attributes"].get("type", "issue").tame(check_string).lower(),
             id=payload["object_attributes"]["iid"].tame(check_int),
             title=payload["object_attributes"]["title"].tame(check_string),
         )
@@ -874,8 +964,29 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
             event_name = payload["object_kind"].tame(check_string)
         event = event_name.split("__")[0].replace("_", " ").title()
         event = f"{event} Hook"
-    if event in ["Confidential Issue Hook", "Issue Hook", "Merge Request Hook", "Wiki Page Hook"]:
+    if event in ["Merge Request Hook", "Wiki Page Hook"]:
         action = payload["object_attributes"].get("action", "open").tame(check_string)
+        event = f"{event} {action}"
+    elif event in ["Issue Hook", "Confidential Issue Hook"]:
+        # GitLab unifies all work items under Issue Hook and Confidential Issue Hook.
+        # Older versions without work items had only issue and omits the `type` field.
+        work_item_type = payload["object_attributes"].get("type", "").tame(check_string)
+        # Regular issues report `type` as "Issue", which we
+        # don't append to the event name to avoid a redundant "Issue Hook Issue open".
+        if work_item_type and work_item_type != "Issue":
+            event += f" {work_item_type}"
+        action = payload["object_attributes"].get("action", "open").tame(check_string)
+        # Requirements combine updated/closed/reopened actions into update action,
+        # but state updates(reopened and closed) have a `state_id` field in the `changes` section of the payload.
+        if (
+            work_item_type == "Requirement"
+            and action == "update"
+            and "state_id" in payload["changes"]
+        ):
+            if payload["object_attributes"]["state"].tame(check_string) == "closed":
+                action = "close"
+            else:
+                action = "reopen"
         event = f"{event} {action}"
     elif event in ["Confidential Note Hook", "Note Hook"]:
         action = payload["object_attributes"]["noteable_type"].tame(check_string)
