@@ -7,7 +7,7 @@ from pydantic import Json
 from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
-from zerver.lib.validator import WildValue, check_int, check_string
+from zerver.lib.validator import WildValue, check_bool, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import (
     TOPIC_WITH_BRANCH_TEMPLATE,
@@ -26,7 +26,7 @@ def build_message_from_gitlog(
     after: str,
     url: str,
     pusher: str,
-    forced: str | None = None,
+    forced: bool | None = None,
     created: str | None = None,
     deleted: bool = False,
 ) -> tuple[str, str]:
@@ -34,7 +34,21 @@ def build_message_from_gitlog(
     topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
     commits_data = _transform_commits_list_to_common_format(commits)
-    content = get_push_commits_event_message(pusher, url, short_ref, commits_data, deleted=deleted)
+    # If Beanstalk provides a 'forced' flag, surface it to the shared
+    # git message formatter so force pushes are shown similarly to GitHub.
+    # TODO: Beanstalk payloads may not include a 'forced' field in the
+    # current webhook format. If Beanstalk introduces a different key or
+    # nested location for marking force pushes, update detection here.
+    force_flag = False
+    if forced is not None:
+        try:
+            force_flag = bool(forced)
+        except Exception:  # nocoverage
+            force_flag = False  # nocoverage
+
+    content = get_push_commits_event_message(
+        pusher, url, short_ref, commits_data, deleted=deleted, force_push=force_flag
+    )
 
     return topic_name, content
 
@@ -74,6 +88,14 @@ def api_beanstalk_webhook(
         if not is_branch_name_notifiable(branch, branches):
             return json_success(request)
 
+        # Compute forced flag if present in the payload and pass through.
+        forced_flag = None
+        if payload.get("forced") is not None:
+            try:
+                forced_flag = payload["forced"].tame(check_bool)
+            except Exception:  # nocoverage ✅
+                forced_flag = None  # nocoverage ✅
+
         topic_name, content = build_message_from_gitlog(
             user_profile,
             payload["repository"]["name"].tame(check_string),
@@ -83,6 +105,7 @@ def api_beanstalk_webhook(
             payload["after"].tame(check_string),
             payload["repository"]["url"].tame(check_string),
             payload["pusher_name"].tame(check_string),
+            forced=forced_flag,
         )
     else:
         author = payload["author_full_name"].tame(check_string)
