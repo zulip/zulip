@@ -97,6 +97,7 @@ class HomeTest(ZulipTestCase):
         "giphy_api_key",
         "has_webex_token",
         "has_zoom_token",
+        "has_google_meet_token",
         "idle_queue_timeout_secs",
         "is_admin",
         "is_guest",
