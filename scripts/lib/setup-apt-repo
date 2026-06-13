@@ -69,6 +69,50 @@ EOF
     exit 1
 fi
 
+apt_repository_indexes_present() {
+    local line
+    local found_source=false
+    local source_prefix
+    local source_url
+    local suite
+    local -a fields
+
+    if [ ! -f "$SOURCES_FILE" ]; then
+        return 1
+    fi
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        line=${line%%#*}
+        if [[ ! "$line" =~ ^[[:space:]]*deb ]]; then
+            continue
+        fi
+
+        read -r -a fields <<<"$line"
+        if [ "${#fields[@]}" -lt 3 ]; then
+            continue
+        fi
+
+        if [[ "${fields[1]}" == \[* ]]; then
+            source_url="${fields[2]}"
+            suite="${fields[3]}"
+        else
+            source_url="${fields[1]}"
+            suite="${fields[2]}"
+        fi
+
+        found_source=true
+        source_prefix="${source_url#*://}"
+        source_prefix="${source_prefix%/}"
+        source_prefix="${source_prefix//\//_}"
+
+        if ! compgen -G "/var/lib/apt/lists/${source_prefix}_dists_${suite}_*" >/dev/null; then
+            return 1
+        fi
+    done <"$SOURCES_FILE"
+
+    "$found_source"
+}
+
 DEPENDENCIES_HASH="$(sha256sum "$LIST_PATH"/?(*.asc|"$release.list"|"$LIST.pref"|custom.sh) "scripts/lib/setup-apt-repo")"
 DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-$LIST"
 # Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
@@ -76,8 +120,11 @@ touch "$DEPENDENCIES_HASH_FILE"
 LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
 
 # First, we only do anything in setup-apt-repo if any of its inputs
-# (apt keys, code, etc.)  changed.
-if [ "$DEPENDENCIES_HASH" = "$LAST_DEPENDENCIES_HASH" ]; then
+# (apt keys, code, etc.) changed, and the package indexes for the
+# configured repositories are still present.
+if [ "$DEPENDENCIES_HASH" = "$LAST_DEPENDENCIES_HASH" ] \
+    && ! [ -e "$STAMP_FILE" ] \
+    && apt_repository_indexes_present; then
     exit 0
 elif [ "$verify" == true ]; then
     exit 1
@@ -99,6 +146,7 @@ fi
 apt-get -y install "${pre_setup_deps[@]}"
 
 cp "$LIST_PATH/"*.asc /etc/apt/keyrings/
+chmod 644 /etc/apt/keyrings/*.asc
 cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
 
 if [ -e "$LIST_PATH/custom.sh" ]; then
