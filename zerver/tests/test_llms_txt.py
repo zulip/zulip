@@ -1,6 +1,7 @@
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models.realms import get_realm
+from zerver.models.streams import Stream, get_stream
 
 
 class LlmsTxtTest(ZulipTestCase):
@@ -30,6 +31,13 @@ class LlmsTxtTest(ZulipTestCase):
         self.assertIn("use the numeric ID as the `channel` operand", content)
         self.assertIn("Channel IDs are stable", content)
         self.assertIn("names can be renamed", content)
+        # The channel narrow operand must be the numeric channel ID (an
+        # unquoted integer), never a quoted name, everywhere it appears.
+        self.assertNotIn('"operator":"channel","operand":"', content)
+        # The channel listing exposes each channel's numeric ID so clients
+        # can build narrows directly.
+        rome_id = get_stream("Rome", realm).id
+        self.assertIn(f"Rome ({rome_id})", content)
 
     def test_llms_txt_spectator_access_disabled(self) -> None:
         """
@@ -45,8 +53,6 @@ class LlmsTxtTest(ZulipTestCase):
         GET /llms.txt returns 404 when spectator access is enabled but there
         are no web-public channels in the realm.
         """
-        from zerver.models.streams import Stream
-
         realm = get_realm("zulip")
         do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
         # Mark all previously web-public streams as not web-public.
