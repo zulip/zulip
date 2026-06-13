@@ -627,7 +627,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
             required: field.required,
             editable_by_user: field.editable_by_user,
             use_for_user_matching: field.use_for_user_matching,
-            is_select_field: field.type === field_types.DROPDOWN.id,
+            is_dropdown_field: field.type === field_types.DROPDOWN.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
             valid_to_use_for_user_matching: is_valid_to_use_for_user_matching(field.type),
@@ -848,8 +848,6 @@ export function populate_profile_fields(profile_fields_data: CustomProfileField[
 }
 
 export function do_populate_profile_fields(profile_fields_data: CustomProfileField[]): void {
-    const field_types = realm.custom_profile_field_types;
-
     // We should only call this internally or from tests.
     const $profile_fields_table = $("#admin_profile_fields_table").expectOne();
 
@@ -873,14 +871,6 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
             return profile_field;
         },
         modifier_html(profile_field) {
-            let choices: FieldChoice[] = [];
-            if (profile_field.field_data && profile_field.type === field_types.DROPDOWN.id) {
-                const field_data = settings_components.select_field_data_schema.parse(
-                    JSON.parse(profile_field.field_data),
-                );
-                choices = parse_field_choices_from_field_data(field_data);
-            }
-
             const display_in_profile_summary = profile_field.display_in_profile_summary === true;
             const required = profile_field.required;
 
@@ -890,10 +880,6 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
                     name: profile_field.name,
                     hint: profile_field.hint,
                     type: field_type_id_to_string(profile_field.type),
-                    choices,
-                    is_select_field: profile_field.type === field_types.DROPDOWN.id,
-                    is_external_account_field:
-                        profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
                     display_in_profile_summary,
                     valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
                     required,

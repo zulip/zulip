@@ -48,10 +48,10 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             rendered_value: "",
         };
         const editable_by_user = current_user.is_admin || field.editable_by_user;
-        const is_select_field = field.type === all_field_types.DROPDOWN.id;
+        const is_dropdown_field = field.type === all_field_types.DROPDOWN.id;
         const field_choices = [];
 
-        if (is_select_field) {
+        if (is_dropdown_field) {
             const field_choice_dict = settings_components.select_field_data_schema.parse(
                 JSON.parse(field.field_data),
             );
@@ -73,7 +73,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             is_date_field: field.type === all_field_types.DATE.id,
             is_url_field: field.type === all_field_types.URL.id,
             is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
-            is_select_field,
+            is_dropdown_field,
             field_choices,
             for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
             is_empty_required_field: field.required && !field_value.value,
