@@ -58,7 +58,7 @@ function register_message_preview_click_handlers(
 function get_message_group_for_message_preview(message: Message): MessageGroup {
     // This creates a simpler recipient_row without element like the
     // topic menu and topic visibility policy menu.
-    const message_group = populate_group_from_message(message, false, false, undefined);
+    const message_group = populate_group_from_message(message, false, false);
     if (message_group.is_stream) {
         message_group.user_can_resolve_topic = false;
         message_group.is_topic_editable = false;
