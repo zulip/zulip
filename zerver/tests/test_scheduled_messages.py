@@ -17,7 +17,7 @@ from zerver.actions.scheduled_messages import (
 from zerver.actions.users import change_user_is_active
 from zerver.lib.message import is_message_to_self
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import most_recent_message
+from zerver.lib.test_helpers import most_recent_message, queries_captured
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
 from zerver.models.recipients import get_or_create_direct_message_group
@@ -450,6 +450,33 @@ class ScheduledMessageTest(ZulipTestCase):
             "channel", verona_stream_id, f"{content} 1", scheduled_delivery_timestamp
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
+
+    def test_edit_scheduled_message_locks_row(self) -> None:
+        # Editing a scheduled message must take the same FOR NO KEY
+        # UPDATE row lock the delivery worker
+        # (try_deliver_one_scheduled_message) takes. Without it, an edit
+        # racing with delivery reads the pre-delivery snapshot, passes
+        # the delivered=False guard, and its save() overwrites the
+        # worker's delivered=True/delivered_message_id, resurrecting the
+        # row so the next worker pass sends the message a second time.
+        self.create_scheduled_message()
+        scheduled_message = self.last_scheduled_message()
+
+        new_delivery_timestamp = int((timezone_now() + timedelta(minutes=7)).timestamp())
+        payload = {
+            "content": "Edited content",
+            "scheduled_delivery_timestamp": new_delivery_timestamp,
+        }
+        with queries_captured() as queries:
+            result = self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+        self.assert_json_success(result)
+
+        lock_queries = [
+            query
+            for query in queries
+            if 'FROM "zerver_scheduledmessage"' in query.sql and "FOR NO KEY UPDATE" in query.sql
+        ]
+        self.assert_length(lock_queries, 1)
 
     def test_edit_schedule_message(self) -> None:
         content = "Original test message"
