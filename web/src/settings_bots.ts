@@ -12,7 +12,7 @@ import type {Bot} from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
 import {
     EMBEDDED_BOT_TYPE,
-    GENERIC_BOT_TYPE,
+    GENERIC_BOT_TYPE_INT,
     INCOMING_WEBHOOK_BOT_TYPE_INT,
     OUTGOING_WEBHOOK_BOT_TYPE,
     OUTGOING_WEBHOOK_BOT_TYPE_INT,
@@ -455,7 +455,7 @@ function bot_info(bot_user_id: number): BotInfo {
             : {
                   bot_owner_id: null,
               }),
-        show_download_zuliprc_button: is_bot_owner && bot_user.bot_type === GENERIC_BOT_TYPE,
+        show_download_zuliprc_button: is_bot_owner && bot_user.bot_type === GENERIC_BOT_TYPE_INT,
         show_generate_integration_url_button:
             can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT,
     };

@@ -618,6 +618,7 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
         assert.equal(data.channel_name, "Denmark");
+        assert.equal(data.audience_channel_name, "Denmark");
         banner_rendered = true;
         return "<banner-stub>";
     });
