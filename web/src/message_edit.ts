@@ -49,6 +49,7 @@ import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as resize from "./resize.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
@@ -1047,7 +1048,7 @@ function do_toggle_resolve_topic(
 
                 if (report_errors_in_global_banner) {
                     const {msg} = z.object({msg: z.string()}).parse(xhr.responseJSON);
-                    ui_report.generic_embed_error(_.escape(msg), 3500);
+                    popup_banners.open_error_popup_banner(_.escape(msg), 3500);
                 }
             }
         },
