@@ -103,7 +103,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Joe Bloggs created [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1):\n\n``` quote\nTesting\n```"
 
         self.check_webhook(
-            "issue_hook__confidential_issue_created_without_assignee",
+            "confidential_issue_hook__issue_created_without_assignee",
             expected_subject,
             expected_message,
         )
@@ -146,7 +146,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Joe Bloggs created [issue #2](https://gitlab.example.co.uk/joe.bloggs/testing/issues/2) (assigned to Joe Bloggs):\n\n``` quote\nTesting\n```"
 
         self.check_webhook(
-            "issue_hook__confidential_issue_created_with_assignee",
+            "confidential_issue_hook__issue_created_with_assignee",
             expected_subject,
             expected_message,
         )
@@ -166,7 +166,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Joe Bloggs created [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1):\n\n``` quote\nThis description actually has a hidden comment in it!\n```"
 
         self.check_webhook(
-            "issue_hook__confidential_issue_created_with_hidden_comment_in_description",
+            "confidential_issue_hook__issue_created_with_hidden_comment_in_description",
             expected_subject,
             expected_message,
         )
@@ -189,7 +189,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Joe Bloggs updated [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
 
         self.check_webhook(
-            "issue_hook__confidential_issue_updated", expected_subject, expected_message
+            "confidential_issue_hook__issue_updated", expected_subject, expected_message
         )
 
     def test_update_issue_with_custom_topic_in_url(self) -> None:
@@ -210,7 +210,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Joe Bloggs closed [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
 
         self.check_webhook(
-            "issue_hook__confidential_issue_closed", expected_subject, expected_message
+            "confidential_issue_hook__issue_closed", expected_subject, expected_message
         )
 
     def test_reopen_issue_event_message(self) -> None:
@@ -224,7 +224,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Joe Bloggs reopened [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
 
         self.check_webhook(
-            "issue_hook__confidential_issue_reopened", expected_subject, expected_message
+            "confidential_issue_hook__issue_reopened", expected_subject, expected_message
         )
 
     def test_note_commit_event_message(self) -> None:
@@ -269,7 +269,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_subject = "testing-zulip-gitlab-integration / issue #1 Add more lines"
         expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406130881):\n\n``` quote\nSome more comments\n```"
 
-        self.check_webhook("note_hook__confidential_issue_note", expected_subject, expected_message)
+        self.check_webhook("confidential_note_hook__issue_note", expected_subject, expected_message)
 
     def test_note_issue_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
