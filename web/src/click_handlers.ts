@@ -1060,6 +1060,15 @@ export function initialize(): void {
 
     // MAIN CLICK HANDLER
 
+    // Read at pointerdown — before browsers detach e.target on target="_blank"
+    // link clicks — so the click handler can reliably identify link presses.
+    let last_pointerdown_was_within_link = false;
+    $(document).on("pointerdown", (e) => {
+        if (e.button === 0) {
+            last_pointerdown_was_within_link = $(e.target).closest("a").length > 0;
+        }
+    });
+
     $(document).on("click", (e) => {
         if (e.button !== 0 || $(e.target).is(".drag")) {
             // Firefox emits right click events on the document, but not on
@@ -1069,7 +1078,8 @@ export function initialize(): void {
         }
 
         if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
-            const is_click_within_link = $(e.target).closest("a").length > 0;
+            const is_click_within_link =
+                last_pointerdown_was_within_link || $(e.target).closest("a").length > 0;
             if (is_click_within_link || $(e.target).closest(".copy_codeblock").length > 0) {
                 const is_selecting_link_text = is_click_within_link && mouse_drag.is_drag(e);
                 if (is_selecting_link_text) {
