@@ -422,9 +422,9 @@ def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -
 
 
 def get_categories_for_integration(integration: Integration) -> list[tuple[str, str]]:
-    display_to_slug = {str(display): slug for slug, display in CATEGORIES.items()}
+    display_to_slug = {display: slug for slug, display in CATEGORIES.items()}
     result = []
-    for display_name in integration.get_translated_categories():
+    for display_name in integration.categories:
         slug = display_to_slug.get(display_name)
         assert slug is not None
         result.append((slug, display_name))
