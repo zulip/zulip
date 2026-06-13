@@ -323,4 +323,45 @@ export function trap_focus_for_settings_overlay(): void {
             }
         }
     });
+
+    $("body").on("keydown", "#draft_overlay", (e) => {
+        if (e.key !== "Tab" || !drafts_open()) {
+            return;
+        }
+
+        const $draft_overlay = $("#draft_overlay");
+        const focusable_elements =
+            overlay_util.get_visible_focusable_elements_in_overlay_container($draft_overlay);
+
+        if (focusable_elements.length === 0) {
+            e.preventDefault();
+            return;
+        }
+        const active_element =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        const focus_is_in_focusable_element = active_element
+            ? focusable_elements.includes(active_element)
+            : false;
+
+        // If focus is currently outside the focusable elements (e.g. after clicking
+        // on the overlay or another non-focusable area), we treat it as if no
+        // valid element is focused and move focus to the last element.
+        if (e.shiftKey) {
+            if (
+                document.activeElement === focusable_elements[0] ||
+                !focus_is_in_focusable_element
+            ) {
+                e.preventDefault();
+                focusable_elements.at(-1)!.focus();
+            }
+        } else {
+            if (
+                document.activeElement === focusable_elements.at(-1) ||
+                !focus_is_in_focusable_element
+            ) {
+                e.preventDefault();
+                focusable_elements[0]!.focus();
+            }
+        }
+    });
 }
