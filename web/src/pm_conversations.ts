@@ -84,6 +84,22 @@ class RecentDirectMessages {
         this.recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
     }
 
+    remove(user_ids_string: string): void {
+        // Removes a conversation from both the fast-lookup map and
+        // the ordered list used for the UI.
+        this.recent_message_ids.delete(user_ids_string);
+        this.recent_private_messages = this.recent_private_messages.filter(
+            (item) => item.user_ids_string !== user_ids_string,
+        );
+    }
+
+    get_max_message_id(user_ids_string: string): number | undefined {
+        // Returns the max message ID for a conversation, or undefined
+        // if the conversation doesn't exist.
+        const conversation = this.recent_message_ids.get(user_ids_string);
+        return conversation?.max_message_id;
+    }
+
     get(): PMConversation[] {
         // returns array of structs with user_ids_string and
         // message_id
