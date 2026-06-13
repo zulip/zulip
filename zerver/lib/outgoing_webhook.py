@@ -5,6 +5,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from time import perf_counter
 from typing import Any, AnyStr
+import re
 
 import requests
 from django.conf import settings
@@ -78,7 +79,25 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             realm_host=realm.host,
         )
 
+        # Extract the raw text content from the finalized payload dictionary:
+        message_content = message_dict.get("content", "").strip()
+
+        # Default values mirroring normal event commandst
+        command_field = event["command"]
+        text_field = message_content
+        mention_match = re.match(r"^@\*\*([^*]+)\*\*\s*", message_content)
+
+        if mention_match:
+            bot_name = mention_match.group(1)
+            full_mention_length = len(mention_match.group(0))
+
+            command_field = f"/{bot_name.lower().replace(' ', '')}"
+            text_field = message_content[full_mention_length:].strip()
+            
+
         request_data = {
+            "command": command_field,
+            "text": text_field,
             "data": event["command"],
             "message": message_dict,
             "bot_email": self.user_profile.email,
