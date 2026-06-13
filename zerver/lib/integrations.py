@@ -860,7 +860,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="RhodeCode",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    IncomingWebhookIntegration("rundeck", ["deployment"], [WebhookScreenshotConfig("start.json")]),
+    IncomingWebhookIntegration(
+        "rundeck", ["deployment"], [WebhookScreenshotConfig("failure.json")]
+    ),
     IncomingWebhookIntegration(
         "semaphore",
         ["continuous-integration", "deployment"],
