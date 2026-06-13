@@ -196,6 +196,7 @@ class RawStreamDict(TypedDict):
     stream_post_policy: int
     subscriber_count: int
     topics_policy: str
+    can_access_stream_topics_group_id: int
 
 
 class RawSubscriptionDict(TypedDict):
@@ -257,6 +258,7 @@ class SubscriptionStreamDict(TypedDict):
     rendered_description: str
     stream_id: int
     stream_post_policy: int
+    can_access_stream_topics_group: int
     stream_weekly_traffic: int | None
     subscriber_count: int
     subscribers: NotRequired[list[int]]
@@ -293,6 +295,7 @@ class NeverSubscribedStreamDict(TypedDict):
     rendered_description: str
     stream_id: int
     stream_post_policy: int
+    can_access_stream_topics_group: int
     stream_weekly_traffic: int | None
     subscriber_count: int
     subscribers: NotRequired[list[int]]
@@ -334,6 +337,7 @@ class DefaultStreamDict(TypedDict):
     stream_post_policy: int
     subscriber_count: int
     topics_policy: str
+    can_access_stream_topics_group: int
     # Computed fields not specified in `Stream.API_FIELDS`
     is_announcement_only: bool
     is_default: NotRequired[bool]

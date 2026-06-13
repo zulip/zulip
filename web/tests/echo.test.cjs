@@ -346,6 +346,33 @@ run_test("insert_local_message streams", ({override}) => {
     assert.ok(insert_message_called);
 });
 
+run_test("try_deliver_locally suppresses echo in restricted support channel", ({override}) => {
+    // In a "support" channel, a user who is not in can_access_stream_topics_group
+    // must not locally echo their message: the server decides topic access, so
+    // echoing could surface a message the server will reject, or place it in a
+    // topic the user cannot actually see. See issue #19434.
+    override(markdown, "contains_backend_only_syntax", () => false);
+
+    let insert_called = false;
+    const insert_new_messages = () => {
+        insert_called = true;
+        return [];
+    };
+
+    const message_request = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "support request",
+        content: "please help",
+    };
+
+    override(stream_data, "is_support_stream", () => true);
+    override(stream_data, "can_access_topics_in_stream", () => false);
+
+    assert.equal(echo.try_deliver_locally(message_request, insert_new_messages), undefined);
+    assert.ok(!insert_called);
+});
+
 run_test("insert_local_message direct message", ({override}) => {
     const local_id_float = 102.01;
 

@@ -67,6 +67,7 @@ exports.test_streams = {
         can_remove_subscribers_group: 2,
         is_recently_active: true,
         subscriber_count: 10,
+        can_access_stream_topics_group: 14,
     },
     test: {
         is_archived: false,
@@ -94,6 +95,7 @@ exports.test_streams = {
         can_remove_subscribers_group: 2,
         is_recently_active: true,
         subscriber_count: 2,
+        can_access_stream_topics_group: 14,
     },
 };
 

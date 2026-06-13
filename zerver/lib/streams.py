@@ -27,7 +27,11 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import get_topic_display_name, messages_for_topic
+from zerver.lib.topic import (
+    check_access_based_on_can_access_stream_topics_group,
+    get_topic_display_name,
+    messages_for_topic,
+)
 from zerver.lib.types import APIStreamDict, UserGroupMembersData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -102,6 +106,7 @@ class StreamDict(TypedDict, total=False):
     can_remove_subscribers_group: UserGroup | None
     can_resolve_topics_group: UserGroup | None
     can_subscribe_group: UserGroup | None
+    can_access_stream_topics_group: UserGroup | None
     folder: ChannelFolder | None
 
 
@@ -385,6 +390,7 @@ def create_stream_if_needed(
     can_remove_subscribers_group: UserGroup | None = None,
     can_resolve_topics_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
+    can_access_stream_topics_group: UserGroup | None = None,
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
@@ -519,6 +525,7 @@ def create_streams_if_needed(
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             can_resolve_topics_group=stream_dict.get("can_resolve_topics_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
+            can_access_stream_topics_group=stream_dict.get("can_access_stream_topics_group", None),
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
@@ -1200,6 +1207,11 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
     if user_profile.realm_id != stream.realm_id:
         raise AssertionError("user_profile and stream realms don't match")
 
+    if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+        user_profile, stream
+    ):
+        return False
+
     if stream.is_web_public:
         return True
 
@@ -1850,6 +1862,9 @@ def stream_to_dict(
     can_subscribe_group = get_group_setting_value_for_register_api(
         stream.can_subscribe_group_id, anonymous_group_membership
     )
+    can_access_stream_topics_group = get_group_setting_value_for_register_api(  # ← INSERT HERE
+        stream.can_access_stream_topics_group_id, anonymous_group_membership
+    )
 
     stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
         stream.can_send_message_group
@@ -1882,6 +1897,7 @@ def stream_to_dict(
         rendered_description=stream.rendered_description,
         stream_id=stream.id,
         stream_post_policy=stream_post_policy,
+        can_access_stream_topics_group=can_access_stream_topics_group,
         is_announcement_only=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=stream.subscriber_count,

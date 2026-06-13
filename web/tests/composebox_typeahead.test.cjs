@@ -842,6 +842,27 @@ test("topics_seen_for", ({override}) => {
     assert.deepEqual(ct.topics_seen_for(""), []);
 });
 
+test("topics_seen_for surfaces only local topic history", ({override}) => {
+    const support_stream_id = 9999;
+    for (const [message_id, topic_name] of [
+        [2, "my question"],
+        [1, "my other question"],
+    ]) {
+        stream_topic_history.add_message({
+            stream_id: support_stream_id,
+            message_id,
+            topic_name,
+        });
+    }
+
+    override(stream_topic_history_util, "get_server_history", noop);
+
+    assert.deepEqual(ct.topics_seen_for(support_stream_id), [
+        "my question",
+        "my other question",
+    ]);
+});
+
 test("should_suppress_topic_typeahead", () => {
     // An empty query is never suppressed, even when the empty topic (which
     // renders as a non-empty display name) is among the items.
