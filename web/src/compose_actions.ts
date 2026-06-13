@@ -466,7 +466,10 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     }
     // This has to happen after we insert the content, so that the next "input" event
     // is from user input.
-    if (restoring_last_draft) {
+    const should_mark_unedited_restored_draft =
+        restoring_last_draft ||
+        (opts.content !== undefined && opts.draft_id !== undefined && opts.draft_id !== "");
+    if (should_mark_unedited_restored_draft) {
         compose_state.set_is_content_unedited_restored_draft(true);
     }
 

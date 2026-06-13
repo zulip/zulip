@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -50,4 +50,34 @@ run_test("has_full_recipient", ({override}) => {
 
     compose_state.set_private_message_recipient_ids([123]);
     assert.equal(compose_state.has_full_recipient(), true);
+});
+
+run_test("focus_in_unedited_restored_draft_at_end", () => {
+    set_global("document", {
+        activeElement: {id: "compose-textarea"},
+    });
+
+    const $textarea = $("textarea#compose-textarea");
+    compose_state.set_message_type("stream");
+    compose_state.set_is_content_unedited_restored_draft(true);
+    compose_state.set_recipient_edited_manually(false);
+
+    $textarea.val("draft");
+    $textarea.caret(5);
+    assert.equal(compose_state.focus_in_unedited_restored_draft_at_end(), true);
+
+    $textarea.caret(0);
+    assert.equal(compose_state.focus_in_unedited_restored_draft_at_end(), false);
+
+    $textarea.caret(5);
+    compose_state.set_is_content_unedited_restored_draft(false);
+    assert.equal(compose_state.focus_in_unedited_restored_draft_at_end(), false);
+
+    compose_state.set_is_content_unedited_restored_draft(true);
+    compose_state.set_recipient_edited_manually(true);
+    assert.equal(compose_state.focus_in_unedited_restored_draft_at_end(), false);
+
+    compose_state.set_recipient_edited_manually(false);
+    compose_state.set_message_type(undefined);
+    compose_state.set_is_content_unedited_restored_draft(false);
 });
