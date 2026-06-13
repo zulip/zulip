@@ -33,9 +33,11 @@ def api_alertmanager_webhook(
             desc_field, annotations.get(desc_field, f"<missing field: {desc_field}>")
         ).tame(check_string)
 
-        url = alert["generatorURL"].tame(check_string).replace("tab=1", "tab=0")
-
-        body = f"{desc} ([source]({url}))"
+        if "generatorURL" in alert:
+            url = alert["generatorURL"].tame(check_string).replace("tab=1", "tab=0")
+            body = f"{desc} ([source]({url}))"
+        else:
+            body = desc
         if name not in topics:
             topics[name] = {"firing": [], "resolved": []}
         topics[name][alert["status"].tame(check_string)].append(body)
