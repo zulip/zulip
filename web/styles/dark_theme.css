@@ -20,7 +20,7 @@
     }
 
     .enter_sends_choices {
-        color: hsl(236deg 33% 90%);
+        color: var(--color-text-default);
 
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
@@ -71,7 +71,7 @@
 
     & select option {
         background-color: var(--color-background);
-        color: hsl(236deg 33% 90%);
+        color: var(--color-text-default);
     }
 
     .pill-container.not-editable-by-user {
@@ -139,7 +139,7 @@
     }
 
     .alert.home-error-bar {
-        color: hsl(236deg 33% 90%);
+        color: var(--color-text-default);
         background-color: hsl(35deg 84% 62% / 25%);
         border: 1px solid hsl(11deg 46% 54%);
     }
