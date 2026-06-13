@@ -1022,10 +1022,18 @@ export function dispatch_normal_event(event) {
                 stream_list.update_streams_sidebar(true);
             }
             if (event.property === "web_animate_image_previews") {
-                // Rerender the whole message list UI
+                // Propagate the new setting to status emoji info so subsequent
+                // template renders pick it up.
+                user_status.rebuild_animation_setting_for_all_users();
+                // Rerender the whole message list UI so message body emojis,
+                // reactions, and status emojis reflect the new setting.
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
                 }
+                // Rebuild the buddy list and PM list so their status emojis
+                // re-render with the new setting.
+                activity_ui.build_user_sidebar();
+                pm_list.update_private_messages();
             }
             if (event.property === "web_stream_unreads_count_display_policy") {
                 stream_list.build_stream_list(true);
