@@ -23,6 +23,7 @@ import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as feedback_widget from "./feedback_widget.ts";
+import * as file_attachment_preview from "./file_attachment_preview.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as hash_util from "./hash_util.ts";
@@ -1103,6 +1104,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if (overlays.lightbox_open()) {
             lightbox.prev();
             return true;
+        } else if (overlays.file_preview_open()) {
+            file_attachment_preview.prev();
+            return true;
         } else if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);
             return true;
@@ -1118,6 +1122,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
     if (event_name === "right_arrow") {
         if (overlays.lightbox_open()) {
             lightbox.next();
+            return true;
+        } else if (overlays.file_preview_open()) {
+            file_attachment_preview.next();
             return true;
         } else if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);

@@ -166,6 +166,9 @@ importers:
       handlebars-loader:
         specifier: ^1.7.1
         version: 1.7.3(handlebars@4.7.9(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9))
+      highlight.js:
+        specifier: ^11.11.0
+        version: 11.11.1
       html-webpack-plugin:
         specifier: ^5.3.2
         version: 5.6.7(webpack@5.106.2)
@@ -5638,6 +5641,10 @@ packages:
 
   heap@0.2.7:
     resolution: {integrity: sha512-2bsegYkkHO+h/9MGbn6KWcE45cHZgPANo5LXF7EvWdT0yT2EguSVO1nDgU5c8+ZOPwp2vMNa7YFsJhVcDR9Sdg==}
+
+  highlight.js@11.11.1:
+    resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
+    engines: {node: '>=12.0.0'}
 
   hookified@1.15.1:
     resolution: {integrity: sha512-MvG/clsADq1GPM2KGo2nyfaWVyn9naPiXrqIe4jYjXNZQt238kWyOGrsyc/DmRAQ+Re6yeo6yX/yoNCG5KAEVg==}
@@ -16011,6 +16018,8 @@ snapshots:
   he@1.2.0: {}
 
   heap@0.2.7: {}
+
+  highlight.js@11.11.1: {}
 
   hookified@1.15.1: {}
 

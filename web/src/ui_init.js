@@ -50,6 +50,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
 import * as fenced_code from "./fenced_code.ts";
+import * as file_attachment_preview from "./file_attachment_preview.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as gif_state from "./gif_state.ts";
@@ -631,6 +632,7 @@ export async function initialize_everything(state_data) {
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();
+    file_attachment_preview.initialize();
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();
