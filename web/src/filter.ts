@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_search_description from "../templates/search_description.hbs";
 
+import * as date_util from "./date_util.ts";
 import * as filter_util from "./filter_util.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
@@ -220,6 +221,7 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
         // Operators that don't filter messages on the client.
         case "near":
         case "with":
+        case "date":
         case "":
             return null;
 
@@ -354,6 +356,8 @@ export class Filter {
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
                 narrow_term.operand = narrow_term.operand.replaceAll(/[\u201C\u201D]/g, '"');
+                break;
+            case "date":
                 break;
             default:
                 narrow_term.operand = narrow_term.operand.toLowerCase();
@@ -662,6 +666,11 @@ export class Filter {
             case "id":
             case "near":
             case "with":
+                // Negating these doesn't have a useful meaning,
+                // so we reject it (matching `date` below).
+                if (term.negated) {
+                    return false;
+                }
                 return Number.isInteger(Number(term.operand));
             case "channel":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
@@ -678,6 +687,13 @@ export class Filter {
             case "search":
             case "":
                 return true;
+            case "date": {
+                if (term.negated) {
+                    return false;
+                }
+                const date = date_util.maybe_get_parsed_iso_8601_date(term.operand);
+                return date_util.is_date_valid(date);
+            }
             default:
                 // istanbul ignore next
                 // It should never reach here because of operator validation.
@@ -800,6 +816,10 @@ export class Filter {
                 return verb + "messages in a specific channel";
             case "channels":
                 return verb + "channel type";
+
+            case "date":
+                return "messages sent around a specific date";
+
             case "near":
                 return verb + "messages around";
 
@@ -937,6 +957,14 @@ export class Filter {
                     }
                     // Assume the operand is a partially formed name and return
                     // the operator as the channel name in the next block.
+                }
+                if (term.operator === "date") {
+                    return {
+                        type: "prefix_for_operator",
+                        prefix_for_operator:
+                            term.operand === "" ? prefix_for_operator : "messages sent around",
+                        operand: date_util.convert_date_str_to_description_date(term.operand),
+                    };
                 }
                 if (term.operator === "topic" && !is_operator_suggestion) {
                     return {
@@ -1123,18 +1151,23 @@ export class Filter {
     }
 
     public_terms(): NarrowTerm[] {
-        const safe_to_return = this._terms.filter(
+        const safe_to_return = this._terms.filter((term) => {
+            if (term.operator === "date") {
+                // We don't send the date as a part of the narrow
+                // while fetching messages or during other
+                // server interactions.
+                return false;
+            }
+            // TODO(stream_id): Ideally we have `page_params.narrow_stream_id`
+            if (page_params.narrow_stream === undefined || term.operator !== "channel") {
+                return true;
+            }
+
             // Filter out the embedded narrow (if any).
-            (term) => {
-                // TODO(stream_id): Ideally we have `page_params.narrow_stream_id`
-                if (page_params.narrow_stream === undefined || term.operator !== "channel") {
-                    return true;
-                }
-                const narrow_stream = stream_data.get_sub_by_name(page_params.narrow_stream);
-                assert(narrow_stream !== undefined);
-                return Number.parseInt(term.operand, 10) !== narrow_stream.stream_id;
-            },
-        );
+            const narrow_stream = stream_data.get_sub_by_name(page_params.narrow_stream);
+            assert(narrow_stream !== undefined);
+            return Number.parseInt(term.operand, 10) !== narrow_stream.stream_id;
+        });
         return safe_to_return;
     }
 
@@ -1246,6 +1279,7 @@ export class Filter {
             "not-channels-web-public",
             "near",
             "with",
+            "date",
         ]);
 
         for (const term of term_types) {
@@ -2082,16 +2116,22 @@ export class Filter {
     }
 
     get_stringified_narrow_for_server_query(): string {
-        return JSON.stringify(
-            this._terms.map((term) => {
-                if (term.operator === "channel") {
-                    return {
-                        ...term,
-                        operand: Number.parseInt(term.operand, 10),
-                    };
-                }
-                return term;
-            }),
-        );
+        // We work off `_terms` rather than `public_terms()` because the
+        // embedded-narrow stripping in `public_terms()` is specific to
+        // the client-side filter; the server query should include those
+        // terms. We do still drop `date`, since it travels to the server
+        // as the `anchor`/`anchor_date` parameters instead.
+        const filtered_terms = this._terms.filter((term) => term.operator !== "date");
+        const terms = filtered_terms.map((term) => {
+            if (term.operator === "channel") {
+                return {
+                    ...term,
+                    operand: Number.parseInt(term.operand, 10),
+                };
+            }
+            return term;
+        });
+
+        return JSON.stringify(terms);
     }
 }

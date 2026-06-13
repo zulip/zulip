@@ -134,6 +134,9 @@ export function is_an_allowed_web_public_narrow(
 export const allowed_web_public_narrow_operators = [
     "channels",
     "channel",
+    // This is sent as an anchor to the server rather
+    // than a narrow operator, but is part of the fragment.
+    "date",
     "streams",
     "stream",
     "topic",
