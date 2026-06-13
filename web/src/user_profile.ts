@@ -89,6 +89,11 @@ export type CustomProfileFieldData = {
     link?: string;
 };
 
+const avatar_upload_response_schema = z.object({
+    avatar_url: z.string(),
+    avatar_url_medium: z.string(),
+});
+
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
 let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
@@ -179,6 +184,12 @@ export function update_profile_modal_ui(
             "background-image",
             `url(${CSS.escape(people.medium_avatar_url_for_person(user))})`,
         );
+        if ($("#admin-user-avatar-upload-widget").length > 0) {
+            update_admin_user_avatar_widget(
+                people.medium_avatar_url_for_person(user),
+                user.avatar_source === "U",
+            );
+        }
     }
     if (new_data.delivery_email !== undefined) {
         $("#email .value").text(new_data.delivery_email ?? "");
@@ -1238,6 +1249,88 @@ function maybe_redirect_to_profile_panel(user_id: number, role: number): void {
     }
 }
 
+function update_admin_user_avatar_widget(
+    avatar_url_medium: string,
+    show_delete_button: boolean,
+): void {
+    $("#admin-user-avatar-upload-widget .image-block").attr("src", avatar_url_medium);
+    $("#admin-user-avatar-upload-widget .image-delete-button").toggle(show_delete_button);
+}
+
+function get_person_avatar_source(user_id: number, person: User): string | undefined {
+    if (people.is_my_user_id(user_id)) {
+        return person.avatar_source ?? current_user.avatar_source;
+    }
+
+    return person.avatar_source;
+}
+
+function set_person_avatar_source(user_id: number, avatar_source: string): void {
+    const person = people.maybe_get_user_by_id(user_id);
+    if (person !== undefined) {
+        person.avatar_source = avatar_source;
+    }
+    if (people.is_my_user_id(user_id)) {
+        current_user.avatar_source = avatar_source;
+    }
+}
+
+function display_admin_avatar_delete_complete(): void {
+    $("#admin-user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
+    $("#admin-user-avatar-upload-widget .image-upload-text").show();
+}
+
+function display_admin_avatar_delete_started(): void {
+    $("#admin-user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
+    $("#admin-user-avatar-upload-widget .image-upload-text").hide();
+    $("#admin-user-avatar-upload-widget .image-delete-button").hide();
+}
+
+function upload_admin_user_avatar(user_id: number, file: File): void {
+    const form_data = new FormData();
+
+    assert(csrf_token !== undefined);
+    form_data.append("csrfmiddlewaretoken", csrf_token);
+    form_data.append("file", file);
+    $("#admin-user-avatar-upload-widget-error").hide();
+
+    channel.post({
+        url: "/json/users/" + encodeURIComponent(user_id) + "/avatar",
+        data: form_data,
+        cache: false,
+        processData: false,
+        contentType: false,
+        success(raw_data) {
+            const data = avatar_upload_response_schema.parse(raw_data);
+            set_person_avatar_source(user_id, "U");
+            dialog_widget.close();
+            update_admin_user_avatar_widget(data.avatar_url_medium, true);
+        },
+        error(xhr) {
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+            dialog_widget.hide_dialog_spinner();
+        },
+    });
+}
+
+function delete_admin_user_avatar(user_id: number): void {
+    display_admin_avatar_delete_started();
+
+    channel.del({
+        url: "/json/users/" + encodeURIComponent(user_id) + "/avatar",
+        success(raw_data) {
+            const data = avatar_upload_response_schema.parse(raw_data);
+            set_person_avatar_source(user_id, realm.realm_default_avatar_source);
+            display_admin_avatar_delete_complete();
+            update_admin_user_avatar_widget(data.avatar_url_medium, false);
+        },
+        error() {
+            display_admin_avatar_delete_complete();
+            $("#admin-user-avatar-upload-widget .image-delete-button").show();
+        },
+    });
+}
+
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -1259,6 +1352,8 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         hide_deactivate_button,
         user_is_only_organization_owner,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
+        user_avatar_url: people.medium_avatar_url_for_person(person),
+        is_me: people.is_my_user_id(user_id),
     });
 
     $container.append($(modal_content_html));
@@ -1272,6 +1367,18 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             .hide();
     }
     disable_user_role_dropdown_if_needed(person);
+
+    if (!people.is_my_user_id(user_id)) {
+        avatar.build_admin_user_avatar_widget(
+            (file) => {
+                upload_admin_user_avatar(user_id, file);
+            },
+            () => {
+                delete_admin_user_avatar(user_id);
+            },
+            get_person_avatar_source(user_id, person) === "U",
+        );
+    }
 
     const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
     $(custom_profile_field_form_selector).empty();
