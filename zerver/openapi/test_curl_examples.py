@@ -22,7 +22,7 @@ from zerver.openapi.curl_param_value_generators import (
     AUTHENTICATION_LINE,
     assert_all_helper_functions_called,
 )
-from zerver.openapi.openapi import get_endpoint_from_operationid
+from zerver.openapi.openapi import get_endpoint_from_operationid, is_avatar_endpoint
 
 UNTESTED_GENERATED_CURL_EXAMPLES = {
     # Requires organization-specific JWT_AUTH_KEYS configuration.
@@ -65,6 +65,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     for endpoint in endpoints_to_test:
         article_name = endpoint + ".md"
         file_name = os.path.join(settings.DEPLOY_ROOT, "api_docs/", article_name)
+        is_redirect_endpoint: bool = False
 
         if os.path.exists(file_name):
             with open(file_name) as f:
@@ -84,6 +85,10 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             endpoint_string = endpoint_path + ":" + endpoint_method
             command = f"{{generate_code_example(curl)|{endpoint_string}|example}}"
             curl_commands_to_test = [command]
+            # We'll likely expand this to generally check whether the endpoint returns
+            # HTTP redirect instead of just checking if it's an avatar endpoint in the
+            # future.
+            is_redirect_endpoint = is_avatar_endpoint(endpoint_path, endpoint_method)
 
         for line in curl_commands_to_test:
             # To do an end-to-end test on the documentation examples
@@ -109,14 +114,35 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
                 # Turn the text into an arguments list.
                 generated_curl_command = [x for x in shlex.split(curl_command_text) if x != "\n"]
 
+                if is_redirect_endpoint and "-si" not in generated_curl_command:
+                    raise AssertionError(
+                        "Since these endpoints don't return a response body, consider adding the `-si` flag to show the HTTP response headers."
+                    )
+
                 response_json = None
                 response = None
+
+                # We currently don't support curl commands that use a shell pipe. The
+                # avatar endpoints use this to show the HTTP response headers by following
+                # the curl command with a grep command.
+                if "|" in generated_curl_command:
+                    pipe_index = generated_curl_command.index("|")
+                    generated_curl_command = generated_curl_command[:pipe_index]
+
                 try:
                     # We split this across two lines so if curl fails and
                     # returns non-JSON output, we'll still print it.
                     response_json = subprocess.check_output(generated_curl_command, text=True)
-                    response = json.loads(response_json)
-                    assert response["result"] == "success"
+                    if is_redirect_endpoint:
+                        # These endpoints don't return a JSON body, so the curl examples for these
+                        # typically just show the HTTP response headers.
+                        assert "HTTP/1.1 302 Found" in response_json
+                        # Currently, all curl examples for these endpoints look for the "Location"
+                        # field using a grep command.
+                        assert "Location:" in response_json
+                    else:
+                        response = json.loads(response_json)
+                        assert response["result"] == "success"
                 except (AssertionError, Exception):
                     error_template = """
 Error verifying the success of the API documentation curl example.
