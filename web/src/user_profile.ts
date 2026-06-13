@@ -37,7 +37,7 @@ import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget.ts";
-import {get_current_hash_category} from "./hash_parser.ts";
+import {get_current_hash_category, is_overlay_hash} from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
@@ -556,18 +556,21 @@ export function hide_user_profile(): void {
 }
 
 function on_user_profile_hide(): void {
-    const base = get_current_hash_category();
     // After closing the user profile, if the hash consists of `#user`
     // it means that it acts as an overlay rather than a modal (when
     // no other overlay is in the background). Hence, we also need to
     // update the hash when we close it.
-    if (base === "user") {
+    if (get_current_hash_category() === "user") {
         browser_history.exit_overlay();
     }
 }
 
 function show_manage_user_tab(target: string): void {
     toggler.goto(target);
+}
+
+export function update_user_profile_tab(tab_key: string): void {
+    toggler.goto(tab_key);
 }
 
 function initialize_user_type_fields(user: User): void {
@@ -740,6 +743,20 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
+
+    if (get_current_hash_category() === "user") {
+        // Hash is already #user/ID (no tab) from a click handler — replace it
+        // in history so we don't create an extra back-button step.
+        window.history.replaceState(
+            null,
+            "",
+            browser_history.get_full_url(hash_util.user_profile_url(user_id, default_tab_key)),
+        );
+    } else if (!is_overlay_hash(window.location.hash)) {
+        browser_history.set_hash_before_overlay(window.location.hash);
+        browser_history.update(hash_util.user_profile_url(user_id, default_tab_key));
+    }
+
     modals.open("user-profile-modal", {autoremove: true, on_hide: on_user_profile_hide});
     $(".tabcontent").hide();
     $("#user-profile-modal .dialog_submit_button").prop("disabled", true);
@@ -748,7 +765,11 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
 
     if (default_tab_key === "user-profile-streams-tab") {
         default_tab = 1;
-    } else if (default_tab_key === "manage-profile-tab") {
+    } else if (default_tab_key === "manage-profile-tab" && can_manage_profile) {
+        // Guard: the manage tab is only appended to opts.values when
+        // can_manage_profile is true. Without this check, direct navigation
+        // to #user/ID/manage by a non-admin passes selected=3 to the toggler
+        // with only 3 entries (indices 0-2), causing an out-of-range error.
         default_tab = 3;
     }
 
@@ -762,6 +783,9 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
             {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
         ],
         callback(_name: string | undefined, key: string) {
+            if (get_current_hash_category() === "user") {
+                browser_history.update(hash_util.user_profile_url(user.user_id, key));
+            }
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
             $("#user-profile-modal").removeClass("prevent-user-modal-content-scrolling");
