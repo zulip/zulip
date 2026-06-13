@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter, _ActionsContainer
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import reduce, wraps
 from typing import Any, Protocol
@@ -53,6 +54,32 @@ def abort_unless_locked(handle_func: HandleMethod) -> HandleMethod:
             handle_func(self, *args, **kwargs)
 
     return our_handle
+
+
+def abort_if_module_is_locked(
+    blocking_func: HandleMethod,
+) -> Callable[[HandleMethod], HandleMethod]:  # nocoverage
+    def decorator(handle_func: HandleMethod) -> HandleMethod:
+        @wraps(handle_func)
+        def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+            os.makedirs(settings.LOCKFILE_DIRECTORY, exist_ok=True)
+            blocking_name = blocking_func.__module__.split(".")[-1]
+            lockfile_path = settings.LOCKFILE_DIRECTORY + "/" + blocking_name + ".lock"
+            with lockfile_nonblocking(lockfile_path) as lock_acquired:
+                if not lock_acquired:  # nocoverage
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Process '{blocking_name}' is currently running "
+                            f"(lock {lockfile_path} is held). "
+                            f"Please wait until it has finished before trying again."
+                        )
+                    )
+                    sys.exit(1)
+                handle_func(self, *args, **kwargs)
+
+        return our_handle
+
+    return decorator
 
 
 def abort_cron_during_deploy(handle_func: HandleMethod) -> HandleMethod:
