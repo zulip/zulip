@@ -1307,3 +1307,44 @@ class TestCreateStreams(ZulipTestCase):
         self.assertNotEqual(
             stream_1.can_add_subscribers_group_id, stream_2.can_add_subscribers_group_id
         )
+
+    def test_create_stream_with_push_notifications_enabled(self) -> None:
+        """An admin can set push_notifications_enabled=True when creating a stream.
+        A non-admin cannot."""
+        admin = self.example_user("iago")
+        non_admin = self.example_user("hamlet")
+        realm = admin.realm
+
+        result = self.subscribe_via_post(
+            non_admin,
+            ["push_create_nonadmin"],
+            extra_post_data={"push_notifications_enabled": orjson.dumps(True).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Same guard on /channels/create.
+        result = self.create_channel_via_post(
+            non_admin,
+            name="push_create_nonadmin_v2",
+            extra_post_data={"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.subscribe_via_post(
+            admin,
+            ["push_create_admin"],
+            extra_post_data={"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        stream = get_stream("push_create_admin", realm)
+        self.assertTrue(stream.push_notifications_enabled)
+
+        # Verify the /channels/create endpoint also persists the field for admins.
+        result = self.create_channel_via_post(
+            admin,
+            name="push_create_via_channels_api",
+            extra_post_data={"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("push_create_via_channels_api", realm)
+        self.assertTrue(stream.push_notifications_enabled)

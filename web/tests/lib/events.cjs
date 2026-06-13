@@ -66,6 +66,7 @@ exports.test_streams = {
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        push_notifications_enabled: false,
         subscriber_count: 10,
     },
     test: {
@@ -93,6 +94,7 @@ exports.test_streams = {
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        push_notifications_enabled: false,
         subscriber_count: 2,
     },
 };
