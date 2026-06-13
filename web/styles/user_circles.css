@@ -19,3 +19,18 @@
 .user-circle-deactivated {
     color: var(--color-user-circle-deactivated);
 }
+.user-circle::before {
+    content: "";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 50%;
+}
+
+.user-circle-active::before {
+    background: var(--color-user-circle-active);
+}
+
+.user-circle-idle::before {
+    background: var(--gradient-user-circle-idle);
+}
