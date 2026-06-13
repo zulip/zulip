@@ -26880,11 +26880,13 @@ paths:
                   data:
                     type: string
                     description: |
-                      The message content, in raw [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format (not rendered to HTML).
+                      The message content, in raw [Zulip-flavored Markdown](/help/format-your-message-using-markdown)
+                      format (not rendered to HTML).
                   message:
                     type: object
                     description: |
-                      The full message object associated with the trigger.
+                      A dictionary containing details on the message that triggered the
+                      outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
                   text:
                     type: string
                     description: |
@@ -26898,10 +26900,6 @@ paths:
                     description: |
                       What aspect of the message triggered the outgoing webhook notification.
                       Possible values include `direct_message` and `mention`.
-                  message:
-                    description: |
-                      A dictionary containing details on the message that triggered the
-                      outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
                     allOf:
                       - $ref: "#/components/schemas/MessagesBase"
                       - additionalProperties: false
