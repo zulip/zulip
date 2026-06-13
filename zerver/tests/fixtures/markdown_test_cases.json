@@ -1080,6 +1080,11 @@
       "name": "explicit_link_asana_desktop",
       "input": "[Asana Task](asanadesktop://task/123456789)",
       "expected_output": "<p><a href=\"asanadesktop://task/123456789\">Asana Task</a></p>"
+    },
+    {
+      "name": "explicit_link_devonthink",
+      "input": "[DEVONthink Document](x-devonthink-item://AF54031A-0F3F-4E44-A5DB-B490E30648B6)",
+      "expected_output": "<p><a href=\"x-devonthink-item://AF54031A-0F3F-4E44-A5DB-B490E30648B6\">DEVONthink Document</a></p>"
     }
   ],
   "linkify_tests": [
@@ -1492,6 +1497,11 @@
       "Приветhttps://google.com",
       "<p>Привет<a href=\"https://google.com\">https://google.com</a></p>",
       "https://google.com"
+    ],
+    [
+      "x-devonthink-item://AF54031A-0F3F-4E44-A5DB-B490E30648B6",
+      "<p>%s</p>",
+      "x-devonthink-item://AF54031A-0F3F-4E44-A5DB-B490E30648B6"
     ]
   ]
 }

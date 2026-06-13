@@ -99,8 +99,16 @@ html_safelisted_schemes = (
     "xmpp",
     "zotero",
     "asanadesktop",
+    "x-devonthink-item",
 )
-auto_linked_schemes = ["https?", "hansoft", "obsidian", "zotero", "asanadesktop"]
+auto_linked_schemes = [
+    "https?",
+    "hansoft",
+    "obsidian",
+    "zotero",
+    "asanadesktop",
+    "x-devonthink-item",
+]
 allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
 
 
