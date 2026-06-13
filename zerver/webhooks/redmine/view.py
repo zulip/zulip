@@ -68,7 +68,7 @@ def handle_issue_opened(payload: WildValue) -> str:
 
 def handle_issue_updated(payload: WildValue) -> str:
     issue = payload["issue"]
-    author_name = _get_user_name(issue["author"])
+    author_name = _get_user_name(payload["journal"]["author"])
     issue_link = _get_issue_link(payload)
 
     journal_notes = ""
