@@ -747,6 +747,22 @@ export class Typeahead<ItemType extends string | object> {
                 e.preventDefault();
                 this.next();
                 break;
+
+            case "n":
+            case "N":
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    this.next();
+                }
+                break;
+
+            case "p":
+            case "P":
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    this.prev();
+                }
+                break;
         }
 
         this.maybeStopAdvance(e);
