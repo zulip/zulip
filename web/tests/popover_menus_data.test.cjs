@@ -32,6 +32,15 @@ function MessageListView() {
         clear_rendering_state: noop,
         get_row: () => ({
             find(selector) {
+                if (selector === ".message_content") {
+                    return {
+                        hasClass(class_name) {
+                            assert.equal(class_name, "condensed");
+                            return false;
+                        },
+                    };
+                }
+
                 assert.equal(selector, ".message_controls .reaction_button");
                 return {
                     length: 1,
