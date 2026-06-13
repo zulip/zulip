@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -264,9 +265,9 @@ export function get_add_reaction_button(message_id: number): JQuery {
     return $add_button;
 }
 
-export let set_reaction_vote_text = ($reaction: JQuery, vote_text: string): void => {
+export let set_reaction_vote_text = ($reaction: JQuery, vote_text_html: string): void => {
     const $count_element = $reaction.find(".message_reaction_count");
-    $count_element.text(vote_text);
+    $count_element.html(vote_text_html);
 };
 
 export function rewire_set_reaction_vote_text(value: typeof set_reaction_vote_text): void {
@@ -628,6 +629,7 @@ function make_clean_reaction({
         emoji_alt_code,
         is_realm_emoji,
         ...build_reaction_data(user_ids, emoji_name, should_display_reactors),
+        vote_text_html: get_vote_text(user_ids, should_display_reactors),
     };
 }
 
@@ -685,7 +687,27 @@ function get_reaction_counts_and_user_ids(message: Message): ReactionUserIdAndCo
 
 export function get_vote_text(user_ids: number[], should_display_reactors: boolean): string {
     if (should_display_reactors) {
-        return comma_separated_usernames(user_ids);
+        const sorted_ids = user_ids.toSorted((a, b) => {
+            if (people.is_my_user_id(a)) {
+                return -1;
+            }
+            if (people.is_my_user_id(b)) {
+                return 1;
+            }
+            return 0;
+        });
+
+        return sorted_ids
+            .map((id) => {
+                let name;
+                if (people.is_my_user_id(id)) {
+                    name = $t({defaultMessage: "You"});
+                } else {
+                    name = people.get_by_user_id(id).full_name;
+                }
+                return `<span class="reaction-author-name">${_.escape(name)}</span>`;
+            })
+            .join(", ");
     }
     return `${user_ids.length}`;
 }
@@ -704,20 +726,6 @@ function check_should_display_reactors(
     return total_reactions <= 3;
 }
 
-function comma_separated_usernames(user_list: number[]): string {
-    const usernames = people.get_display_full_names(user_list);
-    const current_user_has_reacted = user_list.includes(current_user.user_id);
-
-    if (current_user_has_reacted) {
-        const current_user_index = user_list.indexOf(current_user.user_id);
-        usernames[current_user_index] = $t({
-            defaultMessage: "You",
-        });
-    }
-    const comma_separated_usernames = usernames.join(", ");
-    return comma_separated_usernames;
-}
-
 export let update_vote_text_on_message = (message: Message): void => {
     // Because whether we display a count or the names of reacting
     // users depends on total reactions on the message, we need to
@@ -731,7 +739,7 @@ export let update_vote_text_on_message = (message: Message): void => {
         const vote_text = get_vote_text(clean_reaction.user_ids, should_display_reactors);
         const message_clean_reaction = message.clean_reactions.get(reaction);
         assert(message_clean_reaction !== undefined);
-        message_clean_reaction.vote_text = vote_text;
+        message_clean_reaction.vote_text_html = vote_text;
         set_reaction_vote_text(reaction_elem, vote_text);
     }
 };
