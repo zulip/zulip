@@ -145,6 +145,12 @@
         margin: 4px 0;
         max-height: min(248px, 95vh);
         overflow-y: auto;
+        mask-image: linear-gradient(
+            to bottom,
+            hsl(0deg 0% 0%) 90%,
+            transparent 100%
+        );
+        padding-bottom: 15px;
     }
 
     .typeahead-footer {
