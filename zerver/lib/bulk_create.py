@@ -18,6 +18,7 @@ from zerver.models import (
     RealmUserDefault,
     Recipient,
     Stream,
+    UserAPIKey,
     UserGroupMembership,
     UserProfile,
 )
@@ -86,12 +87,14 @@ def bulk_create_users(
         profiles_to_create.append(profile)
 
     if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        UserProfile.objects.bulk_create(profiles_to_create)
+        created_profiles = UserProfile.objects.bulk_create(profiles_to_create)
+        create_api_keys_for_users(created_profiles)
     else:
         for user_profile in profiles_to_create:
             user_profile.email = user_profile.delivery_email
 
-        UserProfile.objects.bulk_create(profiles_to_create)
+        created_profiles = UserProfile.objects.bulk_create(profiles_to_create)
+        create_api_keys_for_users(created_profiles)
 
         for user_profile in profiles_to_create:
             user_profile.email = get_display_email_address(user_profile)
@@ -216,3 +219,14 @@ def create_users(
 ) -> None:
     user_set = {(email, full_name, True) for full_name, email in name_list}
     bulk_create_users(realm, user_set, bot_type)
+
+
+def create_api_keys_for_users(users: Iterable[UserProfile]) -> None:
+    UserAPIKey.objects.bulk_create(
+        [
+            UserAPIKey(
+                user=user, description=UserAPIKey.LEGACY_API_KEY_DESCRIPTION, is_revoked=False
+            )
+            for user in users
+        ]
+    )

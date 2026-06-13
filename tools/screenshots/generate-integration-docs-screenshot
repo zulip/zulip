@@ -12,6 +12,8 @@ from urllib.parse import parse_qsl, urlencode
 
 import zulip
 
+from zerver.lib.users import get_api_key
+
 SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
 TOOLS_DIR = os.path.abspath(os.path.dirname(SCREENSHOTS_DIR))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
@@ -190,14 +192,14 @@ def send_bot_payload_message(
     if config.custom_headers:
         headers.update(config.custom_headers)
     if config.use_basic_auth:
-        credentials = base64.b64encode(f"{bot.email}:{bot.api_key}".encode()).decode()
+        credentials = base64.b64encode(f"{bot.email}:{get_api_key(bot)}".encode()).decode()
         auth = f"basic {credentials}"
         headers.update(dict(Authorization=auth))
 
     assert isinstance(bot.bot_owner, UserProfile)
     channel_name = config.channel or integration.name
     url = f"{bot.bot_owner.realm.url}/{integration.url}"
-    params = {"api_key": bot.api_key, "stream": channel_name}
+    params = {"api_key": get_api_key(bot), "stream": channel_name}
     params.update(config.extra_params)
 
     extra_args = {}
@@ -248,7 +250,7 @@ def send_bot_mock_message(bot: UserProfile, channel: str, topic: str, message: s
     Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
     assert bot.bot_owner is not None
     url = f"{bot.bot_owner.realm.url}"
-    client = zulip.Client(email=bot.email, api_key=bot.api_key, site=url)
+    client = zulip.Client(email=bot.email, api_key=get_api_key(bot), site=url)
 
     request = {"type": "stream", "to": channel, "topic": topic, "content": message}
     client.send_message(request)

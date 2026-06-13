@@ -5,7 +5,7 @@ from typing import Any
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import UserProfile
+from zerver.models import UserAPIKey, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user_by_delivery_email
 
@@ -27,7 +27,15 @@ class Command(ZulipBaseCommand):
         try:
             realm = get_realm("zulip")
             user_profile = get_user_by_delivery_email(email, realm)
-            user_profile.api_key = api_key
-            user_profile.save(update_fields=["api_key"])
+
+            UserAPIKey.objects.filter(user=user_profile, is_revoked=False).update(is_revoked=True)
+
+            UserAPIKey.objects.create(
+                user=user_profile,
+                api_key=api_key,
+                description="Synced from ~/.zuliprc",
+                is_revoked=False,
+            )
+
         except UserProfile.DoesNotExist:
             print(f"User {email} does not exist; not syncing API key")

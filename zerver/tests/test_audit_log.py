@@ -101,6 +101,7 @@ from zerver.models import (
     RealmPlayground,
     Recipient,
     Subscription,
+    UserAPIKey,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
@@ -417,7 +418,8 @@ class TestRealmAuditLog(ZulipTestCase):
             ).count(),
             1,
         )
-        self.assertTrue(user.api_key)
+        api_keys = UserAPIKey.objects.filter(user=user, is_revoked=False).first()
+        self.assertTrue(api_keys)
 
     def test_get_streams_traffic(self) -> None:
         realm = get_realm("zulip")

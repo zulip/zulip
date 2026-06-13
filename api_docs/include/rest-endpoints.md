@@ -123,6 +123,7 @@
 * [Regenerate your API key](/api/regenerate-api-key)
 * [Get a bot's API key](/api/get-bot-api-key)
 * [Regenerate a bot's API key](/api/regenerate-bot-api-key)
+* [Revoke an API key](/api/revoke-api-key)
 
 ## Invitations
 
@@ -194,3 +195,4 @@
 * [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
 * [Create Webex video call](/api/create-webex-video-call)
 * [Outgoing webhook payloads](/api/outgoing-webhook-payload)
+* [Get API keys](/api/get-api-keys)

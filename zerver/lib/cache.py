@@ -24,7 +24,16 @@ from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
-    from zerver.models import Attachment, Message, MutedUser, Realm, Stream, SubMessage, UserProfile
+    from zerver.models import (
+        Attachment,
+        Message,
+        MutedUser,
+        Realm,
+        Stream,
+        SubMessage,
+        UserAPIKey,
+        UserProfile,
+    )
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
@@ -569,7 +578,6 @@ def get_realm_system_groups_cache_key(realm_id: int) -> str:
 
 
 bot_dict_fields: list[str] = [
-    "api_key",
     "avatar_source",
     "avatar_version",
     "bot_owner_id",
@@ -591,13 +599,21 @@ def bot_dicts_in_realm_cache_key(realm_id: int) -> str:
 
 def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm_id: int) -> None:
     # Imported here to avoid cyclic dependency.
-    from zerver.models.users import is_cross_realm_bot_email
+    from zerver.models.users import UserAPIKey, is_cross_realm_bot_email
+
+    user_profiles_list = list(user_profiles)
+    user_ids = [user_profile.id for user_profile in user_profiles_list]
+
+    api_keys_by_user: dict[int, list[str]] = {}
+    for user_api_key in UserAPIKey.objects.filter(user_id__in=user_ids):
+        api_keys_by_user.setdefault(user_api_key.user_id, []).append(user_api_key.api_key)
 
     def user_profile_key_iterator() -> Iterator[str]:
-        for user_profile in user_profiles:
+        for user_profile in user_profiles_list:
             yield user_profile_by_id_cache_key(user_profile.id)
             yield user_profile_narrow_by_id_cache_key(user_profile.id)
-            yield user_profile_by_api_key_cache_key(user_profile.api_key)
+            for api_key in api_keys_by_user.get(user_profile.id, []):
+                yield user_profile_by_api_key_cache_key(api_key)
             yield user_profile_by_email_realm_id_cache_key(user_profile.email, realm_id)
             yield user_profile_delivery_email_cache_key(user_profile.delivery_email, realm_id)
             if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
@@ -660,6 +676,19 @@ def bulk_flush_users(
 
     if changed(update_fields, ["email", "full_name", "id", "is_mirror_dummy"]):
         delete_display_recipient_cache(user_profiles)
+
+
+def flush_bot_api_key(
+    *,
+    instance: "UserAPIKey",
+    **kwargs: object,
+) -> None:
+    user = instance.user
+
+    if not user.is_bot:
+        return
+
+    flush_user_profile(instance=user)
 
 
 # Called by models/users.py to flush the user_profile cache whenever we save
