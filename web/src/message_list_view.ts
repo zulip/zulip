@@ -401,7 +401,6 @@ export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
-    subscription_markers: SubscriptionMarkers | undefined,
 ): MessageGroup {
     const is_stream = message.is_stream;
     const is_private = message.is_private;
@@ -426,7 +425,6 @@ export function populate_group_from_message(
             is_stream,
             ...get_topic_edit_properties(message),
             user_can_resolve_topic: stream_data.can_resolve_topics(sub),
-            ...subscription_markers,
             date_html,
             display_recipient,
             date_unchanged,
@@ -977,10 +975,6 @@ export class MessageListView {
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
                 !same_year(message_for_next_group, prev_message),
-                // Subscription-status bookends are filled in afterward by
-                // set_subscription_dividers_and_markers, which also needs the
-                // boundary against already-rendered messages.
-                undefined,
             );
         };
 
@@ -1846,7 +1840,6 @@ export class MessageListView {
                 group.message_containers[0]!.msg,
                 group.date_unchanged,
                 group.message_containers[0]!.year_changed,
-                undefined,
             ),
             // We don't want `populate_group_from_message` to generate a
             // new id. We also preserve the message containers, since this
