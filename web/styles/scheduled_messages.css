@@ -39,4 +39,8 @@
     font-size: 1em;
     line-height: var(--base-line-height-unitless);
     font-family: inherit;
+
+    &:focus {
+        border-color: var(--focus-border-color-textarea);
+    }
 }

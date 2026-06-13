@@ -2189,11 +2189,16 @@ body:not(.spectator-view) {
         margin: 4px 4px 2px;
 
         &:focus {
-            background: hsl(0deg 0% 100%);
-            border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
-            box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
+            background: var(--color-background-input-focus);
+            border: 1px solid var(--color-outline-input-focus);
+            box-shadow: 0 0 6px var(--color-box-shadow-input-focus);
         }
     }
+}
+
+select option {
+    background-color: var(--color-background-select-option);
+    color: var(--color-text-select-option);
 }
 
 .dropdown-list-container {
