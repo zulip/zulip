@@ -10,6 +10,7 @@ zxcvbnOptions.setOptions({
         ...zxcvbnCommonPackage.dictionary,
         ...zxcvbnEnPackage.dictionary,
     },
+    graphs: zxcvbnCommonPackage.adjacencyGraphs,
 });
 
 // Note: this module is loaded asynchronously from the app with
