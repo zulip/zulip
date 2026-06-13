@@ -418,6 +418,13 @@ class AbstractReaction(AbstractEmoji):
 class Reaction(AbstractReaction):
     message = models.ForeignKey(Message, on_delete=CASCADE)
 
+    class Meta(AbstractReaction.Meta):
+        indexes = [
+            models.Index(
+                fields=["emoji_code", "message"], name="zerver_reaction_emoji_code_message_id"
+            ),
+        ]
+
     @override
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
