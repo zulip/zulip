@@ -1,0 +1,22 @@
+{
+    "type": "QUOTA_EXCEED",
+    "occur_at": 1571334980,
+    "event_data": {
+        "resources": [
+            {
+                "digest": "sha256:d72f37f783ed6a8d58ac70b4db052707d1ec9d4ea010ef5ccd84652faf9ed844"
+            }
+        ],
+        "repository": {
+            "date_created": 1571334632,
+            "name": "app",
+            "namespace": "myproject",
+            "repo_full_name": "myproject/app",
+            "repo_type": "private"
+        },
+        "custom_attributes": {
+            "Details": "adding 2.1 MiB of storage resource, which when updated to current usage of 97.9 MiB will exceed the configured upper limit of 100.0 MiB"
+        }
+    },
+    "operator": "admin"
+}
