@@ -696,6 +696,122 @@ test("merge_message_groups", ({mock_template}) => {
         assert.ok(!list._message_groups[1].message_containers[0].want_subscription_status_divider);
     })();
 
+    // Messages moved here from another channel carry a `historical` flag
+    // that is meaningless in this channel, so they must not trigger
+    // subscription-status dividers or bookends.
+    function build_moved_message_context(message = {}) {
+        // prev_stream differs from the default stream_id (2), marking the
+        // message as moved here from another channel.
+        return build_message_context({
+            edit_history: [{prev_stream: 999}],
+            ...message,
+        });
+    }
+
+    (function test_append_moved_message_skips_subscription_divider() {
+        const moved_message = build_moved_message_context({historical: true});
+        const message_group1 = build_message_group([moved_message]);
+
+        const message2 = build_message_context({historical: false});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([message_group1]);
+        list.merge_message_groups([message_group2], "bottom");
+
+        assert.ok(!message2.want_subscription_status_divider);
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([moved_message, message2]),
+        ]);
+    })();
+
+    (function test_moved_message_never_gets_subscription_divider() {
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([message1]);
+
+        const moved_message = build_moved_message_context({historical: true});
+        const message_group2 = build_message_group([moved_message]);
+
+        const list = build_list([message_group1]);
+        list.merge_message_groups([message_group2], "bottom");
+
+        // Assert the groups joined, so the divider check can't pass
+        // vacuously on an unset field.
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message1, moved_message]),
+        ]);
+        assert.equal(moved_message.want_subscription_status_divider, false);
+    })();
+
+    (function test_moved_last_message_skips_subscription_bookend() {
+        // When the groups do not join (different topic), the transition is
+        // shown as a group bookend; a moved message must not trigger it.
+        const moved_message = build_moved_message_context({historical: true});
+        const message_group1 = build_message_group([moved_message]);
+
+        const message2 = build_message_context({historical: false, topic: "Test topic 2"});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([message_group1]);
+        list.merge_message_groups([message_group2], "bottom");
+
+        assert.equal(message_group2.bookend_top, undefined);
+        assert.equal(message_group2.subscribed, undefined);
+        assert.equal(message_group2.just_unsubscribed, undefined);
+    })();
+
+    (function test_moved_first_message_skips_subscription_bookend() {
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([message1]);
+
+        const moved_message = build_moved_message_context({
+            historical: true,
+            topic: "Test topic 2",
+        });
+        const message_group2 = build_message_group([moved_message]);
+
+        const list = build_list([message_group1]);
+        list.merge_message_groups([message_group2], "bottom");
+
+        assert.equal(message_group2.bookend_top, undefined);
+        assert.equal(message_group2.just_unsubscribed, undefined);
+    })();
+
+    (function test_message_moved_back_to_original_channel() {
+        // A message moved away and then back to its current channel carries
+        // a meaningful historical flag, so it is treated as a normal message.
+        const moved_back_message = build_message_context({
+            historical: true,
+            edit_history: [{prev_stream: 2}],
+        });
+        const message_group1 = build_message_group([moved_back_message]);
+
+        const message2 = build_message_context({historical: false});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([message_group1]);
+        list.merge_message_groups([message_group2], "bottom");
+
+        assert.ok(message2.want_subscription_status_divider);
+    })();
+
+    (function test_prepend_moved_message_skips_subscription_bookend() {
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([message1]);
+
+        const moved_message = build_moved_message_context({
+            historical: true,
+            topic: "Test topic 2",
+        });
+        const message_group2 = build_message_group([moved_message]);
+
+        const list = build_list([message_group1]);
+        list.merge_message_groups([message_group2], "top");
+
+        // The bookend, if any, is added to the existing (lower) group.
+        assert.equal(message_group1.bookend_top, undefined);
+        assert.equal(message_group1.subscribed, undefined);
+    })();
+
     (function test_append_message_same_topic_me_message() {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
@@ -832,6 +948,74 @@ test("merge_message_groups", ({mock_template}) => {
         assert.ok(!list._message_groups[1].message_containers[0].want_subscription_status_divider);
         assert.ok(list._message_groups[1].message_containers[1].want_subscription_status_divider);
     })();
+});
+
+test("last_message_historical", () => {
+    // get_last_message_historical() feeds the trailing bookend, which
+    // must infer subscription status from the newest message whose
+    // `historical` flag is meaningful in this channel, skipping
+    // messages moved here from another channel.
+    function build_message_container(message = {}) {
+        return {
+            msg: {
+                id: _.uniqueId("test_message_"),
+                type: "stream",
+                stream_id: 2,
+                ...message,
+            },
+        };
+    }
+
+    function build_list(message_groups) {
+        const list = new MessageListView({id: 1}, true, true);
+        list._message_groups = message_groups;
+        return list;
+    }
+
+    // The newest message's flag is used directly when it is meaningful.
+    let list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: false}),
+                build_message_container({historical: true}),
+            ],
+        },
+    ]);
+    assert.equal(list.get_last_message_historical(), true);
+
+    // Moved messages are skipped, across group boundaries.
+    list = build_list([
+        {message_containers: [build_message_container({historical: false})]},
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 999}]}),
+            ],
+        },
+    ]);
+    assert.equal(list.get_last_message_historical(), false);
+
+    // A message moved back to its original channel has a meaningful flag.
+    list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 2}]}),
+            ],
+        },
+    ]);
+    assert.equal(list.get_last_message_historical(), true);
+
+    // With no meaningful flag at all, the status is unknown.
+    list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 999}]}),
+            ],
+        },
+    ]);
+    assert.equal(list.get_last_message_historical(), undefined);
+
+    list = build_list([]);
+    assert.equal(list.get_last_message_historical(), undefined);
 });
 
 test("render_windows", ({mock_template}) => {

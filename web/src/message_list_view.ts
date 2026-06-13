@@ -195,6 +195,22 @@ function clear_message_divider(message_container: MessageContainer): void {
     message_container.date_divider_html = undefined;
 }
 
+function was_moved_from_another_channel(message: Message): boolean {
+    // A moved message's `historical` flag reflects the channel it was
+    // originally sent to, so it says nothing about the user's
+    // subscription history in the current channel.
+    if (message.type !== "stream") {
+        return false;
+    }
+    // edit_history is newest-first, so the oldest stream-move entry's
+    // prev_stream is the original channel; a message moved back there
+    // has a meaningful flag again.
+    const original_stream_id = message.edit_history?.findLast(
+        (entry) => entry.prev_stream !== undefined,
+    )?.prev_stream;
+    return original_stream_id !== undefined && original_stream_id !== message.stream_id;
+}
+
 function update_message_divider(opts: {
     prev_msg_container: MessageContainer | undefined;
     curr_msg_container: MessageContainer;
@@ -223,8 +239,12 @@ function get_message_divider_data(opts: {
     const display_year = opts.display_year;
     let want_subscription_status_divider = false;
 
-    if (prev_message) {
-        want_subscription_status_divider = prev_message?.historical !== curr_message.historical;
+    if (
+        prev_message !== undefined &&
+        !was_moved_from_another_channel(prev_message) &&
+        !was_moved_from_another_channel(curr_message)
+    ) {
+        want_subscription_status_divider = prev_message.historical !== curr_message.historical;
     }
 
     if (!prev_message || same_day(curr_message, prev_message)) {
@@ -704,7 +724,11 @@ export class MessageListView {
         if (!this.list.data.filter.has_operator("channel")) {
             return undefined;
         }
-        if (last_message === undefined) {
+        if (
+            last_message === undefined ||
+            was_moved_from_another_channel(last_message) ||
+            was_moved_from_another_channel(first_message)
+        ) {
             return undefined;
         }
 
@@ -731,6 +755,15 @@ export class MessageListView {
         }
 
         return undefined;
+    }
+
+    get_last_message_historical(): boolean | undefined {
+        // The `historical` flag of the newest rendered message whose flag
+        // is meaningful in this channel, or undefined if there is none.
+        return this._message_groups
+            .flatMap((message_group) => message_group.message_containers)
+            .findLast((message_container) => !was_moved_from_another_channel(message_container.msg))
+            ?.msg.historical;
     }
 
     build_message_groups(messages: Message[]): MessageGroup[] {
@@ -1285,12 +1318,6 @@ export class MessageListView {
 
         restore_scroll_position();
 
-        const last_message_group = this._message_groups.at(-1);
-        if (last_message_group !== undefined) {
-            list.last_message_historical =
-                last_message_group.message_containers.at(-1)!.msg.historical;
-        }
-
         list.update_trailing_bookend();
 
         if (list === message_lists.current) {
@@ -1469,7 +1496,6 @@ export class MessageListView {
         if (clear_table) {
             this.clear_table();
         }
-        this.list.last_message_historical = false;
 
         this._render_win_start = 0;
         this._render_win_end = 0;
