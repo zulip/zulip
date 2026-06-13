@@ -3444,6 +3444,147 @@ class SubscriptionRestApiTest(ZulipTestCase):
         streams = self.get_streams(user)
         self.assertTrue("my_test_stream_1" not in streams)
 
+    def test_basic_add_delete_by_id(self) -> None:
+        """Test that the PATCH endpoint accepts stream IDs in the delete list."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        # add by name (stream creation always uses name)
+        request = {
+            "add": orjson.dumps([{"name": "my_test_stream_by_id"}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+        streams = self.get_streams(user)
+        self.assertIn("my_test_stream_by_id", streams)
+
+        # get the stream ID
+        stream = get_stream("my_test_stream_by_id", user.realm)
+
+        # delete by ID
+        request = {
+            "delete": orjson.dumps([stream.id]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+        streams = self.get_streams(user)
+        self.assertNotIn("my_test_stream_by_id", streams)
+
+    def test_subscribe_by_stream_id(self) -> None:
+        """Test that POST /users/me/subscriptions accepts stream_id in dicts."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        # First, create the stream by subscribing via name.
+        request = {
+            "add": orjson.dumps([{"name": "test_sub_by_id_stream"}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        stream = get_stream("test_sub_by_id_stream", user.realm)
+
+        # Unsubscribe first so we can re-subscribe by ID.
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([stream.id]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertNotIn("test_sub_by_id_stream", self.get_streams(user))
+
+        # Now subscribe by stream_id only (no name).
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"stream_id": stream.id}]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertIn("test_sub_by_id_stream", self.get_streams(user))
+
+    def test_subscribe_by_stream_id_via_patch(self) -> None:
+        """Test that PATCH add accepts stream_id in subscription dicts."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        # Create the stream.
+        request = {
+            "add": orjson.dumps([{"name": "test_patch_sub_by_id"}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        stream = get_stream("test_patch_sub_by_id", user.realm)
+
+        # Unsubscribe so we can re-subscribe via PATCH.
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([stream.id]).decode()},
+        )
+        self.assert_json_success(result)
+
+        # Re-subscribe by stream_id via PATCH.
+        request = {
+            "add": orjson.dumps([{"stream_id": stream.id}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+        self.assertIn("test_patch_sub_by_id", self.get_streams(user))
+
+    def test_unsubscribe_by_stream_id(self) -> None:
+        """Test that DELETE /users/me/subscriptions accepts stream IDs."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream_name = "test_unsub_by_id"
+        self.make_stream(stream_name)
+        self.subscribe(user, stream_name)
+
+        stream = get_stream(stream_name, user.realm)
+
+        # Unsubscribe using stream ID
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([stream.id]).decode()},
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+        self.assertEqual(json["removed"][0], stream_name)
+
+    def test_unsubscribe_by_invalid_stream_id(self) -> None:
+        """Test that unsubscribing with a non-existent stream ID returns an error."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        # Use a stream ID that doesn't exist
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([99999]).decode()},
+        )
+        self.assert_json_error(result, "Invalid channel ID: 99999")
+
+    def test_unsubscribe_by_mixed_id_and_name(self) -> None:
+        """Test that a single unsubscribe call can mix stream IDs and names."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream_name_1 = "mixed_unsub_stream_1"
+        stream_name_2 = "mixed_unsub_stream_2"
+        self.make_stream(stream_name_1)
+        self.make_stream(stream_name_2)
+        self.subscribe(user, stream_name_1)
+        self.subscribe(user, stream_name_2)
+
+        stream_1 = get_stream(stream_name_1, user.realm)
+
+        # Unsubscribe: stream_1 by ID, stream_2 by name
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([stream_1.id, stream_name_2]).decode()},
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 2)
+        self.assertIn(stream_name_1, json["removed"])
+        self.assertIn(stream_name_2, json["removed"])
+
     def test_add_with_color(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -3522,7 +3663,10 @@ class SubscriptionRestApiTest(ZulipTestCase):
             ["foo"],
             "Invalid add[0]: Input should be a valid dictionary or instance of AddSubscriptionData",
         )
-        check_for_error([{"bogus": "foo"}], 'add[0]["name"] field is missing: Field required')
+        check_for_error(
+            [{"bogus": "foo"}],
+            'Invalid add[0]: Value error, One of "name" or "stream_id" must be provided',
+        )
         check_for_error([{"name": {}}], 'add[0]["name"] is not a string')
 
     def test_bad_principals(self) -> None:
@@ -3544,7 +3688,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([{"name": "my_test_stream_1"}]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "delete[0] is not a string")
+        self.assert_json_error(result, 'delete[0]["str"] is not a string')
 
     def test_add_or_delete_not_specified(self) -> None:
         user = self.example_user("hamlet")
