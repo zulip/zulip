@@ -1042,6 +1042,7 @@ function setup_page(callback: () => void): void {
             has_billing_access: settings_data.user_has_billing_access(),
             is_admin: current_user.is_admin,
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
+            message_content_allowed_in_email_notifications: true,
         };
 
         const rendered = render_stream_settings_overlay(template_data);

@@ -59,11 +59,16 @@ function update_stream_setting(
         | "email_notifications"
         | "wildcard_mentions_notify"
         | "pin_to_top"
-        | "is_recently_active",
+        | "is_recently_active"
+        | "message_content_allowed_in_email_notifications",
 ): void {
     const $setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id.toString())}`);
     $setting_checkbox.prop("checked", value);
-    if (setting === "pin_to_top" || setting === "is_recently_active") {
+    if (
+        setting === "pin_to_top" ||
+        setting === "is_recently_active" ||
+        setting === "message_content_allowed_in_email_notifications"
+    ) {
         assert(value !== null);
         sub[setting] = value;
         return;
@@ -235,6 +240,13 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             stream_settings_ui.update_channel_folder(sub, value);
             channel_folders_ui.update_channel_folder_channels_list(stream_id, value);
             recent_view_ui.complete_rerender();
+        },
+        message_content_allowed_in_email_notifications(value) {
+            update_stream_setting(sub, value, "message_content_allowed_in_email_notifications");
+            stream_ui_updates.update_setting_element(
+                sub,
+                "message_content_allowed_in_email_notifications",
+            );
         },
     };
 

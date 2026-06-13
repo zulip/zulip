@@ -2763,6 +2763,41 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
+    def test_change_message_content_allowed_in_email_notifications(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        self.subscribe(user_profile, "stream_name1")
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            stream_id = get_stream("stream_name1", realm).id
+            result = self.client_patch(
+                f"/json/streams/{stream_id}",
+                {"message_content_allowed_in_email_notifications": orjson.dumps(False).decode()},
+            )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.message_content_allowed_in_email_notifications, False)
+
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                op="update",
+                type="stream",
+                property="message_content_allowed_in_email_notifications",
+                value=False,
+                stream_id=stream_id,
+                name="stream_name1",
+            ),
+        )
+        notified_user_ids = set(events[0]["users"])
+
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
+        self.assertIn(user_profile.id, notified_user_ids)
+        self.assertIn(self.example_user("prospero").id, notified_user_ids)
+        self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
+
     def test_notification_on_changing_stream_posting_permission(self) -> None:
         desdemona = self.example_user("desdemona")
         realm = desdemona.realm

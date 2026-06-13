@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import one_click_unsubscribe_link
 from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_deactivate_stream, do_set_stream_property
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.digest import (
     DigestTopic,
@@ -630,6 +630,133 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(kwargs["context"]["message_content_disabled_by_realm"], True)
         self.assertEqual(kwargs["context"]["new_streams_count"], 1)
         self.assertEqual(kwargs["context"]["new_messages_count"], new_messages_count)
+
+    @mock.patch("zerver.lib.digest.send_future_email")
+    def test_email_digest_when_message_content_is_disabled_in_stream(
+        self, mock_send_future_email: mock.MagicMock
+    ) -> None:
+        Message.objects.all().delete()
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        cutoff_date = timezone_now() - timedelta(days=5)
+        cutoff = time.mktime(cutoff_date.timetuple())
+
+        # Make all existing streams appear old
+        Stream.objects.all().update(date_created=cutoff_date - timedelta(days=2))
+
+        denmark = get_stream("Denmark", realm)
+        verona = get_stream("Verona", realm)
+        # Make these two streams appear to be new.
+        denmark.date_created = timezone_now() - timedelta(days=2)
+        denmark.save()
+        verona.date_created = timezone_now() - timedelta(days=2)
+        verona.save()
+
+        self.assertTrue(denmark.message_content_allowed_in_email_notifications)
+        do_set_stream_property(
+            verona,
+            "message_content_allowed_in_email_notifications",
+            False,
+            acting_user=self.example_user("iago"),
+        )
+
+        self.subscribe(othello, "Denmark")
+        self.subscribe(othello, "Verona")
+
+        # Backdate subscription audit logs so get_user_stream_map includes them
+        RealmAuditLog.objects.filter(
+            modified_user=othello,
+            modified_stream__in=[denmark, verona],
+            event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
+        ).update(event_time=cutoff_date - timedelta(days=1))
+
+        self.assertTrue(realm.message_content_allowed_in_email_notifications)
+
+        senders = ["hamlet", "cordelia", "default_bot"]
+        self.simulate_stream_conversation("Denmark", senders)
+        self.simulate_stream_conversation("Verona", senders)
+
+        # When this test is run in isolation, one additional query is run which
+        # is equivalent to
+        # ContentType.objects.get(app_label='zerver', model='userprofile')
+        # This code is run when we call `confirmation.models.create_confirmation_link`.
+        # To trigger this, we call the one_click_unsubscribe_link function below.
+        one_click_unsubscribe_link(othello, "digest")
+        # Clear the LRU cache on the stream topics
+        get_recent_topics.cache_clear()
+        with self.assert_database_query_count(9):
+            bulk_handle_digest_email([othello.id], cutoff)
+
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        kwargs = mock_send_future_email.call_args[1]
+        self.assertEqual(kwargs["context"]["show_message_content"], True)
+        self.assertEqual(kwargs["context"]["message_content_disabled_by_realm"], False)
+        self.assertEqual(kwargs["context"]["message_content_disabled_by_all_channels"], False)
+        self.assertEqual(kwargs["context"]["new_streams_count"], 2)
+        self.assertEqual(kwargs["context"]["new_messages_count"], 0)
+        self.assertIn("new_channels", kwargs["context"])
+        # Check conversation from only one channel is included.
+        self.assert_length(kwargs["context"]["hot_conversations"], 1)
+        hot_convo = kwargs["context"]["hot_conversations"][0]
+        header = hot_convo["first_few_messages"].header.html
+        self.assertIn("Denmark", header)
+        self.assertNotIn("Verona", header)
+
+        do_set_stream_property(
+            verona,
+            "message_content_allowed_in_email_notifications",
+            True,
+            acting_user=self.example_user("iago"),
+        )
+
+        with self.assert_database_query_count(7):
+            bulk_handle_digest_email([othello.id], cutoff)
+
+        self.assertEqual(mock_send_future_email.call_count, 2)
+        kwargs = mock_send_future_email.call_args[1]
+        self.assertEqual(kwargs["context"]["show_message_content"], True)
+        self.assertEqual(kwargs["context"]["message_content_disabled_by_realm"], False)
+        self.assertEqual(kwargs["context"]["message_content_disabled_by_all_channels"], False)
+        self.assertEqual(kwargs["context"]["new_streams_count"], 2)
+        self.assertEqual(kwargs["context"]["new_messages_count"], 0)
+        self.assertIn("new_channels", kwargs["context"])
+        # Check conversation from both the channels are included.
+        self.assert_length(kwargs["context"]["hot_conversations"], 2)
+        hot_convo = kwargs["context"]["hot_conversations"][0]
+        header = hot_convo["first_few_messages"].header.html
+        self.assertIn("Denmark", header)
+        hot_convo = kwargs["context"]["hot_conversations"][1]
+        header = hot_convo["first_few_messages"].header.html
+        self.assertIn("Verona", header)
+
+        # If none of the streams allows content in emails, then
+        # we include message count.
+        do_set_stream_property(
+            verona,
+            "message_content_allowed_in_email_notifications",
+            False,
+            acting_user=self.example_user("iago"),
+        )
+        do_set_stream_property(
+            denmark,
+            "message_content_allowed_in_email_notifications",
+            False,
+            acting_user=self.example_user("iago"),
+        )
+
+        with self.assert_database_query_count(8):
+            bulk_handle_digest_email([othello.id], cutoff)
+
+        self.assertEqual(mock_send_future_email.call_count, 3)
+        kwargs = mock_send_future_email.call_args[1]
+        self.assertEqual(kwargs["context"]["show_message_content"], False)
+        self.assertEqual(kwargs["context"]["message_content_disabled_by_realm"], False)
+        self.assertEqual(kwargs["context"]["message_content_disabled_by_all_channels"], True)
+        self.assertEqual(kwargs["context"]["new_streams_count"], 2)
+        self.assertEqual(kwargs["context"]["new_messages_count"], 4)
+        self.assertNotIn("new_channels", kwargs["context"])
+        # Check conversation from both the channels are not included.
+        self.assert_length(kwargs["context"]["hot_conversations"], 0)
 
     def simulate_stream_conversation(self, stream: str, senders: list[str]) -> list[int]:
         message_ids = []  # List[int]

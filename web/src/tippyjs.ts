@@ -489,6 +489,18 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".message_content_allowed_in_email_notifications_disabled_tooltip",
+        content: $t({
+            defaultMessage:
+                "Message content in message notification emails is not allowed in this organization.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: "[data-tab-key='invite-link-tab'].disabled",
         content: $t({
             defaultMessage:

@@ -91,6 +91,7 @@ class StreamDict(TypedDict, total=False):
     history_public_to_subscribers: bool | None
     message_retention_days: int | None
     topics_policy: int | None
+    message_content_allowed_in_email_notifications: bool
     can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
     can_create_topic_group: UserGroup | None
@@ -388,6 +389,7 @@ def create_stream_if_needed(
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
+    message_content_allowed_in_email_notifications: bool = True,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         invite_only, history_public_to_subscribers
@@ -429,6 +431,7 @@ def create_stream_if_needed(
             message_retention_days=message_retention_days,
             folder=folder,
             topics_policy=topics_policy,
+            message_content_allowed_in_email_notifications=message_content_allowed_in_email_notifications,
             **group_setting_values,
         ),
     )
@@ -522,6 +525,9 @@ def create_streams_if_needed(
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
+            message_content_allowed_in_email_notifications=stream_dict.get(
+                "message_content_allowed_in_email_notifications", True
+            ),
         )
 
         if created:
@@ -1886,6 +1892,7 @@ def stream_to_dict(
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=stream.subscriber_count,
         topics_policy=StreamTopicsPolicyEnum(stream.topics_policy).name,
+        message_content_allowed_in_email_notifications=stream.message_content_allowed_in_email_notifications,
     )
 
 

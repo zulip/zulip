@@ -486,6 +486,9 @@ def send_subscription_add_events(
                 stream_post_policy=stream_dict["stream_post_policy"],
                 subscriber_count=stream_dict["subscriber_count"],
                 topics_policy=stream_dict["topics_policy"],
+                message_content_allowed_in_email_notifications=stream_dict[
+                    "message_content_allowed_in_email_notifications"
+                ],
                 # Computed fields not present in Stream.API_FIELDS
                 is_announcement_only=stream_dict["is_announcement_only"],
             )
@@ -1748,6 +1751,9 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
         event["value"] = StreamTopicsPolicyEnum(value).name
 
     send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+
+    if name != "topics_policy":
+        return
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
 
