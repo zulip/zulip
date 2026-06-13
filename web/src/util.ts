@@ -596,13 +596,12 @@ export function parse_youtube_start_time(url: string): number | undefined {
     return undefined;
 }
 
-// Measure the maximum rendered width of a set of candidate text
-// strings. This is used to set CSS variables for column widths
-// that need to fit their content tightly. All candidates are
-// inserted as block-level children of a single hidden container
-// sized to max-content, so only one reflow is needed.
+// Make a hidden, max-content-sized container for measuring the
+// rendered width of content without affecting the page layout.
+// Append it where the content's CSS rules apply, measure, and
+// remove it.
 /* istanbul ignore next */
-export let max_text_content_width = (candidates: string[], css_class?: string): number => {
+export function make_offscreen_measurement_container(): HTMLDivElement {
     const container = document.createElement("div");
     Object.assign(container.style, {
         position: "absolute",
@@ -612,6 +611,17 @@ export let max_text_content_width = (candidates: string[], css_class?: string): 
         left: "-9999px",
         top: "0",
     });
+    return container;
+}
+
+// Measure the maximum rendered width of a set of candidate text
+// strings. This is used to set CSS variables for column widths
+// that need to fit their content tightly. All candidates are
+// inserted as block-level children of a single hidden container
+// sized to max-content, so only one reflow is needed.
+/* istanbul ignore next */
+export let max_text_content_width = (candidates: string[], css_class?: string): number => {
+    const container = make_offscreen_measurement_container();
 
     for (const text of candidates) {
         const child = document.createElement("div");
