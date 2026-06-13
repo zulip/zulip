@@ -855,7 +855,7 @@ export function process_unread_message(message: UnreadMessageData): void {
     update_message_for_mention(message);
 }
 
-function is_message_in_unmuted_context(message: UnreadMessageData | Message): boolean {
+export function is_message_in_unmuted_context(message: UnreadMessageData | Message): boolean {
     // A message is in unmuted context if:
     // - the message is a direct message or
     // - the message is in a non muted topic in an unmuted stream or
