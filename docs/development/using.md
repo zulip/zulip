@@ -92,9 +92,83 @@ the development environment][authentication-dev-server].
 See the mobile project's documentation on [getting set up to develop
 and contribute to the mobile app][mobile-development-guide].
 
+## External access to the dev server
+
+By default, the dev server is reachable only from the machine it
+runs on: Vagrant forwards port 9991 to the host's loopback
+interface, and `run-dev` listens only on `localhost` otherwise.
+The most common reason to change that is **running the mobile app
+against your dev server**: a phone or emulator needs an address
+it can resolve, and Zulip's realm-subdomain routing has to agree
+on the same address. In dev mode `EXTERNAL_HOST` drives
+`REALM_HOSTS` (see `zproject/dev_settings.py`), so without setting
+it, the `zulip` realm stays pinned to `localhost:9991` even after
+the request reaches the box.
+
+For installing the app, see the [mobile setup
+guide][mobile-development-guide]; the [mobile dev-server
+guide][mobile-dev-server-guide] is the canonical end-to-end recipe
+on the mobile side. The steps below describe the dev-server-side
+configuration and apply equally to a browser running on another
+machine on your LAN.
+
+:::{important}
+The Zulip development environment is not hardened for exposure to
+the public internet. Enable external access only for short testing
+windows, and turn it off when you are done.
+:::
+
+The simplest path depends on which client you're reaching from:
+
+- **iOS simulator (macOS).** The simulator shares its host's
+  network interface, so `http://localhost:9991` works as-is — no
+  configuration needed.
+- **Android emulator on the same machine.** The emulator routes
+  `10.0.2.2` to the host's loopback. Skip Step 1 below and run
+  `EXTERNAL_HOST=10.0.2.2:9991 ./tools/run-dev`.
+- **Physical device, or any other off-host client.** Follow both
+  steps below.
+
+1. **Make the dev server listen on a non-loopback address.** Find
+   the host's LAN IP first; `ip route get 8.8.8.8` (Linux) prints
+   it after `src`, macOS's Network preferences pane shows it, and
+   `ipconfig` works on Windows. Then:
+
+   - **Vagrant:** add `HOST_IP_ADDR 0.0.0.0` to
+     `~/.zulip-vagrant-config` and run `vagrant reload` — see
+     [Using a different port for Vagrant][vagrant-host-ip] for
+     background. `run-dev` inside the guest already listens on all
+     interfaces for the `vagrant` user, so no further change is
+     needed there.
+   - **Direct install on the host OS:** pass `--interface=''` to
+     `run-dev` in the next step.
+
+1. **Start `run-dev` with `EXTERNAL_HOST` set to that address.**
+   For example, with the host's LAN IP at `192.168.1.10` on a
+   direct install:
+
+   ```bash
+   EXTERNAL_HOST=192.168.1.10:9991 ./tools/run-dev --interface=''
+   ```
+
+   On Vagrant, drop `--interface=''`.
+
+Sanity-check from another device on the same network:
+
+```bash
+curl -I "http://192.168.1.10:9991/login/"
+```
+
+A `200` response confirms the chain is wired up; a connection
+timeout or `Connection refused` points at `HOST_IP_ADDR`,
+`--interface`, or a host firewall. Then point the mobile app (or
+another machine's browser) at `http://192.168.1.10:9991`.
+
 [rest-api]: https://zulip.com/api/rest
 [authentication-dev-server]: authentication.md
 [django-runserver]: https://docs.djangoproject.com/en/5.0/ref/django-admin/#runserver
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
 [mobile-development-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/setup.md
+[mobile-dev-server-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/howto/dev-server.md
+[vagrant-host-ip]: setup-recommended.md#using-a-different-port-for-vagrant
