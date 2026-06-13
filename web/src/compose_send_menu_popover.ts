@@ -55,6 +55,10 @@ export function open_schedule_message_menu(
                 },
             ],
         },
+        onHide() {
+            // onHide returning false prevents Tippy from closing the popover when flatpickr is open.
+            return flatpickr.is_open() ? false : undefined;
+        },
         onShow(instance) {
             // Only show send later options that are possible today.
             const date = new Date();
