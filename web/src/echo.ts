@@ -2,7 +2,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_message_controls from "../templates/message_controls.hbs";
 import render_message_controls_failed_msg from "../templates/message_controls_failed_msg.hbs";
 
 import * as alert_words from "./alert_words.ts";
@@ -128,27 +127,27 @@ function hide_retry_spinner($row: JQuery): boolean {
 }
 
 function show_message_failed(message_id: number, _failed_msg: string): void {
-    // Failed to send message, so display inline retry/cancel
+    const message = message_store.get(message_id);
+
+    // Do not show retry/cancel buttons while the message is still sending
+    if (!message || (message.locally_echoed && !message.failed_request)) {
+        return;
+    }
+
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         $row.find(".slow-send-spinner").addClass("hidden");
         const $message_controls = $row.find(".message_controls");
         $message_controls.html(render_message_controls_failed_msg());
     });
-    // TODO: Show the `_failed_msg` in the UI, describing the reason for the failure.
-}
-
-function show_failed_message_success(message_id: number): void {
-    // Previously failed message succeeded
-    const msg = message_store.get(message_id);
-    message_live_update.update_message_in_all_views(message_id, ($row) => {
-        const $message_controls = $row.find(".message_controls");
-        $message_controls.html(render_message_controls({msg}));
-    });
 }
 
 function failed_message_success(message_id: number): void {
-    message_store.get(message_id)!.failed_request = false;
-    show_failed_message_success(message_id);
+    const message = message_store.get(message_id);
+    if (!message) {
+        return;
+    }
+
+    message.failed_request = false;
 }
 
 function resend_message(
