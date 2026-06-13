@@ -13,5 +13,16 @@
                 {{/if}}
             </span>
         </label>
+        <i class="fa fa-pencil small todo-edit-task-icon"></i>
+        <div class="todo-task-edit-bar">
+            <input type="text" class="add-task" placeholder="{{t 'Task'}}" />
+            <input type="text" class="add-desc" placeholder="{{t 'Description'}}" />
+            <button class="todo-task-edit-cancel"><i class="fa fa-remove"></i></button>
+            <button class="todo-task-edit-check">
+                <i class="fa fa-check todo-task-check"></i>
+                <i class="fa fa-circle-o-notch todo-task-spinner" style="display: none;"></i>
+            </button>
+        </div>
+        <div class="widget-error"></div>
     </li>
 {{/each}}
