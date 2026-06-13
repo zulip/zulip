@@ -25,6 +25,14 @@ outcome_to_formatted_status_map = {
     "error": "had an error",
 }
 
+OUTCOME_EMOJI_MAP: dict[str, str] = {
+    "success": ":check:",
+    "failed": ":cross_mark:",
+    "canceled": ":no_entry:",
+    "unauthorized": ":warning:",
+    "error": ":cross_mark:",
+}
+
 GITHUB_COMMIT_LINK = "{target_repository_url}/commit/{commit_sha}"
 
 BITBUCKET_COMMIT_LINK = "{target_repository_url}/commits/{commit_sha}"
@@ -175,7 +183,7 @@ def get_body(payload: WildValue) -> str:
         job_name = payload["job"]["name"].tame(check_string)
         status = payload["job"]["status"].tame(check_string)
         formatted_status = outcome_to_formatted_status_map.get(status)
-        return JOB_BODY_TEMPLATE.format(
+        body = JOB_BODY_TEMPLATE.format(
             job_name=job_name,
             pipeline_number=pipeline_number,
             formatted_status=formatted_status,
@@ -187,10 +195,15 @@ def get_body(payload: WildValue) -> str:
         workflow_url = payload["workflow"]["url"].tame(check_url)
         status = payload["workflow"]["status"].tame(check_string)
         formatted_status = outcome_to_formatted_status_map.get(status)
-        return WORKFLOW_BODY_TEMPLATE.format(
+        body = WORKFLOW_BODY_TEMPLATE.format(
             workflow_name=workflow_name,
             workflow_url=workflow_url,
             pipeline_number=pipeline_number,
             formatted_status=formatted_status,
             commit_details=commit_details,
         )
+
+    emoji = OUTCOME_EMOJI_MAP.get(status, "")
+    if emoji:
+        body = f"{emoji} {body.lstrip()}"
+    return body
