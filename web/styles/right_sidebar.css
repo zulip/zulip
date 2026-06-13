@@ -237,6 +237,13 @@
             background-color: inherit;
             color: var(--color-text-url-hover);
         }
+
+        &:focus,
+        &:focus-visible,
+        &:active {
+            text-decoration: none;
+            outline: none;
+        }
     }
 }
 
@@ -339,7 +346,7 @@
         "starting-anchor-element row-content markers-and-controls" var(
             --line-height-sidebar-row
         )
-        ".                       row-content ." auto / var(
+        ".                        row-content ." auto / var(
             --right-sidebar-presence-circle-width
         )
         minmax(0, 1fr)
@@ -578,6 +585,35 @@
     }
 }
 
+.buddy-list-user-link {
+    &:focus-within {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    a {
+        &:focus,
+        &:focus-visible,
+        &:active {
+            outline: none;
+            text-decoration: none;
+        }
+    }
+}
+
+#user-list.with_avatars
+    .buddy-list-user-link
+    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-with-avatar);
+}
+
+.buddy-list-user-link .right-sidebar-wrappable-text-container,
+.buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-without-avatar);
+}
+
 .invite-user-shortcut {
     /* The margin top is calculated from a legacy 25px height,
        from a 20px line of text and 5px of margin top. We calculate
@@ -610,18 +646,6 @@
             outline: none;
         }
     }
-}
-
-#user-list.with_avatars
-    .buddy-list-user-link
-    .right-sidebar-wrappable-text-container,
-#user-list.with_avatars .buddy-list-section .empty-list-message {
-    margin-left: var(--right-sidebar-text-indent-with-avatar);
-}
-
-.buddy-list-user-link .right-sidebar-wrappable-text-container,
-.buddy-list-section .empty-list-message {
-    margin-left: var(--right-sidebar-text-indent-without-avatar);
 }
 
 #user-list.with_avatars .invite-user-link {
