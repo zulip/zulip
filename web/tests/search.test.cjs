@@ -215,6 +215,27 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
             assert.ok(input_pill_displayed);
         }
+
+        {
+            /* Test hideAfterSelect */
+            // An empty search bar means the selected term became a pill,
+            // so the typeahead should hide.
+            $search_query_box.text("");
+            assert.ok(opts.hideAfterSelect());
+
+            // A bare operator still needs an operand, so keep the
+            // typeahead open.
+            $search_query_box.text("channel:");
+            assert.ok(!opts.hideAfterSelect());
+
+            // A complete operator term is done, so hide the typeahead.
+            $search_query_box.text("channel:Verona");
+            assert.ok(opts.hideAfterSelect());
+
+            // A plain search term is also complete, so hide.
+            $search_query_box.text("ver");
+            assert.ok(opts.hideAfterSelect());
+        }
     }
 
     $search_query_box.text("test string");
