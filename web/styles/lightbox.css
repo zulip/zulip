@@ -4,6 +4,88 @@
     flex-direction: column;
     height: 100dvh;
 
+    &.code-lightbox-mode {
+        .video-player,
+        .player-container {
+            display: none;
+        }
+
+        /* White "paper" card: pan/zoom on .zoom-element clips overflow (no inner scrollbars). */
+        .code-lightbox-hilite {
+            display: flex !important;
+            flex-direction: row;
+            align-items: stretch;
+            width: max-content;
+            max-width: none;
+            cursor: grab;
+            border-radius: 6px;
+            border: 1px solid hsl(0deg 0% 0% / 15%);
+            box-shadow: 0 4px 24px hsl(0deg 0% 0% / 35%);
+            background-color: hsl(0deg 0% 100%);
+
+            &:active {
+                cursor: grabbing;
+            }
+        }
+
+        .code-lightbox-gutter {
+            display: flex;
+            flex-direction: column;
+            min-width: 2.5em;
+            padding: 10px 0.6em 10px 0.8em;
+            text-align: right;
+            user-select: none;
+            color: hsl(0deg 0% 60%);
+            font-size: 0.825em;
+            line-height: 1.4;
+            border-right: 1px solid hsl(0deg 0% 80% / 40%);
+            margin-right: 0.8em;
+
+            span {
+                display: block;
+            }
+        }
+
+        .code-lightbox-content {
+            margin: 0;
+            max-width: none;
+            overflow: visible;
+            padding: 10px 12px;
+            background-color: hsl(0deg 0% 100%);
+            border: none;
+            font-size: 0.825em;
+            line-height: 1.4;
+        }
+
+        &.code-lightbox-syntax-light {
+            .codehilite pre,
+            pre.code-lightbox-content {
+                color: hsl(0deg 0% 7%);
+            }
+
+            .codehilite pre code {
+                color: inherit;
+            }
+        }
+
+        &.code-lightbox-syntax-dark {
+            .code-lightbox-hilite {
+                border: 1px solid hsl(0deg 0% 100% / 12%);
+                box-shadow: 0 4px 24px hsl(0deg 0% 0% / 45%);
+                background-color: hsl(73deg 8% 15%);
+            }
+
+            .code-lightbox-content {
+                background-color: hsl(73deg 8% 15%);
+                color: hsl(60deg 9% 96%);
+            }
+        }
+    }
+
+    &:not(.code-lightbox-mode) .code-lightbox-theme-toggle {
+        display: none;
+    }
+
     .image-preview {
         flex: 1;
         display: flex;
