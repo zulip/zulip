@@ -1295,7 +1295,7 @@ class InviteUserTest(InviteUserBase):
         realm.save(update_fields=["signup_announcements_stream"])
 
         private_stream_name = "Secret"
-        self.make_stream(private_stream_name, invite_only=True)
+        private_stream = self.make_stream(private_stream_name, invite_only=True)
         self.subscribe(user_profile, private_stream_name)
         public_msg_id = self.send_stream_message(
             self.example_user("hamlet"),
@@ -1322,11 +1322,25 @@ class InviteUserTest(InviteUserBase):
         self.assertFalse(secret_msg_id in invitee_msg_ids)
         self.assertFalse(invitee_profile.is_realm_admin)
 
-        invitee_msg, signups_stream_msg, inviter_msg, secret_msg = Message.objects.all().order_by(
-            "-id"
-        )[0:4]
+        (
+            invitee_msg,
+            signups_stream_msg,
+            inviter_msg,
+            private_channel_join_msg,
+            secret_msg,
+        ) = Message.objects.all().order_by("-id")[0:5]
 
         self.assertEqual(secret_msg.id, secret_msg_id)
+
+        self.assertEqual(private_channel_join_msg.sender.email, "notification-bot@zulip.com")
+        self.assertEqual(private_channel_join_msg.recipient.type_id, private_stream.id)
+        self.assertEqual(private_channel_join_msg.topic_name(), "channel events")
+        self.assertEqual(
+            private_channel_join_msg.content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** subscribed "
+            f"@_**{invitee_profile.full_name}|{invitee_profile.id}** to this channel.",
+        )
+        self.assertIn(private_channel_join_msg.id, invitee_msg_ids)
 
         self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
