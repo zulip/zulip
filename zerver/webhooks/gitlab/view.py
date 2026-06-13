@@ -50,9 +50,6 @@ EMOJI_MESSAGE_TEMPLATE = "{user_name} {action} the emoji :{emoji_text}:{suffix}.
 
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
-    if fixture_name.startswith("build"):
-        return {}  # Since there are 2 possible event types.
-
     # Map "push_hook__push_commits_more_than_limit.json" into GitLab's
     # HTTP event title "Push Hook".
     return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__", 1)[0].replace("_", " ").title()}
@@ -363,7 +360,7 @@ def get_wiki_page_event_body(
     )
 
 
-def get_build_hook_event_body(
+def get_job_hook_event_body(
     payload: WildValue, include_title: bool, realm: Realm | None = None
 ) -> str:
     build_status = payload["build_status"].tame(check_string)
@@ -707,8 +704,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Merge Request Hook reopen": partial(get_merge_request_event_body, "reopened"),
     "Wiki Page Hook create": partial(get_wiki_page_event_body, "created"),
     "Wiki Page Hook update": partial(get_wiki_page_event_body, "updated"),
-    "Job Hook": get_build_hook_event_body,
-    "Build Hook": get_build_hook_event_body,
+    "Job Hook": get_job_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
     "Feature Flag Hook": get_feature_flag_event_body,
@@ -770,7 +766,7 @@ def get_body_based_on_event(event: str) -> EventFunction:
 def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_title: bool) -> str:
     if event == "Push Hook":
         return f"{get_repo_name(payload)} / {get_branch_name(payload)}"
-    elif event in ("Job Hook", "Build Hook"):
+    elif event == "Job Hook":
         return "{} / {}".format(
             payload["repository"]["name"].tame(check_string), get_branch_name(payload)
         )
