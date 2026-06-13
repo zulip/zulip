@@ -2304,8 +2304,7 @@ def process_social_auth_group_sync_info(
         case str():  # nocoverage
             raise AssertionError(f'unsupported groups config string: {groups_config}; expected "*"')
 
-    # Group sync is only supported for SAML for the foreseeable time.
-    assert backend.name == "saml"
+    assert backend.name in USER_ATTRIBUTE_SYNC_SUPPORTED_BACKENDS
 
     syncable_group_names = set(external_group_name_to_zulip_group_name.values())
 
@@ -2367,12 +2366,10 @@ def social_auth_sync_user_attributes(
        so they'll only be synced during the user's next login, not during
        signup.
     """
-    # This is only supported for SAML right now, though the design
-    # is meant to be easy to extend this to other backends if desired.
     # Unlike LDAP or SCIM, this hook can only do syncing during the authentication
     # flow, as that's when the data is provided and we don't have a way to query
     # for it otherwise.
-    if backend.name != "saml":
+    if backend.name not in USER_ATTRIBUTE_SYNC_SUPPORTED_BACKENDS:
         assert not extra_attrs
         return None
 
@@ -4132,6 +4129,40 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         return None
 
     @override
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
+        def get_value(key: str) -> Any | None:
+            if key in response:
+                return response.get(key)
+            if self.id_token is not None:
+                return self.id_token.get(key)  # type: ignore[unreachable]  # self.id_token is declared as None in the base class. mypy doesn't re-evaluate its type when request_access_token reassigns it.
+            return None  # nocoverage
+
+        user_details = super().get_user_details(response)
+
+        # Put together the "extra_attrs" field for user attribute sync later.
+        # custom claims are included as part of id_token.
+        extra_attrs: dict[str, Any] = {}
+
+        if groups_list := get_value("zulip_groups"):
+            assert isinstance(groups_list, list)
+            extra_attrs["zulip_groups"] = groups_list
+
+        # This happens after auth_complete, so no need to check
+        # if the IdP is valid in this subdomain or not.
+        for extra_attr_name in self.settings_dict.get("extra_attrs", []):
+            assert isinstance(extra_attr_name, str)
+            value = get_value(extra_attr_name)
+            # Empty fields are skipped. Careful not to skip other falsy values
+            # like 0 or False.
+            if value is not None and (isinstance(value, str) and value.strip() != ""):
+                extra_attrs[extra_attr_name] = value
+
+        return {
+            **user_details,
+            "extra_attrs": extra_attrs,
+        }
+
+    @override
     def get_key_and_secret(self) -> tuple[str, str]:
         client_id = self.settings_dict.get("client_id", "")
         assert isinstance(client_id, str)
@@ -4450,6 +4481,9 @@ def get_external_method_dicts(realm: Realm | None = None) -> list[ExternalAuthMe
             result.extend(backend.dict_representation(realm))
 
     return result
+
+
+USER_ATTRIBUTE_SYNC_SUPPORTED_BACKENDS = [GenericOpenIdConnectBackend.name, SAMLAuthBackend.name]
 
 
 AUTH_BACKEND_NAME_MAP: dict[str, Any] = {
