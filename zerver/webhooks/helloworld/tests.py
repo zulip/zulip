@@ -1,5 +1,6 @@
 from django.conf import settings
 
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
@@ -46,12 +47,15 @@ class HelloWorldHookTests(WebhookTestCase):
         )
 
     def test_stream_error_pm_to_bot_owner(self) -> None:
-        # Note that this is really just a test for check_send_webhook_message
         self.channel_name = "nonexistent"
         self.url = self.build_webhook_url()
         realm = get_realm("zulip")
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
-        expected_message = "Your bot `webhook-bot@zulip.com` tried to send a message to channel #**nonexistent**, but that channel does not exist. Click [here](#channels/new) to create it."
+        expected_message = (
+            f"{silent_mention_syntax_for_user(self.test_user)} failed to send a message to "
+            "#**nonexistent** because the channel does not exist. "
+            "[Create it](#channels/new)"
+        )
         self.send_and_test_private_message(
             "goodbye",
             expected_message=expected_message,
