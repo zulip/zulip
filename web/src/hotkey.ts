@@ -412,6 +412,45 @@ export function rewire_processing_text(value: typeof processing_text): void {
     processing_text = value;
 }
 
+function should_route_hotkey_to_recent_view($target: JQuery<object>): boolean {
+    return $target.is("body") || $target.closest("#recent_view").length > 0;
+}
+
+type RecentViewTargetLike = {
+    to_$: () => JQuery;
+};
+
+function is_recent_view_target_like(target: unknown): target is RecentViewTargetLike {
+    return (
+        typeof target === "object" &&
+        target !== null &&
+        "to_$" in target &&
+        typeof target.to_$ === "function"
+    );
+}
+
+function get_recent_view_hotkey_target(target: unknown): JQuery | undefined {
+    if (target === undefined || target === null) {
+        return undefined;
+    }
+
+    let $target: JQuery;
+
+    if (typeof HTMLElement !== "undefined" && target instanceof HTMLElement) {
+        $target = $(target);
+    } else if (is_recent_view_target_like(target)) {
+        $target = target.to_$();
+    } else {
+        return undefined;
+    }
+
+    if (!should_route_hotkey_to_recent_view($target)) {
+        return undefined;
+    }
+
+    return $target;
+}
+
 // Returns true if we handled it, false if the browser should.
 function process_escape_key(e: JQuery.KeyDownEvent): boolean {
     assert(e.target instanceof HTMLElement);
@@ -840,11 +879,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "vim_right":
         case "tab":
         case "shift_tab":
-        case "open_recent_view":
-            if (recent_view_ui.is_in_focus()) {
-                assert(e.target instanceof HTMLElement);
-                return recent_view_ui.change_focused_element($(e.target), event_name);
+        case "open_recent_view": {
+            const $target = get_recent_view_hotkey_target(e.target);
+            if (recent_view_ui.is_in_focus() && $target) {
+                return recent_view_ui.change_focused_element($target, event_name);
             }
+        }
     }
 
     switch (event_name) {
