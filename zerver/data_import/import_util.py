@@ -7,10 +7,11 @@ import subprocess
 from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
+from datetime import datetime
 from dataclasses import dataclass
 from email.errors import HeaderDefect
 from email.headerregistry import Address
-from typing import Any, Generic, Protocol, TypeAlias, TypeVar
+from typing import Any, Generic, Optional, Protocol, TypeAlias, TypeVar
 from urllib.parse import SplitResult
 
 import orjson
@@ -755,15 +756,22 @@ def download_and_export_upload_file(
     write_response_file_stream_to_path(response, file_output_path)
 
 
-def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
-    return model_to_dict(
-        RealmEmoji(
-            realm_id=realm_id,
-            name=name,
-            id=id,
-            file_name=file_name,
-        ),
+def build_realm_emoji(
+    realm_id: int,
+    name: str,
+    id: int,
+    file_name: str,
+    date_created: Optional[datetime] = None,
+) -> ZerverFieldsT:
+    realmemoji = RealmEmoji(
+        realm_id=realm_id,
+        name=name,
+        id=id,
+        file_name=file_name,
     )
+    if date_created is not None:
+        realmemoji.date_created = date_created
+    return model_to_dict(realmemoji)
 
 
 def get_emojis(
