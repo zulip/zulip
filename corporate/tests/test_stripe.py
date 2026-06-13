@@ -235,6 +235,7 @@ class StripeTest(StripeTestCase):
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
+            .exclude(event_type=AuditLogEventType.USER_LOGGED_IN)
             .values_list("event_type", "event_time")
             .order_by("id")
         )
@@ -358,6 +359,7 @@ class StripeTest(StripeTestCase):
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
+            .exclude(event_type=AuditLogEventType.USER_LOGGED_IN)
             .values_list("event_type", "event_time")
             .order_by("id")
         )
@@ -484,6 +486,7 @@ class StripeTest(StripeTestCase):
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
+            .exclude(event_type=AuditLogEventType.USER_LOGGED_IN)
             .values_list("event_type", "event_time")
             .order_by("id")
         )
@@ -618,6 +621,7 @@ class StripeTest(StripeTestCase):
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
+            .exclude(event_type=AuditLogEventType.USER_LOGGED_IN)
             .values_list("event_type", "event_time")
             .order_by("id")
         )
@@ -731,6 +735,7 @@ class StripeTest(StripeTestCase):
             )
             audit_log_entries = list(
                 RealmAuditLog.objects.filter(acting_user=user)
+                .exclude(event_type=AuditLogEventType.USER_LOGGED_IN)
                 .values_list("event_type", "event_time")
                 .order_by("id")
             )
@@ -949,6 +954,7 @@ class StripeTest(StripeTestCase):
             )
             audit_log_entries = list(
                 RealmAuditLog.objects.filter(acting_user=user)
+                .exclude(event_type=AuditLogEventType.USER_LOGGED_IN)
                 .values_list("event_type", "event_time")
                 .order_by("id")
             )
@@ -1149,6 +1155,7 @@ class StripeTest(StripeTestCase):
             )
             audit_log_entries = list(
                 RealmAuditLog.objects.filter(acting_user=user)
+                .exclude(event_type=AuditLogEventType.USER_LOGGED_IN)
                 .values_list("event_type", "event_time")
                 .order_by("id")
             )
@@ -1342,6 +1349,7 @@ class StripeTest(StripeTestCase):
             )
             audit_log_entries = list(
                 RealmAuditLog.objects.filter(acting_user=user)
+                .exclude(event_type=AuditLogEventType.USER_LOGGED_IN)
                 .values_list("event_type", "event_time")
                 .order_by("id")
             )
