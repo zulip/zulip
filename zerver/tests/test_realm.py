@@ -384,23 +384,6 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Must be an organization administrator")
 
-    def test_unauthorized_name_change(self) -> None:
-        data = {"full_name": "Sir Hamlet"}
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        do_set_realm_property(user_profile.realm, "name_changes_disabled", True, acting_user=None)
-        url = "/json/settings"
-        result = self.client_patch(url, data)
-        self.assertEqual(result.status_code, 200)
-        # Since the setting fails silently, no message is returned
-        self.assert_in_response("", result)
-        # Realm admins can change their name even setting is disabled.
-        data = {"full_name": "New Iago"}
-        self.login("iago")
-        url = "/json/settings"
-        result = self.client_patch(url, data)
-        self.assert_json_success(result)
-
     def test_do_deactivate_realm_clears_user_realm_cache(self) -> None:
         """The main complicated thing about deactivating realm names is
         updating the cache, and we start by populating the cache for

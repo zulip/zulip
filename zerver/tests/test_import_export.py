@@ -2499,6 +2499,26 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
+    def test_import_realm_with_legacy_name_change_setting(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        realm_data = read_json("realm.json")
+        realm_data["zerver_realm"][0]["name_changes_disabled"] = True
+        del realm_data["zerver_realm"][0]["can_change_own_name_group"]
+
+        with open(export_fn("realm.json"), "wb") as f:
+            f.write(orjson.dumps(realm_data))
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip")
+
+        self.assertEqual(
+            imported_realm.can_change_own_name_group.named_user_group.name,
+            SystemGroups.ADMINISTRATORS,
+        )
+
     @activate_push_notification_service()
     def test_import_realm_notify_bouncer(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
