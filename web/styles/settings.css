@@ -473,6 +473,18 @@ select.settings_select {
     .modal_text_input {
         margin-bottom: 0;
     }
+
+    .bot-modal-confirm-regenerate-bot-api-key {
+        /* Squeeze the API key input, not the confirmation label,
+           when both don't fit on the row. */
+        flex-shrink: 0;
+    }
+
+    .bot-api-key-regenerate-warning {
+        /* Match the text color of warning banners. */
+        color: var(--color-text-warning-banner);
+        margin-top: 0.25em;
+    }
 }
 
 #zuliprc-section {
