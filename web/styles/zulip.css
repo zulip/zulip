@@ -6,6 +6,7 @@ html {
     overflow: hidden scroll;
     overscroll-behavior-y: none;
     width: calc(100% - var(--disabled-scrollbar-width));
+    background-color: var(--color-background);
 }
 
 body,
