@@ -68,6 +68,7 @@ class ErrorCode(Enum):
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
     PERMISSION_DENIED = auto()
+    CHANNEL_ACCESS_DENIED = auto()
 
 
 class JsonableError(Exception):
@@ -192,6 +193,19 @@ class ChannelExistsError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Channel '{channel_name}' already exists")
+
+
+class ChannelAccessError(JsonableError):
+    code = ErrorCode.CHANNEL_ACCESS_DENIED
+    data_fields = ["stream"]
+
+    def __init__(self, stream: str) -> None:
+        self.stream = stream
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to access channel '{stream}'.")
 
 
 class StreamDoesNotExistError(JsonableError):
@@ -736,13 +750,14 @@ class MissingRemoteRealmError(JsonableError):  # nocoverage
 class StreamWildcardMentionNotAllowedError(JsonableError):
     code: ErrorCode = ErrorCode.STREAM_WILDCARD_MENTION_NOT_ALLOWED
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, stream: str) -> None:
+        self.stream = stream
 
-    @staticmethod
     @override
-    def msg_format() -> str:
-        return _("You do not have permission to use channel wildcard mentions in this channel.")
+    def to_json_error_msg(self) -> str:
+        return _("You do not have permission to access channel '{channel_name}'.").format(
+            channel_name=self.stream,
+        )
 
 
 class TopicWildcardMentionNotAllowedError(JsonableError):
