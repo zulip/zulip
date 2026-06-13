@@ -20,7 +20,7 @@ def llms_txt(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=404)
 
     streams = list(
-        get_web_public_streams_queryset(realm).values_list("name", flat=True).order_by("name")
+        get_web_public_streams_queryset(realm).order_by("name").values_list("id", "name")
     )
 
     # Return 404 if the feature is enabled at the realm level but no
@@ -29,8 +29,8 @@ def llms_txt(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=404)
 
     server_url = realm.url
-    example_channel = streams[0]
-    channel_list = "\n".join(f"- {name}" for name in streams)
+    example_channel_id = streams[0][0]
+    channel_list = "\n".join(f"- {name} (channel ID: {channel_id})" for channel_id, name in streams)
 
     content = f"""\
 # {realm.name}
@@ -52,7 +52,7 @@ Required query parameters:
 - `num_before` — number of messages before anchor (e.g. `0`)
 - `num_after` — number of messages after anchor (e.g. `100`)
 - `narrow` — JSON array of filter operators, e.g.:
-  `[{{"operator":"channels","operand":"web-public"}},{{"operator":"channel","operand":"CHANNEL_NAME"}},{{"operator":"topic","operand":"TOPIC_NAME"}}]`
+  `[{{"operator":"channels","operand":"web-public"}},{{"operator":"channel","operand":CHANNEL_ID}},{{"operator":"topic","operand":"TOPIC_NAME"}}]`
 
 **Important**: the narrow must include `{{"operator":"channels","operand":"web-public"}}`
 to enable unauthenticated access.
@@ -72,7 +72,7 @@ request returned the entire conversation.
 
 Fetch the 100 oldest messages from a topic:
 
-    GET {server_url}/json/messages?anchor=oldest&num_before=0&num_after=100&narrow=[{{"operator":"channels","operand":"web-public"}},{{"operator":"channel","operand":"{example_channel}"}},{{"operator":"topic","operand":"TOPIC_NAME"}}]
+    GET {server_url}/json/messages?anchor=oldest&num_before=0&num_after=100&narrow=[{{"operator":"channels","operand":"web-public"}},{{"operator":"channel","operand":{example_channel_id}}},{{"operator":"topic","operand":"TOPIC_NAME"}}]
 
 ## Fetching messages in specific conversations / views
 
