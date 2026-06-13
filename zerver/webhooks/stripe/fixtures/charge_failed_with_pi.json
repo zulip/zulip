@@ -1,0 +1,128 @@
+{
+  "id": "evt_3TbGfyJEe0yY0QKr08P0MBRO",
+  "object": "event",
+  "api_version": "2026-04-22.dahlia",
+  "created": 1779785366,
+  "data": {
+    "object": {
+      "id": "ch_3TbGfyJEe0yY0QKr0Nh9uVjd",
+      "object": "charge",
+      "amount": 2200,
+      "amount_captured": 0,
+      "amount_refunded": 0,
+      "application": null,
+      "application_fee": null,
+      "application_fee_amount": null,
+      "balance_transaction": null,
+      "billing_details": {
+        "address": {
+          "city": null,
+          "country": null,
+          "line1": null,
+          "line2": null,
+          "postal_code": "89999",
+          "state": null
+        },
+        "email": null,
+        "name": null,
+        "phone": null,
+        "tax_id": null
+      },
+      "calculated_statement_descriptor": "KARNATAKATE2W",
+      "captured": false,
+      "created": 1779785366,
+      "currency": "usd",
+      "customer": null,
+      "description": "dwfwdqf",
+      "destination": null,
+      "dispute": null,
+      "disputed": false,
+      "failure_balance_transaction": null,
+      "failure_code": "card_declined",
+      "failure_message": "Your card was declined.",
+      "fraud_details": {},
+      "livemode": false,
+      "metadata": {},
+      "on_behalf_of": null,
+      "order": null,
+      "outcome": {
+        "advice_code": "try_again_later",
+        "network_advice_code": null,
+        "network_decline_code": "01",
+        "network_status": "declined_by_network",
+        "reason": "generic_decline",
+        "risk_level": "normal",
+        "risk_score": 9,
+        "seller_message": "The bank did not return any further details with this decline.",
+        "type": "issuer_declined"
+      },
+      "paid": false,
+      "payment_intent": "pi_3TbGfyJEe0yY0QKr0V9PBbP9",
+      "payment_method": "pm_1TbGfxJEe0yY0QKr6Adq5Ky8",
+      "payment_method_details": {
+        "card": {
+          "amount_authorized": null,
+          "authorization_code": "267232",
+          "brand": "visa",
+          "checks": {
+            "address_line1_check": null,
+            "address_postal_code_check": "pass",
+            "cvc_check": "pass"
+          },
+          "country": "US",
+          "ds_transaction_id": null,
+          "exp_month": 12,
+          "exp_year": 2034,
+          "extended_authorization": {
+            "status": "disabled"
+          },
+          "fingerprint": "exampleFingerpr2",
+          "funding": "credit",
+          "incremental_authorization": {
+            "status": "unavailable"
+          },
+          "installments": null,
+          "last4": "0002",
+          "mandate": null,
+          "multicapture": {
+            "status": "unavailable"
+          },
+          "network": "visa",
+          "network_token": {
+            "used": false
+          },
+          "network_transaction_id": "100116825454997",
+          "overcapture": {
+            "maximum_amount_capturable": 2200,
+            "status": "unavailable"
+          },
+          "regulated_status": "unregulated",
+          "three_d_secure": null,
+          "wallet": null
+        },
+        "type": "card"
+      },
+      "radar_options": {},
+      "receipt_email": null,
+      "receipt_number": null,
+      "receipt_url": null,
+      "refunded": false,
+      "review": null,
+      "shipping": null,
+      "source": null,
+      "source_transfer": null,
+      "statement_descriptor": "Karnatakate2w",
+      "statement_descriptor_suffix": null,
+      "status": "failed",
+      "transfer_data": null,
+      "transfer_group": null
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": "req_UylpYEOXaAFBkb",
+    "idempotency_key": "9ff3c174-0cdd-4212-873d-7237de717995"
+  },
+  "type": "charge.failed"
+}
