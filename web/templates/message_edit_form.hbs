@@ -19,7 +19,14 @@
                 <div class="controls edit-controls">
                     <div class="message-edit-buttons-and-timer">
                         {{#if is_editable}}
-                            <div class="message_edit_save_container">
+                            <div class="message-edit-saving-container tippy-zulip-tooltip {{#unless is_echoing}}hide{{/unless}}"
+                              data-tippy-content="{{t 'Saving previous changes.' }}">
+                                <button type="button" class="message-actions-button message-edit-saving saving" disabled>
+                                    <span class="message-edit-saving-text">{{t "Saving" }}</span>
+                                </button>
+                            </div>
+
+                            <div class="message_edit_save_container {{#if is_echoing}}hide{{/if}}">
                                 <button type="button" class="message-actions-button message_edit_save">
                                     <img class="loader" alt="" src="" />
                                     <span>{{t "Save" }}</span>
