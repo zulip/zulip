@@ -3,6 +3,8 @@ import render_empty_feed_notice from "../templates/empty_feed_notice.hbs";
 type QueryWord = {
     query_word: string;
     is_stop_word: boolean;
+    prefix?: string;
+    suffix?: string;
 };
 
 export type SearchData = {

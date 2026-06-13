@@ -92,11 +92,18 @@ function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
 
     // Gather information about each query word
     for (const query_word of query_words) {
-        if (realm.stop_words.includes(query_word)) {
+        // Capture leading quotes, the core word, and trailing quotes
+        const match = /^(['"]*)(.*?)(['"]*)$/.exec(query_word);
+        const prefix = match?.[1] ?? "";
+        const cleaned_query_word = match?.[2] ?? query_word;
+        const suffix = match?.[3] ?? "";
+        if (realm.stop_words.includes(cleaned_query_word)) {
             search_string_result.has_stop_word = true;
             search_string_result.query_words.push({
-                query_word,
+                query_word: cleaned_query_word,
                 is_stop_word: true,
+                prefix,
+                suffix,
             });
         } else {
             search_string_result.query_words.push({
