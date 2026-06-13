@@ -11,6 +11,7 @@ import type {ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
 
 import * as fenced_code from "./fenced_code.ts";
 import type {LinkifierMapValue} from "./linkifiers.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -33,6 +34,25 @@ const preview_regexes = [
 
     /\S*youtube\.com\/\S*/,
 ];
+
+const common_marked_options = {
+    // Enable GitHub Flavored Markdown.
+    gfm: true,
+    // Enable GFM tables.
+    tables: true,
+    // Enable GFM line breaks.
+    breaks: true,
+    // Conform to obscure parts of markdown.pl as much as possible.
+    pedantic: false,
+    // Sanitize the output. Ignore any HTML that has been input.
+    sanitize: true,
+    // Use smarter list behavior than the original markdown.pl.
+    smartLists: true,
+    // Use "smart" typograhic punctuation for things like quotes and dashes.
+    smartypants: false,
+    // Custom Zulip extensions.
+    zulip: true,
+};
 
 function contains_preview_link(content: string): boolean {
     return preview_regexes.some((re) => re.test(content));
@@ -146,6 +166,23 @@ export function translate_emoticons_to_names({
     return translated;
 }
 
+export function get_first_disallowed_group_mention(content: string): string | null {
+    // Quick check: no @*...* syntax means no group mentions possible
+    if (!/@\*[^*]+\*/.test(content)) {
+        return null;
+    }
+
+    if (!web_app_helpers) {
+        return null;
+    }
+
+    const {disallowed_group_mentions} = parse({
+        raw_content: content,
+        helper_config: web_app_helpers,
+    });
+
+    return disallowed_group_mentions[0] ?? null;
+}
 function parse_with_options(
     raw_content: string,
     helper_config: MarkdownHelpers,
@@ -153,6 +190,7 @@ function parse_with_options(
 ): {
     content: string;
     flags: string[];
+    disallowed_group_mentions: string[];
 } {
     // Given the raw markdown content of a message (raw_content)
     // we return the HTML content (content) and flags.
@@ -164,6 +202,7 @@ function parse_with_options(
     let mentioned_group = false;
     let mentioned_stream_wildcard = false;
     let mentioned_topic_wildcard = false;
+    const disallowed_group_mentions: string[] = [];
 
     const marked_options = {
         ...options,
@@ -286,6 +325,18 @@ function parse_with_options(
         groupMentionHandler(name: string, silently: boolean): string | undefined {
             const group = helper_config.get_user_group_from_name(name);
             if (group !== undefined) {
+                const group_full = user_groups.maybe_get_user_group_from_id(group.id);
+                if (
+                    !silently &&
+                    group_full?.can_mention_group &&
+                    !user_groups.is_user_in_setting_group(
+                        group_full.can_mention_group,
+                        helper_config.my_user_id(),
+                    )
+                ) {
+                    disallowed_group_mentions.push(group_full.name);
+                }
+
                 let display_text;
                 let classes;
                 if (silently) {
@@ -358,7 +409,7 @@ function parse_with_options(
         flags.push("topic_wildcard_mentioned");
     }
 
-    return {content, flags};
+    return {content, flags, disallowed_group_mentions};
 }
 
 function is_x_between(x: number, start: number, length: number): boolean {
@@ -696,6 +747,7 @@ export function parse({
 }): {
     content: string;
     flags: string[];
+    disallowed_group_mentions: string[];
 } {
     function get_linkifier_regexes(): RE2JS[] {
         return [...helper_config.get_linkifier_map().keys()];
@@ -826,14 +878,7 @@ export function parse({
         streamTopicMessageHandler,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
-        gfm: true,
-        tables: true,
-        breaks: true,
-        pedantic: false,
-        sanitize: true,
-        smartLists: true,
-        smartypants: false,
-        zulip: true,
+        ...common_marked_options,
         renderer,
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     };
@@ -858,15 +903,20 @@ export function render(
     content: string;
     flags: string[];
     is_me_message: boolean;
+    disallowed_group_mentions: string[];
 } {
     // This is generally only intended to be called by the web app. Most
     // other platforms should call parse().
     assert(web_app_helpers !== undefined);
-    const {content, flags} = parse({raw_content, helper_config: helper_config ?? web_app_helpers});
+    const {content, flags, disallowed_group_mentions} = parse({
+        raw_content,
+        helper_config: helper_config ?? web_app_helpers,
+    });
     return {
         content,
         flags,
         is_me_message: is_status_message(raw_content),
+        disallowed_group_mentions,
     };
 }
 

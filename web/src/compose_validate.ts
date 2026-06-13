@@ -20,6 +20,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -95,6 +96,8 @@ export const CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE = $t({
     defaultMessage:
         "You are not allowed to start new topics in this channel. Choose an existing topic from the typeahead.",
 });
+export const get_user_group_mention_error_tooltip_message = (group_name: string): string =>
+    $t({defaultMessage: "You do not have permission to mention {group_name}."}, {group_name});
 
 type StreamWildcardOptions = {
     stream_id: number;
@@ -1242,6 +1245,20 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         return false;
     }
 
+    const disallowed_group = markdown.get_first_disallowed_group_mention(message_content);
+    if (disallowed_group) {
+        if (show_banner) {
+            compose_banner.show_user_group_mention_not_allowed_error(disallowed_group);
+        }
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html =
+                get_user_group_mention_error_tooltip_message(disallowed_group);
+        }
+        blueslip.debug("Invalid compose state: Disallowed group mention");
+        is_validating_compose_box = false;
+        return false;
+    }
+
     if (upload_in_progress) {
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = UPLOAD_IN_PROGRESS_ERROR_TOOLTIP_MESSAGE;
@@ -1257,6 +1274,10 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
 
 export function rewire_validate(value: typeof validate): void {
     validate = value;
+}
+
+export function get_disabled_send_tooltip_message_html(): string {
+    return disabled_send_tooltip_message_html;
 }
 
 export function convert_mentions_to_silent_in_direct_messages(
