@@ -321,6 +321,26 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = ":cross_mark: baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__closed", TOPIC_PR, expected_message)
 
+    def test_pull_request_closed_msg_without_sender(self) -> None:
+        expected_message = ":cross_mark: Unknown closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        self.subscribe(self.test_user, self.channel_name)
+        payload = orjson.loads(self.get_body("pull_request__closed"))
+        del payload["sender"]
+        self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            payload,
+            HTTP_X_GITHUB_EVENT="pull_request",
+            content_type="application/json",
+        )
+        msg = self.get_last_message()
+        self.assert_channel_message(
+            message=msg,
+            channel_name=self.channel_name,
+            topic_name=TOPIC_PR,
+            content=expected_message,
+        )
+
     def test_pull_request_closed_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
