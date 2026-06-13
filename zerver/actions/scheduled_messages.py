@@ -16,6 +16,14 @@ from zerver.actions.message_send import (
 from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
 from zerver.lib.display_recipient import get_recipient_ids
+from zerver.lib.event_types import (
+    ReminderFields,
+    RemindersAddEvent,
+    ScheduledMessageFields,
+    ScheduledMessagesAddEvent,
+    ScheduledMessagesRemoveEvent,
+    ScheduledMessagesUpdateEvent,
+)
 from zerver.lib.exceptions import (
     DeliveryTimeNotInFutureError,
     JsonableError,
@@ -78,22 +86,19 @@ def check_schedule_message(
 def notify_new_scheduled_message(
     user_profile: UserProfile, scheduled_messages: list[ScheduledMessage]
 ) -> None:
-    event = {
-        "type": "scheduled_messages",
-        "op": "add",
-        "scheduled_messages": [
-            scheduled_message.to_dict() for scheduled_message in scheduled_messages
+    event = ScheduledMessagesAddEvent(
+        scheduled_messages=[
+            ScheduledMessageFields(**scheduled_message.to_dict())
+            for scheduled_message in scheduled_messages
         ],
-    }
+    )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def notify_new_reminder(user_profile: UserProfile, reminders: list[ScheduledMessage]) -> None:
-    event = {
-        "type": "reminders",
-        "op": "add",
-        "reminders": [reminder.to_reminder_dict() for reminder in reminders],
-    }
+    event = RemindersAddEvent(
+        reminders=[ReminderFields(**reminder.to_reminder_dict()) for reminder in reminders],
+    )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
@@ -152,11 +157,9 @@ def do_schedule_messages(
 def notify_update_scheduled_message(
     user_profile: UserProfile, scheduled_message: ScheduledMessage
 ) -> None:
-    event = {
-        "type": "scheduled_messages",
-        "op": "update",
-        "scheduled_message": scheduled_message.to_dict(),
-    }
+    event = ScheduledMessagesUpdateEvent(
+        scheduled_message=ScheduledMessageFields(**scheduled_message.to_dict()),
+    )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
@@ -280,11 +283,7 @@ def edit_scheduled_message(
 
 
 def notify_remove_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:
-    event = {
-        "type": "scheduled_messages",
-        "op": "remove",
-        "scheduled_message_id": scheduled_message_id,
-    }
+    event = ScheduledMessagesRemoveEvent(scheduled_message_id=scheduled_message_id)
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 

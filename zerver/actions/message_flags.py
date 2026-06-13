@@ -1,6 +1,5 @@
 import time
 from collections import defaultdict
-from dataclasses import asdict, dataclass, field
 
 from django.db import transaction
 from django.db.models import F
@@ -8,6 +7,12 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
+from zerver.lib.event_types import (
+    BaseEvent,
+    MessageDetails,
+    UpdateMessageFlagsAddEvent,
+    UpdateMessageFlagsRemoveEvent,
+)
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import (
     bulk_access_messages,
@@ -20,16 +25,6 @@ from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import Device, Message, PushDeviceToken, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
-
-
-@dataclass
-class ReadMessagesEvent:
-    messages: list[int]
-    all: bool
-    type: str = field(default="update_message_flags", init=False)
-    op: str = field(default="add", init=False)
-    operation: str = field(default="add", init=False)
-    flag: str = field(default="read", init=False)
 
 
 def do_mark_all_as_read(user_profile: UserProfile, *, timeout: float | None = None) -> int | None:
@@ -89,11 +84,11 @@ def do_mark_all_as_read(user_profile: UserProfile, *, timeout: float | None = No
             if updated_count < batch_size:
                 break
 
-    event = asdict(
-        ReadMessagesEvent(
-            messages=[],  # we don't send messages, since the client reloads anyway
-            all=True,
-        )
+    event = UpdateMessageFlagsAddEvent(
+        flag="read",
+        # Empty list because the client reloads anyway.
+        messages=[],
+        all=True,
     )
     send_event_rollback_unsafe(user_profile.realm, event, [user_profile.id])
 
@@ -130,12 +125,7 @@ def do_mark_stream_messages_as_read(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
-    event = asdict(
-        ReadMessagesEvent(
-            messages=message_ids,
-            all=False,
-        )
-    )
+    event = UpdateMessageFlagsAddEvent(flag="read", messages=message_ids, all=False)
     event_time = timezone_now()
 
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
@@ -173,12 +163,7 @@ def do_mark_muted_user_messages_as_read(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
-    event = asdict(
-        ReadMessagesEvent(
-            messages=message_ids,
-            all=False,
-        )
-    )
+    event = UpdateMessageFlagsAddEvent(flag="read", messages=message_ids, all=False)
     event_time = timezone_now()
 
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
@@ -416,24 +401,26 @@ def do_update_message_flags(
         else:
             to_update.update(flags=F("flags").bitand(~flagattr))
 
-        event = {
-            "type": "update_message_flags",
-            "op": operation,
-            "operation": operation,
-            "flag": flag,
-            "messages": messages,
-            "all": False,
-        }
-
-        if flag == "read" and not is_adding:
+        event: BaseEvent
+        if is_adding:
+            event = UpdateMessageFlagsAddEvent(flag=flag, messages=messages, all=False)
+        elif flag == "read":
             # When removing the read flag (i.e. marking messages as
             # unread), extend the event with an additional object with
             # details on the messages required to update the client's
             # `unread_msgs` data structure.
             raw_unread_data = get_raw_unread_data(user_profile, messages)
-            event["message_details"] = format_unread_message_details(
-                user_profile.id, raw_unread_data
+            message_details = {
+                message_id: MessageDetails(**details)
+                for message_id, details in format_unread_message_details(
+                    user_profile.id, raw_unread_data
+                ).items()
+            }
+            event = UpdateMessageFlagsRemoveEvent(
+                flag=flag, messages=messages, all=False, message_details=message_details
             )
+        else:
+            event = UpdateMessageFlagsRemoveEvent(flag=flag, messages=messages, all=False)
 
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
