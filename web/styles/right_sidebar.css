@@ -579,16 +579,11 @@
 }
 
 .buddy-list-user-link {
-    text-decoration: none;
-    display: block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    
     &:focus-within {
         outline: 2px solid var(--color-outline-focus);
         outline-offset: -2px;
         background-color: var(--color-background-hover-narrow-filter);
-        text-decoration: none;
+        
     }
 }
 
