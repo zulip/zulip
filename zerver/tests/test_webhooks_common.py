@@ -12,6 +12,7 @@ from typing_extensions import override
 
 from version import ZULIP_VERSION
 from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
@@ -25,13 +26,15 @@ from zerver.lib.webhooks.common import (
     MissingHTTPEventHeaderError,
     call_fixture_to_headers,
     check_send_webhook_message,
+    check_topic_rename,
     get_event_header,
     get_service_api_data,
     guess_zulip_user_from_external_account,
     standardize_headers,
     validate_webhook_signature,
 )
-from zerver.models import Client, CustomProfileField, Message, UserProfile
+from zerver.models import Client, CustomProfileField, Message, NamedUserGroup, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -278,6 +281,84 @@ class TestGuessZulipUserFromExternalAccount(ZulipTestCase):
             external_username_case_insensitive=True,
         )
         self.assertEqual(result, self.hamlet)
+
+
+class TopicRenameTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.realm = get_realm("zulip")
+        self.user_profile = get_user("webhook-bot@zulip.com", self.realm)
+        self.stream_name = "webhook-rename-test"
+        self.make_stream(self.stream_name)
+        self.subscribe(self.user_profile, self.stream_name)
+
+    def test_topic_rename_success(self) -> None:
+        old_topic = "Old Topic"
+        new_topic = "New Topic"
+
+        message_id = self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=old_topic, content="Test message"
+        )
+
+        self.assertTrue(
+            check_topic_rename(self.user_profile, self.stream_name, old_topic, new_topic)
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), new_topic)
+
+    def test_topic_rename_failure_cases(self) -> None:
+        existing_topic = "Has Messages"
+        message_id = self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=existing_topic, content="Test message"
+        )
+
+        cases = [
+            ("NonExistentStream", existing_topic),
+            (self.stream_name, "Ghost Topic"),
+        ]
+        for stream, topic in cases:
+            self.assertFalse(check_topic_rename(self.user_profile, stream, topic, "New"))
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), existing_topic)
+
+    def test_topic_rename_multiple_messages(self) -> None:
+        old_topic = "Topic To Move"
+        new_topic = "Moved Topic"
+
+        msg_ids = [
+            self.send_stream_message(
+                self.user_profile, self.stream_name, topic_name=old_topic, content=f"Msg {i}"
+            )
+            for i in range(3)
+        ]
+
+        self.assertTrue(
+            check_topic_rename(self.user_profile, self.stream_name, old_topic, new_topic)
+        )
+
+        messages = Message.objects.filter(id__in=msg_ids)
+        self.assertTrue(all(message.topic_name() == new_topic for message in messages))
+
+    def test_topic_rename_without_permission(self) -> None:
+        old_topic = "Old Topic"
+        new_topic = "New Topic"
+
+        message_id = self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=old_topic, content="Test message"
+        )
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=self.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            self.realm,
+            "can_move_messages_between_topics_group",
+            nobody_group,
+            acting_user=None,
+        )
+        user_profile = get_user("webhook-bot@zulip.com", self.realm)
+
+        self.assertFalse(check_topic_rename(user_profile, self.stream_name, old_topic, new_topic))
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), old_topic)
 
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):

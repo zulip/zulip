@@ -11,6 +11,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.message import truncate_topic
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -18,6 +19,7 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
+    check_topic_rename,
     default_fixture_to_headers,
     get_event_header,
     get_setup_webhook_message,
@@ -804,6 +806,28 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
     )
 
 
+def handle_topic_rename(
+    user_profile: UserProfile,
+    header_event: str,
+    payload: WildValue,
+    stream: str,
+    new_topic: str,
+) -> None:
+    type_str = "PR" if header_event == "pull_request" else "issue"
+    item = payload["pull_request"] if header_event == "pull_request" else payload["issue"]
+
+    old_topic = truncate_topic(
+        TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repository_name(payload),
+            type=type_str,
+            id=item["number"].tame(check_int),
+            title=payload["changes"]["title"]["from"].tame(check_string),
+        )
+    )
+
+    check_topic_rename(user_profile, stream, old_topic, truncate_topic(new_topic))
+
+
 def get_pull_request_review_requested_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
@@ -1208,6 +1232,8 @@ def api_github_webhook(
     ignore_private_repositories: Json[bool] = False,
     include_repository_name: Json[bool] = False,
     include_emoji_indicators: Json[bool] = True,
+    enable_topic_rename: Json[bool] = True,
+    stream: str | None = None,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -1257,7 +1283,20 @@ def api_github_webhook(
     )
     body = body_function(helper)
 
-    check_send_webhook_message(request, user_profile, topic_name, body, event)
+    sent_message_id = check_send_webhook_message(request, user_profile, topic_name, body, event)
+
+    # Handle topic renaming for PRs and Issues with edited titles
+    if (
+        sent_message_id is not None
+        and enable_topic_rename
+        and stream is not None
+        and user_specified_topic is None
+        and header_event in ("pull_request", "issues")
+        and payload["action"].tame(check_string) == "edited"
+        and "title" in payload.get("changes", {})
+    ):
+        handle_topic_rename(user_profile, header_event, payload, stream, topic_name)
+
     return json_success(request)
 
 
