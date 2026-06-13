@@ -137,6 +137,11 @@ type RenderingPlan = {
     append_messages: MessageContainer[];
 };
 
+type BoundaryMessageContainerInfo = {
+    message_group: MessageGroup;
+    message_container: MessageContainer;
+};
+
 function same_day(earlier_msg: Message | undefined, later_msg: Message | undefined): boolean {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
@@ -196,14 +201,37 @@ function clear_message_divider(message_container: MessageContainer): void {
     message_container.date_divider_html = undefined;
 }
 
+function was_moved_from_another_channel(message: Message): boolean {
+    // A moved message's `historical` flag reflects the channel it was
+    // originally sent to, so it says nothing about the user's
+    // subscription history in the current channel.
+    if (message.type !== "stream") {
+        return false;
+    }
+    // edit_history is newest-first, so the oldest stream-move entry's
+    // prev_stream is the original channel; a message moved back there
+    // has a meaningful flag again.
+    const original_stream_id = message.edit_history?.findLast(
+        (entry) => entry.prev_stream !== undefined,
+    )?.prev_stream;
+    return original_stream_id !== undefined && original_stream_id !== message.stream_id;
+}
+
 function wants_subscription_divider(
     prev_historical: boolean | undefined,
     message: Message,
+    message_was_moved: boolean,
 ): boolean {
     // A continuation message shows an inline subscription divider when its
-    // `historical` flag differs from the previous one, i.e. the user
-    // (un)subscribed between them.
-    return prev_historical !== undefined && prev_historical !== message.historical;
+    // `historical` flag differs from the previous meaningful one, i.e. the
+    // user (un)subscribed between them. A moved message's flag is
+    // meaningless here, so it never shows one; callers pass the
+    // already-computed moved status to avoid recomputing it.
+    return (
+        !message_was_moved &&
+        prev_historical !== undefined &&
+        prev_historical !== message.historical
+    );
 }
 
 function update_date_divider(opts: {
@@ -685,10 +713,12 @@ export class MessageListView {
         group: MessageGroup,
         prev_historical: boolean | undefined,
         first_message: Message,
+        first_message_was_moved: boolean,
     ): void {
         const markers = this.get_possible_group_subscription_markers(
             prev_historical,
             first_message,
+            first_message_was_moved,
         );
         if (markers) {
             Object.assign(group, markers);
@@ -698,6 +728,7 @@ export class MessageListView {
     get_possible_group_subscription_markers(
         prev_historical: boolean | undefined,
         first_message: Message,
+        first_message_was_moved: boolean,
     ): SubscriptionMarkers | undefined {
         // The `historical` flag is present on messages which were
         // sent a time when the current user was not subscribed to the
@@ -710,7 +741,11 @@ export class MessageListView {
         if (!this.list.data.filter.has_operator("channel")) {
             return undefined;
         }
-        if (prev_historical === undefined) {
+        // A moved message's flag reflects its original channel, so a
+        // boundary involving one tells us nothing about subscription
+        // changes here. prev_historical already skips moved messages;
+        // guard the group's first message too.
+        if (prev_historical === undefined || first_message_was_moved) {
             return undefined;
         }
 
@@ -739,26 +774,95 @@ export class MessageListView {
         return undefined;
     }
 
-    update_oldest_rendered_subscription_representation(prev_historical: boolean): void {
-        // Set the oldest rendered container's divider and marker against
-        // the prepended messages; the set_subscription_representation pass over
-        // the new groups did not cover this boundary.
-        const oldest_rendered_group = this._message_groups[0];
-        const oldest_rendered_container = this._message_groups[0]?.message_containers[0];
-        if (oldest_rendered_group !== undefined && oldest_rendered_container !== undefined) {
-            this.maybe_add_subscription_marker_to_group(
-                oldest_rendered_group,
-                prev_historical,
-                oldest_rendered_container.msg,
-            );
-            // The oldest rendered group may merge with the prepended content, so
-            // set the divider speculatively; merge_message_groups() clears it if
-            // the merge does not happen.
-            oldest_rendered_container.want_subscription_status_divider = wants_subscription_divider(
-                prev_historical,
-                oldest_rendered_container.msg,
-            );
+    get_boundary_message_info_with_meaningful_historical(
+        position: "oldest" | "newest",
+    ): BoundaryMessageContainerInfo | undefined {
+        // Returns the oldest or newest rendered message container info whose
+        // `historical` flag is meaningful in the current channel, or
+        // undefined if there is none.
+        //
+        // Moved messages are skipped because their `historical` flag does not
+        // represent the subscription state of this channel. This method is
+        // used when prepending/appending messages, so it walks from the
+        // requested boundary rather than flattening all rendered containers;
+        // in the common case it finds a meaningful message immediately.
+        const message_groups =
+            position === "oldest" ? this._message_groups : this._message_groups.toReversed();
+
+        for (const message_group of message_groups) {
+            const meaningful_container =
+                position === "oldest"
+                    ? message_group.message_containers.find(
+                          (message_container) =>
+                              !was_moved_from_another_channel(message_container.msg),
+                      )
+                    : message_group.message_containers.findLast(
+                          (message_container) =>
+                              !was_moved_from_another_channel(message_container.msg),
+                      );
+
+            if (meaningful_container !== undefined) {
+                return {
+                    message_container: meaningful_container,
+                    message_group,
+                };
+            }
         }
+
+        return undefined;
+    }
+
+    update_oldest_rendered_subscription_representation(prev_historical: boolean): void {
+        // Set the oldest rendered meaningful container's divider/marker against
+        // the prepended messages; the walk over the new groups did not cover
+        // this boundary.
+        //
+        // The container is meaningful, hence never moved, so it passes `false`
+        // for message_was_moved below.
+        const boundary_message_container_info =
+            this.get_boundary_message_info_with_meaningful_historical("oldest");
+        if (boundary_message_container_info === undefined) {
+            return;
+        }
+        const {message_group, message_container} = boundary_message_container_info;
+
+        const is_first_container_in_group =
+            message_group.message_containers[0] === message_container;
+
+        if (!is_first_container_in_group) {
+            // A continuation within its group: shown as an inline divider.
+            message_container.want_subscription_status_divider = wants_subscription_divider(
+                prev_historical,
+                message_container.msg,
+                false,
+            );
+            return;
+        }
+
+        // Starts its group: the change is shown as a group marker.
+        this.maybe_add_subscription_marker_to_group(
+            message_group,
+            prev_historical,
+            message_container.msg,
+            false,
+        );
+
+        const is_oldest_rendered_group = message_group === this._message_groups[0];
+
+        if (!is_oldest_rendered_group) {
+            // This group can't merge with the prepended content, so no divider.
+            message_container.want_subscription_status_divider = false;
+            return;
+        }
+
+        // The oldest rendered group may merge with the prepended content, so
+        // set the divider speculatively; merge_message_groups() clears it if
+        // the merge does not happen.
+        message_container.want_subscription_status_divider = wants_subscription_divider(
+            prev_historical,
+            message_container.msg,
+            false,
+        );
     }
 
     set_subscription_dividers_and_markers(
@@ -768,38 +872,62 @@ export class MessageListView {
         // Walk the newly built groups in order, setting each container's
         // inline subscription-status divider and each group's bookend marker.
         // Both mark the same thing -- the `historical` flag flipping between
-        // two adjacent messages, i.e. the user (un)subscribed
+        // two adjacent meaningful messages, i.e. the user (un)subscribed
         // between them -- shown inline between two messages or as a bookend
         // at a group boundary.
         //
-        // prev_historical stores the previous message's flag as we walk.
+        // prev_historical holds the last meaningful flag as we walk. A message
+        // moved here from another channel carries its original channel's flag,
+        // so it is skipped and does not advance prev_historical, preserving a
+        // real transition around a moved message rather than hiding it.
         //
         // The boundary against the already-rendered messages is handled after
         // the loop, since that container may merge into a neighbouring group.
 
         const is_prepend = where === "top";
-        let prev_historical = is_prepend ? undefined : this.list.last_message_historical;
+        let prev_historical = is_prepend
+            ? undefined
+            : this.get_boundary_message_info_with_meaningful_historical("newest")?.message_container
+                  .msg.historical;
+        const newest_rendered_historical = is_prepend ? undefined : prev_historical;
+
+        // The first new container is the boundary against the already-rendered
+        // messages when appending; cache whether it was moved during the walk
+        // so the post-loop boundary step need not recompute it.
+        const first_message_container = new_message_groups[0]?.message_containers[0];
+        let first_message_was_moved = false;
 
         // Record a container's subscription change as a bookend marker when it
         // starts its group, or as an inline divider when it is a continuation,
-        // then advance prev_historical.
+        // then advance prev_historical past meaningful messages.
         const set_subscription_representation = (
             group: MessageGroup,
             message_container: MessageContainer,
             starts_message_group: boolean,
         ): void => {
             const message = message_container.msg;
+            const message_was_moved = was_moved_from_another_channel(message);
+            if (message_container === first_message_container) {
+                first_message_was_moved = message_was_moved;
+            }
             if (starts_message_group) {
-                this.maybe_add_subscription_marker_to_group(group, prev_historical, message);
+                this.maybe_add_subscription_marker_to_group(
+                    group,
+                    prev_historical,
+                    message,
+                    message_was_moved,
+                );
                 message_container.want_subscription_status_divider = false;
             } else {
                 message_container.want_subscription_status_divider = wants_subscription_divider(
                     prev_historical,
                     message,
+                    message_was_moved,
                 );
             }
-
-            prev_historical = message.historical;
+            if (!message_was_moved) {
+                prev_historical = message.historical;
+            }
         };
 
         for (const message_group of new_message_groups) {
@@ -820,15 +948,12 @@ export class MessageListView {
         // speculative: merge_message_groups() clears it if no merge takes place.
         if (is_prepend && prev_historical !== undefined) {
             this.update_oldest_rendered_subscription_representation(prev_historical);
-        } else {
-            const first_message_container = new_message_groups[0]?.message_containers[0];
-            if (first_message_container !== undefined) {
-                first_message_container.want_subscription_status_divider =
-                    wants_subscription_divider(
-                        this.list.last_message_historical,
-                        first_message_container.msg,
-                    );
-            }
+        } else if (first_message_container !== undefined) {
+            first_message_container.want_subscription_status_divider = wants_subscription_divider(
+                newest_rendered_historical,
+                first_message_container.msg,
+                first_message_was_moved,
+            );
         }
     }
 
