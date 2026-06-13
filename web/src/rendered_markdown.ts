@@ -7,6 +7,7 @@ import assert from "minimalistic-assert";
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import code_buttons_container from "../templates/code_buttons_container.hbs";
 import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
+import render_hide_preview_button from "../templates/hide_preview_button.hbs";
 import render_markdown_audio from "../templates/markdown_audio.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
@@ -25,6 +26,7 @@ import * as rows from "./rows.ts";
 import * as rtl from "./rtl.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import {parse_html} from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -402,6 +404,26 @@ export const update_elements = ($content: JQuery): void => {
         });
         $codehilite.addClass("zulip-code-block");
     });
+
+    // Inject hide-preview buttons on link previews (embeds, images,
+    // videos).  Skips user uploads.  Permission and visibility are
+    // handled in click_handlers.ts and message_list_hover.ts.
+    if (get_message_for_message_content($content) !== undefined) {
+        $content
+            .find(".message_embed, .message-media-preview-image, .message-media-preview-video")
+            .each(function (): void {
+                const $preview = $(this);
+
+                // Skip user uploads; they are message content, not hideable link previews.
+                const preview_url = $preview.find("a").attr("href");
+                if (preview_url === undefined || preview_url.startsWith("/user_uploads/")) {
+                    return;
+                }
+
+                const $hide_preview_button = parse_html(render_hide_preview_button({preview_url}));
+                $preview.append($hide_preview_button);
+            });
+    }
 
     $content.find("audio").each(function (): void {
         // We grab the audio source and title for
