@@ -9463,6 +9463,24 @@ paths:
                               type: integer
                               description: |
                                 The UNIX timestamp for this edit.
+                            history_deleted_by:
+                              type: integer
+                              description: |
+                                Only present when a content-edit entry's previous
+                                content has been deleted. Contains the ID of the user
+                                who deleted it. Any user with permission to delete the
+                                message also has permission to delete its edit history.
+
+                                **Changes**: New in Zulip 13.0 (feature level ZF-bbdbb7).
+                            history_deleted_at:
+                              type: integer
+                              description: |
+                                Only present when `history_deleted_by` is present.
+
+                                The UNIX timestamp at which the previous message
+                                content was deleted from this entry's edit history.
+
+                                **Changes**: New in Zulip 13.0 (feature level ZF-bbdbb7).
                         description: |
                           A chronologically sorted, oldest to newest, array
                           of `snapshot` objects, each one with the values of
@@ -9502,6 +9520,44 @@ paths:
                   - $ref: "#/components/schemas/InvalidMessageError"
                   - description: |
                       An example JSON response for when the specified message does not exist:
+  /messages/{message_id}/edit_history/delete_content_revisions:
+    post:
+      operationId: delete-message-edit-history-content-revisions
+      summary: Delete a message's prior content revisions
+      tags: ["messages"]
+      description: |
+        Delete the prior content revisions from a message's edit history.
+        The record that the message was edited (including topic or channel
+        moves) is preserved, and each affected entry will record who
+        performed the deletion and when.
+
+        Users who have permission to [delete a message](/help/delete-a-message)
+        also have permission to delete its edit history. The time limit that
+        applies to message deletion does not apply here.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-bbdbb7).
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+              examples:
+                response:
+                  value: {"msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      An example error response if the message has no
+                      content edits to delete.
   /messages/flags:
     post:
       operationId: update-message-flags
