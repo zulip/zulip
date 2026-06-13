@@ -6,15 +6,74 @@ from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_string
+from zerver.lib.validator import WildValue, check_bool, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
+ADMIN_ROLE_UPDATED_TEMPLATE = "{name} is {phrase} an admin."
 
-def get_ping_message(payload: WildValue) -> tuple[str, str]:
-    body = get_setup_webhook_message("Intercom")
-    topic_name = "Intercom"
-    return (topic_name, body)
+ADMIN_AWAY_MODE_UPDATED_TEMPLATE = "{name} is {away_mode}{reason}."
+
+ADMIN_LOGIN_LOGOUT_TEMPLATE = "{name} {phrase}."
+
+
+def get_admin_name(payload: WildValue) -> str:
+    return payload["data"]["item"]["name"].tame(check_string)
+
+
+def get_topic_name(event_category: str, payload: WildValue) -> str:
+    match event_category:
+        case "ping":
+            return "Intercom"
+        case "admin":
+            if payload["topic"].tame(check_string) == "admin.activity_log_event.created":
+                return "Admin"
+            return f"Admin: {get_admin_name(payload)}"
+        case _:  # nocoverage
+            raise UnsupportedWebhookEventTypeError(payload["topic"].tame(check_string))
+
+
+def get_ping_message(payload: WildValue) -> str:
+    return get_setup_webhook_message("Intercom")
+
+
+def get_admin_activity_log_event_created_message(payload: WildValue) -> str:
+    return payload["data"]["item"]["activity_description"].tame(check_string)
+
+
+def get_admin_role_updated_message(payload: WildValue) -> str:
+    if payload["topic"].tame(check_string) == "admin.added_to_workspace":
+        return ADMIN_ROLE_UPDATED_TEMPLATE.format(name=get_admin_name(payload), phrase="now")
+    else:
+        return ADMIN_ROLE_UPDATED_TEMPLATE.format(name=get_admin_name(payload), phrase="no longer")
+
+
+def get_admin_login_logout_message(payload: WildValue) -> str:
+    if payload["topic"].tame(check_string) == "admin.logged_in":
+        return ADMIN_LOGIN_LOGOUT_TEMPLATE.format(name=get_admin_name(payload), phrase="logged in")
+    else:
+        return ADMIN_LOGIN_LOGOUT_TEMPLATE.format(name=get_admin_name(payload), phrase="logged out")
+
+
+def get_admin_away_mode_updated_message(payload: WildValue) -> str:
+    admin_name = get_admin_name(payload)
+    away_mode_enabled = payload["data"]["item"]["away_mode_enabled"].tame(check_bool)
+
+    if away_mode_enabled:
+        away_status = "away"
+        reason_value = payload["data"]["item"]["away_status_reason"].tame(check_string)
+
+        # Strip trailing period if exists,
+        # since reason will be wrapped inside parentheses.
+        reason_value = reason_value.removesuffix(".")
+        reason = f" ({reason_value})" if reason_value else ""
+    else:
+        away_status = "now available"
+        reason = ""
+
+    return ADMIN_AWAY_MODE_UPDATED_TEMPLATE.format(
+        name=admin_name, away_mode=away_status, reason=reason
+    )
 
 
 IGNORED_EVENTS = [
@@ -39,8 +98,14 @@ IGNORED_EVENTS = [
 ]
 
 
-EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
-    "ping": get_ping_message
+EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
+    "ping": get_ping_message,
+    "admin.activity_log_event.created": get_admin_activity_log_event_created_message,
+    "admin.added_to_workspace": get_admin_role_updated_message,
+    "admin.removed_from_workspace": get_admin_role_updated_message,
+    "admin.away_mode_updated": get_admin_away_mode_updated_message,
+    "admin.logged_in": get_admin_login_logout_message,
+    "admin.logged_out": get_admin_login_logout_message,
 }
 
 ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
@@ -65,7 +130,8 @@ def api_intercom_webhook(
     handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
         raise UnsupportedWebhookEventTypeError(event_type)
-    topic_name, body = handler(payload)
+    body = handler(payload)
+    topic_name = get_topic_name(event_category, payload)
 
     check_send_webhook_message(request, user_profile, topic_name, body, event_type)
     return json_success(request)
