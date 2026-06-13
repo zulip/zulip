@@ -387,11 +387,13 @@ class Subscription(models.Model):
     is_user_active = models.BooleanField()
 
     # Whether this user had muted this stream.
-    is_muted = models.BooleanField(default=False)
+    is_muted = models.BooleanField(default=False, db_default=False)
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
-    color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
-    pin_to_top = models.BooleanField(default=False)
+    color = models.CharField(
+        max_length=10, default=DEFAULT_STREAM_COLOR, db_default=DEFAULT_STREAM_COLOR
+    )
+    pin_to_top = models.BooleanField(default=False, db_default=False)
 
     # These fields are stream-level overrides for the user's default
     # configuration for notification, configured in UserProfile.  The
