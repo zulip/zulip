@@ -1,3 +1,4 @@
+import concurrent.futures
 from collections.abc import Iterable, Sequence
 from dataclasses import asdict
 from email.headerregistry import Address
@@ -17,6 +18,7 @@ from zerver.actions.message_send import (
     extract_private_recipients,
     extract_stream_indicator,
 )
+from zerver.lib.cache import cache_get, preview_url_cache_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
@@ -27,6 +29,8 @@ from zerver.lib.typed_endpoint import (
     OptionalTopic,
     typed_endpoint,
 )
+from zerver.lib.url_preview import preview as url_preview
+from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.zcommand import process_zcommands
 from zerver.models import Client, Message, RealmDomain, UserProfile
 from zerver.models.users import get_user_including_cross_realm
@@ -251,6 +255,48 @@ def zcommand_backend(
     return json_success(request, data=asdict(process_zcommands(command, user_profile)))
 
 
+# Maximum number of URLs for which to attempt embed data fetching in compose preview.
+COMPOSE_PREVIEW_MAX_URLS = 2
+
+
+def get_compose_preview_embed_data(
+    links_for_preview: set[str],
+) -> dict[str, UrlEmbedData | None]:
+    """Return cached embed data for URLs in links_for_preview.
+
+    Uncached URLs are fetched in background threads (fire-and-forget)
+    so the cache is warm for the frontend's next poll request.
+    """
+    if not links_for_preview:
+        return {}
+
+    # Sort for deterministic selection when slicing to COMPOSE_PREVIEW_MAX_URLS.
+    urls_to_check = sorted(links_for_preview)[:COMPOSE_PREVIEW_MAX_URLS]
+
+    url_embed_data: dict[str, UrlEmbedData | None] = {}
+    urls_needing_fetch: list[str] = []
+
+    for url in urls_to_check:
+        cached = cache_get(preview_url_cache_key(url))
+        if cached is not None:
+            # cache_with_key wraps stored values in a (value,) tuple; unwrap.
+            data = cached[0]
+            if data is not None:
+                url_embed_data[url] = data
+        else:
+            urls_needing_fetch.append(url)
+
+    if urls_needing_fetch:
+        # shutdown(wait=False) lets threads complete in the background
+        # without blocking the request.
+        executor = concurrent.futures.ThreadPoolExecutor()
+        for url in urls_needing_fetch:
+            executor.submit(url_preview.get_link_embed_data, url)
+        executor.shutdown(wait=False)
+
+    return url_embed_data
+
+
 @typed_endpoint
 def render_message_backend(
     request: HttpRequest,
@@ -267,4 +313,13 @@ def render_message_backend(
     message.sending_client = client
 
     rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
+
+    # Mirror the two-pass approach the embed worker uses for sent messages:
+    # first render populates links_for_preview; second bakes in any cached embeds.
+    url_embed_data = get_compose_preview_embed_data(rendering_result.links_for_preview)
+    if url_embed_data:
+        rendering_result = render_message_markdown(
+            message, content, realm=user_profile.realm, url_embed_data=url_embed_data
+        )
+
     return json_success(request, data={"rendered": rendering_result.rendered_content})

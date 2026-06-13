@@ -76,6 +76,7 @@ export function clear_preview_area(): void {
     compose_ui.exit_preview_mode($("#compose"));
     autosize.update($("textarea#compose-textarea"));
     compose_ui.clear_thumbnail_polling();
+    compose_ui.clear_embed_polling();
 }
 
 export function show_preview_area(): void {
