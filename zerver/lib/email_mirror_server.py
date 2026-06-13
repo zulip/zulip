@@ -22,7 +22,11 @@ from django.core.mail import EmailMultiAlternatives as DjangoEmailMultiAlternati
 from typing_extensions import override
 
 from version import ZULIP_VERSION
-from zerver.lib.email_mirror import decode_stream_email_address, validate_to_address
+from zerver.lib.email_mirror import (
+    decode_stream_email_address,
+    is_noreply_address,
+    validate_to_address,
+)
 from zerver.lib.email_mirror_helpers import (
     ZulipEmailForwardError,
     get_email_gateway_message_string_from_address,
@@ -84,6 +88,10 @@ class ZulipMessageHandler(MessageHandler):
         if address.lower() == "postmaster":
             envelope.rcpt_tos.append("postmaster")
             return "250 Continue"
+
+        # Reject mail to the noreply address.
+        if is_noreply_address(address):
+            return "550 5.1.1 This address is not monitored. Please reply within Zulip."
 
         with suppress(ZulipEmailForwardError):
             if get_email_gateway_message_string_from_address(address).lower() == "postmaster":
