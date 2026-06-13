@@ -697,6 +697,7 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
                 "x_forwarded_for": request.headers.get("X-Forwarded-For"),
                 "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
                 "remote_addr": request.META["REMOTE_ADDR"],
+                "helm_config": settings.RUNNING_IN_HELM,
                 "docker_config": settings.RUNNING_IN_DOCKER
                 and os.environ.get("MANUAL_CONFIGURATION") != "True",
                 "all_headers": list(request.headers.items()),
