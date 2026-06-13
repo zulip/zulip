@@ -5,6 +5,7 @@
     <head>
         <meta name="viewport" content="width=device-width" />
         <meta charset="UTF-8" />
+        <meta name="color-scheme" content="light dark" />
         <title>Zulip</title>
         <style>{{css_styles}}</style>
     </head>
@@ -14,9 +15,9 @@
                 <td>&nbsp;</td>
                 <td class="container wide-container">
                     <div class="content wide-content">
-                        <a href="#" class="illustration">
-                            {% block illustration %}{% endblock %}
-                        </a>
+                        <div class="email-logo">
+                            <img src="{{ email_images_base_url }}/email_logo_color.png" alt="{{ _('Zulip logo') }}" width="124" height="32" />
+                        </div>
                         <span class="preheader">
                             {% block preheader %}{% endblock %}
                         </span>
@@ -30,7 +31,6 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <img src="{{ email_images_base_url }}/footer.png" alt="{{ _('Swimming fish') }}"/>
                                 </td>
                             </tr>
                         </table>
