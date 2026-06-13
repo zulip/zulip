@@ -629,6 +629,13 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm-including", operand=self.hamlet_email)
         self._do_add_term_test(term, 'WHERE "zerver_usermessage"."flags" & %s != 0')
 
+    def test_add_term_using_dm_with_operator(self) -> None:
+        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
+        self._do_add_term_test(
+            term,
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
     def test_add_term_using_dm_including_operator_with_different_user_email(self) -> None:
         # Test without any such group direct messages existing
         term = NarrowParameter(operator="dm-including", operand=self.othello_email)
@@ -1256,7 +1263,7 @@ class NarrowLibraryTest(ZulipTestCase):
         )
         self.assertFalse(
             is_spectator_compatible(
-                [NarrowParameter(operator="dm-including", operand="hamlet@zulip.com")]
+                [NarrowParameter(operator="dm-with", operand="hamlet@zulip.com")]
             )
         )
         self.assertTrue(
@@ -1296,10 +1303,16 @@ class NarrowLibraryTest(ZulipTestCase):
                 [NarrowParameter(operator="pm-with", operand="hamlet@zulip.com")]
             )
         )
-        # "group-pm-with:" was deprecated by the addition of "dm-including:"
+        # "group-pm-with:" was deprecated by the addition of "dm-with:"
         self.assertFalse(
             is_spectator_compatible(
                 [NarrowParameter(operator="group-pm-with", operand="hamlet@zulip.com")]
+            )
+        )
+        # "dm-including:" is a legacy alias for "dm-with:"
+        self.assertFalse(
+            is_spectator_compatible(
+                [NarrowParameter(operator="dm-including", operand="hamlet@zulip.com")]
             )
         )
         # "stream" is a legacy alias for "channel" operator
@@ -2747,10 +2760,11 @@ class GetOldMessagesTest(ZulipTestCase):
         narrow = [dict(operator="dm", operand=self.example_user("iago").email)]
         self.message_visibility_test(narrow, message_ids, 2)
 
-    def test_get_messages_with_narrow_dm_including(self) -> None:
+    def test_get_messages_with_narrow_dm_with(self) -> None:
         """
-        A request for old messages with a narrow by "dm-including" only
-        returns direct messages (both group and 1:1) with that user.
+        A request for old messages with a narrow by "dm-with" (or its
+        legacy alias "dm-including") only returns direct messages (both
+        group and 1:1) with that user.
         """
         me = self.example_user("hamlet")
 
@@ -2801,12 +2815,15 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.login_user(me)
         test_operands = [cordelia.email, cordelia.id]
-        for operand in test_operands:
-            narrow = [dict(operator="dm-including", operand=operand)]
-            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
-            for message in result["messages"]:
-                self.assertIn(message["id"], matching_message_ids)
-                self.assertNotIn(message["id"], non_matching_message_ids)
+        # "dm-including" is a legacy alias for "dm-with"; both return
+        # the same results.
+        for operator in ["dm-with", "dm-including"]:
+            for operand in test_operands:
+                narrow = [dict(operator=operator, operand=operand)]
+                result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+                for message in result["messages"]:
+                    self.assertIn(message["id"], matching_message_ids)
+                    self.assertNotIn(message["id"], non_matching_message_ids)
 
     def test_get_visible_messages_with_narrow_dm_including(self) -> None:
         me = self.example_user("hamlet")
