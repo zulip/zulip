@@ -94,7 +94,7 @@ export function maybe_disable_widgets(): void {
     }
 
     $(".organization-box [data-name='default-channels-list']")
-        .find("input:not(.search), button, select")
+        .find("input:not(.search), button:not(.clear-filter), select")
         .prop("disabled", true);
 }
 
