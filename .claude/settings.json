@@ -1,0 +1,11 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(./tools/lint:*)",
+            "Bash(./tools/test-backend:*)",
+            "Bash(./tools/test-js-with-node:*)",
+            "Bash(./tools/create-api-changelog:*)",
+            "Bash(.claude/skills/fetch-zulip-messages/fetch-zulip-web-public-messages:*)"
+        ]
+    }
+}
