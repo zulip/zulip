@@ -189,7 +189,7 @@ function clear_group_date(group: MessageGroup): void {
 
 function clear_message_divider(message_container: MessageContainer): void {
     // want_date_divider is set by update_date_divider and
-    // want_subscription_status_divider by set_subscription_dividers;
+    // want_subscription_status_divider by set_subscription_dividers_and_markers;
     // reset both here.
     message_container.want_date_divider = false;
     message_container.want_subscription_status_divider = false;
@@ -683,17 +683,20 @@ export class MessageListView {
 
     maybe_add_subscription_marker_to_group(
         group: MessageGroup,
-        last_message: Message | undefined,
+        prev_historical: boolean | undefined,
         first_message: Message,
     ): void {
-        const markers = this.get_possible_group_subscription_markers(last_message, first_message);
+        const markers = this.get_possible_group_subscription_markers(
+            prev_historical,
+            first_message,
+        );
         if (markers) {
             Object.assign(group, markers);
         }
     }
 
     get_possible_group_subscription_markers(
-        last_message: Message | undefined,
+        prev_historical: boolean | undefined,
         first_message: Message,
     ): SubscriptionMarkers | undefined {
         // The `historical` flag is present on messages which were
@@ -707,11 +710,11 @@ export class MessageListView {
         if (!this.list.data.filter.has_operator("channel")) {
             return undefined;
         }
-        if (last_message === undefined) {
+        if (prev_historical === undefined) {
             return undefined;
         }
 
-        const last_subscribed = !last_message.historical;
+        const last_subscribed = !prev_historical;
         const first_subscribed = !first_message.historical;
         assert(first_message.type === "stream");
         const stream_id = first_message.stream_id;
@@ -736,15 +739,38 @@ export class MessageListView {
         return undefined;
     }
 
-    set_subscription_dividers(new_message_groups: MessageGroup[], where: "top" | "bottom"): void {
+    update_oldest_rendered_subscription_representation(prev_historical: boolean): void {
+        // Set the oldest rendered container's divider and marker against
+        // the prepended messages; the set_subscription_representation pass over
+        // the new groups did not cover this boundary.
+        const oldest_rendered_group = this._message_groups[0];
+        const oldest_rendered_container = this._message_groups[0]?.message_containers[0];
+        if (oldest_rendered_group !== undefined && oldest_rendered_container !== undefined) {
+            this.maybe_add_subscription_marker_to_group(
+                oldest_rendered_group,
+                prev_historical,
+                oldest_rendered_container.msg,
+            );
+            // The oldest rendered group may merge with the prepended content, so
+            // set the divider speculatively; merge_message_groups() clears it if
+            // the merge does not happen.
+            oldest_rendered_container.want_subscription_status_divider = wants_subscription_divider(
+                prev_historical,
+                oldest_rendered_container.msg,
+            );
+        }
+    }
+
+    set_subscription_dividers_and_markers(
+        new_message_groups: MessageGroup[],
+        where: "top" | "bottom",
+    ): void {
         // Walk the newly built groups in order, setting each container's
-        // inline subscription-status divider, which marks -- the `historical`
-        // flag flipping between two adjacent messages, i.e. the user (un)subscribed
-        // between them -- shown inline between two messages.
-        //
-        // A flip at the first container of a group is shown as a group
-        // bookend rather than an inline divider, so those containers are
-        // skipped here.
+        // inline subscription-status divider and each group's bookend marker.
+        // Both mark the same thing -- the `historical` flag flipping between
+        // two adjacent messages, i.e. the user (un)subscribed
+        // between them -- shown inline between two messages or as a bookend
+        // at a group boundary.
         //
         // prev_historical stores the previous message's flag as we walk.
         //
@@ -754,16 +780,19 @@ export class MessageListView {
         const is_prepend = where === "top";
         let prev_historical = is_prepend ? undefined : this.list.last_message_historical;
 
-        // Record a container's subscription change as an inline divider
-        // when it isn't the first container of its message group, and
+        // Record a container's subscription change as a bookend marker when it
+        // starts its group, or as an inline divider when it is a continuation,
         // then advance prev_historical.
         const set_subscription_representation = (
+            group: MessageGroup,
             message_container: MessageContainer,
             starts_message_group: boolean,
         ): void => {
             const message = message_container.msg;
-
-            if (!starts_message_group) {
+            if (starts_message_group) {
+                this.maybe_add_subscription_marker_to_group(group, prev_historical, message);
+                message_container.want_subscription_status_divider = false;
+            } else {
                 message_container.want_subscription_status_divider = wants_subscription_divider(
                     prev_historical,
                     message,
@@ -775,7 +804,7 @@ export class MessageListView {
 
         for (const message_group of new_message_groups) {
             for (const [index, message_container] of message_group.message_containers.entries()) {
-                set_subscription_representation(message_container, index === 0);
+                set_subscription_representation(message_group, message_container, index === 0);
             }
         }
 
@@ -783,27 +812,22 @@ export class MessageListView {
         // may be merged into a single group by merge_message_groups():
         //
         // * when prepending, the oldest rendered container may merge into the
-        //   last new group, so update (divider) against the incoming messages;
+        //   last new group, so update (divider/marker) against the incoming messages;
         // * when appending, the first new container may merge into the newest
         //   rendered group, so set its divider against the newest rendered flag.
         //
         // Update the subscription representation at the boundary. Either is
         // speculative: merge_message_groups() clears it if no merge takes place.
-        if (is_prepend) {
-            // Set the oldest rendered container's divider against
-            // the prepended messages; the set_subscription_representation pass over
-            // the new groups did not cover this boundary.
-            const oldest_rendered_container = this._message_groups[0]?.message_containers[0];
-            if (oldest_rendered_container !== undefined) {
-                oldest_rendered_container.want_subscription_status_divider =
-                    wants_subscription_divider(prev_historical, oldest_rendered_container.msg);
-            }
+        if (is_prepend && prev_historical !== undefined) {
+            this.update_oldest_rendered_subscription_representation(prev_historical);
         } else {
-            prev_historical = this.list.last_message_historical;
             const first_message_container = new_message_groups[0]?.message_containers[0];
-            if (first_message_container) {
+            if (first_message_container !== undefined) {
                 first_message_container.want_subscription_status_divider =
-                    wants_subscription_divider(prev_historical, first_message_container.msg);
+                    wants_subscription_divider(
+                        this.list.last_message_historical,
+                        first_message_container.msg,
+                    );
             }
         }
     }
@@ -828,7 +852,10 @@ export class MessageListView {
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
                 !same_year(message_for_next_group, prev_message),
-                this.get_possible_group_subscription_markers(prev_message, message_for_next_group),
+                // Subscription-status bookends are filled in afterward by
+                // set_subscription_dividers_and_markers, which also needs the
+                // boundary against already-rendered messages.
+                undefined,
             );
         };
 
@@ -931,8 +958,7 @@ export class MessageListView {
         second_group: MessageGroup | undefined,
     ): boolean {
         // join_message_groups will combine groups if they have the
-        // same_recipient and the view supports collapsing, otherwise
-        // it may add a subscription_marker if required.  It returns
+        // same_recipient and the view supports collapsing. It returns
         // true if the two groups were joined in to one and the
         // second_group should be ignored.
         if (first_group === undefined || second_group === undefined) {
@@ -959,13 +985,6 @@ export class MessageListView {
             ];
             return true;
         }
-
-        // We may need to add a subscription marker after merging the groups.
-        this.maybe_add_subscription_marker_to_group(
-            second_group,
-            last_msg_container?.msg,
-            first_msg_container.msg,
-        );
 
         return false;
     }
@@ -1247,7 +1266,7 @@ export class MessageListView {
 
         const new_message_groups = this.build_message_groups(messages);
         const message_containers = new_message_groups.flatMap((group) => group.message_containers);
-        this.set_subscription_dividers(new_message_groups, where);
+        this.set_subscription_dividers_and_markers(new_message_groups, where);
         const message_actions = this.merge_message_groups(new_message_groups, where);
         const new_dom_elements = [];
         let $rendered_groups;
