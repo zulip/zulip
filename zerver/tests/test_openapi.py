@@ -230,7 +230,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These "organization settings" endpoint have modest value to document:
         "/realm",
         "/bots",
-        "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
         "/realm/profile_fields/{field_id}",
         "/realm/icon",
@@ -901,6 +900,22 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "channel"}]\'',
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    def test_generate_and_render_curl_example_multipart_with_excludes(self) -> None:
+        generated_curl_example = self.curl_example(
+            "/bots/{bot_id}",
+            "PATCH",
+            include=["full_name", "file"],
+            exclude=["file"],
+        )
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX PATCH http://localhost:9991/api/v1/bots/17 \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    --data-urlencode 'full_name=The New Bot Name'",
             "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
