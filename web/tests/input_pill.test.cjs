@@ -521,7 +521,7 @@ run_test("misc things", () => {
     const input_stub = {
         to_$: () => ({
             removeClass(cls) {
-                assert.equal(cls, "shake");
+                assert.equal(cls, "input-validation-shake");
                 shake_class_removed = true;
             },
         }),

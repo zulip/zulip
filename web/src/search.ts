@@ -111,7 +111,7 @@ function convert_search_text_to_terms(
             if (shake_pill_if_invalid) {
                 // The shake animation will show if there is any invalid term in the,
                 // search bar, even if it's not what the user just typed or selected.
-                $("#search_query").addClass("shake");
+                $("#search_query").addClass("input-validation-shake");
             }
             return undefined;
         }

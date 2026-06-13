@@ -1638,7 +1638,7 @@ export function initialize(): void {
         const $alert_box = $("#user-profile-groups-tab .user-profile-group-list-alert");
         const item = $("#user-group-to-add .pill-container .input").text().trim();
         if (item) {
-            $("#user-group-to-add .pill-container .input").addClass("shake");
+            $("#user-group-to-add .pill-container .input").addClass("input-validation-shake");
             if (
                 $("#user-group-to-add .pill-container .input").hasClass(
                     "show-outline-on-invalid-input",
