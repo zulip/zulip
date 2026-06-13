@@ -29,7 +29,6 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_usermessages,
     build_zerver_realm,
-    convert_html_to_text,
     create_converted_data_files,
     get_attachment_path_and_content,
     get_data_file,
@@ -42,6 +41,7 @@ from zerver.data_import.import_util import (
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.markdown import get_markdown_image_for_url
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.mime_types import bare_content_type
 from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
@@ -592,7 +592,7 @@ def process_messages(
         message_content_type = message["Body"]["ContentType"]
         if message_content_type == "html":
             try:
-                content = convert_html_to_text(message["Body"]["Content"])
+                content = convert_html_to_markdown(message["Body"]["Content"])
             except Exception:  # nocoverage
                 logging.warning(
                     "Error converting HTML to text for message: '%s'; continuing", content
