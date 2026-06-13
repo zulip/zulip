@@ -1,10 +1,18 @@
 <div class="custom_user_field" name="{{ field.name }}" data-field-id="{{ field.id }}">
     <span class="custom-user-field-label-wrapper {{#if field.required}}required-field-wrapper{{/if}}">
-        <label class="settings-field-label inline-block" for="id_custom_profile_field_input_{{ field.id }}">{{ field.name }}</label>
+        {{#if field.rendered_name}}
+            <label class="settings-field-label inline-block rendered_markdown" for="id_custom_profile_field_input_{{ field.id }}">{{rendered_markdown field.rendered_name}}</label>
+        {{else}}
+            <label class="settings-field-label inline-block" for="id_custom_profile_field_input_{{ field.id }}">{{ field.name }}</label>
+        {{/if}}
         <span class="required-symbol {{#unless is_empty_required_field}}hidden{{/unless}}"> *</span>
     </span>
     <div class="alert-notification custom-field-status"></div>
-    <div class="settings-profile-user-field-hint">{{ field.hint }}</div>
+    {{#if field.rendered_hint}}
+        <div class="settings-profile-user-field-hint rendered_markdown">{{rendered_markdown field.rendered_hint}}</div>
+    {{else}}
+        <div class="settings-profile-user-field-hint">{{ field.hint }}</div>
+    {{/if}}
     <div class="settings-profile-user-field {{#if is_empty_required_field}}empty-required-field{{/if}} {{#unless editable_by_user}}not-editable-by-user-input-wrapper{{/unless}}{{#if (and is_date_field editable_by_user)}}editable-date-field{{/if}}">
         {{#if is_long_text_field}}
         <textarea id="id_custom_profile_field_input_{{ field.id }}" maxlength="500" class="custom_user_field_value {{#if for_manage_user_modal}}modal-textarea{{else}}settings-textarea{{/if}}" name="{{ field.id }}" {{#unless editable_by_user}}disabled{{/unless}}>{{ field_value.value }}</textarea>
