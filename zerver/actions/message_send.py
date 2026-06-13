@@ -1185,7 +1185,7 @@ def do_send_messages(
                about changing the next line.
         """
         if (
-            send_request.message.is_stream_message()
+            send_request.message.is_channel_message
             and send_request.stream
             and send_request.is_support_stream
         ):
