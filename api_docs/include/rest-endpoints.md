@@ -157,6 +157,7 @@
 * [Get all data exports](/api/get-realm-exports)
 * [Create a data export](/api/export-realm)
 * [Get data export consent state](/api/get-realm-export-consents)
+* [Delete a data export](/api/delete-realm-export)
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
 
 ## Real-time events
