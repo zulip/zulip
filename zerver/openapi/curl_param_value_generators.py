@@ -14,6 +14,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_user import do_create_user
+from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
 from zerver.actions.presence import update_user_presence
 from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_domains import do_add_realm_domain
@@ -24,8 +25,9 @@ from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
+from zerver.lib.types import ProfileFieldData
 from zerver.lib.upload import upload_message_attachment
-from zerver.models import Client, Message, NamedUserGroup, UserPresence
+from zerver.models import Client, CustomProfileField, Message, NamedUserGroup, UserPresence
 from zerver.models.channel_folders import ChannelFolder
 from zerver.models.realms import get_realm
 from zerver.models.users import UserProfile, get_user
@@ -356,6 +358,36 @@ def remove_realm_playground() -> dict[str, object]:
     )
     return {
         "playground_id": playground_id,
+    }
+
+
+@openapi_param_value_generator(["/realm/profile_fields/{field_id}:patch"])
+def update_custom_profile_field() -> dict[str, object]:
+    # A dropdown field, so that the documented field_data example validates.
+    field_data: ProfileFieldData = {
+        "0": {"text": "Vim", "order": "1"},
+        "1": {"text": "Emacs", "order": "2"},
+    }
+    field = try_add_realm_custom_profile_field(
+        get_realm("zulip"),
+        "Favorite IDE",
+        CustomProfileField.DROPDOWN,
+        field_data=field_data,
+    )
+    return {
+        "field_id": field.id,
+    }
+
+
+@openapi_param_value_generator(["/realm/profile_fields/{field_id}:delete"])
+def delete_custom_profile_field() -> dict[str, object]:
+    field = try_add_realm_custom_profile_field(
+        get_realm("zulip"),
+        "Field to delete",
+        CustomProfileField.SHORT_TEXT,
+    )
+    return {
+        "field_id": field.id,
     }
 
 
