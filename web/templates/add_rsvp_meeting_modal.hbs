@@ -1,0 +1,43 @@
+<div id="add-rsvp-meeting-modal">
+    <form class="modal-form" id="rsvp-meeting-form">
+        <label for="rsvp-meeting-topic" class="modal-field-label">{{t "Meeting Topic" }}</label>
+        <input
+            id="rsvp-meeting-topic"
+            type="text"
+            name="topic"
+            class="modal_text_input"
+            placeholder="{{t 'Topic for meeting' }}"
+            autocomplete="off"
+            autofocus="autofocus"
+        />
+
+        <label for="rsvp-meeting-datetime" class="modal-field-label">{{t "Meeting Time and Date" }}</label>
+        <input
+            id="rsvp-meeting-datetime"
+            type="datetime-local"
+            name="datetime"
+            class="modal_text_input"
+            placeholder="{{t 'Select day and time' }}"
+        />
+
+        <div class="modal-field-label rsvp-invite-label">
+            <span>{{t "Invite Users" }}</span>
+            <a id="rsvp-add-all-users" class="rsvp-add-all-users-link">{{t "ADD ALL USERS IN CURRENT CHANNEL" }}</a>
+        </div>
+        <div class="pill-container pill-container-outlined rsvp-invite-users-container" id="rsvp-invite-users-container">
+            <div id="rsvp-invite-users" class="input" contenteditable="true" data-placeholder="{{t 'Add users' }}" style="min-height: 32px;"></div>
+            <button type="button" id="rsvp-user-dropdown-button" class="button small">
+                ▼
+            </button>
+            <button type="button" class="button small add-user-button">+</button>
+
+            <div id="rsvp-user-dropdown" class="rsvp-user-dropdown"></div>
+        </div>
+
+        <label class="checkbox rsvp-create-channel-label">
+            <input type="checkbox" id="rsvp-create-channel" name="create_channel" />
+            <span>{{t "Create new channel" }}</span>
+        </label>
+    </form>
+</div>
+
