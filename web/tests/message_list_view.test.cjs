@@ -544,25 +544,15 @@ test("merge_message_groups", ({mock_template}) => {
         view._message_groups = message_groups;
         view.list.unsubscribed_bookend_content = noop;
         view.list.subscribed_bookend_content = noop;
-        // render() records the historical status of the last rendered
-        // message so subsequent appends can compute the subscription
-        // divider against it; mirror that here for the merge tests.
-        const last_group = message_groups.at(-1);
-        if (last_group !== undefined) {
-            view.list.last_message_historical = last_group.message_containers.at(-1).msg.historical;
-        }
         return view;
     }
 
-    // Mirror the order in which render() computes subscription dividers and
-    // markers, merges the new groups, and records the last rendered
-    // message's historical status for the next batch.
+    // Mirror the order in which render() computes subscription-status
+    // dividers and markers on the new groups before merging them into
+    // the rendered list.
     function add_message_groups(list, new_message_groups, where) {
         list.set_subscription_dividers_and_markers(new_message_groups, where);
-        const result = list.merge_message_groups(new_message_groups, where);
-        const last_group = list._message_groups.at(-1);
-        list.list.last_message_historical = last_group.message_containers.at(-1).msg.historical;
-        return result;
+        return list.merge_message_groups(new_message_groups, where);
     }
 
     function extract_message_ids(lst) {
@@ -851,6 +841,396 @@ test("merge_message_groups", ({mock_template}) => {
         assert.ok(!list._message_groups[1].message_containers[0].want_subscription_status_divider);
         assert.ok(list._message_groups[1].message_containers[1].want_subscription_status_divider);
     })();
+
+    // Messages moved here from another channel carry a `historical` flag
+    // that is meaningless in this channel, so they must not trigger
+    // subscription-status dividers or bookends.
+    function build_moved_message_context(message = {}) {
+        // prev_stream differs from the default stream_id (2), marking the
+        // message as moved here from another channel.
+        return build_message_context({
+            edit_history: [{prev_stream: 999}],
+            ...message,
+        });
+    }
+
+    (function test_append_moved_message_skips_subscription_divider() {
+        const moved_message = build_moved_message_context({historical: true});
+        const message_group1 = build_message_group([moved_message]);
+
+        const message2 = build_message_context({historical: false});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "bottom");
+
+        assert.ok(!message2.want_subscription_status_divider);
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([moved_message, message2]),
+        ]);
+    })();
+
+    (function test_moved_message_never_gets_subscription_divider() {
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([message1]);
+
+        const moved_message = build_moved_message_context({historical: true});
+        const message_group2 = build_message_group([moved_message]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "bottom");
+
+        // Assert the groups joined, so the divider check can't pass
+        // vacuously on an unset field.
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message1, moved_message]),
+        ]);
+        assert.equal(moved_message.want_subscription_status_divider, false);
+    })();
+
+    (function test_moved_last_message_skips_subscription_bookend() {
+        // When the groups do not join (different topic), the transition is
+        // shown as a group bookend; a moved message must not trigger it.
+        const moved_message = build_moved_message_context({historical: true});
+        const message_group1 = build_message_group([moved_message]);
+
+        const message2 = build_message_context({historical: false, topic: "Test topic 2"});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "bottom");
+
+        assert.equal(message_group2.bookend_top, undefined);
+        assert.equal(message_group2.subscribed, undefined);
+        assert.equal(message_group2.just_unsubscribed, undefined);
+    })();
+
+    (function test_moved_first_message_skips_subscription_bookend() {
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([message1]);
+
+        const moved_message = build_moved_message_context({
+            historical: true,
+            topic: "Test topic 2",
+        });
+        const message_group2 = build_message_group([moved_message]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "bottom");
+
+        assert.equal(message_group2.bookend_top, undefined);
+        assert.equal(message_group2.just_unsubscribed, undefined);
+    })();
+
+    (function test_message_moved_back_to_original_channel() {
+        // A message moved away and then back to its current channel carries
+        // a meaningful historical flag, so it is treated as a normal message.
+        const moved_back_message = build_message_context({
+            historical: true,
+            edit_history: [{prev_stream: 2}],
+        });
+        const message_group1 = build_message_group([moved_back_message]);
+
+        const message2 = build_message_context({historical: false});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "bottom");
+
+        assert.ok(message2.want_subscription_status_divider);
+    })();
+
+    (function test_prepend_moved_message_skips_subscription_bookend() {
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([message1]);
+
+        const moved_message = build_moved_message_context({
+            historical: true,
+            topic: "Test topic 2",
+        });
+        const message_group2 = build_message_group([moved_message]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "top");
+
+        // The bookend, if any, is added to the existing (lower) group.
+        assert.equal(message_group1.bookend_top, undefined);
+        assert.equal(message_group1.subscribed, undefined);
+    })();
+
+    (function test_divider_shown_across_moved_message_in_batch() {
+        // A moved message between two messages with meaningful flags must
+        // not hide the real transition between them: the divider belongs
+        // on the first meaningful message after the flip.
+        const message1 = build_message_context({historical: true});
+        const message_group1 = build_message_group([message1]);
+
+        const moved_message = build_moved_message_context({historical: true});
+        const message2 = build_message_context({historical: false});
+        const message_group2 = build_message_group([moved_message, message2]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "bottom");
+
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message1, moved_message, message2]),
+        ]);
+        assert.ok(!moved_message.want_subscription_status_divider);
+        assert.ok(message2.want_subscription_status_divider);
+    })();
+
+    (function test_divider_shown_when_newest_rendered_message_was_moved() {
+        // Likewise when the moved message was already rendered: the new
+        // message is compared with the newest meaningful flag, not with
+        // the moved message just above it.
+        const message1 = build_message_context({historical: true});
+        const moved_message = build_moved_message_context({historical: true});
+        const message_group1 = build_message_group([message1, moved_message]);
+
+        const message2 = build_message_context({historical: false});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "bottom");
+
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message1, moved_message, message2]),
+        ]);
+        assert.ok(message2.want_subscription_status_divider);
+    })();
+
+    (function test_prepend_divider_shown_across_moved_message() {
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([message1]);
+
+        const message2 = build_message_context({historical: true});
+        const moved_message = build_moved_message_context({historical: true});
+        const message_group2 = build_message_group([message2, moved_message]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "top");
+
+        // The existing message joins below the prepended group; its
+        // divider reflects the flip from message2's flag, not the moved
+        // message's.
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message2, moved_message, message1]),
+        ]);
+        assert.ok(message1.want_subscription_status_divider);
+        assert.ok(!moved_message.want_subscription_status_divider);
+    })();
+
+    (function test_prepend_marker_when_oldest_rendered_group_was_moved() {
+        // The oldest rendered group consists only of a message moved here from
+        // another channel, so the first meaningful rendered message starts a
+        // later group that the prepended messages can never merge into. A
+        // subscription change at that boundary belongs on the group as a
+        // bookend, not as an inline divider on its first message.
+        const moved_message = build_moved_message_context({
+            historical: true,
+            topic: "Moved topic",
+        });
+        const moved_group = build_message_group([moved_message]);
+
+        const message1 = build_message_context({historical: true, topic: "Subscribed topic"});
+        const message_group1 = build_message_group([message1]);
+
+        const message2 = build_message_context({historical: false, topic: "New topic"});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([moved_group, message_group1]);
+        add_message_groups(list, [message_group2], "top");
+
+        // No merge happens (distinct topics), so the flip from subscribed
+        // (message2) to unsubscribed (message1) shows as a bookend on
+        // message1's group, and message1 keeps no inline divider.
+        assert.ok(message_group1.bookend_top);
+        assert.equal(message_group1.just_unsubscribed, true);
+        assert.ok(!message1.want_subscription_status_divider);
+    })();
+
+    (function test_prepend_inline_divider_when_oldest_rendered_group_starts_with_moved() {
+        // The oldest rendered group starts with a moved message but
+        // continues with a meaningful one. The boundary against the
+        // prepended messages is shown as an inline divider on that
+        // meaningful continuation message, since the moved message above it
+        // in the same group makes it a continuation rather than the group's
+        // first message.
+        const moved_message = build_moved_message_context({historical: true});
+        const message1 = build_message_context({historical: true});
+        // Same recipient, so both messages live in one rendered group.
+        const rendered_group = build_message_group([moved_message, message1]);
+
+        const message2 = build_message_context({historical: false, topic: "New topic"});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([rendered_group]);
+        add_message_groups(list, [message_group2], "top");
+
+        // No merge happens (distinct topics), so the flip from message2
+        // (subscribed) to message1 (unsubscribed) is shown inline on
+        // message1, not on the moved message above it.
+        assert.ok(message1.want_subscription_status_divider);
+        assert.ok(!moved_message.want_subscription_status_divider);
+    })();
+
+    (function test_prepend_no_boundary_update_when_all_rendered_messages_moved() {
+        // Every already-rendered message was moved here from another
+        // channel, so none has a meaningful flag. The prepended-boundary
+        // update finds no container to mark and leaves the rendered content
+        // untouched.
+        const moved_message = build_moved_message_context({historical: true});
+        const rendered_group = build_message_group([moved_message]);
+
+        const message1 = build_message_context({historical: false, topic: "New topic"});
+        const message_group1 = build_message_group([message1]);
+
+        const list = build_list([rendered_group]);
+        add_message_groups(list, [message_group1], "top");
+
+        assert.ok(!moved_message.want_subscription_status_divider);
+        assert.equal(rendered_group.bookend_top, undefined);
+        assert.equal(rendered_group.subscribed, undefined);
+        assert.equal(rendered_group.just_unsubscribed, undefined);
+    })();
+
+    (function test_no_subscription_marker_without_historical_flip() {
+        // Two non-merging groups in the same subscription state produce no
+        // bookend: there is no historical-flag flip between them.
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([message1]);
+
+        const message2 = build_message_context({historical: false, topic: "New topic"});
+        const message_group2 = build_message_group([message2]);
+
+        const list = build_list([message_group1]);
+        add_message_groups(list, [message_group2], "bottom");
+
+        assert.equal(message_group2.bookend_top, undefined);
+        assert.equal(message_group2.subscribed, undefined);
+        assert.equal(message_group2.just_unsubscribed, undefined);
+        assert.ok(!message2.want_subscription_status_divider);
+    })();
+});
+
+test("get_boundary_message_info_with_meaningful_historical", () => {
+    // get_boundary_message_info_with_meaningful_historical("newest")
+    // feeds the trailing bookend, which must infer subscription status from the newest
+    // message whose `historical` flag is meaningful in this channel, skipping
+    // messages moved here from another channel.
+    function build_message_container(message = {}) {
+        return {
+            msg: {
+                id: _.uniqueId("test_message_"),
+                type: "stream",
+                stream_id: 2,
+                ...message,
+            },
+        };
+    }
+
+    function build_list(message_groups) {
+        const list = new MessageListView({id: 1}, true, true);
+        list._message_groups = message_groups;
+        return list;
+    }
+
+    // The newest message's flag is used directly when it is meaningful.
+    let list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: false}),
+                build_message_container({historical: true}),
+            ],
+        },
+    ]);
+    assert.equal(
+        list.get_boundary_message_info_with_meaningful_historical("newest")?.message_container.msg
+            .historical,
+        true,
+    );
+
+    // Moved messages are skipped, across group boundaries.
+    list = build_list([
+        {message_containers: [build_message_container({historical: false})]},
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 999}]}),
+            ],
+        },
+    ]);
+    assert.equal(
+        list.get_boundary_message_info_with_meaningful_historical("newest")?.message_container.msg
+            .historical,
+        false,
+    );
+
+    // A message moved back to its original channel has a meaningful flag.
+    list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 2}]}),
+            ],
+        },
+    ]);
+    assert.equal(
+        list.get_boundary_message_info_with_meaningful_historical("newest")?.message_container.msg
+            .historical,
+        true,
+    );
+
+    // With no meaningful flag at all, the status is unknown.
+    list = build_list([
+        {
+            message_containers: [
+                build_message_container({historical: true, edit_history: [{prev_stream: 999}]}),
+            ],
+        },
+    ]);
+    assert.equal(
+        list.get_boundary_message_info_with_meaningful_historical("newest")?.message_container.msg
+            .historical,
+        undefined,
+    );
+
+    list = build_list([]);
+    assert.equal(
+        list.get_boundary_message_info_with_meaningful_historical("newest")?.message_container.msg
+            .historical,
+        undefined,
+    );
+});
+
+test("set_subscription_dividers_and_markers ignores non-channel narrows", () => {
+    // Subscription-status dividers and bookends only make sense in a
+    // single-channel narrow. In other narrows (e.g. direct messages) the
+    // pass must run without adding any divider or bookend, and a non-stream
+    // message is never treated as moved.
+    const filter = new Filter([{operator: "is", operand: "dm"}]);
+    const list = new message_list.MessageList({
+        data: new MessageListData({excludes_muted_topics: false, filter}),
+        is_node_test: true,
+    });
+    const view = new MessageListView(list, true, true);
+
+    const dm1 = {include_sender: true, msg: {id: 1, type: "private", to_user_ids: "5"}};
+    const dm2 = {include_sender: true, msg: {id: 2, type: "private", to_user_ids: "5"}};
+    const rendered_group = {message_containers: [dm1], message_group_id: "dm-group-1"};
+    const new_group = {message_containers: [dm2], message_group_id: "dm-group-2"};
+    view._message_groups = [rendered_group];
+
+    view.set_subscription_dividers_and_markers([new_group], "bottom");
+
+    assert.ok(!dm2.want_subscription_status_divider);
+    assert.equal(new_group.bookend_top, undefined);
+    assert.equal(new_group.subscribed, undefined);
+    assert.equal(new_group.just_unsubscribed, undefined);
+
+    // Appending no new groups is a no-op: there is no boundary container to
+    // mark.
+    assert.doesNotThrow(() => {
+        view.set_subscription_dividers_and_markers([], "bottom");
+    });
 });
 
 test("render_windows", ({mock_template}) => {
