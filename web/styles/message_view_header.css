@@ -100,15 +100,17 @@
         margin: 0;
 
         .help_link_widget,
-        .fa {
+        .zulip-icon {
             margin: 0;
         }
 
-        .fa-question-circle-o {
+        .zulip-icon-help {
             /* Override relative position for sake of
                Chrome paint bug that keeps the circle
                visible when ellipses are showing. */
             position: static;
+            vertical-align: -0.1em;
+            font-size: 0.88em;
         }
 
         .help_link_widget {
@@ -117,6 +119,7 @@
                help icon with an inline-block assist,
                which is present on the .fa class. */
             vertical-align: middle;
+            text-decoration: none;
         }
     }
 

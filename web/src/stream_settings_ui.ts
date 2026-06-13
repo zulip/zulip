@@ -956,14 +956,14 @@ function setup_page(callback: () => void): void {
                 },
                 {
                     label_html: render_stream_sorter_toggle_label({
-                        icon_class: "fa fa-user-o",
+                        icon_class: "zulip-icon zulip-icon-user",
                         tooltip: $t({defaultMessage: "Sort by number of subscribers"}),
                     }),
                     key: "by-subscriber-count",
                 },
                 {
                     label_html: render_stream_sorter_toggle_label({
-                        icon_class: "fa fa-bar-chart",
+                        icon_class: "zulip-icon zulip-icon-bar-chart",
                         tooltip: $t({defaultMessage: "Sort by estimated weekly traffic"}),
                     }),
                     key: "by-weekly-traffic",
