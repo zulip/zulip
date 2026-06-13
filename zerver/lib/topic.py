@@ -379,6 +379,36 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
     return participants
 
 
+def participants_for_topic_count_capped(
+    realm_id: int, recipient_id: int, topic_name: str, cap: int
+) -> int:
+    """
+    Returns min(actual_distinct_participant_count, cap + 1).
+
+    Uses LIMIT cap + 1 so Postgres stops scanning once enough
+    participants have been seen, and avoids materializing the
+    full participant set in Python.
+    """
+    messages = Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_upper_subject
+        realm_id=realm_id,
+        recipient_id=recipient_id,
+        subject__iexact=topic_name,
+        is_channel_message=True,
+    )
+    participant_ids = list(
+        UserProfile.objects.filter(
+            Q(id__in=Subquery(messages.values("sender_id")))
+            | Q(
+                id__in=Subquery(
+                    Reaction.objects.filter(message__in=messages).values("user_profile_id")
+                )
+            )
+        ).values_list("id", flat=True)[: cap + 1]
+    )
+    return len(participant_ids)
+
+
 def maybe_rename_general_chat_to_empty_topic(topic_name: str) -> str:
     if topic_name == Message.EMPTY_TOPIC_FALLBACK_NAME:
         topic_name = ""
