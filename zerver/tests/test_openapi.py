@@ -203,7 +203,9 @@ class OpenAPIToolsTest(ZulipTestCase):
 
 class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
-    checked_endpoints: set[str] = set()
+    def setUp(self) -> None:
+        super().setUp()
+        self.checked_endpoints: set = set()
     pending_endpoints = {
         #### For current endpoint documentation priorities see
         #### https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/Undocumented.20endpoint.20priorities/with/2397881
