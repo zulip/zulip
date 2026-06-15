@@ -382,7 +382,7 @@ export function unsubscribed_subs(): StreamSubscription[] {
     return [...stream_info.false_values()];
 }
 
-export function subscribed_streams(): string[] {
+export function subscribed_stream_names(): string[] {
     return subscribed_subs().map((sub) => sub.name);
 }
 
@@ -1381,7 +1381,7 @@ export function get_streams_for_move_messages_widget(): (dropdown_widget.Option 
 export let set_max_channel_width_css_variable = async (): Promise<void> => {
     // Return a promise to avoid blocking main thread.
     const promise = new Promise<void>((resolve) => {
-        const length = util.max_text_content_width([...subscribed_streams()]);
+        const length = util.max_text_content_width([...subscribed_stream_names()]);
         $(":root").css("--longest-subscribed-channel-name-width", `${length}px`);
         resolve();
     });

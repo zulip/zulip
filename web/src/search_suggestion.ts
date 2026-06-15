@@ -267,13 +267,12 @@ function get_channel_suggestions(
     assert(last.operator === "channel" || last.operator === "search" || last.operator === "");
 
     const query = last.operand;
-    let channels = stream_data.subscribed_streams();
-
-    channels = channels.filter((channel_name) => channel_matches_query(channel_name, query));
-
-    channels = typeahead_helper.sorter(query, channels, (x) => x);
-
-    return channels.map((channel_name) => {
+    const channel_names = stream_data.subscribed_stream_names();
+    let matching_channel_names = channel_names.filter((channel_name) =>
+        channel_matches_query(channel_name, query),
+    );
+    matching_channel_names = typeahead_helper.sorter(query, matching_channel_names, (x) => x);
+    return matching_channel_names.map((channel_name) => {
         const channel = stream_data.get_sub_by_name(channel_name);
         assert(channel !== undefined);
         const term: NarrowTerm = {
