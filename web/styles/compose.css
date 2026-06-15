@@ -1788,6 +1788,10 @@ textarea.new_message_textarea {
 
         .channel-privacy-type-icon {
             grid-area: privacy-icon;
+            /* Maintain correct vertical alignment on
+               DM picker, which does not participate in
+               the subgrid above used for channel icons. */
+            align-self: center;
 
             .zulip-icon {
                 color: var(--privacy-icon-color-original);
