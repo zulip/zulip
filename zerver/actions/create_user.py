@@ -20,6 +20,7 @@ from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     do_send_user_group_members_update_event,
+    update_users_in_full_members_system_group,
 )
 from zerver.actions.users import (
     change_user_is_active,
@@ -766,6 +767,14 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
             },
         )
         bot_owner_changed = True
+
+    if bot_owner_changed and user_profile.role == UserProfile.ROLE_MEMBER:
+        # The reassignment above can hand the bot to an owner of a different
+        # status, and deactivation does not remove group memberships, so the
+        # row inherited from the previous owner is otherwise stale.
+        update_users_in_full_members_system_group(
+            user_profile.realm, [user_profile.id], acting_user=acting_user
+        )
 
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
