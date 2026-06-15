@@ -30,7 +30,7 @@ from django.core.management.base import CommandError
 from typing_extensions import override
 
 from zerver.lib.email_mirror import logger, process_message
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, skip_unless_locked
 
 ## Setup ##
 
@@ -83,6 +83,7 @@ class Command(ZulipBaseCommand):
     help = __doc__
 
     @override
+    @skip_unless_locked
     def handle(self, *args: Any, **options: str) -> None:
         for message in get_imap_messages():
             process_message(message)

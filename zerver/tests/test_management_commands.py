@@ -1,5 +1,7 @@
+import fcntl
 import os
 import re
+import tempfile
 from datetime import timedelta
 from typing import Any
 from unittest import mock, skipUnless
@@ -9,7 +11,7 @@ from urllib.parse import quote, quote_plus
 from django.apps import apps
 from django.conf import settings
 from django.core.management import call_command, find_commands
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.test import override_settings
@@ -18,7 +20,7 @@ from typing_extensions import override
 from confirmation.models import Confirmation, generate_realm_creation_url
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_user_setting
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, skip_unless_locked
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
 from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile
@@ -379,6 +381,31 @@ class TestCalculateFirstVisibleMessageID(ZulipTestCase):
             call_command(self.COMMAND_NAME, "--lookback-hours=35")
         calls = [call(realm, 35) for realm in Realm.objects.all()]
         m.assert_has_calls(calls, any_order=True)
+
+
+class TestSkipUnlessLocked(ZulipTestCase):
+    def test_skip_when_lock_is_held(self) -> None:
+        ran = []
+
+        @skip_unless_locked
+        def handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+            ran.append(True)
+
+        command = BaseCommand()
+        with tempfile.TemporaryDirectory() as lock_dir, self.settings(LOCKFILE_DIRECTORY=lock_dir):
+            # With the lock free, the wrapped command runs.
+            handle(command)
+            self.assertEqual(ran, [True])
+
+            # While the lock is held -- as it would be by a previous
+            # invocation still running -- the command is skipped, with
+            # no error and no output.
+            ran.clear()
+            lock_path = os.path.join(lock_dir, "test_management_commands.lock")
+            with open(lock_path, "w") as held:
+                fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                handle(command)
+            self.assertEqual(ran, [])
 
 
 class TestPasswordRestEmail(ZulipTestCase):

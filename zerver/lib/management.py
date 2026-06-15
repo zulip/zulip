@@ -34,22 +34,49 @@ class HandleMethod(Protocol):
     def __call__(self, *args: Any, **kwargs: Any) -> None: ...
 
 
+def lockfile_path(handle_func: HandleMethod) -> str:
+    os.makedirs(settings.LOCKFILE_DIRECTORY, exist_ok=True)
+    # Trim out just the last part of the module name, which is the
+    # command name, to use as the lockfile name;
+    # `zerver.management.commands.send_zulip_update_announcements`
+    # becomes `/srv/zulip-locks/send_zulip_update_announcements.lock`
+    lockfile_name = handle_func.__module__.split(".")[-1]
+    return settings.LOCKFILE_DIRECTORY + "/" + lockfile_name + ".lock"
+
+
 def abort_unless_locked(handle_func: HandleMethod) -> HandleMethod:
+    """Take a per-command lock, exiting with an error if it is already
+    held.  For cron jobs wrapped in Sentry's `monitors run`, that error
+    surfaces as a failed check-in; use this only for commands whose
+    runtime is reliably shorter than their cron interval, where an
+    overlapping run signals something is wrong and is worth alerting on."""
+
     @wraps(handle_func)
     def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
-        os.makedirs(settings.LOCKFILE_DIRECTORY, exist_ok=True)
-        # Trim out just the last part of the module name, which is the
-        # command name, to use as the lockfile name;
-        # `zerver.management.commands.send_zulip_update_announcements`
-        # becomes `/srv/zulip-locks/send_zulip_update_announcements.lock`
-        lockfile_name = handle_func.__module__.split(".")[-1]
-        lockfile_path = settings.LOCKFILE_DIRECTORY + "/" + lockfile_name + ".lock"
-        with lockfile_nonblocking(lockfile_path) as lock_acquired:
+        path = lockfile_path(handle_func)
+        with lockfile_nonblocking(path) as lock_acquired:
             if not lock_acquired:  # nocoverage
-                self.stdout.write(
-                    self.style.ERROR(f"Lock {lockfile_path} is unavailable; exiting.")
-                )
+                self.stdout.write(self.style.ERROR(f"Lock {path} is unavailable; exiting."))
                 sys.exit(1)
+            handle_func(self, *args, **kwargs)
+
+    return our_handle
+
+
+def skip_unless_locked(handle_func: HandleMethod) -> HandleMethod:
+    """Like abort_unless_locked, but for commands where an overlapping
+    run is an expected, benign condition -- for instance a network-bound
+    job polled every minute, where a still-running previous invocation
+    just means this one should do nothing.  If the lock is already held,
+    exit successfully and silently -- in particular emitting no output,
+    since under cron any output is mailed to the administrator."""
+
+    @wraps(handle_func)
+    def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+        path = lockfile_path(handle_func)
+        with lockfile_nonblocking(path) as lock_acquired:
+            if not lock_acquired:  # nocoverage
+                return
             handle_func(self, *args, **kwargs)
 
     return our_handle
