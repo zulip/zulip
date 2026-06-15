@@ -126,7 +126,12 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
-from zerver.models.users import ExternalAuthID, get_system_bot, get_user_profile_by_id
+from zerver.models.users import (
+    ExternalAuthID,
+    compute_is_provisional_member,
+    get_system_bot,
+    get_user_profile_by_id,
+)
 from zproject.backends import AUTH_BACKEND_NAME_MAP
 
 ImportedTableData: TypeAlias = dict[str, list[Record]]
@@ -2649,16 +2654,40 @@ def add_users_to_system_user_groups(
         group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
         role_system_groups_dict[role] = system_groups_name_dict[group_name]
 
+    # A member-role bot's full-member status is computed from its owner's role
+    # and date_joined, so collect just those two columns for the owners in this
+    # batch rather than loading whole UserProfile rows for them.
+    bot_owner_ids = {
+        user_profile.bot_owner_id
+        for user_profile in user_profiles
+        if user_profile.is_bot
+        and user_profile.role == UserProfile.ROLE_MEMBER
+        and user_profile.bot_owner_id is not None
+    }
+    bot_owner_columns = {
+        owner_id: (owner_role, owner_date_joined)
+        for owner_id, owner_role, owner_date_joined in UserProfile.objects.filter(
+            id__in=bot_owner_ids
+        ).values_list("id", "role", "date_joined")
+    }
+
     usergroup_memberships = []
     for user_profile in user_profiles:
         user_group = role_system_groups_dict[user_profile.role]
         usergroup_memberships.append(
             UserGroupMembership(user_profile=user_profile, user_group=user_group)
         )
-        if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
-            usergroup_memberships.append(
-                UserGroupMembership(user_profile=user_profile, user_group=full_members_system_group)
-            )
+        if user_profile.role == UserProfile.ROLE_MEMBER:
+            if user_profile.is_bot and user_profile.bot_owner_id is not None:
+                role, date_joined = bot_owner_columns[user_profile.bot_owner_id]
+            else:
+                role, date_joined = user_profile.role, user_profile.date_joined
+            if not compute_is_provisional_member(realm, role, date_joined):
+                usergroup_memberships.append(
+                    UserGroupMembership(
+                        user_profile=user_profile, user_group=full_members_system_group
+                    )
+                )
     UserGroupMembership.objects.bulk_create(usergroup_memberships)
     now = timezone_now()
     RealmAuditLog.objects.bulk_create(

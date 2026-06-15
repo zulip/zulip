@@ -68,7 +68,13 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import StreamTopicsPolicyEnum
-from zerver.models.users import ExternalAuthID, active_user_ids, bot_owner_user_ids, get_system_bot
+from zerver.models.users import (
+    ExternalAuthID,
+    active_user_ids,
+    bot_owner_user_ids,
+    get_system_bot,
+    user_is_provisional_member,
+)
 from zerver.tornado.django_api import send_event_on_commit
 
 MAX_NUM_RECENT_MESSAGES = 1000
@@ -596,7 +602,9 @@ def do_create_user(
         acting_user=acting_user,
     )
 
-    if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+    if user_profile.role == UserProfile.ROLE_MEMBER and not user_is_provisional_member(
+        user_profile
+    ):
         full_members_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.FULL_MEMBERS,
             realm_for_sharding=user_profile.realm,
@@ -619,7 +627,9 @@ def do_create_user(
     notify_created_user(user_profile, [])
 
     do_send_user_group_members_update_event("add_members", system_user_group, [user_profile.id])
-    if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+    if user_profile.role == UserProfile.ROLE_MEMBER and not user_is_provisional_member(
+        user_profile
+    ):
         do_send_user_group_members_update_event(
             "add_members", full_members_system_group, [user_profile.id]
         )

@@ -7,7 +7,7 @@ import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.create_user import do_reactivate_user
+from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
@@ -70,6 +70,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realms import get_realm
+from zerver.models.users import compute_is_provisional_member, user_is_provisional_member
 
 
 class UserGroupTestCase(ZulipTestCase):
@@ -4371,3 +4372,197 @@ class UserGroupAPITestCase(UserGroupTestCase):
             {"delete": orjson.dumps([other_user_group.id]).decode()},
         )
         self.assert_json_error(result, f"Invalid user group ID: {other_user_group.id}")
+
+
+class BotFullMemberStatusTest(ZulipTestCase):
+    def full_members_group(self) -> NamedUserGroup:
+        return NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS,
+            realm_for_sharding=get_realm("zulip"),
+            is_system_group=True,
+        )
+
+    def assert_in_full_members(self, user: UserProfile) -> None:
+        self.assertIn(
+            user.id,
+            get_user_group_member_ids(self.full_members_group(), direct_member_only=True),
+        )
+
+    def assert_not_in_full_members(self, user: UserProfile) -> None:
+        self.assertNotIn(
+            user.id,
+            get_user_group_member_ids(self.full_members_group(), direct_member_only=True),
+        )
+
+    def test_compute_is_provisional_member(self) -> None:
+        realm = get_realm("zulip")
+        realm.waiting_period_threshold = 10
+        recent = timezone_now()
+        old = timezone_now() - timedelta(days=30)
+        self.assertTrue(compute_is_provisional_member(realm, UserProfile.ROLE_MEMBER, recent))
+        self.assertFalse(compute_is_provisional_member(realm, UserProfile.ROLE_MEMBER, old))
+        for role in (
+            UserProfile.ROLE_MODERATOR,
+            UserProfile.ROLE_REALM_ADMINISTRATOR,
+            UserProfile.ROLE_REALM_OWNER,
+        ):
+            self.assertFalse(compute_is_provisional_member(realm, role, recent))
+
+        self.assertTrue(compute_is_provisional_member(realm, UserProfile.ROLE_GUEST, old))
+
+    def test_user_is_provisional_member_follows_bot_owner(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+        system_groups_name_dict = get_realm_system_groups_name_dict(realm.id)
+        full_members_group = self.full_members_group()
+
+        provisional_owner = self.example_user("hamlet")
+        provisional_owner.date_joined = timezone_now()
+        provisional_owner.save(update_fields=["date_joined"])
+
+        full_owner = self.example_user("othello")
+        full_owner.date_joined = timezone_now() - timedelta(days=11)
+        full_owner.save(update_fields=["date_joined"])
+
+        guest_owner = self.example_user("polonius")
+        self.assertEqual(guest_owner.role, UserProfile.ROLE_GUEST)
+
+        # Each bot is created now, so each has a recent date_joined of its own;
+        # only the owner's should count.
+        new_member_bot = self.create_test_bot(
+            "new-owner", provisional_owner, full_name="New Owner Bot"
+        )
+        full_member_bot = self.create_test_bot("full-owner", full_owner, full_name="Full Owner Bot")
+        guest_bot = do_create_user(
+            "guest-owned-bot@zulip.testserver",
+            None,
+            realm,
+            "Guest Owned Bot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=guest_owner,
+            acting_user=guest_owner,
+        )
+
+        self.assertTrue(user_is_provisional_member(new_member_bot))
+        self.assertFalse(user_is_provisional_member(full_member_bot))
+        self.assertTrue(user_is_provisional_member(guest_bot))
+
+        # check_user_has_permission_by_role decides full-member status from the
+        # role and date_joined rather than from group membership, so it has to
+        # resolve a bot to its owner separately.
+        self.assertFalse(
+            check_user_has_permission_by_role(
+                new_member_bot, full_members_group.id, system_groups_name_dict
+            )
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(
+                full_member_bot, full_members_group.id, system_groups_name_dict
+            )
+        )
+        self.assertFalse(
+            check_user_has_permission_by_role(
+                guest_bot, full_members_group.id, system_groups_name_dict
+            )
+        )
+
+    def test_bot_full_member_status_follows_owner_on_creation(self) -> None:
+        realm = get_realm("zulip")
+        full_members_group = self.full_members_group()
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", full_members_group, acting_user=None
+        )
+
+        provisional_owner = self.example_user("hamlet")
+        provisional_owner.date_joined = timezone_now()
+        provisional_owner.save(update_fields=["date_joined"])
+
+        full_owner = self.example_user("othello")
+        full_owner.date_joined = timezone_now() - timedelta(days=11)
+        full_owner.save(update_fields=["date_joined"])
+
+        # Setting the threshold recomputes existing members using the dates above.
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+        self.assert_not_in_full_members(provisional_owner)
+        self.assert_in_full_members(full_owner)
+
+        new_member_bot = self.create_test_bot(
+            "provisional-owner", provisional_owner, full_name="Provisional Owner Bot"
+        )
+        self.assert_not_in_full_members(new_member_bot)
+        self.assertFalse(new_member_bot.has_permission("can_add_subscribers_group"))
+
+        full_member_bot = self.create_test_bot("full-owner", full_owner, full_name="Full Owner Bot")
+        self.assert_in_full_members(full_member_bot)
+        self.assertTrue(full_member_bot.has_permission("can_add_subscribers_group"))
+
+        admin_bot = self.create_test_bot(
+            "admin-owner", self.example_user("iago"), full_name="Admin Owner Bot"
+        )
+        self.assert_in_full_members(admin_bot)
+        self.assertTrue(admin_bot.has_permission("can_add_subscribers_group"))
+
+        # Guests cannot create bots via the API, so create one with a guest
+        # owner directly.
+        guest_owner = self.example_user("polonius")
+        self.assertEqual(guest_owner.role, UserProfile.ROLE_GUEST)
+        guest_bot = do_create_user(
+            "guest-owned-bot@zulip.testserver",
+            None,
+            realm,
+            "Guest Owned Bot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=guest_owner,
+            acting_user=guest_owner,
+        )
+        self.assert_not_in_full_members(guest_bot)
+        self.assertFalse(guest_bot.has_permission("can_add_subscribers_group"))
+
+    def test_promote_new_full_members_promotes_owned_bots(self) -> None:
+        realm = get_realm("zulip")
+        full_members_group = self.full_members_group()
+
+        owner = self.example_user("cordelia")
+        owner.date_joined = timezone_now() - timedelta(days=8)
+        owner.save(update_fields=["date_joined"])
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        # The owner is still within the waiting period, so its freshly created
+        # bot is a new member too -- excluded based on the owner's age, not the
+        # bot's own (the bot was just created).
+        bot = self.create_test_bot("aging-owner", owner)
+        member_ids = get_user_group_member_ids(full_members_group, direct_member_only=True)
+        self.assertNotIn(owner.id, member_ids)
+        self.assertNotIn(bot.id, member_ids)
+
+        # Once the owner ages past the threshold, the cron promotes both the
+        # owner and its bot in the same pass.
+        with time_machine.travel(timezone_now() + timedelta(days=3), tick=False):
+            promote_new_full_members()
+
+        member_ids = get_user_group_member_ids(full_members_group, direct_member_only=True)
+        self.assertIn(owner.id, member_ids)
+        self.assertIn(bot.id, member_ids)
+
+    def test_promote_new_full_members_handles_deactivated_owned_bot(self) -> None:
+        realm = get_realm("zulip")
+        full_members_group = self.full_members_group()
+
+        owner = self.example_user("hamlet")
+        owner.date_joined = timezone_now() - timedelta(days=30)
+        owner.save(update_fields=["date_joined"])
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        bot = self.create_test_bot("deactivated-owned", owner)
+        self.assert_in_full_members(bot)
+
+        # Deactivation leaves the FULL_MEMBERS membership row in place, and the
+        # cron's full scan is not filtered by is_active, so it revisits the bot.
+        # The owner-aware lookup must not crash on the deactivated bot.
+        do_deactivate_user(bot, acting_user=None)
+        promote_new_full_members()
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=bot, user_group=full_members_group
+            ).exists()
+        )

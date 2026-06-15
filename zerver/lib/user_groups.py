@@ -35,6 +35,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.users import user_is_provisional_member
 
 
 @dataclass
@@ -1305,7 +1306,7 @@ def check_user_has_permission_by_role(
         return user.is_moderator
 
     # Handle full members case.
-    return user.role != UserProfile.ROLE_MEMBER or not user.is_provisional_member
+    return user.role != UserProfile.ROLE_MEMBER or not user_is_provisional_member(user)
 
 
 def check_any_user_has_permission_by_role(

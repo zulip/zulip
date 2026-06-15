@@ -1,3 +1,4 @@
+from datetime import datetime
 from email.headerregistry import Address
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
@@ -788,12 +789,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def is_provisional_member(self) -> bool:
-        if self.is_moderator:
-            return False
-        diff = (timezone_now() - self.date_joined).days
-        if diff < self.realm.waiting_period_threshold:
-            return True
-        return False
+        return compute_is_provisional_member(self.realm, self.role, self.date_joined)
 
     @property
     def is_realm_admin(self) -> bool:
@@ -978,6 +974,38 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
 class PasswordTooWeakError(Exception):
     pass
+
+
+def compute_is_provisional_member(realm: "Realm", role: int, date_joined: datetime) -> bool:
+    if role in (
+        UserProfile.ROLE_REALM_OWNER,
+        UserProfile.ROLE_REALM_ADMINISTRATOR,
+        UserProfile.ROLE_MODERATOR,
+    ):
+        return False
+    if role == UserProfile.ROLE_GUEST:
+        # A guest never has full-member permissions, however long ago they
+        # joined. This branch is what makes a bot owned by a guest a new
+        # member; other callers only consult this for member-role accounts.
+        return True
+    return (timezone_now() - date_joined).days < realm.waiting_period_threshold
+
+
+def user_is_provisional_member(user: UserProfile) -> bool:
+    """Whether this account has the permissions of a new member.
+
+    A member-role bot's status follows its owner rather than the bot's own
+    date_joined, so that a bot can never be a full member while its owner is
+    not -- whether because the owner is a guest or is still in the waiting
+    period. See issue #32468.
+
+    Callers holding a UserProfile that might be a bot want this rather than
+    the is_provisional_member property, which considers only the account
+    itself.
+    """
+    if user.is_bot and user.role == UserProfile.ROLE_MEMBER and user.bot_owner is not None:
+        return user.bot_owner.is_provisional_member
+    return user.is_provisional_member
 
 
 def remote_user_to_email(remote_user: str) -> str:
