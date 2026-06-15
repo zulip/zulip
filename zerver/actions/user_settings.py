@@ -378,19 +378,22 @@ def do_change_avatar_fields(
     skip_notify: bool = False,
     *,
     acting_user: UserProfile | None,
+    skip_audit_log: bool = False,
 ) -> None:
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        modified_user=user_profile,
-        event_type=AuditLogEventType.USER_AVATAR_SOURCE_CHANGED,
-        extra_data={"avatar_source": avatar_source},
-        event_time=event_time,
-        acting_user=acting_user,
-    )
+
+    if not skip_audit_log:
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            event_type=AuditLogEventType.USER_AVATAR_SOURCE_CHANGED,
+            extra_data={"avatar_source": avatar_source},
+            event_time=event_time,
+            acting_user=acting_user,
+        )
 
     if not skip_notify:
         notify_avatar_url_change(user_profile)
@@ -418,6 +421,23 @@ def set_avatar_to_default(user_profile: UserProfile, *, acting_user: UserProfile
             user_profile, realm_uuid=str(user_profile.realm.uuid), future=True
         )
     do_change_avatar_fields(user_profile, default_avatar_source, acting_user=acting_user)
+
+
+def reupload_realm_jdenticon_avatars(realm: Realm) -> None:
+    # We bump the avatar_version to bust the immutable avatar cache.
+    # We skip the audit log because the avatar source is unchanged
+    # and it'll create a lot of audit logs on large servers without
+    # much benefit.
+    for user_profile in UserProfile.objects.filter(
+        realm=realm, avatar_source=UserProfile.AVATAR_FROM_JDENTICON
+    ):
+        generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=True)
+        do_change_avatar_fields(
+            user_profile,
+            UserProfile.AVATAR_FROM_JDENTICON,
+            acting_user=None,
+            skip_audit_log=True,
+        )
 
 
 def update_scheduled_email_notifications_time(

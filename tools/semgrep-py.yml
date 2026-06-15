@@ -96,6 +96,7 @@ rules:
         - zerver/migrations/0387_reupload_realmemoji_again.py
         - zerver/migrations/0443_userpresence_new_table_schema.py
         - zerver/migrations/0493_rename_userhotspot_to_onboardingstep.py
+        - zerver/migrations/0805_reupload_jdenticon_avatars.py
         - pgroonga/migrations/0002_html_escape_subject.py
 
   - id: use-addindexconcurrently
