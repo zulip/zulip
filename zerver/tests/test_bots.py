@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 import orjson
 from django.core import mail
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.actions.bots import do_change_bot_owner, do_change_default_sending_stream
@@ -23,6 +24,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS, IncomingWebhookIntegration
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
+from zerver.lib.user_groups import get_user_group_member_ids
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.webhooks.common import WebhookConfigOption
 from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
@@ -2336,3 +2338,36 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         invalid_bot_id = 1000
         result = self.client_get(f"/json/bots/{invalid_bot_id}/api_key")
         self.assert_json_error(result, "No such bot")
+
+    def test_full_member_status_follows_owner_on_ownership_change(self) -> None:
+        realm = get_realm("zulip")
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        def assert_full_member(bot: UserProfile, expected: bool) -> None:
+            is_full = bot.id in get_user_group_member_ids(
+                full_members_group, direct_member_only=True
+            )
+            self.assertEqual(is_full, expected)
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        for provisional_member in (hamlet, cordelia):
+            provisional_member.date_joined = timezone_now()
+            provisional_member.save(update_fields=["date_joined"])
+        bot = self.create_test_bot("owner-transfer", hamlet)
+        assert_full_member(bot, False)
+
+        do_change_bot_owner(bot, self.example_user("iago"), acting_user=hamlet)
+        assert_full_member(bot, True)
+
+        do_change_bot_owner(bot, self.example_user("polonius"), acting_user=None)
+        assert_full_member(bot, False)
+
+        do_change_bot_owner(bot, self.example_user("shiva"), acting_user=None)
+        assert_full_member(bot, True)
+
+        do_change_bot_owner(bot, cordelia, acting_user=None)
+        assert_full_member(bot, False)
