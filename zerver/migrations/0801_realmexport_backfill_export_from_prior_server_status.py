@@ -9,15 +9,18 @@ EXPORT_FROM_PRIOR_SERVER = 6
 def backfill_export_from_prior_server_status(
     apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
-    # RealmExport rows with SUCCEEDED status but no export_path are
-    # records carried across a realm export->import, where the tarball
-    # is not preserved. Fix them up to use EXPORT_FROM_PRIOR_SERVER status.
+    # RealmExport rows with SUCCEEDED status and no export_path, created
+    # via the UI, are records carried across a realm export->import, where
+    # the tarball is not preserved. Fix them up to use the
+    # EXPORT_FROM_PRIOR_SERVER status. Exports created via the manage.py
+    # export command have no acting_user and likewise lack an export_path,
+    # but they are not surfaced via the UI/API, so we leave them untouched.
     with connection.cursor() as cursor:
         cursor.execute(
             """
             UPDATE zerver_realmexport
             SET status = %s
-            WHERE status = %s AND export_path IS NULL
+            WHERE status = %s AND export_path IS NULL AND acting_user_id IS NOT NULL
             RETURNING id, realm_id
             """,
             [EXPORT_FROM_PRIOR_SERVER, SUCCEEDED],
