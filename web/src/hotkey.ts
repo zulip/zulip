@@ -20,6 +20,7 @@ import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as feedback_widget from "./feedback_widget.ts";
+import * as forward_message from "./forward_message.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as hash_util from "./hash_util.ts";
@@ -1434,7 +1435,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             compose_reply.quote_message({trigger: "hotkey"});
             return true;
         case "compose_forward_message": // < : forward selected message
-            compose_reply.quote_message({trigger: "hotkey", forward_message: true});
+            // NODL MODIFICATION: open the dedicated "Forward to…" modal.
+            forward_message.show({message_id: msg.id});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);

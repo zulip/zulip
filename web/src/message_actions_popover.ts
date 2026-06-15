@@ -9,6 +9,7 @@ import * as compose_reply from "./compose_reply.ts";
 import * as condense from "./condense.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as emoji_picker from "./emoji_picker.ts";
+import * as forward_message from "./forward_message.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
@@ -130,12 +131,10 @@ export function initialize({
             });
 
             $popper.one("click", ".forward_button", (e) => {
-                compose_reply.quote_message({
-                    trigger: "popover respond",
-                    message_id,
-                    quote_content,
-                    forward_message: true,
-                });
+                // NODL MODIFICATION: open the dedicated "Forward to…" modal
+                // (a destination picker for channels, task channels and DMs)
+                // instead of upstream's quote-into-compose forwarding.
+                forward_message.show({message_id});
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);

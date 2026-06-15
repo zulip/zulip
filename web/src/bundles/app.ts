@@ -36,6 +36,7 @@ import "../../styles/message_view_header.css";
 import "../../styles/message_header.css";
 import "../../styles/message_row.css";
 import "../../styles/modal.css";
+import "../../styles/forward_message.css";
 import "../../styles/settings.css";
 import "../../styles/image_upload_widget.css";
 import "../../styles/subscriptions.css";
