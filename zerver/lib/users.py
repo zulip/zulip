@@ -823,7 +823,9 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 
     active_non_guest_user_ids_in_realm = active_non_guest_user_ids(realm.id)
 
-    users_sharing_any_subscription = get_subscribers_of_target_user_subscriptions([target_user])
+    users_sharing_any_subscription = bulk_get_subscribers_of_target_user_subscriptions(
+        [target_user]
+    )
     users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([target_user], realm)
 
     user_ids_who_can_access_target_user = (
@@ -835,7 +837,7 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
     return list(user_ids_who_can_access_target_user)
 
 
-def get_subscribers_of_target_user_subscriptions(
+def bulk_get_subscribers_of_target_user_subscriptions(
     target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
 ) -> dict[int, set[int]]:
     target_user_ids = [user.id for user in target_users]
@@ -1017,8 +1019,10 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
 def get_accessible_user_ids(
     realm: Realm, user_profile: UserProfile, include_deactivated_users: bool = False
 ) -> list[int]:
-    subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
-        [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
+    subscribers_dict_of_target_user_subscriptions = (
+        bulk_get_subscribers_of_target_user_subscriptions(
+            [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
+        )
     )
     users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
         [user_profile], realm, include_deactivated_users=include_deactivated_users
