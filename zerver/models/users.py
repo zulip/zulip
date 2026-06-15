@@ -1,3 +1,4 @@
+from datetime import datetime
 from email.headerregistry import Address
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
@@ -785,14 +786,51 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         else:
             return False
 
+    @staticmethod
+    def determine_is_provisional_member(
+        *,
+        role: int,
+        date_joined: datetime,
+        waiting_period_threshold: int,
+        bot_owner_role: int | None,
+        bot_owner_date_joined: datetime | None,
+    ) -> bool:
+        """Whether a user with these attributes is a provisional (new) member.
+
+        For a member-role bot, the caller passes its owner's role and
+        date_joined so the bot's status is pinned to its owner. This
+        preserves the security invariant that a bot can never be a full
+        member when its owner is not (e.g. a bot owned by a guest, or by a
+        member still in the waiting period). See issue #32468.
+        """
+        if bot_owner_role is not None:
+            if bot_owner_role == UserProfile.ROLE_GUEST:
+                return True
+            assert bot_owner_date_joined is not None
+            role = bot_owner_role
+            date_joined = bot_owner_date_joined
+        if role in (
+            UserProfile.ROLE_REALM_OWNER,
+            UserProfile.ROLE_REALM_ADMINISTRATOR,
+            UserProfile.ROLE_MODERATOR,
+        ):
+            return False
+        return (timezone_now() - date_joined).days < waiting_period_threshold
+
     @property
     def is_provisional_member(self) -> bool:
-        if self.is_moderator:
-            return False
-        diff = (timezone_now() - self.date_joined).days
-        if diff < self.realm.waiting_period_threshold:
-            return True
-        return False
+        bot_owner_role: int | None = None
+        bot_owner_date_joined: datetime | None = None
+        if self.is_bot and self.role == UserProfile.ROLE_MEMBER and self.bot_owner is not None:
+            bot_owner_role = self.bot_owner.role
+            bot_owner_date_joined = self.bot_owner.date_joined
+        return UserProfile.determine_is_provisional_member(
+            role=self.role,
+            date_joined=self.date_joined,
+            waiting_period_threshold=self.realm.waiting_period_threshold,
+            bot_owner_role=bot_owner_role,
+            bot_owner_date_joined=bot_owner_date_joined,
+        )
 
     @property
     def is_realm_admin(self) -> bool:
