@@ -119,3 +119,13 @@ Clients can compare the `realm_waiting_period_threshold` to a user
 accounts's `date_joined` property, which is the time the user account
 was created, to determine if a user has the permissions of a full
 member or a new member.
+
+For a bot with the member role, this status follows the bot's owner
+rather than the bot itself. Clients should apply the comparison above to
+the `date_joined` of the account referenced by the bot's `bot_owner_id`,
+and treat a bot owned by a guest as a new member. Because a bot's owner
+can change, its full-member status can change accordingly.
+
+**Changes**: Before Zulip 12.0 (feature level ZF-53d45e), a bot's
+full-member status was determined by the bot's own `date_joined`, like
+any other account.

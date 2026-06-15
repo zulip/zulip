@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.actions.bots import do_change_bot_owner, do_change_default_sending_stream
+from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
@@ -2371,3 +2372,84 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         do_change_bot_owner(bot, cordelia, acting_user=None)
         assert_full_member(bot, False)
+
+    def test_reactivated_bot_full_member_status_follows_new_owner(self) -> None:
+        realm = get_realm("zulip")
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        def assert_full_member(bot: UserProfile, expected: bool) -> None:
+            is_full = bot.id in get_user_group_member_ids(
+                full_members_group, direct_member_only=True
+            )
+            self.assertEqual(is_full, expected)
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        for provisional_member in (hamlet, cordelia):
+            provisional_member.date_joined = timezone_now()
+            provisional_member.save(update_fields=["date_joined"])
+        # Reactivating a bot whose owner is deactivated reassigns it to the
+        # acting user, so its full-member status re-pins to that new owner.
+        iago = self.example_user("iago")
+        demoted_bot = self.create_test_bot(
+            "reactivate-demote", iago, full_name="Reactivate Demote Bot"
+        )
+        assert_full_member(demoted_bot, True)
+        do_deactivate_user(iago, acting_user=None)
+        demoted_bot.refresh_from_db()
+        do_reactivate_user(demoted_bot, acting_user=hamlet)
+        demoted_bot.refresh_from_db()
+        self.assertEqual(demoted_bot.bot_owner_id, hamlet.id)
+        assert_full_member(demoted_bot, False)
+
+        desdemona = self.example_user("desdemona")
+        promoted_bot = self.create_test_bot(
+            "reactivate-promote", cordelia, full_name="Reactivate Promote Bot"
+        )
+        assert_full_member(promoted_bot, False)
+        do_deactivate_user(cordelia, acting_user=None)
+        promoted_bot.refresh_from_db()
+        do_reactivate_user(promoted_bot, acting_user=desdemona)
+        promoted_bot.refresh_from_db()
+        self.assertEqual(promoted_bot.bot_owner_id, desdemona.id)
+        assert_full_member(promoted_bot, True)
+
+    def test_reactivated_bot_full_member_status_recomputed_with_unchanged_owner(self) -> None:
+        realm = get_realm("zulip")
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        def assert_full_member(bot: UserProfile, expected: bool) -> None:
+            is_full = bot.id in get_user_group_member_ids(
+                full_members_group, direct_member_only=True
+            )
+            self.assertEqual(is_full, expected)
+
+        iago = self.example_user("iago")
+        demoted_bot = self.create_test_bot("repin-demote", iago, full_name="Repin Demote Bot")
+        assert_full_member(demoted_bot, True)
+        do_deactivate_user(demoted_bot, acting_user=None)
+        self.set_user_role(iago, UserProfile.ROLE_GUEST)
+        demoted_bot.refresh_from_db()
+        do_reactivate_user(demoted_bot, acting_user=None)
+        demoted_bot.refresh_from_db()
+        self.assertEqual(demoted_bot.bot_owner_id, iago.id)
+        assert_full_member(demoted_bot, False)
+
+        hamlet = self.example_user("hamlet")
+        hamlet.date_joined = timezone_now()
+        hamlet.save(update_fields=["date_joined"])
+        promoted_bot = self.create_test_bot("repin-promote", hamlet, full_name="Repin Promote Bot")
+        assert_full_member(promoted_bot, False)
+        do_deactivate_user(promoted_bot, acting_user=None)
+        self.set_user_role(hamlet, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        promoted_bot.refresh_from_db()
+        do_reactivate_user(promoted_bot, acting_user=None)
+        promoted_bot.refresh_from_db()
+        self.assertEqual(promoted_bot.bot_owner_id, hamlet.id)
+        assert_full_member(promoted_bot, True)
