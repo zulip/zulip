@@ -97,8 +97,8 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
+    bulk_get_subscribers_of_target_user_subscriptions,
     check_can_access_user,
-    get_subscribers_of_target_user_subscriptions,
     get_user_ids_who_can_access_user,
     user_access_restricted_in_realm,
 )
@@ -1795,12 +1795,12 @@ def get_recipients_for_user_creation_events(
     ).exists():
         return recipients_for_user_creation_events
 
-    # TODO: get_subscribers_of_target_user_subscriptions
+    # TODO: bulk_get_subscribers_of_target_user_subscriptions
     # executes 2 queries. While this is only for a new DirectMessageGroup,
     # it's still worth optimizing, also because it's called
     # in other code paths.
-    subscribers_of_guest_recipient_subscriptions = get_subscribers_of_target_user_subscriptions(
-        guest_recipients
+    subscribers_of_guest_recipient_subscriptions = (
+        bulk_get_subscribers_of_target_user_subscriptions(guest_recipients)
     )
 
     for recipient_user in guest_recipients:
