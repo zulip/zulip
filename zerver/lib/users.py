@@ -823,9 +823,7 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 
     active_non_guest_user_ids_in_realm = active_non_guest_user_ids(realm.id)
 
-    users_sharing_any_subscription = bulk_get_subscribers_of_target_user_subscriptions(
-        [target_user]
-    )
+    users_sharing_any_subscription = get_subscribers_of_target_user_subscriptions(target_user)
     users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([target_user], realm)
 
     user_ids_who_can_access_target_user = (
@@ -840,6 +838,9 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 def bulk_get_subscribers_of_target_user_subscriptions(
     target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
 ) -> dict[int, set[int]]:
+    # Important: For a single target_user, use
+    # get_subscribers_of_target_user_subscriptions
+    # as it's more efficient.
     target_user_ids = [user.id for user in target_users]
     target_user_subscriptions = (
         Subscription.objects.filter(
@@ -866,7 +867,10 @@ def bulk_get_subscribers_of_target_user_subscriptions(
         active=True,
     )
 
-    if include_deactivated_users_for_dm_groups:
+    # Tests who used to cover this condition
+    # now use the single target_user version:
+    # get_subscribers_of_target_user_subscriptions.
+    if include_deactivated_users_for_dm_groups:  # nocoverage
         subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
             Q(recipient__type=Recipient.STREAM, is_user_active=True)
             | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
@@ -895,6 +899,44 @@ def bulk_get_subscribers_of_target_user_subscriptions(
             users_subbed_to_target_user_subscriptions_dict[user_id] |= (
                 subscribers_dict_by_recipient_ids[recipient_id]
             )
+
+    return users_subbed_to_target_user_subscriptions_dict
+
+
+def get_subscribers_of_target_user_subscriptions(
+    target_user: UserProfile, include_deactivated_users_for_dm_groups: bool = False
+) -> dict[int, set[int]]:
+    target_user_subbed_recipient_ids = Subscription.objects.filter(
+        user_profile=target_user,
+        active=True,
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+    ).values("recipient_id")
+
+    subs_in_target_user_subscriptions_query = Subscription.objects.filter(
+        recipient_id__in=target_user_subbed_recipient_ids,
+        active=True,
+    )
+
+    if include_deactivated_users_for_dm_groups:
+        subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
+            Q(recipient__type=Recipient.STREAM, is_user_active=True)
+            | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
+        )
+    else:
+        subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
+            recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+            is_user_active=True,
+        )
+
+    subs_in_target_user_subscriptions: set[int] = set(
+        subs_in_target_user_subscriptions_query.values_list("user_profile_id", flat=True)
+    )
+
+    users_subbed_to_target_user_subscriptions_dict: dict[int, set[int]] = defaultdict(set)
+    if subs_in_target_user_subscriptions:
+        users_subbed_to_target_user_subscriptions_dict[target_user.id] = (
+            subs_in_target_user_subscriptions
+        )
 
     return users_subbed_to_target_user_subscriptions_dict
 
@@ -1019,10 +1061,8 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
 def get_accessible_user_ids(
     realm: Realm, user_profile: UserProfile, include_deactivated_users: bool = False
 ) -> list[int]:
-    subscribers_dict_of_target_user_subscriptions = (
-        bulk_get_subscribers_of_target_user_subscriptions(
-            [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
-        )
+    subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
+        user_profile, include_deactivated_users_for_dm_groups=include_deactivated_users
     )
     users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
         [user_profile], realm, include_deactivated_users=include_deactivated_users
