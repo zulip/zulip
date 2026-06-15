@@ -697,9 +697,24 @@ def do_change_user_role(
 
     do_send_user_group_members_update_event("add_members", system_group, [user_profile.id])
 
-    if UserProfile.ROLE_MEMBER in [old_value, value]:
+    # user_profile's own FULL_MEMBERS membership can change only when the
+    # member role is involved. A member-role bot's full-member status follows
+    # its owner, so the owner's bots must also be re-checked whenever the
+    # owner crosses the boundary between full-member-equivalent roles and the
+    # guest or new-member roles (e.g. moderator -> guest must demote the bot,
+    # which matters even in realms with no waiting period and thus no cron).
+    member_role_involved = UserProfile.ROLE_MEMBER in [old_value, value]
+    guest_role_involved = UserProfile.ROLE_GUEST in [old_value, value]
+    affected_user_ids = [user_profile.id] if member_role_involved else []
+    if not user_profile.is_bot and (member_role_involved or guest_role_involved):
+        affected_user_ids += list(
+            get_active_bots_owned_by_user(user_profile)
+            .filter(role=UserProfile.ROLE_MEMBER)
+            .values_list("id", flat=True)
+        )
+    if affected_user_ids:
         update_users_in_full_members_system_group(
-            user_profile.realm, [user_profile.id], acting_user=acting_user
+            user_profile.realm, affected_user_ids, acting_user=acting_user
         )
 
     send_stream_events_for_role_update(user_profile, previously_accessible_streams)

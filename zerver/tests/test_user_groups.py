@@ -4579,3 +4579,31 @@ class BotFullMemberStatusTest(ZulipTestCase):
                 user_profile=bot, user_group=full_members_group
             ).exists()
         )
+
+    def test_owner_role_change_repins_owned_bots(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        owner = self.example_user("hamlet")
+        self.assertEqual(owner.role, UserProfile.ROLE_MEMBER)
+        owner.date_joined = timezone_now()
+        owner.save(update_fields=["date_joined"])
+        bot = self.create_test_bot("role-change", owner)
+        self.assert_not_in_full_members(bot)
+        self.set_user_role(owner, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.assert_in_full_members(bot)
+
+        self.set_user_role(owner, UserProfile.ROLE_MEMBER)
+        self.assert_not_in_full_members(bot)
+
+        self.set_user_role(owner, UserProfile.ROLE_MODERATOR)
+        self.assert_in_full_members(bot)
+
+        # moderator -> guest must immediately demote the bot, even though
+        # neither role is "member" (the guest boundary). Otherwise a realm with
+        # no waiting period, and thus no cron, would leak full-member access.
+        self.set_user_role(owner, UserProfile.ROLE_GUEST)
+        self.assert_not_in_full_members(bot)
+
+        self.set_user_role(owner, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.assert_in_full_members(bot)
