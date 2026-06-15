@@ -52,7 +52,7 @@ from onelogin.saml2.utils import OneLogin_Saml2_Utils
 from onelogin.saml2.xml_utils import OneLogin_Saml2_XML
 from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
-from social_core.backends.azuread import AzureADOAuth2
+from social_core.backends.azuread import AzureADOAuth2V2
 from social_core.backends.base import BaseAuth
 from social_core.backends.discord import DiscordOAuth2
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
@@ -3088,16 +3088,13 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
 
 @external_auth_method
-class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
-    # The upstream implementation uses the outdated /oauth2/authorize
-    # API (instead of the v2.0 API), which doesn't allow us to authenticate
-    # users with just a personal Microsoft account. v2.0 API is required.
-    # This requires us to override the default URLs to use it as well
-    # as adjust the requested scopes, to match this new API.
-    AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
-    ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
-    DEFAULT_SCOPE = ["User.Read profile openid email"]
-
+class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2V2):
+    # AzureADOAuth2V2 uses the v2.0 API endpoints, which we require to
+    # authenticate users with personal Microsoft accounts, and to fetch
+    # the v2.0 OpenID configuration whose issuer matches the v2.0 tokens
+    # Microsoft returns. We keep name="azuread-oauth2" (rather than the
+    # upstream "azuread-oauth2-v2") to preserve our existing OAuth
+    # redirect URI.
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
