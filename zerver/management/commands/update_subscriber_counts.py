@@ -10,7 +10,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
 from zerver.models import RealmAuditLog, Stream, Subscription
 from zerver.models.realm_audit_logs import AuditLogEventType
 
@@ -36,6 +36,7 @@ accurate; this command is run as a daily cron job to ensure the number is accura
         self.add_realm_args(parser, help="The optional name of the realm to limit to")
 
     @override
+    @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         streams = Stream.objects.all()

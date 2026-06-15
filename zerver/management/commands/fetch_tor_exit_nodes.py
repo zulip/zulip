@@ -7,7 +7,7 @@ from django.conf import settings
 from typing_extensions import override
 from urllib3.util import Retry
 
-from zerver.lib.management import ZulipBaseCommand, abort_cron_during_deploy
+from zerver.lib.management import ZulipBaseCommand, abort_cron_during_deploy, abort_unless_locked
 from zerver.lib.outgoing_http import OutgoingSession
 
 
@@ -45,6 +45,7 @@ Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
 
     @override
     @abort_cron_during_deploy
+    @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
         if not settings.RATE_LIMIT_TOR_TOGETHER:
             return
