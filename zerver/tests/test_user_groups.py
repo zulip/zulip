@@ -4566,3 +4566,57 @@ class BotFullMemberStatusTest(ZulipTestCase):
                 user_profile=bot, user_group=full_members_group
             ).exists()
         )
+
+    def test_owner_role_change_repins_owned_bots(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        owner = self.example_user("hamlet")
+        self.assertEqual(owner.role, UserProfile.ROLE_MEMBER)
+        owner.date_joined = timezone_now()
+        owner.save(update_fields=["date_joined"])
+        bot = self.create_test_bot("role-change", owner)
+        self.assert_not_in_full_members(bot)
+        self.set_user_role(owner, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.assert_in_full_members(bot)
+
+        self.set_user_role(owner, UserProfile.ROLE_MEMBER)
+        self.assert_not_in_full_members(bot)
+
+        self.set_user_role(owner, UserProfile.ROLE_MODERATOR)
+        self.assert_in_full_members(bot)
+
+        self.set_user_role(owner, UserProfile.ROLE_GUEST)
+        self.assert_not_in_full_members(bot)
+
+        self.set_user_role(owner, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.assert_in_full_members(bot)
+
+    def assert_full_members_row(self, user: UserProfile, expected: bool) -> None:
+        self.assertEqual(
+            UserGroupMembership.objects.filter(
+                user_profile=user, user_group=self.full_members_group()
+            ).exists(),
+            expected,
+        )
+
+    def test_owner_role_change_repins_deactivated_bots(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        owner = self.example_user("hamlet")
+        owner.date_joined = timezone_now()
+        owner.save(update_fields=["date_joined"])
+        bot = self.create_test_bot("deactivated-role-change", owner)
+        self.assert_not_in_full_members(bot)
+
+        do_deactivate_user(bot, acting_user=None)
+        self.set_user_role(owner, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.assert_full_members_row(bot, True)
+
+        self.set_user_role(owner, UserProfile.ROLE_GUEST)
+        self.assert_full_members_row(bot, False)
+
+        self.set_user_role(owner, UserProfile.ROLE_MODERATOR)
+        do_reactivate_user(bot, acting_user=None)
+        self.assert_in_full_members(bot)
