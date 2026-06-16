@@ -140,6 +140,10 @@ export function clear_subscriptions(for_tests = true): void {
     // it should only be used in tests.
     stream_info = new BinaryDict((sub) => sub.subscribed);
     sub_store.clear();
+    stream_ids_by_name.clear();
+    stream_ids_by_old_names.clear();
+    default_stream_ids.clear();
+    realm_web_public_stream_ids.clear();
     if (for_tests) {
         peer_data.clear_subscriber_counts_for_tests();
     }
