@@ -135,7 +135,7 @@ const stream_ids_by_old_names = new FoldDict<number>();
 const default_stream_ids = new Set<number>();
 const realm_web_public_stream_ids = new Set<number>();
 
-export function clear_subscriptions(for_tests = true): void {
+export function clear_subscriptions(): void {
     // This function is only used once at page load, and then
     // it should only be used in tests.
     stream_info = new BinaryDict((sub) => sub.subscribed);
@@ -144,12 +144,10 @@ export function clear_subscriptions(for_tests = true): void {
     stream_ids_by_old_names.clear();
     default_stream_ids.clear();
     realm_web_public_stream_ids.clear();
-    if (for_tests) {
-        peer_data.clear_subscriber_counts_for_tests();
-    }
+    peer_data.clear_subscriber_counts();
 }
 
-clear_subscriptions(false);
+clear_subscriptions();
 
 export function rename_sub(sub: StreamSubscription, new_name: string): void {
     const old_name = sub.name;
