@@ -2812,11 +2812,99 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_personal_message(self) -> None:
-        user_profile = self.example_user("hamlet")
+        hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        prospero = self.example_user("prospero")
 
+        # A normal user sends a personal message.
         with self.assert_database_query_count(24):
-            self.send_personal_message(user_profile, cordelia)
+            self.send_personal_message(hamlet, cordelia)
+
+        # Give guests limited user access.
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        # Make prospero a guest user.
+        self.set_user_role(prospero, UserProfile.ROLE_GUEST)
+
+        # Compared to a normal user, when a guest with limited
+        # user access sends a personal message, we do extra checks resulting
+        # in extra queries.
+        # TODO: Optimize the following 2 cases
+        # by refining the logic and reducing the query count
+        # inside check_sender_can_access_recipients.
+
+        # A guest with limited user access sends a personal message
+        # to another accessible user.
+        with self.assert_database_query_count(26):
+            self.send_personal_message(polonius, hamlet)
+
+        # A guest with limited user access sends a personal message
+        # to themself.
+        with self.assert_database_query_count(25):
+            self.send_personal_message(polonius, polonius)
+
+        # A guest with limited user access sends a personal message
+        # to another accessible guest.
+        with self.assert_database_query_count(23):
+            self.send_personal_message(polonius, prospero)
+
+    def test_group_direct_message(self) -> None:
+        """
+        When a guest with limited user access sends a group Direct Message
+        to recipients with another guest included, we do extra checks resulting
+        in extra queries as opposed to a normal user.
+        This test tracks query count for these different cases.
+        """
+        # Give guests limited user access.
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        prospero = self.example_user("prospero")
+
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        bot = self.create_test_bot("test2", cordelia, full_name="Test bot")
+
+        # Make prospero a guest user.
+        self.set_user_role(prospero, UserProfile.ROLE_GUEST)
+
+        # Direct message group recipients including a guest (prospero).
+        recipients = [cordelia, hamlet, bot, prospero]
+
+        # A normal user sends the first message
+        # to a new DirectMessageGroup.
+        with self.assert_database_query_count(29):
+            self.send_group_direct_message(iago, recipients)
+
+        # A normal user sends a message
+        # to an existing DirectMessageGroup.
+        with self.assert_database_query_count(24):
+            self.send_group_direct_message(iago, recipients)
+
+        # Subscribe polonius to Verona to make the recipients
+        # below accessible for polonius.
+        self.subscribe(polonius, "Verona")
+
+        # polonius and prospero have already exchanged 1:1 DM
+        # via set_up_db_for_testing_user_access,
+        # and we need this interaction because:
+        # 1- It's very common for the message recipients
+        # to have 1:1 DM partners.
+        # 2- This triggers 2 queries by get_users_involved_in_dms_with_target_users,
+        # so we can capture that.
+
+        # A guest with limited user access sends the first message
+        # to a new DirectMessageGroup.
+        with self.assert_database_query_count(32):
+            self.send_group_direct_message(polonius, recipients)
+
+        # A guest with limited user access sends a message
+        # to an existing DirectMessageGroup.
+        # TODO: Query count could be reduced by
+        # optimizing get_recipients_for_user_creation_events
+        # and get_inaccessible_user_ids.
+        with self.assert_database_query_count(27):
+            self.send_group_direct_message(polonius, recipients)
 
     def test_direct_message_initiator_group_setting(self) -> None:
         """
