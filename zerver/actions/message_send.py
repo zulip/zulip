@@ -116,7 +116,11 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
-from zerver.models.recipients import get_direct_message_group_user_ids
+from zerver.models.recipients import (
+    DirectMessageGroup,
+    get_direct_message_group_hash,
+    get_direct_message_group_user_ids,
+)
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
@@ -1682,14 +1686,14 @@ def get_recipients_for_user_creation_events(
 ) -> dict[UserProfile, set[int]]:
     """
     This function returns a dictionary with data about which users would
-    receive stream creation events due to gaining access to a user.
+    receive user creation events due to gaining access to a user.
     The key of the dictionary is a user object and the value is a set of
     user_ids that would gain access to that user.
     """
     recipients_for_user_creation_events: dict[UserProfile, set[int]] = defaultdict(set)
 
-    # If none of the users in the direct message conversation are
-    # guests, then there is no possible can_access_all_users_group
+    # If none of the direct message recipients are guests,
+    # then there is no possible can_access_all_users_group
     # policy that would mean sending this message changes any user's
     # user access to other users.
     guest_recipients = [user for user in user_profiles if user.is_guest]
@@ -1704,6 +1708,21 @@ def get_recipients_for_user_creation_events(
             recipients_for_user_creation_events[sender].add(user_profiles[0].id)
         return recipients_for_user_creation_events
 
+    # Here, we check if all participants have a common DirectMessageGroup
+    # with at least one message, which would mean that every user
+    # already has access to every other user, and no need to proceed.
+    all_participant_ids = list({user.id for user in user_profiles} | {sender.id})
+    if DirectMessageGroup.objects.filter(
+        Exists(Message.objects.filter(realm=realm, recipient_id=OuterRef("recipient_id"))),
+        huddle_hash=get_direct_message_group_hash(all_participant_ids),
+        group_size=len(all_participant_ids),
+    ).exists():
+        return recipients_for_user_creation_events
+
+    # TODO: The following 2 functions execute 4 queries.
+    # While this is only for a new DirectMessageGroup,
+    # it's still worth optimizing, also because these functions
+    # are called in other code paths.
     users_involved_in_dms = get_users_involved_in_dms_with_target_users(guest_recipients, realm)
     subscribers_of_guest_recipient_subscriptions = get_subscribers_of_target_user_subscriptions(
         guest_recipients

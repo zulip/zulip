@@ -2883,13 +2883,11 @@ class PersonalMessageSendTest(ZulipTestCase):
         recipients = [cordelia, hamlet, bot, bassanio]
 
         # Send the first message to a new DirectMessageGroup.
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(32):
             self.send_group_direct_message(polonius, recipients)
 
         # Send message in an existing DirectMessageGroup.
-        # TODO: Query count could be reduced by checking
-        # if a DirectMessageGroup already exists for the participants.
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(23):
             self.send_group_direct_message(polonius, recipients)
 
     def test_direct_message_initiator_group_setting(self) -> None:
