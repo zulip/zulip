@@ -2818,6 +2818,84 @@ class PersonalMessageSendTest(ZulipTestCase):
         with self.assert_database_query_count(24):
             self.send_personal_message(user_profile, cordelia)
 
+    def test_personal_message_from_limited_guest_performance(self) -> None:
+        """
+        When a limited guest sends a DM, we do extra checks resulting in extra queries,
+        as opposed to a non-limited guest. This test tracks query count in this case.
+        """
+        realm = get_realm("zulip")
+
+        # Make guests limited
+        members_group = NamedUserGroup.objects.get(name="role:members", realm_for_sharding=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
+
+        polonius = self.example_user("polonius")
+
+        # TODO: Optimize the following 2 cases
+        # by refining the logic and reducing the query count
+        # inside check_sender_can_access_recipients.
+
+        # Limited guest sends a DM to themself.
+        with self.assert_database_query_count(26):
+            self.send_personal_message(polonius, polonius)
+
+        # Limited guest sends a DM to another accessible user.
+        hamlet = self.example_user("hamlet")
+        with self.assert_database_query_count(26):
+            self.send_personal_message(polonius, hamlet)
+
+    def test_group_direct_message_from_limited_guest_performance(self) -> None:
+        """
+        When a limited guest sends a group DM to recipients with a guest included,
+        we do extra checks resulting in extra queries, as opposed to a non-limited guest.
+        This test tracks query count in this case.
+        """
+        realm = get_realm("zulip")
+
+        # Make guests limited.
+        members_group = NamedUserGroup.objects.get(name="role:members", realm_for_sharding=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
+
+        polonius = self.example_user("polonius")
+        bassanio = do_create_user(
+            "bassanio@analytics.ds",
+            "Bassanio",
+            realm,
+            full_name="Bassanio",
+            role=UserProfile.ROLE_GUEST,
+            acting_user=None,
+        )
+        # subscribe bassanio to Verona, which polonius is subscribed to,
+        # to make bassanio accessible.
+        self.subscribe(bassanio, "Verona")
+
+        # It's very common for the message recipients
+        # to have other DM partners via 1:1 DM groups, so we send
+        # this message to simulate the check by
+        # get_users_involved_in_dms_with_target_users which executes 2 queries
+        # in most cases.
+        self.send_personal_message(polonius, bassanio)
+
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        bot = self.create_test_bot("test2", cordelia, full_name="Test bot")
+
+        recipients = [cordelia, hamlet, bot, bassanio]
+
+        # Send the first message to a new DirectMessageGroup.
+        with self.assert_database_query_count(32):
+            self.send_group_direct_message(polonius, recipients)
+
+        # Send message in an existing DirectMessageGroup.
+        # TODO: Query count could be reduced by checking
+        # if a DirectMessageGroup already exists for the participants.
+        with self.assert_database_query_count(27):
+            self.send_group_direct_message(polonius, recipients)
+
     def test_direct_message_initiator_group_setting(self) -> None:
         """
         Tests that direct_message_initiator_group_setting works correctly.
