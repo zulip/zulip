@@ -2,6 +2,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, TypeAlias
 from urllib.parse import SplitResult, urljoin
 
@@ -13,19 +14,22 @@ from urllib3.util import Retry
 from zerver.data_import.import_util import (
     ImportedBotEmail,
     ZerverFieldsT,
+    build_message,
     build_realm,
     build_recipient,
     build_stream,
     build_subscription,
     build_user_profile,
+    build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
     get_data_file,
     get_unique_truncated_name,
+    make_subscriber_map,
     validate_user_emails_for_import,
 )
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.export import do_common_export_processes
+from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.message import truncate_content
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.string_validation import is_character_printable
@@ -61,6 +65,28 @@ DISCORD_ANNOUNCEMENT_CHANNEL_TYPE = "GuildNews"
 
 DISCORD_VOICE_CHANNEL_TYPES = frozenset(["GuildVoiceChat", "GuildStageVoice"])
 VOICE_CHANNEL_NAME_PREFIX = "[voice] "
+
+# All of a channel's messages (including those merged in from its threads)
+# are imported into this single topic.
+MAIN_DISCORD_IMPORT_TOPIC = "imported from Discord"
+
+# The types listed in *_MESSAGE_TYPES variables are not native from Discord,
+# they're from Discord Chat Exporter:
+# https://raw.githubusercontent.com/Tyrrrz/DiscordChatExporter/master/DiscordChatExporter.Core/Discord/Data/MessageKind.cs
+DISCORD_CONVERTIBLE_MESSAGE_TYPES = frozenset(["Default", "Reply"])
+
+DISCORD_SYSTEM_MESSAGE_TYPES = frozenset(
+    [
+        "RecipientAdd",
+        "RecipientRemove",
+        "Call",
+        "ChannelNameChange",
+        "ChannelIconChange",
+        "ChannelPinnedMessage",
+        "GuildMemberJoin",
+        "ThreadCreated",
+    ]
+)
 
 DISCORD_API_BASE_URL = "https://discord.com/api/v10/"
 
@@ -196,6 +222,25 @@ def becomes_zulip_channel(channel: DiscordFieldsT) -> bool:
         and channel_type not in DISCORD_DIRECT_MESSAGE_CHANNEL_TYPES
         and channel_type not in NON_TEXT_DISCORD_CHANNEL_TYPES
     )
+
+
+def should_convert_message(message: DiscordFieldsT) -> bool:
+    message_type = message["type"]
+    if message_type in DISCORD_CONVERTIBLE_MESSAGE_TYPES:
+        return True
+    if message_type not in DISCORD_SYSTEM_MESSAGE_TYPES:
+        # An unrecognized type might carry user content (e.g. a slash-command
+        # message), so warn rather than dropping it silently.
+        logging.warning(
+            "Skipping Discord message %s of unsupported type %s",
+            message["id"],
+            message_type,
+        )
+    return False
+
+
+def get_timestamp_from_message(message: DiscordFieldsT) -> float:
+    return datetime.fromisoformat(message["timestamp"]).timestamp()
 
 
 @dataclass
@@ -394,8 +439,13 @@ def convert_channels(
     realm: dict[str, Any],
     realm_id: int,
     timestamp: float,
-) -> None:
+) -> dict[str, int]:
+    """Build a Zulip channel for each Discord channel and return a mapping from
+    Discord channel ID to the Zulip recipient ID of its channel.
+    """
+    recipient_id_by_discord_channel_id: dict[str, int] = {}
     channel_name_counts: dict[str, int] = {}
+
     logging.info("######### IMPORTING CHANNELS STARTED #########\n")
     for discord_channel in discord_channels:
         channel = discord_channel.channel
@@ -458,7 +508,80 @@ def convert_channels(
             )
             realm["zerver_subscription"].append(subscription)
 
+        recipient_id_by_discord_channel_id[channel["id"]] = recipient_id
+
     logging.info("######### IMPORTING CHANNELS FINISHED #########\n")
+    return recipient_id_by_discord_channel_id
+
+
+def convert_messages(
+    discord_channels: list[DiscordChannel],
+    recipient_id_by_discord_channel_id: dict[str, int],
+    discord_user_id_to_zulip_user_id: DiscordUserIdToZulipUserIdT,
+    realm: dict[str, Any],
+    realm_id: int,
+    output_dir: str,
+    chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
+) -> None:
+    logging.info("######### IMPORTING MESSAGES STARTED #########\n")
+    subscriber_map = make_subscriber_map(realm["zerver_subscription"])
+
+    # Pair each convertible message with the recipient of its channel.
+    messages_to_convert = [
+        (recipient_id_by_discord_channel_id[discord_channel.channel["id"]], message)
+        for discord_channel in discord_channels
+        for message in discord_channel.messages
+        if should_convert_message(message)
+    ]
+
+    dump_file_id = 1
+    for batch_start in range(0, len(messages_to_convert), chunk_size):
+        zerver_message: list[ZerverFieldsT] = []
+        zerver_usermessage: list[ZerverFieldsT] = []
+        for recipient_id, message in messages_to_convert[batch_start : batch_start + chunk_size]:
+            message_id = NEXT_ID("message")
+            user_id = discord_user_id_to_zulip_user_id[message["author"]["id"]]
+
+            zulip_message = build_message(
+                topic_name=MAIN_DISCORD_IMPORT_TOPIC,
+                date_sent=get_timestamp_from_message(message),
+                message_id=message_id,
+                # TODO: Translate Discord-specific markup such as user
+                # mentions, channel links, custom emoji, and replies, and
+                # convert attachments and reactions.
+                content=message["content"],
+                rendered_content=None,
+                user_id=user_id,
+                recipient_id=recipient_id,
+                realm_id=realm_id,
+                # There are no per-server direct messages. Discord DMs are global.
+                is_channel_message=True,
+                # Import will correct the message's has_image and has_link
+                # attributes.
+                has_image=False,
+                has_link=False,
+                has_attachment=False,
+                is_direct_message_type=False,
+            )
+            zerver_message.append(zulip_message)
+
+            build_usermessages(
+                zerver_usermessage=zerver_usermessage,
+                subscriber_map=subscriber_map,
+                recipient_id=recipient_id,
+                mentioned_user_ids=[],
+                message_id=message_id,
+                is_private=False,
+            )
+
+        create_converted_data_files(
+            dict(zerver_message=zerver_message, zerver_usermessage=zerver_usermessage),
+            output_dir,
+            f"/messages-{dump_file_id:06}.json",
+        )
+        dump_file_id += 1
+
+    logging.info("######### IMPORTING MESSAGES FINISHED #########\n")
 
 
 def do_convert_directory(discord_data_dir: str, output_dir: str, token: str) -> None:
@@ -502,12 +625,21 @@ def do_convert_directory(discord_data_dir: str, output_dir: str, token: str) -> 
         domain_name=domain_name,
     )
 
-    convert_channels(
+    recipient_id_by_discord_channel_id = convert_channels(
         discord_channels=discord_channels,
         discord_user_id_to_zulip_user_id=discord_user_id_to_zulip_user_id,
         realm=realm,
         realm_id=realm_id,
         timestamp=NOW,
+    )
+
+    convert_messages(
+        discord_channels=discord_channels,
+        recipient_id_by_discord_channel_id=recipient_id_by_discord_channel_id,
+        discord_user_id_to_zulip_user_id=discord_user_id_to_zulip_user_id,
+        realm=realm,
+        realm_id=realm_id,
+        output_dir=output_dir,
     )
 
     create_converted_data_files(realm, output_dir, "/realm.json")

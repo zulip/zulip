@@ -1,10 +1,16 @@
+import json
+import os
 import tempfile
+from collections import defaultdict
+from datetime import datetime
+from typing import Any
 from urllib.parse import urljoin
 
 import responses
 
 from zerver.data_import.discord import (
     DISCORD_API_BASE_URL,
+    MAIN_DISCORD_IMPORT_TOPIC,
     DiscordChannel,
     convert_channels,
     do_convert_directory,
@@ -12,9 +18,12 @@ from zerver.data_import.discord import (
     get_zulip_compatible_full_name,
     group_messages_into_channels,
     is_private_channel,
+    should_convert_message,
 )
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.topic import messages_for_topic
+from zerver.models import Message
 from zerver.models.realms import get_realm
 from zerver.models.streams import Stream, Subscription
 from zerver.models.users import UserProfile
@@ -57,11 +66,31 @@ DISCORD_BOT_EMAIL = f"{DISCORD_USER_FULL_NAME['bot']}-bot@{DISCORD_IMPORT_EXTERN
 
 DISCORD_BOT_TOKEN = "DISCORD_BOT_TOKEN"
 
+# Maps each export channel to the Zulip stream it is imported as. The voice
+# channel's text chat gets a prefixed name; see VOICE_CHANNEL_NAME_PREFIX.
+DISCORD_CHANNEL_ID_TO_STREAM_NAME = {
+    DISCORD_CHANNEL_ID["general"]: "general",
+    DISCORD_CHANNEL_ID["general-2"]: "general-2",
+    DISCORD_CHANNEL_ID["private"]: "private",
+    DISCORD_CHANNEL_ID["voice"]: "[voice] General",
+}
+
+# The Discord message types the importer converts; every other type (system
+# messages like joins and pins) is dropped. Defined here independently of the
+# importer so the tests cross-check its message selection.
+CONVERTIBLE_DISCORD_MESSAGE_TYPES = {"Default", "Reply"}
+
 GET_GUILD_URL = urljoin(DISCORD_API_BASE_URL, f"guilds/{DISCORD_GUILD_ID}")
 
 
 def encoded_discord_email(discord_user_id: str) -> str:
     return EMAIL_WITH_ENCODED_DISCORD_ID.format(discord_user_id=discord_user_id)
+
+
+def expected_sender_email(discord_user_id: str) -> str:
+    if discord_user_id == DISCORD_USER_ID["bot"]:  # nocoverage
+        return DISCORD_BOT_EMAIL
+    return encoded_discord_email(discord_user_id)
 
 
 def get_channel_url(channel_id: str) -> str:
@@ -85,6 +114,28 @@ class DiscordImporterTestCase(ZulipTestCase):
         responses.add(
             responses.GET, get_channel_url(channel_id), self.discord_api_response(fixture_name)
         )
+
+    def read_convertible_exported_messages(self) -> dict[str, list[dict[str, Any]]]:
+        """Group the export fixture's convertible messages by Discord channel ID.
+
+        This re-derives the importer's message selection independently of the
+        importer: it merges a channel's export partitions and keeps only the
+        message types we convert, so tests can assert that the imported
+        messages match the export exactly. The fixture has no thread or direct
+        message exports, so every channel file becomes a Zulip stream.
+        """
+        channels_dir = os.path.join(self.fixture_file_name("", self.FIXTURE_DIR), "channels")
+        messages_by_channel_id: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for file_name in os.listdir(channels_dir):
+            if not file_name.endswith(".json"):  # nocoverage
+                continue
+            with open(os.path.join(channels_dir, file_name)) as channel_export_file:
+                channel_export = json.load(channel_export_file)
+            channel_id = channel_export["channel"]["id"]
+            for message in channel_export["messages"]:
+                if message["type"] in CONVERTIBLE_DISCORD_MESSAGE_TYPES:
+                    messages_by_channel_id[channel_id].append(message)
+        return messages_by_channel_id
 
 
 class DiscordImporterIntegrationTest(DiscordImporterTestCase):
@@ -189,6 +240,65 @@ class DiscordImporterIntegrationTest(DiscordImporterTestCase):
             | {DISCORD_BOT_EMAIL},
         )
 
+    def test_imported_messages(self) -> None:
+        self.import_discord_fixture()
+        realm = get_realm(self.SUBDOMAIN)
+        convertible_messages_by_channel_id = self.read_convertible_exported_messages()
+
+        for channel_id, channel_name in DISCORD_CHANNEL_ID_TO_STREAM_NAME.items():
+            channel = Stream.objects.get(realm=realm, name=channel_name)
+            assert channel.recipient is not None
+            imported_messages = messages_for_topic(
+                realm.id, channel.recipient.id, MAIN_DISCORD_IMPORT_TOPIC
+            )
+            exported_messages = convertible_messages_by_channel_id[channel_id]
+
+            # Each channel's convertible messages are all imported into its
+            # single "imported from Discord" topic with the right sender and
+            # send time -- and nothing else is, so system messages like joins
+            # and pins, and the messages of dropped channels, are excluded.
+            self.assertEqual(
+                sorted(
+                    (message.sender.delivery_email, message.date_sent.timestamp())
+                    for message in imported_messages
+                ),
+                sorted(
+                    (
+                        expected_sender_email(message["author"]["id"]),
+                        datetime.fromisoformat(message["timestamp"]).timestamp(),
+                    )
+                    for message in exported_messages
+                ),
+            )
+
+        # The imported users author no messages beyond their converted ones, so
+        # nothing is duplicated or imported into an unexpected channel.
+        imported_users = UserProfile.objects.filter(realm=realm)
+        self.assertEqual(
+            Message.objects.filter(realm=realm, sender__in=imported_users).count(),
+            sum(len(messages) for messages in convertible_messages_by_channel_id.values()),
+        )
+
+        # Messages within a topic are imported in chronological order.
+        general = Stream.objects.get(realm=realm, name="general")
+        assert general.recipient is not None
+        dates_sent = [
+            message.date_sent
+            for message in messages_for_topic(
+                realm.id, general.recipient.id, MAIN_DISCORD_IMPORT_TOPIC
+            ).order_by("id")
+        ]
+        self.assertEqual(dates_sent, sorted(dates_sent))
+
+        # Message content is imported verbatim for now; translating
+        # Discord-specific markup is a TODO.
+        self.assertEqual(
+            Message.objects.get(
+                realm=realm, content="**Bold** *italic* __underline__"
+            ).sender.delivery_email,
+            encoded_discord_email(DISCORD_USER_ID["pieter"]),
+        )
+
 
 class DiscordImporterUnitTest(DiscordImporterTestCase):
     def test_convert_directory_without_channels_dir(self) -> None:
@@ -236,6 +346,22 @@ class DiscordImporterUnitTest(DiscordImporterTestCase):
         with self.assertRaises(Exception) as e, self.assertLogs(level="INFO"):
             get_discord_api_data(f"guilds/{DISCORD_GUILD_ID}", DISCORD_BOT_TOKEN)
         self.assertEqual("HTTP error accessing the Discord API.", str(e.exception))
+
+    def test_should_convert_message(self) -> None:
+        # Messages with user-authored content are converted.
+        self.assertTrue(should_convert_message({"id": "1", "type": "Default"}))
+        self.assertTrue(should_convert_message({"id": "2", "type": "Reply"}))
+
+        # Known system messages are skipped without warning.
+        with self.assertNoLogs(level="WARNING"):
+            self.assertFalse(should_convert_message({"id": "3", "type": "GuildMemberJoin"}))
+
+        # An unrecognized type (such as a slash-command message, which
+        # DiscordChatExporter leaves unnamed) is skipped but logs a warning so
+        # that any dropped content is visible.
+        with self.assertLogs(level="WARNING") as logs:
+            self.assertFalse(should_convert_message({"id": "4", "type": "20"}))
+        self.assertIn("Skipping Discord message 4 of unsupported type 20", logs.output[0])
 
     @responses.activate
     def test_group_messages_into_channels(self) -> None:
