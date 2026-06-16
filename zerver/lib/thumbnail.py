@@ -419,6 +419,7 @@ class MarkdownImageMetadata:
 class AttachmentData:
     audio_path_ids: set[str]
     image_metadata: dict[str, MarkdownImageMetadata]
+    path_ids_to_sizes: dict[str, int]
 
 
 def manifest_and_get_user_upload_previews(
@@ -434,6 +435,7 @@ def manifest_and_get_user_upload_previews(
         return AttachmentData(
             audio_path_ids=set(),
             image_metadata={},
+            path_ids_to_sizes={},
         )
 
     image_metadata: dict[str, MarkdownImageMetadata] = {}
@@ -488,9 +490,18 @@ def manifest_and_get_user_upload_previews(
         and bare_content_type(attachment.content_type) in AUDIO_INLINE_MIME_TYPES
     }
 
+    attachments = Attachment.objects.filter(
+        realm_id=realm_id, path_id__in=path_ids
+    ).values("path_id", "size")
+    path_ids_to_sizes = {
+        attachment["path_id"]: attachment["size"]
+        for attachment in attachments
+    }
+
     return AttachmentData(
         audio_path_ids=audio_path_ids,
         image_metadata=image_metadata,
+        path_ids_to_sizes=path_ids_to_sizes,
     )
 
 
