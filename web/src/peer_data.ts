@@ -348,7 +348,7 @@ export function set_subscriber_count(stream_id: number, count: number): void {
     subscriber_counts.set(stream_id, count);
 }
 
-export function clear_subscriber_counts_for_tests(): void {
+export function clear_subscriber_counts(): void {
     subscriber_counts.clear();
 }
 
