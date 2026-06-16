@@ -2866,12 +2866,12 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A normal user sends the first message
         # to a new DirectMessageGroup.
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(30):
             self.send_group_direct_message(iago, recipients)
 
         # A normal user sends a message
         # to an existing DirectMessageGroup.
-        with self.assert_database_query_count(24):
+        with self.assert_database_query_count(21):
             self.send_group_direct_message(iago, recipients)
 
         # Subscribe polonius to Verona to make the recipients
@@ -2888,14 +2888,12 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A guest with limited user access sends the first message
         # to a new DirectMessageGroup.
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(32):
             self.send_group_direct_message(polonius, recipients)
 
         # A guest with limited user access sends a message
         # to an existing DirectMessageGroup.
-        # TODO: Query count could be reduced by
-        # optimizing get_recipients_for_user_creation_events.
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(23):
             self.send_group_direct_message(polonius, recipients)
 
     def test_direct_message_initiator_group_setting(self) -> None:
