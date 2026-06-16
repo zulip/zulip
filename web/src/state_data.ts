@@ -31,6 +31,12 @@ export type NarrowTermSuggestion = {
 export type NarrowCanonicalTermSuggestion = {
     operator: NarrowCanonicalTerm["operator"];
     operand: string;
+    // The operand as the user actually typed it, before any
+    // canonicalization from a name to a user id (e.g. `dm:John`
+    // becomes `dm:50` when "John" is a unique full name). People
+    // suggestions match against this so that completing a unique name
+    // does not hide other name matches like "John Doe".
+    raw_operand: string;
     negated?: boolean | undefined;
 };
 
