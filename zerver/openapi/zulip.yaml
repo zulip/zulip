@@ -29619,6 +29619,18 @@ components:
             Name of the default group for the setting for system groups.
 
             This is non-null only for group-level settings.
+        replacement_group_name:
+          type: string
+          description: |
+            Name of the system group that the setting falls back to when
+            the group configured for it can no longer be used; for example,
+            when that group is deactivated, or when the only user in an
+            anonymous group used for the setting is deactivated.
+
+            This is `role:nobody` for settings that can be set to the
+            `role:nobody` system group, and `role:owners` otherwise.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-4194b5).
         allowed_system_groups:
           type: array
           description: |
