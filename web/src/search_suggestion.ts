@@ -391,7 +391,11 @@ function make_people_getter(last: NarrowCanonicalTermSuggestion): () => User[] {
         if (last.operator === "is" && last.operand === "dm") {
             query = "";
         } else {
-            query = last.operand;
+            // We match people against the text the user actually typed
+            // (`raw_operand`), not `last.operand`, since that may have
+            // been canonicalized from a name to a user id (e.g. `dm:John`
+            // becomes `dm:50` when "John" is a unique full name).
+            query = last.raw_operand;
         }
 
         persons = people.get_people_for_search_bar(query);
@@ -407,7 +411,7 @@ function get_person_suggestions(
     autocomplete_operator: "dm" | "sender" | "dm-including" | "mentions",
 ): Suggestion[] {
     if (last.operator === "is" && last.operand === "dm") {
-        last = {operator: "dm", operand: "", negated: false};
+        last = {operator: "dm", operand: "", raw_operand: "", negated: false};
     }
 
     const valid = ["search", autocomplete_operator];
@@ -1093,12 +1097,14 @@ export let get_suggestions = function (
                 return {
                     operator: canonical_term.operator,
                     operand: String(canonical_term.operand),
+                    raw_operand: term.operand,
                     negated: canonical_term.negated,
                 };
             }
             return {
                 operator: filter_util.canonicalize_operator(term.operator),
                 operand: term.operand,
+                raw_operand: term.operand,
                 negated: term.negated,
             };
         },
@@ -1110,7 +1116,12 @@ export let get_suggestions = function (
 
     // `last` will always be a text term, not a pill term. If there is no
     // text, then `last` is this default empty term.
-    let last: NarrowCanonicalTermSuggestion = {operator: "", operand: "", negated: false};
+    let last: NarrowCanonicalTermSuggestion = {
+        operator: "",
+        operand: "",
+        raw_operand: "",
+        negated: false,
+    };
     if (text_search_terms.length > 0) {
         last = text_search_terms.at(-1)!;
     }
@@ -1131,6 +1142,7 @@ export let get_suggestions = function (
         last = {
             operator: person_op.operator,
             operand: person_op.operand + " " + last.operand,
+            raw_operand: person_op.raw_operand + " " + last.raw_operand,
             negated: person_op.negated,
         };
         text_search_terms.splice(-2);

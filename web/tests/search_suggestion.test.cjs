@@ -324,6 +324,39 @@ test("dm_suggestions", ({override}) => {
     assert.deepEqual(suggestions, expected);
 });
 
+test("dm_suggestions_for_exact_full_name", () => {
+    // When the typed text exactly matches a unique full name, it is
+    // resolved to that user's id internally. We must still suggest other
+    // users whose names match the typed text as a prefix, rather than
+    // collapsing to just the exactly-named user.
+    const john = make_user({
+        email: "john@zulip.com",
+        user_id: 200,
+        full_name: "John",
+    });
+    const john_doe = make_user({
+        email: "john-doe@zulip.com",
+        user_id: 201,
+        full_name: "John Doe",
+    });
+    people.add_active_user(john, "server_events");
+    people.add_active_user(john_doe, "server_events");
+
+    // A partial query matches both users by name prefix.
+    let suggestions = get_suggestions("dm:joh");
+    assert.deepEqual(suggestions, [`dm:${john.user_id}`, `dm:${john_doe.user_id}`]);
+
+    // Completing the unique full name "John" must still suggest "John Doe",
+    // not collapse to just "John".
+    suggestions = get_suggestions("dm:John");
+    assert.deepEqual(suggestions, [`dm:${john.user_id}`, `dm:${john_doe.user_id}`]);
+
+    // A multi-word continuation after the resolved name still matches by
+    // name, narrowing to "John Doe".
+    suggestions = get_suggestions("dm:John Do");
+    assert.deepEqual(suggestions, [`dm:${john_doe.user_id}`]);
+});
+
 test("group_suggestions", () => {
     // If there's an existing completed user pill right before
     // the input string, we suggest a user group as one of the
