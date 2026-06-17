@@ -200,8 +200,15 @@ export function get_sub(stream_name: string): StreamSubscription | undefined {
 
 export function get_sub_by_id_string(stream_id_string: string): StreamSubscription | undefined {
     const stream_id = Number.parseInt(stream_id_string, 10);
-    const stream = stream_info.get(stream_id);
-    return stream;
+    // Only treat the operand as a stream id when it is exactly the
+    // canonical decimal form of that id. Otherwise `Number.parseInt`
+    // reads a digit-leading channel name like "7th floor" as the
+    // unrelated stream 7, so e.g. searching `channel:7th` would resolve
+    // to whatever channel happens to have id 7.
+    if (stream_id.toString() !== stream_id_string) {
+        return undefined;
+    }
+    return stream_info.get(stream_id);
 }
 
 export function get_valid_sub_by_id_string(stream_id_string: string): StreamSubscription {
