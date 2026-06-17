@@ -4,15 +4,14 @@
     <div class="settings_panel_list_header">
         <h3>{{t "Default channels"}}</h3>
         <div class="add_default_streams_button_container">
-            {{#if is_admin}}
-                {{> ../components/action_button
-                  id="show-add-default-streams-modal"
-                  label=(t "Add channel")
-                  variant="subtle"
-                  intent="brand"
-                  type="submit"
-                  }}
-            {{/if}}
+            {{> ../components/action_button
+              id="show-add-default-streams-modal"
+              label=(t "Add channel")
+              variant="subtle"
+              intent="brand"
+              type="submit"
+              hidden=(not is_admin)
+              }}
             {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter default channels')}}
         </div>
     </div>
@@ -24,9 +23,7 @@
                     <th class="active" data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}
                         <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
                     </th>
-                    {{#if is_admin}}
-                    <th class="actions"></th>
-                    {{/if}}
+                    <th class="actions{{#unless is_admin}} hide{{/unless}}"></th>
                 </tr>
             </thead>
             <tbody data-empty="{{t 'There are no default channels.' }}" data-search-results-empty="{{t 'No default channels match your current filter.' }}"
