@@ -17,8 +17,12 @@ import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 
+// `label_text` is a flat, pre-formatted string used by the call-creation
+// paths in compose_call_ui.ts to build a meeting/room name.
+// The reply-button template uses the structured `stream` / `topic_display_name`
+// fields instead, so it can render the decorated channel icon.
 type RecipientLabel = {
-    label_text?: string;
+    label_text: string;
     has_empty_string_topic?: boolean;
     stream?: StreamSubscription;
     topic_display_name?: string;
@@ -31,6 +35,7 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
     const topic_display_name = util.get_final_topic_display_name(topic);
     if (stream) {
         const recipient_label: RecipientLabel = {
+            label_text: `#${stream.name} > ${topic_display_name}`,
             has_empty_string_topic: topic === "",
             stream,
             topic_display_name,
