@@ -4095,6 +4095,25 @@ class NormalActionsTest(BaseAction):
             for k, v in fields.items():
                 self.assertEqual(msg[k], v)
 
+    def test_rename_stream_with_muted_topic(self) -> None:
+        # Clients without the user_topic capability track muted topics
+        # by channel name (the legacy muted_topics payload), and
+        # fetch_initial_state_data resolves that name at read time. So
+        # applying a channel-rename event must rewrite the name in
+        # muted_topics too, or apply_events diverges from a fresh fetch.
+        # verify_action checks that parity for us.
+        stream = self.make_stream("muted channel")
+        self.subscribe(self.user_profile, stream.name)
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            stream,
+            "muted topic",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+        with self.verify_action(num_events=2) as events:
+            do_rename_stream(stream, "renamed channel", self.user_profile)
+        check_stream_update("events[0]", events[0])
+
     def test_deactivate_stream_neversubscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
             stream = self.make_stream(f"stream{i}")

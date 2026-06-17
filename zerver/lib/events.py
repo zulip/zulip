@@ -1558,6 +1558,14 @@ def apply_event(
                                     stream["stream_id"]
                                 ]
 
+            # The legacy muted_topics data is keyed by channel name, which
+            # fetch_initial_state_data resolves at read time; keep it in
+            # sync with the rename.
+            if event["property"] == "name" and "muted_topics" in state:
+                for muted_topic in state["muted_topics"]:
+                    if muted_topic[0] == event["name"]:
+                        muted_topic[0] = event["value"]
+
     elif event["type"] == "default_streams":
         state["realm_default_streams"] = event["default_streams"]
     elif event["type"] == "default_stream_groups":
