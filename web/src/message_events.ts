@@ -617,7 +617,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 !stream_archived &&
                 compose_stream_id &&
                 old_stream.stream_id === compose_stream_id &&
-                orig_topic === compose_state.topic()
+                util.lower_same(orig_topic, compose_state.topic())
             ) {
                 changed_compose = true;
                 compose_state.topic(new_topic);

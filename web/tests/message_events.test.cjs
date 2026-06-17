@@ -9,6 +9,19 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
+mock_esm("../src/compose_fade", {
+    set_focused_recipient: noop,
+    update_message_list: noop,
+});
+const compose_state = mock_esm("../src/compose_state", {
+    stream_id: noop,
+    topic: noop,
+    set_stream_id: noop,
+});
+mock_esm("../src/compose_validate", {
+    warn_if_topic_resolved: noop,
+    inform_if_topic_is_moved: noop,
+});
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
 const message_notifications = mock_esm("../src/message_notifications");
@@ -340,5 +353,92 @@ run_test(
         });
         const topic_names = stream_topic_history.get_recent_topic_names(verona.stream_id);
         assert.equal(topic_names[0], new_topic);
+    },
+);
+
+run_test(
+    "update_messages topic move follows the compose box case-insensitively",
+    ({override, override_rewire}) => {
+        override_rewire(message_events, "update_views_filtered_on_message_property", () => {}, {
+            unused: false,
+        });
+        linkifiers.initialize([]);
+        markdown.initialize({
+            get_linkifier_map: linkifiers.get_linkifier_map,
+        });
+
+        const old_topic = "CI failures";
+        const new_topic = "Bug reports";
+        const raw_message = {
+            id: 444,
+            display_recipient: denmark.name,
+            flags: [],
+            sender_id: alice.user_id,
+            stream_id: denmark.stream_id,
+            topic: old_topic,
+            topic_links: markdown.get_topic_links(old_topic),
+            type: "stream",
+            reactions: [],
+            submessages: [],
+            avatar_url: `/avatar/${alice.user_id}`,
+        };
+
+        const original_message = message_helper.process_new_message({
+            type: "server_message",
+            raw_message,
+        }).message;
+
+        stream_topic_history.set_update_topic_last_message_id(noop);
+        message_lists.current.view = {};
+        message_lists.current.view.rerender_messages = noop;
+        message_lists.current.selected_id = () => -1;
+        message_lists.current.data = {
+            filter: {can_apply_locally: () => true},
+            remove: noop,
+            add_messages: noop,
+        };
+        message_lists.current.rerender = noop;
+
+        // The user is composing to this conversation, but typed the
+        // topic with different casing than the server's record.
+        let composed_topic = "ci failures";
+        override(compose_state, "stream_id", () => denmark.stream_id);
+        override(compose_state, "topic", (new_value) => {
+            if (new_value !== undefined) {
+                composed_topic = new_value;
+                return undefined;
+            }
+            return composed_topic;
+        });
+
+        const events = [
+            {
+                message_id: original_message.id,
+                message_ids: [original_message.id],
+                user_id: alice.user_id,
+                flags: [],
+                edit_timestamp: 1700000000,
+                stream_id: denmark.stream_id,
+                propagate_mode: "change_all",
+                orig_subject: old_topic,
+                subject: new_topic,
+                topic_links: markdown.get_topic_links(new_topic),
+                rendering_only: false,
+            },
+        ];
+
+        override(
+            realm,
+            "realm_message_edit_history_visibility_policy",
+            settings_config.message_edit_history_visibility_policy_values.always.code,
+        );
+
+        $("#message-edit-history").set_parents_result(".micromodal", $.create("modal-stub"));
+
+        message_events.update_messages(events);
+
+        // The compose box followed the move even though the typed
+        // topic differed from the moved topic only by case.
+        assert.equal(composed_topic, new_topic);
     },
 );
