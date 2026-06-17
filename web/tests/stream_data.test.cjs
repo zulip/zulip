@@ -974,6 +974,30 @@ test("delete_sub", () => {
     stream_data.delete_sub(99999);
 });
 
+test("get_sub_by_id_string", () => {
+    const general = {
+        stream_id: 7,
+        name: "general",
+        subscribed: true,
+    };
+    stream_data.add_sub_for_tests(general);
+
+    // A canonical id string resolves to the stream.
+    assert.equal(stream_data.get_sub_by_id_string("7"), general);
+
+    // A digit-leading channel name must not be read as that id, so
+    // that e.g. searching `channel:7th` doesn't resolve to the
+    // unrelated stream 7.
+    assert.equal(stream_data.get_sub_by_id_string("7th"), undefined);
+    assert.equal(stream_data.get_sub_by_id_string("7th floor"), undefined);
+
+    // Other non-canonical forms don't resolve either.
+    assert.equal(stream_data.get_sub_by_id_string("07"), undefined);
+    assert.equal(stream_data.get_sub_by_id_string("7.0"), undefined);
+    assert.equal(stream_data.get_sub_by_id_string(""), undefined);
+    assert.equal(stream_data.get_sub_by_id_string("general"), undefined);
+});
+
 test("mark_archived", () => {
     const canada = {
         is_archived: false,
