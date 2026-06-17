@@ -777,6 +777,22 @@ class UnreadCountTests(ZulipTestCase):
         )
         self.assert_json_error(result, "No such topic 'abc'")
 
+    def test_mark_topic_as_read_validates_topic_name(self) -> None:
+        # mark_topic_as_read applies the same normalization and
+        # validation to the topic name as topics of actual messages
+        # do. In particular, a NUL byte (which Postgres rejects at the
+        # query level) yields a clean 400 rather than a 500.
+        self.login("hamlet")
+        stream_id = get_stream("Denmark", get_realm("zulip")).id
+        result = self.client_post(
+            "/json/mark_topic_as_read",
+            {
+                "stream_id": stream_id,
+                "topic_name": "invalid\x00topic",
+            },
+        )
+        self.assert_json_error(result, "Invalid character in topic, at position 8!")
+
 
 class FixUnreadTests(ZulipTestCase):
     def test_fix_unreads(self) -> None:

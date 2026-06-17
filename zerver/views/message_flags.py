@@ -19,6 +19,7 @@ from zerver.lib.narrow import (
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic, user_message_exists_for_topic
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
@@ -171,6 +172,11 @@ def mark_topic_as_read(
 ) -> HttpResponse:
     stream, _sub = access_stream_by_id(user_profile, stream_id)
     assert stream.recipient_id is not None
+
+    # Normalize and validate the topic like the message paths do, so we
+    # only ever look up a topic name a real message could have.
+    topic_name = topic_name.strip()
+    check_stream_topic(topic_name)
 
     if topic_name:
         topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
