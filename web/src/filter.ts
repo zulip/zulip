@@ -490,11 +490,11 @@ export class Filter {
                 }
                 operand = Filter.decodeOperand(parts.join(":"), operator);
 
-                // Check for user-entered channel name. If the name is valid,
-                // convert it to id.
+                // Resolve a user-entered channel name to its id. A purely
+                // numeric operand is taken to be a stream id already.
                 if (
                     (operator === "channel" || util.is_channel_synonym(operator)) &&
-                    Number.isNaN(Number.parseInt(operand, 10))
+                    !util.is_numeric_string(operand)
                 ) {
                     const sub = stream_data.get_sub(operand);
                     if (sub) {
