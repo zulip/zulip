@@ -1166,6 +1166,18 @@ export function end_message_edit(message_id: number): void {
     }
 }
 
+export function inline_topic_edit_merges_into_existing_topic(
+    stream_id: number,
+    old_topic_name: string,
+    new_topic_name: string,
+): boolean {
+    // A case-only rename of the message's own topic is not a merge.
+    if (util.lower_same(old_topic_name, new_topic_name)) {
+        return false;
+    }
+    return stream_topic_history.is_known_topic_name(stream_id, new_topic_name);
+}
+
 export function try_save_inline_topic_edit($row: JQuery): void {
     assert(message_lists.current !== undefined);
     const message_id = rows.id_for_recipient_row($row);
@@ -1198,8 +1210,7 @@ export function try_save_inline_topic_edit($row: JQuery): void {
 
     const $message_header = $row.find(".message_header").expectOne();
     const stream_id = Number.parseInt($message_header.attr("data-stream-id")!, 10);
-    const stream_topics = stream_topic_history.get_recent_topic_names(stream_id);
-    if (stream_topics.includes(new_topic)) {
+    if (inline_topic_edit_merges_into_existing_topic(stream_id, old_topic, new_topic)) {
         confirm_dialog.launch({
             modal_title_html: $t_html({defaultMessage: "Merge with another topic?"}),
             modal_content_html: render_confirm_merge_topics_with_rename({

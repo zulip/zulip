@@ -12,6 +12,7 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const is_content_editable = message_edit.is_content_editable;
 
 const stream_data = mock_esm("../src/stream_data");
+const stream_topic_history = mock_esm("../src/stream_topic_history");
 
 const realm = make_realm();
 set_realm(realm);
@@ -302,5 +303,27 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
             "topic match",
         ),
         false,
+    );
+});
+
+run_test("inline_topic_edit_merges_into_existing_topic", () => {
+    const stream_id = 5;
+    const known_topics = new Set(["bar"]);
+    stream_topic_history.is_known_topic_name = (id, name) =>
+        id === stream_id &&
+        [...known_topics].some((topic) => topic.toLowerCase() === name.toLowerCase());
+
+    // Renaming to a different existing topic is a merge, even when the
+    // requested casing differs from the stored casing.
+    assert.ok(message_edit.inline_topic_edit_merges_into_existing_topic(stream_id, "Foo", "BAR"));
+
+    // A case-only rename of the message's own topic is not a merge,
+    // even once that name is itself a "known" topic.
+    known_topics.add("foo");
+    assert.ok(!message_edit.inline_topic_edit_merges_into_existing_topic(stream_id, "Foo", "foo"));
+
+    // A brand-new topic name is not a merge.
+    assert.ok(
+        !message_edit.inline_topic_edit_merges_into_existing_topic(stream_id, "Foo", "new topic"),
     );
 });
