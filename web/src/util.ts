@@ -284,6 +284,10 @@ export function is_channels_synonym(text: string): boolean {
     return text === "streams";
 }
 
+export function is_numeric_string(text: string): boolean {
+    return /^\d+$/.test(text);
+}
+
 export function prefix_match({value, search_term}: {value: string; search_term: string}): boolean {
     return filter_by_word_prefix_match([value], search_term, (s) => s).length === 1;
 }
@@ -581,7 +585,7 @@ export function parse_youtube_start_time(url: string): number | undefined {
     }
 
     // t can be in seconds (e.g. 120) or in #h#m#s format (e.g. 1h2m30s)
-    if (/^\d+$/.test(t)) {
+    if (is_numeric_string(t)) {
         return Number.parseInt(t, 10);
     }
 
