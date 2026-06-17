@@ -403,35 +403,14 @@ export const select_field_data_schema = z.record(
 );
 export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
-function read_select_field_data_from_form(
-    $profile_field_form: JQuery,
-    old_field_data: unknown,
-): SelectFieldData {
+function read_select_field_data_from_form($profile_field_form: JQuery): SelectFieldData {
     const field_data: SelectFieldData = {};
     let field_order = 1;
 
-    const old_option_value_map = new Map<string, string>();
-    if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(
-            select_field_data_schema.parse(old_field_data),
-        )) {
-            assert(typeof choice !== "string");
-            old_option_value_map.set(choice.text, value);
-        }
-    }
     $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
         const text = util.the($(this).find("input")).value;
         if (text) {
-            let value = old_option_value_map.get(text);
-            if (value !== undefined) {
-                // Resetting the data-value in the form is
-                // important if the user removed an option string
-                // and then added it back again before saving
-                // changes.
-                $(this).attr("data-value", value);
-            } else {
-                value = $(this).attr("data-value")!;
-            }
+            const value = $(this).attr("data-value")!;
             field_data[value] = {text, order: field_order.toString()};
             field_order += 1;
         }
@@ -486,7 +465,7 @@ export function read_field_data_from_form(
 
     // Only the following field types support associated field data.
     if (field_type_id === field_types.DROPDOWN.id) {
-        return read_select_field_data_from_form($profile_field_form, old_field_data);
+        return read_select_field_data_from_form($profile_field_form);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         const parsed_old_field_data = old_field_data
             ? external_account_field_schema.parse(old_field_data)
