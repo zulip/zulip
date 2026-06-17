@@ -7,6 +7,7 @@ import * as message_util from "./message_util.ts";
 import * as resolved_topics from "./resolved_topic.ts";
 import * as sub_store from "./sub_store.ts";
 import * as unread from "./unread.ts";
+import * as util from "./util.ts";
 
 // stream_id -> PerStreamHistory object
 const stream_dict = new Map<number, PerStreamHistory>();
@@ -373,6 +374,10 @@ export function get_recent_topic_names(stream_id: number): string[] {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
+}
+
+export function is_known_topic_name(stream_id: number, topic_name: string): boolean {
+    return get_recent_topic_names(stream_id).some((name) => util.lower_same(name, topic_name));
 }
 
 export function get_max_message_id(stream_id: number): number {

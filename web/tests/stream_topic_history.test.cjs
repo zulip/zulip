@@ -130,6 +130,18 @@ test("basics", () => {
     });
 });
 
+test("is_known_topic_name", () => {
+    const stream_id = 77;
+    stream_topic_history.add_message({stream_id, message_id: 201, topic_name: "Foo Bar"});
+
+    // Topic matching is case-insensitive.
+    assert.ok(stream_topic_history.is_known_topic_name(stream_id, "Foo Bar"));
+    assert.ok(stream_topic_history.is_known_topic_name(stream_id, "foo bar"));
+    assert.ok(stream_topic_history.is_known_topic_name(stream_id, "FOO BAR"));
+
+    assert.ok(!stream_topic_history.is_known_topic_name(stream_id, "other topic"));
+});
+
 test("server_history", () => {
     const sub = make_stream({
         name: "devel",

@@ -958,11 +958,8 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
 
     if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
         const topic = compose_state.topic();
-        const existing_topics_in_stream = stream_topic_history
-            .get_recent_topic_names(stream_id)
-            .map((topic) => topic.toLowerCase());
         if (
-            !existing_topics_in_stream.includes(topic.trim().toLowerCase()) &&
+            !stream_topic_history.is_known_topic_name(stream_id, topic.trim()) &&
             stream_topic_history.has_history_for(stream_id)
         ) {
             if (is_validating_compose_box) {

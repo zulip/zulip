@@ -523,11 +523,8 @@ function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: numb
 
     if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
         const topic_val = $inline_topic_edit_input.val()!;
-        const existing_topics_in_stream = stream_topic_history
-            .get_recent_topic_names(stream_id)
-            .map((topic) => topic.toLowerCase());
         if (
-            !existing_topics_in_stream.includes(topic_val.trim().toLowerCase()) &&
+            !stream_topic_history.is_known_topic_name(stream_id, topic_val.trim()) &&
             stream_topic_history.has_history_for(stream_id)
         ) {
             $topic_edit_save_button.prop("disabled", true);

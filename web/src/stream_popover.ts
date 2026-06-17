@@ -544,10 +544,6 @@ export async function build_move_topic_to_stream_popover(
         }
 
         if (!stream_data.can_create_new_topics_in_stream(select_stream_id)) {
-            const existing_topics_in_stream = stream_topic_history
-                .get_recent_topic_names(select_stream_id)
-                .map((topic) => topic.toLowerCase());
-
             // new_topic_name can be undefined if user is not allowed
             // to edit topic, but we still need to check the permission
             // to create new topics if only stream is changed since it
@@ -555,7 +551,7 @@ export async function build_move_topic_to_stream_popover(
             // for the new stream.
             const topic_name = new_topic_name ?? old_topic_name;
             if (
-                !existing_topics_in_stream.includes(topic_name.trim().toLowerCase()) &&
+                !stream_topic_history.is_known_topic_name(select_stream_id, topic_name.trim()) &&
                 stream_topic_history.has_history_for(select_stream_id)
             ) {
                 is_disabled = true;
@@ -877,13 +873,7 @@ export async function build_move_topic_to_stream_popover(
         } else {
             stream_id = stream_widget_value;
         }
-        const stream_topics = stream_topic_history
-            .get_recent_topic_names(stream_id)
-            .map((topic) => topic.toLowerCase());
-        if (stream_topics.includes(new_topic_name.trim().toLowerCase())) {
-            return true;
-        }
-        return false;
+        return stream_topic_history.is_known_topic_name(stream_id, new_topic_name.trim());
     }
 
     function maybe_show_topic_already_exists_warning(): void {
