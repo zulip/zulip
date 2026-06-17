@@ -18,12 +18,14 @@ from zerver.data_import.discord import (
     get_zulip_compatible_full_name,
     group_messages_into_channels,
     is_private_channel,
+    process_message_attachments,
     should_convert_message,
 )
+from zerver.data_import.import_util import AttachmentRecordData, UploadRecordData
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import messages_for_topic
-from zerver.models import Message
+from zerver.models import Attachment, Message
 from zerver.models.realms import get_realm
 from zerver.models.streams import Stream, Subscription
 from zerver.models.users import UserProfile
@@ -299,6 +301,37 @@ class DiscordImporterIntegrationTest(DiscordImporterTestCase):
             encoded_discord_email(DISCORD_USER_ID["pieter"]),
         )
 
+        # Each attachment on a convertible message is copied out of the export's
+        # media directory, which is referenced by a path relative to each export
+        # file, and imported under its original file name.
+        exported_file_names = {
+            attachment["fileName"]
+            for messages in self.read_convertible_exported_messages().values()
+            for message in messages
+            for attachment in message["attachments"]
+        }
+        attachments = Attachment.objects.filter(realm=realm)
+        self.assertSetEqual(
+            {attachment.file_name for attachment in attachments},
+            exported_file_names,
+        )
+
+        image_attachment = attachments.get(file_name="Screenshot_2026-03-18_222549.png")
+        # The attachment is owned by the sender of its message and linked to it.
+        self.assertEqual(
+            image_attachment.owner.delivery_email,
+            encoded_discord_email(DISCORD_USER_ID["pieter"]),
+        )
+        message = image_attachment.messages.get()
+        self.assertTrue(message.has_attachment)
+        # The original message text is kept and the uploaded file is linked
+        # below it.
+        self.assertEqual(message.content.split("\n\n")[0], "Image files")
+        self.assertIn(
+            f"[Screenshot_2026-03-18_222549.png](/user_uploads/{image_attachment.path_id})",
+            message.content,
+        )
+
 
 class DiscordImporterUnitTest(DiscordImporterTestCase):
     def test_convert_directory_without_channels_dir(self) -> None:
@@ -339,6 +372,32 @@ class DiscordImporterUnitTest(DiscordImporterTestCase):
             "any messages in the export, so no realm owner could be assigned.",
             str(e.exception),
         )
+
+    def test_process_message_attachments_skips_missing_file(self) -> None:
+        # An attachment whose file isn't present in the export is skipped with a
+        # warning rather than failing the import.
+        discord_data_dir = tempfile.mkdtemp()
+        zerver_attachment: list[AttachmentRecordData] = []
+        uploads_list: list[UploadRecordData] = []
+
+        with self.assertLogs(level="INFO") as logs:
+            markdown = process_message_attachments(
+                # A Windows-style relative path, as Discord Chat Exporter writes
+                # on Windows.
+                attachments=[{"url": "media\\missing.png", "fileName": "missing.png"}],
+                realm_id=0,
+                message_id=1,
+                user_id=1,
+                zerver_attachment=zerver_attachment,
+                uploads_list=uploads_list,
+                discord_data_dir=discord_data_dir,
+                output_dir=make_export_output_dir(),
+            )
+
+        self.assertEqual(markdown, "")
+        self.assertEqual(zerver_attachment, [])
+        self.assertEqual(uploads_list, [])
+        self.assertIn("Message attachment file not found: 'media\\missing.png'", logs.output[0])
 
     @responses.activate
     def test_failed_get_discord_api_data(self) -> None:

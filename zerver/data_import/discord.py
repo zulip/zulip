@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, TypeAlias
@@ -12,8 +13,11 @@ from django.utils.timezone import now as timezone_now
 from urllib3.util import Retry
 
 from zerver.data_import.import_util import (
+    AttachmentRecordData,
     ImportedBotEmail,
+    UploadRecordData,
     ZerverFieldsT,
+    build_attachment,
     build_message,
     build_realm,
     build_recipient,
@@ -23,6 +27,7 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    get_attachment_path_and_content,
     get_data_file,
     get_unique_truncated_name,
     make_subscriber_map,
@@ -30,6 +35,7 @@ from zerver.data_import.import_util import (
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.import_realm import validate_and_resolve_relative_path
 from zerver.lib.message import truncate_content
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.string_validation import is_character_printable
@@ -514,13 +520,91 @@ def convert_channels(
     return recipient_id_by_discord_channel_id
 
 
+def process_message_attachments(
+    attachments: list[DiscordFieldsT],
+    realm_id: int,
+    message_id: int,
+    user_id: int,
+    zerver_attachment: list[AttachmentRecordData],
+    uploads_list: list[UploadRecordData],
+    discord_data_dir: str,
+    output_dir: str,
+) -> str:
+    """Copy a message's attachment files out of the export's media directory
+    into the import's uploads, and return the markdown links to append to the
+    message.
+    """
+    markdown_links = []
+    safe_base_dir = os.path.realpath(discord_data_dir)
+
+    for attachment in attachments:
+        # The export records each file's path relative to the export's root
+        # directory, using the path separator of the machine that produced the
+        # export (Discord Chat Exporter uses "\" on Windows). Resolving it
+        # within the export root ensures a crafted path can't read files
+        # outside the export.
+        relative_path = attachment["url"].replace("\\", "/")
+        try:
+            _, attachment_safe_full_path = validate_and_resolve_relative_path(
+                relative_path,
+                base_dir=discord_data_dir,
+                safe_base_dir=safe_base_dir,
+                field_name_for_error="attachment URL",
+            )
+        except FileNotFoundError:
+            logging.info("Message attachment file not found: '%s'; continuing.", attachment["url"])
+            continue
+
+        # Discord's fileName is the original upload name; the on-disk file in
+        # the export has a deduplicated name.
+        file_name = attachment["fileName"]
+        attachment_data = get_attachment_path_and_content(
+            link_name=file_name, filename=file_name, realm_id=realm_id
+        )
+        markdown_links.append(attachment_data.markdown_link)
+
+        fileinfo = {
+            "name": file_name,
+            "size": os.path.getsize(attachment_safe_full_path),
+            "created": os.path.getmtime(attachment_safe_full_path),
+        }
+        uploads_list.append(
+            UploadRecordData(
+                content_type=None,
+                last_modified=fileinfo["created"],
+                path=attachment_data.path_id,
+                realm_id=realm_id,
+                s3_path=attachment_data.path_id,
+                size=fileinfo["size"],
+                user_profile_id=user_id,
+            )
+        )
+        build_attachment(
+            realm_id=realm_id,
+            message_ids={message_id},
+            user_id=user_id,
+            fileinfo=fileinfo,
+            s3_path=attachment_data.path_id,
+            zerver_attachment=zerver_attachment,
+        )
+
+        attachment_out_path = os.path.join(output_dir, "uploads", attachment_data.path_id)
+        os.makedirs(os.path.dirname(attachment_out_path), exist_ok=True)
+        shutil.copyfile(attachment_safe_full_path, attachment_out_path)
+
+    return "\n".join(markdown_links)
+
+
 def convert_messages(
     discord_channels: list[DiscordChannel],
     recipient_id_by_discord_channel_id: dict[str, int],
     discord_user_id_to_zulip_user_id: DiscordUserIdToZulipUserIdT,
     realm: dict[str, Any],
     realm_id: int,
+    discord_data_dir: str,
     output_dir: str,
+    zerver_attachment: list[AttachmentRecordData],
+    uploads_list: list[UploadRecordData],
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> None:
     logging.info("######### IMPORTING MESSAGES STARTED #########\n")
@@ -542,14 +626,28 @@ def convert_messages(
             message_id = NEXT_ID("message")
             user_id = discord_user_id_to_zulip_user_id[message["author"]["id"]]
 
+            content = message["content"]
+            attachment_markdown = process_message_attachments(
+                attachments=message["attachments"],
+                realm_id=realm_id,
+                message_id=message_id,
+                user_id=user_id,
+                zerver_attachment=zerver_attachment,
+                uploads_list=uploads_list,
+                discord_data_dir=discord_data_dir,
+                output_dir=output_dir,
+            )
+            if attachment_markdown:
+                content = f"{content}\n\n{attachment_markdown}" if content else attachment_markdown
+
             zulip_message = build_message(
                 topic_name=MAIN_DISCORD_IMPORT_TOPIC,
                 date_sent=get_timestamp_from_message(message),
                 message_id=message_id,
                 # TODO: Translate Discord-specific markup such as user
                 # mentions, channel links, custom emoji, and replies, and
-                # convert attachments and reactions.
-                content=message["content"],
+                # convert reactions.
+                content=content,
                 rendered_content=None,
                 user_id=user_id,
                 recipient_id=recipient_id,
@@ -560,7 +658,7 @@ def convert_messages(
                 # attributes.
                 has_image=False,
                 has_link=False,
-                has_attachment=False,
+                has_attachment=bool(attachment_markdown),
                 is_direct_message_type=False,
             )
             zerver_message.append(zulip_message)
@@ -633,18 +731,25 @@ def do_convert_directory(discord_data_dir: str, output_dir: str, token: str) -> 
         timestamp=NOW,
     )
 
+    zerver_attachment: list[AttachmentRecordData] = []
+    uploads_list: list[UploadRecordData] = []
     convert_messages(
         discord_channels=discord_channels,
         recipient_id_by_discord_channel_id=recipient_id_by_discord_channel_id,
         discord_user_id_to_zulip_user_id=discord_user_id_to_zulip_user_id,
         realm=realm,
         realm_id=realm_id,
+        discord_data_dir=discord_data_dir,
         output_dir=output_dir,
+        zerver_attachment=zerver_attachment,
+        uploads_list=uploads_list,
     )
 
     create_converted_data_files(realm, output_dir, "/realm.json")
-    create_converted_data_files([], output_dir, "/uploads/records.json")
-    create_converted_data_files({"zerver_attachment": []}, output_dir, "/attachment.json")
+    create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
+    create_converted_data_files(
+        {"zerver_attachment": zerver_attachment}, output_dir, "/attachment.json"
+    )
     create_converted_data_files([], output_dir, "/emoji/records.json")
     create_converted_data_files([], output_dir, "/avatars/records.json")
     create_converted_data_files([], output_dir, "/realm_icons/records.json")
