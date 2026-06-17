@@ -251,6 +251,34 @@ run_test("test_non_message_list_input", ({mock_template}) => {
     assert.equal(label, "translated: Compose message");
 });
 
+run_test("recipient_label_text_for_call_creation", () => {
+    recent_view_util.is_visible = () => true;
+    message_lists.current = undefined;
+    const stream = make_stream({
+        subscribed: true,
+        name: "stream test",
+        stream_id: 11,
+    });
+    stream_data.add_sub_for_tests(stream);
+
+    assert.equal(
+        compose_closed_ui.get_recipient_label({
+            stream_id: stream.stream_id,
+            topic: "topic test",
+        })?.label_text,
+        "#stream test > topic test",
+    );
+
+    // Empty topic falls back to the realm's empty-topic display name.
+    assert.equal(
+        compose_closed_ui.get_recipient_label({
+            stream_id: stream.stream_id,
+            topic: "",
+        })?.label_text,
+        `#stream test > translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
+    );
+});
+
 run_test("update_reply_button_state", ({override, override_rewire}) => {
     const $compose_reply_wrapper = $("#legacy-closed-compose-box .compose-reply-button-wrapper");
     const $reply_button = $(".compose_reply_button");
