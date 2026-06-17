@@ -29,6 +29,7 @@ import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_profile_fields from "./settings_profile_fields.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
+import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_events from "./stream_events.ts";
@@ -159,6 +160,7 @@ export const update_person = function update(event: UserUpdate): void {
             settings_org.enable_or_disable_group_permission_settings();
             settings_profile_fields.maybe_disable_widgets();
             settings_realm_user_settings_defaults.maybe_disable_widgets();
+            settings_streams.rerender_default_streams_for_role_change();
             settings_account.update_account_settings_display();
             settings.update_lock_icon_in_sidebar();
             settings_account.update_user_own_role_dropdown_state();

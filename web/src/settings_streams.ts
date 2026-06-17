@@ -249,3 +249,13 @@ export function build_page(): void {
         },
     );
 }
+
+export function rerender_default_streams_for_role_change(): void {
+    if (!meta.loaded) {
+        return;
+    }
+
+    $("#show-add-default-streams-modal").toggleClass("hide", !current_user.is_admin);
+    $("#admin-default-channels-list th.actions").toggleClass("hide", !current_user.is_admin);
+    update_default_streams_table();
+}
