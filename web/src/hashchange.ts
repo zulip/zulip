@@ -35,6 +35,7 @@ import * as ui_report from "./ui_report.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
@@ -87,7 +88,7 @@ function channels_overlay_state_from_hash(): {
     if (hash_section === "new") {
         return {right_panel: "new", left_side_tab: undefined};
     }
-    if (/^\d+$/.test(hash_section)) {
+    if (util.is_numeric_string(hash_section)) {
         return {right_panel: Number.parseInt(hash_section, 10), left_side_tab: undefined};
     }
     // validate_channels_settings_hash has already constrained
