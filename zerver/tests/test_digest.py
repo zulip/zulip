@@ -23,6 +23,7 @@ from zerver.lib.digest import (
     get_new_messages_count,
     get_recent_topics,
     get_recently_created_streams,
+    get_slim_stream_id_map,
     get_user_stream_map,
 )
 from zerver.lib.email_notifications import get_channel_privacy_icon
@@ -150,6 +151,39 @@ class TestDigestEmailMessages(ZulipTestCase):
         }
         self.assertEqual(digests[othello.id], [])
         self.assertNotEqual(digests[iago.id], [])
+
+    def test_recent_topics_grouped_case_insensitively(self) -> None:
+        # Topic matching is case-insensitive, so messages sent to one
+        # logical topic under different casings form a single hot
+        # conversation rather than being split, which would undercount
+        # its length and diversity.
+        realm = get_realm("zulip")
+        stream = get_stream("Verona", realm)
+
+        one_day_ago = timezone_now() - timedelta(days=1)
+        Message.objects.all().update(date_sent=one_day_ago)
+        one_hour_ago = timezone_now() - timedelta(seconds=3600)
+
+        senders = ["hamlet", "cordelia", "iago"]
+        for i, sender_name in enumerate(senders):
+            sender = self.example_user(sender_name)
+            self.subscribe(sender, "Verona")
+            # Alternate the casing of the same logical topic.
+            topic_name = "Bugs" if i % 2 == 0 else "bugs"
+            self.send_stream_message(sender, "Verona", "some content", topic_name=topic_name)
+
+        get_recent_topics.cache_clear()
+        topics = get_recent_topics(realm.id, stream.id, one_hour_ago)
+
+        self.assert_length(topics, 1)
+        self.assertEqual(topics[0].length(), 3)
+        self.assertEqual(topics[0].diversity(), 3)
+
+        # The teaser renders even though its sample messages carry
+        # different casings of the topic.
+        stream_id_map = get_slim_stream_id_map({stream.id})
+        teaser = topics[0].teaser_data(self.example_user("hamlet"), stream_id_map)
+        self.assertEqual(teaser.count, 3 - 2)
 
     def test_bulk_handle_digest_email_skips_deactivated_users(self) -> None:
         """

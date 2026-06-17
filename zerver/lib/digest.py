@@ -229,7 +229,9 @@ def get_recent_topics(
 
     digest_topic_map: dict[TopicKey, DigestTopic] = {}
     for message in messages:
-        topic_key = (stream_id, message.topic_name())
+        # Topic matching is case-insensitive; bucket by the lowercased
+        # name so a conversation's differently-cased messages aren't split.
+        topic_key = (stream_id, message.topic_name().lower())
 
         if topic_key not in digest_topic_map:
             digest_topic_map[topic_key] = DigestTopic(topic_key)
