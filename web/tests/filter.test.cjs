@@ -1666,6 +1666,19 @@ test("parse", () => {
     ];
     _test();
 
+    // A digit-leading channel name resolves by name, not by reading
+    // its leading digits as a stream id.
+    make_sub("7th", 7000);
+    string = "channel:7th";
+    terms = [{operator: "channel", operand: "7000"}];
+    _test();
+
+    // A digit-leading operand with no matching channel is left as-is,
+    // not coerced into a stream id.
+    string = "channel:9th";
+    terms = [{operator: "channel", operand: "9th"}];
+    _test();
+
     string = `channel:${foo_stream_id} topic:bar yo`;
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
