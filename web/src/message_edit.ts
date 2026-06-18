@@ -1493,7 +1493,10 @@ export function maybe_show_edit($row: JQuery, id: number): void {
 
     if (currently_editing_messages.has(id)) {
         const $message_edit_content = currently_editing_messages.get(id);
-        edit_message($row, $message_edit_content?.val() ?? "");
+        start_edit_with_content($row, $message_edit_content?.val() ?? "");
+        if ($row.hasClass("show_preview")) {
+            show_preview_area($row);
+        }
     }
 }
 
