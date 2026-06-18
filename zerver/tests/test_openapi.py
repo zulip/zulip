@@ -229,7 +229,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/zcommand",
         #### These "organization settings" endpoint have modest value to document:
         "/realm",
-        "/bots",
         "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
         "/realm/profile_fields/{field_id}",
