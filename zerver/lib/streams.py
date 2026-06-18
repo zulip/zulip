@@ -769,10 +769,19 @@ def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) 
 def user_has_metadata_access(
     user_profile: UserProfile,
     stream: Stream,
-    user_group_membership_details: UserGroupMembershipDetails,
+    user_group_membership_details: UserGroupMembershipDetails | None = None,
     *,
     is_subscribed: bool,
 ) -> bool:
+    """Whether user_profile has metadata access to stream.
+
+    The final case requires a database query for the user's recursive
+    group memberships. Callers on a query-sensitive path (e.g. the
+    message-send path) can pass user_group_membership_details=None to skip
+    that query, which treats access that would depend on group membership
+    as no access. That is never more permissive than the full check, since
+    the skipped check can only grant access, never deny it.
+    """
     if stream.is_web_public:
         return True
 
@@ -788,21 +797,21 @@ def user_has_metadata_access(
     if user_profile.is_realm_admin:
         return True
 
+    if user_group_membership_details is None:
+        return False
+
     if user_group_membership_details.user_recursive_group_ids is None:
         user_group_membership_details.user_recursive_group_ids = set(
             get_recursive_membership_groups(user_profile).values_list("id", flat=True)
         )
 
-    if has_metadata_access_to_channel_via_groups(
+    return has_metadata_access_to_channel_via_groups(
         user_profile,
         user_group_membership_details.user_recursive_group_ids,
         stream.can_administer_channel_group_id,
         stream.can_add_subscribers_group_id,
         stream.can_subscribe_group_id,
-    ):
-        return True
-
-    return False
+    )
 
 
 def user_has_content_access(
