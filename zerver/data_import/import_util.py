@@ -26,7 +26,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.markdown import get_markdown_link_for_url
-from zerver.lib.message import normalize_body_for_import
+from zerver.lib.message import normalize_body_for_import, truncate_content
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.parallel import run_parallel
@@ -1035,3 +1035,27 @@ def scrub_missing_upload_records_after_download(
             if os.path.isfile(os.path.join(output_dir, "uploads", upload_record.path))
         ],
     )
+
+
+def get_unique_truncated_name(name: str, max_length: int, name_counts: dict[str, int]) -> str:
+    """Truncate name to at most max_length characters, disambiguating repeats
+    with a numeric suffix.
+
+    The first time a given truncated name is produced it is returned
+    unchanged. Each subsequent identical truncated name gets a " (N)" suffix
+    appended to keep names unique, e.g.
+        1. "My exceedingly long channel na…"
+        2. "My exceedingly long chann… (2)"
+
+    `name_counts` maps each truncated name to the number of times it has been
+    produced. The caller must create it outside the loop that calls this
+    function; declaring it inside would reset the counts each iteration and
+    defeat collision detection.
+    """
+    truncated_name = truncate_content(name, max_length, "…")
+    name_counts[truncated_name] = name_counts.get(truncated_name, 0) + 1
+    occurrence = name_counts[truncated_name]
+    if occurrence == 1:
+        return truncated_name
+    count_string = f" ({occurrence})"
+    return truncate_content(truncated_name, max_length - len(count_string), "…") + count_string
