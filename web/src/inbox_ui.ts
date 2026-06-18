@@ -1630,9 +1630,9 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
             };
         }
     } else {
-        const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");
+        const $topic_menu_elt = $row.find(".inbox-topic-menu");
         reply_recipient_information = {
-            stream_id: Number($stream.attr("data-stream-id")),
+            stream_id: Number($topic_menu_elt.attr("data-stream-id")),
             topic: $row.find(".inbox-topic-name a").text(),
         };
     }
