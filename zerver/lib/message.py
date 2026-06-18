@@ -185,6 +185,9 @@ class SendMessageRequest:
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
     reminder_target_message_id: int | None = None
     reminder_note: str | None = None
+    # Computed during do_send_messages, for the POST /messages response.
+    message_url: str | None = None
+    message_link: str | None = None
 
 
 @dataclass
