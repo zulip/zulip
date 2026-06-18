@@ -16064,7 +16064,169 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SuccessIgnoredParameters"
+  /users/me/avatar:
+    post:
+      operationId: upload-avatar
+      summary: Upload your profile picture
+      tags: ["users"]
+      description: |
+        Upload a new [profile picture](/help/change-your-profile-picture)
+        for the current user.
 
+        The maximum allowed file size is available in the `max_avatar_file_size_mib`
+        field in the [`POST /register`](/api/register-queue) response.
+
+        In organizations that
+        [restrict profile picture changes](/help/restrict-profile-picture-changes),
+        only administrators can use this endpoint.
+      x-parameter-description: |
+        The profile picture image file must be provided in the request's body
+        as multipart form data.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  example: "zerver/tests/images/img.png"
+              required:
+                - file
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      avatar_url:
+                        type: string
+                        description: |
+                          The URL of the current user's new profile picture.
+                example:
+                  {
+                    "avatar_url": "/user_avatars/2/c4ce28dde2d44a08b2a72cb371fe78d99cffd7c4.png",
+                    "msg": "",
+                    "result": "success",
+                  }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the request did not include
+                          exactly one file:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "You must upload exactly one avatar.",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the uploaded file exceeds the
+                          maximum allowed size:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Uploaded file is larger than the allowed limit of 5 MiB",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the uploaded file
+                          is not a supported image format:
+                        example:
+                          {
+                            "code": "BAD_IMAGE",
+                            "msg": "Invalid image format",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when a non-administrator attempts
+                          to change their profile picture in an organization that has
+                          disabled profile picture changes:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Avatar changes are disabled in this organization.",
+                            "result": "error",
+                          }
+    delete:
+      operationId: delete-avatar
+      summary: Delete your profile picture
+      tags: ["users"]
+      description: |
+        Delete the current user's uploaded [profile picture](/help/change-your-profile-picture),
+        reverting to the organization's
+        [default style for profile pictures](/help/configure-default-profile-pictures).
+
+        This endpoint is idempotent: if the current user has not uploaded a
+        custom profile picture, the request succeeds without making any
+        changes.
+
+        In organizations that
+        [restrict profile picture changes](/help/restrict-profile-picture-changes),
+        only administrators can use this endpoint.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      avatar_url:
+                        type: string
+                        description: |
+                          The URL of the current user's profile picture, which
+                          now uses the organization's default style for profile
+                          pictures. Its format depends on whether that style is
+                          the default abstract design or Gravatar.
+                example:
+                  {
+                    "avatar_url": "/user_avatars/2/3a7bd3e2360a3d29eea436fcfb7e44c735d117c4.png",
+                    "msg": "",
+                    "result": "success",
+                  }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      An example JSON response for when a non-administrator attempts
+                      to change their profile picture in an organization that has
+                      disabled profile picture changes:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Avatar changes are disabled in this organization.",
+                        "result": "error",
+                      }
   /users/me/subscriptions/properties:
     post:
       operationId: update-subscription-settings
