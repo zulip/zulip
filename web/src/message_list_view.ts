@@ -195,6 +195,16 @@ function clear_message_divider(message_container: MessageContainer): void {
     message_container.date_divider_html = undefined;
 }
 
+function wants_subscription_divider(
+    prev_historical: boolean | undefined,
+    message: Message,
+): boolean {
+    // A continuation message shows an inline subscription divider when its
+    // `historical` flag differs from the previous one, i.e. the user
+    // (un)subscribed between them.
+    return prev_historical !== undefined && prev_historical !== message.historical;
+}
+
 function update_message_divider(opts: {
     prev_msg_container: MessageContainer | undefined;
     curr_msg_container: MessageContainer;
@@ -221,11 +231,10 @@ function get_message_divider_data(opts: {
     const prev_message = opts.prev_message;
     const curr_message = opts.curr_message;
     const display_year = opts.display_year;
-    let want_subscription_status_divider = false;
-
-    if (prev_message) {
-        want_subscription_status_divider = prev_message?.historical !== curr_message.historical;
-    }
+    const want_subscription_status_divider = wants_subscription_divider(
+        prev_message?.historical,
+        curr_message,
+    );
 
     if (!prev_message || same_day(curr_message, prev_message)) {
         return {
