@@ -28,11 +28,7 @@
     }
 
     .dropdown-list-delete {
-        color: color-mix(
-            in oklch,
-            var(--red-250) 70%,
-            transparent
-        ) !important;
+        color: color-mix(in oklch, var(--red-250) 70%, transparent) !important;
 
         &:hover {
             color: var(--red-250) !important;
