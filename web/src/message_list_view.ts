@@ -188,8 +188,9 @@ function clear_group_date(group: MessageGroup): void {
 }
 
 function clear_message_divider(message_container: MessageContainer): void {
-    // see update_message_divider for how
-    // these get set
+    // want_date_divider is set by update_date_divider and
+    // want_subscription_status_divider by set_subscription_dividers;
+    // reset both here.
     message_container.want_date_divider = false;
     message_container.want_subscription_status_divider = false;
     message_container.date_divider_html = undefined;
@@ -205,13 +206,13 @@ function wants_subscription_divider(
     return prev_historical !== undefined && prev_historical !== message.historical;
 }
 
-function update_message_divider(opts: {
+function update_date_divider(opts: {
     prev_msg_container: MessageContainer | undefined;
     curr_msg_container: MessageContainer;
 }): void {
     Object.assign(
         opts.curr_msg_container,
-        get_message_divider_data({
+        get_date_divider_data({
             prev_message: opts.prev_msg_container?.msg,
             curr_message: opts.curr_msg_container.msg,
             display_year: !same_year(opts.curr_msg_container.msg, opts.prev_msg_container?.msg),
@@ -219,27 +220,21 @@ function update_message_divider(opts: {
     );
 }
 
-function get_message_divider_data(opts: {
+function get_date_divider_data(opts: {
     prev_message: Message | undefined;
     curr_message: Message;
     display_year: boolean;
 }): {
     want_date_divider: boolean;
-    want_subscription_status_divider: boolean;
     date_divider_html: string | undefined;
 } {
     const prev_message = opts.prev_message;
     const curr_message = opts.curr_message;
     const display_year = opts.display_year;
-    const want_subscription_status_divider = wants_subscription_divider(
-        prev_message?.historical,
-        curr_message,
-    );
 
     if (!prev_message || same_day(curr_message, prev_message)) {
         return {
             want_date_divider: false,
-            want_subscription_status_divider,
             date_divider_html: undefined,
         };
     }
@@ -247,7 +242,6 @@ function get_message_divider_data(opts: {
 
     return {
         want_date_divider: true,
-        want_subscription_status_divider,
         date_divider_html: timerender.render_date(curr_time, display_year).outerHTML,
     };
 }
@@ -742,6 +736,78 @@ export class MessageListView {
         return undefined;
     }
 
+    set_subscription_dividers(new_message_groups: MessageGroup[], where: "top" | "bottom"): void {
+        // Walk the newly built groups in order, setting each container's
+        // inline subscription-status divider, which marks -- the `historical`
+        // flag flipping between two adjacent messages, i.e. the user (un)subscribed
+        // between them -- shown inline between two messages.
+        //
+        // A flip at the first container of a group is shown as a group
+        // bookend rather than an inline divider, so those containers are
+        // skipped here.
+        //
+        // prev_historical stores the previous message's flag as we walk.
+        //
+        // The boundary against the already-rendered messages is handled after
+        // the loop, since that container may merge into a neighbouring group.
+
+        const is_prepend = where === "top";
+        let prev_historical = is_prepend ? undefined : this.list.last_message_historical;
+
+        // Record a container's subscription change as an inline divider
+        // when it isn't the first container of its message group, and
+        // then advance prev_historical.
+        const set_subscription_representation = (
+            message_container: MessageContainer,
+            starts_message_group: boolean,
+        ): void => {
+            const message = message_container.msg;
+
+            if (!starts_message_group) {
+                message_container.want_subscription_status_divider = wants_subscription_divider(
+                    prev_historical,
+                    message,
+                );
+            }
+
+            prev_historical = message.historical;
+        };
+
+        for (const message_group of new_message_groups) {
+            for (const [index, message_container] of message_group.message_containers.entries()) {
+                set_subscription_representation(message_container, index === 0);
+            }
+        }
+
+        // The boundary between new and already-rendered messages
+        // may be merged into a single group by merge_message_groups():
+        //
+        // * when prepending, the oldest rendered container may merge into the
+        //   last new group, so update (divider) against the incoming messages;
+        // * when appending, the first new container may merge into the newest
+        //   rendered group, so set its divider against the newest rendered flag.
+        //
+        // Update the subscription representation at the boundary. Either is
+        // speculative: merge_message_groups() clears it if no merge takes place.
+        if (is_prepend) {
+            // Set the oldest rendered container's divider against
+            // the prepended messages; the set_subscription_representation pass over
+            // the new groups did not cover this boundary.
+            const oldest_rendered_container = this._message_groups[0]?.message_containers[0];
+            if (oldest_rendered_container !== undefined) {
+                oldest_rendered_container.want_subscription_status_divider =
+                    wants_subscription_divider(prev_historical, oldest_rendered_container.msg);
+            }
+        } else {
+            prev_historical = this.list.last_message_historical;
+            const first_message_container = new_message_groups[0]?.message_containers[0];
+            if (first_message_container) {
+                first_message_container.want_subscription_status_divider =
+                    wants_subscription_divider(prev_historical, first_message_container.msg);
+            }
+        }
+    }
+
     build_message_groups(messages: Message[]): MessageGroup[] {
         const new_message_groups: MessageGroup[] = [];
 
@@ -787,7 +853,7 @@ export class MessageListView {
             let include_sender;
             let want_date_divider;
             let date_divider_html;
-            let want_subscription_status_divider = false;
+            const want_subscription_status_divider = false;
             const year_changed = !same_year(message, prev_message_container?.msg);
 
             if (
@@ -795,13 +861,12 @@ export class MessageListView {
                 util.same_recipient(prev_message_container.msg, message) &&
                 this.collapse_messages
             ) {
-                const divider_data = get_message_divider_data({
+                const divider_data = get_date_divider_data({
                     prev_message: prev_message_container.msg,
                     curr_message: message,
                     display_year: year_changed,
                 });
                 want_date_divider = divider_data.want_date_divider;
-                want_subscription_status_divider = divider_data.want_subscription_status_divider;
                 date_divider_html = divider_data.date_divider_html;
             } else {
                 finish_group();
@@ -945,7 +1010,7 @@ export class MessageListView {
 
         const was_joined = this.join_message_groups(first_group, second_group);
         if (was_joined) {
-            update_message_divider({
+            update_date_divider({
                 prev_msg_container,
                 curr_msg_container,
             });
@@ -1182,6 +1247,7 @@ export class MessageListView {
 
         const new_message_groups = this.build_message_groups(messages);
         const message_containers = new_message_groups.flatMap((group) => group.message_containers);
+        this.set_subscription_dividers(new_message_groups, where);
         const message_actions = this.merge_message_groups(new_message_groups, where);
         const new_dom_elements = [];
         let $rendered_groups;
