@@ -22478,7 +22478,6 @@ paths:
                           - "U" = Uploaded by user
 
                           **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
-                          The avatar data source type for the current user.
                       avatar_url_medium:
                         type: string
                         description: |
