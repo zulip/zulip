@@ -766,13 +766,21 @@ def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) 
         raise IncompatibleParametersError(["stream_id", "stream"])
 
 
-def user_has_metadata_access(
+def metadata_access_without_group_membership_check(
     user_profile: UserProfile,
     stream: Stream,
-    user_group_membership_details: UserGroupMembershipDetails,
     *,
     is_subscribed: bool,
-) -> bool:
+) -> bool | None:
+    """The part of user_has_metadata_access that can be decided without a
+    database query for the user's recursive group memberships; returns None
+    when that group membership is needed for a definitive answer.
+
+    Callers that cannot afford the query (e.g. the message-send path) can
+    treat None as "no access", which is never more permissive than
+    user_has_metadata_access, since the group-membership check it skips can
+    only grant access, never deny it.
+    """
     if stream.is_web_public:
         return True
 
@@ -788,21 +796,34 @@ def user_has_metadata_access(
     if user_profile.is_realm_admin:
         return True
 
+    return None
+
+
+def user_has_metadata_access(
+    user_profile: UserProfile,
+    stream: Stream,
+    user_group_membership_details: UserGroupMembershipDetails,
+    *,
+    is_subscribed: bool,
+) -> bool:
+    access = metadata_access_without_group_membership_check(
+        user_profile, stream, is_subscribed=is_subscribed
+    )
+    if access is not None:
+        return access
+
     if user_group_membership_details.user_recursive_group_ids is None:
         user_group_membership_details.user_recursive_group_ids = set(
             get_recursive_membership_groups(user_profile).values_list("id", flat=True)
         )
 
-    if has_metadata_access_to_channel_via_groups(
+    return has_metadata_access_to_channel_via_groups(
         user_profile,
         user_group_membership_details.user_recursive_group_ids,
         stream.can_administer_channel_group_id,
         stream.can_add_subscribers_group_id,
         stream.can_subscribe_group_id,
-    ):
-        return True
-
-    return False
+    )
 
 
 def user_has_content_access(
