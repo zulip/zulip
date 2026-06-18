@@ -854,6 +854,82 @@ class MessagePOSTTest(ZulipTestCase):
         content = self.assert_json_success(result)
         assert "automatic_new_visibility_policy" not in content
 
+    def test_message_url_in_api_response(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # A subscribed sender has metadata access, so the URL includes the
+        # channel name and message_link is the "Copy link to message" Markdown.
+        stream = get_stream("Verona", hamlet.realm)
+        result = self.api_post(
+            hamlet,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(stream.name).decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        message_id = response_dict["id"]
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/channel/{stream.id}-{stream.name}"
+            f"/topic/Test.20topic/near/{message_id}",
+        )
+        self.assertEqual(
+            response_dict["message_link"],
+            f"[#{stream.name} > Test topic @ 💬]"
+            f"(#narrow/channel/{stream.id}-{stream.name}/topic/Test.20topic/near/{message_id})",
+        )
+
+        # A DM has no channel name to protect and no standard label, so
+        # message_link is just the URL.
+        result = self.api_post(
+            hamlet,
+            "/api/v1/messages",
+            {
+                "type": "direct",
+                "content": "Test message",
+                "to": orjson.dumps([othello.id]).decode(),
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        message_id = response_dict["id"]
+        dm_slug = ",".join(str(user_id) for user_id in sorted([hamlet.id, othello.id]))
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/dm/{dm_slug}/near/{message_id}",
+        )
+        self.assertEqual(response_dict["message_link"], response_dict["message_url"])
+
+        # A bot posting to a private channel via its owner's subscription
+        # (without being subscribed itself) can send but lacks metadata
+        # access, so it gets an ID-only URL with the channel name omitted.
+        private_stream = self.make_stream("private channel", invite_only=True)
+        self.subscribe(hamlet, private_stream.name)
+        bot = self.create_test_bot("writeonly", hamlet)
+        result = self.api_post(
+            bot,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(private_stream.name).decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        message_id = response_dict["id"]
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/channel/{private_stream.id}"
+            f"/topic/Test.20topic/near/{message_id}",
+        )
+        self.assertNotIn("private", response_dict["message_url"])
+        self.assertEqual(response_dict["message_link"], response_dict["message_url"])
+
     def test_personal_message(self) -> None:
         """
         Sending a personal message to a valid username is successful.

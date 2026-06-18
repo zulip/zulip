@@ -73,6 +73,7 @@ from zerver.lib.streams import (
     check_for_can_create_topic_group_violation,
     ensure_stream,
     get_stream_topics_policy,
+    metadata_access_without_group_membership_check,
     notify_stream_is_recently_active_update,
     subscribed_to_stream,
 )
@@ -80,8 +81,9 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
-from zerver.lib.topic_link_util import get_stream_link_syntax
+from zerver.lib.topic_link_util import get_fallback_markdown_link, get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
+from zerver.lib.url_encoding import message_link_url, stream_message_url
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -236,6 +238,8 @@ class UserProfileAnnotations(TypedDict):
 @dataclass
 class SentMessageResult:
     message_id: int
+    message_url: str
+    message_link: str
     automatic_new_visibility_policy: int | None = None
 
 
@@ -924,6 +928,46 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
+def get_message_url_and_link(
+    send_request: SendMessageRequest, message_dict: dict[str, Any]
+) -> tuple[str, str]:
+    """Compute the (message_url, message_link) pair for the POST /messages
+    response: the bare URL, and Markdown matching the web app's "Copy link
+    to message".
+
+    The channel name is included only when the sender has metadata access,
+    so a write-only bot posting to a channel it cannot read does not learn
+    its name. Direct messages and that restricted case have no standard
+    label, so message_link is just the URL.
+    """
+    realm = send_request.realm
+    stream = send_request.stream
+    if stream is None:
+        url = message_link_url(realm, message_dict)
+        return url, url
+
+    sender_has_metadata_access = (
+        metadata_access_without_group_membership_check(
+            send_request.message.sender,
+            stream,
+            is_subscribed=send_request.sender_muted_stream is not None,
+        )
+        is True
+    )
+    if not sender_has_metadata_access:
+        url = stream_message_url(realm, message_dict, include_channel_name=False)
+        return url, url
+
+    url = stream_message_url(realm, message_dict)
+    link = get_fallback_markdown_link(
+        stream.id,
+        stream.name,
+        send_request.message.topic_name(),
+        send_request.message.id,
+    )
+    return url, link
+
+
 @transaction.atomic(savepoint=False)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
@@ -1120,6 +1164,10 @@ def do_send_messages(
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
         wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
+
+        send_request.message_url, send_request.message_link = get_message_url_and_link(
+            send_request, wide_message_dict
+        )
 
         user_flags = user_message_flags.get(send_request.message.id, {})
 
@@ -1327,13 +1375,18 @@ def do_send_messages(
                     },
                 )
 
-    sent_message_results = [
-        SentMessageResult(
-            message_id=send_request.message.id,
-            automatic_new_visibility_policy=send_request.automatic_new_visibility_policy,
+    sent_message_results = []
+    for send_request in send_message_requests:
+        assert send_request.message_url is not None
+        assert send_request.message_link is not None
+        sent_message_results.append(
+            SentMessageResult(
+                message_id=send_request.message.id,
+                message_url=send_request.message_url,
+                message_link=send_request.message_link,
+                automatic_new_visibility_policy=send_request.automatic_new_visibility_policy,
+            )
         )
-        for send_request in send_message_requests
-    ]
     return sent_message_results
 
 
