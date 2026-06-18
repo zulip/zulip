@@ -28,15 +28,14 @@
     }
 
     .dropdown-list-delete {
-        /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
         color: color-mix(
             in oklch,
-            hsl(7deg 100% 74%) 70%,
+            var(--red-250) 70%,
             transparent
         ) !important;
 
         &:hover {
-            color: hsl(7deg 100% 74%) !important;
+            color: var(--red-250) !important;
         }
     }
 
