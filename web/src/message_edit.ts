@@ -781,6 +781,16 @@ function start_edit_maintaining_scroll($row: JQuery, content: string): void {
     }
 }
 
+function setup_edit_form_widgets($row: JQuery): void {
+    const row_id = rows.id($row);
+    upload.setup_upload(upload.edit_config(row_id));
+    // Setup dropdown for saved snippets button in the current
+    // message edit control buttons tray.
+    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
+        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
+    );
+}
+
 function start_edit_with_content(
     $row: JQuery,
     content: string,
@@ -790,13 +800,7 @@ function start_edit_with_content(
     if (edit_box_open_callback) {
         edit_box_open_callback();
     }
-    const row_id = rows.id($row);
-    upload.setup_upload(upload.edit_config(row_id));
-    // Setup dropdown for saved snippets button in the current
-    // message edit control buttons tray.
-    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
-        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
-    );
+    setup_edit_form_widgets($row);
 }
 
 export function start($row: JQuery, edit_box_open_callback?: () => void): void {
@@ -1494,6 +1498,10 @@ export function maybe_show_edit($row: JQuery, id: number): void {
     if (currently_editing_messages.has(id)) {
         const $message_edit_content = currently_editing_messages.get(id);
         edit_message($row, $message_edit_content?.val() ?? "");
+        setup_edit_form_widgets($row);
+        if ($row.hasClass("show_preview")) {
+            show_preview_area($row);
+        }
     }
 }
 
