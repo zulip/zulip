@@ -98,6 +98,8 @@
 * [Update user status](/api/update-status-for-user)
 * [Update your profile data](/api/update-profile-data)
 * [Remove your profile data](/api/remove-profile-data)
+* [Upload your profile picture](/api/upload-avatar)
+* [Delete your profile picture](/api/delete-avatar)
 * [Set "typing" status](/api/set-typing-status)
 * [Set "typing" status for message editing](/api/set-typing-status-for-message-edit)
 * [Get a user's presence](/api/get-user-presence)
