@@ -223,7 +223,7 @@ export function initialize(): void {
         e.stopPropagation();
 
         if (ui_util.matches_viewport_state("gte_xl_min")) {
-            $("body").toggleClass("hide-right-sidebar");
+            toggle_sidebar_preserving_selected_row_offset("hide-right-sidebar");
             if (!$("body").hasClass("hide-right-sidebar")) {
                 fix_invite_user_button_flicker();
             }
