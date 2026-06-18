@@ -544,6 +544,13 @@ test("merge_message_groups", ({mock_template}) => {
         view._message_groups = message_groups;
         view.list.unsubscribed_bookend_content = noop;
         view.list.subscribed_bookend_content = noop;
+        // render() records the historical status of the last rendered
+        // message so subsequent appends can compute the subscription
+        // divider against it; mirror that here for the merge tests.
+        const last_group = message_groups.at(-1);
+        if (last_group !== undefined) {
+            view.list.last_message_historical = last_group.message_containers.at(-1).msg.historical;
+        }
         return view;
     }
 
@@ -663,6 +670,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
+        list.set_subscription_dividers([message_group2], "bottom");
         const result = list.merge_message_groups([message_group2], "bottom");
 
         // Flipping historical flag should not split the message group
@@ -682,6 +690,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message3 = build_message_context({historical: false, topic: "test"});
         const message_group3 = build_message_group([message3]);
 
+        list.set_subscription_dividers([message_group3], "bottom");
         const result2 = list.merge_message_groups([message_group3]);
 
         assert.ok(message_group3.bookend_top);
@@ -799,6 +808,7 @@ test("merge_message_groups", ({mock_template}) => {
 
         const list = build_list([message_group1]);
         list.$list[0].prepend = noop;
+        list.set_subscription_dividers([message_group2], "top");
         const result = list.merge_message_groups([message_group2], "top");
 
         assert.equal(message_group1.bookend_top, undefined);
@@ -817,6 +827,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message3 = build_message_context({historical: false, topic: "test"});
         const message_group3 = build_message_group([message3]);
 
+        list.set_subscription_dividers([message_group3], "top");
         const result2 = list.merge_message_groups([message_group3], "top");
 
         assert.ok(message_group2.bookend_top);
