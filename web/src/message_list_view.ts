@@ -1129,7 +1129,7 @@ export class MessageListView {
 
     render(
         messages: Message[],
-        where: string,
+        where: "top" | "bottom",
         messages_are_new = false,
     ): {need_user_to_scroll: boolean} | undefined {
         // This function processes messages into chunks with separators between them,
