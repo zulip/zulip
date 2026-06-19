@@ -346,10 +346,6 @@ h3,
         padding-bottom: 4px;
         height: 1.4em; /* To match height of input elements */
     }
-
-    .account-settings-heading {
-        margin-right: 10px;
-    }
 }
 
 /* Make this one less wide because it's indented, so that the right
@@ -771,11 +767,6 @@ input[type="checkbox"] {
     border-radius: 4px;
     color: hsl(156deg 30% 50%);
     padding: 3px 10px;
-
-    &.account-alert-notification {
-        margin: 0 0 10px;
-        vertical-align: middle;
-    }
 
     &:not(:empty) {
         border: 1px solid hsl(156deg 30% 50%);
@@ -1474,6 +1465,13 @@ label.preferences-radio-choice-label {
         font-size: 1.5em;
         font-weight: normal;
         line-height: 1.5;
+    }
+
+    /* All non-table section headings sit in a '.subsection-header' and
+       share this margin; table-panel headings ('.settings_panel_list_header
+       h3') keep their own spacing. */
+    .subsection-header h3 {
+        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     & h5 {
