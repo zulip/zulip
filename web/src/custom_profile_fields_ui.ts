@@ -245,6 +245,14 @@ export function format_date(date: Date | undefined, format: string): string {
     return flatpickr.formatDate(date, format);
 }
 
+// The "has-date" class controls the clear-date button's visibility,
+// so derive it from the visible alt input's value.
+function update_has_date_class($custom_user_field: JQuery): void {
+    const has_value =
+        $custom_user_field.find<HTMLInputElement>(".date-field-alt-input").val()!.length > 0;
+    $custom_user_field.toggleClass("has-date", has_value);
+}
+
 export function initialize_custom_date_type_fields(
     element_id: string,
     user_id: number,
@@ -286,9 +294,7 @@ export function initialize_custom_date_type_fields(
             );
             const original_value = people.get_custom_profile_data(user_id, field_id)?.value ?? "";
             instance.setDate(original_value);
-            $input_elem
-                .closest(".custom_user_field")
-                .toggleClass("has-date", original_value !== "");
+            update_has_date_class($input_elem.closest(".custom_user_field"));
             if (!for_profile_settings_panel) {
                 // Trigger "input" event so that save button state can
                 // be toggled in "Manage user" modal.
@@ -353,11 +359,7 @@ export function initialize_custom_date_type_fields(
         },
         onChange(_selected_dates, date_str, instance) {
             update_date(instance, date_str);
-            if (date_str !== "Invalid Date") {
-                $(instance.element)
-                    .closest(".custom_user_field")
-                    .toggleClass("has-date", date_str !== "");
-            }
+            update_has_date_class($(instance.element).closest(".custom_user_field"));
         },
     });
 
@@ -400,22 +402,20 @@ export function initialize_custom_date_type_fields(
             const $displayed_input = $(this).parent().find(".date-field-alt-input");
             $displayed_input.val("");
             $custom_user_field.val("");
-            $(this).closest(".custom_user_field").removeClass("has-date");
+            update_has_date_class($(this).closest(".custom_user_field"));
             $custom_user_field.trigger("input");
         });
 
     $(element_id)
         .find<HTMLInputElement>("input.date-field-alt-input")
         .on("input", function () {
-            const has_value = $(this).val()!.length > 0;
-            $(this).closest(".custom_user_field").toggleClass("has-date", has_value);
+            update_has_date_class($(this).closest(".custom_user_field"));
         });
 
     $(element_id)
-        .find<HTMLInputElement>(".custom_user_field .custom_user_field_value.datepicker")
+        .find(".custom_user_field .datepicker")
         .each(function () {
-            const has_value = $(this).val()!.length > 0;
-            $(this).closest(".custom_user_field").toggleClass("has-date", has_value);
+            update_has_date_class($(this).closest(".custom_user_field"));
         });
 }
 
