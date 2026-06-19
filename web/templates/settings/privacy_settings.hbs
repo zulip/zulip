@@ -1,11 +1,11 @@
 <div {{#if for_realm_settings}}class="privacy_settings settings-subsection-parent" {{else}} id="privacy_settings_box"
   {{/if}}>
-    <div class="subsection-header inline-block">
+    <div class="subsection-header">
         {{#if for_realm_settings}}
-        <h3 class="inline-block">{{t "Privacy settings"}}</h3>
+        <h3>{{t "Privacy settings"}}</h3>
         {{> settings_save_discard_widget section_name="privacy-setting" show_save_discard_buttons=true }}
         {{else}}
-        <h3 class="inline-block">{{t "Privacy"}}</h3>
+        <h3>{{t "Privacy"}}</h3>
         {{> settings_save_discard_widget section_name="privacy-setting" }}
         {{/if}}
     </div>
