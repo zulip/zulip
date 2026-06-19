@@ -29,8 +29,12 @@ function stub_pills() {
     $pill_input[0].before = noop;
 }
 
+let caret_moved_to_end = false;
 set_global("getSelection", () => ({
-    modify: noop,
+    modify(alter, direction, granularity) {
+        assert.deepEqual([alter, direction, granularity], ["move", "forward", "line"]);
+        caret_moved_to_end = true;
+    },
 }));
 
 let typeahead_forced_open = false;
@@ -97,8 +101,15 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return search_typeahead;
     });
 
+    let narrow_collapses_search_bar = false;
     search.initialize({
-        on_narrow_search() {},
+        on_narrow_search() {
+            if (narrow_collapses_search_bar) {
+                // Like a common narrow, which closes the search bar.
+                $.set_results(".navbar-search.expanded", []);
+                $search_query_box.trigger("blur");
+            }
+        },
     });
 
     // Removing a search pill with its "x" triggers a "change" event on
@@ -335,8 +346,32 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     $searchbox_form.trigger(ev);
     // No change on first Enter keyup event
     assert.ok($search_query_box.is(":focus"));
+
+    let search_bar_reopened = false;
+    override_rewire(search, "open_search_bar_and_close_narrow_description", () => {
+        search_bar_reopened = true;
+    });
+
+    // Like selecting a typeahead item, narrowing on Enter leaves the
+    // search box focused with the cursor at the end. When the search
+    // bar stays open after narrowing, it isn't reopened.
+    caret_moved_to_end = false;
     $searchbox_form.trigger(ev);
-    assert.ok(!$search_query_box.is(":focus"));
+    assert.ok($search_query_box.is(":focus"));
+    assert.ok(caret_moved_to_end);
+    assert.ok(!search_bar_reopened);
+
+    // When narrowing closes the search bar, it's reopened with the
+    // search box focused.
+    $.reset_selector(".navbar-search.expanded");
+    narrow_collapses_search_bar = true;
+    caret_moved_to_end = false;
+    $searchbox_form.trigger(ev);
+    assert.ok($search_query_box.is(":focus"));
+    assert.ok(caret_moved_to_end);
+    assert.ok(search_bar_reopened);
+    narrow_collapses_search_bar = false;
+    $.reset_selector(".navbar-search.expanded");
 });
 
 run_test("initiate_search", ({override_rewire}) => {
