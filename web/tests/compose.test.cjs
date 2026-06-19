@@ -857,10 +857,11 @@ test_ui("DM policy disabled", ({override}) => {
     reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
     assert.ok(!reply_disabled);
     // For human user, Alice, the "Message X" button is disabled
-    override(narrow_state, "pm_ids_string", () => "31,33");
+    override(narrow_state, "pm_ids_string", () => "31");
     reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
     assert.ok(reply_disabled);
     // For human user and bot user, the "Message X" button is disabled
+    override(narrow_state, "pm_ids_string", () => "31,33");
     reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
     assert.ok(reply_disabled);
 });
