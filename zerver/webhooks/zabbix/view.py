@@ -28,6 +28,12 @@ ZABBIX_MESSAGE_TEMPLATE = """
 * {item}
 """.strip()
 
+STATUS_EMOJI_MAP = {
+    "PROBLEM": "❌",
+    "OK": "✅",
+    "WARNING": "⚠️",
+}
+
 
 @webhook_view("Zabbix")
 @typed_endpoint
@@ -64,6 +70,10 @@ def get_body_for_http_request(payload: WildValue) -> str:
     item = payload["item"].tame(check_string)
     trigger = payload["trigger"].tame(check_string)
     link = payload["link"].tame(check_string)
+
+    # Prepend emoji to status if it exists in the mapping
+    if status in STATUS_EMOJI_MAP:
+        status = f"{STATUS_EMOJI_MAP[status]} {status}"
 
     data = {
         "hostname": hostname,
