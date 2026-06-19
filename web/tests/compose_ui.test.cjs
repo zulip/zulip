@@ -832,6 +832,15 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     compose_ui.format_text($textarea, "bulleted");
     assert.equal(get_textarea_state(), "<- first_item\n- second_item>");
 
+    // Cursor on an empty line (no selection) should still insert the marker.
+    init_textarea_state("|");
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(get_textarea_state(), "- |");
+
+    init_textarea_state("first_line\n|");
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(get_textarea_state(), "first_line\n- |");
+
     init_textarea_state("<\nfirst_item\nsecond_item>");
     compose_ui.format_text($textarea, "bulleted");
     assert.equal(get_textarea_state(), "<\n- first_item\n- second_item>");
@@ -858,6 +867,15 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     init_textarea_state("<first_item\nsecond_item>");
     compose_ui.format_text($textarea, "numbered");
     assert.equal(get_textarea_state(), "<1. first_item\n2. second_item>");
+
+    // Cursor on an empty line (no selection) should still insert the marker.
+    init_textarea_state("|");
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(get_textarea_state(), "1. |");
+
+    init_textarea_state("first_line\n|");
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(get_textarea_state(), "first_line\n1. |");
 
     init_textarea_state("<first_item\nsecond_item\n>");
     compose_ui.format_text($textarea, "numbered");
