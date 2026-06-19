@@ -966,10 +966,15 @@ export let format_text = (
         const should_mark = selected_lines.split("\n").some((line) => !is_marked(line));
         if (should_mark) {
             const lines = selected_lines.split("\n");
+            // Only skip blank lines for multi-line selections, where blanks
+            // act as spacing between list items. For a single line (including
+            // when the cursor is on an empty line with no selection), always
+            // insert the list marker so the button is not a noop.
+            const skip_blank_lines = lines.length > 1;
             const processed_lines = [];
             let counter = 1;
             for (const line of lines) {
-                if (line.trim() === "") {
+                if (skip_blank_lines && line.trim() === "") {
                     processed_lines.push(line);
                 } else {
                     if (type === "bulleted") {
