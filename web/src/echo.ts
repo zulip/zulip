@@ -412,7 +412,13 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
             // message, and not its rendering.
             const {content, flags, is_me_message} = markdown.render(raw_content);
             message_store.update_message_content(message, content);
-            message.flags = flags;
+            // Recompute the content-driven boolean flags (mentioned,
+            // mentioned_me_directly, etc.) from the freshly rendered
+            // flags. Without this, the message keeps its stale mention
+            // booleans until the server event arrives, which (e.g. when
+            // editing away a personal mention) briefly miscolors the
+            // message as a group mention.
+            message_store.update_booleans(message, flags);
             message.is_me_message = is_me_message;
             if (request.starred !== undefined) {
                 message.starred = request.starred;
