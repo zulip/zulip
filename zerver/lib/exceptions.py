@@ -911,5 +911,3 @@ class PushServiceNotConfiguredError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Server is not configured to use push notification service.")
-        
-    
