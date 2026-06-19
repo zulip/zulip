@@ -913,7 +913,7 @@ input[type="checkbox"] {
     align-items: center;
     width: var(--modal-input-width);
 
-    .flatpickr-wrapper {
+    input.date-field-alt-input {
         grid-column: datepicker-start / close-button-end;
         grid-row: close-button;
     }

@@ -329,7 +329,6 @@ export function initialize_custom_date_type_fields(
         altInputClass: "date-field-alt-input " + common_class_name,
         altFormat: "F j, Y",
         allowInput: true,
-        static: true,
         // This helps us in accepting inputs in other formats
         // like MM/DD/YYYY and basically any other format
         // which is accepted by Date.
@@ -341,6 +340,17 @@ export function initialize_custom_date_type_fields(
         // values.
         formatDate: format_date,
         allowInvalidPreload: true,
+        // Close the date picker on scroll, since flatpickr leaves the
+        // open calendar in place and it would drift away from the input.
+        onOpen(_selected_dates, _date_str, instance) {
+            window.addEventListener(
+                "scroll",
+                () => {
+                    instance.close();
+                },
+                {capture: true, once: true},
+            );
+        },
         onChange(_selected_dates, date_str, instance) {
             update_date(instance, date_str);
             if (date_str !== "Invalid Date") {
