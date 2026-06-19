@@ -14,6 +14,8 @@ const hash_util = mock_esm("../src/hash_util");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
 const message_events_util = mock_esm("../src/message_events_util");
+const pm_list = mock_esm("../src/pm_list");
+const stream_list = mock_esm("../src/stream_list");
 
 let disparities = [];
 
@@ -32,6 +34,8 @@ const message_store = mock_esm("../src/message_store", {
     get: () => ({failed_request: true}),
 
     update_booleans() {},
+
+    maybe_update_raw_content() {},
 
     update_message_content(message, new_content) {
         message.content = new_content;
@@ -404,6 +408,48 @@ run_test("insert_local_message direct message", ({override}) => {
     echo.insert_local_message(message_request, local_id_float, insert_new_messages);
     assert.ok(render_called);
     assert.ok(insert_message_called);
+});
+
+run_test("edit_locally recomputes content-driven booleans", ({override}) => {
+    // A content edit that drops a personal mention should immediately
+    // clear the message's mention booleans from the locally rendered
+    // flags, rather than leaving them stale until the server event
+    // arrives (which would briefly miscolor the message).
+    override(markdown, "render", () => ({
+        content: "<p>edited, no longer mentions me</p>",
+        flags: [],
+        is_me_message: false,
+    }));
+    override(stream_list, "update_streams_sidebar", noop);
+    override(pm_list, "update_private_messages", noop);
+    override(message_lists, "all_rendered_message_lists", () => [
+        {view: {rerender_messages: noop}},
+    ]);
+
+    let update_booleans_args;
+    override(message_store, "update_booleans", (message, flags) => {
+        update_booleans_args = {message, flags};
+        message.mentioned = flags.includes("mentioned");
+        message.mentioned_me_directly = flags.includes("mentioned");
+    });
+
+    const message = {
+        id: 42,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "@**me** original",
+        content: "<p>original</p>",
+        mentioned: true,
+        mentioned_me_directly: true,
+    };
+
+    echo.edit_locally(message, {raw_content: "edited, no longer mentions me"});
+
+    assert.equal(update_booleans_args.message, message);
+    assert.deepEqual(update_booleans_args.flags, []);
+    assert.equal(message.mentioned, false);
+    assert.equal(message.mentioned_me_directly, false);
 });
 
 run_test("test reify_message_id", ({override}) => {
