@@ -4,6 +4,7 @@
 * [Upload a file](/api/upload-file)
 * [Edit a message](/api/update-message)
 * [Delete a message](/api/delete-message)
+* [Delete messages](/api/delete-messages)
 * [Get messages](/api/get-messages)
 * [Construct a narrow](/api/construct-narrow)
 * [Add an emoji reaction](/api/add-reaction)

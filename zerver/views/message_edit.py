@@ -18,6 +18,7 @@ from zerver.lib.message import (
     access_message,
     access_message_and_usermessage,
     access_web_public_message,
+    bulk_access_messages,
     messages_for_ids,
     visible_edit_history_for_message,
 )
@@ -231,6 +232,58 @@ def delete_message_backend(
     validate_can_delete_message(user_profile, message)
     try:
         do_delete_messages(user_profile.realm, [message], acting_user=user_profile)
+    except (Message.DoesNotExist, IntegrityError):
+        raise JsonableError(_("Message already deleted"))
+    return json_success(request)
+
+
+# Upper bound on how many messages a single bulk-delete request may target.
+# A larger selection risks exceeding the request time budget; the interactive
+# selection UI never approaches this, and deleting whole topics/channels has
+# dedicated endpoints.
+MAX_BULK_DELETE_MESSAGES = 1000
+
+
+@transaction.atomic(durable=True)
+@typed_endpoint
+def delete_messages_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    message_ids: Json[list[NonNegativeInt]],
+) -> HttpResponse:
+    unique_message_ids = set(message_ids)
+    if not unique_message_ids:
+        raise JsonableError(_("Nothing to delete."))
+    if len(unique_message_ids) > MAX_BULK_DELETE_MESSAGES:
+        raise JsonableError(
+            _("You can delete at most {max_messages} messages at once.").format(
+                max_messages=MAX_BULK_DELETE_MESSAGES,
+            )
+        )
+
+    # Lock all targeted Message rows, mirroring the single-message deletion
+    # codepath, to serialize against concurrent modifications. Bulk deletion is
+    # all-or-nothing: every requested message must exist and be deletable by
+    # this user, so the user never ends up with a partially deleted selection.
+    messages = list(
+        Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
+        .select_for_update(of=("self",), no_key=False)
+        .filter(realm=user_profile.realm, id__in=unique_message_ids)
+    )
+    if len(messages) != len(unique_message_ids):
+        raise JsonableError(_("Invalid message(s)"))
+
+    if len(bulk_access_messages(user_profile, messages, is_modifying_message=True)) != len(
+        messages
+    ):
+        raise JsonableError(_("Invalid message(s)"))
+
+    for message in messages:
+        validate_can_delete_message(user_profile, message)
+
+    try:
+        do_delete_messages(user_profile.realm, messages, acting_user=user_profile)
     except (Message.DoesNotExist, IntegrityError):
         raise JsonableError(_("Message already deleted"))
     return json_success(request)

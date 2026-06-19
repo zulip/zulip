@@ -8648,6 +8648,57 @@ paths:
                   - description: |
                       A typical failed JSON response for when an invalid channel ID is passed:
   /messages:
+    delete:
+      operationId: delete-messages
+      summary: Delete messages
+      tags: ["messages"]
+      description: |
+        Permanently delete a set of messages in a single request.
+
+        This is the bulk counterpart of [deleting a single
+        message](/api/delete-message); it is used by the web app's message
+        selection mode to delete several messages at once.
+
+        Deletion is all-or-nothing: the user must be able to both access and
+        delete every message in `message_ids`, or the request fails without
+        deleting anything. The content-access and permission rules are identical
+        to those documented for [deleting a single
+        message](/api/delete-message).
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-07d492).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                message_ids:
+                  description: |
+                    The IDs of the messages to delete. Must contain at least one
+                    message ID, and at most 1000.
+                  type: array
+                  items:
+                    type: integer
+                  example: [13, 17, 18]
+              required:
+                - message_ids
+            encoding:
+              message_ids:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      An example JSON response for when one or more of the
+                      messages do not exist or cannot be deleted by the user:
     get:
       operationId: get-messages
       summary: Get messages

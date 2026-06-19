@@ -16,6 +16,7 @@ from zerver.models import ArchiveTransaction, Message, NamedUserGroup, UserMessa
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
+from zerver.views.message_edit import MAX_BULK_DELETE_MESSAGES
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -49,6 +50,106 @@ class DeleteMessageTest(ZulipTestCase):
         do_delete_messages(realm, [Message.objects.get(id=msg_id)], acting_user=None)
         archive_transaction = ArchiveTransaction.objects.latest("id")
         self.assertIsNone(archive_transaction.acting_user)
+
+    def test_bulk_delete_messages(self) -> None:
+        # Administrators can delete any message by default, so iago can bulk
+        # delete other users' messages in a single request.
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        msg_ids = [self.send_stream_message(hamlet, "Denmark", f"msg {i}") for i in range(3)]
+        kept_msg_id = self.send_stream_message(hamlet, "Denmark", "keep me")
+
+        result = self.client_delete(
+            "/json/messages", {"message_ids": orjson.dumps(msg_ids).decode()}
+        )
+        self.assert_json_success(result)
+        self.assertEqual(Message.objects.filter(id__in=msg_ids).count(), 0)
+        self.assertTrue(Message.objects.filter(id=kept_msg_id).exists())
+
+    def test_bulk_delete_messages_is_all_or_nothing(self) -> None:
+        realm = get_realm("zulip")
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        administrators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        # Members may delete their own messages, but not others'.
+        do_change_realm_permission_group_setting(
+            realm, "can_delete_own_message_group", members_group, acting_user=None
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_delete_any_message_group", administrators_group, acting_user=None
+        )
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, "Denmark")
+        self.login_user(hamlet)
+        own_msg_id = self.send_stream_message(hamlet, "Denmark", "mine")
+        others_msg_id = self.send_stream_message(cordelia, "Denmark", "not mine")
+
+        result = self.client_delete(
+            "/json/messages",
+            {"message_ids": orjson.dumps([own_msg_id, others_msg_id]).decode()},
+        )
+        self.assert_json_error(result, "You don't have permission to delete this message")
+        # Neither message was deleted: the request is rejected as a whole.
+        self.assertTrue(Message.objects.filter(id=own_msg_id).exists())
+        self.assertTrue(Message.objects.filter(id=others_msg_id).exists())
+
+    def test_bulk_delete_messages_invalid_id(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_stream_message(hamlet, "Denmark", "real")
+        result = self.client_delete(
+            "/json/messages",
+            {"message_ids": orjson.dumps([msg_id, msg_id + 1000]).decode()},
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+        # The valid message is untouched, since deletion is all-or-nothing.
+        self.assertTrue(Message.objects.filter(id=msg_id).exists())
+
+    def test_bulk_delete_messages_requires_access(self) -> None:
+        # A message that exists but the user cannot even access (here, someone
+        # else's direct message) is rejected, before the delete-permission check.
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        dm_id = self.send_personal_message(hamlet, iago, "secret")
+        self.login("cordelia")
+        result = self.client_delete(
+            "/json/messages", {"message_ids": orjson.dumps([dm_id]).decode()}
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+        self.assertTrue(Message.objects.filter(id=dm_id).exists())
+
+    def test_bulk_delete_messages_already_deleted(self) -> None:
+        # If the messages are deleted out from under us between locking and
+        # archiving (a latency race), we surface a clean error, not a 500.
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_stream_message(hamlet, "Denmark", "race")
+        with mock.patch(
+            "zerver.views.message_edit.do_delete_messages",
+            side_effect=Message.DoesNotExist(),
+        ):
+            result = self.client_delete(
+                "/json/messages", {"message_ids": orjson.dumps([msg_id]).decode()}
+            )
+        self.assert_json_error(result, "Message already deleted")
+
+    def test_bulk_delete_messages_empty_and_over_limit(self) -> None:
+        self.login("iago")
+        result = self.client_delete("/json/messages", {"message_ids": orjson.dumps([]).decode()})
+        self.assert_json_error(result, "Nothing to delete.")
+
+        too_many = list(range(1, MAX_BULK_DELETE_MESSAGES + 2))
+        result = self.client_delete(
+            "/json/messages", {"message_ids": orjson.dumps(too_many).decode()}
+        )
+        self.assert_json_error(
+            result, f"You can delete at most {MAX_BULK_DELETE_MESSAGES} messages at once."
+        )
 
     def test_do_delete_private_messages_with_acting_user(self) -> None:
         realm = get_realm("zulip")
