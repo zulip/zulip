@@ -12,7 +12,7 @@ from zerver.actions.streams import do_change_stream_group_based_setting, do_deac
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, NamedUserGroup, UserMessage, UserProfile
+from zerver.models import ArchiveTransaction, Message, NamedUserGroup, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -28,6 +28,27 @@ class DeleteMessageTest(ZulipTestCase):
         do_delete_messages(realm, [], acting_user=None)
         final_count = Message.objects.count()
         self.assertEqual(initial_count, final_count)
+
+    def test_archive_transaction_records_acting_user(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        # A manual deletion records the acting user on its archive transaction,
+        # so a user-facing undo can later authorize the user who deleted.
+        msg_id = self.send_personal_message(cordelia, hamlet, "Hello!")
+        do_delete_messages(realm, [Message.objects.get(id=msg_id)], acting_user=iago)
+        archive_transaction = ArchiveTransaction.objects.latest("id")
+        self.assertEqual(archive_transaction.type, ArchiveTransaction.MANUAL)
+        self.assertEqual(archive_transaction.acting_user, iago)
+
+        # With no acting user (e.g. retention policy or management commands),
+        # acting_user is left null.
+        msg_id = self.send_personal_message(cordelia, hamlet, "Hello again!")
+        do_delete_messages(realm, [Message.objects.get(id=msg_id)], acting_user=None)
+        archive_transaction = ArchiveTransaction.objects.latest("id")
+        self.assertIsNone(archive_transaction.acting_user)
 
     def test_do_delete_private_messages_with_acting_user(self) -> None:
         realm = get_realm("zulip")
