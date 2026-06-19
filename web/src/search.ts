@@ -58,6 +58,14 @@ function full_search_query_in_terms(): NarrowCanonicalTerm[] | undefined {
     return [...search_pill.get_current_search_pill_terms(search_pill_widget), ...search_terms];
 }
 
+function reopen_search_bar_if_collapsed(): void {
+    if ($(".navbar-search.expanded").length === 0) {
+        open_search_bar_and_close_narrow_description();
+        focus_search_input_at_end();
+        search_input_has_changed = true;
+    }
+}
+
 function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): void {
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -84,13 +92,7 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     );
     on_narrow_search(terms, {trigger: "search"});
 
-    // It's sort of annoying that this is not in a position to
-    // blur the search box, because it means that Esc won't
-    // unnarrow, it'll leave the searchbox.
-
-    // Narrowing will have already put some terms in the search box,
-    // so leave the current text in.
-    $("#search_query").trigger("blur");
+    reopen_search_bar_if_collapsed();
     return;
 }
 
@@ -137,15 +139,7 @@ function narrow_to_search_contents_with_search_bar_open(): void {
 
     on_narrow_search(terms, {trigger: "search"});
 
-    // We want to keep the search bar open here, not show the
-    // message header. But here we'll let the message header
-    // get rendered first, so that it's up to date with the
-    // new narrow, and then reopen search if it got closed.
-    if ($(".navbar-search.expanded").length === 0) {
-        open_search_bar_and_close_narrow_description();
-        focus_search_input_at_end();
-        search_input_has_changed = true;
-    }
+    reopen_search_bar_if_collapsed();
 }
 
 export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
