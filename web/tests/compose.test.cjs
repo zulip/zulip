@@ -768,6 +768,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             assert.equal(payload.url, "/json/messages/render");
             assert.ok(payload.data);
             assert.deepEqual(payload.data.content, current_message);
+            assert.equal(payload.data.fetch_link_previews, true);
 
             function test(func, param) {
                 let destroy_indicator_called = false;

@@ -206,6 +206,12 @@ exports.fixtures = {
         },
     },
 
+    compose_link_preview: {
+        type: "compose_link_preview",
+        content: "http://example.com/",
+        rendered_content: '<p><a href="http://example.com/">http://example.com/</a></p>',
+    },
+
     custom_profile_fields: {
         type: "custom_profile_fields",
         fields: [
