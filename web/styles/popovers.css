@@ -274,11 +274,6 @@
         line-height: 1.1;
     }
 
-    .popover-stream-name,
-    .stream-privacy.filter-icon {
-        margin-top: 4px;
-    }
-
     .zulip-icon-lock {
         /* Override the margin-top set on the stream lock icon
            at the top-level, since we don't need to pull up this
@@ -288,6 +283,28 @@
 
     .popover-stream-info-menu-description {
         color: var(--color-text-popover-menu);
+    }
+}
+
+#stream-actions-menu-popover {
+    .popover-stream-name,
+    .stream-privacy.filter-icon {
+        margin-top: 4px;
+    }
+}
+
+#stream-card-popover {
+    .simplebar-content {
+        min-width: var(--stream-card-popover-min-width);
+    }
+
+    .popover-stream-header.text-item,
+    .popover-stream-info-menu-description.text-item {
+        min-height: 0;
+    }
+
+    .popover-stream-info-menu-description.text-item {
+        padding-top: 0;
     }
 }
 
@@ -1189,12 +1206,6 @@ ul.popover-group-menu-member-list {
 .user-group-info-popover {
     .simplebar-content {
         min-width: var(--user-group-info-popover-min-width);
-    }
-}
-
-#stream-card-popover {
-    .simplebar-content {
-        min-width: var(--stream-card-popover-min-width);
     }
 }
 
