@@ -25,7 +25,14 @@ from zerver.actions.user_topics import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
-from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
+from zerver.lib.cache import (
+    cache_get,
+    cache_set,
+    cache_with_key,
+    compose_preview_pending_cache_key,
+    preview_url_cache_key,
+    user_profile_delivery_email_cache_key,
+)
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
@@ -124,7 +131,7 @@ from zerver.models.streams import (
     get_stream_by_id_in_realm,
 )
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
-from zerver.tornado.django_api import send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -191,6 +198,89 @@ def render_incoming_message(
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
     return rendering_result
+
+
+def render_message_for_compose_preview(
+    sender: UserProfile,
+    content: str,
+    *,
+    url_embed_data: dict[str, UrlEmbedData | None] | None = None,
+) -> MessageRenderingResult:
+    message = Message()
+    message.sender = sender
+    message.realm = sender.realm
+    message.content = content
+    try:
+        return render_message_markdown(
+            message=message,
+            content=content,
+            realm=sender.realm,
+            url_embed_data=url_embed_data,
+        )
+    except MarkdownRenderingError:
+        raise JsonableError(_("Unable to render message"))
+
+
+# Short enough that a fetch which never populated the cache is retried by a
+# later preview.
+COMPOSE_PREVIEW_FETCH_PENDING_TIMEOUT_SECONDS = 60
+
+
+def get_compose_preview_embeds_and_enqueue_fetch(
+    sender: UserProfile,
+    content: str,
+    links_for_preview: set[str],
+) -> dict[str, UrlEmbedData | None]:
+    """Return the cached embeds to bake into the render, and enqueue an
+    embed_links job for the rest.
+
+    The job lists *every* previewable link, since the client swaps in the
+    worker's re-render, which would otherwise drop the cached links' cards.
+
+    The pending marker is keyed on the draft the job will deliver, not the
+    link, because a job for a draft the user has since edited renders content
+    the client discards.
+    """
+    url_embed_data: dict[str, UrlEmbedData | None] = {}
+    has_uncached_link = False
+    for url in links_for_preview:
+        cache_entry = cache_get(preview_url_cache_key(url))
+        if cache_entry is None:
+            has_uncached_link = True
+        else:
+            # cache_with_key stores values in a singleton tuple.
+            url_embed_data[url] = cache_entry[0]
+
+    # A draft too long to send isn't worth fetching previews for, and this
+    # bounds the content we copy into the queue and the event.
+    if has_uncached_link and len(content) <= settings.MAX_MESSAGE_LENGTH:
+        pending_cache_key = compose_preview_pending_cache_key(sender.id, content)
+        if cache_get(pending_cache_key) is None:
+            cache_set(
+                pending_cache_key,
+                True,
+                timeout=COMPOSE_PREVIEW_FETCH_PENDING_TIMEOUT_SECONDS,
+            )
+            queue_event_on_commit(
+                "embed_links",
+                {
+                    "compose_preview": True,
+                    "user_id": sender.id,
+                    "content": content,
+                    "urls": list(links_for_preview),
+                },
+            )
+
+    return url_embed_data
+
+
+def do_send_compose_link_preview(sender: UserProfile, content: str, rendered_content: str) -> None:
+    event = {
+        "type": "compose_link_preview",
+        "content": content,
+        "rendered_content": rendered_content,
+    }
+    send_event_rollback_unsafe(sender.realm, event, [sender.id])
 
 
 @dataclass

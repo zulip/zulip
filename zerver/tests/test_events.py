@@ -66,6 +66,7 @@ from zerver.actions.message_edit import (
     do_update_message,
 )
 from zerver.actions.message_flags import do_update_message_flags
+from zerver.actions.message_send import do_send_compose_link_preview
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.navigation_views import (
     do_add_navigation_view,
@@ -173,6 +174,7 @@ from zerver.lib.event_schema import (
     check_channel_folder_add,
     check_channel_folder_reorder,
     check_channel_folder_update,
+    check_compose_link_preview,
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
@@ -1631,6 +1633,13 @@ class NormalActionsTest(BaseAction):
             )
 
         check_invites_changed("events[6]", events[5])
+
+    def test_compose_link_preview_events(self) -> None:
+        with self.verify_action(state_change_expected=False) as events:
+            do_send_compose_link_preview(
+                self.user_profile, "http://example.com/", "<p>rendered</p>"
+            )
+        check_compose_link_preview("events[0]", events[0])
 
     def test_typing_events(self) -> None:
         with self.verify_action(state_change_expected=False) as events:

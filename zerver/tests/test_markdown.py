@@ -3877,6 +3877,15 @@ class MarkdownErrorTests(ZulipTestCase):
         ):
             self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
+    def test_render_message_errors(self) -> None:
+        with self.simulated_markdown_failure():
+            result = self.api_post(
+                self.example_user("othello"),
+                "/api/v1/messages/render",
+                dict(content="whatever"),
+            )
+        self.assert_json_error(result, "Unable to render message")
+
     @override_settings(MAX_MESSAGE_LENGTH=10)
     def test_ultra_long_rendering(self) -> None:
         """A rendered message with an ultra-long length (> 100 * MAX_MESSAGE_LENGTH)
