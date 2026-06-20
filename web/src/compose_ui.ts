@@ -1586,6 +1586,9 @@ async function poll_thumbnail_status(
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
+    // Kept on for the compose preview so a thumbnail-triggered re-render
+    // re-requests link embeds rather than dropping a card already shown.
+    fetch_link_previews = false,
     attempt = 1,
 ): Promise<void> {
     if (attempt > MAX_THUMBNAIL_RETRIES) {
@@ -1625,6 +1628,7 @@ async function poll_thumbnail_status(
                 $preview_content_box,
                 content,
                 false,
+                fetch_link_previews,
             );
             return;
         }
@@ -1637,6 +1641,7 @@ async function poll_thumbnail_status(
                     $preview_spinner,
                     $preview_content_box,
                     content,
+                    fetch_link_previews,
                     attempt + 1,
                 );
             }, retry_delay_secs * 1000);
@@ -1688,14 +1693,15 @@ export function exit_preview_mode($container: JQuery): void {
     $container.find(".markdown_preview").show();
 }
 
-function apply_preview_render(
+export let apply_preview_render = (
     $preview_container: JQuery,
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
     rendered_content: string,
     raw_content?: string,
-): void {
+    fetch_link_previews = false,
+): void => {
     // raw_content is checked for status messages ("/me ..."); it's
     // undefined when we have no authoritative raw content (e.g. errors).
     let rendered_preview_html;
@@ -1723,8 +1729,13 @@ function apply_preview_render(
             $preview_spinner,
             $preview_content_box,
             content,
+            fetch_link_previews,
         );
     }
+};
+
+export function rewire_apply_preview_render(value: typeof apply_preview_render): void {
+    apply_preview_render = value;
 }
 
 export function render_and_show_preview(
@@ -1733,6 +1744,9 @@ export function render_and_show_preview(
     $preview_content_box: JQuery,
     content: string,
     show_spinner = true,
+    // Only the compose preview consumes the resulting live-update event, so
+    // other callers (message-edit, drafts) leave this off to skip the fetch.
+    fetch_link_previews = false,
 ): void {
     if (prevent_next_spinner) {
         show_spinner = false;
@@ -1748,6 +1762,8 @@ export function render_and_show_preview(
             $preview_content_box,
             content,
             $t_html({defaultMessage: "Nothing to preview"}),
+            undefined,
+            fetch_link_previews,
         );
     } else {
         if (markdown.contains_backend_only_syntax(content) && show_spinner) {
@@ -1769,11 +1785,13 @@ export function render_and_show_preview(
                 $preview_content_box,
                 content,
                 rendered_content,
+                undefined,
+                fetch_link_previews,
             );
         }
         void channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: {content, fetch_link_previews},
             success(response_data) {
                 if (
                     preview_render_count !== compose_state.get_preview_render_count() ||
@@ -1796,6 +1814,7 @@ export function render_and_show_preview(
                     content,
                     data.rendered,
                     content,
+                    fetch_link_previews,
                 );
             },
             error() {
@@ -1808,8 +1827,33 @@ export function render_and_show_preview(
                     $preview_content_box,
                     content,
                     $t_html({defaultMessage: "Failed to generate preview"}),
+                    undefined,
+                    fetch_link_previews,
                 );
             },
         });
     }
+}
+
+// Live-update the open compose preview with the draft the embed_links worker
+// re-rendered once link previews were fetched. The content check discards a
+// stale update for a draft the user has since edited.
+export function update_compose_link_preview(content: string, rendered_content: string): void {
+    const $preview_container = $("#compose");
+    if (!$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+    if (content !== compose_state.message_content()) {
+        return;
+    }
+    apply_preview_render(
+        $preview_container,
+        $("#compose .markdown_preview_spinner"),
+        $("#compose .preview_content"),
+        content,
+        rendered_content,
+        content,
+        // fetch_link_previews: always on, since this is the compose preview.
+        true,
+    );
 }
