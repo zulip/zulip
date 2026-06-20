@@ -1320,6 +1320,12 @@ run_test("get_mention_syntax", () => {
     assert.equal(people.get_mention_syntax("Stephen King", 602, true), "@_**Stephen King|602**");
     assert.equal(people.get_mention_syntax("Maria Athens", 603), "@**Maria Athens**");
 
+    // With always_include_id, the id is pinned even when the name is unique.
+    assert.equal(
+        people.get_mention_syntax("Maria Athens", 603, false, true),
+        "@**Maria Athens|603**",
+    );
+
     // Following tests handle a special case when `full_name` matches with a wildcard.
     //
     // At this point, there is no duplicate full name, `all`, so we should still get

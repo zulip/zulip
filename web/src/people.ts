@@ -1332,7 +1332,15 @@ export function get_unique_full_name(full_name: string, user_id: number): string
     return unique_full_name;
 }
 
-export function get_mention_syntax(full_name: string, user_id?: number, silent = false): string {
+export function get_mention_syntax(
+    full_name: string,
+    user_id?: number,
+    silent = false,
+    // Callers that build a mention from rendered HTML (e.g. paste
+    // handling) can't trust the display name, so they pin the mention
+    // to the id even when the name isn't ambiguous.
+    always_include_id = false,
+): string {
     let mention = "";
     if (silent) {
         mention += "@_**";
@@ -1352,7 +1360,10 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     if (user_id === undefined && !wildcard_match) {
         blueslip.warn("get_mention_syntax called without user_id.");
     }
-    if ((is_duplicate_full_name(full_name) || wildcard_match) && user_id !== undefined) {
+    if (
+        (always_include_id || is_duplicate_full_name(full_name) || wildcard_match) &&
+        user_id !== undefined
+    ) {
         mention += `|${user_id}`;
     }
     mention += "**";
