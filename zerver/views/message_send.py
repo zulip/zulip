@@ -17,9 +17,10 @@ from zerver.actions.message_send import (
     create_mirror_user_if_needed,
     extract_private_recipients,
     extract_stream_indicator,
+    get_cached_embeds_and_enqueue_fetch,
+    render_unsaved_message,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import (
@@ -29,7 +30,7 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
 )
 from zerver.lib.zcommand import process_zcommands
-from zerver.models import Client, Message, RealmDomain, UserProfile
+from zerver.models import Client, RealmDomain, UserProfile
 from zerver.models.users import get_user_including_cross_realm
 
 
@@ -267,14 +268,21 @@ def render_message_backend(
     user_profile: UserProfile,
     *,
     content: Annotated[str, StringConstraints(max_length=settings.MAX_MESSAGE_LENGTH)],
+    populate_url_embed_data: Json[bool] = False,
 ) -> HttpResponse:
-    message = Message()
-    message.sender = user_profile
-    message.realm = user_profile.realm
-    message.content = content
-    client = RequestNotes.get_notes(request).client
-    assert client is not None
-    message.sending_client = client
+    rendering_result = render_unsaved_message(user_profile, content)
 
-    rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
+    # The message-edit preview and drafts overlay don't consume the
+    # url_embed_data event, so they leave this off.
+    if populate_url_embed_data and rendering_result.links_for_preview:
+        url_embed_data = get_cached_embeds_and_enqueue_fetch(
+            user_profile, content, rendering_result.links_for_preview
+        )
+        # A link cached as "no preview available" (None) renders identically,
+        # so only a real cached embed is worth a second render.
+        if any(embed_data is not None for embed_data in url_embed_data.values()):
+            rendering_result = render_unsaved_message(
+                user_profile, content, url_embed_data=url_embed_data
+            )
+
     return json_success(request, data={"rendered": rendering_result.rendered_content})
