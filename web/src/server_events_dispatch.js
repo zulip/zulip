@@ -16,6 +16,7 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
@@ -1187,6 +1188,10 @@ export function dispatch_normal_event(event) {
             }
             break;
         }
+
+        case "url_embed_data":
+            compose_ui.update_compose_preview_embeds(event.content, event.rendered_content);
+            break;
 
         case "user_group":
             switch (event.op) {

@@ -1611,6 +1611,8 @@ async function poll_thumbnail_status(
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
+    // Threaded through so a thumbnail re-render doesn't drop a shown card.
+    populate_url_embed_data = false,
     attempt = 1,
 ): Promise<void> {
     if (attempt > MAX_THUMBNAIL_RETRIES) {
@@ -1650,6 +1652,7 @@ async function poll_thumbnail_status(
                 $preview_content_box,
                 content,
                 false,
+                populate_url_embed_data,
             );
             return;
         }
@@ -1662,6 +1665,7 @@ async function poll_thumbnail_status(
                     $preview_spinner,
                     $preview_content_box,
                     content,
+                    populate_url_embed_data,
                     attempt + 1,
                 );
             }, retry_delay_secs * 1000);
@@ -1713,14 +1717,15 @@ export function exit_preview_mode($container: JQuery): void {
     $container.find(".markdown_preview").show();
 }
 
-function apply_preview_render(
+export let apply_preview_render = (
     $preview_container: JQuery,
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
     rendered_content: string,
     raw_content?: string,
-): void {
+    populate_url_embed_data = false,
+): void => {
     // raw_content is checked for status messages ("/me ..."); it's
     // undefined when we have no authoritative raw content (e.g. errors).
     let rendered_preview_html;
@@ -1748,9 +1753,18 @@ function apply_preview_render(
             $preview_spinner,
             $preview_content_box,
             content,
+            populate_url_embed_data,
         );
     }
+};
+
+export function rewire_apply_preview_render(value: typeof apply_preview_render): void {
+    apply_preview_render = value;
 }
+
+// Separate from compose_state's render count, which the message-edit preview
+// shares and so must not be superseded from here.
+let embed_update_count = 0;
 
 export function render_and_show_preview(
     $preview_container: JQuery,
@@ -1758,6 +1772,8 @@ export function render_and_show_preview(
     $preview_content_box: JQuery,
     content: string,
     show_spinner = true,
+    // Only the compose preview consumes the resulting event.
+    populate_url_embed_data = false,
 ): void {
     if (prevent_next_spinner) {
         show_spinner = false;
@@ -1765,6 +1781,7 @@ export function render_and_show_preview(
 
     const preview_render_count = compose_state.get_preview_render_count() + 1;
     compose_state.set_preview_render_count(preview_render_count);
+    const link_preview_update_count_at_request = embed_update_count;
 
     if (content.length === 0) {
         apply_preview_render(
@@ -1773,6 +1790,8 @@ export function render_and_show_preview(
             $preview_content_box,
             content,
             $t_html({defaultMessage: "Nothing to preview"}),
+            undefined,
+            populate_url_embed_data,
         );
     } else {
         if (markdown.contains_backend_only_syntax(content) && show_spinner) {
@@ -1794,11 +1813,13 @@ export function render_and_show_preview(
                 $preview_content_box,
                 content,
                 rendered_content,
+                undefined,
+                populate_url_embed_data,
             );
         }
         void channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: {content, populate_url_embed_data},
             success(response_data) {
                 if (
                     preview_render_count !== compose_state.get_preview_render_count() ||
@@ -1814,6 +1835,14 @@ export function render_and_show_preview(
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }
+                if (
+                    populate_url_embed_data &&
+                    link_preview_update_count_at_request !== embed_update_count
+                ) {
+                    // This response predates embeds an update already
+                    // applied, so applying it would drop their cards.
+                    return;
+                }
                 apply_preview_render(
                     $preview_container,
                     $preview_spinner,
@@ -1821,6 +1850,7 @@ export function render_and_show_preview(
                     content,
                     data.rendered,
                     content,
+                    populate_url_embed_data,
                 );
             },
             error() {
@@ -1833,8 +1863,32 @@ export function render_and_show_preview(
                     $preview_content_box,
                     content,
                     $t_html({defaultMessage: "Failed to generate preview"}),
+                    undefined,
+                    populate_url_embed_data,
                 );
             },
         });
     }
+}
+
+// Live-update the open compose preview with the embed_links worker's re-render.
+export function update_compose_preview_embeds(content: string, rendered_content: string): void {
+    const $preview_container = $("#compose");
+    if (!$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+    if (content !== compose_state.message_content()) {
+        return;
+    }
+    // Supersede any in-flight render whose response predates the embeds.
+    embed_update_count += 1;
+    apply_preview_render(
+        $preview_container,
+        $("#compose .markdown_preview_spinner"),
+        $("#compose .preview_content"),
+        content,
+        rendered_content,
+        content,
+        true,
+    );
 }

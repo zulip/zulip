@@ -984,6 +984,12 @@ exports.fixtures = {
         all: false,
     },
 
+    url_embed_data: {
+        type: "url_embed_data",
+        content: "http://example.com/",
+        rendered_content: '<p><a href="http://example.com/">http://example.com/</a></p>',
+    },
+
     user_group__add: {
         type: "user_group",
         op: "add",
