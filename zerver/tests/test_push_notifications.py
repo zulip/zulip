@@ -2174,7 +2174,10 @@ class TestSendToPushBouncer(ZulipTestCase):
         with self.assertLogs(level="WARNING") as m:
             with self.assertRaises(PushNotificationBouncerServerError):
                 send_to_push_bouncer("POST", "register", {"data": "true"})
-            self.assertEqual(m.output, ["WARNING:root:Received 500 from push notification bouncer"])
+            self.assertEqual(
+                m.output,
+                ["WARNING:zerver.lib.remote_server:Received 500 from push notification bouncer"],
+            )
 
     @responses.activate
     def test_400_error(self) -> None:
@@ -2212,6 +2215,65 @@ class TestSendToPushBouncer(ZulipTestCase):
         self.assertEqual(
             str(exc.exception), "Push notification bouncer returned unexpected status code 300"
         )
+
+    @responses.activate
+    def test_429_retry_succeeds(self) -> None:
+        """A single 429 followed by a 200 should succeed transparently after one retry."""
+        self.add_mock_response(body=orjson.dumps({"msg": "rate limited"}), status=429)
+        self.add_mock_response(body=orjson.dumps({"result": "success", "msg": ""}), status=200)
+        with mock.patch("zerver.lib.remote_server.time.sleep") as mock_sleep:
+            with self.assertLogs("zerver.lib.remote_server", level="WARNING"):
+                result = send_to_push_bouncer("POST", "register", {"data": "true"})
+        self.assertEqual(result, {"result": "success", "msg": ""})
+        mock_sleep.assert_called_once_with(1.0)
+        self.assertEqual(len(responses.calls), 2)
+
+    @responses.activate
+    def test_429_exponential_backoff(self) -> None:
+        """Without a Retry-After header, delays should double on each attempt: 1s, 2s, 4s."""
+        for _ in range(3):
+            self.add_mock_response(body=orjson.dumps({"msg": "rate limited"}), status=429)
+        self.add_mock_response(body=orjson.dumps({"result": "success", "msg": ""}), status=200)
+        with mock.patch("zerver.lib.remote_server.time.sleep") as mock_sleep:
+            with self.assertLogs("zerver.lib.remote_server", level="WARNING"):
+                send_to_push_bouncer("POST", "register", {"data": "true"})
+        delays = [call.args[0] for call in mock_sleep.call_args_list]
+        self.assertEqual(delays, [1.0, 2.0, 4.0])
+        self.assertEqual(len(responses.calls), 4)
+
+    @responses.activate
+    def test_429_retry_after_header_respected(self) -> None:
+        """When the bouncer sends a Retry-After header, that value should be used as the delay."""
+        assert settings.ZULIP_SERVICES_URL is not None
+        URL = settings.ZULIP_SERVICES_URL + "/api/v1/remotes/register"
+        responses.add(
+            responses.POST,
+            URL,
+            body=orjson.dumps({"msg": "rate limited"}),
+            status=429,
+            headers={"Retry-After": "42"},
+        )
+        self.add_mock_response(body=orjson.dumps({"result": "success", "msg": ""}), status=200)
+        with mock.patch("zerver.lib.remote_server.time.sleep") as mock_sleep:
+            with self.assertLogs("zerver.lib.remote_server", level="WARNING"):
+                send_to_push_bouncer("POST", "register", {"data": "true"})
+        mock_sleep.assert_called_once_with(42.0)
+        self.assertEqual(len(responses.calls), 2)
+
+    @responses.activate
+    def test_429_max_retries_exceeded_raises(self) -> None:
+        """If every attempt is rate-limited, the function should stop after MAX retries
+        and raise the same error as any other unhandled 4xx (JsonableError)."""
+        from zerver.lib.remote_server import PUSH_BOUNCER_RATE_LIMIT_MAX_RETRIES
+
+        for _ in range(PUSH_BOUNCER_RATE_LIMIT_MAX_RETRIES + 1):
+            self.add_mock_response(body=orjson.dumps({"msg": "rate limited"}), status=429)
+        with mock.patch("zerver.lib.remote_server.time.sleep"):
+            with self.assertLogs("zerver.lib.remote_server", level="WARNING"):
+                with self.assertRaises(JsonableError):
+                    send_to_push_bouncer("POST", "register", {"data": "true"})
+        # Exactly MAX_RETRIES + 1 requests should have been made (initial + all retries).
+        self.assertEqual(len(responses.calls), PUSH_BOUNCER_RATE_LIMIT_MAX_RETRIES + 1)
 
 
 class TestAddRemoveDeviceTokenAPI(BouncerTestCase):
