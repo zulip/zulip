@@ -10,12 +10,20 @@ type PartialSelectionConfig = {
     start_text_node_offset?: number;
     end_text_node_offset?: number;
 };
-async function copy_messages(
-    page: Page,
-    start_message: string,
-    end_message: string,
-    partial_selection_config?: PartialSelectionConfig,
-): Promise<string[]> {
+
+type CopyMessagesOptions = {
+    page: Page;
+    start_message: string;
+    end_message: string;
+    partial_selection_config?: PartialSelectionConfig;
+};
+
+async function copy_messages({
+    page,
+    start_message,
+    end_message,
+    partial_selection_config,
+}: CopyMessagesOptions): Promise<string[]> {
     return await page.evaluate(
         (
             start_message: string,
@@ -85,19 +93,31 @@ async function copy_messages(
 }
 
 async function test_copying_first_message_from_topic(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test C", "copy paste test C");
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test C",
+        end_message: "copy paste test C",
+    });
     const expected_copied_lines: string[] = [];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
 async function test_copying_last_message_from_topic(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test E", "copy paste test E");
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test E",
+        end_message: "copy paste test E",
+    });
     const expected_copied_lines: string[] = [];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
 async function test_copying_first_two_messages_from_topic(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test C", "copy paste test D");
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test C",
+        end_message: "copy paste test D",
+    });
     const expected_copied_lines = [
         "Desdemona:",
         "copy paste test C",
@@ -108,7 +128,11 @@ async function test_copying_first_two_messages_from_topic(page: Page): Promise<v
 }
 
 async function test_copying_all_messages_from_topic(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test C", "copy paste test E");
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test C",
+        end_message: "copy paste test E",
+    });
     const expected_copied_lines = [
         "Desdemona:",
         "copy paste test C",
@@ -121,7 +145,11 @@ async function test_copying_all_messages_from_topic(page: Page): Promise<void> {
 }
 
 async function test_copying_last_from_prev_first_from_next(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test C");
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test B",
+        end_message: "copy paste test C",
+    });
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
@@ -134,7 +162,11 @@ async function test_copying_last_from_prev_first_from_next(page: Page): Promise<
 }
 
 async function test_copying_last_from_prev_all_from_next(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test E");
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test B",
+        end_message: "copy paste test E",
+    });
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
@@ -151,7 +183,11 @@ async function test_copying_last_from_prev_all_from_next(page: Page): Promise<vo
 }
 
 async function test_copying_all_from_prev_first_from_next(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test A", "copy paste test C");
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test A",
+        end_message: "copy paste test C",
+    });
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
@@ -166,7 +202,11 @@ async function test_copying_all_from_prev_first_from_next(page: Page): Promise<v
 }
 
 async function test_copying_messages_from_several_topics(page: Page): Promise<void> {
-    const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test F");
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test B",
+        end_message: "copy paste test F",
+    });
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
@@ -230,17 +270,17 @@ async function test_timestamp_clipboard_has_datetime(page: Page): Promise<void> 
 async function test_multiple_message_selection_with_partially_selected_bookend_messages(
     page: Page,
 ): Promise<void> {
-    const actual_copied_lines = await copy_messages(
+    const actual_copied_lines = await copy_messages({
         page,
-        "copy paste test B",
-        "copy paste test F",
-        {
+        start_message: "copy paste test B",
+        end_message: "copy paste test F",
+        partial_selection_config: {
             select_start_message_partially: true,
             select_end_message_partially: true,
             start_text_node_offset: 5,
             end_text_node_offset: 7,
         },
-    );
+    });
     const expected_copied_lines = [
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
