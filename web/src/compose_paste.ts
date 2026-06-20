@@ -9,8 +9,10 @@ import * as compose_banner from "./compose_banner.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 const MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT = 2000;
@@ -246,6 +248,8 @@ function get_code_block_language(
     return language;
 }
 
+export const MENTION_SELECTOR = ".user-mention, .user-group-mention, .topic-mention";
+
 export function paste_handler_converter(
     paste_html: string,
     $textarea?: JQuery<HTMLTextAreaElement>,
@@ -264,7 +268,11 @@ export function paste_handler_converter(
     if (
         has_single_child_with_valid_text &&
         copied_html_fragment.firstElementChild !== null &&
-        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
+        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName) &&
+        // A mention anywhere in the selection (even wrapped in a <p> or
+        // nested inside .mention-content-wrapper) must reach the Turndown
+        // mention rule, so never take the plain-text fast path for it.
+        copied_html_fragment.querySelector(MENTION_SELECTOR) === null
     ) {
         // This will always return some text as it is already ensured
         // that such a text node exists in `has_single_textful_child_node`.
@@ -290,6 +298,61 @@ export function paste_handler_converter(
         codeBlockStyle: "fenced",
         headingStyle: "atx",
         br: "",
+    });
+    turndownService.addRule("mentions", {
+        filter(node) {
+            return node.nodeName === "SPAN" && node.matches(MENTION_SELECTOR);
+        },
+        replacement(_content, node) {
+            assert(node instanceof HTMLElement);
+            const is_silent = node.classList.contains("silent");
+            const is_group = node.classList.contains("user-group-mention");
+
+            // Group mentions use single-asterisk syntax (@*name* / @_*name*);
+            // user, topic, and wildcard mentions use double-asterisk.
+            const delimiter = is_group ? "*" : "**";
+            const prefix = (is_silent ? "@_" : "@") + delimiter;
+
+            const user_id = node.getAttribute("data-user-id");
+            if (
+                node.classList.contains("user-mention") &&
+                !node.classList.contains("channel-wildcard-mention") &&
+                user_id !== null
+            ) {
+                // Look up canonical full_name from the people store so the markdown
+                // doesn't depend on the display text (which can include suffixes
+                // like "(guest)" added by rendered_markdown.ts). Fall back to the
+                // id-only @**|id** syntax if the user can't be resolved locally;
+                // the backend will resolve it on send.
+                const user = people.maybe_get_user_by_id(Number(user_id), true);
+                if (user !== undefined) {
+                    return people.get_mention_syntax(
+                        user.full_name,
+                        Number(user_id),
+                        is_silent,
+                        true,
+                    );
+                }
+                return `${prefix}|${user_id}${delimiter}`;
+            }
+
+            const group_id = node.getAttribute("data-user-group-id");
+            if (is_group && group_id !== null) {
+                // System groups render with a display name (e.g. "Owners")
+                // that differs from the mention name (e.g. "role:owners"),
+                // so look up the canonical name instead of the display text.
+                const group = user_groups.maybe_get_user_group_from_id(Number(group_id));
+                if (group !== undefined) {
+                    return `${prefix}${group.name}${delimiter}`;
+                }
+            }
+
+            let name = (node.textContent ?? "").trim();
+            if (name.startsWith("@")) {
+                name = name.slice(1);
+            }
+            return `${prefix}${name}${delimiter}`;
+        },
     });
     turndownService.addRule("style", {
         filter: "style",
