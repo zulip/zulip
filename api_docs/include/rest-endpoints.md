@@ -123,7 +123,7 @@
 * [Regenerate your API key](/api/regenerate-api-key)
 * [Get a bot's API key](/api/get-bot-api-key)
 * [Regenerate a bot's API key](/api/regenerate-bot-api-key)
-* [Revoke an API key](/api/revoke-api-key)
+* [Regenerate an API key](/api/regenerate-single-api-key)
 
 ## Invitations
 

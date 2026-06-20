@@ -237,7 +237,7 @@ from zerver.views.user_settings import (
     delete_avatar_backend,
     json_change_settings,
     regenerate_api_key,
-    revoke_user_api_key,
+    regenerate_single_api_key,
     set_avatar_backend,
 )
 from zerver.views.user_topics import update_muted_topic, update_user_topic
@@ -613,7 +613,7 @@ v1_api_and_json_patterns = [
     rest_path("remove_client_device", POST=remove_device),
     # users/me/api_keys -> zerver.views.auth
     rest_path("users/me/api_keys", GET=get_user_api_keys),
-    rest_path("users/me/api_keys/<int:key_id>", DELETE=revoke_user_api_key),
+    rest_path("users/me/api_keys/<int:key_id>/regenerate", POST=regenerate_single_api_key),
 ]
 
 # These views serve pages (HTML). As such, their internationalization

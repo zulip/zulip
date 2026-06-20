@@ -8,11 +8,18 @@ from django.http import HttpRequest
 from django.test import override_settings
 
 from zerver.actions.user_settings import do_change_user_setting
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
 from zerver.lib.users import get_api_key
-from zerver.models import Draft, NamedUserGroup, ScheduledMessageNotificationEmail, UserProfile
+from zerver.models import (
+    Draft,
+    NamedUserGroup,
+    ScheduledMessageNotificationEmail,
+    UserAPIKey,
+    UserProfile,
+)
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_user_profile_by_api_key
 
@@ -764,13 +771,16 @@ class ChangeSettingsTest(ZulipTestCase):
 
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:
+        """Test the legacy endpoint that regenerates all API keys."""
         user = self.example_user("hamlet")
         email = user.email
 
         self.login_user(user)
+        old_api_key = get_api_key(user)
+
         # Ensure the old API key is in the authentication cache, so
         # that the below logic can test whether we have a cache-flushing bug.
-        self.assertEqual(get_user_profile_by_api_key(get_api_key(user)).email, email)
+        self.assertEqual(get_user_profile_by_api_key(old_api_key).email, email)
 
         # First verify this endpoint is not registered in the /json/... path
         # to prevent access with only a session.
@@ -782,17 +792,62 @@ class UserChangesTest(ZulipTestCase):
         result = self.client_post("/api/v1/users/me/api_key/regenerate")
         self.assertEqual(result.status_code, 401)
 
-        old_api_key = get_api_key(user)
         result = self.api_post(user, "/api/v1/users/me/api_key/regenerate")
         new_api_key = self.assert_json_success(result)["api_key"]
         self.assertNotEqual(new_api_key, old_api_key)
+
         user = self.example_user("hamlet")
         self.assertEqual(new_api_key, get_api_key(user))
 
+        # Old key should be flushed from cache.
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_profile_by_api_key(old_api_key)
 
         self.assertEqual(get_user_profile_by_api_key(get_api_key(user)).email, email)
+
+    def test_update_api_key_revokes_all_keys(self) -> None:
+        """Legacy regenerate endpoint should revoke all existing keys."""
+        user = self.example_user("hamlet")
+
+        # Create additional named keys alongside the legacy key.
+        key_phone = create_user_api_key(user, "ZulipMobile")
+        key_web = create_user_api_key(user, "ZulipWeb")
+
+        result = self.api_post(user, "/api/v1/users/me/api_key/regenerate")
+        self.assert_json_success(result)
+
+        # All pre-existing keys should now be revoked.
+        key_phone.refresh_from_db()
+        key_web.refresh_from_db()
+        self.assertTrue(key_phone.is_revoked)
+        self.assertTrue(key_web.is_revoked)
+
+        # Exactly one active key should remain.
+        active_keys = UserAPIKey.objects.filter(user=user, is_revoked=False)
+        self.assertEqual(active_keys.count(), 1)
+
+    def test_regenerate_single_api_key(self) -> None:
+        """Test regenerating a specific API key by ID."""
+        user = self.example_user("hamlet")
+        email = user.email
+        key_obj = create_user_api_key(user, "ZulipMobile")
+        old_api_key = key_obj.api_key
+
+        # Ensure old key is in cache.
+        self.assertEqual(get_user_profile_by_api_key(old_api_key).email, email)
+
+        result = self.api_post(user, f"/api/v1/users/me/api_keys/{key_obj.id}/regenerate")
+        new_api_key = self.assert_json_success(result)["api_key"]
+        self.assertNotEqual(new_api_key, old_api_key)
+
+        # Old key should be revoked and flushed from cache.
+        key_obj.refresh_from_db()
+        self.assertTrue(key_obj.is_revoked)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_profile_by_api_key(old_api_key)
+
+        # New key should be resolvable in cache.
+        self.assertEqual(get_user_profile_by_api_key(new_api_key).email, email)
 
 
 class UserDraftSettingsTests(ZulipTestCase):

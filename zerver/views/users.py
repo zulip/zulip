@@ -29,7 +29,7 @@ from zerver.actions.user_settings import (
     check_change_full_name,
     do_change_avatar_fields,
     do_change_user_delivery_email,
-    do_regenerate_api_key,
+    do_regenerate_all_api_keys,
 )
 from zerver.actions.users import (
     do_change_user_role,
@@ -609,7 +609,7 @@ def regenerate_bot_api_key(
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
-    new_api_key = do_regenerate_api_key(bot, user_profile)
+    new_api_key = do_regenerate_all_api_keys(bot, user_profile)
     json_result = dict(
         api_key=new_api_key,
     )

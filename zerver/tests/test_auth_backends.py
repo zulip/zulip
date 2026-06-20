@@ -9904,61 +9904,6 @@ class ListAPIKeysTest(ZulipTestCase):
         )
 
 
-class RevokeAPIKeysTest(ZulipTestCase):
-    @override
-    def setUp(self) -> None:
-        self.user_profile = self.example_user("hamlet")
-        self.email = self.user_profile.email
-
-        self.api_key_obj = create_user_api_key(
-            self.user_profile,
-            "Test API key",
-        )
-
-    def test_success(self) -> None:
-        result = self.api_delete(
-            self.user_profile,
-            f"/api/v1/users/me/api_keys/{self.api_key_obj.id}",
-        )
-
-        self.assert_json_success(result)
-
-        self.api_key_obj.refresh_from_db()
-        self.assertTrue(self.api_key_obj.is_revoked)
-
-    def test_non_existing_key(self) -> None:
-        deleted_id = self.api_key_obj.id
-        self.api_key_obj.delete()
-
-        result = self.api_delete(
-            self.user_profile,
-            f"/api/v1/users/me/api_keys/{deleted_id}",
-        )
-
-        self.assert_json_error(
-            result,
-            "There are no API keys with such ID in your account.",
-        )
-
-    def test_other_users_key(self) -> None:
-        othello = self.example_user("othello")
-
-        othello_api_key = create_user_api_key(
-            othello,
-            "Test API key",
-        )
-
-        result = self.api_delete(
-            self.user_profile,
-            f"/api/v1/users/me/api_keys/{othello_api_key.id}",
-        )
-
-        self.assert_json_error(
-            result,
-            "There are no API keys with such ID in your account.",
-        )
-
-
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
 del SocialAuthBase
 

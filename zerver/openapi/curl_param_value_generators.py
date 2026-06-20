@@ -525,14 +525,23 @@ def remove_bot_storage_bot_auth() -> dict[str, object]:
     return {}
 
 
-@openapi_param_value_generator(["/users/me/api_keys/{key_id}:delete"])
-def delete_user_api_key_owner_auth() -> dict[str, object]:
-    # This endpoint requires the user to have the API key they want to delete.
-    user = helpers.example_user("iago")
+@openapi_param_value_generator(["/users/me/api_keys/{key_id}/regenerate:post"])
+def regenerate_single_api_key_test_user() -> dict[str, object]:
+    test_user_email = "regenerate-single-api-key-test@zulip.com"
+    test_user = do_create_user(
+        test_user_email,
+        "secret",
+        get_realm("zulip"),
+        "Mr. Regenerate Single",
+        role=200,
+        acting_user=None,
+    )
+    test_user_api_key = get_api_key(test_user)
+    # Change authentication line to allow test_client to regenerate its own key.
+    AUTHENTICATION_LINE[0] = f"{test_user.email}:{test_user_api_key}"
 
-    revoke_test_key = UserAPIKey.objects.create(
-        user=user,
+    regenerate_test_key = UserAPIKey.objects.create(
+        user=test_user,
         description="Test API key",
     )
-
-    return {"key_id": revoke_test_key.id}
+    return {"key_id": regenerate_test_key.id}
