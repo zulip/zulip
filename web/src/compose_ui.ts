@@ -1808,3 +1808,24 @@ export function render_and_show_preview(
         });
     }
 }
+
+// Live-update the open compose preview with the draft the embed_links
+// worker re-rendered once link previews were fetched.  The content check
+// discards a stale update for a draft the user has since edited.
+export function update_compose_link_preview(content: string, rendered_content: string): void {
+    const $preview_container = $("#compose");
+    if (!$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+    if (content !== compose_state.message_content()) {
+        return;
+    }
+    apply_preview_render(
+        $preview_container,
+        $("#compose .markdown_preview_spinner"),
+        $("#compose .preview_content"),
+        content,
+        rendered_content,
+        content,
+    );
+}
