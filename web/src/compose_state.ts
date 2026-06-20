@@ -1,6 +1,11 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 
@@ -179,6 +184,165 @@ const untrimmed_message_content = get_or_set("textarea#compose-textarea", true, 
 function cursor_at_start_of_whitespace_in_compose(): boolean {
     const cursor_position = $("textarea#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
+}
+
+export function get_message_with_raw_reply_content(
+    $input_textarea: JQuery<HTMLTextAreaElement>,
+): string {
+    const content = $input_textarea.val()?.trimEnd();
+    assert(content !== undefined);
+    const $reply = $input_textarea
+        .closest("#message-content-container, .edit-content-container")
+        .find(".reply");
+    if ($reply.length === 0) {
+        return content;
+    }
+
+    const $user_mention = $reply.children(".user-mention");
+    const user_id = $user_mention.attr("data-user-id");
+    // The displayed username always carries a leading `@` in the reply UI,
+    // so serialize from data-full-name rather than stripping the text.
+    const full_name = $user_mention.attr("data-full-name") ?? "";
+    const is_silent = $user_mention.hasClass("silent");
+    const mention = is_silent ? `@_**${full_name}|${user_id}**` : `@**${full_name}|${user_id}**`;
+
+    const $referenced_message_link = $reply.children(".referenced-message-link");
+    const reply_content = $t(
+        {defaultMessage: "{username} [{content}]({link_to_message})"},
+        {
+            username: mention,
+            link_to_message: $referenced_message_link.attr("href"),
+            content: serialize_reply_link_content($referenced_message_link),
+        },
+    );
+
+    return reply_content + "\n\n" + content;
+}
+
+// Build the plain text that goes inside the reply snippet's `[...]`. Emoji
+// are converted to Unicode characters here because the markdown processor
+// doesn't reliably expand emoji shortcodes inside link text.
+export function serialize_reply_link_content($link: JQuery): string {
+    const link_el: unknown = $link[0];
+    if (link_el === undefined) {
+        return "";
+    }
+    if (link_el instanceof Element) {
+        return convert_link_descendants_to_markdown_text(link_el);
+    }
+    // Fallback for zjquery's FakeElement in unit tests, which isn't a real
+    // Element: use textContent without the emoji conversion.
+    if (
+        typeof link_el === "object" &&
+        link_el !== null &&
+        "textContent" in link_el &&
+        typeof link_el.textContent === "string"
+    ) {
+        return link_el.textContent;
+    }
+    return "";
+}
+
+function convert_link_descendants_to_markdown_text(root: Element): string {
+    let out = "";
+    for (const node of root.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            out += node.textContent ?? "";
+        } else if (node instanceof Element) {
+            if (node.classList.contains("emoji")) {
+                out += emoji_element_to_markdown_text(node);
+            } else {
+                out += convert_link_descendants_to_markdown_text(node);
+            }
+        }
+    }
+    return out;
+}
+
+function emoji_element_to_markdown_text(emoji_el: Element): string {
+    // Unicode emoji render as <span class="emoji emoji-XXXX"> (or
+    // `emoji-XXXX-YYYY` for multi-codepoint sequences); decode the
+    // class-encoded codepoints back to characters.
+    for (const cls of emoji_el.classList) {
+        const match = /^emoji-([\da-f-]+)$/.exec(cls);
+        if (!match) {
+            continue;
+        }
+        try {
+            return match[1]!
+                .split("-")
+                .map((p) => String.fromCodePoint(Number.parseInt(p, 16)))
+                .join("");
+        } catch {
+            break;
+        }
+    }
+    // Realm emoji <img> (or anything we can't decode): use the alt
+    // attribute (`:name:`). Unlike Unicode emoji, realm emoji shortcodes
+    // do survive markdown re-rendering.
+    const alt = emoji_el.getAttribute("alt");
+    if (alt !== null) {
+        return alt;
+    }
+    return emoji_el.textContent ?? "";
+}
+
+// Captures a leading reply line — `@**Name|id** [snippet](url)`, or the silent
+// `@_**…**` form — as (mention-prefix)(snippet text)(link target).
+const reply_line_with_parts_pattern = /^(@_?\*\*[^*]+\*\*\s+)!?\[([^\]]+)\]\(([^)]+)\)/;
+
+// Turn a quoted reply message's leading reply pointer into plain text. The
+// reply line's snippet is a markdown link to the referenced message; inside a
+// quote it would render as a stray blue link (the feed only styles it as a
+// dimmed reply line at the top level). De-linking keeps the snippet text and
+// the body intact while dropping the link. We only touch a genuine reply line,
+// identified by its link targeting a specific message (`/near/<id>`) — the same
+// signal the renderer uses — so ordinary text that opens with a mention and a
+// link is left alone.
+export function delink_leading_reply_snippet(content: string): string {
+    const match = reply_line_with_parts_pattern.exec(content);
+    if (match === null || !/\/near\/\d+/.test(match[3]!)) {
+        return content;
+    }
+    return match[1]! + match[2]! + content.slice(match[0].length);
+}
+
+export function render_reply_and_get_parsed_message(
+    message: string,
+    $container?: JQuery,
+    include_reply_action_buttons = true,
+): string {
+    const reply_pattern = /^@(_?)(?:\*\*([^*]+)\*\*)\s+!?\[([^\]]+)\]\(([^)]+)\)/;
+    let stream = stream_name();
+    let topic_name = topic();
+    if ($container?.hasClass("message-edit-reply-container")) {
+        stream = narrow_state.stream_name() ?? "";
+        topic_name = narrow_state.topic() ?? "";
+    }
+
+    const message_content_html = postprocess_content(
+        markdown.render(message).content,
+        stream,
+        topic_name,
+        include_reply_action_buttons,
+    );
+    const inertDocument = new DOMParser().parseFromString("", "text/html");
+    const template = inertDocument.createElement("template");
+    template.innerHTML = message_content_html;
+    const reply_html = template.content.querySelector(".reply");
+    if (reply_html) {
+        // The strip must not depend on $container: message-edit first calls
+        // this without one to get the stripped body for the textarea, and
+        // only later passes a container to populate the reply UI. Gating the
+        // strip on $container would leave the reply markdown in the textarea
+        // and duplicate it on every save.
+        if ($container) {
+            $container.html(reply_html.outerHTML);
+        }
+        return message.replace(reply_pattern, "").trimStart();
+    }
+
+    return message;
 }
 
 export function focus_in_formatting_buttons(): boolean {

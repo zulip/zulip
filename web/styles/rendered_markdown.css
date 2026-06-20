@@ -25,12 +25,16 @@
                ordinary bottom space by half. */
             margin-bottom: calc(var(--markdown-interelement-space-px) / 2);
         }
+
+        &:has(> .reply:first-child) {
+            margin: 0;
+        }
     }
 
     /* The spacing between two paragraphs is double the usual value.
        We coordinate this spacing matches so that it matches the
        spacing between paragraphs in two consecutive 1-line messages. */
-    & p + p {
+    & p:not(:has(> .reply:first-child)) + p {
         margin-top: var(--markdown-interelement-doubled-space-px);
     }
 
@@ -973,6 +977,229 @@
         font-size: 1.1363em;
         border: 1px solid var(--color-copy-button-square-bg-active);
         backdrop-filter: blur(20px);
+    }
+
+    .reply {
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns: auto auto auto 1fr auto auto;
+        grid-template-areas: "reply-icon topic-link user-mention message-link compose-reply-mention-toggle close-button";
+        /* The media thumbnail drives the row height, so without centering the
+           icon, topic link, and mention stretch full-height (the mention's
+           highlight becomes a tall band) with dead space around the text. */
+        align-items: center;
+        gap: 4px;
+        padding-bottom: 3px;
+        /* Reply needs to be slightly smaller than the actual content. */
+        font-size: 0.875em; /* 14px at 16px em */
+
+        /* To avoid double gap between reply icon and user mention */
+        &:has(.referenced-message-topic-link.hidden) {
+            grid-template-columns: auto auto 1fr auto auto;
+            grid-template-areas: "reply-icon user-mention message-link compose-reply-mention-toggle close-button";
+        }
+
+        /* With a media thumbnail, lay the line out as a 2-line card: thumbnail
+           spanning both rows, metadata on row 1, snippet on row 2. grid-template-areas
+           does the 2-D placement so the DOM stays flat, keeping serialization
+           and the mention toggle working off direct children. */
+        &:has(.reply-thumbnail-cell) {
+            grid-auto-flow: row;
+            /* Pin the metadata row (mention, toggle, close) and the snippet to
+               the top of the card instead of centering them against the tall
+               thumbnail. */
+            align-items: start;
+            grid-template: "thumb reply-icon topic-link user-mention . compose-reply-mention-toggle close-button" auto "thumb message-link message-link message-link message-link message-link message-link" auto "thumb . . . . . ." 1fr / auto auto auto auto 1fr auto auto;
+            /* A flexible third row absorbs the thumbnail's extra height so the
+               metadata + snippet rows stay content-sized and hug the top —
+               keeping the toggle and close buttons on the top line. */
+            gap: 0 6px;
+
+            /* Same-channel reply (the common case): no topic-link column.
+               Nesting under the thumbnail-card rule gives this enough
+               specificity to win over the single-row
+               `:has(.referenced-message-topic-link.hidden)` rule above,
+               whose two-class argument would otherwise outrank the card. */
+            &:has(.referenced-message-topic-link.hidden) {
+                grid-template: "thumb reply-icon user-mention . compose-reply-mention-toggle close-button" auto "thumb message-link message-link message-link message-link message-link" auto "thumb . . . . ." 1fr / auto auto auto 1fr auto auto;
+            }
+
+            .reply-line-thumbnail {
+                height: 4.5em;
+                max-width: 9em;
+            }
+        }
+
+        .reply-thumbnail-cell {
+            grid-area: thumb;
+            display: flex;
+            align-items: center;
+            /* The reply line is dimmed via its links' opacity, but the
+               thumbnail sits outside the snippet link, so dim it directly to
+               match. */
+            opacity: 0.5;
+        }
+
+        .reply-icon {
+            grid-area: reply-icon;
+        }
+
+        /* The reply-line mention — the normal pill, or the diff-spans wrapper in
+           an edit-history entry that toggled it. */
+        .reply-user-mention {
+            grid-area: user-mention;
+        }
+
+        .referenced-message-link {
+            grid-area: message-link;
+            /* Grid/flex items default to min-width:auto, which refuses to shrink
+               below the content width — so on narrow/mobile widths the snippet
+               hard-cuts instead of ellipsizing. Let it shrink so the
+               overflow/ellipsis above actually engages. */
+            min-width: 0;
+        }
+
+        .compose-reply-mention-toggle {
+            grid-area: compose-reply-mention-toggle;
+        }
+
+        .remove-reply-button {
+            grid-area: close-button;
+        }
+
+        .reply-icon,
+        .reply-action-button {
+            opacity: 0.5;
+            font-size: 1.25em; /* 20px at 16px em */
+        }
+
+        .reply-action-button {
+            padding: 0;
+        }
+
+        a {
+            opacity: 0.5;
+            max-width: fit-content;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
+            text-decoration-line: underline;
+            text-underline-offset: 0.25em;
+            text-decoration-color: light-dark(
+                hsl(0deg 0% 15% / 30%),
+                hsl(0deg 0% 100% / 30%)
+            );
+
+            &:hover {
+                color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
+                opacity: 0.75;
+            }
+
+            &:active {
+                color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
+                opacity: 0.85;
+            }
+
+            /* When the snippet link takes focus — e.g. after clicking a pill
+               inside it, which opens a popover and no longer navigates away to
+               clear the focus — keep the dimmed styling instead of falling
+               through to the default blue link `:focus` rule, and don't draw a
+               focus box for a mouse click (keyboard focus still shows one). */
+            &:focus {
+                color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
+            }
+
+            &:focus:not(:focus-visible) {
+                outline: none;
+            }
+        }
+
+        .referenced-message-topic-link {
+            max-width: 7.5em; /* 120px at 16px em */
+            grid-area: topic-link;
+            /* Let it shrink and ellipsize on narrow widths instead of being
+               hard-cut (grid items default to min-width:auto). */
+            min-width: 0;
+        }
+
+        /* The reply line's own mention (the author being replied to) always
+           starts with `@` so the layout doesn't shift when the mention toggle
+           is clicked. To still convey silent vs. non-silent visually, drop the
+           highlight background and dim the text for a silent mention. Scope this
+           to the reply-line mention only (`.reply-user-mention`); mentions that
+           appear inside the quoted snippet keep their normal pill styling. */
+        .reply-user-mention.silent {
+            background-color: transparent;
+            color: inherit;
+            opacity: 0.7;
+        }
+
+        /* The reply line's snippet links to the referenced message, so clicking
+           anywhere on it jumps there for context (compose disables that via
+           compose.css). All snippet content is inert so the click always reaches
+           the link — including mention/channel pills, which are part of the
+           preview here rather than their own popover triggers. */
+        a.referenced-message-link {
+            cursor: pointer;
+
+            * {
+                pointer-events: none;
+            }
+
+            /* The snippet wraps its content in this <a>, so the generic
+               `.rendered_markdown a code` rule paints inline code link-blue,
+               and the base code rule's `pre-wrap` lets long code break the
+               one-line snippet across multiple lines. Render it as ordinary
+               inline code that stays on the snippet's single ellipsized line. */
+            code {
+                color: var(--color-markdown-code-text);
+                white-space: inherit;
+            }
+        }
+
+        /* Render emoji inline at the line height of the reply text, not the
+           surrounding message text. Without this, realm emoji images can
+           stretch the reply line. */
+        .emoji {
+            height: 1em;
+            width: 1em;
+            vertical-align: text-bottom;
+        }
+
+        /* Thumbnail shown beside the reply snippet for media-only messages,
+           so media-heavy threads stay distinguishable beyond a (frequently
+           default) filename or a bare "Video" label. It always sits in the
+           card cell; its size lives in the card rule above. width:auto keeps
+           the aspect ratio, and the card's max-width caps pathological
+           ultra-wide images via object-fit cropping. */
+        .reply-line-thumbnail {
+            width: auto;
+            object-fit: cover;
+            border-radius: 3px;
+        }
+
+        /* A distinct chip naming the snippet's type ("Image", "Code block",
+           …), so the type reads as a descriptor rather than part of the
+           quoted content, staying distinguishable even within the dimmed
+           snippet. */
+        .reply-type-badge {
+            display: inline-block;
+            font-size: 0.72em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            vertical-align: middle;
+            padding: 0 0.45em;
+            margin-right: 0.15em;
+            border-radius: 3px;
+            background-color: light-dark(
+                hsl(0deg 0% 0% / 8%),
+                hsl(0deg 0% 100% / 14%)
+            );
+            color: light-dark(hsl(0deg 0% 30%), hsl(0deg 0% 80%));
+            text-decoration: none;
+        }
     }
 }
 

@@ -499,13 +499,13 @@ test_while_not_editing_text("misc", ({override}) => {
 
     // TODO: Similar check for being in the subs page
 
-    assert_mapping("@", compose_reply, "reply_with_mention");
+    assert_mapping("@", compose_reply, "quote_messages");
     assert_mapping("+", reactions, "toggle_emoji_reaction");
     // Without an existing emoji reaction, this next one will only
     // call get_message_reactions, so we verify just that.
     assert_mapping("=", reactions, "get_message_reactions");
     assert_mapping("-", condense, "toggle_collapse");
-    assert_mapping("r", compose_reply, "respond_to_message");
+    assert_mapping("r", compose_reply, "quote_messages");
     assert_mapping("R", compose_reply, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
     assert_mapping("J", navigate, "page_down", true);
@@ -580,6 +580,30 @@ test_while_not_editing_text("lightbox closed w/other overlay open", ({override})
 test_while_not_editing_text("v w/no overlays", ({override}) => {
     override(overlays, "any_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
+});
+
+test_while_not_editing_text("r and @ propagate force_silent_mention", () => {
+    // `r` opens reply with silent mention; `@` opens reply with active
+    // mention. Both must pass reply_to_message:true and the right
+    // force_silent_mention so the toggle starts in the expected state.
+    stubbing(compose_reply, "quote_messages", (stub) => {
+        assert.ok(process("r"));
+        assert.equal(stub.num_calls, 1);
+        assert.deepEqual(stub.last_call_args[0], {
+            trigger: "hotkey",
+            reply_to_message: true,
+            force_silent_mention: true,
+        });
+    });
+    stubbing(compose_reply, "quote_messages", (stub) => {
+        assert.ok(process("@", true));
+        assert.equal(stub.num_calls, 1);
+        assert.deepEqual(stub.last_call_args[0], {
+            trigger: "hotkey",
+            reply_to_message: true,
+            force_silent_mention: false,
+        });
+    });
 });
 
 run_test("emoji picker", ({override}) => {

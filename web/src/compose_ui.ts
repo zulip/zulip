@@ -1597,6 +1597,7 @@ export function enter_preview_mode($container: JQuery): void {
     $container.find(".markdown_preview").hide();
     $container.find(".undo_markdown_preview").show();
     $container.find(".undo_markdown_preview").trigger("focus");
+    $container.find(".reply-container").addClass("reply-preview");
 }
 
 export function exit_preview_mode($container: JQuery): void {
@@ -1611,6 +1612,7 @@ export function exit_preview_mode($container: JQuery): void {
     $container.find(".preview_message_area").hide();
     $container.find(".preview_content").empty();
     $container.find(".markdown_preview").show();
+    $container.find(".reply-container").removeClass("reply-preview");
 }
 
 export function render_and_show_preview(

@@ -606,6 +606,18 @@ export function initialize(): void {
         sidebar_ui.hide_userlist_sidebar();
     });
 
+    $("body").on("click", ".compose-reply-mention-toggle", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        compose_reply.toggle_silent_mention($(this));
+    });
+
+    $("body").on("click", ".remove-reply-button", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).closest(".reply").remove();
+    });
+
     // Doesn't show tooltip on touch devices.
     function do_render_buddy_list_tooltip(
         $elem: JQuery,
