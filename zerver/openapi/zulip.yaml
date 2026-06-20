@@ -3524,6 +3524,48 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to a user when the server finishes fetching the
+                                [link previews](/help/image-video-and-website-previews) for a
+                                message draft that the user is previewing in the compose box.
+
+                                Because fetching link previews can be slow, the compose preview
+                                is first shown without them; this event then delivers the draft
+                                re-rendered with the fetched previews so the client can
+                                live-update the open preview. The event is sent only to the
+                                user composing the draft.
+
+                                Clients should apply `rendered_content` only if `content` still
+                                matches the current draft, since the user may have edited the
+                                draft while the previews were being fetched.
+
+                                **Changes**: New in Zulip 13.0 (feature level ZF-4c56a7).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - compose_link_preview
+                                content:
+                                  type: string
+                                  description: |
+                                    The raw Markdown content of the draft that was re-rendered.
+                                rendered_content:
+                                  type: string
+                                  description: |
+                                    The draft re-rendered as HTML with the fetched link
+                                    previews included.
+                              example:
+                                {
+                                  "type": "compose_link_preview",
+                                  "content": "http://example.com/",
+                                  "rendered_content": '<p><a href="http://example.com/">http://example.com/</a></p>',
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to a user when [message flags][message-flags] are added
                                 to messages.
 
@@ -9929,6 +9971,19 @@ paths:
               properties:
                 content:
                   $ref: "#/components/schemas/RequiredContent"
+                fetch_link_previews:
+                  type: boolean
+                  default: false
+                  example: true
+                  description: |
+                    Whether the server should asynchronously fetch
+                    [link previews](/help/image-video-and-website-previews)
+                    for the rendered draft and deliver them to the requesting
+                    user via a `compose_link_preview` event once ready. Used by
+                    the compose box's message preview to live-update with
+                    link-preview cards.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-4c56a7).
               required:
                 - content
       responses:

@@ -25,7 +25,14 @@ from zerver.actions.user_topics import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
-from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
+from zerver.lib.cache import (
+    cache_get,
+    cache_set,
+    cache_with_key,
+    preview_url_cache_key,
+    preview_url_pending_cache_key,
+    user_profile_delivery_email_cache_key,
+)
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
@@ -124,7 +131,7 @@ from zerver.models.streams import (
     get_stream_by_id_in_realm,
 )
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
-from zerver.tornado.django_api import send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -191,6 +198,94 @@ def render_incoming_message(
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
     return rendering_result
+
+
+def render_message_for_compose_preview(
+    sender: UserProfile,
+    content: str,
+    *,
+    url_embed_data: dict[str, UrlEmbedData | None] | None = None,
+) -> MessageRenderingResult:
+    """Render an unsaved message stub for the compose preview.
+
+    Renders through render_incoming_message -- the same entry point the
+    send path uses -- so the preview and the eventual message stay
+    consistent. A draft simply has no saved message to look up, so we
+    build a stub and skip the persisted-message handling; only the
+    delivery (a transient event to the composer) is compose-specific.
+    """
+    message = Message()
+    message.sender = sender
+    message.realm = sender.realm
+    message.content = content
+    return render_incoming_message(message, content, sender.realm, url_embed_data=url_embed_data)
+
+
+# Long enough to bridge a typical embed fetch (a few network round
+# trips), short enough that a fetch which never populated the cache is
+# retried by a later preview rather than blocked indefinitely.
+COMPOSE_PREVIEW_FETCH_PENDING_TIMEOUT_SECONDS = 60
+
+
+def get_compose_preview_embeds_and_enqueue_uncached(
+    sender: UserProfile,
+    content: str,
+    links_for_preview: set[str],
+) -> dict[str, UrlEmbedData | None]:
+    """Return cached embed data for the previewable links (used for the
+    initial synchronous render) and, if any link is not yet cached, enqueue
+    an embed_links job so the worker can fetch the rest and live-update the
+    preview via a compose_link_preview event.
+
+    The enqueued job lists *every* previewable link, not just the uncached
+    ones. The worker re-renders the whole draft and the client replaces the
+    preview with that new HTML, so the re-render has to include the
+    already-cached links, or their cards would disappear from the preview.
+    Re-including a cached link is cheap -- just a cache read, since
+    get_link_embed_data is cache-backed.
+
+    A URL whose fetch is already in flight is marked pending in the cache
+    so that re-renders while composing don't pile up duplicate jobs for
+    it; the marker expires on its own, letting a later preview retry a
+    fetch that failed to populate the cache.
+    """
+    url_embed_data: dict[str, UrlEmbedData | None] = {}
+    uncached_urls: list[str] = []
+    for url in links_for_preview:
+        cache_entry = cache_get(preview_url_cache_key(url))
+        if cache_entry is not None:
+            # cache_with_key stores values in a singleton tuple.
+            url_embed_data[url] = cache_entry[0]
+        elif cache_get(preview_url_pending_cache_key(url)) is None:
+            uncached_urls.append(url)
+
+    if uncached_urls:
+        for url in uncached_urls:
+            cache_set(
+                preview_url_pending_cache_key(url),
+                True,
+                timeout=COMPOSE_PREVIEW_FETCH_PENDING_TIMEOUT_SECONDS,
+            )
+        queue_event_on_commit(
+            "embed_links",
+            {
+                "compose_preview": True,
+                "user_id": sender.id,
+                "content": content,
+                "urls": list(links_for_preview),
+            },
+        )
+
+    return url_embed_data
+
+
+def do_send_compose_link_preview(sender: UserProfile, content: str, rendered_content: str) -> None:
+    event = {
+        "type": "compose_link_preview",
+        "content": content,
+        "rendered_content": rendered_content,
+    }
+    send_event_rollback_unsafe(sender.realm, event, [sender.id])
 
 
 @dataclass
