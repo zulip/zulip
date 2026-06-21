@@ -24,7 +24,12 @@ class Migration(migrations.Migration):
             model_name="realmuserdefault",
             name="emojiset",
             field=models.CharField(
-                choices=[("google", "Google"), ("twitter", "Twitter"), ("text", "Plain text")],
+                choices=[
+                    ("google", "Google"),
+                    ("twitter", "Twitter"),
+                    ("native", "Native"),
+                    ("text", "Plain text"),
+                ],
                 default="google",
                 max_length=20,
             ),
@@ -33,7 +38,12 @@ class Migration(migrations.Migration):
             model_name="userprofile",
             name="emojiset",
             field=models.CharField(
-                choices=[("google", "Google"), ("twitter", "Twitter"), ("text", "Plain text")],
+                choices=[
+                    ("google", "Google"),
+                    ("twitter", "Twitter"),
+                    ("native", "Native"),
+                    ("text", "Plain text"),
+                ],
                 default="google",
                 max_length=20,
             ),
