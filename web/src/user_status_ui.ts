@@ -10,6 +10,7 @@ import type {EmojiRenderingDetails} from "./emoji.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as people from "./people.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 
@@ -141,18 +142,7 @@ function rebuild_status_emoji_selector_ui(selected_emoji_info: Partial<UserStatu
     $("#set-user-status-modal .status-emoji-wrapper").html(rendered_status_emoji_selector);
 }
 
-function user_status_post_render(): void {
-    const user_id = people.my_current_user_id();
-    const old_status_text = user_status.get_status_text(user_id) ?? "";
-    const old_emoji_info = user_status.get_status_emoji(user_id) ?? {};
-    set_selected_emoji_info(old_emoji_info);
-    const $field = input_field();
-    $field.val(old_status_text);
-    toggle_clear_status_button();
-
-    const $button = submit_button();
-    $button.prop("disabled", true);
-
+function bind_default_status_options_click_handler(): void {
     $("#set-user-status-modal .user-status-value").on("click", (event) => {
         event.stopPropagation();
         const user_status_value = $(event.currentTarget).text().trim();
@@ -166,6 +156,61 @@ function user_status_post_render(): void {
         toggle_clear_status_button();
         update_button();
     });
+}
+
+function refresh_selected_emoji_info(): void {
+    if (
+        selected_emoji_info.emoji_name === undefined ||
+        selected_emoji_info.emoji_code === undefined ||
+        selected_emoji_info.reaction_type === undefined
+    ) {
+        return;
+    }
+    selected_emoji_info = {
+        emoji_alt_code: user_settings.emojiset === "text",
+        ...emoji.get_emoji_details_for_rendering({
+            emoji_name: selected_emoji_info.emoji_name,
+            emoji_code: selected_emoji_info.emoji_code,
+            reaction_type: selected_emoji_info.reaction_type,
+        }),
+    };
+}
+
+export function rerender_status_emoji_ui(): void {
+    // Recompute the emojiset-dependent details for the default status
+    // presets and the selected emoji, then re-render the "Set status"
+    // modal if it is open.
+    initialize();
+    if (!user_status_picker_open()) {
+        return;
+    }
+    refresh_selected_emoji_info();
+    rebuild_status_emoji_selector_ui(selected_emoji_info);
+    const $rerendered_overlay = $(
+        render_set_status_overlay({
+            default_status_messages_and_emoji_info,
+            selected_emoji_info: {},
+        }),
+    );
+    $("#set-user-status-modal ul.user-status-options").replaceWith(
+        $rerendered_overlay.filter("ul.user-status-options"),
+    );
+    bind_default_status_options_click_handler();
+}
+
+function user_status_post_render(): void {
+    const user_id = people.my_current_user_id();
+    const old_status_text = user_status.get_status_text(user_id) ?? "";
+    const old_emoji_info = user_status.get_status_emoji(user_id) ?? {};
+    set_selected_emoji_info(old_emoji_info);
+    const $field = input_field();
+    $field.val(old_status_text);
+    toggle_clear_status_button();
+
+    const $button = submit_button();
+    $button.prop("disabled", true);
+
+    bind_default_status_options_click_handler();
 
     $("#set-user-status-modal").on("keydown", "input.user-status, .user-status-value", (event) => {
         if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
@@ -206,35 +251,42 @@ function navigate_status_options($focused_element: JQuery, key: "ArrowUp" | "Arr
     $navigable_elements.eq(next_index).trigger("focus");
 }
 
+// Looks up the rendering details for a default status emoji, including
+// the native Unicode glyph when the "native" emojiset is active.
+function get_default_status_emoji(emoji_name: string): EmojiRenderingDetails {
+    const details = emoji.get_emoji_details_by_name(emoji_name);
+    return {...details, ...emoji.get_native_emoji_info(details)};
+}
+
 export function initialize(): void {
     default_status_messages_and_emoji_info = [
         {
             status_text: $t({defaultMessage: "Busy"}),
-            emoji: emoji.get_emoji_details_by_name("working_on_it"),
+            emoji: get_default_status_emoji("working_on_it"),
         },
         {
             status_text: $t({defaultMessage: "In a meeting"}),
-            emoji: emoji.get_emoji_details_by_name("calendar"),
+            emoji: get_default_status_emoji("calendar"),
         },
         {
             status_text: $t({defaultMessage: "Commuting"}),
-            emoji: emoji.get_emoji_details_by_name("bus"),
+            emoji: get_default_status_emoji("bus"),
         },
         {
             status_text: $t({defaultMessage: "Out sick"}),
-            emoji: emoji.get_emoji_details_by_name("hurt"),
+            emoji: get_default_status_emoji("hurt"),
         },
         {
             status_text: $t({defaultMessage: "Vacationing"}),
-            emoji: emoji.get_emoji_details_by_name("palm_tree"),
+            emoji: get_default_status_emoji("palm_tree"),
         },
         {
             status_text: $t({defaultMessage: "Working remotely"}),
-            emoji: emoji.get_emoji_details_by_name("house"),
+            emoji: get_default_status_emoji("house"),
         },
         {
             status_text: $t({defaultMessage: "At the office"}),
-            emoji: emoji.get_emoji_details_by_name("office"),
+            emoji: get_default_status_emoji("office"),
         },
     ];
 }

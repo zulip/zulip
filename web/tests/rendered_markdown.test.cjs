@@ -26,6 +26,11 @@ class Clipboard {
 
 mock_cjs("clipboard", Clipboard);
 
+let is_emoji_supported_result = false;
+mock_esm("is-emoji-supported", {
+    isEmojiSupported: () => is_emoji_supported_result,
+});
+
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
 
@@ -136,6 +141,7 @@ const get_content_element = () => {
     $content.set_find_results("time", []);
     $content.set_find_results("span.timestamp-error", []);
     $content.set_find_results(".emoji", []);
+    $content.set_find_results("span.emoji", []);
     $content.set_find_results("div.spoiler-header", []);
     $content.set_find_results("div.codehilite", []);
     $content.set_find_results(".message_inline_video video", []);
@@ -775,6 +781,57 @@ run_test("emoji", ({override}) => {
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");
+});
+
+run_test("emoji-native", ({override}) => {
+    // With the "native" emojiset and a supported emoji, the span gains
+    // "emoji-native" and its sprite-hidden text becomes the glyph.
+    const $content = get_content_element();
+    const $emoji = $.create("native-supported");
+    $emoji.attr("class", "emoji emoji-1f604");
+    $emoji.text(":smile:");
+    $content.set_find_results("span.emoji", $emoji);
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = true;
+
+    rm.update_elements($content);
+
+    assert.ok($emoji.hasClass("emoji-native"));
+    assert.equal($emoji.text(), "\u{1F604}");
+});
+
+run_test("emoji-native-unsupported", ({override}) => {
+    // When isEmojiSupported returns false, the span is left unchanged
+    // (keeping the Google sprite).
+    const $content = get_content_element();
+    const $emoji = $.create("native-unsupported");
+    $emoji.attr("class", "emoji emoji-1f604");
+    $emoji.text(":smile:");
+    $content.set_find_results("span.emoji", $emoji);
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = false;
+
+    rm.update_elements($content);
+
+    assert.ok(!$emoji.hasClass("emoji-native"));
+    assert.equal($emoji.text(), ":smile:");
+});
+
+run_test("emoji-native-not-active-for-other-emojisets", ({override}) => {
+    // With emojiset="google", span.emoji elements are not modified by
+    // the native emoji logic.
+    const $content = get_content_element();
+    const $emoji = $.create("google-emojiset");
+    $emoji.attr("class", "emoji emoji-1f604");
+    $emoji.text(":smile:");
+    $content.set_find_results("span.emoji", $emoji);
+    override(user_settings, "emojiset", "google");
+    is_emoji_supported_result = true;
+
+    rm.update_elements($content);
+
+    assert.ok(!$emoji.hasClass("emoji-native"));
+    assert.equal($emoji.text(), ":smile:");
 });
 
 run_test("spoiler-header", () => {
