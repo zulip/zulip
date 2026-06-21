@@ -2228,11 +2228,30 @@ body:not(.spectator-view) {
         }
     }
 
-    &.folder_id-dropdown-list-container {
-        width: calc(var(--modal-input-width) * 0.75);
+    &.saved_snippets-dropdown-list-container {
+        width: fit-content;
+        max-width: 100vw; /* Prevent overflow of viewport */
+
+        .dropdown-list-wrapper {
+            min-width: fit-content;
+        }
+    }
+
+    &.folder_id-dropdown-list-container,
+    &.new_channel_folder_id-dropdown-list-container {
+        width: fit-content;
+        max-width: calc(var(--modal-input-width) * 0.75);
+
+        .dropdown-list-wrapper {
+            min-width: fit-content;
+        }
+
+        .dropdown-list-item-common-styles {
+            padding-left: 14px;
+        }
 
         /* Alignment adjustments on channel-folder selector. */
-        .dropdown-list-item-name:has(.dropdown-list-buttons) {
+        .dropdown-list-item-name {
             /* We hold the first row height to 28px at 16px/1em
                for the sake of the buttons plus their padding. */
             grid-template-rows: 1.75em minmax(0, auto);
@@ -2241,7 +2260,8 @@ body:not(.spectator-view) {
                buttons. */
             align-items: start;
 
-            .dropdown-list-text-neutral {
+            .dropdown-list-text-neutral,
+            .dropdown-list-text-selected {
                 /* 0.2em is an eyeballed value that keeps the buttons
                    well aligned with the first/only line of text. */
                 padding-top: 0.2em;
