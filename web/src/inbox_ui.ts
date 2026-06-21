@@ -2494,20 +2494,28 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         "click",
         "#inbox-list .unread-count-focus-outline",
         function (this: HTMLElement, e) {
-            e.stopPropagation();
-            e.preventDefault();
             const $badge = $(this).find(".unread_count");
             if ($badge.length === 0) {
                 return;
             }
+            // This handler marks conversations as read for a DM conversation
+            // or a channel. If the badge was for neither of these (e.g. a channel
+            // folder or the full DM folder), we don't want to do anything here.
+            // Let the click fall through to the header's collapse/expand handler.
+            const user_ids_string = $badge.attr("data-user-ids-string");
+            const stream_id_string = $badge.attr("data-stream-id");
+            if (user_ids_string === undefined && stream_id_string === undefined) {
+                return;
+            }
+            e.stopPropagation();
+            e.preventDefault();
             col_focus = COLUMNS.UNREAD_COUNT;
             focus_clicked_list_element($(this));
-            const user_ids_string = $badge.attr("data-user-ids-string");
-            if (user_ids_string) {
+            if (user_ids_string !== undefined) {
                 unread_ops.mark_pm_as_read(user_ids_string);
                 return;
             }
-            const stream_id = Number($badge.attr("data-stream-id"));
+            const stream_id = Number(stream_id_string);
             const topic = $badge.attr("data-topic-name");
             if (topic !== undefined) {
                 unread_ops.mark_topic_as_read(stream_id, topic);
