@@ -1153,6 +1153,20 @@ test("compare_by_pms", () => {
 
     assert.equal(th.compare_by_pms(a_user, b_user_1), 1);
     assert.equal(th.compare_by_pms(b_user_1, a_user), -1);
+
+    // Deactivated users rank below active users regardless of PM count
+    const deactivated_user = make_user({
+        email: "deactivated@zulip.net",
+        full_name: "Deactivated User",
+        user_id: 999,
+    });
+    people.add_active_user(deactivated_user);
+    people.deactivate(deactivated_user);
+    people.set_recipient_count_for_testing(deactivated_user.user_id, 100);
+
+    assert.equal(th.compare_by_pms(a_user, deactivated_user), -1);
+    assert.equal(th.compare_by_pms(deactivated_user, a_user), 1);
+    assert.equal(th.compare_by_pms(deactivated_user, deactivated_user), 0);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {

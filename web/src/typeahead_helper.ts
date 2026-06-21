@@ -260,6 +260,15 @@ export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string):
 }
 
 export function compare_by_pms(user_a: User, user_b: User): number {
+    const a_is_active = people.is_active_user(user_a.user_id);
+    const b_is_active = people.is_active_user(user_b.user_id);
+
+    if (a_is_active && !b_is_active) {
+        return -1;
+    } else if (!a_is_active && b_is_active) {
+        return 1;
+    }
+
     const count_a = people.get_recipient_count(user_a);
     const count_b = people.get_recipient_count(user_b);
 
