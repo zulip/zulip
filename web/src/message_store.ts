@@ -161,6 +161,7 @@ export type MessageCleanReaction = {
     label: string;
     local_id: string;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
+    unicode_emoji?: string;
     user_ids: number[];
     vote_text: string;
 };
@@ -418,6 +419,17 @@ export function update_status_emoji_info(
         const message = message_data.message;
         if (message.sender_id && message.sender_id === user_id) {
             message.status_emoji_info = new_info;
+        }
+    }
+}
+
+export function update_all_status_emoji_info(
+    get_status_emoji: (user_id: number) => UserStatusEmojiInfo | undefined,
+): void {
+    for (const message_data of stored_messages.values()) {
+        const message = message_data.message;
+        if (message.sender_id) {
+            message.status_emoji_info = get_status_emoji(message.sender_id);
         }
     }
 }

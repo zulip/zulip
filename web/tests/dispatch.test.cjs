@@ -52,7 +52,12 @@ const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
-const pm_list = mock_esm("../src/pm_list");
+const pm_list = mock_esm("../src/pm_list", {
+    update_private_messages() {},
+});
+mock_esm("../src/user_status_ui", {
+    rerender_status_emoji_ui() {},
+});
 const reactions = mock_esm("../src/reactions", {
     generate_clean_reactions() {},
 });

@@ -596,7 +596,20 @@ export function update_clean_reactions(message: Message): void {
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     for (const clean_reaction of message.clean_reactions.values()) {
         update_user_fields(clean_reaction, should_display_reactors);
+        update_emoji_fields(clean_reaction);
     }
+}
+
+function update_emoji_fields(clean_reaction_object: MessageCleanReaction): void {
+    const emoji_details = emoji.get_emoji_details_for_rendering({
+        emoji_name: clean_reaction_object.emoji_name,
+        emoji_code: clean_reaction_object.emoji_code,
+        reaction_type: clean_reaction_object.reaction_type,
+    });
+    delete clean_reaction_object.unicode_emoji;
+    Object.assign(clean_reaction_object, emoji_details, {
+        emoji_alt_code: user_settings.emojiset === "text",
+    });
 }
 
 function make_clean_reaction({

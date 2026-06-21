@@ -55,6 +55,11 @@ const message_lists = mock_esm("../src/message_lists", {
     },
 });
 
+let is_emoji_supported_result = true;
+mock_esm("is-emoji-supported", {
+    isEmojiSupported: () => is_emoji_supported_result,
+});
+
 set_global("document", "document-stub");
 
 const emoji = zrequire("emoji");
@@ -1507,4 +1512,34 @@ test("process_reaction_click bad local id", ({override}) => {
     override(message_store, "get", () => stub_message);
     blueslip.expect("error", "Data integrity problem for reaction");
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
+});
+
+test("rerender reaction emoji on emojiset change", ({override}) => {
+    settings_data.user_can_access_all_other_users = () => true;
+    const message = sample_message_with_clean_reactions();
+    const smile = () =>
+        reactions
+            .get_message_reactions(message)
+            .find((reaction) => reaction.local_id === "unicode_emoji,1f604");
+
+    assert.equal(smile().unicode_emoji, undefined);
+    assert.equal(smile().emoji_alt_code, false);
+
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = true;
+    assert.equal(smile().unicode_emoji, "\u{1F604}");
+
+    is_emoji_supported_result = false;
+    assert.equal(smile().unicode_emoji, undefined);
+
+    override(user_settings, "emojiset", "text");
+    assert.equal(smile().unicode_emoji, undefined);
+    assert.equal(smile().emoji_alt_code, true);
+
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = true;
+    assert.equal(smile().unicode_emoji, "\u{1F604}");
+    override(user_settings, "emojiset", "google");
+    assert.equal(smile().unicode_emoji, undefined);
+    assert.equal(smile().emoji_alt_code, false);
 });

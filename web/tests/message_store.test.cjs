@@ -405,6 +405,17 @@ test("update_property", () => {
     assert.equal(message1.display_recipient, "Prod");
     assert.equal(message2.stream_id, denmark.stream_id);
     assert.equal(message2.display_recipient, denmark.name);
+
+    const alice_status_emoji = {
+        emoji_name: "smile",
+        emoji_code: "1f604",
+        reaction_type: "unicode_emoji",
+    };
+    message_store.update_all_status_emoji_info((user_id) =>
+        user_id === alice.user_id ? alice_status_emoji : undefined,
+    );
+    assert.deepEqual(message1.status_emoji_info, alice_status_emoji);
+    assert.equal(message2.status_emoji_info, undefined);
 });
 
 test("remove", () => {
