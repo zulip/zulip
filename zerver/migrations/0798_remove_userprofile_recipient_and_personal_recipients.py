@@ -13,7 +13,8 @@ def delete_personal_recipient_data(
     """Delete Subscription rows and then Recipient rows for personal recipients.
 
     Done in batches to avoid long-running transactions on large
-    deployments.
+    deployments. Both loops are idempotent: re-running simply continues
+    deleting whatever rows remain.
     """
     with connection.cursor() as cursor:
         while True:
@@ -60,9 +61,24 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="userprofile",
-            name="recipient",
+        # Drop the column via DROP COLUMN IF EXISTS to make the migration idempotent
+        # and easier to re-run if needed. This is sometimes necessary for self-hosters
+        # that improperly ran user_profile.delete() in the past and thus experience
+        # DELETE FROM zerver_recipient crashes later in the migration. In such cases,
+        # some db surgery and re-run of the migration is needed.
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    "ALTER TABLE zerver_userprofile DROP COLUMN IF EXISTS recipient_id",
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+            ],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name="userprofile",
+                    name="recipient",
+                ),
+            ],
         ),
         migrations.RunPython(
             delete_personal_recipient_data,
