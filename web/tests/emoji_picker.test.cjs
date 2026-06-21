@@ -6,9 +6,16 @@ const _ = require("lodash");
 
 const {zrequire, set_global, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
+
+let is_emoji_supported_result = true;
+mock_esm("is-emoji-supported", {
+    isEmojiSupported: () => is_emoji_supported_result,
+});
 
 const emoji = zrequire("emoji");
 const emoji_frequency = zrequire("emoji_frequency");
+const {initialize_user_settings} = zrequire("user_settings");
 
 const map = new Map();
 const emoji_frequency_data = mock_esm("../src/emoji_frequency_data", {
@@ -27,6 +34,9 @@ const emoji_picker = zrequire("emoji_picker");
 const typeahead = zrequire("typeahead");
 
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 set_global("document", "document-stub");
 
@@ -141,4 +151,35 @@ run_test("is_emoji_present_in_text", () => {
         emoji_picker.is_emoji_present_in_text("emojis with text no space😎🌡🎧", headphones_emoji),
         true,
     );
+});
+
+run_test("update_emoji_showcase native emojiset", ({override}) => {
+    // The showcase (the large preview at the bottom of the emoji picker)
+    // must render the platform glyph under the "native" emojiset, not a
+    // Google sprite. "smile" is U+1F604.
+    const $focused_emoji = {attr: () => "smile"};
+    const get_showcase_html = () => {
+        emoji_picker.update_emoji_showcase($focused_emoji);
+        return $(".emoji-showcase-container").html();
+    };
+
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = true;
+    let html = get_showcase_html();
+    assert.ok(html.includes("emoji-native"));
+    assert.ok(html.includes("\u{1F604}"));
+    assert.ok(!html.includes("emoji-1f604"));
+
+    // Sprite emojisets, and native emoji the platform can't render, keep
+    // the sprite preview.
+    override(user_settings, "emojiset", "google");
+    html = get_showcase_html();
+    assert.ok(html.includes("emoji-1f604"));
+    assert.ok(!html.includes("emoji-native"));
+
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = false;
+    html = get_showcase_html();
+    assert.ok(html.includes("emoji-1f604"));
+    assert.ok(!html.includes("emoji-native"));
 });

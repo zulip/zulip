@@ -52,6 +52,7 @@
     "handlebars-loader": "^1.7.1",
     "html-webpack-plugin": "^5.3.2",
     "intl-messageformat": "^11.0.7",
+    "is-emoji-supported": "^0.0.5",
     "is-url": "^1.2.4",
     "jdenticon": "^3.3.0",
     "jquery": "^4.0.0",

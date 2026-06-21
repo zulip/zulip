@@ -3,13 +3,22 @@
 const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
+let is_emoji_supported_result = true;
+mock_esm("is-emoji-supported", {
+    isEmojiSupported: () => is_emoji_supported_result,
+});
+
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
+const {initialize_user_settings} = zrequire("user_settings");
 
 const emoji = zrequire("emoji");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const realm_emoji = events.test_realm_emojis;
 
@@ -130,4 +139,60 @@ run_test("get_emoji_details_by_name", () => {
             message: "Bad emoji name: unknown-emoji",
         },
     );
+});
+
+run_test("native emojiset unicode_emoji", ({override}) => {
+    // The "native" emojiset attaches the Unicode glyph in a unicode_emoji
+    // field when the platform can render it; otherwise it's absent.
+    const smile = {
+        emoji_name: "smile",
+        emoji_code: "1f604",
+        reaction_type: "unicode_emoji",
+    };
+
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = true;
+    assert.deepEqual(emoji.get_emoji_details_for_rendering(smile), {
+        ...smile,
+        unicode_emoji: "\u{1F604}",
+    });
+
+    // Non-native emojisets never set unicode_emoji, even for supported emoji.
+    for (const emojiset of ["google", "text", "twitter"]) {
+        override(user_settings, "emojiset", emojiset);
+        assert.deepEqual(emoji.get_emoji_details_for_rendering(smile), smile);
+    }
+
+    // Unicode emoji the platform can't render fall back to sprites.
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = false;
+    assert.deepEqual(emoji.get_emoji_details_for_rendering(smile), smile);
+
+    // Realm and zulip_extra emoji are always images, never native.
+    is_emoji_supported_result = true;
+    assert.deepEqual(emoji.get_emoji_details_by_name("spain"), {
+        emoji_name: "spain",
+        reaction_type: "realm_emoji",
+        emoji_code: "101",
+        url: "/some/path/to/spain.gif",
+        still_url: "/some/path/to/spain.png",
+    });
+    assert.deepEqual(emoji.get_emoji_details_by_name("zulip"), {
+        emoji_name: "zulip",
+        reaction_type: "zulip_extra_emoji",
+        emoji_code: "zulip",
+        url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
+        still_url: null,
+    });
+
+    // Multi-codepoint emoji (e.g., flags) join into the full glyph.
+    const flag = {
+        emoji_name: "united_states",
+        emoji_code: "1f1fa-1f1f8",
+        reaction_type: "unicode_emoji",
+    };
+    assert.deepEqual(emoji.get_emoji_details_for_rendering(flag), {
+        ...flag,
+        unicode_emoji: "\u{1F1FA}\u{1F1F8}",
+    });
 });

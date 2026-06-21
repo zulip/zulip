@@ -94,13 +94,15 @@ export function set_status_emoji(event: UserStatusEvent): void {
         return;
     }
 
+    const emoji_details = emoji.get_emoji_details_for_rendering({
+        emoji_name: opts.emoji_name,
+        emoji_code: opts.emoji_code,
+        reaction_type: opts.reaction_type,
+    });
+
     user_status_emoji_info.set(opts.user_id, {
         emoji_alt_code: user_settings.emojiset === "text",
-        ...emoji.get_emoji_details_for_rendering({
-            emoji_name: opts.emoji_name,
-            emoji_code: opts.emoji_code,
-            reaction_type: opts.reaction_type,
-        }),
+        ...emoji_details,
     });
 }
 
