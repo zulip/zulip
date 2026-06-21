@@ -205,35 +205,42 @@ function navigate_status_options($focused_element: JQuery, key: "ArrowUp" | "Arr
     $navigable_elements.eq(next_index).trigger("focus");
 }
 
+// Looks up the rendering details for a default status emoji, including
+// the native Unicode glyph when the "native" emojiset is active.
+function get_default_status_emoji(emoji_name: string): EmojiRenderingDetails {
+    const details = emoji.get_emoji_details_by_name(emoji_name);
+    return {...details, ...emoji.get_native_emoji_info(details)};
+}
+
 export function initialize(): void {
     default_status_messages_and_emoji_info = [
         {
             status_text: $t({defaultMessage: "Busy"}),
-            emoji: emoji.get_emoji_details_by_name("working_on_it"),
+            emoji: get_default_status_emoji("working_on_it"),
         },
         {
             status_text: $t({defaultMessage: "In a meeting"}),
-            emoji: emoji.get_emoji_details_by_name("calendar"),
+            emoji: get_default_status_emoji("calendar"),
         },
         {
             status_text: $t({defaultMessage: "Commuting"}),
-            emoji: emoji.get_emoji_details_by_name("bus"),
+            emoji: get_default_status_emoji("bus"),
         },
         {
             status_text: $t({defaultMessage: "Out sick"}),
-            emoji: emoji.get_emoji_details_by_name("hurt"),
+            emoji: get_default_status_emoji("hurt"),
         },
         {
             status_text: $t({defaultMessage: "Vacationing"}),
-            emoji: emoji.get_emoji_details_by_name("palm_tree"),
+            emoji: get_default_status_emoji("palm_tree"),
         },
         {
             status_text: $t({defaultMessage: "Working remotely"}),
-            emoji: emoji.get_emoji_details_by_name("house"),
+            emoji: get_default_status_emoji("house"),
         },
         {
             status_text: $t({defaultMessage: "At the office"}),
-            emoji: emoji.get_emoji_details_by_name("office"),
+            emoji: get_default_status_emoji("office"),
         },
     ];
 }
