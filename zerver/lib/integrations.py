@@ -739,6 +739,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 label="Include participant names in the notifications",
                 input_type="checkbox_enabled",
             ),
+            WebhookUrlOption(
+                "include_participant_contacts",
+                label="Include participant emails and phone numbers (requires participant names)",
+                input_type="checkbox_enabled",
+            ),
         ],
     ),
     IncomingWebhookIntegration(

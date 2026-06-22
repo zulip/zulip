@@ -32,11 +32,13 @@ class Helper:
         include_trackers: bool,
         include_topics: bool,
         include_participants: bool,
+        include_participant_contacts: bool,
     ) -> None:
         self.payload = payload
         self.include_trackers = include_trackers
         self.include_topics = include_topics
         self.include_participants = include_participants
+        self.include_participant_contacts = include_participant_contacts
 
 
 def duration_pretty(duration: int) -> str:
@@ -53,18 +55,23 @@ def duration_pretty(duration: int) -> str:
     return f"{minutes} {minute_word}"
 
 
-def get_participants(parties_payload: WildValue) -> str:
+def get_participants(parties_payload: WildValue, include_participant_contacts: bool) -> str:
     # Gong may omit a party's name, email, and phone for unidentified callers
     # (https://help.gong.io/docs/uploading-calls-from-a-non-integrated-telephony-system).
     labels = []
     unidentified = 0
     for party in parties_payload:
         name = party.get("name")
-        contact_parts = [
-            party[key].tame(check_string)
-            for key in ("emailAddress", "phoneNumber")
-            if party.get(key)
-        ]
+        contact_parts = (
+            [
+                party[key].tame(check_string)
+                for key in ("emailAddress", "phoneNumber")
+                if party.get(key)
+            ]
+            if include_participant_contacts
+            else []
+        )
+
         label = name.tame(check_string) if name else (contact_parts[0] if contact_parts else None)
         if label is None:
             unidentified += 1
@@ -161,7 +168,9 @@ def handle_call_processed_message(helper: Helper) -> tuple[str, str]:
         time=datetime_to_global_time(meta_data["started"].tame(check_iso_datetime)),
         duration=duration_pretty(meta_data["duration"].tame(check_int)),
     )
-    if helper.include_participants and (participants := get_participants(call_data["parties"])):
+    if helper.include_participants and (
+        participants := get_participants(call_data["parties"], helper.include_participant_contacts)
+    ):
         body += "\n\n" + SECTION_TEMPLATE.format(heading="Participants", body=participants)
 
     if content := call_data.get("content"):
@@ -192,8 +201,15 @@ def api_gong_webhook(
     include_trackers: Json[bool] = True,
     include_topics: Json[bool] = True,
     include_participants: Json[bool] = True,
+    include_participant_contacts: Json[bool] = True,
 ) -> HttpResponse:
-    helper = Helper(payload, include_trackers, include_topics, include_participants)
+    helper = Helper(
+        payload,
+        include_trackers,
+        include_topics,
+        include_participants,
+        include_participant_contacts,
+    )
     if payload.get("isTest").tame(check_bool):
         topic, body = handle_test_message(helper)
     else:
