@@ -3,6 +3,7 @@ import hashlib
 from django.db import connection, migrations, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from django.db.models import Exists, OuterRef
 from psycopg2.sql import SQL, Identifier
 
 PERSONAL_RECIPIENT_TYPE = 1
@@ -190,6 +191,40 @@ def backfill_update_recipient_type_of_personal_messages_to_dm_group(
         print("Migration completed.")
 
 
+def delete_orphan_personal_recipients(
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
+) -> None:
+    """Delete personal recipients whose owning UserProfile is gone.
+
+    A personal recipient's type_id is its owner's user id, but it is a
+    plain integer, not a foreign key, so a user removed outside the
+    normal codepath leaves its personal recipient -- and the messages
+    pointing at it -- behind. The backfill above skips these (its join
+    to zerver_userprofile finds no owner), so they would block the
+    recipient DELETE below.
+
+    Deleting the recipient cascades to its messages, archived messages,
+    scheduled messages, and subscriptions; drafts are left with a null
+    recipient, matching that on_delete behavior. This mirrors the orphan
+    cleanup that 0803 does for stream and direct-message-group
+    recipients.
+    """
+    Recipient = apps.get_model("zerver", "Recipient")
+    UserProfile = apps.get_model("zerver", "UserProfile")
+
+    orphan_ids = list(
+        Recipient.objects.filter(type=PERSONAL_RECIPIENT_TYPE)
+        .filter(~Exists(UserProfile.objects.filter(id=OuterRef("type_id"))))
+        .values_list("id", flat=True)
+    )
+    print()
+    print(f"Deleting {len(orphan_ids)} orphan personal recipients...")
+    for chunk_start in range(0, len(orphan_ids), BATCH_SIZE):
+        chunk = orphan_ids[chunk_start : chunk_start + BATCH_SIZE]
+        Recipient.objects.filter(id__in=chunk).delete()
+        print(f"  Deleted {chunk_start + len(chunk)}/{len(orphan_ids)} orphan personal recipients.")
+
+
 def delete_personal_recipient_data(
     apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
@@ -249,11 +284,14 @@ class Migration(migrations.Migration):
             reverse_code=migrations.RunPython.noop,
             elidable=True,
         ),
-        # Drop the column via DROP COLUMN IF EXISTS to make the migration idempotent
-        # and easier to re-run if needed. This is sometimes necessary for self-hosters
-        # that improperly ran user_profile.delete() in the past and thus experience
-        # DELETE FROM zerver_recipient crashes later in the migration. In such cases,
-        # some db surgery and re-run of the migration is needed.
+        migrations.RunPython(
+            delete_orphan_personal_recipients,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True,
+        ),
+        # Drop the column with DROP COLUMN IF EXISTS, via
+        # SeparateDatabaseAndState, so that re-running the migration after an
+        # interrupted run does not fail on an already-dropped column.
         migrations.SeparateDatabaseAndState(
             database_operations=[
                 migrations.RunSQL(
