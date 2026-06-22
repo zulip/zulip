@@ -13,6 +13,8 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
@@ -334,8 +336,41 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "#scroll-to-bottom-button-clickable-area",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            if (
+                message_viewport.bottom_rendered_message_visible() &&
+                narrow_state.narrowed_by_topic_reply()
+            ) {
+                $(instance.reference).attr(
+                    "data-tooltip-template-id",
+                    "next-unread-topic-tooltip-template",
+                );
+            } else if (
+                message_viewport.bottom_rendered_message_visible() &&
+                narrow_state.narrowed_by_pm_reply()
+            ) {
+                $(instance.reference).attr(
+                    "data-tooltip-template-id",
+                    "next-unread-pm-tooltip-template",
+                );
+            } else {
+                $(instance.reference).attr(
+                    "data-tooltip-template-id",
+                    "scroll-to-bottom-button-tooltip-template",
+                );
+            }
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: [
-            "#scroll-to-bottom-button-clickable-area",
             "#compose_close",
             ".expand-composebox-button",
             ".collapse-composebox-button",

@@ -23,14 +23,16 @@ export function hide_scroll_to_bottom(): void {
         return;
     }
 
-    if (
-        message_viewport.bottom_rendered_message_visible() ||
-        message_lists.current.visibly_empty()
-    ) {
-        // If last message is visible, just hide the
-        // scroll to bottom button.
+    if (message_lists.current.visibly_empty()) {
         $show_scroll_to_bottom_button.removeClass("show");
         return;
+    }
+
+    const $icon = $("#scroll-to-bottom-button .zulip-icon");
+    if (message_viewport.bottom_rendered_message_visible()) {
+        $icon.removeClass("zulip-icon-chevron-down").addClass("zulip-icon-chevron-right");
+    } else {
+        $icon.removeClass("zulip-icon-chevron-right").addClass("zulip-icon-chevron-down");
     }
 
     hide_scroll_to_bottom_timer = setInterval(() => {
@@ -47,11 +49,15 @@ export function hide_scroll_to_bottom(): void {
 }
 
 export function show_scroll_to_bottom_button(): void {
-    if (message_viewport.bottom_rendered_message_visible()) {
-        // Only show scroll to bottom button when
-        // last message is not visible in the
-        // current scroll position.
+    if (message_lists.current === undefined || message_lists.current.visibly_empty()) {
         return;
+    }
+
+    const $icon = $("#scroll-to-bottom-button .zulip-icon");
+    if (message_viewport.bottom_rendered_message_visible()) {
+        $icon.removeClass("zulip-icon-chevron-down").addClass("zulip-icon-chevron-right");
+    } else {
+        $icon.removeClass("zulip-icon-chevron-right").addClass("zulip-icon-chevron-down");
     }
 
     clearInterval(hide_scroll_to_bottom_timer);

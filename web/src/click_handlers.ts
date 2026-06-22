@@ -22,6 +22,7 @@ import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as navigate from "./navigate.ts";
@@ -325,6 +326,19 @@ export function initialize(): void {
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (message_viewport.bottom_rendered_message_visible()) {
+            if (narrow_state.narrowed_by_topic_reply()) {
+                message_view.narrow_to_next_topic({
+                    trigger: "next_topic_unread_hotkey",
+                    only_followed_topics: false,
+                });
+                return;
+            } else if (narrow_state.narrowed_by_pm_reply()) {
+                message_view.narrow_to_next_pm_string({trigger: "hotkey"});
+                return;
+            }
+        }
 
         // Since it take a few milliseconds for this button complete disappear transition,
         // it is possible for user to click it before it hides when switching narrows.
