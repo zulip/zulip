@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
 
-from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages, do_restore_messages
 from zerver.actions.message_edit import check_update_message
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
@@ -29,7 +29,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import maybe_rename_empty_topic_to_general_chat
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
-from zerver.models import Message, UserProfile
+from zerver.models import ArchivedMessage, ArchiveTransaction, Message, UserProfile
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.streams import Stream, get_stream_by_id_in_realm
 
@@ -286,6 +286,62 @@ def delete_messages_backend(
         do_delete_messages(user_profile.realm, messages, acting_user=user_profile)
     except (Message.DoesNotExist, IntegrityError):
         raise JsonableError(_("Message already deleted"))
+    return json_success(request)
+
+
+# How long after deleting messages a user may undo the deletion by restoring
+# them from the archive. Bounds how stale the restored state can be for other
+# users, and keeps the restorable window well within the archive's retention.
+MESSAGE_DELETE_UNDO_WINDOW_SECONDS = 30
+
+
+@transaction.atomic(durable=True)
+@typed_endpoint
+def restore_messages_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    message_ids: Json[list[NonNegativeInt]],
+) -> HttpResponse:
+    # Undo a recent deletion by restoring the given messages from the archive.
+    # A user may only restore messages they themselves deleted, all-or-nothing,
+    # and only within MESSAGE_DELETE_UNDO_WINDOW_SECONDS of the deletion.
+    unique_message_ids = set(message_ids)
+    if not unique_message_ids:
+        raise JsonableError(_("Nothing to restore."))
+
+    # Each requested message must still be in the archive; a mismatch means
+    # some were never deleted, already restored, or purged.
+    transaction_ids = list(
+        ArchivedMessage.objects.filter(id__in=unique_message_ids).values_list(
+            "archive_transaction_id", flat=True
+        )
+    )
+    if len(transaction_ids) != len(unique_message_ids):
+        raise JsonableError(_("Invalid message(s)"))
+
+    # Lock the transactions before validating, so a concurrent undo of the
+    # same deletion cannot restore the messages twice.
+    archive_transactions = list(
+        ArchiveTransaction.objects.select_for_update(no_key=True).filter(
+            id__in=set(transaction_ids)
+        )
+    )
+    cutoff = timezone_now() - timedelta(seconds=MESSAGE_DELETE_UNDO_WINDOW_SECONDS)
+    deletion_expired = False
+    for archive_transaction in archive_transactions:
+        if (
+            archive_transaction.type != ArchiveTransaction.MANUAL
+            or archive_transaction.acting_user_id != user_profile.id
+            or archive_transaction.restored
+        ):
+            raise JsonableError(_("Invalid message(s)"))
+        if archive_transaction.timestamp < cutoff:
+            deletion_expired = True
+    if deletion_expired:
+        raise JsonableError(_("The time limit for undoing this deletion has passed."))
+
+    do_restore_messages(user_profile.realm, archive_transactions, acting_user=user_profile)
     return json_success(request)
 
 

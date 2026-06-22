@@ -43,6 +43,7 @@ from zerver.tornado.event_queue import (
     get_client_info_for_message_event,
     mark_clients_to_reload,
     process_message_event,
+    process_restored_message_event,
     send_web_reload_client_events,
 )
 from zerver.tornado.exceptions import BadEventQueueIdError
@@ -1227,6 +1228,93 @@ class ClientDescriptorsTest(ZulipTestCase):
                 ),
             ],
         )
+
+    def test_process_restored_message_event_with_mocked_client_info(self) -> None:
+        # A restored message is delivered as a "restored_message" event, with
+        # the same per-client payload personalization as a normal message but
+        # no notifications.
+        hamlet = self.example_user("hamlet")
+
+        class MockClient:
+            def __init__(self, *, apply_markdown: bool) -> None:
+                self.user_profile_id = hamlet.id
+                self.apply_markdown = apply_markdown
+                self.client_gravatar = True
+                self.client_type_name = "website"
+                self.events: list[dict[str, Any]] = []
+                self.empty_topic_name = True
+
+            def accepts_messages(self) -> bool:
+                return True
+
+            def accepts_event(self, event: dict[str, Any]) -> bool:
+                assert event["type"] == "restored_message"
+                return True
+
+            def add_event(self, event: dict[str, Any]) -> None:
+                self.events.append(event)
+
+        markdown_client = MockClient(apply_markdown=True)
+        text_client = MockClient(apply_markdown=False)
+
+        client_info = {
+            "client:1": dict(client=markdown_client, flags=["read"]),
+            "client:2": dict(client=text_client, flags=["read"]),
+        }
+
+        sender = hamlet
+        restored_event = dict(
+            message_dict=dict(
+                id=999,
+                content="**hello**",
+                rendered_content="<b>hello</b>",
+                sender_id=sender.id,
+                recipient_id=1111,
+                type="stream",
+                client="website",
+                sender_email=sender.email,
+                sender_delivery_email=sender.delivery_email,
+                sender_realm_id=sender.realm_id,
+                sender_avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+                sender_avatar_version=1,
+                sender_is_mirror_dummy=None,
+                sender_email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+                recipient_type=None,
+                recipient_type_id=None,
+            ),
+        )
+
+        with mock.patch(
+            "zerver.tornado.event_queue.get_client_info_for_message_event",
+            return_value=client_info,
+        ):
+            process_restored_message_event(restored_event, [])
+
+        self.assertEqual(
+            markdown_client.events,
+            [
+                dict(
+                    type="restored_message",
+                    message=dict(
+                        type="stream",
+                        sender_id=sender.id,
+                        sender_email=sender.email,
+                        avatar_url=None,
+                        id=999,
+                        recipient_id=1111,
+                        content="<b>hello</b>",
+                        content_type="text/html",
+                        client="website",
+                    ),
+                    flags=["read"],
+                ),
+            ],
+        )
+
+        # The same restored message is re-rendered as Markdown source for a
+        # client that did not request server-side Markdown rendering.
+        self.assertEqual(text_client.events[0]["message"]["content"], "**hello**")
+        self.assertEqual(text_client.events[0]["message"]["content_type"], "text/x-markdown")
 
 
 class ReloadWebClientsTest(ZulipTestCase):

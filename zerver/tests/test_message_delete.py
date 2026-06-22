@@ -7,16 +7,24 @@ from django.db import IntegrityError
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import ArchiveTransaction, Message, NamedUserGroup, UserMessage, UserProfile
+from zerver.models import (
+    ArchiveTransaction,
+    Message,
+    NamedUserGroup,
+    Reaction,
+    UserMessage,
+    UserProfile,
+)
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
-from zerver.views.message_edit import MAX_BULK_DELETE_MESSAGES
+from zerver.views.message_edit import MAX_BULK_DELETE_MESSAGES, MESSAGE_DELETE_UNDO_WINDOW_SECONDS
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -150,6 +158,194 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_error(
             result, f"You can delete at most {MAX_BULK_DELETE_MESSAGES} messages at once."
         )
+
+    def test_restore_messages(self) -> None:
+        # iago bulk-deletes hamlet's messages, then undoes within the window;
+        # the messages and their reactions come back, and the recipients who
+        # saw them are told to re-display them.
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, "Denmark")
+        # An older message we never delete, so first_message_id is unaffected.
+        self.send_stream_message(hamlet, "Denmark", "anchor")
+        msg_ids = [self.send_stream_message(hamlet, "Denmark", f"msg {i}") for i in range(3)]
+        do_add_reaction(
+            hamlet, Message.objects.get(id=msg_ids[0]), "tada", "1f389", "unicode_emoji"
+        )
+
+        self.client_delete("/json/messages", {"message_ids": orjson.dumps(msg_ids).decode()})
+        self.assertEqual(Message.objects.filter(id__in=msg_ids).count(), 0)
+        self.assertEqual(Reaction.objects.filter(message_id=msg_ids[0]).count(), 0)
+
+        with self.capture_send_event_calls(expected_num_events=3) as events:
+            result = self.client_post(
+                "/json/messages/restore", {"message_ids": orjson.dumps(msg_ids).decode()}
+            )
+        self.assert_json_success(result)
+
+        # The messages and their related objects (reactions, UserMessage rows)
+        # are restored with their original IDs.
+        self.assertEqual(Message.objects.filter(id__in=msg_ids).count(), 3)
+        self.assertEqual(Reaction.objects.filter(message_id=msg_ids[0]).count(), 1)
+
+        # One restored_message event per message, delivered to the recipients
+        # who had the message.
+        self.assert_length(events, 3)
+        restored_message_ids = set()
+        for event in events:
+            self.assertEqual(event["event"]["type"], "restored_message")
+            restored_message_ids.add(event["event"]["message_dict"]["id"])
+            notified_user_ids = {user["id"] for user in event["users"]}
+            self.assertIn(hamlet.id, notified_user_ids)
+            self.assertIn(cordelia.id, notified_user_ids)
+        self.assertEqual(restored_message_ids, set(msg_ids))
+
+        # The deletion cannot be undone a second time.
+        result = self.client_post(
+            "/json/messages/restore", {"message_ids": orjson.dumps(msg_ids).decode()}
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+
+    def test_restore_messages_notifies_acting_user_without_usermessage(self) -> None:
+        # On undo, the acting user must be notified to re-display the messages
+        # even when they have no UserMessage of their own (mirrors deletion).
+        self.login("iago")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "unfollowed")
+        # Anchor we never delete, so first_message_id (and the event count) is
+        # unaffected by the restore.
+        self.send_stream_message(hamlet, "unfollowed", "anchor")
+        msg_ids = [self.send_stream_message(hamlet, "unfollowed", f"msg {i}") for i in range(2)]
+        self.assertFalse(
+            UserMessage.objects.filter(user_profile=iago, message_id__in=msg_ids).exists()
+        )
+
+        self.client_delete("/json/messages", {"message_ids": orjson.dumps(msg_ids).decode()})
+
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            result = self.client_post(
+                "/json/messages/restore", {"message_ids": orjson.dumps(msg_ids).decode()}
+            )
+        self.assert_json_success(result)
+
+        for event in events:
+            users_by_id = {user["id"]: user for user in event["users"]}
+            self.assertIn(iago.id, users_by_id)
+            # The acting user is notified as read, since they aren't a recipient.
+            self.assertEqual(users_by_id[iago.id]["flags"], ["read"])
+
+    def test_restore_messages_only_by_the_user_who_deleted_them(self) -> None:
+        # A different user cannot undo iago's deletion, even an administrator.
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        msg_ids = [self.send_stream_message(hamlet, "Denmark", f"msg {i}") for i in range(2)]
+        self.login_user(iago)
+        self.client_delete("/json/messages", {"message_ids": orjson.dumps(msg_ids).decode()})
+
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/messages/restore", {"message_ids": orjson.dumps(msg_ids).decode()}
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+        self.assertEqual(Message.objects.filter(id__in=msg_ids).count(), 0)
+
+    def test_restore_messages_after_window_passes(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        msg_ids = [self.send_stream_message(hamlet, "Denmark", f"msg {i}") for i in range(2)]
+        self.client_delete("/json/messages", {"message_ids": orjson.dumps(msg_ids).decode()})
+
+        # Backdate the deletion to just past the undo window.
+        ArchiveTransaction.objects.filter(archivedmessage__id__in=msg_ids).update(
+            timestamp=timezone_now() - timedelta(seconds=MESSAGE_DELETE_UNDO_WINDOW_SECONDS + 1)
+        )
+        result = self.client_post(
+            "/json/messages/restore", {"message_ids": orjson.dumps(msg_ids).decode()}
+        )
+        self.assert_json_error(result, "The time limit for undoing this deletion has passed.")
+        self.assertEqual(Message.objects.filter(id__in=msg_ids).count(), 0)
+
+    def test_restore_messages_is_all_or_nothing(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        deleted_id = self.send_stream_message(hamlet, "Denmark", "deleted")
+        live_id = self.send_stream_message(hamlet, "Denmark", "still here")
+        self.client_delete("/json/messages", {"message_ids": orjson.dumps([deleted_id]).decode()})
+
+        # The live message is not in the archive, so the whole restore fails.
+        result = self.client_post(
+            "/json/messages/restore",
+            {"message_ids": orjson.dumps([deleted_id, live_id]).decode()},
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+        self.assertFalse(Message.objects.filter(id=deleted_id).exists())
+
+    def test_restore_messages_empty(self) -> None:
+        self.login("iago")
+        result = self.client_post(
+            "/json/messages/restore", {"message_ids": orjson.dumps([]).decode()}
+        )
+        self.assert_json_error(result, "Nothing to restore.")
+
+    def test_restore_messages_recomputes_first_message_id(self) -> None:
+        # Restoring a channel's deleted first message lowers first_message_id
+        # back, emitting a stream event alongside the restore.
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "restore-first")
+        first_id = self.send_stream_message(hamlet, "restore-first", "first")
+        self.send_stream_message(hamlet, "restore-first", "second")
+        stream = get_stream("restore-first", hamlet.realm)
+        self.assertEqual(stream.first_message_id, first_id)
+
+        self.client_delete("/json/messages", {"message_ids": orjson.dumps([first_id]).decode()})
+        stream.refresh_from_db()
+        self.assertNotEqual(stream.first_message_id, first_id)
+
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            result = self.client_post(
+                "/json/messages/restore", {"message_ids": orjson.dumps([first_id]).decode()}
+            )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.first_message_id, first_id)
+        self.assertTrue(
+            any(
+                event["event"]["type"] == "stream"
+                and event["event"]["property"] == "first_message_id"
+                for event in events
+            )
+        )
+
+    def test_restore_messages_strips_inaccessible_guest_sender(self) -> None:
+        # When the sender is a guest no longer accessible to all recipients,
+        # the restore event strips their identity, like the send path.
+        realm = get_realm("zulip")
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
+        polonius = self.example_user("polonius")  # a guest
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(polonius, "Denmark")
+        self.send_stream_message(hamlet, "Denmark", "anchor")
+        msg_id = self.send_stream_message(polonius, "Denmark", "from the guest")
+        # The guest leaves the channel, so they are no longer a subscriber.
+        self.unsubscribe(polonius, "Denmark")
+
+        self.login("iago")
+        self.client_delete("/json/messages", {"message_ids": orjson.dumps([msg_id]).decode()})
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_post(
+                "/json/messages/restore", {"message_ids": orjson.dumps([msg_id]).decode()}
+            )
+        self.assert_json_success(result)
+        self.assertIn("user_ids_without_access_to_sender", events[0]["event"])
 
     def test_do_delete_private_messages_with_acting_user(self) -> None:
         realm = get_realm("zulip")

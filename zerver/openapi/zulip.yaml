@@ -1179,6 +1179,64 @@ paths:
                                 }
                             - type: object
                               description: |
+                                Event sent to a message's original recipients when a
+                                deletion of it is undone, restoring the message from the
+                                archive (see [`POST /messages/restore`](/api/restore-messages)).
+                                Clients should re-display the message, which reappears with
+                                its original ID and data; this is not a new message, so
+                                clients should not notify the user about it.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-35ca3e).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - restored_message
+                                message:
+                                  $ref: "#/components/schemas/MessagesEvent"
+                                flags:
+                                  type: array
+                                  description: |
+                                    The user's [message flags][message-flags] for the restored
+                                    message, as they were when it was deleted.
+
+                                    [message-flags]: /api/update-message-flags#available-flags
+                                  items:
+                                    type: string
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "restored_message",
+                                  "message":
+                                    {
+                                      "id": 31,
+                                      "sender_id": 10,
+                                      "content": "<p>First message</p>",
+                                      "recipient_id": 23,
+                                      "timestamp": 1594825416,
+                                      "client": "test suite",
+                                      "subject": "test",
+                                      "topic_links": [],
+                                      "is_me_message": false,
+                                      "reactions": [],
+                                      "submessages": [],
+                                      "sender_full_name": "King Hamlet",
+                                      "sender_email": "user10@zulip.testserver",
+                                      "sender_realm_str": "zulip",
+                                      "display_recipient": "Denmark",
+                                      "type": "stream",
+                                      "stream_id": 1,
+                                      "avatar_url": null,
+                                      "content_type": "text/html",
+                                    },
+                                  "flags": [],
+                                  "id": 1,
+                                }
+                            - type: object
+                              description: |
                                 Event sent to a user's clients when the user completes the OAuth flow
                                 for the [Zoom integration](/help/configure-call-provider). Clients need
                                 to know whether initiating Zoom OAuth is required before creating a Zoom
@@ -9964,6 +10022,62 @@ paths:
                         "found_newest": true,
                         "ignored_because_not_subscribed_channels": [12, 13, 9],
                       }
+  /messages/restore:
+    post:
+      operationId: restore-messages
+      summary: Restore deleted messages
+      tags: ["messages"]
+      description: |
+        Undo a recent deletion, restoring a set of messages from the archive
+        with their original IDs, reactions, and other related data. This is
+        used by the web app's message selection mode to implement an "undo"
+        of a [bulk deletion](/api/delete-messages).
+
+        A user may only restore messages that they deleted themselves, and
+        only within a short server-defined time window after the deletion.
+        Restoration is all-or-nothing: if any of `message_ids` is no longer
+        restorable by the user, the request fails without restoring anything.
+
+        When messages are restored, the server sends a `restored_message`
+        event to their original recipients so that their clients re-display
+        them.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-35ca3e).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                message_ids:
+                  description: |
+                    The IDs of the messages to restore. These must be all of
+                    the messages from a single recent deletion performed by the
+                    current user.
+                  type: array
+                  items:
+                    type: integer
+                  example: [13, 17, 18]
+              required:
+                - message_ids
+            encoding:
+              message_ids:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      An example JSON response for when the messages cannot be
+                      restored, e.g. they were not deleted by you or the undo
+                      window has passed:
   /messages/render:
     post:
       operationId: render-message
