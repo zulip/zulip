@@ -2,7 +2,13 @@ import orjson
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.validator import wrap_wild_value
-from zerver.webhooks.gong.view import duration_pretty, get_participants, get_topics, get_trackers
+from zerver.webhooks.gong.view import (
+    duration_pretty,
+    get_participants,
+    get_public_comments,
+    get_topics,
+    get_trackers,
+)
 
 
 class GongHookTests(WebhookTestCase):
@@ -178,6 +184,18 @@ class GongHookTests(WebhookTestCase):
             content_type="application/json",
         )
 
+    def test_call_with_public_comments_enabled(self) -> None:
+        self.url = self.build_webhook_url(include_public_comments="true")
+        comments = (
+            "**Comments**:\n* Might be helpful to loop us in on Outreach issue with Outreach team"
+        )
+        self.check_webhook(
+            "call_completed",
+            "Gong Call: Ron/Speedman",
+            f"{self.EXPECTED_CALL_MESSAGE.format(title='Ron/Speedman')}\n\n{comments}",
+            content_type="application/json",
+        )
+
     def test_get_participants(self) -> None:
         name = "Jennifer Band"
         title = "Customer Success Manager"
@@ -306,6 +324,23 @@ class GongHookTests(WebhookTestCase):
         self.assertEqual(get_topics(payload), "Pricing (3 mins), Next steps (45 secs), Small talk.")
 
         self.assertEqual(get_topics(wrap_wild_value("topics", [])), "")
+
+    def test_get_public_comments(self) -> None:
+        payload = wrap_wild_value(
+            "publicComments",
+            [
+                {"comment": "Third", "posted": "2019-10-19T03:00:00+00:00"},
+                {"comment": "First", "posted": "2019-10-19T01:00:00+00:00"},
+                {"comment": "Second", "posted": "2019-10-19T02:00:00+00:00"},
+                {"comment": "Fourth", "posted": "2019-10-19T04:00:00+00:00"},
+            ],
+        )
+        self.assertEqual(
+            get_public_comments(payload),
+            "* Fourth\n* Third\n* Second\n* and 1 more",
+        )
+
+        self.assertEqual(get_public_comments(wrap_wild_value("publicComments", [])), "")
 
     def test_duration_pretty(self) -> None:
         test_cases = [

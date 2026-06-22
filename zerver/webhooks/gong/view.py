@@ -23,6 +23,7 @@ SECTION_TEMPLATE = "**{heading}**:\n{body}"
 TOPICS_TEMPLATE = "**Topics**: {topics}"
 TOP_CONTENT_LIMIT = 3
 PARTICIPANTS_LIMIT = 5
+COMMENTS_LIMIT = 3
 
 
 class Helper:
@@ -33,12 +34,14 @@ class Helper:
         include_topics: bool,
         include_participants: bool,
         include_participant_contacts: bool,
+        include_public_comments: bool,
     ) -> None:
         self.payload = payload
         self.include_trackers = include_trackers
         self.include_topics = include_topics
         self.include_participants = include_participants
         self.include_participant_contacts = include_participant_contacts
+        self.include_public_comments = include_public_comments
 
 
 def duration_pretty(duration: int) -> str:
@@ -141,6 +144,22 @@ def get_topics(topics_payload: WildValue) -> str:
     return ", ".join(lines) + "." if lines else ""
 
 
+def get_public_comments(comments_payload: WildValue) -> str:
+    comments = sorted(
+        comments_payload,
+        key=lambda comment: comment["posted"].tame(check_iso_datetime),
+        reverse=True,
+    )
+    lines = []
+    for comment in comments[:COMMENTS_LIMIT]:
+        text = comment["comment"].tame(check_string)
+        lines.append(f"* {text}")
+    additional_comments = len(comments) - len(lines)
+    if additional_comments:
+        lines.append(f"* and {additional_comments} more")
+    return "\n".join(lines)
+
+
 def handle_test_message(helper: Helper) -> tuple[str, str]:
     # Gong's "Test now" sends a real, already-processed call, so render the
     # actual message and prefix it with the standard setup confirmation.
@@ -188,6 +207,13 @@ def handle_call_processed_message(helper: Helper) -> tuple[str, str]:
             and (topics := get_topics(content["topics"]))
         ):
             body += "\n\n" + TOPICS_TEMPLATE.format(topics=topics)
+
+    if (
+        helper.include_public_comments
+        and (public_comments_list := call_data["collaboration"].get("publicComments"))
+        and (public_comments := get_public_comments(public_comments_list))
+    ):
+        body += "\n\n" + SECTION_TEMPLATE.format(heading="Comments", body=public_comments)
     return topic, body
 
 
@@ -202,6 +228,7 @@ def api_gong_webhook(
     include_topics: Json[bool] = True,
     include_participants: Json[bool] = True,
     include_participant_contacts: Json[bool] = True,
+    include_public_comments: Json[bool] = False,
 ) -> HttpResponse:
     helper = Helper(
         payload,
@@ -209,6 +236,7 @@ def api_gong_webhook(
         include_topics,
         include_participants,
         include_participant_contacts,
+        include_public_comments,
     )
     if payload.get("isTest").tame(check_bool):
         topic, body = handle_test_message(helper)
