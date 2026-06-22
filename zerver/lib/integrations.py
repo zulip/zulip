@@ -734,6 +734,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 label="Include primary topics in the notifications",
                 input_type="checkbox_enabled",
             ),
+            WebhookUrlOption(
+                "include_participants",
+                label="Include participant names in the notifications",
+                input_type="checkbox_enabled",
+            ),
         ],
     ),
     IncomingWebhookIntegration(

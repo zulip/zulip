@@ -141,6 +141,16 @@ class GongHookTests(WebhookTestCase):
             content_type="application/json",
         )
 
+    def test_call_with_participants_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_participants="false")
+        intro = self.MESSAGE_INTRO.format(title="Ron/Speedman")
+        self.check_webhook(
+            "call_completed",
+            "Gong Call: Ron/Speedman",
+            f"{intro}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
+            content_type="application/json",
+        )
+
     def test_get_participants(self) -> None:
         name = "Jennifer Band"
         title = "Customer Success Manager"
