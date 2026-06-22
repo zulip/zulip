@@ -31,10 +31,12 @@ class Helper:
         payload: WildValue,
         include_trackers: bool,
         include_topics: bool,
+        include_participants: bool,
     ) -> None:
         self.payload = payload
         self.include_trackers = include_trackers
         self.include_topics = include_topics
+        self.include_participants = include_participants
 
 
 def format_duration_to_string(duration: int) -> str:
@@ -161,8 +163,7 @@ def handle_call_processed_message(helper: Helper) -> tuple[str, str]:
         time=datetime_to_global_time(meta_data["started"].tame(check_iso_datetime)),
         duration=format_duration_to_string(meta_data["duration"].tame(check_int)),
     )
-
-    if participants := get_participants(call_data["parties"]):
+    if helper.include_participants and (participants := get_participants(call_data["parties"])):
         body += "\n\n" + SECTION_TEMPLATE.format(heading="Participants", body=participants)
 
     if content := call_data.get("content"):
@@ -192,8 +193,9 @@ def api_gong_webhook(
     payload: JsonBodyPayload[WildValue],
     include_trackers: Json[bool] = True,
     include_topics: Json[bool] = True,
+    include_participants: Json[bool] = True,
 ) -> HttpResponse:
-    helper = Helper(payload, include_trackers, include_topics)
+    helper = Helper(payload, include_trackers, include_topics, include_participants)
     if payload.get("isTest").tame(check_bool):
         topic, body = handle_test_message(helper)
     else:
