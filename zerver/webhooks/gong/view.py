@@ -1,4 +1,5 @@
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
@@ -22,6 +23,12 @@ SECTION_TEMPLATE = "**{heading}**:\n{body}"
 TOPICS_TEMPLATE = "**Topics**: {topics}"
 TOP_CONTENT_LIMIT = 3
 PARTICIPANTS_LIMIT = 5
+
+
+class Helper:
+    def __init__(self, payload: WildValue, include_trackers: bool) -> None:
+        self.payload = payload
+        self.include_trackers = include_trackers
 
 
 def format_duration_to_string(duration: int) -> str:
@@ -121,18 +128,18 @@ def get_topics(topics_payload: WildValue) -> str:
     return topics_line + "." if topics_line else ""
 
 
-def handle_test_message(payload: WildValue) -> tuple[str, str]:
+def handle_test_message(helper: Helper) -> tuple[str, str]:
     # Gong's "Test now" sends a real, already-processed call, so render the
     # actual message and prefix it with the standard setup confirmation.
-    _, body = handle_call_processed_message(payload)
+    _, body = handle_call_processed_message(helper)
     return (
         "Gong Test",
         f"{get_setup_webhook_message('Gong')}\n\n{body}",
     )
 
 
-def handle_call_processed_message(payload: WildValue) -> tuple[str, str]:
-    call_data = payload["callData"]
+def handle_call_processed_message(helper: Helper) -> tuple[str, str]:
+    call_data = helper.payload["callData"]
     meta_data = call_data["metaData"]
     # call_title can be an optional field and can be omitted if not present.
     call_title = meta_data.get("title").tame(check_none_or(check_string))
@@ -153,7 +160,11 @@ def handle_call_processed_message(payload: WildValue) -> tuple[str, str]:
         body += "\n\n" + SECTION_TEMPLATE.format(heading="Participants", body=participants)
 
     if content := call_data.get("content"):
-        if "trackers" in content and (top_trackers := get_trackers(content["trackers"])):
+        if (
+            helper.include_trackers
+            and "trackers" in content
+            and (top_trackers := get_trackers(content["trackers"]))
+        ):
             body += "\n\n" + SECTION_TEMPLATE.format(
                 heading="Top Trackers (by count)", body=top_trackers
             )
@@ -169,10 +180,12 @@ def api_gong_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
+    include_trackers: Json[bool] = True,
 ) -> HttpResponse:
+    helper = Helper(payload, include_trackers)
     if payload.get("isTest").tame(check_bool):
-        topic, body = handle_test_message(payload)
+        topic, body = handle_test_message(helper)
     else:
-        topic, body = handle_call_processed_message(payload)
+        topic, body = handle_call_processed_message(helper)
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)

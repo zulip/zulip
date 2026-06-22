@@ -723,6 +723,13 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "gong",
         ["customer-support", "marketing"],
         [WebhookScreenshotConfig("call_completed.json")],
+        url_options=[
+            WebhookUrlOption(
+                "include_trackers",
+                label="Include primary trackers in the notifications",
+                input_type="checkbox_enabled",
+            )
+        ],
     ),
     IncomingWebhookIntegration(
         "gosquared",
