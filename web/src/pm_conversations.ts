@@ -39,6 +39,14 @@ function filter_muted_pms(conversation: PMConversation): boolean {
     return true;
 }
 
+function get_user_ids_string(user_ids: number[]): string {
+    if (user_ids.length === 0) {
+        // The server sends [] for direct messages to oneself.
+        user_ids = [people.my_current_user_id()];
+    }
+    return user_ids.toSorted((a, b) => a - b).join(",");
+}
+
 class RecentDirectMessages {
     // This data structure keeps track of the sets of users you've had
     // recent conversations with, sorted by time (implemented via
@@ -47,13 +55,7 @@ class RecentDirectMessages {
     recent_private_messages: PMConversation[] = [];
 
     insert(user_ids: number[], message_id: number): void {
-        if (user_ids.length === 0) {
-            // The server sends [] for direct messages to oneself.
-            user_ids = [people.my_current_user_id()];
-        }
-        user_ids.sort((a, b) => a - b);
-
-        const user_ids_string = user_ids.join(",");
+        const user_ids_string = get_user_ids_string(user_ids);
         let conversation = this.recent_message_ids.get(user_ids_string);
 
         if (conversation === undefined) {
