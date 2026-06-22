@@ -159,6 +159,33 @@ class GongHookTests(WebhookTestCase):
             content_type="application/json",
         )
 
+    def test_call_with_participant_contacts_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_participant_contacts="false")
+        intro = self.MESSAGE_INTRO.format(title=self.CALL_TITLE)
+        participants = (
+            "**Participants**:\n"
+            f"* {BO_NAME}: Sales Enablement Manager - Sales Development\n"
+            f"* {KEVIN_NAME}: Customer Success Manager"
+        )
+        self.check_webhook(
+            "call_completed",
+            self.EXPECTED_TOPIC,
+            f"{intro}\n\n{participants}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
+            content_type="application/json",
+        )
+
+    def test_call_with_participants_off_but_contacts_on(self) -> None:
+        self.url = self.build_webhook_url(
+            include_participants="false", include_participant_contacts="true"
+        )
+        intro = self.MESSAGE_INTRO.format(title=self.CALL_TITLE)
+        self.check_webhook(
+            "call_completed",
+            self.EXPECTED_TOPIC,
+            f"{intro}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
+            content_type="application/json",
+        )
+
     def test_get_participants(self) -> None:
         name = KEVIN_NAME
         title = "Customer Success Manager"
@@ -219,7 +246,24 @@ class GongHookTests(WebhookTestCase):
         for parties, expected_output in test_cases:
             with self.subTest(parties=parties):
                 payload = wrap_wild_value("parties", parties)
-                self.assertEqual(get_participants(payload), expected_output)
+                self.assertEqual(get_participants(payload, True), expected_output)
+
+        no_contacts_cases = [
+            ([{"name": name, "title": title, "emailAddress": email}], f"* {name}: {title}"),
+            ([{"name": name, "emailAddress": email, "phoneNumber": phone}], f"* {name}"),
+            (
+                [{"name": "Alice"}, {"emailAddress": email}, {"phoneNumber": phone}],
+                "* Alice\n* and 2 more participants",
+            ),
+            ([{"title": title, "emailAddress": email}], "* 1 participant"),
+        ]
+        for parties, expected_output in no_contacts_cases:
+            with self.subTest(parties=parties, include_participant_contacts=False):
+                payload = wrap_wild_value("parties", parties)
+                self.assertEqual(
+                    get_participants(payload, False),
+                    expected_output,
+                )
 
     def test_get_trackers(self) -> None:
         payload = wrap_wild_value(
