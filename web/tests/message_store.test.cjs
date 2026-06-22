@@ -278,7 +278,7 @@ test("errors", ({disallow_rewire}) => {
 
     // This should early return and not run pm_conversations.set_partner
     disallow_rewire(pm_conversations, "set_partner");
-    pm_conversations.process_message(message);
+    pm_conversations.process_message(message, false);
 });
 
 test("reify_message_id", () => {

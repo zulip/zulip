@@ -25,6 +25,7 @@ import * as message_store from "./message_store.ts";
 import type {DisplayRecipientUser, Message, MessageReaction, RawMessage} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import * as pm_list from "./pm_list.ts";
 import * as recent_view_data from "./recent_view_data.ts";
 import * as rows from "./rows.ts";
@@ -490,15 +491,20 @@ export let reify_message_id = (local_id: string, server_id: number): void => {
     compose_notifications.reify_message_id(opts);
     recent_view_data.reify_message_id_if_available(opts);
 
-    // We add the message to stream_topic_history only after we receive
-    // it from the server i.e., is acked, so as to maintain integer
-    // message id values there.
+    // We count a message toward its conversation only on ack, both to keep
+    // integer message ids in stream_topic_history and so that an un-acked
+    // echo never inflates pm_conversations' counts.
     if (message.type === "stream") {
         stream_topic_history.add_message({
             stream_id: message.stream_id,
             topic_name: message.topic,
             message_id: message.id,
         });
+    } else {
+        const user_ids = people.pm_with_user_ids(message);
+        if (user_ids !== undefined) {
+            pm_conversations.recent.increment_message_count(user_ids);
+        }
     }
     update_topic_hash_to_contain_with_term(message);
 };

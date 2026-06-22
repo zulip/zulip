@@ -43,6 +43,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
 import * as realm_icon from "./realm_icon.ts";
@@ -175,6 +176,24 @@ export function dispatch_normal_event(event) {
 
         case "delete_message": {
             const msg_ids = event.message_ids;
+
+            // A delete_message event for DMs doesn't identify the
+            // conversation, so we derive it from a deleted message before
+            // remove_messages below clears it from the cache.  All messages
+            // in one event share a conversation, so any one suffices.
+            let deleted_dm_user_ids;
+            if (event.message_type === "private") {
+                for (const msg_id of msg_ids) {
+                    const message = message_store.get(msg_id);
+                    if (message !== undefined) {
+                        deleted_dm_user_ids = people.pm_with_user_ids(message);
+                        if (deleted_dm_user_ids !== undefined) {
+                            break;
+                        }
+                    }
+                }
+            }
+
             // message is passed to unread.get_unread_messages,
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur
@@ -192,6 +211,12 @@ export function dispatch_normal_event(event) {
                     max_removed_msg_id: Math.max(...msg_ids),
                 });
                 stream_list.update_streams_sidebar();
+            } else if (deleted_dm_user_ids !== undefined) {
+                // We may have emptied a DM conversation; remove it from the
+                // sidebar if so.  The recent conversations view is updated
+                // separately, by message_events.remove_messages.
+                pm_conversations.recent.maybe_remove(deleted_dm_user_ids, msg_ids.length);
+                pm_list.update_private_messages();
             }
 
             break;
