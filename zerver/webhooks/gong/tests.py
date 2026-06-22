@@ -139,6 +139,16 @@ class GongHookTests(WebhookTestCase):
             content_type="application/json",
         )
 
+    def test_call_with_top_topics_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_topics="false")
+        intro = self.MESSAGE_INTRO.format(title=self.CALL_TITLE)
+        self.check_webhook(
+            "call_completed",
+            self.EXPECTED_TOPIC,
+            f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TRACKERS_SECTION}",
+            content_type="application/json",
+        )
+
     def test_get_participants(self) -> None:
         name = KEVIN_NAME
         title = "Customer Success Manager"
