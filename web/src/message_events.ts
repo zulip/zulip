@@ -406,6 +406,47 @@ export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     return messages;
 }
 
+export function insert_restored_messages(raw_messages: RawMessage[]): void {
+    // Re-insert messages that were restored from the archive when a deletion
+    // was undone. Unlike insert_new_messages, these are not new arrivals: they
+    // reappear with their original IDs and read state, so we treat them as
+    // already-loaded messages (messages_are_new: false) and never notify the
+    // user about them.
+    const messages = raw_messages.map((raw_message) =>
+        message_helper.process_new_server_message(raw_message),
+    );
+
+    const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
+    direct_message_group_data.process_loaded_messages(messages);
+
+    for (const list of message_lists.all_rendered_message_lists()) {
+        if (!list.data.filter.can_apply_locally()) {
+            // As in insert_new_messages, ask the server which of these match
+            // the narrow when we can't determine it locally.
+            const messages_are_new = false;
+            message_events_util.maybe_add_narrowed_messages(messages, list, messages_are_new);
+            continue;
+        }
+
+        list.add_messages(messages, {messages_are_new: false});
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        if (!msg_list_data.filter.can_apply_locally()) {
+            message_list_data_cache.remove(msg_list_data.filter);
+        } else {
+            msg_list_data.add_messages(messages);
+        }
+    }
+
+    if (any_untracked_unread_messages) {
+        unread_ui.update_unread_counts();
+    }
+
+    stream_list.update_streams_sidebar_for_messages(messages);
+    pm_list.update_private_messages();
+}
+
 function topic_resolve_toggled(new_topic: string, original_topic: string): boolean {
     if (resolved_topic.is_resolved(new_topic) && new_topic.slice(2) === original_topic) {
         return true;
