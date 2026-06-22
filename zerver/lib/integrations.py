@@ -728,7 +728,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 "include_trackers",
                 label="Include primary trackers in the notifications",
                 input_type="checkbox_enabled",
-            )
+            ),
+            WebhookUrlOption(
+                "include_topics",
+                label="Include primary topics in the notifications",
+                input_type="checkbox_enabled",
+            ),
         ],
     ),
     IncomingWebhookIntegration(

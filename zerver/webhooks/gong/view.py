@@ -26,9 +26,15 @@ PARTICIPANTS_LIMIT = 5
 
 
 class Helper:
-    def __init__(self, payload: WildValue, include_trackers: bool) -> None:
+    def __init__(
+        self,
+        payload: WildValue,
+        include_trackers: bool,
+        include_topics: bool,
+    ) -> None:
         self.payload = payload
         self.include_trackers = include_trackers
+        self.include_topics = include_topics
 
 
 def duration_pretty(duration: int) -> str:
@@ -166,7 +172,11 @@ def handle_call_processed_message(helper: Helper) -> tuple[str, str]:
             body += "\n\n" + SECTION_TEMPLATE.format(
                 heading="Top Trackers (by count)", body=top_trackers
             )
-        if "topics" in content and (topics := get_topics(content["topics"])):
+        if (
+            helper.include_topics
+            and "topics" in content
+            and (topics := get_topics(content["topics"]))
+        ):
             body += "\n\n" + TOPICS_TEMPLATE.format(topics=topics)
     return topic, body
 
@@ -179,8 +189,9 @@ def api_gong_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
     include_trackers: Json[bool] = True,
+    include_topics: Json[bool] = True,
 ) -> HttpResponse:
-    helper = Helper(payload, include_trackers)
+    helper = Helper(payload, include_trackers, include_topics)
     if payload.get("isTest").tame(check_bool):
         topic, body = handle_test_message(helper)
     else:
