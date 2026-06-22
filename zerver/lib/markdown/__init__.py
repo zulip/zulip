@@ -1574,6 +1574,47 @@ class Fence:
     is_code: bool
 
 
+class TabIndentedListPreprocessor(markdown.preprocessors.Preprocessor):
+    """Convert leading tabs to 2-space indentation for nested lists.
+
+    Zulip uses 2-space indentation for nested bulleted lists, but
+    Python-Markdown's NormalizeWhitespace expands tabs to 4 spaces,
+    causing tab-indented nested lists to fail to nest correctly.
+
+    This preprocessor runs before NormalizeWhitespace and converts
+    each leading tab to 2 spaces, so one tab equals one level of
+    list nesting, matching Zulip's 2-space convention. Lines inside
+    fenced code blocks are left untouched.
+    """
+
+    LEADING_TABS_RE = re.compile(r"^\t+")
+
+    @override
+    def run(self, lines: list[str]) -> list[str]:
+        result: list[str] = []
+        in_code_fence: bool = False
+        open_fences: list[Fence] = []
+        for line in lines:
+            m = FENCE_RE.match(line)
+            if m:
+                fence_str = m.group("fence")
+                lang: str | None = m.group("lang")
+                is_code = lang not in ("quote", "quoted")
+                matches_last_fence = (
+                    fence_str == open_fences[-1].fence_str if open_fences else False
+                )
+                closes_last_fence = not lang and matches_last_fence
+                if closes_last_fence:
+                    open_fences.pop()
+                else:
+                    open_fences.append(Fence(fence_str, is_code))
+                in_code_fence = any(fence.is_code for fence in open_fences)
+            if not in_code_fence:
+                line = self.LEADING_TABS_RE.sub(lambda m: "  " * len(m.group()), line)
+            result.append(line)
+        return result
+
+
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """Allows list blocks that come directly after another block
     to be rendered as a list.
@@ -2275,6 +2316,7 @@ class ZulipMarkdown(markdown.Markdown):
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
+        preprocessors.register(TabIndentedListPreprocessor(self), "tab_indented_lists", 32)
         preprocessors.register(
             markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
         )
