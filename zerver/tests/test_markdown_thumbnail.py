@@ -171,6 +171,68 @@ class MarkdownThumbnailTest(ZulipTestCase):
         )
         self.assert_message_content_is(message_id, expected)
 
+    def test_uploaded_images_ignore_inline_image_preview_setting(self) -> None:
+        path_id = self.upload_and_thumbnail_image("img.png")
+
+        sender_user_profile = self.example_user("othello")
+        sender_user_profile.realm.inline_image_preview = False
+        sender_user_profile.realm.save(update_fields=["inline_image_preview"])
+
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        converted = render_message_markdown(
+            msg,
+            f"[linked image](/user_uploads/{path_id})\n\n![inline image](/user_uploads/{path_id})",
+        )
+
+        self.assertEqual(
+            converted.rendered_content,
+            (
+                f'<p><a href="/user_uploads/{path_id}">linked image</a></p>\n'
+                f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="linked image">'
+                "<img"
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>\n'
+                f'<p><img alt="inline image" class="inline-image"'
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                f' data-original-src="/user_uploads/{path_id}"'
+                f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></p>'
+            ),
+        )
+
+    def test_uploaded_videos_ignore_inline_image_preview_setting(self) -> None:
+        path_id = upload_message_attachment(
+            "video.mov",
+            "video/quicktime",
+            b"",
+            self.example_user("othello"),
+        )[0].removeprefix("/user_uploads/")
+
+        sender_user_profile = self.example_user("othello")
+        sender_user_profile.realm.inline_image_preview = False
+        sender_user_profile.realm.save(update_fields=["inline_image_preview"])
+
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        converted = render_message_markdown(msg, f"[uploaded video](/user_uploads/{path_id})")
+
+        self.assertEqual(
+            converted.rendered_content,
+            (
+                f'<p><a href="/user_uploads/{path_id}">uploaded video</a></p>\n'
+                f'<div class="message_inline_image message_inline_video"><a href="/user_uploads/{path_id}" title="uploaded video">'
+                f'<video preload="metadata" src="/user_uploads/{path_id}"></video></a></div>'
+            ),
+        )
+
     def test_thumbnail_escaping(self) -> None:
         self.login("othello")
         with self.captureOnCommitCallbacks(execute=True):

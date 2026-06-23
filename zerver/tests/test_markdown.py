@@ -1220,6 +1220,22 @@ class MarkdownEmbedsTest(ZulipTestCase):
             "</video></a></div>",
         )
 
+    def test_inline_mov_video_respects_realm_setting_for_external_links(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        sender_user_profile.realm.inline_image_preview = False
+        sender_user_profile.realm.save(update_fields=["inline_image_preview"])
+
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        converted = render_message_markdown(msg, "Check out: https://example.com/video.mov")
+        self.assertEqual(
+            converted.rendered_content,
+            '<p>Check out: <a href="https://example.com/video.mov">https://example.com/video.mov</a></p>',
+        )
+
     def test_inline_dropbox_preview(self) -> None:
         # Test photo album previews
         msg = "https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5"

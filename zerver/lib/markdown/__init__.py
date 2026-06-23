@@ -329,6 +329,19 @@ def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
     zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
 
 
+def get_local_user_upload_path_id(url: str, zmd: "ZulipMarkdown") -> str | None:
+    parsed_url = urlsplit(urljoin("/", url))
+    host = parsed_url.netloc
+
+    if host != "" and (zmd.zulip_realm is None or host != zmd.zulip_realm.host):
+        return None
+
+    if not parsed_url.path.startswith("/user_uploads/"):
+        return None
+
+    return parsed_url.path.removeprefix("/user_uploads/")
+
+
 def url_embed_preview_enabled(
     message: Message | None = None, realm: Realm | None = None, no_previews: bool = False
 ) -> bool:
@@ -761,19 +774,22 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return url
 
     def is_image(self, url: str) -> bool:
-        if not self.zmd.image_preview_enabled:
-            return False
         parsed_url = urlsplit(url)
         # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
 
-        # Check against the previews we generated -- if we didn't have
-        # a row for the ImageAttachment, then its header didn't parse
-        # as a valid image type which libvips handles.
-        if url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
-            path_id = url.removeprefix("/user_uploads/")
+        path_id = get_local_user_upload_path_id(url, self.zmd)
+        if path_id is not None and self.zmd.zulip_db_data:
+            # Check against the previews we generated -- if we didn't
+            # have a row for the ImageAttachment, then its header
+            # didn't parse as a valid image type which libvips
+            # handles. User-uploaded media is exempt from the
+            # inline-image-preview organization setting.
             return path_id in self.zmd.zulip_db_data.user_upload_previews.image_metadata
+
+        if not self.zmd.image_preview_enabled:
+            return False
 
         return any(parsed_url.path.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
 
@@ -1040,16 +1056,24 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return insertion_index
 
     def is_video(self, url: str) -> bool:
-        if not self.zmd.image_preview_enabled:
-            return False
-
-        url_type = guess_type(url)[0]
         # Video container formats broadly supported across browsers; see
         # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
         # Whether a specific file actually plays depends on the codecs
         # inside the container; the frontend hides the preview on a
         # playback error and falls back to the download link.
         supported_mimetypes = ["video/mp4", "video/quicktime", "video/webm"]
+
+        path_id = get_local_user_upload_path_id(url, self.zmd)
+        if path_id is not None:
+            # User-uploaded media is exempt from the
+            # inline-image-preview organization setting.
+            url_type = guess_type(path_id)[0]
+            return url_type in supported_mimetypes
+
+        if not self.zmd.image_preview_enabled:
+            return False
+
+        url_type = guess_type(url)[0]
         return url_type in supported_mimetypes
 
     def add_video(
