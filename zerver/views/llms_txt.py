@@ -1,3 +1,6 @@
+import json
+from urllib.parse import urlencode
+
 from django.http import HttpRequest, HttpResponse
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -30,6 +33,17 @@ def llms_txt(request: HttpRequest) -> HttpResponse:
 
     server_url = realm.url
     example_channel_id = streams[0][0]
+    example_narrow = json.dumps(
+        [
+            {"operator": "channels", "operand": "web-public"},
+            {"operator": "channel", "operand": example_channel_id},
+            {"operator": "topic", "operand": "TOPIC_NAME"},
+        ],
+        separators=(",", ":"),
+    )
+    example_url = f"{server_url}/json/messages?" + urlencode(
+        {"anchor": "oldest", "num_before": 0, "num_after": 100, "narrow": example_narrow}
+    )
     channel_list = "\n".join(f"- {name} ({channel_id})" for channel_id, name in streams)
 
     content = f"""\
@@ -70,9 +84,10 @@ request returned the entire conversation.
 
 ## Example
 
-Fetch the 100 oldest messages from a topic:
+Fetch the 100 oldest messages from a topic. The entire `narrow` value
+must be URL-encoded in the query string, as in this example:
 
-    GET {server_url}/json/messages?anchor=oldest&num_before=0&num_after=100&narrow=[{{"operator":"channels","operand":"web-public"}},{{"operator":"channel","operand":{example_channel_id}}},{{"operator":"topic","operand":"TOPIC_NAME"}}]
+    GET {example_url}
 
 ## Fetching messages in specific conversations / views
 
