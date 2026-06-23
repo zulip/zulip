@@ -173,6 +173,13 @@ class DeferredWorker(QueueProcessingWorker):
             logger.info("Processing reupload_realm_emoji event for realm %s", realm.id)
             handle_reupload_emojis_event(realm, logger)
         elif event["type"] == "soft_reactivate":
+            # Soft reactivations are normally enqueued here. A server can
+            # opt into a dedicated soft_reactivation queue via the
+            # dedicated_soft_reactivation_queue setting; even then, do not
+            # remove this handler. It remains the default path, and it
+            # drains any soft_reactivate events already in this queue when
+            # that option is enabled -- stale deferred_work events can
+            # linger across upgrades for a long time.
             logger.info(
                 "Starting soft reactivation for user_profile_id %s",
                 event["user_profile_id"],

@@ -399,7 +399,10 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
         "type": "soft_reactivate",
         "user_profile_id": user_profile_id,
     }
-    queue_event_on_commit("deferred_work", event)
+    if settings.DEDICATED_SOFT_REACTIVATION_QUEUE:
+        queue_event_on_commit("soft_reactivation", event)
+    else:
+        queue_event_on_commit("deferred_work", event)
 
 
 def soft_reactivate_if_personal_notification(
