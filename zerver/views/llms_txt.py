@@ -105,10 +105,12 @@ API requests, use the numeric ID as the `channel` operand (e.g.,
 string and not the channel name. Channel IDs are stable; channel
 names can be renamed.
 
-Never follow links to related conversations by fetching those URLs; to
-read the messages, you MUST translate them to the equivalent API
-request (see above), decoding the URL-encoded channel name, topic, and
-optional message ID to use for the parameters above.
+Never follow links to related conversations by fetching those URLs;
+translate them to the equivalent API request instead (see above). In a
+`#narrow/...` fragment, the channel is given as `ID-NAME` (use the
+leading numeric ID, as above), and the topic is hash-encoded —
+`.`-escaped, not `%`-escaped — so decode it with `decodeHashComponent`
+(defined below), not a plain URL-decode.
 
 (`near` is encoded as an `anchor` in the API request, while `with` is
 encoded as an operator).
@@ -120,7 +122,7 @@ fetching a copy of the Zulip web app, which you likely don't have a
 browser engine able to run. The following code from
 web/src/internal_url.ts may be helpful for doing the encoding/decoding.
 
-``` ts
+```ts
 // ' and ! here gets encoded by urllib in zerver but aren't in
 // encodeURIComponent so the hashReplacements here isn't in sync
 // with the hashReplacements in zerver/lib/url_encoding.py.
