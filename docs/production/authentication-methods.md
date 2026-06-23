@@ -790,7 +790,7 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
-### Synchronizing data during login
+### Synchronizing data with SAML
 
 In contrast with SCIM or LDAP, the SAML protocol only allows Zulip to
 access data about a user when that user authenticates to Zulip using
@@ -807,70 +807,9 @@ their metadata might feel reasonable.
 Specifically, Zulip supports synchronizing
 [group memberships][user-groups-help-center], the [user
 role][user-role-help-center], the user's full name, and [custom profile
-fields][custom-profile-fields] from the SAML provider.
-
-In order to use this functionality, configure `SOCIAL_AUTH_SYNC_ATTRS_DICT` in
-`/etc/zulip/settings.py` according to the instructions in the inline
-documentation in the file. Servers installed before Zulip 10.0 may want to
-[update inline comment documentation][update-inline-comments] first in order to
-access it. For configuring syncing of groups see
-[below][configure-saml-group-sync].
-
-Custom profile fields are only synchronized during login, not during
-account creation; we consider this [a
-bug](https://github.com/zulip/zulip/issues/18746). User role is
-synchronized during both account creation and each consecutive login.
-
-:::{note}
-When user role is provided by the SAML IdP during signup of a
-user who's coming from an invitation link, the IdP-provided role will
-take precedence over the role set in the invitation.
-:::
-
-[configure-saml-group-sync]: #synchronizing-group-membership-with-saml
-
-#### Synchronizing group membership with SAML
-
-Zulip 11.0+ includes support for syncing group memberships upon user
-login. To activate this feature, uncomment the `groups` field in the
-config in `SOCIAL_AUTH_SYNC_ATTRS_DICT` and configure the list as
-explained below. An example configuration might look like this:
-
-```python
-SOCIAL_AUTH_SYNC_ATTRS_DICT = {
-    "your_subdomain": {
-        "saml": {
-            "groups": ["group1", ("samlgroup2", "zulipgroup2"), "group3"],
-        }
-    }
-}
-```
-
-The tuple syntax (`("samlgroup2", "zulipgroup2")`) should be used when
-the Zulip group that you'd like to sync does not have exactly the same
-name as the SAML group.
-
-Your SAML IdP will need to provide the list of SAML group names in the
-`zulip_groups` attribute of the `SAMLResponse`. When a user logs in
-using SAML, groups are synced as follows:
-
-1. Zulip checks `SOCIAL_AUTH_SYNC_ATTRS_DICT` for whether the group is
-   a "SAML synced group": one whose membership should be synced from
-   SAML. The special `"groups": "*",` wildcard syntax means all Zulip
-   groups are SAML synced groups. Otherwise, all groups not explicitly
-   listed in the `groups` list for the organization will have their
-   membership managed entirely in Zulip and will never be synced.
-1. If a SAML synced group appears in `zulip_groups` in the
-   `SAMLResponse`, the user is added to that group (if not already a
-   member). If the SAML synced group doesn't yet exist in Zulip, it
-   will be created automatically, with a default configuration where
-   only organization owners can manage the group.
-1. Otherwise, the user is removed from the SAML synced group (if
-   currently a member).
-
-Only direct membership of groups is synced through this protocol;
-subgroups of Zulip groups are managed entirely [inside
-Zulip](https://zulip.com/help/manage-user-groups#add-user-groups-to-a-group).
+fields][custom-profile-fields] from the SAML provider; see
+[Synchronizing data during login](#synchronizing-data-during-login) for
+configuration instructions.
 
 ### Synchronizing email addresses with SAML
 
@@ -1227,6 +1166,15 @@ If your OIDC server's HTTPS server is signed by a custom certificate
 authority, you will need to [configure Zulip to trust
 it](system-configuration.md#custom_ca_path).
 
+Zulip 13.0+ can synchronize [group
+memberships][user-groups-help-center], the [user
+role][user-role-help-center], the user's full name, and [custom profile
+fields][custom-profile-fields] from the OIDC provider when a user logs
+in; see [Synchronizing data during
+login](#synchronizing-data-during-login) for details. To synchronize
+user data continuously rather than only at login, consider [SCIM
+provisioning](./scim.md) instead, if your provider offers it.
+
 ### Microsoft Entra ID (OIDC)
 
 Microsoft Entra ID (AzureAD) can be configured as an OIDC provider.
@@ -1337,6 +1285,83 @@ specific Entra ID tenant. If that meets your needs, you can
 configure it via the settings documented in `/etc/zulip/settings.py`.
 For tenant-specific authentication, use the OIDC approach above.
 :::
+
+## Synchronizing data during login
+
+The [SAML](#saml) and [OpenID Connect](#openid-connect) backends can
+synchronize [group memberships][user-groups-help-center], the [user
+role][user-role-help-center], the user's full name, and [custom profile
+fields][custom-profile-fields] from the identity provider. Because
+these protocols only give Zulip access to a user's data when they log
+in, this metadata can only be synchronized at that time; installations
+that need continuous synchronization should use [SCIM
+provisioning](./scim.md) where their provider offers it.
+
+In order to use this functionality, configure `SOCIAL_AUTH_SYNC_ATTRS_DICT` in
+`/etc/zulip/settings.py` according to the instructions in the inline
+documentation in the file. Servers installed before Zulip 10.0 may want to
+[update inline comment documentation][update-inline-comments] first in order to
+access it. For configuring syncing of groups see
+[below][configure-group-sync].
+
+Custom profile fields are only synchronized during login, not during
+account creation; we consider this [a
+bug](https://github.com/zulip/zulip/issues/18746). User role is
+synchronized during both account creation and each consecutive login.
+
+:::{note}
+When user role is provided by the identity provider during signup of a
+user who's coming from an invitation link, the IdP-provided role will
+take precedence over the role set in the invitation.
+:::
+
+[configure-group-sync]: #synchronizing-group-membership
+
+### Synchronizing group membership
+
+Support for syncing group memberships upon user login was added in
+Zulip 11.0 for SAML and in Zulip 13.0 for OpenID Connect. To activate
+this feature, uncomment the `groups` field in the config in
+`SOCIAL_AUTH_SYNC_ATTRS_DICT` and configure the list as explained
+below. An example configuration might look like this:
+
+```python
+SOCIAL_AUTH_SYNC_ATTRS_DICT = {
+    "your_subdomain": {
+        "saml": {
+            "groups": ["group1", ("group2", "zulipgroup2"), "group3"],
+        }
+    }
+}
+```
+
+The second-level key (`"saml"` above) is the name of the
+authentication backend; use `"oidc"` for OpenID Connect. The tuple
+syntax (`("group2", "zulipgroup2")`) should be used when the Zulip
+group that you'd like to sync does not have exactly the same name as
+the group provided by the identity provider.
+
+Your identity provider will need to provide the list of group names in
+the `zulip_groups` attribute (SAML) or claim (OIDC). When a user logs
+in, groups are synced as follows:
+
+1. Zulip checks `SOCIAL_AUTH_SYNC_ATTRS_DICT` for whether the group is
+   a "synced group": one whose membership should be synced from the
+   identity provider. The special `"groups": "*",` wildcard syntax
+   means all Zulip groups are synced groups. Otherwise, all groups not
+   explicitly listed in the `groups` list for the organization will
+   have their membership managed entirely in Zulip and will never be
+   synced.
+1. If a synced group appears in `zulip_groups`, the user is added to
+   that group (if not already a member). If the synced group doesn't
+   yet exist in Zulip, it will be created automatically, with a default
+   configuration where only organization owners can manage the group.
+1. Otherwise, the user is removed from the synced group (if currently a
+   member).
+
+Only direct membership of groups is synced through this mechanism;
+subgroups of Zulip groups are managed entirely [inside
+Zulip](https://zulip.com/help/manage-user-groups#add-user-groups-to-a-group).
 
 ## Custom authentication backends
 
