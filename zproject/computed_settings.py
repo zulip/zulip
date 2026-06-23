@@ -1276,6 +1276,17 @@ MOBILE_NOTIFICATIONS_SHARDS = int(
 )
 USER_ACTIVITY_SHARDS = int(get_config("application_server", "user_activity_shards", "1"))
 
+# Process soft reactivations in their own queue and worker process instead of
+# sharing deferred_work. This lives here, not in default_settings, because it
+# can only be configured via zulip.conf: enabling it requires a puppet apply
+# to actually run the dedicated worker, so a settings.py override would be
+# ineffective. Off by default so small servers don't pay for an extra worker
+# process; large servers can enable it so reactivations aren't delayed behind
+# long deferred_work jobs such as realm exports.
+DEDICATED_SOFT_REACTIVATION_QUEUE = get_config(
+    "application_server", "dedicated_soft_reactivation_queue", False
+)
+
 TWO_FACTOR_PATCH_ADMIN = False
 
 # Allow the environment to override the default DSN

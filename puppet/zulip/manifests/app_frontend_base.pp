@@ -150,7 +150,7 @@ class zulip::app_frontend_base {
   # of memory.
   $queues_multiprocess_default = $zulip::common::total_memory_mb > 3800
   $queues_multiprocess = zulipconf('application_server', 'queue_workers_multiprocess', $queues_multiprocess_default)
-  $queues = [
+  $base_queues = [
     'deferred_work',
     'digest_emails',
     'email_mirror',
@@ -165,6 +165,12 @@ class zulip::app_frontend_base {
     'user_activity',
     'user_activity_interval',
   ]
+  # Soft reactivations normally share the deferred_work queue; larger
+  # servers can opt into a dedicated queue (and worker process) for them.
+  $queues = zulipconf('application_server', 'dedicated_soft_reactivation_queue', false) ? {
+    true    => $base_queues + ['soft_reactivation'],
+    default => $base_queues,
+  }
 
   if $zulip::common::total_memory_mb > 24000 {
     $uwsgi_default_processes = 16

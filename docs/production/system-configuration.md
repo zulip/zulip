@@ -148,6 +148,17 @@ using remote servers for PostgreSQL, memcached, Redis, and RabbitMQ.
 
 [docker-memory-limit]: https://docs.docker.com/reference/compose-file/deploy/#memory
 
+#### `dedicated_soft_reactivation_queue`
+
+When a long-term-idle user returns, Zulip backfills the message-history
+rows that were skipped while they were idle; this "soft reactivation"
+can take many seconds. By default it runs in the shared `deferred_work`
+queue, alongside jobs such as data exports that can take minutes. Set
+this to true to process soft reactivations in a dedicated queue (and, in
+multiprocess mode, a dedicated worker process), so they aren't delayed
+behind such jobs. This costs an additional worker process, so it is most
+useful on large servers; smaller servers should leave it disabled.
+
 #### `rolling_restart`
 
 If set to true, when using `./scripts/restart-server` to restart

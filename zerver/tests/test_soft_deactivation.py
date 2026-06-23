@@ -1,6 +1,7 @@
 from collections.abc import Set as AbstractSet
 from unittest import mock
 
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words
@@ -14,6 +15,7 @@ from zerver.lib.soft_deactivation import (
     do_soft_deactivate_users,
     get_soft_deactivated_users_for_catch_up,
     get_users_for_soft_deactivation,
+    queue_soft_reactivation,
     reactivate_user_if_soft_deactivated,
 )
 from zerver.lib.stream_subscription import get_subscriptions_for_send_message
@@ -137,6 +139,37 @@ class UserSoftDeactivationTests(ZulipTestCase):
         for user in users:
             user.refresh_from_db()
             self.assertFalse(user.long_term_idle)
+
+    def test_soft_reactivation_uses_deferred_work_queue_by_default(self) -> None:
+        user = self.example_user("hamlet")
+        with mock.patch("zerver.lib.soft_deactivation.queue_event_on_commit") as mock_queue:
+            queue_soft_reactivation(user.id)
+        mock_queue.assert_called_once_with(
+            "deferred_work", {"type": "soft_reactivate", "user_profile_id": user.id}
+        )
+
+    @override_settings(DEDICATED_SOFT_REACTIVATION_QUEUE=True)
+    def test_soft_reactivation_uses_dedicated_queue_when_enabled(self) -> None:
+        user = self.example_user("hamlet")
+
+        # With the option enabled, reactivations route to the dedicated queue.
+        with mock.patch("zerver.lib.soft_deactivation.queue_event_on_commit") as mock_queue:
+            queue_soft_reactivation(user.id)
+        mock_queue.assert_called_once_with(
+            "soft_reactivation", {"type": "soft_reactivate", "user_profile_id": user.id}
+        )
+
+        # And the dedicated queue's worker reactivates the user end to end.
+        self.subscribe(user, "Denmark")
+        self.send_stream_message(user, "Denmark")
+        with self.assertLogs(logger_string, level="INFO"):
+            do_soft_deactivate_users([user])
+        user.refresh_from_db()
+        self.assertTrue(user.long_term_idle)
+        with self.captureOnCommitCallbacks(execute=True):
+            queue_soft_reactivation(user.id)
+        user.refresh_from_db()
+        self.assertFalse(user.long_term_idle)
 
     def test_get_users_for_catch_up(self) -> None:
         users = [
