@@ -45,6 +45,10 @@ class LlmsTxtTest(ZulipTestCase):
             content,
         )
         self.assertNotIn("narrow=[", content)
+        # The `#narrow/...` URL segments use Zulip's hash-encoding, which
+        # the doc must not conflate with the URL-encoding of API requests.
+        self.assertIn("hash-encoded", content)
+        self.assertNotIn("URL-encoded channel name", content)
 
     def test_llms_txt_spectator_access_disabled(self) -> None:
         """
