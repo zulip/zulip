@@ -1643,9 +1643,9 @@ No changes; feature level used for Zulip 10.0 release.
   `server_max_deactivated_realm_deletion_days` fields for the permitted
   number of days before full data deletion of a deactivated organization
   on the server.
-* `POST /realm/deactivate`: Added `deletion_delay_days` parameter to
-  support setting when a full data deletion of the deactivated
-  organization may be done.
+* [`POST /realm/deactivate`](/api/deactivate-realm): Added
+  `deletion_delay_days` parameter to support setting when a full data
+  deletion of the deactivated organization may be done.
 
 **Feature level 331**
 

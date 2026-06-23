@@ -40,6 +40,10 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-constructor-groups-video-call",
     "create-nextcloud-talk-video-call",
     "create-webex-video-call",
+    # Successfully running this example would deactivate the "zulip"
+    # realm used by the test server, breaking the curl examples that
+    # run after it.
+    "deactivate-realm",
 }
 
 

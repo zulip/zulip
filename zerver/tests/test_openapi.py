@@ -233,7 +233,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/profile_fields/{field_id}",
         "/realm/icon",
         "/realm/logo",
-        "/realm/deactivate",
         "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
