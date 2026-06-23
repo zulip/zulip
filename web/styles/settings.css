@@ -16,7 +16,7 @@ h3,
 
 /* TODO: This should ideally be added to help_link_widget.hbs,
    allowing us to deduplicate at least the opacity CSS with the
-   fa-question-circle-o logic above. */
+   zulip-icon-help logic above. */
 .settings-info-icon {
     padding-left: 3px;
     opacity: 0.7;
@@ -31,9 +31,9 @@ a.help_link_widget {
     color: inherit;
     margin-left: 3px;
 
-    .fa-question-circle-o {
-        position: relative;
-        top: 1px;
+    .zulip-icon-help {
+        vertical-align: -0.16em;
+        font-size: 0.88em;
     }
 
     &:hover {
@@ -47,6 +47,10 @@ h3,
 .settings-section-title {
     .help_link_widget {
         margin-left: 5px;
+
+        .zulip-icon-help {
+            vertical-align: -0.15em;
+        }
     }
 }
 

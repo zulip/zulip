@@ -494,6 +494,10 @@ h4.stream_setting_subsection_title {
 
     .tab-switcher.stream_sorter_toggle {
         margin-left: auto;
+
+        .zulip-icon-bar-chart {
+            font-size: 1.115em;
+        }
     }
 
     .tab-switcher,
@@ -1116,6 +1120,21 @@ h4.stream_setting_subsection_title {
         .bottom-bar .stream-message-count {
             white-space: nowrap;
             color: hsl(0deg 0% 67%);
+            display: flex;
+            align-items: center;
+            gap: 0.1em;
+        }
+
+        .top-bar .subscriber-count .zulip-icon-user {
+            font-size: 1.1em;
+        }
+
+        .top-bar .subscriber-count .zulip-icon-lock {
+            font-size: 0.82em;
+        }
+
+        .bottom-bar .stream-message-count .zulip-icon-bar-chart {
+            font-size: 1.2em;
         }
 
         .top-bar .subscriber-count-text,
