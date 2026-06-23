@@ -622,9 +622,11 @@
    the formatting bar via Tab. Scroller-button state
    silently updates despite their being hidden, and
    scroller buttons reappear once focus has moved out
-   of the formatting bar. */
+   of the formatting bar. Using :focus-visible (instead
+   of :focus-within) avoids hiding the buttons during a
+   mouse click, which would otherwise cause a blink. */
 .compose-scrolling-buttons-container:has(
-        .compose-scrollable-buttons:focus-within
+        .compose-scrollable-buttons :focus-visible
     ) {
     .formatting-scroller-backward,
     .formatting-scroller-forward {
