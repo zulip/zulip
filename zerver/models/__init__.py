@@ -72,5 +72,6 @@ from zerver.models.user_activity import UserActivity as UserActivity
 from zerver.models.user_activity import UserActivityInterval as UserActivityInterval
 from zerver.models.user_topics import UserTopic as UserTopic
 from zerver.models.users import RealmUserDefault as RealmUserDefault
+from zerver.models.users import UserAPIKey as UserAPIKey
 from zerver.models.users import UserBaseSettings as UserBaseSettings
 from zerver.models.users import UserProfile as UserProfile
