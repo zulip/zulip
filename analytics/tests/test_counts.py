@@ -266,8 +266,6 @@ class AnalyticsTestCase(ZulipTestCase):
             self.assertEqual(table._default_manager.filter(**kwargs).count(), 1)
         self.assert_length(arg_values, table._default_manager.count())
 
-
-class TestProcessCountStat(AnalyticsTestCase):
     def make_dummy_count_stat(self, property: str) -> CountStat:
         query = lambda kwargs: SQL(
             """
@@ -288,6 +286,8 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertEqual(fill_state.end_time, end_time)
         self.assertEqual(fill_state.state, state)
 
+
+class TestProcessCountStat(AnalyticsTestCase):
     def test_process_stat(self) -> None:
         # process new stat
         current_time = installation_epoch() + self.HOUR

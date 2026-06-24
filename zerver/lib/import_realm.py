@@ -22,7 +22,7 @@ from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
-from analytics.models import RealmCount, StreamCount, UserCount
+from analytics.models import FillState, RealmCount, StreamCount, UserCount
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import set_default_for_realm_permission_group_settings
 from zerver.actions.realm_settings import (
@@ -49,7 +49,11 @@ from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-from zerver.lib.server_initialization import create_internal_realm, server_initialized
+from zerver.lib.server_initialization import (
+    create_internal_realm,
+    server_initialized,
+    server_is_initialized_and_has_no_other_realm,
+)
 from zerver.lib.streams import (
     get_stream_permission_default_group,
     render_stream_description,
@@ -189,6 +193,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "analytics_realmcount": {},
     "analytics_streamcount": {},
     "analytics_usercount": {},
+    "analytics_fillstate": {},
     "realmuserdefault": {},
     "scheduledmessage": {},
     "onboardingusermessage": {},
@@ -2520,6 +2525,33 @@ def create_image_attachments(realm: Realm, attachment_data: ImportedTableData) -
         maybe_thumbnail(pyvips_source, content_type, path_id, realm.id, skip_events=True)
 
 
+def import_analytics_fillstate(data: ImportedTableData, realm: Realm) -> None:
+    # This currently only handles the scenario where there are no other
+    # realms in the server.
+    #
+    # TODO: This doesn't yet handle scenarios where there are other realms
+    #       in the server and the server's FillState is different from the
+    #       one we're currently importing. See #13486 for plans on how to
+    #       handle the other scenarios.
+    #
+    #       One of the plans mentioned in #13486 was adding support for
+    #       running process_count_stat only on the imported realm and
+    #       getting it in sync with the server's FillState if the server
+    #       is ahead.
+    #
+    #       The main blockers for that approach is that, we currently have
+    #       no solution for how to update FillState and InstallationCount
+    #       tables for realm-specific process_count_stat operations.
+
+    if server_is_initialized_and_has_no_other_realm(realm):
+        # Clear out any stale FillState rows from cases like previous
+        # manual test runs.
+        FillState.objects.all().delete()
+        update_model_ids(FillState, data, "analytics_fillstate")
+        bulk_import_model(data, FillState)
+        return
+
+
 def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: set[int]) -> None:
     analytics_filename = os.path.join(import_dir, "analytics.json")
     if not os.path.exists(analytics_filename):
@@ -2549,6 +2581,9 @@ def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: s
     re_map_foreign_keys(data, "analytics_streamcount", "stream", related_table="stream")
     update_model_ids(StreamCount, data, "analytics_streamcount")
     bulk_import_model(data, StreamCount)
+
+    fix_datetime_fields(data, "analytics_fillstate")
+    import_analytics_fillstate(data, realm)
 
 
 def add_users_to_system_user_groups(
