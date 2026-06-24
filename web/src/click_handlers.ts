@@ -295,6 +295,11 @@ export function initialize(): void {
     });
 
     $("#main_div").on("click", "a.stream", function (this: HTMLAnchorElement, e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            // Let the browser handle modified clicks (open in a new
+            // tab/window) using the link's href.
+            return;
+        }
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
