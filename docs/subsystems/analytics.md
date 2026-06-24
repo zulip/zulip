@@ -180,7 +180,7 @@ The relevant files are:
 
 - `analytics/views/stats.py`: All chart data requests from the /stats page call
   get_chart_data in this file.
-- `web/src/stats/stats.ts`: The JavaScript and Plotly code.
+- `web/src/stats/stats.ts`: The JavaScript and Chart.js code.
 - `templates/analytics/stats.html`
 - `web/styles/stats.css` and `web/styles/legacy_portico.css`: We are in the
   process of re-styling this page to use in-app CSS instead of the portico CSS,
@@ -197,24 +197,19 @@ Tips and tricks:
 
 - Use `$.get` to fetch data from the backend. You can grep through `stats.ts`
   to find examples of this.
-- The Plotly documentation is at
-  <https://plot.ly/javascript/> (check out the full reference, event
-  reference, and function reference). The documentation pages seem to work
-  better in Chrome than in Firefox, though this hasn't been extensively
-  verified.
-- Unless a graph has a ton of data, it is typically better to just redraw it
-  when something changes (e.g., in the various aggregation click handlers)
-  rather than to use retrace or relayout or do other complicated
-  things. Performance on the `/stats` page is nice but not critical, and we've
-  run into a lot of small bugs when trying to use Plotly's retrace/relayout.
-- There is a way to access raw d3 functionality through Plotly, though it
-  isn't documented well.
-- `'paper'` as a Plotly option refers to the bounding box of the graph (or
-  something related to that).
-- You can't right click and inspect the elements of a Plotly graph (e.g., the
-  bars in a bar graph) in your browser, since there is an interaction layer
-  on top of it. But if you hunt around the document tree you should be able
-  to find it.
+- The Chart.js documentation is at <https://www.chartjs.org/docs/latest/>.
+  Each chart is a `Chart` instance rendered into a `<canvas>`; the
+  `chartjs-plugin-zoom` plugin provides the drag/wheel pan and zoom on the
+  time-series charts.
+- Unless a graph has a ton of data, it is typically better to just rebuild
+  its datasets and call `chart.update()` when something changes (e.g., in the
+  various aggregation click handlers) rather than mutating datasets in place.
+  Performance on the `/stats` page is nice but not critical.
+- The built-in Chart.js tooltip is disabled on several charts in favor of a
+  custom hover readout rendered into dedicated DOM elements; see
+  `attach_hover_readout`.
+- Because charts render to a `<canvas>`, individual elements (e.g., the bars
+  in a bar graph) aren't inspectable in the browser's DOM tree.
 
 ### /activity page
 

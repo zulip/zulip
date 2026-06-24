@@ -13,10 +13,6 @@ p {
     max-width: none;
 }
 
-.svg-container {
-    margin: 20px;
-}
-
 .center-charts {
     margin: 30px;
 }
@@ -52,8 +48,11 @@ p {
 
 .chart-container {
     vertical-align: top;
+    position: relative;
     margin: 10px 0;
-    padding: 20px;
+    /* Extra bottom padding hosts the absolutely-positioned hover readout
+       below the chart canvas; see #hoverinfo etc. */
+    padding: 20px 20px 32px;
     border: 2px solid hsl(0deg 0% 93%);
     background-color: hsl(0deg 0% 100%);
 
@@ -76,14 +75,6 @@ p {
 
 .analytics-page-header {
     margin-left: 10px;
-}
-
-.rangeslider-container {
-    user-select: none;
-}
-
-.rangeselector text {
-    font-weight: 400;
 }
 
 .buttons button {
@@ -127,7 +118,8 @@ p {
     margin-left: 10px;
 }
 
-#id_messages_sent_by_client {
+/* Height is set dynamically in stats.ts based on the number of bars. */
+#messages_sent_by_client_chart {
     min-height: 100px;
     width: 750px;
     position: relative;
@@ -144,10 +136,6 @@ p {
     height: 400px;
     width: 750px;
     position: relative;
-
-    &[last_value_is_partial="true"] .points path:last-of-type {
-        opacity: 0.5;
-    }
 }
 
 #id_number_of_users {
@@ -160,22 +148,27 @@ p {
     display: none;
 }
 
-#users_hover_info,
-#read_hover_info,
-#hoverinfo,
 #pie_messages_sent_by_type_total {
     float: right;
     font-size: 0.8em;
     font-weight: 400;
 }
 
+/*
+ * The hover readouts sit in the card's bottom padding, below the chart canvas
+ * (and thus below its x-axis labels). Absolute positioning keeps them from
+ * shifting the layout as they appear and disappear on hover.
+ */
 #users_hover_info,
 #read_hover_info,
 #hoverinfo {
     display: none;
-    position: relative;
-    height: 0;
-    top: -25px;
+    position: absolute;
+    right: 20px;
+    bottom: 4px;
+    font-size: 0.8em;
+    font-weight: 400;
+    white-space: nowrap;
 }
 
 .spinner::before {
