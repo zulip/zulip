@@ -57,6 +57,7 @@ from zerver.lib.rate_limiter import (
     rate_limit_spectator_attachment_access_by_file,
     should_rate_limit,
 )
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.stream_subscription import get_user_subscribed_streams
@@ -90,6 +91,7 @@ from zerver.lib.users import (
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
+    get_api_key,
     get_users_for_api,
     max_message_id_for_user,
     validate_short_name_and_construct_bot_email,
@@ -622,7 +624,7 @@ def get_bot_api_key(
     bot = access_bot_by_id(user_profile, bot_id)
 
     json_result = dict(
-        api_key=bot.api_key,
+        api_key=get_api_key(bot),
     )
     return json_success(request, data=json_result)
 
@@ -719,6 +721,8 @@ def add_bot_backend(
     if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and service_name:
         check_valid_bot_config(bot_type, service_name, config_data)
 
+    description = RequestNotes.get_notes(request).client_name
+
     bot_profile = do_create_user(
         email=email,
         password=None,
@@ -731,6 +735,7 @@ def add_bot_backend(
         default_events_register_stream=default_events_register_stream,
         default_all_public_streams=default_all_public_streams,
         acting_user=user_profile,
+        description=description,
     )
     if len(request.FILES) == 1:
         [user_file] = request.FILES.values()
@@ -758,7 +763,7 @@ def add_bot_backend(
 
     notify_created_bot(bot_profile)
 
-    api_key = bot_profile.api_key
+    api_key = get_api_key(bot_profile)
 
     json_result = dict(
         user_id=bot_profile.id,
@@ -786,7 +791,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         # Bots are supposed to have only one API key, at least for now.
         # Therefore we can safely assume that one and only valid API key will be
         # the first one.
-        api_key = bot_profile.api_key
+        api_key = get_api_key(bot_profile)
 
         return dict(
             username=bot_profile.email,
@@ -935,6 +940,9 @@ def create_user_backend(
     if not check_password_strength(password):
         raise JsonableError(str(PASSWORD_TOO_WEAK_ERROR))
 
+    request_notes = RequestNotes.get_notes(request)
+    description = request_notes.client_name
+
     target_user = do_create_user(
         email,
         password,
@@ -948,6 +956,7 @@ def create_user_backend(
         # Service on first login.
         tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
         acting_user=user_profile,
+        description=description,
     )
     return json_success(request, data={"user_id": target_user.id})
 
