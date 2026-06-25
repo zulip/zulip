@@ -7,13 +7,14 @@ from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from django_stubs_ext import StrPromise
+from psycopg2.sql import SQL, Identifier
 
 from zerver.actions.message_delete import DeleteMessagesEvent, do_delete_messages
 from zerver.actions.message_flags import do_update_mobile_push_notification
@@ -117,6 +118,62 @@ class UpdateMessageResult:
 # already lets users keep editing near the deadline via
 # `min_seconds_to_edit + seconds_left_buffer` in `message_edit.ts`.
 MESSAGE_EDIT_TIME_LIMIT_BUFFER_SECONDS = 20
+
+
+def reset_attachments_visibility_cache(
+    changed_message_ids: list[int],
+    target_stream: Stream,
+    stream_being_edited: Stream,
+) -> None:
+    """
+    Reset the Attachment.is_*_public caches for all messages
+    moved to another stream with different access permissions.
+    """
+    is_web_public_match = target_stream.is_web_public == stream_being_edited.is_web_public
+    invite_only_match = target_stream.invite_only == stream_being_edited.invite_only
+
+    # Both streams already have the same access permissions,
+    # so no update needed.
+    if is_web_public_match and invite_only_match:
+        return
+
+    updates = []
+    if not invite_only_match:
+        updates.append(SQL("is_realm_public = NULL"))
+
+    if not is_web_public_match:
+        updates.append(SQL("is_web_public = NULL"))
+
+    query = SQL(
+        """
+        UPDATE {attachment}
+        SET {update_fields_segment}
+        WHERE {attachment}.id IN
+        (
+            SELECT {attachment_messages}.attachment_id
+            FROM {attachment_messages}
+            WHERE {attachment_messages}.message_id = ANY(%(changed_message_ids)s)
+        );
+
+        UPDATE {archived_attachment}
+        SET {update_fields_segment}
+        WHERE {archived_attachment}.id IN
+        (
+            SELECT {archived_attachment_messages}.archivedattachment_id
+            FROM {archived_attachment_messages}
+            WHERE {archived_attachment_messages}.archivedmessage_id = ANY(%(changed_message_ids)s)
+        );
+    """
+    ).format(
+        # Table names:
+        attachment=Identifier(Attachment._meta.db_table),
+        attachment_messages=Identifier(Attachment.messages.through._meta.db_table),
+        archived_attachment=Identifier(ArchivedAttachment._meta.db_table),
+        archived_attachment_messages=Identifier(ArchivedAttachment.messages.through._meta.db_table),
+        update_fields_segment=SQL(", ").join(updates),
+    )
+    with connection.cursor() as cursor:
+        cursor.execute(query, {"changed_message_ids": changed_message_ids})
 
 
 def subscriber_info(user_id: int) -> dict[str, Any]:
@@ -1113,23 +1170,11 @@ def do_update_message(
             user_profile.realm, delete_event, [user.id for user in users_losing_access]
         )
 
-        # Reset the Attachment.is_*_public caches for all messages
-        # moved to another stream with different access permissions.
-        if message_edit_request.target_stream.invite_only != stream_being_edited.invite_only:
-            Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
-                is_realm_public=None,
-            )
-            ArchivedAttachment.objects.filter(messages__in=changed_messages.values("id")).update(
-                is_realm_public=None,
-            )
-
-        if message_edit_request.target_stream.is_web_public != stream_being_edited.is_web_public:
-            Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
-                is_web_public=None,
-            )
-            ArchivedAttachment.objects.filter(messages__in=changed_messages.values("id")).update(
-                is_web_public=None,
-            )
+        reset_attachments_visibility_cache(
+            changed_message_ids,
+            message_edit_request.target_stream,
+            stream_being_edited,
+        )
 
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
