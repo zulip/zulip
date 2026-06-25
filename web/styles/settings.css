@@ -281,13 +281,14 @@ h3,
         }
     }
 
-    /* Bare <h3> section titles in settings panels get their font-size,
+    /* Bare <h3> section titles in settings panels (e.g. table-panel
+       headers in '.settings_panel_list_header') get their font-size,
        font-weight, and line-height from the '#settings_page h3' rule
        further down in this file; previously their margin came from the
        universal h1-h4 reset in bootstrap.app.css. Set the margin
        explicitly here so the spacing survives that reset's removal.
-       Specificity matches the existing '.admin-realm-form h3' margin
-       override, which appears later in this file and so still wins. */
+       Headings inside a '.subsection-header' are overridden by the
+       higher-specificity '#settings_page .subsection-header h3' rule. */
     & h3 {
         margin: 10px 0;
     }
@@ -555,10 +556,6 @@ input[type="checkbox"] {
 }
 
 .admin-realm-form {
-    & h3 {
-        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
-    }
-
     .subsection-header h3 {
         display: inline;
     }
@@ -568,7 +565,6 @@ input[type="checkbox"] {
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
-        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     .tip {
