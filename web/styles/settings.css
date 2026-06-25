@@ -1833,6 +1833,12 @@ label.preferences-radio-choice-label {
     width: fit-content;
 }
 
+#realm_invite_required_container {
+    /* Keep the disabled-setting tooltip's hover area on the checkbox, not
+       the empty space its wider siblings stretch this container across. */
+    width: fit-content;
+}
+
 #realm-user-default-settings {
     .settings-field-label,
     .settings-checkbox-wrapper,
