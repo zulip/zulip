@@ -21,6 +21,11 @@ TASK_URL = f"https://app.clickup.com/t/{TEAM_ID}/{TASK_ID}"
 TASK_NAME = "Zulip Test Task"
 AUTHOR = "Sathwik Suresh Shetty"
 
+SPACE_ID = "90167241645"
+SPACE_API_URL = f"https://api.clickup.com/api/v2/space/{SPACE_ID}"
+SPACE_URL = f"https://app.clickup.com/{TEAM_ID}/v/s/{SPACE_ID}"
+SPACE_NAME = "Zulip Test"
+
 
 def mock_clickup_api_calls(
     test_func: Callable[Concatenate["ClickUpHookTests", ParamT], None],
@@ -33,6 +38,11 @@ def mock_clickup_api_calls(
             responses.GET,
             TASK_API_URL,
             self.webhook_fixture_data("clickup", "api_responses/task_api_data"),
+        )
+        responses.add(
+            responses.GET,
+            SPACE_API_URL,
+            self.webhook_fixture_data("clickup", "api_responses/space_api_data"),
         )
         test_func(self, *args, **kwargs)
 
@@ -82,6 +92,44 @@ class ClickUpHookTests(WebhookTestCase):
         result = self.client_post(self.url, {}, content_type="application/json")
         self.assert_json_error(
             result, "Unable to parse request: Did ClickUp generate this event?", 400
+        )
+
+    @mock_clickup_api_calls
+    def test_space_created(self) -> None:
+        self.check_webhook(
+            "space_created",
+            expected_topic_name=f"Space: {SPACE_NAME}",
+            expected_message=f"[{SPACE_NAME}]({SPACE_URL}) was created.",
+        )
+
+    @mock_clickup_api_calls
+    def test_space_updated(self) -> None:
+        self.check_webhook(
+            "space_updated",
+            expected_topic_name=f"Space: {SPACE_NAME}",
+            expected_message=f"[{SPACE_NAME}]({SPACE_URL}) was updated.",
+        )
+
+    def test_space_deleted(self) -> None:
+        self.check_webhook(
+            "space_deleted",
+            expected_topic_name=f"Space: {SPACE_ID}",
+            expected_message="A space was deleted.",
+        )
+
+    def test_space_event_without_token(self) -> None:
+        with self.assertLogs("zerver.webhooks.clickup.view", level="WARNING") as warn_logs:
+            self.check_webhook(
+                "space_created",
+                expected_topic_name=f"Space: {SPACE_ID}",
+                expected_message=f"[Space]({SPACE_URL}) was created.",
+            )
+        self.assertEqual(
+            warn_logs.output,
+            [
+                f"WARNING:zerver.webhooks.clickup.view:ClickUp webhook for bot {self.test_user.full_name}"
+                " has no configured API token; entity names can't be fetched."
+            ],
         )
 
     def test_ignored_events(self) -> None:
