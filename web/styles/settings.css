@@ -697,20 +697,12 @@ input[type="checkbox"] {
     margin-bottom: 1em;
 }
 
-.organization-settings-parent {
-    padding-top: 5px;
-}
-
 #id_org_profile_preview {
     width: max-content;
     display: flex;
     gap: 5px;
     align-items: center;
     margin-bottom: 20px;
-}
-
-.inline-block.organization-permissions-parent {
-    padding-top: 5px;
 }
 
 #org-other-permissions .tip {
