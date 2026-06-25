@@ -20,6 +20,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -90,6 +91,9 @@ export const UPLOAD_IN_PROGRESS_ERROR_TOOLTIP_MESSAGE = $t({
 });
 export const WILDCARD_MENTION_ERROR_TOOLTIP_MESSAGE = $t({
     defaultMessage: "You do not have permission to use wildcard mentions in large streams.",
+});
+export const USER_GROUP_MENTION_ERROR_TOOLTIP_MESSAGE = $t({
+    defaultMessage: "You do not have permission to mention this group.",
 });
 export const CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE = $t({
     defaultMessage:
@@ -1238,6 +1242,19 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
             disabled_send_tooltip_message_html = get_message_too_long_for_compose_error();
         }
         blueslip.debug("Invalid compose state: Message too long");
+        is_validating_compose_box = false;
+        return false;
+    }
+
+    const disallowed_group = markdown.get_first_disallowed_group_mention(message_content);
+    if (disallowed_group) {
+        if (show_banner) {
+            compose_banner.show_user_group_mention_not_allowed_error(disallowed_group);
+        }
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html = USER_GROUP_MENTION_ERROR_TOOLTIP_MESSAGE;
+        }
+        blueslip.debug("Invalid compose state: Disallowed group mention");
         is_validating_compose_box = false;
         return false;
     }
