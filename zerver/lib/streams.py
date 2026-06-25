@@ -1023,6 +1023,37 @@ def access_stream_by_id(
     return (stream, sub)
 
 
+def get_content_accessible_streams_queryset(
+    user_profile: UserProfile,
+    subscribed_stream_ids: QuerySet[Subscription, int],
+    user_recursive_group_ids: set[int],
+) -> QuerySet[Stream]:
+    realm = user_profile.realm
+
+    if user_profile.is_guest:
+        return Stream.objects.filter(
+            Q(realm=realm)
+            & (Q(id__in=subscribed_stream_ids) | Q(is_web_public=True, invite_only=False))
+        )
+
+    return Stream.objects.filter(
+        Q(realm=realm)
+        & (
+            # Public streams, plus the user's own subscriptions.
+            Q(invite_only=False)
+            | Q(id__in=subscribed_stream_ids)
+            # Private streams the user can subscribe to via group permissions.
+            | (
+                Q(invite_only=True)
+                & (
+                    Q(can_add_subscribers_group_id__in=user_recursive_group_ids)
+                    | Q(can_subscribe_group_id__in=user_recursive_group_ids)
+                )
+            )
+        )
+    )
+
+
 def get_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     return Stream.objects.filter(realm=realm, invite_only=False, history_public_to_subscribers=True)
 
