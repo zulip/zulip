@@ -359,7 +359,9 @@ def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int,
 def get_slim_stream_id_map(stream_ids: set[int]) -> dict[int, Stream]:
     # "slim" because it only fetches the names of the stream objects,
     # suitable for passing into build_message_list.
-    streams = Stream.objects.filter(id__in=stream_ids).only("id", "name")
+    streams = Stream.objects.filter(id__in=stream_ids).only(
+        "id", "name", "message_content_allowed_in_email_notifications"
+    )
     return {stream.id: stream for stream in streams}
 
 
@@ -405,8 +407,9 @@ def bulk_get_digest_context(
         context[
             "message_content_disabled_by_user"
         ] = not user.message_content_in_email_notifications
+        context["message_content_disabled_by_all_channels"] = False
 
-        if not message_content_allowed_in_missedmessage_emails(user):
+        if not message_content_allowed_in_missedmessage_emails(user, None):
             # Count new messages when message content is hidden in email notifications.
             context["new_messages_count"] = get_new_messages_count(user, cutoff_date)
             context["hot_conversations"] = []
@@ -417,7 +420,23 @@ def bulk_get_digest_context(
             recent_topics = []
             for stream_id in stream_ids:
                 recent_topics += get_recent_topics(realm.id, stream_id, cutoff_date)
-            hot_topics = get_hot_topics(recent_topics, stream_ids)
+
+            recent_topics_with_content_allowed = []
+            if recent_topics:
+                for topic in recent_topics:
+                    stream = stream_id_map[topic.stream_id()]
+                    if stream.message_content_allowed_in_email_notifications:
+                        recent_topics_with_content_allowed.append(topic)
+
+                if len(recent_topics_with_content_allowed) == 0:
+                    context["hot_conversations"] = []
+                    context["new_messages_count"] = get_new_messages_count(user, cutoff_date)
+                    context["show_message_content"] = False
+                    context["message_content_disabled_by_all_channels"] = True
+                    yield user, context
+                    continue
+
+            hot_topics = get_hot_topics(recent_topics_with_content_allowed, stream_ids)
 
             context["hot_conversations"] = [
                 hot_topic.teaser_data(user, stream_id_map) for hot_topic in hot_topics

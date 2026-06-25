@@ -343,6 +343,10 @@ function create_stream(): void {
         );
     }
 
+    const message_content_allowed_in_email_notifications = util.the(
+        $<HTMLInputElement>("input#id_new_message_content_allowed_in_email_notifications"),
+    ).checked;
+
     let announce =
         stream_data.get_new_stream_announcements_stream() !== "" &&
         util.the($<HTMLInputElement>("#announce-new-stream input")).checked;
@@ -384,6 +388,9 @@ function create_stream(): void {
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
         topics_policy: JSON.stringify(topics_policy),
+        message_content_allowed_in_email_notifications: JSON.stringify(
+            message_content_allowed_in_email_notifications,
+        ),
         principals,
         ...group_setting_values,
     };
@@ -539,6 +546,9 @@ export function show_new_stream_modal(): void {
     stream_ui_updates.update_default_stream_option_state($("#stream-creation"));
     stream_ui_updates.update_history_public_to_subscribers_state($("#stream-creation"));
     stream_ui_updates.update_can_create_topic_group_setting_state($("#stream-creation"));
+    stream_ui_updates.enable_or_disable_message_content_allowed_in_email_notifications(
+        $("#stream-creation"),
+    );
     clear_error_display();
 }
 

@@ -16,6 +16,7 @@ from django_stubs_ext import StrPromise
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import internal_send_private_message
+from zerver.actions.streams import do_set_stream_property
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -1185,6 +1186,69 @@ class TestMessageNotificationEmails(ZulipTestCase):
             message_content_disabled_by_user=True,
             message_content_disabled_by_realm=True,
         )
+
+    def test_stream_messsage_content_allowed_in_email_notifications(self) -> None:
+        realm = get_realm("zulip")
+        self.assertTrue(realm.message_content_allowed_in_email_notifications)
+
+        hamlet = self.example_user("hamlet")
+        self.assertTrue(hamlet.message_content_in_email_notifications)
+
+        verona = get_stream("Verona", realm)
+        do_set_stream_property(
+            verona,
+            "message_content_allowed_in_email_notifications",
+            False,
+            acting_user=self.example_user("iago"),
+        )
+
+        mail.outbox = []
+
+        msg_id_1 = self.send_stream_message(
+            self.example_user("iago"), "Denmark", "@**King Hamlet**"
+        )
+        msg_id_2 = self.send_stream_message(self.example_user("iago"), "Verona", "@**King Hamlet**")
+        msg_id_3 = self.send_stream_message(self.example_user("iago"), "Denmark", "Hello!")
+        msg_id_4 = self.send_stream_message(self.example_user("iago"), "Verona", "Hello!")
+
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {
+                msg_id_1: MissedMessageData(trigger=NotificationTriggers.MENTION),
+                msg_id_2: MissedMessageData(trigger=NotificationTriggers.MENTION),
+                msg_id_3: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
+                msg_id_4: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL),
+            },
+        )
+
+        self.assert_length(mail.outbox, 2)
+
+        email_subject = "#Denmark > test"
+        verify_body_include = [
+            "Iago: > @**King Hamlet** > Hello! -- ",
+            "You are receiving this because you were personally mentioned.",
+        ]
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, email_subject)
+        for text in verify_body_include:
+            self.assertIn(text, self.normalize_string(msg.body))
+
+        email_subject = "#Denmark > test"
+        verify_body_does_not_include = [
+            "Iago: > @**King Hamlet** > Hello! -- ",
+        ]
+        verify_body_include = [
+            "This email does not include message content because messages in this channel",
+            "http://zulip.testserver/help/hide-message-content-in-emails",
+            "View or reply in Zulip Dev Zulip",
+            "You are receiving this because you were personally mentioned.",
+        ]
+        msg = mail.outbox[1]
+        self.assertEqual(msg.subject, "New messages")
+        for text in verify_body_include:
+            self.assertIn(text, self.normalize_string(msg.body))
+        for text in verify_body_does_not_include:
+            self.assertNotIn(text, self.normalize_string(msg.body))
 
     def test_realm_emoji_in_missed_message(self) -> None:
         realm = get_realm("zulip")

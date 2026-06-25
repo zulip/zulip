@@ -165,6 +165,10 @@ class Stream(models.Model):
 
     topics_policy = models.PositiveSmallIntegerField(default=StreamTopicsPolicyEnum.inherit.value)
 
+    # Whether message content is allowed in email notifications for
+    # messages in this channel.
+    message_content_allowed_in_email_notifications = models.BooleanField(default=True)
+
     stream_permission_group_settings = {
         "can_add_subscribers_group": GroupPermissionSetting(
             allow_nobody_group=True,
@@ -291,6 +295,7 @@ class Stream(models.Model):
         "can_resolve_topics_group_id",
         "is_recently_active",
         "topics_policy",
+        "message_content_allowed_in_email_notifications",
     ]
 
 

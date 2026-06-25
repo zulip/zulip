@@ -1307,3 +1307,53 @@ class TestCreateStreams(ZulipTestCase):
         self.assertNotEqual(
             stream_1.can_add_subscribers_group_id, stream_2.can_add_subscribers_group_id
         )
+
+    def test_message_content_allowed_in_email_notifications_when_creating_stream(self) -> None:
+        # By default content is allowed in email notifications for all channels,
+        # even when org-wide setting is set to false.
+        user = self.example_user("hamlet")
+        do_set_realm_property(
+            user.realm, "message_content_allowed_in_email_notifications", False, acting_user=None
+        )
+
+        stream_name = "test channel email 1"
+        result = self.create_channel_via_post(
+            user,
+            name=stream_name,
+        )
+        self.assert_json_success(result)
+        stream = get_stream(stream_name, user.realm)
+        self.assertTrue(stream.message_content_allowed_in_email_notifications)
+
+        stream_name = "test channel email 2"
+        result = self.create_channel_via_post(
+            user,
+            name=stream_name,
+            extra_post_data=dict(
+                message_content_allowed_in_email_notifications=orjson.dumps(False).decode(),
+            ),
+        )
+        self.assert_json_success(result)
+        stream = get_stream(stream_name, user.realm)
+        self.assertEqual(stream.message_content_allowed_in_email_notifications, False)
+
+        # Check the same cases when creating stream using
+        # `POST /users/me/subscriptions` endpoint.
+        stream_name = "test channel email 3"
+        subscriptions = [{"name": stream_name}]
+        result = self.subscribe_via_post(user, subscriptions, subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream(stream_name, user.realm)
+        self.assertTrue(stream.message_content_allowed_in_email_notifications)
+
+        stream_name = "test channel email 4"
+        subscriptions = [{"name": stream_name}]
+        result = self.subscribe_via_post(
+            user,
+            subscriptions,
+            {"message_content_allowed_in_email_notifications": orjson.dumps(False).decode()},
+            subdomain="zulip",
+        )
+        self.assert_json_success(result)
+        stream = get_stream(stream_name, user.realm)
+        self.assertEqual(stream.message_content_allowed_in_email_notifications, False)
