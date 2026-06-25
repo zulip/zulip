@@ -335,7 +335,12 @@ h3.user_group_setting_subsection_title {
     & a {
         color: inherit;
     }
-    margin-bottom: 10px;
+
+    /* Only reserve bottom margin when a banner is actually present, so
+       the empty wrapper doesn't take up space. */
+    &:not(:empty) {
+        margin-bottom: 10px;
+    }
 }
 
 .member-search,
