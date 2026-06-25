@@ -223,6 +223,7 @@ type UserCardPopoverData = {
     user_last_seen_time_status: string;
     user_time: string | undefined;
     user_type: string | undefined;
+    user_pronouns: string | undefined; // Add pronouns field
     status_content_available: boolean;
     status_text: string | undefined;
     status_emoji_info: user_status.UserStatusEmojiInfo | undefined;
@@ -346,9 +347,25 @@ function get_user_card_popover_data(
     }
     // Filtering out only those profile fields that can be display in the popover and are not empty.
     const field_types = realm.custom_profile_field_types;
+
+    // Get pronoun fields separately - they will be displayed in the header
+    const PRONOUNS_ID = field_types.PRONOUNS.id;
+    const pronoun_fields = people.get_custom_fields_by_type(user.user_id, PRONOUNS_ID);
+    const pronouns = pronoun_fields
+        ?.map((field) => field?.value)
+        .filter((value) => value !== undefined && value !== null && value !== "")
+        .join(", ");
+
+    // Filter out pronoun fields from display_profile_fields so they don't count toward the 2-field limit
     const display_profile_fields = realm.custom_profile_fields
         .flatMap((f) => user_profile.get_custom_profile_field_data(user, f, field_types) ?? [])
-        .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
+        .filter(
+            (f) =>
+                f.display_in_profile_summary &&
+                f.value !== undefined &&
+                f.value !== null &&
+                f.type !== PRONOUNS_ID, // Exclude pronoun fields
+        );
 
     const user_id_string = user.user_id.toString();
     const can_send_private_message =
@@ -377,6 +394,7 @@ function get_user_card_popover_data(
         user_last_seen_time_status,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
+        user_pronouns: pronouns, // Add pronouns to the data
         status_content_available: Boolean(status_text ?? status_emoji_info),
         status_text,
         status_emoji_info,
