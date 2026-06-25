@@ -3,6 +3,7 @@ import * as hash_util from "./hash_util.ts";
 import * as linkifiers from "./linkifiers.ts";
 import type {AbstractMap, MarkdownHelpers} from "./markdown.ts";
 import * as people from "./people.ts";
+import type {GroupSettingValue} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {Stream} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
@@ -51,7 +52,7 @@ function stream(obj: Stream | undefined): {stream_id: number; name: string} | un
 
 function user_group(
     obj: user_groups.UserGroup | undefined,
-): {id: number; name: string} | undefined {
+): {id: number; name: string; can_mention_group: GroupSettingValue} | undefined {
     if (obj === undefined) {
         return undefined;
     }
@@ -59,6 +60,7 @@ function user_group(
     return {
         id: obj.id,
         name: obj.name,
+        can_mention_group: obj.can_mention_group,
     };
 }
 
