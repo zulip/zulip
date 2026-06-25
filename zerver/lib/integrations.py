@@ -14,6 +14,7 @@ from django_stubs_ext import StrPromise
 from typing_extensions import override
 
 from zerver.lib.storage import static_path
+from zerver.lib.validator import check_string
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 from zerver.webhooks import fixtureless_integrations
 
@@ -577,6 +578,19 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ["continuous-integration"],
         [WebhookScreenshotConfig("github_job_completed.json")],
         display_name="CircleCI",
+    ),
+    IncomingWebhookIntegration(
+        "clickup",
+        ["project-management"],
+        [WebhookScreenshotConfig("task_created.json")],
+        display_name="ClickUp",
+        config_options=[
+            WebhookConfigOption(
+                name="clickup_token",
+                label="ClickUp API integration token",
+                validator=check_string,
+            ),
+        ],
     ),
     IncomingWebhookIntegration(
         "codeship",
