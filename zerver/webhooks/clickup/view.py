@@ -20,8 +20,10 @@ logger = logging.getLogger(__name__)
 
 CLICKUP_WEB_BASE_URL = "https://app.clickup.com"
 TASK_TEMPLATE = "{author_name} {action} [{name}]({url})."
+COMMON_MESSAGE_TEMPLATE = "[{name}]({url}) was {action}."
 DASHBOARD_URLS: dict[str, str] = {
     "task": CLICKUP_WEB_BASE_URL + "/t/{team_id}/{entity_id}",
+    "space": CLICKUP_WEB_BASE_URL + "/{team_id}/v/s/{entity_id}",
 }
 
 
@@ -63,6 +65,26 @@ def get_task_message(action: str, payload: WildValue, token: str) -> tuple[str, 
     return (topic_name, body)
 
 
+def get_event_message(entity: str, action: str, payload: WildValue, token: str) -> tuple[str, str]:
+    entity_id = payload[f"{entity}_id"].tame(check_string)
+
+    if action == "deleted":
+        return (f"{entity.title()}: {entity_id}", f"A {entity} was deleted.")
+
+    entity_data = get_clickup_api_data(entity_id, entity, token)
+    entity_name = entity_data["name"] if entity_data else entity.title()
+    topic_name = f"{entity.title()}: {entity_name if entity_data else entity_id}"
+    team_id = payload["team_id"].tame(check_string)
+
+    body = COMMON_MESSAGE_TEMPLATE.format(
+        name=entity_name,
+        url=DASHBOARD_URLS["space"].format(team_id=team_id, entity_id=entity_id),
+        action=action,
+    )
+
+    return (topic_name, body)
+
+
 # ClickUp emits granular per-field events in addition
 # to the generic taskUpdated event.
 IGNORED_EVENTS = [
@@ -87,6 +109,9 @@ ALL_EVENT_MAPPER: dict[str, Callable[[WildValue, str], tuple[str, str]]] = {
     "Task Created": partial(get_task_message, "created"),
     "Task Updated": partial(get_task_message, "updated"),
     "Task Deleted": partial(get_task_message, "deleted"),
+    "Space Created": partial(get_event_message, "space", "created"),
+    "Space Updated": partial(get_event_message, "space", "updated"),
+    "Space Deleted": partial(get_event_message, "space", "deleted"),
 }
 ALL_EVENT_TYPES = list(ALL_EVENT_MAPPER.keys())
 
