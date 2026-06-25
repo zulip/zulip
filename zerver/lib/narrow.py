@@ -316,6 +316,10 @@ class NarrowBuilder:
                 "No message can be both a channel message and direct message"
             )
 
+    def get_recipient_condition(self, queryset: QuerySet[Stream]) -> Q:
+        recipient_ids = queryset.values_list("recipient_id", flat=True).order_by("id")
+        return Q(recipient_id__in=list(recipient_ids))
+
     def add_term(self, query: QuerySet[Message], term: NarrowParameter) -> QuerySet[Message]:
         """
         Extend the given query to one narrowed by the given term, and return the result.
@@ -461,15 +465,16 @@ class NarrowBuilder:
             # Get all both subscribed and non-subscribed public channels
             # but exclude any private subscribed channels.
             recipient_queryset = get_public_streams_queryset(self.realm)
+            cond = self.get_recipient_condition(recipient_queryset)
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
+            cond = self.get_recipient_condition(recipient_queryset)
         elif operand == "archived":
             recipient_queryset = get_archived_streams_queryset(self.realm)
+            cond = self.get_recipient_condition(recipient_queryset)
         else:
             raise BadNarrowOperatorError("unknown channels operand " + operand)
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
-        cond = Q(recipient_id__in=list(recipient_ids))
         return query.filter(maybe_negate(cond))
 
     def by_topic(
