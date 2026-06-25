@@ -1,0 +1,221 @@
+{
+  "id": "86d3f01jq",
+  "custom_id": null,
+  "custom_item_id": 0,
+  "name": "Zulip Test Task",
+  "text_content": "",
+  "description": "",
+  "status": {
+    "id": "p90167241766_LmAtqRF3",
+    "status": "in progress",
+    "color": "#5f55ee",
+    "orderindex": 1,
+    "type": "custom"
+  },
+  "orderindex": "39908290.00000000000000000000000000000000",
+  "date_created": "1782285080577",
+  "date_updated": "1782285193253",
+  "date_closed": null,
+  "date_done": null,
+  "archived": false,
+  "creator": {
+    "id": 272608942,
+    "username": "Sathwik Suresh Shetty",
+    "color": "#595d66",
+    "email": "sathwikshetty1234@gmail.com",
+    "profilePicture": null
+  },
+  "assignees": [],
+  "group_assignees": [],
+  "watchers": [
+    {
+      "id": 272608942,
+      "username": "Sathwik Suresh Shetty",
+      "color": "#595d66",
+      "initials": "SS",
+      "email": "sathwikshetty1234@gmail.com",
+      "profilePicture": null
+    }
+  ],
+  "checklists": [
+    {
+      "id": "df4f6d31-de9d-48dc-8769-0ce70864661f",
+      "task_id": "86d3f01jq",
+      "name": "Checklist",
+      "date_created": "1782285162846",
+      "orderindex": 1,
+      "creator": 272608942,
+      "resolved": 1,
+      "unresolved": 0,
+      "items": [
+        {
+          "id": "918574a2-16e4-416b-8f1e-716243df20f4",
+          "name": "new",
+          "orderindex": 0,
+          "assignee": null,
+          "group_assignee": null,
+          "resolved": true,
+          "parent": null,
+          "date_created": "1782285177243",
+          "start_date": null,
+          "start_date_time": false,
+          "due_date": null,
+          "due_date_time": false,
+          "sent_due_date_notif": null,
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "e362a3d2-ae10-42f0-99ac-9068354c7a09",
+      "task_id": "86d3f01jq",
+      "name": "Checklist",
+      "date_created": "1782285297320",
+      "orderindex": 2,
+      "creator": 272608942,
+      "resolved": 3,
+      "unresolved": 0,
+      "items": [
+        {
+          "id": "c9fa5f8e-b86a-4b93-a6ac-dd9aa9b0fcd7",
+          "name": "jhqs",
+          "orderindex": 0,
+          "assignee": null,
+          "group_assignee": null,
+          "resolved": true,
+          "parent": null,
+          "date_created": "1782285304716",
+          "start_date": null,
+          "start_date_time": false,
+          "due_date": null,
+          "due_date_time": false,
+          "sent_due_date_notif": null,
+          "children": []
+        },
+        {
+          "id": "6e09ca6e-2de9-4c33-bb88-ef7ad68a70b2",
+          "name": "[wd[o[",
+          "orderindex": 1,
+          "assignee": null,
+          "group_assignee": null,
+          "resolved": true,
+          "parent": null,
+          "date_created": "1782285309635",
+          "start_date": null,
+          "start_date_time": false,
+          "due_date": null,
+          "due_date_time": false,
+          "sent_due_date_notif": null,
+          "children": []
+        },
+        {
+          "id": "8c4d45de-ae04-4f67-98b7-8bf510de7b50",
+          "name": "jsjsjs",
+          "orderindex": 2,
+          "assignee": null,
+          "group_assignee": null,
+          "resolved": true,
+          "parent": null,
+          "date_created": "1782285312232",
+          "start_date": null,
+          "start_date_time": false,
+          "due_date": null,
+          "due_date_time": false,
+          "sent_due_date_notif": null,
+          "children": []
+        }
+      ]
+    }
+  ],
+  "tags": [],
+  "parent": null,
+  "top_level_parent": null,
+  "priority": null,
+  "due_date": null,
+  "start_date": null,
+  "points": null,
+  "time_estimate": 273600000,
+  "time_spent": 0,
+  "custom_fields": [],
+  "dependencies": [],
+  "linked_tasks": [],
+  "locations": [],
+  "team_id": "90161438581",
+  "url": "https://app.clickup.com/t/86d3f01jq",
+  "sharing": {
+    "public": false,
+    "public_share_expires_on": null,
+    "public_fields": [
+      "assignees",
+      "priority",
+      "due_date",
+      "content",
+      "comments",
+      "attachments",
+      "customFields",
+      "subtasks",
+      "tags",
+      "checklists",
+      "coverimage"
+    ],
+    "token": null,
+    "seo_optimized": false
+  },
+  "permission_level": "create",
+  "list": {
+    "id": "901615428490",
+    "name": "List",
+    "access": true
+  },
+  "project": {
+    "id": "901610030600",
+    "name": "hidden",
+    "hidden": true,
+    "access": true
+  },
+  "folder": {
+    "id": "901610030600",
+    "name": "hidden",
+    "hidden": true,
+    "access": true
+  },
+  "space": {
+    "id": "90167241766"
+  },
+  "attachments": [
+    {
+      "id": "8da4a39f-b3ef-4069-8926-ef25106dd182.ipynb",
+      "date": "1782285193253",
+      "title": "SmartCache_LSTM (2).ipynb",
+      "type": 1,
+      "source": 1,
+      "version": 0,
+      "extension": "ipynb",
+      "thumbnail_small": null,
+      "thumbnail_medium": null,
+      "thumbnail_large": null,
+      "is_folder": null,
+      "mimetype": "application/octet-stream",
+      "hidden": false,
+      "parent_id": "86d3f01jq",
+      "size": 14136,
+      "total_comments": 0,
+      "resolved_comments": 0,
+      "user": {
+        "id": 272608942,
+        "username": "Sathwik Suresh Shetty",
+        "email": "sathwikshetty1234@gmail.com",
+        "initials": "SS",
+        "color": "#595d66",
+        "profilePicture": null
+      },
+      "deleted": false,
+      "orientation": null,
+      "url": "https://t90161438581.p.clickup-attachments.com/t90161438581/8da4a39f-b3ef-4069-8926-ef25106dd182/SmartCache_LSTM%20(2).ipynb",
+      "email_data": null,
+      "workspace_id": null,
+      "url_w_query": "https://t90161438581.p.clickup-attachments.com/t90161438581/8da4a39f-b3ef-4069-8926-ef25106dd182/SmartCache_LSTM%20(2).ipynb?view=open",
+      "url_w_host": "https://t90161438581.p.clickup-attachments.com/t90161438581/8da4a39f-b3ef-4069-8926-ef25106dd182/SmartCache_LSTM%20(2).ipynb"
+    }
+  ]
+}
