@@ -141,19 +141,6 @@ h3.user_group_setting_subsection_title {
     margin: 4px 0;
 }
 
-h4.stream_setting_subsection_title,
-h4.user_group_setting_subsection_title {
-    display: inline-block;
-    font-size: 1.35em;
-    font-weight: normal;
-    line-height: 1.5;
-    margin: 10px 0;
-}
-
-h4.stream_setting_subsection_title {
-    margin-bottom: 5px;
-}
-
 .subscriber_list_settings_container.no-display {
     display: none;
 }
