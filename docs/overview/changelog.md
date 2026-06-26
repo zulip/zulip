@@ -19,6 +19,66 @@ _Unreleased_
 
 ## Zulip Server 12.x series
 
+### Zulip Server 12.1
+
+_Released 2026-06-26_
+
+- When the `require_e2ee_push_notifications` setting is enabled, legacy
+  push notifications are now skipped entirely, rather than sent with
+  redacted content.
+- Fixed signing up via an external authentication method (e.g., SAML)
+  in organizations that require an invitation to join: pending email
+  invitations are now honored, not just multiuse invite links.
+- Fixed a long-standing bug where new users present in the LDAP
+  directory could not sign up via an external authentication method
+  (e.g., SAML); registration silently redirected back to the login
+  page.
+- Fixed an error preventing the data exports panel in organization
+  settings from loading, for organizations that had been imported
+  from another Zulip server. This release includes a migration to fix
+  problematic export records created by earlier versions.
+- Fixed quoting or viewing the source of messages in public channels
+  the user is not subscribed to.
+- Fixed user typeaheads displaying “null” in place of a hidden email
+  address.
+- Fixed the member list in group settings being cut off, with no way
+  to scroll through the full list of members.
+- Fixed a server error when saving channel descriptions containing
+  Dropbox links.
+- Fixed GIF search returning an error for users with certain language
+  settings.
+- Improved email gateway handling of long subjects: the full subject
+  is now included in the message body when it is truncated to fit in
+  a topic.
+- Improved Mattermost import tooling to handle attachment files
+  missing from the export.
+- The topic summarization feature now uses the OpenAI Python SDK,
+  rather than litellm. Installations using `TOPIC_SUMMARIZATION_MODEL`
+  must update their configuration: the setting now takes a plain model
+  name, with OpenAI-compatible providers configured via the new
+  `TOPIC_SUMMARIZATION_API_BASE` setting.
+- Added an `OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS` setting, like the
+  existing `SAML_REQUIRE_LIMIT_TO_SUBDOMAINS` setting. If enabled,
+  each configured OIDC identity provider is required to declare which
+  subdomains it can be used for.
+- Added checks that the file upload storage backend is correctly
+  configured.
+- Improved configuration checks and error messages for Helm and
+  Docker deployments.
+- Fixed `restore-backup` to preserve symlinked uploads and
+  configuration directories.
+- Fixed `restore-backup` failing on some systems, where the PostgreSQL
+  user did not have permission to read the restore scripts.
+- Raised the locked-memory limit for PostgreSQL, fixing PostgreSQL 18
+  startup failures with io_uring on Linux kernels >= 6.14 (e.g.,
+  Ubuntu 26.04).
+- Fixed RabbitMQ setup in various scripts failing when a non-default
+  `RABBITMQ_VHOST` was set.
+- Added a timeout and debug logging for downloads of Puppet
+  dependencies during installation and upgrade.
+- Improved documentation for Docker-based deployments.
+- Updated Python dependencies.
+
 ### Zulip Server 12.0
 
 _Released 2026-04-27_
