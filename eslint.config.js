@@ -23,12 +23,17 @@ export default defineConfig(
         // For our source code, instead of adding files here, consider using
         // specific eslint-disable comments in the files themselves.
         ignores: [
+            "**/.astro",
+            "**/.pnpm-store",
+            "**/.venv",
+            "**/dist",
             "docs/_build",
             "static/generated",
             "static/webpack-bundles",
             "var",
             "web/generated",
             "web/third",
+            "webpack-stats-production.json",
         ],
     },
     js.configs.recommended,
