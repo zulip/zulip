@@ -11,13 +11,15 @@
     {{/tr}}
 </div>
 
-<div class="create_stream_subscriber_list_header">
+<div class="settings_panel_list_header create_stream_subscriber_list_header">
     <div class="subscribers-heading">
         <h3 class="stream_setting_subsection_title">{{t 'Subscribers preview' }}</h3>
         <div class="add-subscriber-loading-spinner"></div>
     </div>
-    <input class="add-user-list-filter filter_text_input" name="user_list_filter" type="text"
-      autocomplete="off" placeholder="{{t 'Filter' }}" />
+    <div class="user_filters">
+        <input class="add-user-list-filter filter_text_input" name="user_list_filter" type="text"
+          autocomplete="off" placeholder="{{t 'Filter' }}" />
+    </div>
 </div>
 
 <div class="subscriber-list-box">
