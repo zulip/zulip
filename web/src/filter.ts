@@ -1797,7 +1797,7 @@ export class Filter {
 
     _fix_redundant_is_private(terms: NarrowCanonicalTerm[]): NarrowCanonicalTerm[] {
         // Every DM is a DM, so drop `is:dm` if on a DM conversation.
-        if (!terms.some((term) => Filter.term_type(term) === "dm")) {
+        if (terms.every((term) => Filter.term_type(term) !== "dm")) {
             return terms;
         }
 
