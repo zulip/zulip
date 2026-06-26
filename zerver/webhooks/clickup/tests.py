@@ -26,6 +26,11 @@ SPACE_API_URL = f"https://api.clickup.com/api/v2/space/{SPACE_ID}"
 SPACE_URL = f"https://app.clickup.com/{TEAM_ID}/v/s/{SPACE_ID}"
 SPACE_NAME = "Zulip Test"
 
+FOLDER_ID = "901610136716"
+FOLDER_API_URL = f"https://api.clickup.com/api/v2/folder/{FOLDER_ID}"
+FOLDER_URL = f"https://app.clickup.com/{TEAM_ID}/v/o/f/{FOLDER_ID}"
+FOLDER_NAME = "Zulip Test Folder"
+
 
 def mock_clickup_api_calls(
     test_func: Callable[Concatenate["ClickUpHookTests", ParamT], None],
@@ -43,6 +48,11 @@ def mock_clickup_api_calls(
             responses.GET,
             SPACE_API_URL,
             self.webhook_fixture_data("clickup", "api_responses/space_api_data"),
+        )
+        responses.add(
+            responses.GET,
+            FOLDER_API_URL,
+            self.webhook_fixture_data("clickup", "api_responses/folder_api_data"),
         )
         test_func(self, *args, **kwargs)
 
@@ -123,6 +133,44 @@ class ClickUpHookTests(WebhookTestCase):
                 "space_created",
                 expected_topic_name=f"Space: {SPACE_ID}",
                 expected_message=f"[Space]({SPACE_URL}) was created.",
+            )
+        self.assertEqual(
+            warn_logs.output,
+            [
+                f"WARNING:zerver.webhooks.clickup.view:ClickUp webhook for bot {self.test_user.full_name}"
+                " has no configured API token; entity names can't be fetched."
+            ],
+        )
+
+    @mock_clickup_api_calls
+    def test_folder_created(self) -> None:
+        self.check_webhook(
+            "folder_created",
+            expected_topic_name=f"Folder: {FOLDER_NAME}",
+            expected_message=f"[{FOLDER_NAME}]({FOLDER_URL}) was created.",
+        )
+
+    @mock_clickup_api_calls
+    def test_folder_updated(self) -> None:
+        self.check_webhook(
+            "folder_updated",
+            expected_topic_name=f"Folder: {FOLDER_NAME}",
+            expected_message=f"[{FOLDER_NAME}]({FOLDER_URL}) was updated.",
+        )
+
+    def test_folder_deleted(self) -> None:
+        self.check_webhook(
+            "folder_deleted",
+            expected_topic_name=f"Folder: {FOLDER_ID}",
+            expected_message="A folder was deleted.",
+        )
+
+    def test_folder_event_without_token(self) -> None:
+        with self.assertLogs("zerver.webhooks.clickup.view", level="WARNING") as warn_logs:
+            self.check_webhook(
+                "folder_created",
+                expected_topic_name=f"Folder: {FOLDER_ID}",
+                expected_message=f"[Folder]({FOLDER_URL}) was created.",
             )
         self.assertEqual(
             warn_logs.output,
