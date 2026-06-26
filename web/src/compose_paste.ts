@@ -177,7 +177,7 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
         return false;
     }
 
-    if (!excel_namespaces.some((ns) => html_outer.includes(ns))) {
+    if (excel_namespaces.every((ns) => !html_outer.includes(ns))) {
         return false;
     }
 

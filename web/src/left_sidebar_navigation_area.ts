@@ -326,8 +326,8 @@ export function get_built_in_popover_condensed_views(): navigation_views.BuiltIn
             view.unread_count = drafts.draft_model.getDraftCount();
         }
         // Remove views that are already visible.
-        return !visible_condensed_views.some(
-            (visible_view) => visible_view.fragment === view.fragment,
+        return visible_condensed_views.every(
+            (visible_view) => visible_view.fragment !== view.fragment,
         );
     });
 }

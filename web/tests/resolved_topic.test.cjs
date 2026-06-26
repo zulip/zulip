@@ -50,7 +50,7 @@ run_test("display_parts", () => {
 
         // The parts, together, differ from those of any other input.
         // (Yes, this is quadratic.  Keep the list of test data nice and short.)
-        assert.ok(!results.some(([p, d]) => p === prefix && d === display_name));
+        assert.ok(results.every(([p, d]) => p !== prefix || d !== display_name));
         results.push([prefix, display_name]);
     }
 });
