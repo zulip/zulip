@@ -459,7 +459,7 @@ export class DropdownWidget {
                     const list_items = this.list_widget.get_current_list();
                     if (
                         list_items.length === 0 &&
-                        !(e.key === "Escape") &&
+                        e.key !== "Escape" &&
                         !this.sticky_bottom_option
                     ) {
                         // Let the browser handle it.
