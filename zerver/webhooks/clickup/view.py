@@ -21,6 +21,7 @@ DASHBOARD_URLS: dict[str, str] = {
     "task": CLICKUP_WEB_BASE_URL + "/t/{team_id}/{entity_id}",
     "space": CLICKUP_WEB_BASE_URL + "/{team_id}/v/s/{entity_id}",
     "folder": CLICKUP_WEB_BASE_URL + "/{team_id}/v/o/f/{entity_id}",
+    "goal": CLICKUP_WEB_BASE_URL + "/{team_id}/goals/{entity_id}",
 }
 
 
@@ -92,6 +93,28 @@ def get_event_message(entity: str, action: str, payload: WildValue, token: str) 
     return (topic_name, body)
 
 
+def get_goal_message(action: str, payload: WildValue, token: str) -> tuple[str, str]:
+    goal_id = payload["goal_id"].tame(check_string)
+    if action == "deleted":
+        return ("Goal", "A goal was deleted.")
+
+    goal_data = get_clickup_api_data(goal_id, "goal", token)
+    goal = goal_data["goal"] if goal_data else None
+    goal_name = goal["name"] if goal else "Goal"
+    topic_name = f"Goal: {goal_name}" if goal else goal_name
+    team_id = payload["team_id"].tame(check_string)
+
+    # Goals are linked by their pretty_id, which is only in the API response.
+    url = (
+        DASHBOARD_URLS["goal"].format(team_id=team_id, entity_id=goal["pretty_id"])
+        if goal
+        else f"{CLICKUP_WEB_BASE_URL}/{team_id}/goals"
+    )
+    body = COMMON_MESSAGE_TEMPLATE.format(name=goal_name, url=url, action=action)
+
+    return (topic_name, body)
+
+
 # ClickUp emits granular per-field events (e.g. taskStatusUpdated) in addition
 # to the generic taskUpdated event.
 IGNORED_EVENTS = [
@@ -119,6 +142,9 @@ ALL_EVENT_MAPPER: dict[str, Callable[[WildValue, str], tuple[str, str]]] = {
     "Folder Created": partial(get_event_message, "folder", "created"),
     "Folder Updated": partial(get_event_message, "folder", "updated"),
     "Folder Deleted": partial(get_event_message, "folder", "deleted"),
+    "Goal Created": partial(get_goal_message, "created"),
+    "Goal Updated": partial(get_goal_message, "updated"),
+    "Goal Deleted": partial(get_goal_message, "deleted"),
 }
 ALL_EVENT_TYPES = list(ALL_EVENT_MAPPER.keys())
 
