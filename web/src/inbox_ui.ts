@@ -934,10 +934,8 @@ function update_channel_folder_data(channel_context: StreamContext): void {
     } else {
         folder_context.unread_count =
             (folder_context.unread_count ?? 0) + (channel_context.unread_count ?? 0);
-        folder_context.is_header_visible =
-            folder_context.is_header_visible || !channel_context.is_hidden;
-        folder_context.has_unread_mention =
-            folder_context.has_unread_mention || channel_context.mention_in_unread;
+        folder_context.is_header_visible ||= !channel_context.is_hidden;
+        folder_context.has_unread_mention ||= channel_context.mention_in_unread;
     }
 }
 

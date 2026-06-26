@@ -976,7 +976,7 @@ export function process_topic_edit(
 
     const old_topic_msgs = message_util.get_loaded_messages_in_topic(old_stream_id, old_topic);
 
-    new_stream_id = new_stream_id || old_stream_id;
+    new_stream_id ||= old_stream_id;
     const new_topic_msgs = message_util.get_loaded_messages_in_topic(new_stream_id, new_topic);
 
     for (const msg of [...old_topic_msgs, ...new_topic_msgs]) {
