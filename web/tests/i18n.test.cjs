@@ -120,76 +120,29 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
 
 run_test("language_list", () => {
     const language_list = [
-        {
-            code: "en",
-            locale: "en",
-            name: "English",
-        },
-        {
-            code: "en-gb",
-            locale: "en_GB",
-            name: "British English",
-            percent_translated: 99,
-        },
-        {
-            code: "id",
-            locale: "id",
-            name: "Bahasa Indonesia",
-            percent_translated: 32,
-        },
-        {
-            code: "mn",
-            locale: "mn",
-            name: "Mongolian",
-            percent_translated: 53,
-        },
-        {
-            code: "bqi",
-            locale: "bqi",
-            name: "Luri (Bakhtiari)",
-            percent_translated: 5,
-        },
-        {
-            code: "zh-hans",
-            locale: "zh_Hans",
-            name: "简体中文",
-            percent_translated: 86,
-        },
+        {code: "bqi", locale: "bqi", name: "Luri (Bakhtiari)", percent_translated: 5},
+        {code: "cy", locale: "cy", name: "Cymraeg", percent_translated: 36},
+        {code: "en", locale: "en", name: "English"},
+        {code: "en-gb", locale: "en_GB", name: "British English", percent_translated: 99},
+        {code: "id", locale: "id", name: "Bahasa Indonesia", percent_translated: 32},
+        {code: "mn", locale: "mn", name: "Mongolian", percent_translated: 53},
+        {code: "pt", locale: "pt", name: "Português", percent_translated: 81},
+        {code: "si", locale: "si", name: "Sinhala", percent_translated: 20},
+        {code: "zh-hans", locale: "zh_Hans", name: "简体中文", percent_translated: 86},
     ];
     initialize({language_list});
     assert.equal(get_language_name("en"), "English");
 
     const successful_formatted_list = [
-        {
-            code: "en",
-            name_with_percent: "English (United States)",
-            selected: true,
-        },
-        {
-            code: "en-gb",
-            name_with_percent: "English (United Kingdom) (99%)",
-            selected: false,
-        },
-        {
-            code: "id",
-            name_with_percent: "Indonesia (32%)",
-            selected: false,
-        },
-        {
-            code: "mn",
-            name_with_percent: "Монгол (53%)",
-            selected: false,
-        },
-        {
-            code: "bqi",
-            name_with_percent: "Bakhtiari (5%)",
-            selected: false,
-        },
-        {
-            code: "zh-hans",
-            name_with_percent: "中文 (简体) (86%)",
-            selected: false,
-        },
+        {code: "bqi", name_with_percent: "Bakhtiari (5%)", selected: false},
+        {code: "cy", name_with_percent: "Cymraeg (36%)", selected: false},
+        {code: "en", name_with_percent: "English (United States)", selected: true},
+        {code: "en-gb", name_with_percent: "English (United Kingdom) (99%)", selected: false},
+        {code: "id", name_with_percent: "Indonesia (32%)", selected: false},
+        {code: "mn", name_with_percent: "Монгол (53%)", selected: false},
+        {code: "pt", name_with_percent: "Português (Brasil) (81%)", selected: false},
+        {code: "si", name_with_percent: "සිංහල (20%)", selected: false},
+        {code: "zh-hans", name_with_percent: "中文（简体） (86%)", selected: false},
     ];
 
     const formatted_list = get_language_list_columns("en");
