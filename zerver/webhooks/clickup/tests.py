@@ -31,6 +31,12 @@ FOLDER_API_URL = f"https://api.clickup.com/api/v2/folder/{FOLDER_ID}"
 FOLDER_URL = f"https://app.clickup.com/{TEAM_ID}/v/o/f/{FOLDER_ID}"
 FOLDER_NAME = "Zulip Test Folder"
 
+GOAL_ID = "9d53e457-b8d6-47d4-9f1a-cab80be8d511"
+GOAL_API_URL = f"https://api.clickup.com/api/v2/goal/{GOAL_ID}"
+GOAL_URL = f"https://app.clickup.com/{TEAM_ID}/goals/1"
+GOAL_LIST_URL = f"https://app.clickup.com/{TEAM_ID}/goals"
+GOAL_NAME = "Weekly Goal"
+
 
 def mock_clickup_api_calls(
     test_func: Callable[Concatenate["ClickUpHookTests", ParamT], None],
@@ -53,6 +59,11 @@ def mock_clickup_api_calls(
             responses.GET,
             FOLDER_API_URL,
             self.webhook_fixture_data("clickup", "api_responses/folder_api_data"),
+        )
+        responses.add(
+            responses.GET,
+            GOAL_API_URL,
+            self.webhook_fixture_data("clickup", "api_responses/goal_api_data"),
         )
         test_func(self, *args, **kwargs)
 
@@ -171,6 +182,44 @@ class ClickUpHookTests(WebhookTestCase):
                 "folder_created",
                 expected_topic_name=f"Folder: {FOLDER_ID}",
                 expected_message=f"[Folder]({FOLDER_URL}) was created.",
+            )
+        self.assertEqual(
+            warn_logs.output,
+            [
+                f"WARNING:zerver.webhooks.clickup.view:ClickUp webhook for bot {self.test_user.full_name}"
+                " has no configured API token; entity names can't be fetched."
+            ],
+        )
+
+    @mock_clickup_api_calls
+    def test_goal_created(self) -> None:
+        self.check_webhook(
+            "goal_created",
+            expected_topic_name=f"Goal: {GOAL_NAME}",
+            expected_message=f"[{GOAL_NAME}]({GOAL_URL}) was created.",
+        )
+
+    @mock_clickup_api_calls
+    def test_goal_updated(self) -> None:
+        self.check_webhook(
+            "goal_updated",
+            expected_topic_name=f"Goal: {GOAL_NAME}",
+            expected_message=f"[{GOAL_NAME}]({GOAL_URL}) was updated.",
+        )
+
+    def test_goal_deleted(self) -> None:
+        self.check_webhook(
+            "goal_deleted",
+            expected_topic_name=f"Goal: {GOAL_ID}",
+            expected_message="A goal was deleted.",
+        )
+
+    def test_goal_event_without_token(self) -> None:
+        with self.assertLogs("zerver.webhooks.clickup.view", level="WARNING") as warn_logs:
+            self.check_webhook(
+                "goal_created",
+                expected_topic_name=f"Goal: {GOAL_ID}",
+                expected_message=f"[Goal]({GOAL_LIST_URL}) was created.",
             )
         self.assertEqual(
             warn_logs.output,

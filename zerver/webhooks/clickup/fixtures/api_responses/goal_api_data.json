@@ -1,0 +1,90 @@
+{
+  "goal": {
+    "id": "9d53e457-b8d6-47d4-9f1a-cab80be8d511",
+    "pretty_id": "1",
+    "name": "Weekly Goal",
+    "team_id": "90161438581",
+    "creator": 272608942,
+    "color": "#757380",
+    "date_created": "1782448696156",
+    "start_date": null,
+    "due_date": "1783621799999",
+    "description": "Weekly Goal\n",
+    "private": false,
+    "archived": false,
+    "multiple_owners": true,
+    "editor_token": "goal:9d53e457-b8d6-47d4-9f1a-cab80be8d511:1f3b3e0e-5106-45a0-b444-4db7996854ad:727c2a6c-6d35-4078-ba20-bdd9b8c92a34",
+    "date_updated": "1782448696156",
+    "folder_id": null,
+    "folder_name": null,
+    "role_subtype": 0,
+    "members": [],
+    "group_members": [],
+    "owners": [
+      {
+        "id": 272608942,
+        "username": "Sathwik Suresh Shetty",
+        "email": "sathwikshetty1234@gmail.com",
+        "color": "#595d66",
+        "profilePicture": null,
+        "initials": "SS"
+      }
+    ],
+    "key_results": [
+      {
+        "id": "00f04f38-6d7d-4ec4-8f58-9cf6eec4b3f1",
+        "goal_id": "9d53e457-b8d6-47d4-9f1a-cab80be8d511",
+        "name": "Milestone 1",
+        "creator": 272608942,
+        "owner": null,
+        "type": "number",
+        "date_created": "1782448730746",
+        "steps_start": 0,
+        "steps_end": 1,
+        "steps_current": 0,
+        "unit": null,
+        "workspace_id": "90161438581",
+        "goal_pretty_id": "1",
+        "percent_completed": 0,
+        "completed": false,
+        "owners": [
+          {
+            "id": 272608942,
+            "email": "sathwikshetty1234@gmail.com",
+            "username": "Sathwik Suresh Shetty",
+            "color": "#595d66",
+            "profilePicture": null,
+            "initials": "SS"
+          }
+        ],
+        "task_ids": [],
+        "subcategory_ids": [],
+        "last_action": {
+          "id": "5ead11ef-673d-4516-95ea-a18356f8c55e",
+          "key_result_id": "00f04f38-6d7d-4ec4-8f58-9cf6eec4b3f1",
+          "userid": 272608942,
+          "note": "Created Key Result",
+          "date_modified": 1782448730746,
+          "steps_before": null,
+          "steps_taken": null,
+          "steps_current": null,
+          "workspace_id": 90161438581
+        }
+      }
+    ],
+    "key_result_count": 1,
+    "percent_completed": 0,
+    "history": [
+      {
+        "id": "5ead11ef-673d-4516-95ea-a18356f8c55e",
+        "key_result_id": "00f04f38-6d7d-4ec4-8f58-9cf6eec4b3f1",
+        "userid": 272608942,
+        "note": "Created Key Result",
+        "date_modified": "1782448730746",
+        "steps_taken": null,
+        "steps_before": null
+      }
+    ],
+    "pretty_url": "https://app.clickup.com/90161438581/goals/1"
+  }
+}
