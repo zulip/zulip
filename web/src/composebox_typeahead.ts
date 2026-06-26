@@ -1590,7 +1590,7 @@ export function should_suppress_topic_typeahead(
     const normalize = (topic: string): string =>
         util.get_final_topic_display_name(topic).trim().toLowerCase();
     const normalized_query = normalize(query);
-    if (!topics.some((topic) => normalize(topic) === normalized_query)) {
+    if (topics.every((topic) => normalize(topic) !== normalized_query)) {
         return false;
     }
     // Suppress only if every topic is either the one the user already
