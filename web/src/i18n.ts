@@ -69,29 +69,30 @@ export function get_language_name(language_code: string): string | undefined {
 }
 
 function get_language_display_name(language_code: string): string {
-    // For "Monoglian" and "Bqi", "Intl.DisplayNames" returns their English names
-    // in Chromium based browsers. So, we hard-code the display names for these
-    // two languages.
-    if (language_code === "bqi") {
-        return "Bakhtiari";
+    switch (language_code) {
+        // Chromium's Intl.DisplayNames returns English names for a few
+        // languages, so we hard-code these ones.
+        case "bqi":
+            return "Bakhtiari";
+        case "cy":
+            return "Cymraeg";
+        case "mn":
+            return "Монгол";
+        case "si":
+            return "සිංහල";
+
+        // Clarify our convention for these bare codes.
+        case "en":
+            language_code = "en-US";
+            break;
+        case "pt":
+            language_code = "pt-BR";
+            break;
     }
 
-    if (language_code === "mn") {
-        return "Монгол";
-    }
-
-    const locale = new Intl.Locale(language_code === "en" ? "en-US" : language_code);
-    let language_display_name = new Intl.DisplayNames([locale], {type: "language"})
-        .of(locale.language)!
-        .replace(/^./u, (c) => c.toLocaleUpperCase(locale));
-
-    if (locale.script !== undefined) {
-        language_display_name += ` (${new Intl.DisplayNames([locale], {type: "script"}).of(locale.script)})`;
-    }
-    if (locale.region !== undefined) {
-        language_display_name += ` (${new Intl.DisplayNames([locale], {type: "region"}).of(locale.region)})`;
-    }
-    return language_display_name;
+    return new Intl.DisplayNames([language_code], {type: "language", languageDisplay: "standard"})
+        .of(language_code)!
+        .replace(/^./u, (c) => c.toLocaleUpperCase(language_code));
 }
 
 export function initialize(language_params: {language_list: typeof language_list}): void {
