@@ -17,8 +17,7 @@
         <div class="add-subscriber-loading-spinner"></div>
     </div>
     <div class="user_filters">
-        <input class="add-user-list-filter filter_text_input" name="user_list_filter" type="text"
-          autocomplete="off" placeholder="{{t 'Filter' }}" />
+        {{> ../settings/filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter subscribers') }}
     </div>
 </div>
 

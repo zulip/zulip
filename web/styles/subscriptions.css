@@ -198,11 +198,6 @@ h3.user_group_setting_subsection_title {
     }
 }
 
-.subscribers-list-header .search,
-.members-list-header .search {
-    max-width: 160px;
-}
-
 .add-group-member-loading-spinner {
     align-self: center;
 }
@@ -1221,10 +1216,6 @@ h3.user_group_setting_subsection_title {
             .settings-sticky-footer {
                 border-radius: 0 0 6px;
             }
-        }
-
-        .add-user-list-filter {
-            width: 140px;
         }
 
         #user_group_creation_form,

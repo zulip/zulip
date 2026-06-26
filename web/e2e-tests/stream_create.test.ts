@@ -45,7 +45,7 @@ async function click_create_new_stream(page: Page): Promise<void> {
 }
 
 async function clear_ot_filter_with_backspace(page: Page): Promise<void> {
-    await page.click(".add-user-list-filter");
+    await page.click("#people_to_add input.search");
     await page.keyboard.press("Backspace");
     await page.keyboard.press("Backspace");
 }
@@ -58,7 +58,7 @@ async function test_user_filter_ui(page: Page): Promise<void> {
     await add_user_to_stream(page, common.fullname.cordelia);
     await add_user_to_stream(page, common.fullname.othello);
 
-    await page.type(`form#stream_creation_form [name="user_list_filter"]`, "ot", {delay: 100});
+    await page.type(`#people_to_add input.search`, "ot", {delay: 100});
     await page.waitForSelector("#create_stream_subscribers", {visible: true});
     // Wait until filtering is completed.
     await page.waitForFunction(

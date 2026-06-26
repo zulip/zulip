@@ -25,7 +25,7 @@
     <div class="settings_panel_list_header members-list-header">
         <h3 class="user_group_setting_subsection_title">{{t "Members"}}</h3>
         <div class="user_filters">
-            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter' }}" />
+            {{> ../settings/filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter members') }}
         </div>
     </div>
     <div class="add-group-member-loading-spinner"></div>
