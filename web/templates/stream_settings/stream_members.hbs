@@ -29,7 +29,7 @@
             <div class="add-subscriber-loading-spinner"></div>
         </div>
         <div class="user_filters">
-            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter' }}" />
+            {{> ../settings/filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter subscribers') }}
         </div>
     </div>
     <div class="subscriber-list-box">
