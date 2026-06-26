@@ -587,7 +587,6 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
                 num_attempts += 1;
                 const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
                 await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
-                continue;
             }
             // Success
             else {
