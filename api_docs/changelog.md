@@ -3012,7 +3012,7 @@ No changes; feature level used for Zulip 8.0 release.
   `enable_followed_topic_desktop_notifications`
   and `enable_followed_topic_audible_notifications` to control whether a user
   receives email, push, wildcard mention, visual desktop and audible desktop
-  notifications, respectively, for messages sent to followed topics.
+  notifications, respectively, for messages sent to followed topics.
 
 **Feature level 188**
 
