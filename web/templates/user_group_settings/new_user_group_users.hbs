@@ -12,10 +12,12 @@
     {{/tr}}
 </div>
 
-<div class="create_user_group_member_list_header">
+<div class="settings_panel_list_header create_user_group_member_list_header">
     <h3 class="user_group_setting_subsection_title">{{t 'Members preview' }}</h3>
-    <input class="add-user-list-filter filter_text_input" name="user_list_filter" type="text"
-      autocomplete="off" placeholder="{{t 'Filter' }}" />
+    <div class="user_filters">
+        <input class="add-user-list-filter filter_text_input" name="user_list_filter" type="text"
+          autocomplete="off" placeholder="{{t 'Filter' }}" />
+    </div>
 </div>
 
 <div class="add-group-member-loading-spinner"></div>

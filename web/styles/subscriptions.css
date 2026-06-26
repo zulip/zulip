@@ -198,6 +198,11 @@ h3.user_group_setting_subsection_title {
     }
 }
 
+.subscribers-list-header .search,
+.members-list-header .search {
+    max-width: 160px;
+}
+
 .add-group-member-loading-spinner {
     align-self: center;
 }
@@ -340,23 +345,6 @@ h3.user_group_setting_subsection_title {
        the empty wrapper doesn't take up space. */
     &:not(:empty) {
         margin-bottom: 10px;
-    }
-}
-
-.member-search,
-.subscriber-search {
-    margin: 10px 0 0;
-
-    .search {
-        max-width: 160px;
-    }
-
-    @media (max-width: $ms_min) {
-        float: none;
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        margin: 0 0 5px;
     }
 }
 
@@ -1235,20 +1223,8 @@ h3.user_group_setting_subsection_title {
             }
         }
 
-        .create_user_group_member_list_header,
-        .create_stream_subscriber_list_header {
-            margin-top: 10px;
-            margin-bottom: 3px;
-
-            & h5 {
-                display: inline-block;
-            }
-        }
-
         .add-user-list-filter {
             width: 140px;
-            float: right;
-            margin-top: 10px;
         }
 
         #user_group_creation_form,
