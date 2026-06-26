@@ -694,7 +694,7 @@ function get_topic_suggestions(
         const terms: NarrowTerm[] = [{operator: "channel", operand: topic.channel_id}, topic_term];
         // We don't want to have two channel pills in the search suggestion.
         if (filter.has_operator("channel")) {
-            terms.splice(0, 1);
+            terms.shift();
         }
 
         return format_as_suggestion(terms);
