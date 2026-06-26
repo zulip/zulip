@@ -174,7 +174,7 @@ const apps_events = function (): void {
             }
         }
 
-        result = result ?? detect_user_os();
+        result ??= detect_user_os();
         return result;
     }
 

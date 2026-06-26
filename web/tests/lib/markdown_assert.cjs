@@ -139,7 +139,7 @@ class MarkdownComparer {
     assertEqual(actual, expected, message) {
         const comparison_results = this._compare(actual, expected);
 
-        message = message || "";
+        message ||= "";
         message += "\n";
 
         /* istanbul ignore if */
@@ -158,7 +158,7 @@ class MarkdownComparer {
     assertNotEqual(actual, expected, message) {
         const comparison_results = this._compare(actual, expected);
 
-        message = message || "";
+        message ||= "";
         message += "\n";
 
         /* istanbul ignore if */
