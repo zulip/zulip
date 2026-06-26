@@ -747,7 +747,7 @@ test("basics", () => {
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
-    additional_terms_to_test = additional_terms_to_test || [];
+    additional_terms_to_test ||= [];
     let has_link_term = [{operator: "has", operand: "link"}];
     let filter = new Filter([...additional_terms_to_test, ...has_link_term]);
     assert.ok(!filter.can_mark_messages_read());
@@ -777,7 +777,7 @@ function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
     assert.ok(!filter.can_mark_messages_read());
 }
 function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
-    additional_terms_to_test = additional_terms_to_test || [];
+    additional_terms_to_test ||= [];
     let is_operator = [{operator: "is", operand: "starred"}];
     let filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
@@ -828,7 +828,7 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
 }
 
 function assert_not_mark_read_when_searching(additional_terms_to_test) {
-    additional_terms_to_test = additional_terms_to_test || [];
+    additional_terms_to_test ||= [];
     let search_op = [{operator: "search", operand: "keyword"}];
     let filter = new Filter([...additional_terms_to_test, ...search_op]);
     assert.ok(!filter.can_mark_messages_read());

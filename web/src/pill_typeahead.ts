@@ -217,11 +217,11 @@ export function set_up_group_setting_typeahead(
             return (item: GroupSettingTypeaheadItem): boolean => {
                 let matches = false;
                 if (item.type === "user_group") {
-                    matches = matches || group_matcher(query, item, should_remove_diacritics);
+                    matches ||= group_matcher(query, item, should_remove_diacritics);
                 }
 
                 if (item.type === "user") {
-                    matches = matches || person_matcher(query, item, should_remove_diacritics);
+                    matches ||= person_matcher(query, item, should_remove_diacritics);
                 }
                 return matches;
             };
@@ -381,7 +381,7 @@ export function set_up_combined(
                 }
 
                 if (include_users && item.type === "user") {
-                    matches = matches || person_matcher(query, item, should_remove_diacritics);
+                    matches ||= person_matcher(query, item, should_remove_diacritics);
                 }
                 return matches;
             };

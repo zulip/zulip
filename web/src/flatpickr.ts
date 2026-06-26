@@ -29,7 +29,7 @@ export function show_flatpickr(
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
-    options.enableTime = options.enableTime ?? ENABLE_TIME_DEFAULT;
+    options.enableTime ??= ENABLE_TIME_DEFAULT;
     if (hide_confirm_button && options.enableTime) {
         throw new Error(
             "`hide_confirm_button` is only supported for date-only flatpickr (set `enableTime` to false).",
