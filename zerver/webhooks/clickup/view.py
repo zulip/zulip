@@ -20,6 +20,7 @@ COMMON_MESSAGE_TEMPLATE = "[{name}]({url}) was {action}."
 DASHBOARD_URLS: dict[str, str] = {
     "task": CLICKUP_WEB_BASE_URL + "/t/{team_id}/{entity_id}",
     "space": CLICKUP_WEB_BASE_URL + "/{team_id}/v/s/{entity_id}",
+    "folder": CLICKUP_WEB_BASE_URL + "/{team_id}/v/o/f/{entity_id}",
 }
 
 
@@ -84,7 +85,7 @@ def get_event_message(entity: str, action: str, payload: WildValue, token: str) 
 
     body = COMMON_MESSAGE_TEMPLATE.format(
         name=entity_name,
-        url=DASHBOARD_URLS["space"].format(team_id=team_id, entity_id=entity_id),
+        url=DASHBOARD_URLS[entity].format(team_id=team_id, entity_id=entity_id),
         action=action,
     )
 
@@ -115,6 +116,9 @@ ALL_EVENT_MAPPER: dict[str, Callable[[WildValue, str], tuple[str, str]]] = {
     "Space Created": partial(get_event_message, "space", "created"),
     "Space Updated": partial(get_event_message, "space", "updated"),
     "Space Deleted": partial(get_event_message, "space", "deleted"),
+    "Folder Created": partial(get_event_message, "folder", "created"),
+    "Folder Updated": partial(get_event_message, "folder", "updated"),
+    "Folder Deleted": partial(get_event_message, "folder", "deleted"),
 }
 ALL_EVENT_TYPES = list(ALL_EVENT_MAPPER.keys())
 
