@@ -513,10 +513,7 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
     }
 
     // Generate traces
-    let date_formatter = function (date: Date): string {
-        return format_date(date, true);
-    };
-    let values = {me: data.user.human, human: data.everyone.human, bot: data.everyone.bot};
+    let date_formatter: (date: Date) => string;
 
     let info = aggregate_data(data, "day");
     date_formatter = function (date) {
@@ -534,7 +531,7 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
     const dates = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
-    values = {
+    const values = {
         human: partial_sums(data.everyone.human),
         bot: partial_sums(data.everyone.bot),
         me: partial_sums(data.user.human),
@@ -1269,10 +1266,7 @@ function populate_messages_read_over_time(raw_data: unknown): void {
     }
 
     // Generate traces
-    let date_formatter = function (date: Date): string {
-        return format_date(date, true);
-    };
-    let values = {me: data.user.read, everyone: data.everyone.read};
+    let date_formatter: (date: Date) => string;
 
     let info = aggregate_data(data, "day");
     date_formatter = function (date) {
@@ -1289,7 +1283,7 @@ function populate_messages_read_over_time(raw_data: unknown): void {
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
     const dates = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
-    values = {everyone: partial_sums(data.everyone.read), me: partial_sums(data.user.read)};
+    const values = {everyone: partial_sums(data.everyone.read), me: partial_sums(data.user.read)};
     date_formatter = function (date) {
         return format_date(date, true);
     };

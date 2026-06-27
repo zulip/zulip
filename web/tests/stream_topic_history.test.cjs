@@ -486,7 +486,6 @@ test("ask_server_for_latest_topic_data", () => {
         max_removed_msg_id: 104,
     });
     assert.equal(get_message_request_triggered, true);
-    get_message_request_triggered = false;
 
     // Until we process the response from the server,
     // the topic is not available.

@@ -315,7 +315,6 @@ function get_group_suggestions(
         if (last.operator === "search") {
             new_query = last.operand;
             existing_user_ids = last_complete_term.operand;
-            terms = terms.slice(-1);
         } else if (last.operator === "") {
             // User hasn't started typing the next term yet; use the
             // last complete term to generate suggestions.

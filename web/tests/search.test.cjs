@@ -60,7 +60,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
     let expected_pill_display_value = "";
-    let input_pill_displayed = false;
+    let input_pill_displayed;
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(data.display_value, expected_pill_display_value);
         input_pill_displayed = true;
@@ -120,13 +120,12 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const search_suggestions = ["ver", "stream:Verona"];
 
             /* Test highlighter */
-            let description_html = "Search for ver";
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for ver</div>\n    \n</div>\n`;
             assert.equal(opts.item_html("ver")(search_suggestions[0]), expected_value);
 
             const search_string = "channel: Verona";
             const verona_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">Verona</span></span>`;
-            description_html = `Messages in ${verona_decorated}`;
+            const description_html = `Messages in ${verona_decorated}`;
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
             assert.equal(opts.item_html("ver")(search_suggestions[1]), expected_value);
 

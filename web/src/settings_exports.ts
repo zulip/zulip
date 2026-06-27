@@ -344,7 +344,7 @@ function maybe_show_notes_about_unusable_users_if_exported(
     //    being exported AND their email visibility is set to "nobody".
     //  - In a public export: they have set their email visibility to
     //    “nobody”.
-    let unusable_user_ids: number[] = [];
+    let unusable_user_ids;
     const $warning_container = $("div#unusable-user-accounts-warning");
     $warning_container.empty();
     if (export_type === settings_config.export_type_values.full_with_consent.slug) {

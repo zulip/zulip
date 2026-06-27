@@ -20,7 +20,7 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import * as settings_components from "./settings_components.ts";
-import type {FieldData, SelectFieldData} from "./settings_components.ts";
+import type {SelectFieldData} from "./settings_components.ts";
 import * as settings_ui from "./settings_ui.ts";
 import type {CustomProfileField} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -348,11 +348,10 @@ function open_custom_profile_field_creation_form_modal(): void {
     });
 
     function create_profile_field(): void {
-        let field_data: FieldData | undefined = {};
         const field_type = $<HTMLSelectOneElement>(
             "select:not([multiple])#profile_field_type",
         ).val()!;
-        field_data = settings_components.read_field_data_from_form(
+        const field_data = settings_components.read_field_data_from_form(
             Number.parseInt(field_type, 10),
             $(".new-profile-field-form"),
             undefined,

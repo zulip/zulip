@@ -144,7 +144,6 @@ run_test("PollData my question", () => {
 
     blueslip.expect("warn", `unknown key for poll: ${invalid_vote_event.key}`);
     data_holder.handle_vote_event(me.user_id, invalid_vote_event);
-    data = data_holder.get_widget_data();
 
     const option_outbound_event = data_holder.new_option_event("new option");
     assert.deepEqual(option_outbound_event, {

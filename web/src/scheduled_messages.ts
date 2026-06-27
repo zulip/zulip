@@ -176,7 +176,7 @@ export function get_filtered_send_opts(date: Date): {
     };
 
     let possible_send_later_today: SendOption | false = {};
-    let possible_send_later_monday: SendOption | false = {};
+    let possible_send_later_monday: SendOption | false;
 
     const minutes_into_day = date.getHours() * 60 + date.getMinutes();
     // Show Today send options based on time of day

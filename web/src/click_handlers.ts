@@ -913,7 +913,7 @@ export function initialize(): void {
         // ...less the width of the two scroller buttons.
         const button_adjusted_scroll_shift =
             button_bar_scroll_percentage * (button_container_width - 2 * scroller_button_width_px);
-        let new_scroll_position = 0;
+        let new_scroll_position;
 
         assert(typeof button_bar_scroll_left === "number");
 

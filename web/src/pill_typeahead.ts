@@ -194,15 +194,10 @@ export function set_up_group_setting_typeahead(
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
         source(_query: string): GroupSettingTypeaheadItem[] {
-            let source: GroupSettingTypeaheadItem[] = [];
-
-            source = user_group_pill.typeahead_source(pills, opts.setting_name, opts.setting_type);
-            source = [
-                ...source,
+            return [
+                ...user_group_pill.typeahead_source(pills, opts.setting_name, opts.setting_type),
                 ...user_pill.typeahead_source(pills, false, opts.setting_name, opts.setting_type),
             ];
-
-            return source;
         },
         item_html(_query: string): (item: GroupSettingTypeaheadItem) => string {
             return (item: GroupSettingTypeaheadItem): string => {

@@ -204,7 +204,6 @@ function parse_with_options(
                 return `<span class="${classes}">${_.escape(display_text)}</span>`;
             }
 
-            let full_name;
             let user_id;
 
             const id_regex = /^(.+)?\|(\d+)$/; // For @**user|id** and @**|id** syntax
@@ -226,7 +225,7 @@ function parse_with_options(
                     through to the other code (which may be a
                     misfeature).
                 */
-                full_name = match[1];
+                const full_name = match[1];
                 user_id = Number.parseInt(match[2]!, 10);
 
                 if (full_name === undefined) {
@@ -234,21 +233,18 @@ function parse_with_options(
                     if (!helper_config.is_valid_user_id(user_id)) {
                         // silently ignore invalid user id.
                         user_id = undefined;
-                    } else {
-                        full_name = helper_config.get_actual_name_from_user_id(user_id);
                     }
                 } else {
                     // For @**user|id** syntax
                     if (!helper_config.is_valid_full_name_and_user_id(full_name, user_id)) {
                         user_id = undefined;
-                        full_name = undefined;
                     }
                 }
             }
 
             if (user_id === undefined) {
                 // Handle normal syntax
-                full_name = mention;
+                const full_name = mention;
                 user_id = helper_config.get_user_id_from_name(full_name);
             }
 

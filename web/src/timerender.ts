@@ -202,8 +202,8 @@ export type TimeRender = {
 };
 
 export function render_now(time: Date, today = new Date(), display_year?: boolean): TimeRender {
-    let time_str = "";
-    let needs_update = false;
+    let time_str;
+    let needs_update;
     // render formal time to be used for tippy tooltip
     const formal_time_str = get_localized_date_or_time_for_format(time, "weekday_dayofyear_year");
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a

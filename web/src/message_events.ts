@@ -308,7 +308,7 @@ export type InsertNewMessagesOpts = {
 
 export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     const deliver_locally = opts.type === "local_message";
-    let messages: Message[] = [];
+    let messages: Message[];
     let local_messages: LocalMessage[] | undefined = [];
     if (opts.type === "server_message") {
         messages = opts.raw_messages.map((raw_message) =>
