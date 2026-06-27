@@ -272,11 +272,11 @@ export class DropdownWidget {
             // Use the provided offset if we have enough space. Otherwise,
             // we overlap the top of dropdown with top of dropdown input.
             if (this.tippy_props?.offset === undefined) {
-                top_offset = -1 * dropdown_input_props.height;
+                top_offset = -dropdown_input_props.height;
             }
         } else if (bottom_space > top_space) {
             placement = "bottom-start";
-            top_offset = -1 * dropdown_input_props.height;
+            top_offset = -dropdown_input_props.height;
         }
 
         const offset: [number, number] = [left_offset, top_offset];
