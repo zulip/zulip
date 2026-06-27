@@ -137,4 +137,27 @@ preparing a new release.
   - Delete the prerelease branch (e.g., `7.0-beta3-branch`); it's now
     an ancestor of `main` and thus unnecessary.
 
+### Important permissions for executing the release
+
+Note that the main steps of pushing the release through `tools/release` require
+several distinct permissions. Ensure that the person executing the release has
+these permissions - this is particularly important for a security release, to
+avoid getting stuck in a half-way state where the final commits have already
+been pushed but the release can't be finalized.
+
+- AWS credentials that authorize you to upload the tarball to
+  `download.zulip.com`. This is needed by the `tools/upload-release`
+  step. You will need `aws-cli` installed and logged in. The simplest
+  way to set up credentials for use by `upload-release` is to export
+  temporary credentials into your environment, obtained via
+  `aws configure export-credentials --format env`.
+- `git` permission to push to the `<major version>.x` branch.
+- `git` permission to push the `<major version>.<minor version>` tag.
+  Note that tags matching this specific release tag format can be
+  subject to GitHub rules restricting who can push them - so check
+  this and don't assume that you can push these tags just because you
+  can push ordinary tags such as `foo`.
+- The GitHub `gh` CLI tool, logged into your account, with permission
+  to create releases.
+
 [non-code-contributions-topic]: https://chat.zulip.org/#narrow/channel/1-announce/topic/recognition.20for.20non-code.20contributions/with/2443350
