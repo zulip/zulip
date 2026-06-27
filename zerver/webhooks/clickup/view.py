@@ -93,11 +93,15 @@ def get_event_message(entity: str, action: str, payload: WildValue, token: str) 
     return (topic_name, body)
 
 
-def get_goal_message(action: str, payload: WildValue, token: str) -> tuple[str, str]:
+def get_goal_and_key_result_message(
+    entity: str, action: str, payload: WildValue, token: str
+) -> tuple[str, str]:
     goal_id = payload["goal_id"].tame(check_string)
     if action == "deleted":
-        return ("Goal", "A goal was deleted.")
+        return (entity.title(), f"A {entity} was deleted.")
 
+    # Key results have no dedicated endpoint, so we fetch the parent goal for
+    # its name and dashboard URL.
     goal_data = get_clickup_api_data(goal_id, "goal", token)
     goal = goal_data["goal"] if goal_data else None
     goal_name = goal["name"] if goal else "Goal"
@@ -110,7 +114,18 @@ def get_goal_message(action: str, payload: WildValue, token: str) -> tuple[str, 
         if goal
         else f"{CLICKUP_WEB_BASE_URL}/{team_id}/goals"
     )
-    body = COMMON_MESSAGE_TEMPLATE.format(name=goal_name, url=url, action=action)
+    if entity == "goal":
+        name = goal_name
+    else:
+        # Key result events carry only its id; look up the name in the goal.
+        name = "Key result"
+        if goal:
+            key_result_id = payload["key_result_id"].tame(check_string)
+            name = next(
+                (kr["name"] for kr in goal["key_results"] if kr["id"] == key_result_id),
+                "Key result",
+            )
+    body = COMMON_MESSAGE_TEMPLATE.format(name=name, url=url, action=action)
 
     return (topic_name, body)
 
@@ -142,9 +157,12 @@ ALL_EVENT_MAPPER: dict[str, Callable[[WildValue, str], tuple[str, str]]] = {
     "Folder Created": partial(get_event_message, "folder", "created"),
     "Folder Updated": partial(get_event_message, "folder", "updated"),
     "Folder Deleted": partial(get_event_message, "folder", "deleted"),
-    "Goal Created": partial(get_goal_message, "created"),
-    "Goal Updated": partial(get_goal_message, "updated"),
-    "Goal Deleted": partial(get_goal_message, "deleted"),
+    "Goal Created": partial(get_goal_and_key_result_message, "goal", "created"),
+    "Goal Updated": partial(get_goal_and_key_result_message, "goal", "updated"),
+    "Goal Deleted": partial(get_goal_and_key_result_message, "goal", "deleted"),
+    "Key Result Created": partial(get_goal_and_key_result_message, "key result", "created"),
+    "Key Result Updated": partial(get_goal_and_key_result_message, "key result", "updated"),
+    "Key Result Deleted": partial(get_goal_and_key_result_message, "key result", "deleted"),
 }
 ALL_EVENT_TYPES = list(ALL_EVENT_MAPPER.keys())
 

@@ -37,6 +37,8 @@ GOAL_URL = f"https://app.clickup.com/{TEAM_ID}/goals/1"
 GOAL_LIST_URL = f"https://app.clickup.com/{TEAM_ID}/goals"
 GOAL_NAME = "Weekly Goal"
 
+KEY_RESULT_NAME = "Milestone 1"
+
 
 def mock_clickup_api_calls(
     test_func: Callable[Concatenate["ClickUpHookTests", ParamT], None],
@@ -189,6 +191,36 @@ class ClickUpHookTests(WebhookTestCase):
             "goal_created",
             expected_topic_name="Goal",
             expected_message=f"[Goal]({GOAL_LIST_URL}) was created.",
+        )
+
+    @mock_clickup_api_calls
+    def test_key_result_created(self) -> None:
+        self.check_webhook(
+            "key_result_created",
+            expected_topic_name=f"Goal: {GOAL_NAME}",
+            expected_message=f"[{KEY_RESULT_NAME}]({GOAL_URL}) was created.",
+        )
+
+    @mock_clickup_api_calls
+    def test_key_result_updated(self) -> None:
+        self.check_webhook(
+            "key_result_updated",
+            expected_topic_name=f"Goal: {GOAL_NAME}",
+            expected_message=f"[{KEY_RESULT_NAME}]({GOAL_URL}) was updated.",
+        )
+
+    def test_key_result_deleted(self) -> None:
+        self.check_webhook(
+            "key_result_deleted",
+            expected_topic_name="Key Result",
+            expected_message="A key result was deleted.",
+        )
+
+    def test_key_result_event_without_token(self) -> None:
+        self.check_webhook(
+            "key_result_created",
+            expected_topic_name="Goal",
+            expected_message=f"[Key result]({GOAL_LIST_URL}) was created.",
         )
 
     def test_ignored_events(self) -> None:
