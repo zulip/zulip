@@ -30,10 +30,12 @@ function load(request, parent, isMain) {
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
         return module_mocks.get(filename);
-    } else if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
+    }
+    if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
         const actual_render = actual_load(request, parent, isMain);
         return template_stub({filename, actual_render});
-    } else if (filename === jquery_path) {
+    }
+    if (filename === jquery_path) {
         return {$: jquery_function ?? $};
     }
 

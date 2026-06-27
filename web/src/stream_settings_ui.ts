@@ -1250,13 +1250,15 @@ export function switch_rows(event: string): boolean {
     if (hash_parser.is_create_new_stream_narrow()) {
         // Prevent switching stream rows when creating a new stream
         return false;
-    } else if (
+    }
+    if (
         hash_parser.is_subscribers_section_opened_for_stream() &&
         $add_subscriber_pill_input.is(":focus")
     ) {
         // Prevent switching stream rows when adding a subscriber
         return false;
-    } else if (!active_data.id || active_data.$row.hasClass("notdisplayed")) {
+    }
+    if (!active_data.id || active_data.$row.hasClass("notdisplayed")) {
         $switch_row = $("div.stream-row:not(.notdisplayed)").first();
         if ($("#search_stream_name").is(":focus")) {
             $("#search_stream_name").trigger("blur");

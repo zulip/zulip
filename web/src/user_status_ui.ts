@@ -119,7 +119,8 @@ function emoji_status_fields_changed(
 ): boolean {
     if (old_emoji_info === undefined && Object.keys(selected_emoji_info).length === 0) {
         return false;
-    } else if (
+    }
+    if (
         old_emoji_info !== undefined &&
         old_emoji_info.emoji_name === selected_emoji_info.emoji_name &&
         old_emoji_info.reaction_type === selected_emoji_info.reaction_type &&

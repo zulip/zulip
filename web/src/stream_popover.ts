@@ -314,7 +314,8 @@ async function get_message_placement_in_conversation(
                 message_lists.current.data.first()?.id === current_message_id
             ) {
                 return "first";
-            } else if (
+            }
+            if (
                 message_lists.current.data.fetch_status.has_found_newest() &&
                 message_lists.current.data.last()?.id === current_message_id
             ) {

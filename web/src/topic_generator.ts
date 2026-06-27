@@ -158,7 +158,8 @@ export function get_next_topic(
 
             /* istanbul ignore next */
             return topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
-        } else if (stream_data.is_muted(stream_id)) {
+        }
+        if (stream_data.is_muted(stream_id)) {
             return topics.filter((topic) =>
                 user_topics.is_topic_unmuted_or_followed(stream_id, topic),
             );

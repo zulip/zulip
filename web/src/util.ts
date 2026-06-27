@@ -88,7 +88,8 @@ export const same_recipient = function util_same_recipient(a?: Recipient, b?: Re
             return false;
         }
         return a.to_user_ids === b.to_user_ids;
-    } else if (a.type === "stream" && b.type === "stream") {
+    }
+    if (a.type === "stream" && b.type === "stream") {
         return same_stream_and_topic(a, b);
     }
 
@@ -523,7 +524,8 @@ export function the<T>(items: T[] | JQuery<T>): T {
 export function compare_a_b<T>(a: T, b: T): number {
     if (a > b) {
         return 1;
-    } else if (a === b) {
+    }
+    if (a === b) {
         return 0;
     }
     return -1;
