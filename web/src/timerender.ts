@@ -520,7 +520,7 @@ export function format_time_modern(time: number | Date, today = new Date()): str
 export function absolute_time(timestamp: number): string {
     const today = new Date();
     const date = new Date(timestamp);
-    const is_older_year = today.getFullYear() - date.getFullYear() > 0;
+    const is_older_year = today.getFullYear() > date.getFullYear();
 
     return get_localized_date_or_time_for_format(
         date,
