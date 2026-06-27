@@ -560,7 +560,7 @@ export function revive_current_focus(): boolean {
         if (last_visited_topic !== undefined) {
             // If the only message in the topic was deleted,
             // then the topic will not be in Recent Conversations data.
-            if (recent_view_data.conversations.get(last_visited_topic) !== undefined) {
+            if (recent_view_data.conversations.has(last_visited_topic)) {
                 const last_conversation = recent_view_data.conversations.get(last_visited_topic);
                 assert(last_conversation !== undefined);
                 const topic_last_msg_id = last_conversation.last_msg_id;

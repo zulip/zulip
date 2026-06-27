@@ -2092,7 +2092,7 @@ export function update_internal(): void {
             }
         } else {
             // If it is rendered.
-            if (dms_dict.get(key) !== undefined) {
+            if (dms_dict.has(key)) {
                 dms_dict.delete(key);
                 get_row_from_conversation_key(key).remove();
             }
