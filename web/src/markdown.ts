@@ -679,7 +679,7 @@ function handleTex(tex: string, fullmatch: string): string {
             // TeX syntax error
             return `<span class="tex-error">${_.escape(fullmatch)}</span>`;
         }
-        throw new Error(error.message);
+        throw new Error(error.message, {cause: error});
     }
 }
 
