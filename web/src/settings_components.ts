@@ -412,9 +412,8 @@ function read_custom_profile_field_choices_from_form(
 
     const old_option_value_map = new Map<string, string>();
     if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(
-            custom_profile_field_choices_schema.parse(old_field_data),
-        )) {
+        const choices = custom_profile_field_choices_schema.parse(old_field_data);
+        for (const [value, choice] of Object.entries(choices)) {
             assert(typeof choice !== "string");
             old_option_value_map.set(choice.text, value);
         }
