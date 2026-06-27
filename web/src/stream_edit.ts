@@ -586,7 +586,7 @@ export function get_stream_email_address(flags: string[], address: string): stri
 
     const flag_string = flags.map((flag) => "." + flag).join("");
 
-    return clean_address.replace("@", flag_string + "@");
+    return clean_address.replace("@", () => flag_string + "@");
 }
 
 function show_stream_email_address_modal(address: string, sub: StreamSubscription): void {

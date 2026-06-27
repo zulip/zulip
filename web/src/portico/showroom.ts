@@ -337,7 +337,7 @@ $(window).on("load", () => {
         $(".action-button .zulip-icon, .icon-button .zulip-icon").attr(
             "class",
             (_index, className) =>
-                className.replaceAll(/zulip-icon-[^\s]+/g, `zulip-icon-${icon_name}`),
+                className.replaceAll(/zulip-icon-[^\s]+/g, () => `zulip-icon-${icon_name}`),
         );
     });
 
