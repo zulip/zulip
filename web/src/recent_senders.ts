@@ -243,11 +243,7 @@ export function get_topic_recent_senders(stream_id: number, topic: string): numb
 
     const sorted_senders = [...sender_dict.entries()];
     sorted_senders.sort(by_max_message_id);
-    const recent_senders = [];
-    for (const item of sorted_senders) {
-        recent_senders.push(item[0]);
-    }
-    return recent_senders;
+    return Array.from(sorted_senders, (item) => item[0]);
 }
 
 export function process_private_message(opts: {

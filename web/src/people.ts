@@ -1374,10 +1374,9 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
 }
 
 export function get_user_mentions_for_display(users: User[], is_silent: boolean): string {
-    const mentions: string[] = [];
-    for (const user of users) {
-        mentions.push(get_mention_syntax(user.full_name, user.user_id, is_silent));
-    }
+    const mentions = Array.from(users, (user) =>
+        get_mention_syntax(user.full_name, user.user_id, is_silent),
+    );
     if (mentions.length === 1) {
         return mentions[0]!;
     }
