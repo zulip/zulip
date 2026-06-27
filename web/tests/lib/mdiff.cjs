@@ -21,9 +21,9 @@ function apply_color(input_string, changes) {
     input_string = input_string.slice(2);
 
     const formatter = new Map([
-        ["delete", (string) => "\u001B[31m" + string + "\u001B[0m"],
-        ["insert", (string) => "\u001B[32m" + string + "\u001B[0m"],
-        ["replace", (string) => "\u001B[33m" + string + "\u001B[0m"],
+        ["delete", (string) => "\u{1B}[31m" + string + "\u{1B}[0m"],
+        ["insert", (string) => "\u{1B}[32m" + string + "\u{1B}[0m"],
+        ["replace", (string) => "\u{1B}[33m" + string + "\u{1B}[0m"],
     ]);
     for (const change of changes) {
         if (formatter.has(change.tag)) {
@@ -116,7 +116,7 @@ function diff_strings(string_0, string_1) {
     }
 
     output_lines = output_lines.map(
-        (string) => "\u001B[34m" + string.slice(0, 1) + "\u001B[0m" + string.slice(1),
+        (string) => "\u{1B}[34m" + string.slice(0, 1) + "\u{1B}[0m" + string.slice(1),
     );
 
     return output_lines.join("\n");

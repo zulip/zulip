@@ -129,17 +129,17 @@ async function checkFile(file: string): Promise<void> {
                                 let diff = "";
                                 for (const part of Diff.diffLines(description, formatted)) {
                                     const prefix = part.added
-                                        ? "\u001B[32m+"
+                                        ? "\u{1B}[32m+"
                                         : part.removed
-                                          ? "\u001B[31m-"
-                                          : "\u001B[34m ";
+                                          ? "\u{1B}[31m-"
+                                          : "\u{1B}[34m ";
                                     diff += prefix;
                                     diff += part.value
                                         .replace(/\n$/, "")
                                         .replaceAll("\n", "\n" + prefix);
                                     diff += "\n";
                                 }
-                                diff += "\u001B[0m";
+                                diff += "\u{1B}[0m";
                                 console.error(diff);
                             }
                         }

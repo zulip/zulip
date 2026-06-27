@@ -217,7 +217,7 @@ run_test("emojis", () => {
         '<p>I <img alt=":heart:" class="emoji" src="/images/emoji/heart.bmp" title="heart"> JavaScript</p>',
     );
     assert_parse(
-        "Mars Attacks! \uD83D\uDC7D",
+        "Mars Attacks! \u{1F47D}",
         '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" title="alien">:alien:</span></p>',
     );
 });
