@@ -147,7 +147,7 @@ export class PanZoomControl {
 
         if (modified_x < 0 + border) {
             // Image has been dragged beyond the LEFT of the view.
-            const move_by = modified_x * -1;
+            const move_by = -modified_x;
             e.moveBy(move_by + return_buffer, 0, false);
         } else if (modified_x - image_width > max_translate_x - border) {
             // Image has been dragged beyond the RIGHT of the view.
@@ -157,7 +157,7 @@ export class PanZoomControl {
 
         if (modified_y < 0 + border) {
             // Image has been dragged beyond the TOP of the view.
-            const move_by = modified_y * -1;
+            const move_by = -modified_y;
             e.moveBy(0, move_by + return_buffer, false);
         } else if (modified_y - image_height > max_translate_y - border) {
             // Image has been dragged beyond the BOTTOM of the view.
