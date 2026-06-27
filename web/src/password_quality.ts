@@ -64,7 +64,8 @@ export function password_warning(password: string, $password_field: JQuery): str
             {defaultMessage: "Password should be at least {length} characters long."},
             {length: min_length},
         );
-    } else if (password.length > max_length) {
+    }
+    if (password.length > max_length) {
         return $t(
             {
                 defaultMessage: "Maximum password length: {max} characters.",

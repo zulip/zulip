@@ -1420,7 +1420,8 @@ function sort_comparator(a: string, b: string): number {
     // compares strings in lowercase and returns -1, 0, 1
     if (a.toLowerCase() > b.toLowerCase()) {
         return 1;
-    } else if (a.toLowerCase() === b.toLowerCase()) {
+    }
+    if (a.toLowerCase() === b.toLowerCase()) {
         return 0;
     }
     return -1;
@@ -1580,7 +1581,8 @@ function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
     if (topic_props.top < thead_bottom) {
         return "above";
         // Topic is below the visible scroll region.
-    } else if (topic_props.bottom > compose_top) {
+    }
+    if (topic_props.bottom > compose_top) {
         return "below";
     }
 

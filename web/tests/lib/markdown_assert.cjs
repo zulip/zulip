@@ -87,7 +87,8 @@ class MarkdownComparer {
             const name_b = b.name;
             if (name_a < name_b) {
                 return -1;
-            } else if (name_a > name_b) {
+            }
+            if (name_a > name_b) {
                 return 1;
             }
             /* istanbul ignore next */

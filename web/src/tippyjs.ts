@@ -611,13 +611,16 @@ export function initialize(): void {
             if ($(instance.reference).closest("span").hasClass("deactivate-user-tooltip")) {
                 instance.setContent($t({defaultMessage: "Deactivate user"}));
                 return undefined;
-            } else if ($(instance.reference).closest("span").hasClass("reactivate-user-tooltip")) {
+            }
+            if ($(instance.reference).closest("span").hasClass("reactivate-user-tooltip")) {
                 instance.setContent($t({defaultMessage: "Reactivate user"}));
                 return undefined;
-            } else if ($(instance.reference).closest("span").hasClass("deactivate-bot-tooltip")) {
+            }
+            if ($(instance.reference).closest("span").hasClass("deactivate-bot-tooltip")) {
                 instance.setContent($t({defaultMessage: "Deactivate bot"}));
                 return undefined;
-            } else if ($(instance.reference).closest("span").hasClass("reactivate-bot-tooltip")) {
+            }
+            if ($(instance.reference).closest("span").hasClass("reactivate-bot-tooltip")) {
                 instance.setContent($t({defaultMessage: "Reactivate bot"}));
                 return undefined;
             }

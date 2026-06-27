@@ -222,7 +222,8 @@ function get_events({dont_block = false} = {}) {
                 if (error_type === "abort") {
                     // Don't restart if we explicitly aborted
                     return;
-                } else if (error_type === "timeout") {
+                }
+                if (error_type === "timeout") {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
                     popup_banners.close_connection_error_popup_banner("server_events");

@@ -1107,7 +1107,8 @@ export function initialize(): void {
                 // into compose and modify it.
                 $("textarea#compose-textarea").trigger("focus");
                 return;
-            } else if (
+            }
+            if (
                 !window.getSelection()?.toString() &&
                 // Clicking any input or text area should not close
                 // the compose box; this means using the sidebar

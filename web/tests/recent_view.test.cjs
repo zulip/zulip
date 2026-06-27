@@ -132,9 +132,11 @@ mock_esm("../src/user_topics", {
     get_topic_visibility_policy(stream_id, topic) {
         if (stream_id === stream1 && topic === topic7) {
             return all_visibility_policies.MUTED;
-        } else if (stream_id === stream6 && topic === topic11) {
+        }
+        if (stream_id === stream6 && topic === topic11) {
             return all_visibility_policies.UNMUTED;
-        } else if (stream_id === stream6 && topic === topic12) {
+        }
+        if (stream_id === stream6 && topic === topic12) {
             return all_visibility_policies.FOLLOWED;
         }
         return all_visibility_policies.INHERIT;

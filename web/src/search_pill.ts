@@ -339,7 +339,8 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 pills: pill_render_data,
                 description_html,
             });
-        } else if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
+        }
+        if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
             const description_html = render_data.negated
                 ? $t({defaultMessage: "Exclude messages you sent"})
                 : $t({defaultMessage: "Messages you sent"});

@@ -1937,7 +1937,8 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
                 msg: "",
             });
             return;
-        } else if (data.user_ids === "[1,2]") {
+        }
+        if (data.user_ids === "[1,2]") {
             if (!sent_success_response_for_third_user) {
                 error({responseJSON: {msg: "Network error"}});
                 return;

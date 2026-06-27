@@ -49,7 +49,8 @@ function get_total_human_subscriber_count(
 ): number {
     if (current_sub) {
         return peer_data.get_subscriber_count(current_sub.stream_id, false);
-    } else if (pm_ids_set.size > 0) {
+    }
+    if (pm_ids_set.size > 0) {
         // The current user is only in the provided recipients list
         // for direct message conversations with oneself.
         const all_recipient_user_ids_set = pm_ids_set.union(new Set([current_user.user_id]));

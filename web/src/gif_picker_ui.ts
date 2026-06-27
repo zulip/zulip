@@ -380,7 +380,8 @@ function get_gif_network(): GifNetwork {
     // In terms of preference, Tenor > KLIPY > GIPHY.
     if (gif_state.is_tenor_enabled()) {
         return new tenor_network.TenorNetwork();
-    } else if (gif_state.is_klipy_enabled()) {
+    }
+    if (gif_state.is_klipy_enabled()) {
         return new klipy_network.KlipyNetwork();
     }
     return new giphy_network.GiphyNetwork();

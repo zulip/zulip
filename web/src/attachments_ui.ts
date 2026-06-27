@@ -144,7 +144,8 @@ function sort_mentioned_in(a: Attachment, b: Attachment): number {
 
     if (a_id > b_id) {
         return 1;
-    } else if (a_id === b_id) {
+    }
+    if (a_id === b_id) {
         return 0;
     }
 
