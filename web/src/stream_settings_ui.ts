@@ -741,11 +741,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
 
     // If we just re-built the DOM from scratch we wouldn't need
     // all this hidden/notdisplayed logic.
-    const hidden_ids = new Set();
-
-    for (const stream_id of buckets.other) {
-        hidden_ids.add(stream_id);
-    }
+    const hidden_ids = new Set(buckets.other);
 
     for (const row of $("#channels_overlay_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
