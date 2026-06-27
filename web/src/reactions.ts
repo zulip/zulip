@@ -661,14 +661,14 @@ export function update_user_fields(
     // who reacted on a message might have changed, including due to
     // upvote/downvotes on ANY reaction in the message, because those
     // can change the correct value of should_display_reactors to use.
-    Object.assign(clean_reaction_object, {
-        ...clean_reaction_object,
-        ...build_reaction_data(
+    Object.assign(
+        clean_reaction_object,
+        build_reaction_data(
             clean_reaction_object.user_ids,
             clean_reaction_object.emoji_name,
             should_display_reactors,
         ),
-    });
+    );
 }
 
 type ReactionUserIdAndCount = {
