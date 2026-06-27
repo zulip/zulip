@@ -543,7 +543,7 @@ export function broadcast_mentions(): PseudoMentionUser[] {
 
         // Always sort above, under the assumption that names will
         // be longer and only contain "all" as a substring.
-        pm_recipient_count: Number.POSITIVE_INFINITY,
+        pm_recipient_count: Infinity,
 
         full_name: mention,
 
