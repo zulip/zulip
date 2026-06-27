@@ -232,17 +232,12 @@ export let update_count_in_dom = (
     // to leave space for the unread count, and has-unmuted-unreads is
     // used in muted streams to set the fading correctly to indicate
     // those are unread
-    if (stream_counts.unmuted_count > 0 && !stream_counts.stream_is_muted) {
-        // Normal stream, has unmuted unreads; display normally.
+    if (stream_counts.unmuted_count > 0) {
+        // Has unmuted unreads. Channel may or may not be muted; if it is,
+        // add has-unmuted-unreads so that we show these unreads as unmuted.
         ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
         $subscription_block.addClass("stream-with-count");
-        $subscription_block.removeClass("has-unmuted-unreads");
-        $subscription_block.removeClass("has-only-muted-unreads");
-    } else if (stream_counts.unmuted_count > 0 && stream_counts.stream_is_muted) {
-        // Muted stream, has unmuted unreads.
-        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
-        $subscription_block.addClass("stream-with-count");
-        $subscription_block.addClass("has-unmuted-unreads");
+        $subscription_block.toggleClass("has-unmuted-unreads", stream_counts.stream_is_muted);
         $subscription_block.removeClass("has-only-muted-unreads");
     } else if (stream_counts.muted_count > 0 && stream_counts.stream_is_muted) {
         // Muted stream, only muted unreads.
