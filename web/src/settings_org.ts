@@ -1121,10 +1121,10 @@ export function deactivate_organization(e: JQuery.Event): void {
                 // that string elsewhere.
                 return $t({defaultMessage: "Custom time"});
             }
-            return $t({defaultMessage: `Custom time ({min}+ days)`}, {min: minimum_allowed_days});
+            return $t({defaultMessage: "Custom time ({min}+ days)"}, {min: minimum_allowed_days});
         }
         return $t(
-            {defaultMessage: `Custom time ({min}-{max} days)`},
+            {defaultMessage: "Custom time ({min}-{max} days)"},
             {min: minimum_allowed_days, max: maximum_allowed_days},
         );
     }
