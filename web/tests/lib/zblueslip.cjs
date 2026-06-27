@@ -34,7 +34,7 @@ function make_zblueslip() {
     lib.expect = (name, message, expected_count = 1) => {
         assert.notEqual(opts[name], undefined, `unexpected arg for expect: ${name}`);
         assert.ok(
-            expected_count > 0 && Number.isInteger(expected_count),
+            expected_count > 0 && Number.isSafeInteger(expected_count),
             "expected count should be a positive integer",
         );
         const obj = {message, count: 0, expected_count};
