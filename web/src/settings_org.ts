@@ -526,7 +526,7 @@ function update_view_welcome_bot_custom_message_button_status(
     assert(message_id !== undefined);
     $view_message_button.on("click", (e) => {
         e.preventDefault();
-        window.location.href = `#narrow/dm/${people.WELCOME_BOT.user_id}/near/${message_id}`;
+        window.location.assign(`#narrow/dm/${people.WELCOME_BOT.user_id}/near/${message_id}`);
     });
 }
 

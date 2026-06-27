@@ -763,7 +763,7 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
             return false;
         }
 
-        window.location.href = hash_util.by_conversation_and_time_url(message);
+        window.location.assign(hash_util.by_conversation_and_time_url(message));
         return true;
     }
 

@@ -86,7 +86,7 @@ export function show_configure_email_banner(): void {
 
     $configure_email_banner_container.on("click", ".demo-organization-add-email", (e) => {
         e.preventDefault();
-        window.location.href = "/#settings/account-and-privacy";
+        window.location.assign("/#settings/account-and-privacy");
     });
 }
 
@@ -132,7 +132,7 @@ export function show_convert_demo_organization_modal(): void {
         const opts: RequestOpts = {
             success_continuation(raw_data) {
                 const data = z.object({realm_url: z.string()}).parse(raw_data);
-                window.location.href = data.realm_url;
+                window.location.assign(data.realm_url);
             },
         };
         dialog_widget.submit_api_request(channel.patch, "/json/realm", data, opts);
