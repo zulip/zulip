@@ -49,7 +49,7 @@ function make_zblueslip() {
                 if (i === -1) {
                     // Only throw this for message types we want to explicitly track.
                     // For example, we do not want to throw here for debug messages.
-                    if (opts[name]) {
+                    if (opts[name] ?? false) {
                         throw new Error(`Unexpected '${name}' message: ${message}`);
                     }
                     continue;
@@ -83,7 +83,7 @@ function make_zblueslip() {
 
     // Create logging functions
     for (const name of names) {
-        if (!opts[name]) {
+        if (!(opts[name] ?? false)) {
             // should just log the message.
             lib[name] = function (message, more_info, cause) {
                 lib.test_logs[name].push({message, more_info, cause});

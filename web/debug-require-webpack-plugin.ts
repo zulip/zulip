@@ -19,7 +19,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
             .for("normal")
             .tap("DebugRequirePlugin", (resolver) => {
                 resolver.getHook("beforeRawModule").tap("DebugRequirePlugin", (req) => {
-                    if (!(nameSymbol in req)) {
+                    if (!Object.hasOwn(req, nameSymbol)) {
                         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                         (req as NamedRequest)[nameSymbol] = req.request;
                     }
@@ -29,7 +29,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                 resolver.getHook("beforeRelative").tap("DebugRequirePlugin", (req) => {
                     if (req.path !== false) {
                         const inPath = path.relative(compiler.context, req.path);
-                        if (!inPath.startsWith("../") && !(nameSymbol in req)) {
+                        if (!inPath.startsWith("../") && !Object.hasOwn(req, nameSymbol)) {
                             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                             (req as NamedRequest)[nameSymbol] = "./" + inPath;
                         }

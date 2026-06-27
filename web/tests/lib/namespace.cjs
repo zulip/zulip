@@ -144,7 +144,7 @@ exports.mock_cjs = (module_path, obj, {callsite = callsites()[1]} = {}) => {
     assert.ok(!module_mocks.has(filename), `You already set up a mock for ${filename}`);
 
     assert.ok(
-        !(filename in require.cache),
+        !Object.hasOwn(require.cache, filename),
         `It is too late to mock ${filename}; call this earlier.`,
     );
 
@@ -204,8 +204,8 @@ exports.unmock_module = (module_path, {callsite = callsites()[1]} = {}) => {
 exports.set_global = function (name, val) {
     assert.notEqual(val, null, `We try to avoid using null in our codebase.`);
 
-    if (!(name in old_globals)) {
-        if (!(name in global)) {
+    if (!Object.hasOwn(old_globals, name)) {
+        if (!Object.hasOwn(global, name)) {
             new_globals.add(name);
         }
         old_globals[name] = global[name];
@@ -376,7 +376,7 @@ exports.with_overrides = function (test_function) {
 
         const rewire_prop = `rewire_${prop}`;
         /* istanbul ignore if */
-        if (!(rewire_prop in obj)) {
+        if (!Object.hasOwn(obj, rewire_prop)) {
             assert.fail(`You must define ${rewire_prop} to use override_rewire on ${prop}.`);
         }
         obj[rewire_prop](new_value);

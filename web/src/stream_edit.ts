@@ -328,7 +328,7 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
                 stream_data.receives_notifications(sub.stream_id, notification_setting.data) &&
                 !realm_setting;
         } else {
-            is_checked = Boolean(sub[setting]) && !realm_setting;
+            is_checked = (sub[setting] ?? false) && !realm_setting;
         }
         return {
             name: setting,
