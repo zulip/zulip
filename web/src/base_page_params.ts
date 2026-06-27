@@ -173,7 +173,7 @@ function parse_page_params(): z.infer<typeof page_params_schema> {
             // Halt module loading without logging to Sentry; the
             // user self-heals on the scheduled reload. The matching
             // entry in sentry.ts's ignoreErrors keeps this quiet.
-            throw new Error("page_params parse failed; reload scheduled");
+            throw new Error("page_params parse failed; reload scheduled", {cause: error});
         }
         throw error;
     }
