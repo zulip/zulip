@@ -71,11 +71,7 @@ class MarkdownComparer {
     _reorderAttributes(node) {
         // Sorts every attribute in every element by name.  Ensures consistent diff HTML output
 
-        const attributeList = [];
-
-        for (const attr of node.attributes) {
-            attributeList.push(attr);
-        }
+        const attributeList = [...node.attributes];
 
         // If put in above forEach loop, causes issues (possible nodes.attribute invalidation?)
         for (const attr of attributeList) {
