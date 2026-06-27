@@ -109,7 +109,7 @@ export function set_up_stream(
         },
         matcher(query: string): (item: StreamPillData) => boolean {
             query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
+            query = query.replaceAll("\u{A0}", " ");
             query = query.trim();
             if (query.startsWith("#")) {
                 query = query.slice(1);

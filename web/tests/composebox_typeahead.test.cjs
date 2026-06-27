@@ -1698,7 +1698,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Adds a `no break-space` at the end. This should fail
                 // if there wasn't any logic replacing `no break-space`
                 // with normal space.
-                query = "cordelia, lear's\u00A0";
+                query = "cordelia, lear's\u{A0}";
                 assert.equal(matcher(query, cordelia_item), true);
                 assert.equal(matcher(query, othello_item), false);
 
@@ -2776,7 +2776,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(":test", "ing", []);
     assert_typeahead_equals("```test", "ing", []);
     assert_typeahead_equals("~~~test", "ing", []);
-    const terminal_symbols = ",.;?!()[]> \u00A0\"'\n\t";
+    const terminal_symbols = ",.;?!()[]> \u{A0}\"'\n\t";
     for (const symbol of terminal_symbols.split()) {
         assert_typeahead_equals(
             "@othello",
