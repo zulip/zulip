@@ -91,7 +91,8 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                                 if (m.resource === debugRequirePath) {
                                     hasDebugRequire = true;
                                 }
-                                for (const name of resolved.get(m.resource) ?? []) {
+                                const names = resolved.get(m.resource) ?? [];
+                                for (const name of names) {
                                     ids.push([
                                         m.rawRequest.slice(0, m.rawRequest.lastIndexOf("!") + 1) +
                                             name,

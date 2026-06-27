@@ -392,7 +392,8 @@ function improve_time_selection_range(range: Range): void {
     // Chrome strips <time> and .timestamp-content-wrapper from the
     // paste HTML, so wrap the date text in a <span data-datetime> that
     // the paste handler can read.
-    for (const time of new Set([start_time, end_time])) {
+    const times = new Set([start_time, end_time]);
+    for (const time of times) {
         if (!time) {
             continue;
         }

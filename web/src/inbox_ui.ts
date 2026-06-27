@@ -458,9 +458,9 @@ function load_data_from_ls(): void {
         z.optional(z.array(z.string())).parse(ls.get(ls_collapsed_containers_key)),
     );
     const saved_per_channel_filters = z
-        .optional(z.array(z.tuple([z.number(), z.array(z.string())])))
+        ._default(z.array(z.tuple([z.number(), z.array(z.string())])), [])
         .parse(ls.get(ls_per_channel_filters_key));
-    for (const [channel_id, filter_set] of saved_per_channel_filters ?? []) {
+    for (const [channel_id, filter_set] of saved_per_channel_filters) {
         const valid_filter_set = new Set(filter_set.filter((filter) => valid_filters.has(filter)));
         if (valid_filter_set.size > 0) {
             per_channel_filters.set(channel_id, valid_filter_set);
