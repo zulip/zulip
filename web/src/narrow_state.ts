@@ -258,9 +258,6 @@ export let _possible_unread_message_ids = (message_list_filter: Filter): number[
     // If we do return a result, it will be a subset of unread
     // message ids but possibly a superset of unread message ids
     // that match our filter.
-    let filter_stream_id: number | undefined;
-    let topic_name: string | undefined;
-    let filter_pm_string: string | undefined;
 
     // For the `with` operator, we can only correctly compute the
     // correct channel/topic for lookup unreads in if we either
@@ -280,8 +277,8 @@ export let _possible_unread_message_ids = (message_list_filter: Filter): number[
         message_list_filter.can_bucket_by("channel", "topic", "with") ||
         message_list_filter.can_bucket_by("channel", "topic")
     ) {
-        filter_stream_id = stream_id(message_list_filter, true);
-        topic_name = topic(message_list_filter);
+        const filter_stream_id = stream_id(message_list_filter, true);
+        const topic_name = topic(message_list_filter);
         if (filter_stream_id === undefined || topic_name === undefined) {
             return [];
         }
@@ -289,7 +286,7 @@ export let _possible_unread_message_ids = (message_list_filter: Filter): number[
     }
 
     if (message_list_filter.can_bucket_by("channel")) {
-        filter_stream_id = stream_id(message_list_filter, true);
+        const filter_stream_id = stream_id(message_list_filter, true);
         if (filter_stream_id === undefined) {
             return [];
         }
@@ -300,7 +297,7 @@ export let _possible_unread_message_ids = (message_list_filter: Filter): number[
         message_list_filter.can_bucket_by("dm", "with") ||
         message_list_filter.can_bucket_by("dm")
     ) {
-        filter_pm_string = pm_ids_string(message_list_filter);
+        const filter_pm_string = pm_ids_string(message_list_filter);
         if (filter_pm_string === undefined) {
             return [];
         }

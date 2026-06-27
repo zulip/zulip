@@ -1390,8 +1390,6 @@ export class MessageListView {
         const new_dom_elements = [];
         let $rendered_groups;
         let $dom_messages;
-        let $last_message_row;
-        let $last_group_row;
 
         for (const message_container of message_containers) {
             this.set_edited_notice_locations(message_container);
@@ -1444,8 +1442,8 @@ export class MessageListView {
 
         // Insert new messages in to the last message group
         if (message_actions.append_messages.length > 0) {
-            $last_message_row = this.$list.find(".message_row").last().expectOne();
-            $last_group_row = rows.get_message_recipient_row($last_message_row);
+            const $last_message_row = this.$list.find(".message_row").last().expectOne();
+            const $last_group_row = rows.get_message_recipient_row($last_message_row);
             $dom_messages = $(
                 message_actions.append_messages
                     .map((message_container) => this._get_message_template(message_container))

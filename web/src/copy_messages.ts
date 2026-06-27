@@ -604,26 +604,20 @@ export function analyze_selection(selection: Selection): {
     // full content.
 
     let i;
-    let range;
     const ranges = [];
-    let $startc;
-    let $endc;
-    let $initial_end_tr;
     let start_id;
     let end_id;
-    let start_data;
-    let end_data;
     // skip_same_td_check is true whenever we know for a fact that the
     // selection covers multiple messages (and thus we should no
     // longer consider letting the browser handle the copy event).
     let skip_same_td_check = false;
 
     for (i = 0; i < selection.rangeCount; i += 1) {
-        range = selection.getRangeAt(i);
+        const range = selection.getRangeAt(i);
         ranges.push(range);
 
-        $startc = $(range.startContainer);
-        start_data = find_boundary_tr(
+        const $startc = $(range.startContainer);
+        const start_data = find_boundary_tr(
             $startc
                 .parents(".selectable_row, .message_header")
                 .not(".overlay-message-header")
@@ -638,9 +632,9 @@ export function analyze_selection(selection: Selection): {
         // touched by the selection.
         start_id ??= start_data[0];
 
-        $endc = $(range.endContainer);
-        $initial_end_tr = get_end_tr_from_endc($endc);
-        end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
+        const $endc = $(range.endContainer);
+        const $initial_end_tr = get_end_tr_from_endc($endc);
+        const end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
 
         if (end_data === undefined) {
             // Skip any selection sections that don't intersect a message.
