@@ -103,7 +103,7 @@ export function postprocess_content(html: string): string {
                     },
                 );
             } else {
-                title = url.toString();
+                title = url.href;
                 legacy_title = href;
             }
             elt.setAttribute(

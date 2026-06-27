@@ -834,7 +834,7 @@ $(() => {
         needs_url_cleanup = true;
     }
     if (needs_url_cleanup) {
-        window.history.replaceState(window.history.state, "", url.toString());
+        window.history.replaceState(window.history.state, "", url);
     }
 
     if (page_params.no_event_queue) {
