@@ -291,7 +291,7 @@ export function initialize(): void {
         onShow(instance) {
             instance.setContent(
                 $t(
-                    {defaultMessage: `Maximum message length: {max_length} characters`},
+                    {defaultMessage: "Maximum message length: {max_length} characters"},
                     {max_length: realm.max_message_length},
                 ),
             );
