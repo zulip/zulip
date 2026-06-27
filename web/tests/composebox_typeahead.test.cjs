@@ -366,12 +366,12 @@ const light_command = {
 const light_command_item = slash_item(light_command);
 
 const name_to_codepoint = {};
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     name_to_codepoint[key] = val.emoji_code;
 }
 
 const codepoint_to_name = {};
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     codepoint_to_name[val.emoji_code] = key;
 }
 
@@ -389,7 +389,7 @@ emoji.initialize({
 });
 emoji.active_realm_emojis.clear();
 emoji.emojis_by_name.clear();
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     emoji.emojis_by_name.set(key, val);
 }
 typeahead.set_frequently_used_emojis(
