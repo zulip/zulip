@@ -215,6 +215,11 @@ class FakeElement extends RejectMissing {
     removeAttribute(name) {
         this.#attributes.delete(normalize_attribute(name));
     }
+    replaceChildren(...children) {
+        assert.equal(children.length, 0, "zjquery does not support this replaceChildren() call");
+        fake_element_state.get(this).query_results.clear();
+        this.innerHTML = "";
+    }
     setAttribute(name, value) {
         this.#attributes.set(normalize_attribute(name), String(value));
     }
@@ -402,8 +407,7 @@ exports.FakeJQuery = class extends RejectMissing {
     }
     empty() {
         for (const element of this) {
-            fake_element_state.get(element).query_results.clear();
-            element.innerHTML = "";
+            element.replaceChildren();
         }
         return this;
     }
