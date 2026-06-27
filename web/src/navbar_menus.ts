@@ -73,7 +73,8 @@ function get_target_navbar_menu(
     if (event_name === "left_arrow" && index !== -1) {
         return [...$navbar_menus].slice(0, index).findLast((menu) => menu.getClientRects().length)
             ?.id;
-    } else if (event_name === "right_arrow" && index !== -1) {
+    }
+    if (event_name === "right_arrow" && index !== -1) {
         return [...$navbar_menus].slice(index + 1).find((menu) => menu.getClientRects().length)?.id;
     }
     return undefined;

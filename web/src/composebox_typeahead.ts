@@ -482,7 +482,8 @@ export function tokenize_compose_str(s: string): string {
                 // Code block must start on a new line
                 if (i === 2) {
                     return s;
-                } else if (i > 2 && s[i - 3] === "\n") {
+                }
+                if (i > 2 && s[i - 3] === "\n") {
                     return s.slice(i - 2);
                 }
                 break;
@@ -497,7 +498,8 @@ export function tokenize_compose_str(s: string): string {
             case "_":
                 if (i === 0) {
                     return s;
-                } else if (/[\s"'(/<[{]/.test(s[i - 1]!)) {
+                }
+                if (/[\s"'(/<[{]/.test(s[i - 1]!)) {
                     return s.slice(i);
                 }
                 break;
@@ -1742,7 +1744,8 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
                         item.language === realm.realm_default_code_block_language
                     ) {
                         return `<em>${$t({defaultMessage: "(default)"})}</em>`;
-                    } else if (item.language === "text") {
+                    }
+                    if (item.language === "text") {
                         return `<em>${$t({defaultMessage: "(no highlighting)"})}</em>`;
                     }
                 }
@@ -1888,7 +1891,8 @@ export function initialize({
         ): string | false {
             if (typeof item !== "string" && item.type === "user") {
                 return `<em>${$t({defaultMessage: "DM"})}</em>`;
-            } else if (!matching_items.includes(item)) {
+            }
+            if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;

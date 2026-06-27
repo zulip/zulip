@@ -204,7 +204,8 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         !stream_data.can_use_empty_topic(opts.stream_id)
     ) {
         return "input#stream_message_recipient_topic";
-    } else if (
+    }
+    if (
         (opts.message_type === "stream" && opts.stream_id !== undefined) ||
         (opts.message_type === "private" && opts.private_message_recipient_ids.length > 0)
     ) {
@@ -448,7 +449,8 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
                 {defaultMessage: "Message #{channel_name} > {topic_name}"},
                 {channel_name: stream_name, topic_name: topic_display_name},
             );
-        } else if (stream_name) {
+        }
+        if (stream_name) {
             return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
         }
     } else if (opts.direct_message_user_ids.length > 0) {
@@ -1048,7 +1050,8 @@ export let format_text = (
                 range.end - syntax_start.length,
             );
             return false;
-        } else if (is_inner_text_formatted(syntax_start, syntax_end)) {
+        }
+        if (is_inner_text_formatted(syntax_start, syntax_end)) {
             // Remove syntax inside the selection, if present.
             text =
                 text.slice(0, range.start) +
@@ -1389,7 +1392,8 @@ export let format_text = (
                     range.end - italic_syntax.length,
                 );
                 break;
-            } else if (
+            }
+            if (
                 selected_text.length > italic_syntax.length * 2 &&
                 // If the selected text contains italic syntax
                 selected_text.startsWith(italic_syntax) &&

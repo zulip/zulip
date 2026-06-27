@@ -1117,10 +1117,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if (overlays.lightbox_open()) {
             lightbox.prev();
             return true;
-        } else if (overlays.streams_open()) {
+        }
+        if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);
             return true;
-        } else if (compose_state.focus_in_formatting_buttons()) {
+        }
+        if (compose_state.focus_in_formatting_buttons()) {
             // Allow left arrow to scroll the formatting buttons backward
             return false;
         }
@@ -1133,7 +1135,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if (overlays.lightbox_open()) {
             lightbox.next();
             return true;
-        } else if (overlays.streams_open()) {
+        }
+        if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);
             return true;
         }
@@ -1412,7 +1415,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             if (narrow_state.narrowed_by_topic_reply()) {
                 // narrow to stream if user is in topic view
                 return do_narrow_action(message_view.narrow_by_recipient);
-            } else if (narrow_state.narrowed_by_pm_reply()) {
+            }
+            if (narrow_state.narrowed_by_pm_reply()) {
                 // do nothing if user is in DM view
                 return false;
             }

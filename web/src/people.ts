@@ -1163,7 +1163,8 @@ export function get_people_for_dm(opts: {
 }): User[] {
     if (opts.exclude_non_message_people) {
         return opts.active_users_only ? get_active_message_people() : get_message_people();
-    } else if (opts.exclude_non_welcome_bots) {
+    }
+    if (opts.exclude_non_welcome_bots) {
         return get_realm_users_and_welcome_bot();
     }
     return get_realm_users_and_system_bots();

@@ -614,7 +614,8 @@ export function set_up(): void {
                         "Sorry for the trouble!",
                 );
                 return;
-            } else if (!password_quality(new_pw, undefined, $new_pw_field)) {
+            }
+            if (!password_quality(new_pw, undefined, $new_pw_field)) {
                 settings_change_error($t_html({defaultMessage: "New password is too weak!"}));
                 return;
             }

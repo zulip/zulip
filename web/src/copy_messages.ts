@@ -39,7 +39,8 @@ function find_boundary_tr(
     }
     if (j === 10) {
         return undefined;
-    } else if (j !== 0) {
+    }
+    if (j !== 0) {
         // If we updated tr, then we are not dealing with a selection
         // that is entirely within one td, and we can skip the same td
         // check (In fact, we need to because it won't work correctly

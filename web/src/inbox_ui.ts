@@ -662,7 +662,8 @@ function rerender_stream_inbox_header_if_needed(
 function get_channel_folder_header_id(folder_id: number): string {
     if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
         return OTHER_CHANNEL_HEADER_ID;
-    } else if (folder_id === PINNED_CHANNEL_FOLDER_ID) {
+    }
+    if (folder_id === PINNED_CHANNEL_FOLDER_ID) {
         return PINNED_CHANNEL_HEADER_ID;
     }
     return CHANNEL_FOLDER_HEADER_ID_PREFIX + folder_id;

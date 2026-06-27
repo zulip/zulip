@@ -29,7 +29,8 @@ export function initialize(): void {
     const sorted_formats = realm.server_thumbnail_formats.toSorted((a, b) => {
         if (a.max_width !== b.max_width) {
             return Math.abs(a.max_width - 840) < Math.abs(b.max_width - 840) ? -1 : 1;
-        } else if (a.format !== b.format) {
+        }
+        if (a.format !== b.format) {
             let a_index = format_preferences.indexOf(a.format);
             if (a_index === -1) {
                 a_index = format_preferences.length;

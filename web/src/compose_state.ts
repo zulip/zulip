@@ -117,7 +117,8 @@ function get_or_set(
         }
         if (no_trim) {
             return oldval;
-        } else if (keep_leading_spaces) {
+        }
+        if (keep_leading_spaces) {
             return oldval.trimEnd().replace(/^(\r?\n)+/, "");
         }
         return oldval.trim();

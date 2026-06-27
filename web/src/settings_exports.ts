@@ -84,7 +84,8 @@ function sort_user(a: RealmExport, b: RealmExport): number {
     const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
     if (a_name > b_name) {
         return 1;
-    } else if (a_name === b_name) {
+    }
+    if (a_name === b_name) {
         return 0;
     }
     return -1;
@@ -166,7 +167,8 @@ function sort_user_by_name(a: ExportConsent, b: ExportConsent): number {
     const b_name = people.get_full_name(b.user_id).toLowerCase();
     if (a_name > b_name) {
         return 1;
-    } else if (a_name === b_name) {
+    }
+    if (a_name === b_name) {
         return 0;
     }
     return -1;

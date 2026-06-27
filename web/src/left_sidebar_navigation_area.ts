@@ -126,7 +126,8 @@ export function handle_narrow_activated(filter: Filter): void {
         if (filter_name === "starred") {
             select_top_left_corner_item(".top_left_starred_messages");
             return;
-        } else if (filter_name === "mentioned") {
+        }
+        if (filter_name === "mentioned") {
             select_top_left_corner_item(".top_left_mentions");
             return;
         }

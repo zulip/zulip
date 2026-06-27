@@ -242,7 +242,8 @@ function get_total_sections(): number {
 function get_max_index(section: number): number | undefined {
     if (search_is_active) {
         return search_results.length;
-    } else if (section >= 0 && section < get_total_sections()) {
+    }
+    if (section >= 0 && section < get_total_sections()) {
         return complete_emoji_catalog[section]!.emojis.length;
     }
     return undefined;
@@ -664,7 +665,8 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
             return true;
         }
         return false;
-    } else if (
+    }
+    if (
         (current_section === 0 && current_index < 6 && event_name === "up_arrow") ||
         (current_section === 0 && current_index === 0 && event_name === "left_arrow")
     ) {

@@ -641,7 +641,8 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         function update_option_label(sender: User | CurrentUser | Bot): string {
             if (sender.user_id === people.EMAIL_GATEWAY_BOT.user_id) {
                 return "Email Gateway bot";
-            } else if (sender.user_id === current_user.user_id) {
+            }
+            if (sender.user_id === current_user.user_id) {
                 return $t({defaultMessage: "You"});
             }
             return sender.full_name;

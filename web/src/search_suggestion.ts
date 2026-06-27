@@ -633,7 +633,8 @@ function get_topic_suggestions(
             excluded_channel_ids.has(subscribed_channel_id.toString())
         ) {
             continue;
-        } else if (!show_topics_from_other_channels) {
+        }
+        if (!show_topics_from_other_channels) {
             continue;
         }
 

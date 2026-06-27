@@ -2265,7 +2265,8 @@ export class MessageListView {
                 navbar_bottom + header_props.height + margin_between_recipient_rows;
             if (header_props.top < partially_hidden_header_position) {
                 return -1;
-            } else if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
+            }
+            if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
                 return 1;
             }
             /* Headers between `partially_hidden_header_position` and `sticky_or_about_to_be_sticky_header_position`
@@ -2290,7 +2291,8 @@ export class MessageListView {
             if (diff === 0) {
                 $sticky_header = $(header);
                 break;
-            } else if (diff === 1) {
+            }
+            if (diff === 1) {
                 end = mid - 1;
             } else {
                 start = mid + 1;

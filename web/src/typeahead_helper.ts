@@ -469,9 +469,11 @@ function compare_language_by_popularity(lang_a: string, lang_b: string): number 
     // languages seem sensible.
     if (!lang_a_data && !lang_b_data) {
         return 0; // Neither have popularity, so they tie.
-    } else if (!lang_a_data) {
+    }
+    if (!lang_a_data) {
         return 1; // lang_a doesn't have popularity, so sort a after b.
-    } else if (!lang_b_data) {
+    }
+    if (!lang_b_data) {
         return -1; // lang_b doesn't have popularity, so sort a before b.
     }
 
@@ -1013,7 +1015,8 @@ function slash_command_comparator(
 ): number {
     if (slash_command_a.name < slash_command_b.name) {
         return -1;
-    } else if (slash_command_a.name > slash_command_b.name) {
+    }
+    if (slash_command_a.name > slash_command_b.name) {
         return 1;
     }
     /* istanbul ignore next */

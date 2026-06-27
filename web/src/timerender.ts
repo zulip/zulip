@@ -269,11 +269,8 @@ export function relative_time_string_from_date(date: Date, use_minutes_short_for
 
     if (days_old < 90) {
         return $t({defaultMessage: "{days_old} days ago"}, {days_old});
-    } else if (
-        days_old > 90 &&
-        days_old < 365 &&
-        date.getFullYear() === current_date.getFullYear()
-    ) {
+    }
+    if (days_old > 90 && days_old < 365 && date.getFullYear() === current_date.getFullYear()) {
         // Online more than 90 days ago, in the same year
         return get_localized_date_or_time_for_format(date, "dayofyear");
     }
@@ -311,7 +308,8 @@ export function last_seen_status_from_date(last_active_date: Date): string {
 
     if (days_old < 90) {
         return $t({defaultMessage: "Active {days_old} days ago"}, {days_old});
-    } else if (
+    }
+    if (
         days_old > 90 &&
         days_old < 365 &&
         last_active_date.getFullYear() === current_date.getFullYear()
@@ -494,13 +492,17 @@ export function format_time_modern(time: number | Date, today = new Date()): str
     if (time > today) {
         /* For timestamps in the future, we always show the year*/
         return get_localized_date_or_time_for_format(time, "dayofyear_year");
-    } else if (hours < 24) {
+    }
+    if (hours < 24) {
         return stringify_time(time);
-    } else if (days_old === 1) {
+    }
+    if (days_old === 1) {
         return $t({defaultMessage: "Yesterday"});
-    } else if (days_old < 7) {
+    }
+    if (days_old < 7) {
         return get_localized_date_or_time_for_format(time, "weekday");
-    } else if (days_old <= 180) {
+    }
+    if (days_old <= 180) {
         return get_localized_date_or_time_for_format(time, "dayofyear");
     }
 
