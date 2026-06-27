@@ -866,7 +866,7 @@ export function set_up(): void {
                 success() {
                     dialog_widget.hide_dialog_spinner();
                     dialog_widget.close();
-                    window.location.href = "/login/";
+                    window.location.assign("/login/");
                 },
                 error(xhr) {
                     const error_last_owner = $t_html({
