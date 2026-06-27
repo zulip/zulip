@@ -39,6 +39,11 @@ GOAL_NAME = "Weekly Goal"
 
 KEY_RESULT_NAME = "Milestone 1"
 
+LIST_ID = "901615428252"
+LIST_API_URL = f"https://api.clickup.com/api/v2/list/{LIST_ID}"
+LIST_URL = f"https://app.clickup.com/{TEAM_ID}/v/l/li/{LIST_ID}"
+LIST_NAME = "Zulip Task List"
+
 
 def mock_clickup_api_calls(
     test_func: Callable[Concatenate["ClickUpHookTests", ParamT], None],
@@ -66,6 +71,11 @@ def mock_clickup_api_calls(
             responses.GET,
             GOAL_API_URL,
             self.webhook_fixture_data("clickup", "goal_api_data"),
+        )
+        responses.add(
+            responses.GET,
+            LIST_API_URL,
+            self.webhook_fixture_data("clickup", "list_api_data"),
         )
         test_func(self, *args, **kwargs)
 
@@ -221,6 +231,36 @@ class ClickUpHookTests(WebhookTestCase):
             "key_result_created",
             expected_topic_name="Goal",
             expected_message=f"[Key result]({GOAL_LIST_URL}) was created.",
+        )
+
+    @mock_clickup_api_calls
+    def test_list_created(self) -> None:
+        self.check_webhook(
+            "list_created",
+            expected_topic_name=f"List: {LIST_NAME}",
+            expected_message=f"[{LIST_NAME}]({LIST_URL}) was created.",
+        )
+
+    @mock_clickup_api_calls
+    def test_list_updated(self) -> None:
+        self.check_webhook(
+            "list_updated",
+            expected_topic_name=f"List: {LIST_NAME}",
+            expected_message=f"[{LIST_NAME}]({LIST_URL}) was updated.",
+        )
+
+    def test_list_deleted(self) -> None:
+        self.check_webhook(
+            "list_deleted",
+            expected_topic_name="List",
+            expected_message="A list was deleted.",
+        )
+
+    def test_list_event_without_token(self) -> None:
+        self.check_webhook(
+            "list_created",
+            expected_topic_name="List",
+            expected_message=f"[List]({LIST_URL}) was created.",
         )
 
     def test_ignored_events(self) -> None:

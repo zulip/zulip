@@ -22,6 +22,7 @@ DASHBOARD_URLS: dict[str, str] = {
     "space": CLICKUP_WEB_BASE_URL + "/{team_id}/v/s/{entity_id}",
     "folder": CLICKUP_WEB_BASE_URL + "/{team_id}/v/o/f/{entity_id}",
     "goal": CLICKUP_WEB_BASE_URL + "/{team_id}/goals/{entity_id}",
+    "list": CLICKUP_WEB_BASE_URL + "/{team_id}/v/l/li/{entity_id}",
 }
 
 
@@ -157,6 +158,9 @@ ALL_EVENT_MAPPER: dict[str, Callable[[WildValue, str], tuple[str, str]]] = {
     "Folder Created": partial(get_event_message, "folder", "created"),
     "Folder Updated": partial(get_event_message, "folder", "updated"),
     "Folder Deleted": partial(get_event_message, "folder", "deleted"),
+    "List Created": partial(get_event_message, "list", "created"),
+    "List Updated": partial(get_event_message, "list", "updated"),
+    "List Deleted": partial(get_event_message, "list", "deleted"),
     "Goal Created": partial(get_goal_and_key_result_message, "goal", "created"),
     "Goal Updated": partial(get_goal_and_key_result_message, "goal", "updated"),
     "Goal Deleted": partial(get_goal_and_key_result_message, "goal", "deleted"),
