@@ -962,15 +962,10 @@ type SectionUnreadCount = {
     // These both include inactive unreads as well.
     unmuted: number;
     muted: number;
-    // These are used for the count on the inactive/muted channel toggle.
-    inactive_unmuted: number;
-    inactive_muted: number;
-    // e.g. followed topics in a muted channel, which count towards
-    // the unmuted count in the inactive/muted channels toggle.
-    muted_channel_unmuted: number;
-    // Doesn't include muted topics in unmuted channels, which shouldn't
-    // contribute to the count for the inactive/muted channel toggle.
-    muted_channel_muted: number;
+    // These are the counts on the inactive/muted channel toggle, covering
+    // channels hidden because they're inactive or muted.
+    hidden_unmuted: number;
+    hidden_muted: number;
 };
 
 export let update_dom_with_unread_counts = function (counts: FullUnreadCountsData): void {
@@ -1003,19 +998,15 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         unmuted: 0,
         muted: 0,
         // Not used for the pinned section, but included here to make typing easier
-        inactive_unmuted: 0,
-        inactive_muted: 0,
-        muted_channel_unmuted: 0,
-        muted_channel_muted: 0,
+        hidden_unmuted: 0,
+        hidden_muted: 0,
     };
     const folder_unread_counts = new Map<number, SectionUnreadCount>();
     const normal_section_unread_counts: SectionUnreadCount = {
         unmuted: 0,
         muted: 0,
-        inactive_unmuted: 0,
-        inactive_muted: 0,
-        muted_channel_unmuted: 0,
-        muted_channel_muted: 0,
+        hidden_unmuted: 0,
+        hidden_muted: 0,
     };
 
     for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
@@ -1029,35 +1020,24 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
                 folder_unread_counts.set(sub.folder_id, {
                     unmuted: 0,
                     muted: 0,
-                    inactive_unmuted: 0,
-                    inactive_muted: 0,
-                    muted_channel_unmuted: 0,
-                    muted_channel_muted: 0,
+                    hidden_unmuted: 0,
+                    hidden_muted: 0,
                 });
             }
 
             const unread_counts = folder_unread_counts.get(sub.folder_id)!;
             unread_counts.unmuted += stream_count_info.unmuted_count;
             unread_counts.muted += stream_count_info.muted_count;
-            if (sub.is_muted) {
-                unread_counts.muted_channel_unmuted += stream_count_info.unmuted_count;
-                unread_counts.muted_channel_muted += stream_count_info.muted_count;
-            }
-            if (!stream_list_sort.has_recent_activity(sub)) {
-                unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
-                unread_counts.inactive_muted += stream_count_info.muted_count;
+            if (sub.is_muted || !stream_list_sort.has_recent_activity(sub)) {
+                unread_counts.hidden_unmuted += stream_count_info.unmuted_count;
+                unread_counts.hidden_muted += stream_count_info.muted_count;
             }
         } else {
             normal_section_unread_counts.unmuted += stream_count_info.unmuted_count;
             normal_section_unread_counts.muted += stream_count_info.muted_count;
-            if (sub.is_muted) {
-                normal_section_unread_counts.muted_channel_unmuted +=
-                    stream_count_info.unmuted_count;
-                normal_section_unread_counts.muted_channel_muted += stream_count_info.muted_count;
-            }
-            if (!stream_list_sort.has_recent_activity(sub)) {
-                normal_section_unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
-                normal_section_unread_counts.inactive_muted += stream_count_info.muted_count;
+            if (sub.is_muted || !stream_list_sort.has_recent_activity(sub)) {
+                normal_section_unread_counts.hidden_unmuted += stream_count_info.unmuted_count;
+                normal_section_unread_counts.hidden_muted += stream_count_info.muted_count;
             }
         }
     }
@@ -1093,10 +1073,8 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
     );
     update_section_unread_count(
         $("#stream-list-normal-streams-container .show-inactive-or-muted-channels"),
-        normal_section_unread_counts.inactive_unmuted +
-            normal_section_unread_counts.muted_channel_unmuted,
-        normal_section_unread_counts.inactive_muted +
-            normal_section_unread_counts.muted_channel_muted,
+        normal_section_unread_counts.hidden_unmuted,
+        normal_section_unread_counts.hidden_muted,
     );
 
     if (user_settings.web_left_sidebar_show_channel_folders) {
@@ -1104,10 +1082,8 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             const unread_counts = folder_unread_counts.get(folder_id) ?? {
                 unmuted: 0,
                 muted: 0,
-                inactive_unmuted: 0,
-                inactive_muted: 0,
-                muted_channel_unmuted: 0,
-                muted_channel_muted: 0,
+                hidden_unmuted: 0,
+                hidden_muted: 0,
             };
             update_section_unread_count(
                 $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
@@ -1116,8 +1092,8 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             );
             update_section_unread_count(
                 $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
-                unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
-                unread_counts.inactive_muted + unread_counts.muted_channel_muted,
+                unread_counts.hidden_unmuted,
+                unread_counts.hidden_muted,
             );
         }
     }
