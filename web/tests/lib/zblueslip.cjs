@@ -43,9 +43,11 @@ function make_zblueslip() {
 
     const check_seen_messages = () => {
         for (const name of names) {
-            for (const obj of lib.test_logs[name]) {
+            const logs = lib.test_logs[name];
+            const data = lib.test_data[name];
+            for (const obj of logs) {
                 const message = obj.message;
-                const i = lib.test_data[name].findIndex((x) => x.message === message);
+                const i = data.findIndex((x) => x.message === message);
                 if (i === -1) {
                     // Only throw this for message types we want to explicitly track.
                     // For example, we do not want to throw here for debug messages.
@@ -54,10 +56,10 @@ function make_zblueslip() {
                     }
                     continue;
                 }
-                lib.test_data[name][i].count += 1;
+                data[i].count += 1;
             }
 
-            for (const obj of lib.test_data[name]) {
+            for (const obj of data) {
                 const message = obj.message;
                 assert.equal(
                     obj.count,
