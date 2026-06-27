@@ -113,7 +113,7 @@ export function create_ajax_request(
                 // User session timed out, we need to login again.
                 const parsed = z.object({login_url: z.string()}).safeParse(xhr.responseJSON);
                 if (parsed.success) {
-                    window.location.href = parsed.data.login_url;
+                    window.location.assign(parsed.data.login_url);
                 }
             }
         },

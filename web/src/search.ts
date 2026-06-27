@@ -430,7 +430,7 @@ export let exit_search = (opts: {keep_search_narrow_open: boolean}): void => {
         // we just keep the search bar open and don't do anything.
         return;
     } else {
-        window.location.href = filter.generate_redirect_url();
+        window.location.assign(filter.generate_redirect_url());
     }
     $("#search_query").trigger("blur");
     $(".app").trigger("focus");

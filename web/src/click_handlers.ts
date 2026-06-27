@@ -227,7 +227,7 @@ export function initialize(): void {
                 // This might happen for locally echoed messages, for example.
                 return;
             }
-            window.location.href = hash_util.by_conversation_and_time_url(message);
+            window.location.assign(hash_util.by_conversation_and_time_url(message));
             return;
         }
 
@@ -308,7 +308,7 @@ export function initialize(): void {
             browser_history.go_to_location(hash_util.channel_url_by_user_setting(stream_id));
             return;
         }
-        window.location.href = this.href;
+        window.location.assign(this.href);
     });
 
     $("body").on("click", ".not-subscribed-banner .load-newer-messages-button", (e) => {

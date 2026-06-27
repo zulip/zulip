@@ -841,7 +841,11 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_night_logo_source, "U");
 
     event = event_fixtures.realm__deactivated;
-    set_global("location", {});
+    set_global("location", {
+        assign(href) {
+            this.href = href;
+        },
+    });
     dispatch(event);
     assert_same(window.location.href, "/accounts/deactivated/");
 });
