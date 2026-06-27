@@ -1162,17 +1162,11 @@ export class BuddyList extends BuddyListConf {
 
         const all_participant_ids = this.render_data.get_all_participant_ids();
         const existing_participant_ids = new Set(this.participants_section.user_ids);
-        const users_to_remove = this.participants_section.user_ids.filter(
-            (user_id) => !all_participant_ids.has(user_id),
-        );
-        const users_to_add = [...all_participant_ids].filter(
-            (user_id) => !existing_participant_ids.has(user_id),
-        );
 
         // We are just moving the users around since we still want to show the
         // user in buddy list regardless of if they are a participant, so we
-        // call `insert_or_move` on both `users_to_remove` and `users_to_add`.
-        this.insert_or_move([...users_to_remove, ...users_to_add]);
+        // call `insert_or_move` on both removed and added users.
+        this.insert_or_move([...existing_participant_ids.symmetricDifference(all_participant_ids)]);
     }
 
     fill_screen_with_content(): void {
