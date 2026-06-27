@@ -474,7 +474,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         const topic_offset = topic_offset_to_visible_area($topic_row);
 
         if (topic_offset === "above") {
-            scroll_element.scrollBy({top: -1 * half_height_of_visible_area});
+            scroll_element.scrollBy({top: -half_height_of_visible_area});
         } else if (topic_offset === "below") {
             scroll_element.scrollBy({top: half_height_of_visible_area});
         }
