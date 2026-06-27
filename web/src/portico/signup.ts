@@ -420,7 +420,7 @@ $(() => {
             // Ensure we don't double-add hashes and handle query parameters properly
             const url = new URL(new_org_url);
             url.hash = url_hash;
-            new_org_url = url.toString();
+            new_org_url = url.href;
         }
         $deactivated_org_auto_redirect.attr("href", new_org_url);
 

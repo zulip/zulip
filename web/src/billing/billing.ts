@@ -77,7 +77,7 @@ function remove_unused_get_parameters(): void {
     // it being displayed repeatedly on reloads.
     const url = new URL(window.location.href);
     url.searchParams.delete("success_message");
-    window.history.replaceState(null, "", url.toString());
+    window.history.replaceState(null, "", url);
 }
 
 export function initialize(): void {
