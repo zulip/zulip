@@ -25,7 +25,7 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             const $container = $(instance.popper).find(".views-tooltip-container");
-            let display_count = 0;
+            let display_count;
             const sidebar_option = $container.attr("data-view-code");
 
             switch (sidebar_option) {

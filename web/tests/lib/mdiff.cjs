@@ -97,10 +97,8 @@ function parse_questionmark_line(questionmark_line) {
 
 function diff_strings(string_0, string_1) {
     let output_lines = [];
-    let ndiff_output = "";
-    let changes_list = [];
 
-    ndiff_output = difflib.ndiff(string_0.split("\n"), string_1.split("\n"));
+    const ndiff_output = difflib.ndiff(string_0.split("\n"), string_1.split("\n"));
 
     for (const line of ndiff_output) {
         if (line.startsWith("+")) {
@@ -108,7 +106,7 @@ function diff_strings(string_0, string_1) {
         } else if (line.startsWith("-")) {
             output_lines.push(line);
         } else if (line.startsWith("?")) {
-            changes_list = parse_questionmark_line(line);
+            const changes_list = parse_questionmark_line(line);
             output_lines.push(apply_color(output_lines.pop(), changes_list));
         } else {
             output_lines.push(line);

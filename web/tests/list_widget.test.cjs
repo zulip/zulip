@@ -836,7 +836,7 @@ run_test("render item", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
-    let called = false;
+    let called;
     $scroll_container.find = (element) => {
         const query = element.selector;
         const expected_queries = [

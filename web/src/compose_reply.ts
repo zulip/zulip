@@ -834,7 +834,7 @@ export let get_message_selection = (selection = window.getSelection()): string =
     for (let i = 0; i < selection.rangeCount; i += 1) {
         let range = selection.getRangeAt(i);
         const range_common_ancestor = range.commonAncestorContainer;
-        let html_to_convert = "";
+        let html_to_convert;
         let message_content;
 
         // If the common ancestor is the message_content div or its child, we can quote

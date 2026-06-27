@@ -1225,7 +1225,7 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
-        message = echo.edit_locally(message, {new_topic});
+        echo.edit_locally(message, {new_topic});
         assert(message_lists.current !== undefined);
         $row = message_lists.current.get_row(message.id);
         end_inline_topic_edit($row);
@@ -1304,7 +1304,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     }
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
-    let message = message_lists.current.get(message_id);
+    const message = message_lists.current.get(message_id);
     assert(message !== undefined);
     let changed = false;
     let edit_locally_echoed = false;
@@ -1342,7 +1342,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     if (message.locally_echoed) {
         if (new_content !== message.raw_content) {
             // `edit_locally` handles the case where `new_topic/new_stream_id` is undefined
-            message = echo.edit_locally(message, {
+            echo.edit_locally(message, {
                 raw_content: new_content,
             });
             $row = message_lists.current.get_row(message_id);
@@ -1383,7 +1383,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         // the message is acknowledged by the server.
         message.local_edit_timestamp = Math.round(Date.now() / 1000);
 
-        message = echo.edit_locally(message, currently_echoing_messages.get(message_id)!);
+        echo.edit_locally(message, currently_echoing_messages.get(message_id)!);
 
         $row = message_lists.current.get_row(message_id);
         end_message_row_edit($row);
@@ -1417,7 +1417,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                 message_id = rows.id($row);
 
                 if (edit_locally_echoed) {
-                    let echoed_message = message_store.get(message_id);
+                    const echoed_message = message_store.get(message_id);
                     assert(echoed_message !== undefined);
                     const echo_data = currently_echoing_messages.get(message_id);
                     assert(echo_data !== undefined);
@@ -1426,7 +1426,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                     currently_echoing_messages.delete(message_id);
 
                     // Restore the original content.
-                    echoed_message = echo.edit_locally(echoed_message, {
+                    echo.edit_locally(echoed_message, {
                         content: echo_data.orig_content,
                         raw_content: echo_data.orig_raw_content,
                         mentioned: echo_data.mentioned,

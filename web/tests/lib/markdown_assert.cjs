@@ -116,10 +116,9 @@ class MarkdownComparer {
         const element_actual = this._htmlToElement(actual_markdown, ID_ACTUAL);
         const element_expected = this._htmlToElement(expected_markdown, ID_EXPECTED);
 
-        let are_equivalent = false;
         let html = {};
 
-        are_equivalent = this._haveEqualContents(element_actual, element_expected);
+        const are_equivalent = this._haveEqualContents(element_actual, element_expected);
         if (!are_equivalent) {
             html = {
                 actual: this._reorderAttributes(element_actual).innerHTML,

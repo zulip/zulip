@@ -123,7 +123,7 @@ export async function check_status(): Promise<boolean> {
 }
 
 async function start_status_polling(): Promise<void> {
-    let completed = false;
+    let completed;
     try {
         completed = await check_status();
     } catch {
