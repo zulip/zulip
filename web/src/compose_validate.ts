@@ -122,11 +122,16 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
     const message_too_long = status;
     const $message_edit_save_container = $container.find(".message_edit_save_container");
     $message_edit_save_container.toggleClass("message-too-long-for-edit", message_too_long);
+    const $message_edit_save = $container.find(".message_edit_save");
     const save_is_disabled =
         message_too_long ||
-        $message_edit_save_container.hasClass("message-edit-time-limit-expired");
+        $message_edit_save_container.hasClass("message-edit-time-limit-expired") ||
+        // Keep the Save button disabled while a previous edit is still
+        // saving, so typing in the reopened form can't re-enable it and
+        // allow a double submission.
+        $message_edit_save.hasClass("saving");
 
-    $container.find(".message_edit_save").prop("disabled", save_is_disabled);
+    $message_edit_save.prop("disabled", save_is_disabled);
     $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
 }
 
@@ -136,6 +141,14 @@ export function get_disabled_send_tooltip_html(): string {
 
 export function get_disabled_save_tooltip($container: JQuery): string {
     const $button_wrapper = $container.find(".message_edit_save_container");
+    // While a previous edit is still being saved, Save is disabled to
+    // prevent a double submission; this takes precedence over the other
+    // tooltips.
+    if ($button_wrapper.find(".message_edit_save").hasClass("saving")) {
+        return $t({
+            defaultMessage: "Saving previous changes.",
+        });
+    }
     // The time limit expiry tooltip takes precedence over the message
     // length exceeded tooltip.
     if ($button_wrapper.hasClass("message-edit-time-limit-expired")) {
