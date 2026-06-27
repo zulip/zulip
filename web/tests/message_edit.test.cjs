@@ -85,6 +85,32 @@ run_test("is_content_editable", ({override}) => {
     assert.equal(is_content_editable(message), false);
 });
 
+run_test("editable while a previous edit is still saving", ({override}) => {
+    // A message whose previous edit is still locally echoed (awaiting
+    // server confirmation) remains editable, so the user can reopen the
+    // edit form; it shows a Saving spinner until the edit is confirmed.
+    // Moving it stays blocked, since a move would close that edit form.
+    const message = {id: 55, sent_by_me: true, submessages: [], type: "stream"};
+    override(realm, "realm_allow_message_editing", true);
+    override(current_user, "is_moderator", true);
+    override(stream_data, "is_stream_archived_by_id", () => false);
+    override(stream_data, "is_empty_topic_only_channel", () => false);
+    override(stream_data, "get_sub_by_id", () => ({}));
+    override(stream_data, "user_can_move_messages_within_channel", () => true);
+    override(stream_data, "user_can_move_messages_out_of_channel", () => true);
+
+    assert.ok(message_edit.is_message_editable_ignoring_permissions(message));
+    assert.ok(message_edit.is_topic_editable(message));
+    assert.ok(message_edit.is_stream_editable(message));
+
+    message_edit.currently_echoing_messages.set(message.id, {});
+    assert.ok(message_edit.is_message_editable_ignoring_permissions(message));
+    assert.ok(!message_edit.is_topic_editable(message));
+    assert.ok(!message_edit.is_stream_editable(message));
+
+    message_edit.currently_echoing_messages.delete(message.id);
+});
+
 run_test("is_topic_editable", ({override}) => {
     const now = new Date();
     const current_timestamp = now / 1000;
@@ -309,26 +335,35 @@ run_test("handle_message_edit_update", () => {
     // With no message list, end_message_edit() just clears the editing-map
     // entry, which lets us observe the close-vs-keep-open decisions here.
     // No edit form open, so nothing happens.
-    message_edit.handle_message_edit_update(111, true);
+    message_edit.handle_message_edit_update(111, true, "new");
     assert.ok(!message_edit.currently_editing_messages.has(111));
 
     const $textarea = {};
 
     // The message moved, so the form closes.
     message_edit.currently_editing_messages.set(111, $textarea);
-    message_edit.handle_message_edit_update(111, false);
+    message_edit.handle_message_edit_update(111, false, "new");
     assert.ok(!message_edit.currently_editing_messages.has(111));
 
     // External content edit: the form stays open, and the re-render that
     // follows lets maybe_show_edit reconcile its content.
     message_edit.currently_editing_messages.set(111, $textarea);
-    message_edit.handle_message_edit_update(111, true);
+    message_edit.handle_message_edit_update(111, true, "new");
     assert.ok(message_edit.currently_editing_messages.has(111));
 
-    // Acknowledgement of our own edit closes the form, as it did before.
+    // Acknowledgement of our own echoed edit, whose form was reopened during
+    // local echo: the form stays open so a new edit in progress isn't lost.
+    message_edit.currently_editing_messages.set(111, $textarea);
+    message_edit.currently_editing_messages_echo_state.set(111, true);
+    message_edit.handle_message_edit_update(111, true, "new");
+    assert.ok(!message_edit.currently_editing_messages_echo_state.has(111));
+    assert.ok(message_edit.currently_editing_messages.has(111));
+
+    // Acknowledgement of our own non-echoed edit (e.g. one with an
+    // attachment) closes the form, as it did before.
     message_edit.currently_editing_messages.set(111, $textarea);
     message_edit.currently_editing_messages_echo_state.set(111, false);
-    message_edit.handle_message_edit_update(111, true);
+    message_edit.handle_message_edit_update(111, true, "new");
     assert.ok(!message_edit.currently_editing_messages_echo_state.has(111));
     assert.ok(!message_edit.currently_editing_messages.has(111));
 
