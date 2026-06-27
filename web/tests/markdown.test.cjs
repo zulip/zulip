@@ -464,7 +464,7 @@ test("marked", ({override}) => {
                 '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
         },
         {
-            input: "\uD83D\uDCA9",
+            input: "\u{1F4A9}",
             expected:
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
