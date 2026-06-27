@@ -490,13 +490,13 @@ function handleUnicodeEmoji(
     // in boxes) into qualified emoji (images).
     // More specifically, we skip anything with text in the second column of
     // this table https://unicode.org/Public/emoji/1.0/emoji-data.txt
-    if (/^\P{Emoji_Presentation}\u20E3?$/u.test(unicode_emoji)) {
+    if (/^\P{Emoji_Presentation}\u{20E3}?$/u.test(unicode_emoji)) {
         return unicode_emoji;
     }
 
     // This unqualifies qualified emoji, which helps us make sure we
     // can match both versions.
-    const unqualified_unicode_emoji = unicode_emoji.replace(/\uFE0F/, "");
+    const unqualified_unicode_emoji = unicode_emoji.replace(/\u{FE0F}/u, "");
 
     const codepoint = [...unqualified_unicode_emoji]
         .map((char) => (char.codePointAt(0)?.toString(16) ?? "").padStart(4, "0"))

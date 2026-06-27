@@ -356,7 +356,7 @@ export class Filter {
                 // phrase search behavior, however.  So, we replace all instances of
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
-                narrow_term.operand = narrow_term.operand.replaceAll(/[\u201C\u201D]/g, '"');
+                narrow_term.operand = narrow_term.operand.replaceAll(/[\u{201C}\u{201D}]/gu, '"');
                 break;
             case "date":
                 break;

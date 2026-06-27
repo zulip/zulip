@@ -215,7 +215,7 @@ function clean_query(query: string, should_remove_diacritics: boolean): string {
     // direct message section, the space at the end was
     // a `no break-space (U+00A0)` instead of `space (U+0020)`,
     // which lead to no matches in those cases.
-    query = query.replaceAll("\u00A0", " ");
+    query = query.replaceAll("\u{A0}", " ");
 
     return query;
 }
