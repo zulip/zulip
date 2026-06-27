@@ -78,21 +78,23 @@ const fetch_user_subscriptions_response_schema = z.object({
 // delay each time) if the server keeps returning non-400 errors.
 export async function fetch_stream_subscribers_with_retry(
     stream_id: number,
-    num_attempts = 1,
 ): Promise<LazySet | null> {
-    const subscribers = await fetch_stream_subscribers(stream_id);
-    // Bad request, so just give up here.
-    if (subscribers === false) {
-        return null;
+    let num_attempts = 1;
+    while (true) {
+        const subscribers = await fetch_stream_subscribers(stream_id);
+        // Bad request, so just give up here.
+        if (subscribers === false) {
+            return null;
+        }
+        // Failed request, retry.
+        if (subscribers === null) {
+            num_attempts += 1;
+            const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
+            await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
+            continue;
+        }
+        return subscribers;
     }
-    // Failed request, retry.
-    if (subscribers === null) {
-        num_attempts += 1;
-        const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
-        await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
-        return fetch_stream_subscribers_with_retry(stream_id, num_attempts);
-    }
-    return subscribers;
 }
 
 // This function either waits for an existing pending request or kicks off
