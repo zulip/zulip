@@ -1934,10 +1934,7 @@ export function change_focused_element(input_key: string): boolean {
         const start = textInput.selectionStart ?? 0;
         const end = textInput.selectionEnd ?? 0;
         const text_length = textInput.value.length;
-        let is_selected = false;
-        if (end - start > 0) {
-            is_selected = true;
-        }
+        const is_selected = end > start;
 
         switch (input_key) {
             case "down_arrow":
