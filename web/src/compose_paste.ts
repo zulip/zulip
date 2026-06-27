@@ -352,7 +352,7 @@ export function paste_handler_converter(
             content = content
                 .replace(/^\n+/, "") // remove leading newlines
                 .replace(/\n+$/, "\n") // replace trailing newlines with just a single one
-                .replaceAll(/\n/gm, "\n  "); // custom 2 space indent
+                .replaceAll("\n", "\n  "); // custom 2 space indent
             let prefix = "* ";
             const parent = node.parentElement;
             assert(parent !== null);
