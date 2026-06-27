@@ -2021,7 +2021,7 @@ export class MessageListView {
     }
 
     prepend(messages: Message[]): void {
-        if (this._render_win_end - this._render_win_start === 0) {
+        if (this._render_win_end === this._render_win_start) {
             // If the message list previously contained no visible
             // messages, appending and prepending are equivalent, but
             // the prepend logic will throw an exception, so just

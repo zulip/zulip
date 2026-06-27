@@ -388,7 +388,7 @@ export let insert_new_reaction = (
     // If the given reaction is the first reaction in a message, then we add
     // the whole message reactions section along with the new reaction.
     // Else, we insert the new reaction before the add reaction button.
-    if (message.clean_reactions.size - 1 === 0) {
+    if (message.clean_reactions.size === 1) {
         const $rows = message_lists.all_rendered_row_for_message_id(message.id);
         const reaction_section_context = {
             msg: {

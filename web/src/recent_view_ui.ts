@@ -1950,7 +1950,7 @@ function up_arrow_navigation(row: number, col: number): void {
     }
     const type = get_row_type(row);
 
-    if (type === "stream" && col === COLUMNS.read && row - 1 >= 0 && !has_unread(row - 1)) {
+    if (type === "stream" && col === COLUMNS.read && row >= 1 && !has_unread(row - 1)) {
         col_focus = COLUMNS.topic;
     }
 }
@@ -2101,10 +2101,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
         const start = textInput.selectionStart!;
         const end = textInput.selectionEnd!;
         const text_length = textInput.value.length;
-        let is_selected = false;
-        if (end - start > 0) {
-            is_selected = true;
-        }
+        const is_selected = end > start;
 
         switch (input_key) {
             //  Allow browser to handle all
