@@ -878,11 +878,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             users: sorted_pm_users,
         });
 
-        const sorted_pm_usernames_only: string[] = [];
-
-        for (const user of sorted_pm_users) {
-            sorted_pm_usernames_only.push(user.name);
-        }
+        const sorted_pm_usernames_only = Array.from(sorted_pm_users, (user) => user.name);
 
         const pm_users_as_plain = util.format_array_as_list_with_conjunction(
             sorted_pm_usernames_only,

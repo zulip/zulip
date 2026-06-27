@@ -739,10 +739,7 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
         });
     }
     label_values.sort((a, b) => b.value - a.value);
-    const labels: string[] = [];
-    for (const item of label_values) {
-        labels.push(item.label);
-    }
+    const labels = Array.from(label_values, (item) => item.label);
 
     function make_plot_data(
         time_series_data: Record<string, number[]>,
