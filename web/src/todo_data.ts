@@ -293,11 +293,6 @@ export class TaskData {
         }
 
         const {data} = parsed;
-        const type = data.type;
-        if (this.handle[type]) {
-            this.handle[type].inbound(sender_id, data);
-        } else {
-            blueslip.warn(`todo widget: unknown inbound type: ${type}`);
-        }
+        this.handle[data.type].inbound(sender_id, data);
     }
 }

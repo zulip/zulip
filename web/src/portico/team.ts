@@ -116,7 +116,7 @@ function get_profile_url(contributor: Contributor, tab_name?: string): string | 
     }
 
     for (const repo_name of all_repository_names) {
-        if (repo_name in contributor) {
+        if (Object.hasOwn(contributor, repo_name)) {
             return `https://github.com/zulip/${repo_name}/commits?author=${email}`;
         }
     }
