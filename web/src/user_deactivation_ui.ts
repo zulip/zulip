@@ -46,7 +46,7 @@ export function confirm_deactivation(
             let number_of_invites_by_user = 0;
             for (const invite of data.invites) {
                 if (invite.invited_by_user_id === user_id) {
-                    number_of_invites_by_user = number_of_invites_by_user + 1;
+                    number_of_invites_by_user += 1;
                 }
             }
 

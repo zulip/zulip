@@ -151,7 +151,7 @@ function archive_folder(folder_id: number): void {
     }
 
     function on_success(): void {
-        successful_requests = successful_requests + 1;
+        successful_requests += 1;
 
         if (successful_requests === stream_ids.length) {
             // Make request to archive folder only after all channels

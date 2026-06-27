@@ -831,7 +831,7 @@ export let get_message_selection = (selection = window.getSelection()): string =
     // the message_content div or its descendants, if any, then convert the html
     // in those ranges to markdown for quoting (firefox can have multiple ranges
     // in one selection), and also compute their combined bounding rect.
-    for (let i = 0; i < selection.rangeCount; i = i + 1) {
+    for (let i = 0; i < selection.rangeCount; i += 1) {
         let range = selection.getRangeAt(i);
         const range_common_ancestor = range.commonAncestorContainer;
         let html_to_convert = "";

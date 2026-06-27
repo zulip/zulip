@@ -410,7 +410,7 @@ test("insert_one_user_into_empty_list", ({override}) => {
             },
             should_add_guest_user_indicator: false,
         });
-        num_calls = num_calls + 1;
+        num_calls += 1;
 
         return "<presence-row>";
     });
