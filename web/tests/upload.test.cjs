@@ -192,7 +192,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
             remove_file_called = true;
         },
     };
-    let hide_upload_banner_called = false;
+    let hide_upload_banner_called;
     override_rewire(upload, "hide_upload_banner", (_uppy, config) => {
         hide_upload_banner_called = true;
         assert.equal(config.mode, "compose");

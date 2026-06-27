@@ -96,7 +96,7 @@ test("activate", ({override}) => {
     $widget_content.addClass("widget-content");
     $row.set_find_results(".widget-content", $widget_content);
 
-    let is_widget_elem_inserted = false;
+    let is_widget_elem_inserted;
     let inserted_element;
 
     $message_content[0].append = (element) => {

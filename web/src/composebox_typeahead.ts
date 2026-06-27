@@ -1658,7 +1658,7 @@ export function initialize_topic_edit_typeahead(
 }
 
 function get_footer_html(): string | false {
-    let tip_text = "";
+    let tip_text;
     switch (completing) {
         case "silent_mention":
             tip_text = $t({defaultMessage: "This silent mention won't trigger notifications."});

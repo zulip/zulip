@@ -444,7 +444,7 @@ function get_filtered_user_id_list(
     user_filter_text: string,
     conversation_participants: Set<number>,
 ): number[] {
-    let base_user_id_list = [];
+    let base_user_id_list;
 
     if (user_filter_text) {
         // If there's a filter, select from all users, not just those

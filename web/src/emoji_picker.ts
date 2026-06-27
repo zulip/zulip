@@ -728,7 +728,7 @@ function process_keydown(e: JQuery.KeyDownEvent): void {
 
         const $emoji_filter = $<HTMLInputElement>("input#emoji-popover-filter");
         const old_query = $emoji_filter.val()!;
-        let new_query = "";
+        let new_query;
 
         if (pressed_key === "Backspace") {
             new_query = old_query.slice(0, -1);
