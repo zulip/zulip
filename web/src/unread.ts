@@ -994,7 +994,7 @@ export function get_counts(): FullUnreadCountsData {
 
 // Saves us from calling to get_counts() when we can avoid it.
 export function calculate_notifiable_count(res: FullUnreadCountsData): number {
-    let new_message_count = 0;
+    let new_message_count;
 
     const only_show_dm_mention =
         user_settings.desktop_icon_count_display ===

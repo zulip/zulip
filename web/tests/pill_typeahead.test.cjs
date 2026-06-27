@@ -211,9 +211,8 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
 
         (function test_source() {
             let expected_result = [];
-            let actual_result = [];
             const result = config.source(person_query);
-            actual_result = result.map((item) => item.user_id);
+            const actual_result = result.map((item) => item.user_id);
             expected_result = [...expected_result, ...person_items];
             expected_result = expected_result.map((item) => item.user_id);
             assert.deepEqual(actual_result, expected_result);
@@ -574,12 +573,11 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             }
 
             let expected_result = [];
-            let actual_result = [];
             function is_group(item) {
                 return item.members;
             }
             result = config.source(person_query);
-            actual_result = result
+            const actual_result = result
                 .map((item) => {
                     if (is_group(item)) {
                         return item.id;
@@ -809,12 +807,11 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
 
         (function test_source() {
             let expected_result = [];
-            let actual_result = [];
             function is_group(item) {
                 return item.members;
             }
             const result = config.source(person_query);
-            actual_result = result
+            const actual_result = result
                 .map((item) => {
                     if (is_group(item)) {
                         return item.id;

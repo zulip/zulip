@@ -111,7 +111,7 @@ const update_read_flags_for_narrow_banner = (
     messages_updated: number,
     is_loaded: boolean,
 ): Banner => {
-    let label = "";
+    let label;
     if (is_loaded) {
         if (operation === "read") {
             label = $t(

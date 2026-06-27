@@ -324,7 +324,7 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
-    let label = "";
+    let label;
     if (old_unreads_missing) {
         label = $t(
             {

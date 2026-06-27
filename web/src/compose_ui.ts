@@ -908,7 +908,7 @@ export let format_text = (
         // partially selected, and those before and after these selected lines.
         const before = text.slice(0, range.start);
         const after = text.slice(range.end);
-        let separating_new_line_before = false;
+        let separating_new_line_before;
         let closest_new_line_beginning_before_index;
         if (before.includes("\n")) {
             separating_new_line_before = true;
@@ -918,7 +918,7 @@ export let format_text = (
             // The beginning of the entire text acts as a new line.
             closest_new_line_beginning_before_index = -1;
         }
-        let separating_new_line_after = false;
+        let separating_new_line_after;
         let closest_new_line_char_after_index;
         if (after.includes("\n")) {
             separating_new_line_after = true;

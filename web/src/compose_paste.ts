@@ -51,7 +51,7 @@ function image_to_zulip_markdown(
     // present on both Zulip and third-party Markdown images, but use
     // title as a fallback, since older-style Zulip image previews
     // only set title.
-    let alt = "";
+    let alt;
     if (node.classList.contains("inline-image")) {
         alt = node.getAttribute("alt") ?? "";
     } else {
@@ -106,8 +106,7 @@ function within_single_element(html_fragment: HTMLElement): boolean {
 // be removed (e.g., for headings that contain <br> and other tags in the fragment).
 // Empty nodes like comments or newline-only text should not be counted.
 function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
-    let textful_nodes = 0;
-    textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
+    const textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
     if (textful_nodes >= 2) {
         return false;
     }
@@ -233,7 +232,7 @@ function get_code_block_language(
     pre_element: HTMLElement,
     code_element_class_name: string,
 ): string {
-    let language = "";
+    let language;
     const parent_contains_lang_metadata =
         pre_element.parentElement?.classList.contains("zulip-code-block");
 
@@ -449,7 +448,8 @@ export function paste_handler_converter(
             }
             // Don't add extra newline at the end
             math_block_markdown = math_block_markdown.slice(0, -1);
-            return (math_block_markdown += "```");
+            math_block_markdown += "```";
+            return math_block_markdown;
         },
     });
 

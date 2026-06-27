@@ -64,7 +64,6 @@ run_test("get_raw_content_for_messages", ({override}) => {
 
     // Case: All messages already have raw_content
     let success_called = false;
-    let error_called = false;
     let success_call_args;
 
     message_fetch_raw_content.get_raw_content_for_messages({
@@ -75,12 +74,10 @@ run_test("get_raw_content_for_messages", ({override}) => {
     });
 
     assert.ok(success_called, "Should call on_success immediately if all messages are hydrated");
-    assert.equal(error_called, false);
 
     // Case: Fetching missing raw_content successfully
     let channel_get_args;
     success_called = false;
-    error_called = false;
 
     override(channel, "get", (args) => {
         channel_get_args = args;
@@ -113,7 +110,7 @@ run_test("get_raw_content_for_messages", ({override}) => {
 
     // Case: Network error during hydration
     success_called = false;
-    error_called = false;
+    let error_called = false;
 
     override(channel, "get", (args) => {
         args.error();
@@ -157,7 +154,7 @@ run_test("get_raw_content_for_single_message", ({override}) => {
     add_messages_to_message_store([msg_1, msg_2, msg_3]);
 
     let success_called = false;
-    let error_called = false;
+    let error_called;
     let success_call_args;
 
     // Case: The message already has raw_content.

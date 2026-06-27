@@ -1433,6 +1433,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                         mentioned_me_directly: echo_data.mentioned_me_directly,
                         alerted: echo_data.alerted,
                     });
+                    void echoed_message;
 
                     $row = message_lists.current.get_row(message_id);
                     if (!currently_editing_messages.has(message_id)) {
