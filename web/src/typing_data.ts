@@ -66,7 +66,7 @@ export function get_topic_typists(stream_id: number, topic: string): number[] {
 }
 
 export function clear_typing_data(): void {
-    for (const [, timer] of inbound_timer_dict.entries()) {
+    for (const [, timer] of inbound_timer_dict) {
         clearTimeout(timer);
     }
     inbound_timer_dict.clear();

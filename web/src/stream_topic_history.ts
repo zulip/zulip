@@ -238,7 +238,7 @@ export class PerStreamHistory {
         // This data source is locally echoed messages, which should
         // are treated as newer than all delivered messages.
         const local_echo_topics = [
-            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id).entries(),
+            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id),
         ].map(([topic, local_id]) => ({pretty_name: topic, message_id: local_id}));
         const local_echo_set = new Set<string>(
             local_echo_topics.map((message_topic) => message_topic.pretty_name.toLowerCase()),

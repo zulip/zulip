@@ -241,7 +241,7 @@ export function get_topic_recent_senders(stream_id: number, topic: string): numb
         return list2.max_id() - list1.max_id();
     }
 
-    const sorted_senders = [...sender_dict.entries()];
+    const sorted_senders = [...sender_dict];
     sorted_senders.sort(by_max_message_id);
     return Array.from(sorted_senders, (item) => item[0]);
 }

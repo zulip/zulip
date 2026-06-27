@@ -273,10 +273,7 @@ function save_data_to_ls(): void {
     ls.set(ls_filter_key, [...filters]);
     ls.set(
         ls_per_channel_filters_key,
-        [...per_channel_filters.entries()].map(([channel_id, filter_set]) => [
-            channel_id,
-            [...filter_set],
-        ]),
+        [...per_channel_filters].map(([channel_id, filter_set]) => [channel_id, [...filter_set]]),
     );
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
 }
@@ -2204,7 +2201,7 @@ export function update_internal(): void {
         }
     }
 
-    for (const [folder_id, folder_info] of folders_info.entries()) {
+    for (const [folder_id, folder_info] of folders_info) {
         const folder_dict = channel_folders_dict.get(folder_id);
         const name = get_folder_name_from_id(folder_id);
         const is_collapsed = collapsed_containers.has(get_channel_folder_header_id(folder_id));
