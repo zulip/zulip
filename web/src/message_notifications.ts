@@ -113,8 +113,6 @@ function get_notification_title(
 ): string {
     let title_prefix = message.sender_full_name;
     let title_suffix = "";
-    let other_recipients;
-    let other_recipients_translated;
 
     if (msg_count > 1) {
         title_prefix = $t(
@@ -126,9 +124,9 @@ function get_notification_title(
     switch (message.type) {
         case "private":
             if (message.display_recipient.length > 2) {
-                other_recipients = remove_sender_from_list_of_recipients(message);
+                const other_recipients = remove_sender_from_list_of_recipients(message);
                 // Same as compose_ui.compute_placeholder_text.
-                other_recipients_translated = util.format_array_as_list(
+                const other_recipients_translated = util.format_array_as_list(
                     other_recipients.split(", "),
                     "long",
                     "conjunction",

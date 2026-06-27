@@ -724,7 +724,6 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
 
     let filtered_persons;
     let participants_people;
-    let dm_people;
 
     if (current_narrow_participant_ids) {
         // Check DM permissions for the user suggestion only, since we
@@ -745,7 +744,7 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
     }
 
     if (!(filtered_persons && filtered_persons?.length >= 3)) {
-        dm_people = util.try_parse_as_truthy(
+        const dm_people = util.try_parse_as_truthy(
             pm_conversations
                 .get_partners()
                 .filter(
