@@ -7,7 +7,7 @@ import * as Prometheus from "prom-client";
 
 const host = "localhost";
 const port = Number(process.argv[2] ?? "9700");
-if (!Number.isInteger(port)) {
+if (!Number.isSafeInteger(port)) {
     throw new TypeError("Invalid port");
 }
 

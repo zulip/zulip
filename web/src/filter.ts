@@ -663,7 +663,7 @@ export class Filter {
             case "id":
             case "near":
             case "with":
-                return Number.isInteger(Number(term.operand));
+                return Number.isSafeInteger(Number(term.operand));
             case "channel":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
