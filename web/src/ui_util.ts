@@ -144,8 +144,8 @@ export function potentially_collapse_quotes($element: JQuery): boolean {
     }
 
     for (const [index, element] of [...$children].entries()) {
-        if (collapsible_status[index]) {
-            if (index > 0 && collapsible_status[index - 1]) {
+        if (collapsible_status[index] ?? false) {
+            if (index > 0 && (collapsible_status[index - 1] ?? false)) {
                 // If the previous element was also collapsible, remove its text
                 // to have a single collapsed block instead of multiple in a row.
                 $(element).text("");

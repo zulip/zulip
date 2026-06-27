@@ -790,7 +790,7 @@ test("test_filter_participated", ({mock_template}) => {
 
     mock_template("recent_view_row.hbs", false, (data) => {
         // All the row will be processed.
-        if (row_data[i]) {
+        if (row_data[i] !== undefined) {
             assert.deepEqual(data, row_data[i]);
             i += 1;
         }

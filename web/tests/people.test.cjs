@@ -761,7 +761,7 @@ run_test("set_custom_profile_field_data", () => {
     assert.equal(person.profile_data[field.id].rendered_value, "<p>Field value</p>");
 
     people.set_custom_profile_field_data(person.user_id, {id: 3, value: null});
-    assert.ok(!(field.id in person.profile_data));
+    assert.ok(!Object.hasOwn(person.profile_data, field.id));
 });
 
 run_test("is_current_user_only_owner", ({override}) => {
