@@ -292,7 +292,7 @@ export function sync_count(): void {
 
 export function delete_all_drafts(): void {
     const drafts = draft_model.get();
-    for (const [id] of Object.entries(drafts)) {
+    for (const id of Object.keys(drafts)) {
         draft_model.deleteDrafts([id]);
     }
 }
