@@ -179,7 +179,7 @@ function show_add_default_streams_modal(): void {
                 url: "/json/default_streams",
                 data,
                 success() {
-                    successful_requests = successful_requests + 1;
+                    successful_requests += 1;
 
                     if (successful_requests === chosen_streams.size) {
                         dialog_widget.close();
