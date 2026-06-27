@@ -1422,7 +1422,7 @@ export function content_typeahead_selected(
         case "slash":
             beginning = beginning.slice(0, -token.length - 1) + "/" + item.name + " ";
             if (item.placeholder) {
-                beginning = beginning + item.placeholder;
+                beginning += item.placeholder;
                 highlight.start = item.name.length + 2;
                 highlight.end = highlight.start + item.placeholder.length;
             }
@@ -1470,7 +1470,7 @@ export function content_typeahead_selected(
             // If there is more text after the cursor, then don't
             // touch "rest" (i.e. do not add a closing fence)
             if (rest === "") {
-                beginning = beginning + "\n";
+                beginning += "\n";
                 rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
             }
             break;

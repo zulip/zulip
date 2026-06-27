@@ -581,7 +581,7 @@ function get_next_emoji_coordinates(move_by: number): {section: number; index: n
     let next_index = current_index + move_by;
     let max_len;
     if (next_index < 0) {
-        next_section = next_section - 1;
+        next_section -= 1;
         if (next_section >= 0) {
             next_index = get_max_index(next_section)! - 1;
             if (move_by === -6) {
@@ -592,7 +592,7 @@ function get_next_emoji_coordinates(move_by: number): {section: number; index: n
             }
         }
     } else if (next_index >= get_max_index(next_section)!) {
-        next_section = next_section + 1;
+        next_section += 1;
         if (next_section < get_total_sections()) {
             next_index = 0;
             if (move_by === 6) {

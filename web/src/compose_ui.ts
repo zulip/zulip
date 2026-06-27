@@ -322,7 +322,7 @@ export function smart_insert_block(
     // are at least padding_newlines number of new lines between
     // the content block and the content after the cursor, if any.
     const new_lines_needed_after_count = padding_newlines - new_lines_after_count;
-    syntax = syntax + "\n".repeat(new_lines_needed_after_count);
+    syntax += "\n".repeat(new_lines_needed_after_count);
 
     insert_and_scroll_into_view(syntax, $textarea);
 }
@@ -1203,7 +1203,7 @@ export let format_text = (
             spoiler_syntax_start_without_break = "\n" + spoiler_syntax_start_without_break;
         }
         if (range.end < text.length && text[range.end] !== "\n") {
-            spoiler_syntax_end = spoiler_syntax_end + "\n";
+            spoiler_syntax_end += "\n";
         }
 
         const spoiler_syntax_start_with_header = spoiler_syntax_start_without_break + "Header\n";
@@ -1456,7 +1456,7 @@ export let format_text = (
                     block_code_syntax_start = "\n" + block_code_syntax_start;
                 }
                 if (range.end < text.length && text[range.end] !== "\n") {
-                    block_code_syntax_end = block_code_syntax_end + "\n";
+                    block_code_syntax_end += "\n";
                 }
                 const added_fence = format(block_code_syntax_start, block_code_syntax_end);
                 if (added_fence) {
@@ -1493,7 +1493,7 @@ export let format_text = (
                 quote_syntax_start = "\n" + quote_syntax_start;
             }
             if (range.end < text.length && text[range.end] !== "\n") {
-                quote_syntax_end = quote_syntax_end + "\n";
+                quote_syntax_end += "\n";
             }
             format(quote_syntax_start, quote_syntax_end);
             break;
@@ -1517,7 +1517,7 @@ export let format_text = (
                     block_latex_syntax_start = "\n" + block_latex_syntax_start;
                 }
                 if (range.end < text.length && text[range.end] !== "\n") {
-                    block_latex_syntax_end = block_latex_syntax_end + "\n";
+                    block_latex_syntax_end += "\n";
                 }
                 format(block_latex_syntax_start, block_latex_syntax_end);
             } else {
