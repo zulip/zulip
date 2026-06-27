@@ -672,7 +672,7 @@ export class Filter {
                 if (term.negated) {
                     return false;
                 }
-                return Number.isInteger(Number(term.operand));
+                return Number.isSafeInteger(Number(term.operand));
             case "channel":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":

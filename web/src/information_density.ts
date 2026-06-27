@@ -290,7 +290,7 @@ export function get_string_display_value_for_line_height(setting_value: number):
         INFO_DENSITY_VALUES_DICT.web_line_height_percent.step_value;
     let display_value;
 
-    if (step_count % 1 === 0) {
+    if (Number.isSafeInteger(step_count)) {
         // If value is an integer, we just return here to avoid showing
         // 1.0 for 1.
         display_value = step_count.toString();
