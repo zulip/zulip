@@ -70,7 +70,7 @@ import * as util from "./util.ts";
 export const currently_editing_messages = new Map<number, JQuery<HTMLTextAreaElement>>();
 const resized_edit_box_height = new Map<number, number>();
 let currently_topic_editing_message_ids: number[] = [];
-const currently_echoing_messages = new Map<number, EchoedMessageData>();
+export const currently_echoing_messages = new Map<number, EchoedMessageData>();
 // Raw content from the last known synced state. Used to detect edits made
 // by another client while this edit form is open.
 const last_synced_raw_content = new Map<number, string>();
@@ -189,11 +189,9 @@ export function is_message_editable_ignoring_permissions(message: Message): bool
         return false;
     }
 
-    // Messages where we're currently locally echoing an edit not yet acknowledged
-    // by the server.
-    if (currently_echoing_messages.has(message.id)) {
-        return false;
-    }
+    // Messages with locally echoed edits that have not yet been acknowledged
+    // by the server remain editable; the edit form shows a "Saving"
+    // indicator while waiting for the server response.
     return true;
 }
 
@@ -419,10 +417,9 @@ function handle_message_edit_enter(
         const $row = $message_edit_content.closest(".message_row");
         const $message_edit_save_button = $row.find(".message_edit_save");
         if ($message_edit_save_button.prop("disabled")) {
-            // In cases when the save button is disabled
-            // we need to disable save on pressing Enter
-            // Prevent default to avoid new-line on pressing
-            // Enter inside the textarea in this case
+            // When the Save button is disabled -- over the length limit,
+            // time limit expired, or a previous edit still saving -- we
+            // disable save on Enter and prevent a newline in the textarea.
             e.preventDefault();
             compose_validate.validate_message_length($row);
             return;
@@ -436,7 +433,12 @@ function handle_message_edit_enter(
     }
 }
 
-export function handle_message_edit_update(message_id: number, keep_form_open: boolean): void {
+export function handle_message_edit_update(
+    message_id: number,
+    keep_form_open: boolean,
+    new_raw_content: string | undefined,
+): void {
+    const edit_was_echoed = currently_editing_messages_echo_state.get(message_id);
     const was_our_pending_edit = currently_editing_messages_echo_state.delete(message_id);
 
     if (!keep_form_open || !currently_editing_messages.has(message_id)) {
@@ -447,8 +449,16 @@ export function handle_message_edit_update(message_id: number, keep_form_open: b
     }
 
     if (was_our_pending_edit) {
-        // Close non-echoed (e.g. attachment) edits.
-        end_message_edit(message_id);
+        // Close non-echoed (e.g. attachment) edits. Keep a reopened locally
+        // echoed form open to avoid losing in-progress changes.
+        if (!edit_was_echoed) {
+            end_message_edit(message_id);
+            return;
+        }
+        // Advance the last-synced content to the confirmed content so it
+        // isn't later mistaken for an external edit.
+        assert(new_raw_content !== undefined);
+        last_synced_raw_content.set(message_id, new_raw_content);
         return;
     }
 }
@@ -668,6 +678,7 @@ function edit_message($row: JQuery, raw_content: string): void {
     }
 
     const is_editable = is_content_editable(message, seconds_left_buffer);
+    const currently_echoing = currently_echoing_messages.has(message.id);
 
     const $form = $(
         render_message_edit_form({
@@ -695,6 +706,15 @@ function edit_message($row: JQuery, raw_content: string): void {
     const previous_height = resized_edit_box_height.get(message.id);
     const do_autosize = previous_height === undefined;
     message_lists.current.show_edit_message($row, $form, do_autosize);
+
+    if (currently_echoing) {
+        // A previous edit is still in flight; disable Save (the saving class
+        // drives the disabled-message-edit-save tooltip and keeps Save
+        // disabled across keystrokes via check_overflow_text), then show the
+        // saving spinner while leaving Cancel enabled.
+        $form.find(".message_edit_save").addClass("saving").prop("disabled", true);
+        show_message_edit_spinner($form, true);
+    }
 
     if (previous_height) {
         $(the($message_edit_content)).height(previous_height + "px");
@@ -1450,6 +1470,19 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
+
+                if (currently_editing_messages.has(message_id)) {
+                    // The user reopened the edit form while this edit was
+                    // still saving; now that it's confirmed, swap the Saving
+                    // spinner back to a Save button so they can continue with
+                    // their new edit.
+                    const $open_edit_row = message_lists.current?.get_row(message_id);
+                    if ($open_edit_row !== undefined && $open_edit_row.length > 0) {
+                        $open_edit_row.find(".message_edit_save").removeClass("saving");
+                        hide_message_edit_spinner($open_edit_row);
+                        compose_validate.check_overflow_text($open_edit_row);
+                    }
+                }
             }
 
             // Ordinarily, in a code path like this, we'd make
@@ -1498,7 +1531,9 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                     }
                 }
 
+                $row.find(".message_edit_save").removeClass("saving");
                 hide_message_edit_spinner($row);
+                compose_validate.check_overflow_text($row);
                 if (xhr.readyState !== 0) {
                     const $container = compose_banner.get_compose_banner_container(
                         $row.find("textarea"),
