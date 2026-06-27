@@ -268,7 +268,7 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
 
     function do_delete_attachments(): void {
         dialog_widget.show_dialog_spinner();
-        for (const [id, attachment] of attachments_map.entries()) {
+        for (const [id, attachment] of attachments_map) {
             void channel.del({
                 url: "/json/attachments/" + attachment.id,
                 success() {

@@ -1008,7 +1008,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         hidden_muted: 0,
     };
 
-    for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
+    for (const [stream_id, stream_count_info] of counts.stream_count) {
         const sub = sub_store.get(stream_id);
         assert(sub);
         if (sub.pin_to_top) {
