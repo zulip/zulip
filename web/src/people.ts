@@ -56,25 +56,12 @@ let fetch_users_storage: {
     pending_user_ids: Set<number>;
     in_transit_user_ids: Set<number>;
     // Will be resolved when fetch for `pending_user_ids` is complete.
-    promise_for_pending: Promise<void> | undefined;
-    promise_resolver_for_pending: (() => void) | undefined;
+    promise_for_pending: PromiseWithResolvers<void> | undefined;
     // Contains sets of `pending_user_ids` that have been requested via
     // `start_fetch_for_requested_users`.
-    promise_for_requested: Map<
-        Set<number>,
-        {
-            promise: Promise<void>;
-            resolver: () => void;
-        }
-    >;
+    promise_for_requested: Map<Set<number>, PromiseWithResolvers<void>>;
     // Contains sets of user ids that are currently being fetched.
-    promise_for_in_transit: Map<
-        Set<number>,
-        {
-            promise: Promise<void>;
-            resolver: () => void;
-        }
-    >;
+    promise_for_in_transit: Map<Set<number>, PromiseWithResolvers<void>>;
 };
 
 export let INACCESSIBLE_USER_NAME: string;
@@ -112,7 +99,6 @@ export function init(): void {
         pending_user_ids: new Set(),
         in_transit_user_ids: new Set(),
         promise_for_pending: undefined,
-        promise_resolver_for_pending: undefined,
         promise_for_requested: new Map(),
         promise_for_in_transit: new Map(),
     };
@@ -1916,19 +1902,10 @@ function get_combined_promise_for_user_ids(user_ids: Set<number>): {
         // Store a promise to be resolved when user_ids_pending_fetch is fetched.
         // This avoids future requests for subset of `user_ids_pending_fetch` to wait
         // for the completion of `user_ids_to_fetch`.
-        let resolver_for_promise_for_pending_fetch: () => void = () => {
-            // This will reassigned instantly below but Typescript thinks
-            // this function is unassigned.
-        };
-        const promise_for_pending_fetch = new Promise<void>((resolve) => {
-            resolver_for_promise_for_pending_fetch = resolve;
-        });
-        promises.push(promise_for_pending_fetch);
-
-        fetch_users_storage.promise_for_in_transit.set(user_ids_pending_fetch, {
-            promise: promise_for_pending_fetch,
-            resolver: resolver_for_promise_for_pending_fetch,
-        });
+        fetch_users_storage.promise_for_in_transit.set(
+            user_ids_pending_fetch,
+            Promise.withResolvers(),
+        );
     }
 
     return {
@@ -1947,13 +1924,12 @@ async function start_fetch_for_requested_users(): Promise<void> {
         get_combined_promise_for_user_ids(user_ids_to_fetch);
 
     // This promise will be resolved when all users are fetched.
-    fetch_users_storage.promise_for_requested.set(user_ids_to_fetch, {
-        promise: fetch_users_storage.promise_for_pending!,
-        resolver: fetch_users_storage.promise_resolver_for_pending!,
-    });
+    fetch_users_storage.promise_for_requested.set(
+        user_ids_to_fetch,
+        fetch_users_storage.promise_for_pending!,
+    );
 
     fetch_users_storage.promise_for_pending = undefined;
-    fetch_users_storage.promise_resolver_for_pending = undefined;
 
     let fetched_users;
     for (let num_attempts = 1; ; num_attempts += 1) {
@@ -1989,7 +1965,7 @@ async function start_fetch_for_requested_users(): Promise<void> {
     }
 
     // Resolve promises waiting on this fetch after updating the data locally.
-    fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
+    fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolve();
     // Clean up in transit promise for this fetch.
     fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
     // Remove fetched users from in transit user ids.
@@ -1998,7 +1974,7 @@ async function start_fetch_for_requested_users(): Promise<void> {
 
     await promise_for_all_requested_users;
     // Resolve promises waiting on the complete fetch.
-    fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolver();
+    fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolve();
     fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
 }
 
@@ -2033,14 +2009,12 @@ export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<u
 
     // Return promise for pending fetch if it exists.
     if (fetch_users_storage.promise_for_pending !== undefined) {
-        return fetch_users_storage.promise_for_pending;
+        return fetch_users_storage.promise_for_pending.promise;
     }
 
     // Create promise for a next fetch attempt.
-    const promise = new Promise<void>((resolve) => {
-        fetch_users_storage.promise_resolver_for_pending = resolve;
-    });
-    fetch_users_storage.promise_for_pending = promise;
+    const promise_for_pending: PromiseWithResolvers<void> = Promise.withResolvers();
+    fetch_users_storage.promise_for_pending = promise_for_pending;
     // To club multiple fetch requests together,
     // we queue the fetch after current call stack.
     setTimeout(() => {
@@ -2048,7 +2022,7 @@ export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<u
             void start_fetch_for_requested_users();
         }
     }, 0);
-    return promise;
+    return promise_for_pending.promise;
 };
 
 export function rewire_fetch_users_from_ids_internal(
