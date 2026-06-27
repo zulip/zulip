@@ -27,11 +27,7 @@ export function maybe_add_narrowed_messages(
     messages_are_new = false,
     attempt = 1,
 ): void {
-    const ids: number[] = [];
-
-    for (const elem of messages) {
-        ids.push(elem.id);
-    }
+    const ids = Array.from(messages, (elem) => elem.id);
 
     void channel.get({
         url: "/json/messages/matches_narrow",
