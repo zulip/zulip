@@ -438,11 +438,10 @@ export function show_from_selected_message(): void {
                 $prev_traverse = true;
                 $message = $message_selected;
                 break;
-            } else {
-                $message = rows.last_message_in_group($prev_message_group);
-                $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
-                continue;
             }
+            $message = rows.last_message_in_group($prev_message_group);
+            $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
+            continue;
         }
         $message = $message.prev();
         $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
@@ -454,11 +453,10 @@ export function show_from_selected_message(): void {
                 const $next_message_group = $message.parent().nextAll(".recipient_row").first();
                 if ($next_message_group.length === 0) {
                     break;
-                } else {
-                    $message = rows.first_message_in_group($next_message_group);
-                    $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
-                    continue;
                 }
+                $message = rows.first_message_in_group($next_message_group);
+                $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
+                continue;
             }
             $message = $message.next();
             $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());

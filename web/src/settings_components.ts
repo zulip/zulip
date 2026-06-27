@@ -487,7 +487,8 @@ export function read_field_data_from_form(
     // Only the following field types support associated field data.
     if (field_type_id === field_types.DROPDOWN.id) {
         return read_custom_profile_field_choices_from_form($profile_field_form, old_field_data);
-    } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
+    }
+    if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         const parsed_old_field_data = old_field_data
             ? external_account_field_schema.parse(old_field_data)
             : undefined;
@@ -787,7 +788,8 @@ export function set_input_element_value(
             assert(typeof value === "boolean");
             $input_elem.prop("checked", value);
             return;
-        } else if (input_type === "string" || input_type === "number") {
+        }
+        if (input_type === "string" || input_type === "number") {
             assert(typeof value !== "boolean");
             $input_elem.val(value);
             return;

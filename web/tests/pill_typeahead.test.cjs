@@ -45,7 +45,8 @@ function override_typeahead_helper({mock_template, override_rewire}) {
     mock_template("typeahead_list_item.hbs", false, (args) => {
         if (args.stream) {
             return "<rendered-stream-stub>";
-        } else if (args.is_user_group) {
+        }
+        if (args.is_user_group) {
             return "<rendered-group-stub>";
         }
         assert.ok(args.is_person);

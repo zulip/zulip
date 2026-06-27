@@ -561,7 +561,8 @@ function timer_text(seconds_left: number): string {
     const seconds = seconds_left % 60;
     if (minutes >= 1) {
         return $t({defaultMessage: "{minutes} min to edit"}, {minutes: minutes.toString()});
-    } else if (seconds_left >= 10) {
+    }
+    if (seconds_left >= 10) {
         return $t(
             {defaultMessage: "{seconds} sec to edit"},
             {seconds: (seconds - (seconds % 5)).toString()},
@@ -864,7 +865,8 @@ function get_resolve_topic_time_limit_error_string(
                 },
                 {N: time_limit},
             );
-        } else if (time_limit_unit === "hour") {
+        }
+        if (time_limit_unit === "hour") {
             return $t(
                 {
                     defaultMessage:
@@ -890,7 +892,8 @@ function get_resolve_topic_time_limit_error_string(
             },
             {N: time_limit},
         );
-    } else if (time_limit_unit === "hour") {
+    }
+    if (time_limit_unit === "hour") {
         return $t(
             {
                 defaultMessage:
@@ -1456,7 +1459,8 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                                 $container,
                             );
                             return;
-                        } else if (code === "EXPECTATION_MISMATCH") {
+                        }
+                        if (code === "EXPECTATION_MISMATCH") {
                             const message = $t({
                                 defaultMessage:
                                     "Error editing message: Message was edited by another client.",

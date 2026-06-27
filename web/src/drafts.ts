@@ -525,7 +525,8 @@ export function current_recipient_data(): {
             topic: compose_state.topic(),
             private_recipient_ids: undefined,
         };
-    } else if (compose_state.get_message_type() === "private") {
+    }
+    if (compose_state.get_message_type() === "private") {
         return {
             stream_name: undefined,
             topic: undefined,

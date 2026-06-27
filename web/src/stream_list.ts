@@ -355,7 +355,8 @@ export function rewire_stream_list_section_container_html(
 function get_section_channel_plus_icon_url(section: StreamListSection): string | undefined {
     if (section.folder_id !== null) {
         return `#channels/folders/${section.folder_id}/new`;
-    } else if (section.id === "normal-streams") {
+    }
+    if (section.id === "normal-streams") {
         return "#channels/new";
     }
     return undefined;

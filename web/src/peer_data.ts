@@ -583,7 +583,7 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
                 break;
             }
             // Failed request, so try again (unless we've reached the retry limit)
-            else if (result === null) {
+            if (result === null) {
                 num_attempts += 1;
                 const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
                 await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));

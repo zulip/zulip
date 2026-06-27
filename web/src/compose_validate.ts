@@ -1226,7 +1226,8 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         }
         is_validating_compose_box = false;
         return false;
-    } else if ($("textarea#compose-textarea").hasClass("invalid")) {
+    }
+    if ($("textarea#compose-textarea").hasClass("invalid")) {
         // Hide the invalid indicator now that it's non-empty.
         $("textarea#compose-textarea").toggleClass("invalid", false);
     }
