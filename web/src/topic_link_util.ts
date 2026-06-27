@@ -54,7 +54,9 @@ export function html_unescape_invalid_stream_topic_characters(text: string): str
 }
 
 export function html_escape_markdown_syntax_characters(text: string): string {
-    return text.replaceAll(invalid_stream_topic_regex, escape_invalid_stream_topic_characters);
+    return text.replaceAll(invalid_stream_topic_regex, (text) =>
+        escape_invalid_stream_topic_characters(text),
+    );
 }
 
 export function get_topic_link_content_with_stream_name(opts: {
