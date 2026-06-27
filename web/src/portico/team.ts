@@ -150,9 +150,7 @@ export default function render_tabs(contributors: Contributor[]): void {
         profile_url: get_profile_url(c),
         commits: calculate_total_commits(c),
     }));
-    mapped_contributors_list.sort((a, b) =>
-        a.commits < b.commits ? 1 : a.commits > b.commits ? -1 : 0,
-    );
+    mapped_contributors_list.sort((a, b) => b.commits - a.commits);
     const total_tab_html = render_contributors({contributors: mapped_contributors_list});
 
     const twenty_plus_total_contributors = mapped_contributors_list.filter((c) => c.commits >= 20);
