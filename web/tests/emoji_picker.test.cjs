@@ -96,10 +96,10 @@ run_test("initialize", () => {
         "1f600", // grinning face
         "1f680", // rocket
     ];
-    const non_popular_emojis_usage = [];
-    for (const [i, non_popular_emoji_code] of non_popular_emoji_codes.entries()) {
-        non_popular_emojis_usage.push(make_emoji(non_popular_emoji_code, i + 10));
-    }
+    const non_popular_emojis_usage = Array.from(
+        non_popular_emoji_codes,
+        (non_popular_emoji_code, i) => make_emoji(non_popular_emoji_code, i + 10),
+    );
     for (const emoji of [...popular_emojis, ...non_popular_emojis_usage]) {
         emoji_frequency_data.reaction_data.set(emoji.emoji_code, emoji);
     }
