@@ -52,6 +52,7 @@ export const CLASSNAMES = {
     guest_in_dm_recipient_warning: "guest_in_dm_recipient_warning",
     unscheduled_message: "unscheduled_message",
     search_view: "search_view",
+    message_edited_elsewhere: "message_edited_elsewhere",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",
@@ -205,6 +206,25 @@ export function show_error_message(
     if ($bad_input !== undefined) {
         $bad_input.trigger("focus").trigger("select");
     }
+}
+
+export function show_warning_message(message: string, classname: string, $container: JQuery): void {
+    // The text-only warning counterpart of show_error_message; like
+    // that function, it intentionally does not support HTML messages.
+    //
+    // To prevent the same banner from appearing twice, we remove the
+    // banner with a matched classname.
+    $container.find(`.${CSS.escape(classname)}`).remove();
+
+    const new_row_html = render_compose_banner({
+        banner_type: WARNING,
+        stream_id: null,
+        topic_name: null,
+        banner_text: message,
+        button_text: null,
+        classname,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $container);
 }
 
 export function cannot_send_direct_message_error(error_message: string): void {
