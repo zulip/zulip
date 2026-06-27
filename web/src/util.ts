@@ -31,11 +31,9 @@ export function lower_bound<T1, T2>(
     const last = array.length;
 
     let len = last - first;
-    let middle;
-    let step;
     while (len > 0) {
-        step = Math.floor(len / 2);
-        middle = first + step;
+        const step = Math.floor(len / 2);
+        const middle = first + step;
         if (less(array[middle]!, value, middle)) {
             first = middle;
             first += 1;
