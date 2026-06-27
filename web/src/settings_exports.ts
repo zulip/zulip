@@ -194,7 +194,7 @@ const filter_by_consent_options: Option[] = [
 
 function get_export_consents_having_consent_value(consent: boolean): ExportConsent[] {
     const export_consent_list: ExportConsent[] = [];
-    for (const [user_id, user_consent_info] of export_consents.entries()) {
+    for (const [user_id, user_consent_info] of export_consents) {
         const consented = user_consent_info.consented;
         const email_address_visibility = user_consent_info.email_address_visibility;
         if (consent === user_consent_info.consented) {
@@ -212,7 +212,7 @@ function get_export_consents_having_email_visibility_value(
     email_address_visibility_code: number,
 ): ExportConsent[] {
     const export_consent_list: ExportConsent[] = [];
-    for (const [user_id, user_consent_info] of export_consents.entries()) {
+    for (const [user_id, user_consent_info] of export_consents) {
         const consented = user_consent_info.consented;
         const email_address_visibility = user_consent_info.email_address_visibility;
         if (email_address_visibility_code === email_address_visibility) {

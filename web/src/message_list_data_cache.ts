@@ -29,7 +29,7 @@ function move_to_end(key: number, cached_data: MessageListData): void {
 }
 
 export function get(filter: Filter): MessageListData | undefined {
-    for (const [key, cached_data] of cache.entries()) {
+    for (const [key, cached_data] of cache) {
         if (cached_data.filter.equals(filter)) {
             move_to_end(key, cached_data);
             return cached_data;
@@ -39,7 +39,7 @@ export function get(filter: Filter): MessageListData | undefined {
 }
 
 export function add(message_list_data: MessageListData): void {
-    for (const [key, cached_data] of cache.entries()) {
+    for (const [key, cached_data] of cache) {
         if (cached_data.filter.equals(message_list_data.filter)) {
             // We could chose to maintain in the cache the
             // message_list_data passed in, or the one already in the
@@ -56,7 +56,7 @@ export function add(message_list_data: MessageListData): void {
 
     if (cache.size >= CACHE_STORAGE_LIMIT) {
         // Remove the oldest item from the cache.
-        for (const [key, cached_data] of cache.entries()) {
+        for (const [key, cached_data] of cache) {
             // We never want to remove the recent_view_messages_data from the cache.
             if (
                 cached_data.filter.equals(
@@ -96,7 +96,7 @@ export function get_superset_datasets(filter: Filter): MessageListData[] {
 }
 
 export function remove(filter: Filter): void {
-    for (const [key, cached_data] of cache.entries()) {
+    for (const [key, cached_data] of cache) {
         if (cached_data.filter.equals(filter)) {
             cache.delete(key);
             return;
