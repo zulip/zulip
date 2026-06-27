@@ -541,7 +541,7 @@ export function get_widget_for_dropdown_list_settings(
 }
 
 export function set_dropdown_setting_widget(property_name: string, widget: DropdownWidget): void {
-    if (dropdown_widget_map.get(property_name) === undefined) {
+    if (!dropdown_widget_map.has(property_name)) {
         blueslip.error("No dropdown list widget for property", {property_name});
         return;
     }
