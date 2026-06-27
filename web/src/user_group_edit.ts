@@ -759,7 +759,7 @@ export function add_assigned_permission_to_permissions_panel(
             break;
         }
         if ($subsection_elem.find(`.prop-element[name="${CSS.escape(name)}"`).length > 0) {
-            insert_position = insert_position + 1;
+            insert_position += 1;
         }
     }
 

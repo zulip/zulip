@@ -575,7 +575,7 @@ export function paste_handler_converter(
                 let delimiter = "`";
                 const matches: string[] = code.match(/`+/gm) ?? [];
                 while (matches.includes(delimiter)) {
-                    delimiter = delimiter + "`";
+                    delimiter += "`";
                 }
 
                 return delimiter + extraSpace + code + extraSpace + delimiter;
