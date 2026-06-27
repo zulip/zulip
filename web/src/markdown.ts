@@ -1,5 +1,5 @@
 import {getUnixTime, isValid} from "date-fns";
-import katex from "katex";
+import * as katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type {Matcher, RE2JS} from "re2js";
@@ -678,12 +678,11 @@ function handleTex(tex: string, fullmatch: string): string {
     try {
         return katex.renderToString(tex);
     } catch (error) {
-        assert(error instanceof Error);
-        if (error.message.startsWith("KaTeX parse error")) {
-            // TeX syntax error
+        if (error instanceof katex.ParseError) {
             return `<span class="tex-error">${_.escape(fullmatch)}</span>`;
         }
-        throw new Error(error.message);
+        /* istanbul ignore next */
+        throw error;
     }
 }
 
