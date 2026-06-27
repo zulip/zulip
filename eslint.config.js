@@ -193,7 +193,7 @@ export default defineConfig(
         },
     },
     {
-        ignores: ["**/*.cts", "**/*.mts", "**/*.ts"],
+        ignores: ["**/*.cts", "**/*.mts", "**/*.ts", "web/babel.config.js"],
         extends: [tseslint.configs.disableTypeChecked],
         rules: {
             "@typescript-eslint/consistent-type-imports": "off",
