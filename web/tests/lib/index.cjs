@@ -7,7 +7,6 @@ require("@date-fns/tz"); // To prevent @sinonjs/fake-timers from interfering wit
 require("css.escape");
 require("handlebars/runtime.js");
 const {JSDOM} = require("jsdom");
-const _ = require("lodash");
 
 const handlebars = require("./handlebars.cjs");
 const namespace = require("./namespace.cjs");
@@ -34,11 +33,6 @@ Object.defineProperty(global, "navigator", {
 
 require("@babel/register")({
     extensions: [".cjs", ".cts", ".js", ".mjs", ".mts", ".ts"],
-    only: [new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../src") + path.sep))],
-    plugins: [
-        ...(process.env.USING_INSTRUMENTED_CODE ? [["istanbul", {exclude: []}]] : []),
-        ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
-    ],
     root: path.resolve(__dirname, "../.."),
 });
 

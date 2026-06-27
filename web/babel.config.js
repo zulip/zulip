@@ -1,5 +1,9 @@
 // @ts-check
 
+import path from "node:path";
+
+import _ from "lodash";
+
 /** @type {Parameters<typeof import("babel-plugin-formatjs").default>[1]} */
 const formatJsOptions = {
     additionalFunctionNames: ["$t", "$t_html"],
@@ -15,7 +19,16 @@ const presetEnvOptions = {
 
 /** @type {import("@babel/core").TransformOptions} */
 const config = {
+    only: [new RegExp("^" + _.escapeRegExp(path.resolve(import.meta.dirname, "src") + path.sep))],
     plugins: [["formatjs", formatJsOptions]],
     presets: [["@babel/preset-env", presetEnvOptions], "@babel/typescript"],
+    env: {
+        test: {
+            plugins: [
+                ...(process.env["USING_INSTRUMENTED_CODE"] ? [["istanbul", {exclude: []}]] : []),
+                ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
+            ],
+        },
+    },
 };
 export default config;
