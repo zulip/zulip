@@ -491,6 +491,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 message_edit.handle_message_edit_update(
                     event.message_id,
                     is_content_edit && !message_was_moved,
+                    event.content,
                 );
             }
 
