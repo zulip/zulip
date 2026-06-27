@@ -344,9 +344,8 @@ exports.FakeJQuery = class extends RejectMissing {
         }
 
         for (const element of this) {
-            for (const [key, value] of Object.entries(
-                typeof property === "string" ? {[property]: args[0]} : property,
-            )) {
+            const properties = typeof property === "string" ? {[property]: args[0]} : property;
+            for (const [key, value] of Object.entries(properties)) {
                 element.style.setProperty(
                     decamel(key),
                     typeof value === "number" &&
