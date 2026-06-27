@@ -678,7 +678,7 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
             // goes to beginning) with something reasonable and
             // consistent (cursor goes to the end of the filter
             // string).
-            $("#emoji-popover-filter").trigger("focus").caret(Number.POSITIVE_INFINITY);
+            $("#emoji-popover-filter").trigger("focus").caret(Infinity);
             scroll_util.get_scroll_element($emoji_map).scrollTop(0);
             scroll_util.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;

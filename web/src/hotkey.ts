@@ -1092,9 +1092,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                 case "page_down": {
                     // so that it always goes to the end of the text box.
                     const height = util.the($(":focus")).scrollHeight;
-                    $(":focus")
-                        .caret(Number.POSITIVE_INFINITY)
-                        .animate({scrollTop: height}, "fast");
+                    $(":focus").caret(Infinity).animate({scrollTop: height}, "fast");
                     return true;
                 }
                 case "search_with_k":

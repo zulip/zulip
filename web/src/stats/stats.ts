@@ -122,7 +122,7 @@ const font_12pt = {
     color: "#000000",
 };
 
-let last_full_update = Number.POSITIVE_INFINITY;
+let last_full_update = Infinity;
 
 function handle_parse_server_stats_result<T>(
     result: z.core.util.SafeParseResult<T>,
