@@ -40,14 +40,14 @@ export function get_popular_emojis(): EmojiItem[] {
 export let frequently_used_emojis: EmojiItem[] = [...get_popular_emojis()];
 
 export type Emoji =
+    | UnicodeEmoji
     | {
           emoji_name: string;
           reaction_type: "realm_emoji" | "zulip_extra_emoji";
           is_realm_emoji: true;
           emoji_url?: string | undefined;
           emoji_code?: undefined;
-      }
-    | UnicodeEmoji;
+      };
 
 // emoji_code is only available for unicode emojis.
 type UnicodeEmoji = {
