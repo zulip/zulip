@@ -105,12 +105,11 @@ function make_zblueslip() {
             const matched_error_message = lib.test_data[name].some((x) => x.message === message);
             const exact_match_fail = !matched_error_message;
             if (exact_match_fail) {
-                const error = new Error(`Invalid ${name} message: "${message}".`);
+                const error = new Error(
+                    `Invalid ${name} message: "${message}".`,
+                    cause === undefined ? {} : {cause},
+                );
                 error.blueslip = true;
-                /* istanbul ignore if */
-                if (cause !== undefined) {
-                    error.cause = cause;
-                }
                 throw error;
             }
         };
