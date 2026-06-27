@@ -50,6 +50,6 @@ async function execute_test(label, f) {
     zblueslip.reset();
 }
 
-exports.run_test = (label, f, opts) => {
-    exports.suite.push(() => execute_test(label, f, opts));
+exports.run_test = (label, f) => {
+    exports.suite.push(() => execute_test(label, f));
 };

@@ -555,13 +555,13 @@ test_while_not_editing_text("misc", ({override}) => {
         type: "stream",
         last_edit_timestamp: 123,
     }));
-    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true);
     override(message_lists.current, "selected_message", () => ({
         id: 2,
         type: "stream",
         last_moved_timestamp: 123,
     }));
-    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true);
     override(message_lists.current, "selected_message", () => ({
         id: 3,
         type: "stream",
