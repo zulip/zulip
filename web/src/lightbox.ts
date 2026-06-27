@@ -590,7 +590,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
                 // It's an HEIC and we support it -- don't use the transcoded version
                 source = url;
             } else {
-                source = preview_src.replace(/\/[^/]+$/, "/" + transcoded_image);
+                source = preview_src.replace(/\/[^/]+$/, () => "/" + transcoded_image);
             }
         } else {
             source = url;

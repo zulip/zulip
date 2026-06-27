@@ -136,7 +136,7 @@ async function checkFile(file: string): Promise<void> {
                                     diff += prefix;
                                     diff += part.value
                                         .replace(/\n$/, "")
-                                        .replaceAll("\n", "\n" + prefix);
+                                        .replaceAll("\n", () => "\n" + prefix);
                                     diff += "\n";
                                 }
                                 diff += "\u{1B}[0m";

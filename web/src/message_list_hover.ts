@@ -156,7 +156,7 @@ export function initialize(): void {
             );
             $img.attr(
                 "src",
-                $img.attr("src")!.replace(/\/[^/]+$/, "/" + thumbnail.animated_format.name),
+                $img.attr("src")!.replace(/\/[^/]+$/, () => "/" + thumbnail.animated_format.name),
             );
         },
     );
@@ -174,7 +174,7 @@ export function initialize(): void {
             );
             $img.attr(
                 "src",
-                $img.attr("src")!.replace(/\/[^/]+$/, "/" + thumbnail.preferred_format.name),
+                $img.attr("src")!.replace(/\/[^/]+$/, () => "/" + thumbnail.preferred_format.name),
             );
         },
     );

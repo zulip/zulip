@@ -266,7 +266,7 @@ export function postprocess_content(html: string): string {
                 }
                 message_media_image.src = message_media_image.src.replace(
                     /\/[^/]+$/,
-                    "/" + thumbnail_name,
+                    () => "/" + thumbnail_name,
                 );
             }
         }

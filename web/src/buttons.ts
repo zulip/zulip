@@ -84,6 +84,6 @@ export function modify_button_icon($button: JQuery, new_icon: string): void {
     $button
         .find(".zulip-icon")
         .attr("class", (_index, className) =>
-            className.replaceAll(/zulip-icon-[^\s]+/g, `zulip-icon-${new_icon}`),
+            className.replaceAll(/zulip-icon-[^\s]+/g, () => `zulip-icon-${new_icon}`),
         );
 }
