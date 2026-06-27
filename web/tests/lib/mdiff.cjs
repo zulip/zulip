@@ -131,8 +131,9 @@ if (require.main === module) {
         "Usage: mdiff <string_0> <string_1>\nWhere <string_0> and <string_1> are the strings to be diffed";
     const {
         values: {help},
-        positionals: [string_0, string_1],
+        positionals,
     } = parseArgs({options: {help: {type: "boolean"}}, allowPositionals: true});
+    const [string_0, string_1] = positionals;
 
     if (help) {
         console.log(usage);
