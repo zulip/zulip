@@ -433,7 +433,7 @@ $(() => {
                 $countdown_elt.text((current_countdown - 1).toString());
             } else {
                 const new_org_url = $deactivated_org_auto_redirect.attr("href")!;
-                window.location.href = new_org_url;
+                window.location.assign(new_org_url);
                 clearInterval(interval_id);
             }
         }, 1000);

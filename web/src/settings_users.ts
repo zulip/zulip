@@ -664,7 +664,7 @@ function handle_deactivation($tbody: JQuery): void {
             if (user_id === current_user.user_id) {
                 dialog_widget.submit_api_request(channel.del, url, data, {
                     success_continuation() {
-                        window.location.href = "/login/";
+                        window.location.assign("/login/");
                     },
                 });
             } else {

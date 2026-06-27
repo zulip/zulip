@@ -2451,7 +2451,7 @@ export function initialize({
         // Focus topic on channel click since we don't have
         // separate column for channel and topic.
         focus_clicked_element(topic_row_index, COLUMNS.topic);
-        window.location.href = $(e.currentTarget).find("a").attr("href")!;
+        window.location.assign($(e.currentTarget).find("a").attr("href")!);
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
@@ -2468,7 +2468,7 @@ export function initialize({
         const topic_key = topic_id.slice("recent_conversation:".length);
         const topic_row_index = $topic_row.index();
         focus_clicked_element(topic_row_index, COLUMNS.topic, topic_key);
-        window.location.href = $(e.currentTarget).find("a").attr("href")!;
+        window.location.assign($(e.currentTarget).find("a").attr("href")!);
     });
 
     $("body").on("click", "#recent-view-content-table .change_visibility_policy", (e) => {

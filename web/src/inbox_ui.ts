@@ -2475,7 +2475,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         const href = $elt.find("a").attr("href");
         col_focus = COLUMNS.FULL_ROW;
         if (href !== undefined) {
-            window.location.href = href;
+            window.location.assign(href);
         } else {
             $elt = $elt.closest(".inbox-header");
             collapse_or_expand($elt.attr("id")!);
