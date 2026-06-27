@@ -360,7 +360,7 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
     let key = e.key;
     if (!use_event_key) {
         const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;
-        if (CODE_TO_QWERTY_CHAR[code]) {
+        if (CODE_TO_QWERTY_CHAR[code] !== undefined) {
             key = CODE_TO_QWERTY_CHAR[code];
         } else {
             return undefined;

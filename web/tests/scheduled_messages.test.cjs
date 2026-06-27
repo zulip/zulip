@@ -106,7 +106,7 @@ function get_expected_send_opts(day, expecteds) {
     // 'monday_nine_am'
     for (const expect of expecteds) {
         const day = expect.split("_", 1)[0]; // "today", "monday"
-        if (!modal_opts[`possible_send_later_${day}`]) {
+        if (modal_opts[`possible_send_later_${day}`] === false) {
             modal_opts[`possible_send_later_${day}`] = {};
         }
         modal_opts[`possible_send_later_${day}`][expect] =

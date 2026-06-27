@@ -448,18 +448,18 @@ function delete_choice_row_for_edit(
 
 function show_modal_for_deleting_options(
     field: CustomProfileField,
-    deleted_values: Record<string, string>,
+    deleted_values: Map<string, string>,
     update_profile_field: () => void,
 ): void {
     const active_user_ids = people.get_active_user_ids();
     let users_count_with_deleted_option_selected = 0;
     for (const user_id of active_user_ids) {
         const field_value = people.get_custom_profile_data(user_id, field.id);
-        if (field_value !== undefined && deleted_values[field_value.value]) {
+        if (field_value !== undefined && deleted_values.has(field_value.value)) {
             users_count_with_deleted_option_selected += 1;
         }
     }
-    const deleted_options_count = Object.keys(deleted_values).length;
+    const deleted_options_count = deleted_values.size;
     const modal_content_html = render_confirm_delete_profile_field_option({
         count: users_count_with_deleted_option_selected,
         field_name: field.name,
@@ -737,16 +737,16 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
                     ),
                 ),
             );
-            const deleted_values: Record<string, string> = {};
+            const deleted_values = new Map<string, string>();
             const custom_profile_field_choices =
                 settings_components.custom_profile_field_choices_schema.parse(field_data);
             for (const [value, option] of Object.entries(custom_profile_field_choices)) {
                 if (!new_values.has(value)) {
-                    deleted_values[value] = option.text;
+                    deleted_values.set(value, option.text);
                 }
             }
 
-            if (Object.keys(deleted_values).length > 0) {
+            if (deleted_values.size > 0) {
                 const edit_custom_profile_field_modal_callback = (): void => {
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 };

@@ -12,13 +12,13 @@ const ignore_missing = Symbol("ignore_missing");
 
 const reject_missing_handler = {
     has(target, property) {
-        if (!(property in target || target[ignore_missing]?.(property))) {
+        if (!(Reflect.has(target, property) || target[ignore_missing]?.(property))) {
             throw new TypeError(`unknown property ${property} of mock ${target.constructor.name}`);
         }
         return Reflect.has(target, property);
     },
     get(target, property, receiver) {
-        if (!(property in target || target[ignore_missing]?.(property))) {
+        if (!(Reflect.has(target, property) || target[ignore_missing]?.(property))) {
             throw new TypeError(`unknown property ${property} of mock ${target.constructor.name}`);
         }
         return Reflect.get(target, property, receiver);
