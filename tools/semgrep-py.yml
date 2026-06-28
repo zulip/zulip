@@ -98,9 +98,11 @@ rules:
         - zerver/migrations/0493_rename_userhotspot_to_onboardingstep.py
         - pgroonga/migrations/0002_html_escape_subject.py
 
-  - id: use-addindexconcurrently
-    pattern: django.db.migrations.AddIndex(...)
-    message: "Import and use AddIndexConcurrently from django.contrib.postgres.operations rather than AddIndex"
+  - id: use-add_index
+    pattern-either:
+      - pattern: django.db.migrations.AddIndex(...)
+      - pattern: django.contrib.postgres.operations.AddIndexConcurrently(...)
+    message: "Import and use add_index from zerver/lib/migrate.py rather than AddIndex/AddIndexConcurrently"
     languages: [python]
     severity: ERROR
     paths:
@@ -130,17 +132,17 @@ rules:
         - zilencer/migrations/0058_remoteinstallationcount_add_mobile_pushes_forwarded_index.py
         - zilencer/migrations/0059_remoterealmauditlog_add_synced_billing_event_type_index.py
 
-  - id: use-removeindexconcurrently
-    pattern: django.db.migrations.RemoveIndex(...)
-    message: "Import and use RemoveIndexConcurrently from django.contrib.postgres.operations rather than RemoveIndex"
+  - id: use-remove_index
+    pattern-either:
+      - pattern: django.db.migrations.RemoveIndex(...)
+      - pattern: django.contrib.postgres.operations.RemoveIndexConcurrently(...)
+    message: "Import and use remove_index from zerver/lib/migrate.py rather than RemoveIndex/RemoveIndexConcurrently"
     languages: [python]
     severity: ERROR
     paths:
       include:
         - "**/migrations"
       exclude:
-        - zerver/migrations/0473_remove_message_non_realm_id_indexes.py
-        - zerver/migrations/0486_clear_old_data_for_unused_usermessage_flags.py
         - zilencer/migrations/0038_unique_server_remote_id.py
 
   - id: html-format
