@@ -1,16 +1,18 @@
-from django.contrib.postgres.operations import AddIndexConcurrently
 from django.db import migrations, models
+from django.conf import settings
+
+from . import add_index
 
 
 class Migration(migrations.Migration):
-    atomic = False
+    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
 
     dependencies = [
         ("zerver", "0527_presencesequence"),
     ]
 
     operations = [
-        AddIndexConcurrently(
+        add_index(
             model_name="realmauditlog",
             index=models.Index(
                 # event_type__in:

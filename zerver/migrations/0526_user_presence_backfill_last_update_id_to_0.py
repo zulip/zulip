@@ -1,7 +1,9 @@
-from django.contrib.postgres.operations import AddIndexConcurrently
 from django.db import migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from django.conf import settings
+
+from . import add_index
 
 
 def backfill_user_presence_last_update_id(
@@ -30,7 +32,7 @@ def backfill_user_presence_last_update_id(
 
 
 class Migration(migrations.Migration):
-    atomic = False
+    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
 
     dependencies = [
         ("zerver", "0525_userpresence_last_update_id"),
@@ -47,7 +49,7 @@ class Migration(migrations.Migration):
             name="last_update_id",
             field=models.PositiveBigIntegerField(db_index=True, default=0),
         ),
-        AddIndexConcurrently(
+        add_index(
             model_name="userpresence",
             index=models.Index(
                 fields=["realm", "last_update_id"],

@@ -214,14 +214,10 @@ INDEX` in SQL) takes a lock that blocks writes to the affected
 table for the duration of the build. On large tables (`Message`,
 `UserMessage`, `Subscription`, `RealmAuditLog`, etc.) that lock
 can last long enough to affect production. Use
-`AddIndexConcurrently` (corresponding to `CREATE INDEX
-CONCURRENTLY`) for any index on those tables, and as a default
-for any index on a table large enough that the lock would be
-noticeable.
-
-`AddIndexConcurrently` requires `atomic = False` on the
-migration class — `CREATE INDEX CONCURRENTLY` cannot run inside
-a transaction.
+`settings.MIGRATE_WITH_CONCURRENT_INDICES = True` and
+`add_index` (corresponding to `CREATE INDEX CONCURRENTLY`) for
+any index on those tables, and as a default for any index on a
+table large enough that the lock would be noticeable.
 
 For an index on plain table columns, `CREATE INDEX` populates
 the index relation's own size/row statistics and the planner
@@ -230,7 +226,7 @@ statistics — no follow-up `ANALYZE` is needed. For **expression
 indexes** (e.g., `Upper(subject)`), PostgreSQL only gathers
 per-expression statistics in `pg_statistic` when `ANALYZE`
 runs, so add a `RunSQL("ANALYZE zerver_<table>")` after the
-`AddIndexConcurrently` so the planner has the distribution info
+`add_index` so the planner has the distribution info
 it needs to use the new index.
 
 ### Renaming indexes

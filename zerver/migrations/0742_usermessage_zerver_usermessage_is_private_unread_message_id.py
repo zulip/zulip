@@ -1,15 +1,17 @@
-from django.contrib.postgres.operations import AddIndexConcurrently
 from django.db import migrations, models
+from django.conf import settings
+
+from . import add_index
 
 
 class Migration(migrations.Migration):
-    atomic = False
+    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
     dependencies = [
         ("zerver", "0741_pushdevice_zerver_pushdevice_user_bouncer_device_id_idx"),
     ]
 
     operations = [
-        AddIndexConcurrently(
+        add_index(
             model_name="usermessage",
             index=models.Index(
                 models.F("user_profile"),
