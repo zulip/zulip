@@ -46,13 +46,15 @@ class ZulipMarkdownConverter(markdownify.MarkdownConverter):
         return ""
 
 
-def convert_html_to_markdown(html: str) -> str:
+def convert_html_to_markdown(
+    html: str, *, converter_class: type[ZulipMarkdownConverter] = ZulipMarkdownConverter
+) -> str:
     # A bare URL is expected input here (the text/html part of an incoming
     # email), but BeautifulSoup warns about it ("looks like a URL, not markup").
     # Suppress the warning so that expected input doesn't spam our logs.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", MarkupResemblesLocatorWarning)
-        converter = ZulipMarkdownConverter(
+        converter = converter_class(
             # Zulip's Markdown supports only ATX headings, not Setext headings.
             heading_style="ATX",
             # Zulip's Markdown has no backslash escaping; it renders "\" as a
