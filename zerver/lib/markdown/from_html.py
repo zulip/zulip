@@ -36,7 +36,9 @@ class ZulipMarkdownConverter(markdownify.MarkdownConverter):
         return get_markdown_link_for_url(label, url)
 
 
-def convert_html_to_markdown(html: str) -> str:
+def convert_html_to_markdown(
+    html: str, *, converter_class: type[ZulipMarkdownConverter] = ZulipMarkdownConverter
+) -> str:
     # BeautifulSoup warns when content is a bare URL ("looks like a URL, not
     # markup"); harmless here, but fatal under CI's PYTHONWARNINGS=error.
     with warnings.catch_warnings():
@@ -44,7 +46,7 @@ def convert_html_to_markdown(html: str) -> str:
         # ATX headings ("# Title"): Zulip doesn't render Setext underlines.
         # Asterisk/underscore escaping is disabled: Zulip's Markdown has no
         # backslash escaping, so "\*" renders as a literal backslash.
-        converter = ZulipMarkdownConverter(
+        converter = converter_class(
             heading_style="ATX",
             escape_asterisks=False,
             escape_underscores=False,
