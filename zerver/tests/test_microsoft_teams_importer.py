@@ -17,9 +17,8 @@ from django.utils.timezone import now as timezone_now
 from requests import PreparedRequest
 from typing_extensions import ParamSpec
 
-from zerver.data_import.import_util import AttachmentRecordData, convert_html_to_text, get_data_file
+from zerver.data_import.import_util import AttachmentRecordData, get_data_file
 from zerver.data_import.microsoft_teams import (
-    HOSTED_CONTENT_GRAPH_API_URL_REGEX,
     MICROSOFT_GRAPH_API_URL,
     ChannelMetadata,
     MicrosoftTeamsFieldsT,
@@ -36,6 +35,10 @@ from zerver.data_import.microsoft_teams import (
     get_user_roles,
     is_microsoft_teams_event_message,
     process_hosted_content_attachments,
+)
+from zerver.data_import.microsoft_teams_message_conversion import (
+    HOSTED_CONTENT_GRAPH_API_URL_REGEX,
+    convert_microsoft_teams_html_to_markdown,
 )
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.import_realm import do_import_realm
@@ -620,6 +623,36 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             str(e.exception),
         )
 
+    def test_convert_microsoft_teams_html_to_markdown_list_conversion(self) -> None:
+        """
+        convert_html_to_text used to mangle plain-text bulleted lists by
+        escaping the leading dashes and collapsing the line breaks;
+        convert_microsoft_teams_html_to_markdown leaves them intact.
+        See #39351.
+        """
+        raw_text = "- bullet 1\n- bullet 2\n- bullet 3\n- bullet 4"
+        content = convert_microsoft_teams_html_to_markdown(raw_text)
+
+        self.assertEqual(raw_text, content)
+
+    def test_convert_microsoft_teams_html_to_markdown_image_conversion(self) -> None:
+        hosted_content_url = "https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZA==/$value"
+        self.assertEqual(
+            convert_microsoft_teams_html_to_markdown(
+                f'<img src="{hosted_content_url}" alt="image">'
+            ),
+            f"![image]({hosted_content_url})",
+        )
+
+        external_url = (
+            "https://raw.githubusercontent.com/zulip/zulip/main/static/images/logo/"
+            "zulip-icon-128x128.png"
+        )
+        self.assertEqual(
+            convert_microsoft_teams_html_to_markdown(f'<img src="{external_url}" alt="logo">'),
+            f"[logo]({external_url})",
+        )
+
     @responses.activate
     def test_failed_get_microsoft_graph_api_data(self) -> None:
         responses.add(
@@ -759,7 +792,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             # This is actual decoded content from a message in messages_1d513e46-d8cd-41db-b84f-381fe5730794.json
             # The original message was just some text followed by an image.
             MessageFixture(
-                content=convert_html_to_text(
+                content=convert_microsoft_teams_html_to_markdown(
                     """
                     <ul>
                         <li>dashes are ok</li>
@@ -776,7 +809,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                          alt="image"
                          itemid="0-wus-d6-3d6dbcb8048aa88f1c1cd57faab3c4ad">
                     </p>
-                    """
+                    """,
                 ),
                 hosted_content_count=1,
                 is_direct_message_type=False,
@@ -800,11 +833,12 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 test_name="multiple images",
             ),
             # This is actual decoded content from a message in messages_002145f2-eaba-4962-997d-6d841a9f50af.json
-            # The original message was just two custom emojis, nothing else. convert_html_to_text doesn't know
-            # how to process MS Teams-specific tags such as <customemoji>, so this will be converted to empty
-            # string.
+            # The original message was just two custom emojis, nothing else.
+            # convert_microsoft_teams_html_to_markdown doesn't know how to process MS
+            # Teams-specific tags such as <customemoji>, so this will be converted to
+            # empty string.
             MessageFixture(
-                content=convert_html_to_text(
+                content=convert_microsoft_teams_html_to_markdown(
                     """
                     <p>
                         <span>
@@ -822,7 +856,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                             </customemoji>
                         </span>
                     </p>
-                    """
+                    """,
                 ),
                 hosted_content_count=0,
                 is_direct_message_type=False,
