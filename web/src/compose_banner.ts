@@ -7,10 +7,7 @@ import render_stream_does_not_exist_error from "../templates/compose_banner/stre
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
 
-import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as stream_data from "./stream_data.ts";
-import type {StreamSubscription} from "./sub_store.ts";
 
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {
@@ -65,7 +62,6 @@ export const CLASSNAMES = {
     deactivated_user: "deactivated_user",
     topic_missing: "topic_missing",
     generic_compose_error: "generic_compose_error",
-    user_not_subscribed: "user_not_subscribed",
     unknown_zoom_user: "unknown_zoom_user",
 };
 
@@ -244,24 +240,6 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
 
     // Open stream select dropdown.
     $("#compose_select_recipient_widget").trigger("click");
-}
-
-export function show_stream_not_subscribed_error(
-    sub: StreamSubscription,
-    banner_text: string,
-): void {
-    const new_row_html = render_compose_banner({
-        banner_type: ERROR,
-        banner_text,
-        button_text: stream_data.can_toggle_subscription(sub)
-            ? $t({defaultMessage: "Subscribe"})
-            : null,
-        classname: CLASSNAMES.user_not_subscribed,
-        // The message cannot be sent until the user subscribes to the stream, so
-        // closing the banner would be more confusing than helpful.
-        hide_close_button: true,
-    });
-    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
 export function show_unknown_zoom_user_error(email: string): void {

@@ -38,7 +38,6 @@ import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
 import {get_timestamp_for_flatpickr} from "./timerender.ts";
@@ -182,26 +181,6 @@ export function initialize(): void {
             } else {
                 compose.finish();
             }
-        },
-    );
-
-    const user_not_subscribed_selector = `.${CSS.escape(
-        compose_banner.CLASSNAMES.user_not_subscribed,
-    )}`;
-    $("body").on(
-        "click",
-        `${user_not_subscribed_selector} .main-view-banner-action-button`,
-        (event) => {
-            event.preventDefault();
-
-            const stream_id = compose_state.stream_id();
-            if (stream_id === undefined) {
-                return;
-            }
-            const sub = stream_data.get_sub_by_id(stream_id);
-            assert(sub !== undefined);
-            stream_settings_components.sub_or_unsub(sub);
-            $(user_not_subscribed_selector).remove();
         },
     );
 
