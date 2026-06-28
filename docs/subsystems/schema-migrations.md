@@ -207,21 +207,34 @@ handle it.
 
 ## Indexes
 
-### Adding indexes
+### Adding and dropping indexes
 
 Django's regular `AddIndex` operation (corresponding to `CREATE
 INDEX` in SQL) takes a lock that blocks writes to the affected
 table for the duration of the build. On large tables (`Message`,
 `UserMessage`, `Subscription`, `RealmAuditLog`, etc.) that lock
-can last long enough to affect production. Use
-`AddIndexConcurrently` (corresponding to `CREATE INDEX
-CONCURRENTLY`) for any index on those tables, and as a default
-for any index on a table large enough that the lock would be
-noticeable.
+can last long enough to affect production, which instead needs
+`CREATE INDEX CONCURRENTLY` to avoid it; self-hosted deployments,
+which have less data, can usually just take the lock. The
+`add_index` helper (from `zerver.lib.migrate`) handles this
+distinction — use it rather than `AddIndex` for any index on
+those tables, and as a default for any index on a table large
+enough that the lock would be noticeable.
 
-`AddIndexConcurrently` requires `atomic = False` on the
-migration class — `CREATE INDEX CONCURRENTLY` cannot run inside
-a transaction.
+Dropping an index has the same problem: `RemoveIndex` (`DROP
+INDEX`) takes an `ACCESS EXCLUSIVE` lock on the table. Use
+`remove_index` (from `zerver.lib.migrate`) rather than
+`RemoveIndex` in the same situations.
+
+Whether these helpers run the operation `CONCURRENTLY` is
+governed by the `MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY`
+setting, which is enabled in production. Because the
+`CONCURRENTLY` operations cannot run inside a transaction, a migration
+using either helper must set `atomic = not
+settings.MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY` — unless another
+operation in the migration requires `atomic = False` regardless, such
+as a large `RunPython` backfill that must not run in a single
+transaction.
 
 For an index on plain table columns, `CREATE INDEX` populates
 the index relation's own size/row statistics and the planner
@@ -230,8 +243,20 @@ statistics — no follow-up `ANALYZE` is needed. For **expression
 indexes** (e.g., `Upper(subject)`), PostgreSQL only gathers
 per-expression statistics in `pg_statistic` when `ANALYZE`
 runs, so add a `RunSQL("ANALYZE zerver_<table>")` after the
-`AddIndexConcurrently` so the planner has the distribution info
+`add_index` so the planner has the distribution info
 it needs to use the new index.
+
+#### Dropping auto-generated indexes
+
+`remove_index` only handles indexes declared in `Meta.indexes`.
+To drop an auto-created index concurrently — for example, the
+index on a foreign key whose `db_index` you're setting to
+`False` — use
+[SeparateDatabaseAndState](#separating-database-and-state)
+instead. Django's `AlterField(db_index=False)` issues a regular
+(locking) `DROP INDEX`; the separate-state pattern lets you keep
+Django's model tracking in sync while doing the actual drop
+concurrently.
 
 ### Renaming indexes
 
@@ -240,16 +265,6 @@ dropping and rebuilding (see
 `0693_add_conditional_indexes_for_topic.py`, which also adds
 expression indexes; note that it mistakenly omits the `ANALYZE`
 that those would need).
-
-### Dropping indexes
-
-To drop an index `CONCURRENTLY` — for example, the auto-created
-index on a foreign key whose `db_index` you're setting to
-`False` — use
-[SeparateDatabaseAndState](#separating-database-and-state).
-Django's `AlterField(db_index=False)` issues a regular (locking)
-`DROP INDEX`; the separate-state pattern lets you keep Django's
-model tracking in sync while doing the actual drop concurrently.
 
 ## Constraints on large tables
 
