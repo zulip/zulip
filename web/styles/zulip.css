@@ -2189,9 +2189,9 @@ body:not(.spectator-view) {
         margin: 4px 4px 2px;
 
         &:focus {
-            background: hsl(0deg 0% 100%);
-            border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
-            box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
+            background: var(--color-popover-filter-input-focus-bg);
+            border: 1px solid var(--color-popover-filter-input-focus-border);
+            box-shadow: 0 0 5px var(--color-popover-filter-input-focus-shadow);
         }
     }
 }

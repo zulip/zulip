@@ -2191,6 +2191,23 @@
         hsl(0deg 0% 0% / 60%)
     );
 
+    /* Pill opacity for non-editable state */
+    --opacity-pill-not-editable: light-dark(1, 0.5);
+
+    /* Popover filter input focus styles */
+    --color-popover-filter-input-focus-bg: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(225deg 6% 7%)
+    );
+    --color-popover-filter-input-focus-border: light-dark(
+        hsl(229.09deg 21.57% 10% / 80%),
+        hsl(0deg 0% 100% / 50%)
+    );
+    --color-popover-filter-input-focus-shadow: light-dark(
+        hsl(228deg 9.8% 20% / 30%),
+        hsl(0deg 0% 100% / 40%)
+    );
+
     /* Inbox view constants - Values from Figma design */
     --inbox-view-folder-component-border-width: 0.5px;
     --width-inbox-search: calc(27.4375em); /* 439px / 16px em */
