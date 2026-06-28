@@ -38,6 +38,7 @@ import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
 import {get_timestamp_for_flatpickr} from "./timerender.ts";
@@ -65,6 +66,12 @@ function setup_compose_actions_hooks(): void {
 export function initialize(): void {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
+
+    // Wire up the view refresh for edits in unsubscribed channels here, since
+    // message_edit cannot import message_view directly without a cycle.
+    message_edit.set_reload_unsubscribed_channel_narrow_after_edit(
+        message_view.maybe_reload_unsubscribed_channel_narrow,
+    );
 
     $(".compose-control-buttons-container .video_link").toggle(
         compose_call.compute_show_video_chat_button(),
@@ -181,6 +188,22 @@ export function initialize(): void {
             } else {
                 compose.finish();
             }
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.sent_to_unsubscribed_channel,
+        )} .sent_to_unsubscribed_channel_subscribe_button`,
+        (event) => {
+            event.preventDefault();
+            const $button = $(event.currentTarget);
+            const stream_id = Number.parseInt($button.attr("data-stream-id")!, 10);
+            const sub = stream_data.get_sub_by_id(stream_id);
+            assert(sub !== undefined);
+            stream_settings_components.sub_or_unsub(sub);
+            $button.closest(".main-view-banner").remove();
         },
     );
 

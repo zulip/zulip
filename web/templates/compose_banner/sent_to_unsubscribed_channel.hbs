@@ -1,0 +1,14 @@
+<div class="above_compose_banner main-view-banner warning {{classname}}">
+    <p class="banner_content">
+        {{#tr}}
+            Sent! Because you aren't subscribed to <z-channel></z-channel>, you won't be notified if other users reply to your message.
+            {{#*inline "z-channel"}}{{> decorated_channel_name stream=stream inline_with_text=true}}{{/inline}}
+        {{/tr}}
+    </p>
+    {{#if can_subscribe}}
+    <button class="action-button action-button-subtle-warning sent_to_unsubscribed_channel_subscribe_button" data-stream-id="{{stream.stream_id}}" type="button">
+        <span class="action-button-label">{{t "Subscribe"}}</span>
+    </button>
+    {{/if}}
+    <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button" tabindex="0" aria-label="{{t 'Dismiss' }}"></a>
+</div>

@@ -19,6 +19,7 @@ import * as echo from "./echo.ts";
 import type {PostMessageAPIData} from "./echo.ts";
 import * as message_events from "./message_events.ts";
 import type {LocalMessage} from "./message_helper.ts";
+import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as reload from "./reload.ts";
@@ -26,6 +27,7 @@ import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as transmit from "./transmit.ts";
 import * as typing from "./typing.ts";
 import {user_settings} from "./user_settings.ts";
@@ -140,6 +142,16 @@ export function send_message_success(
     drafts.draft_model.deleteDrafts([sent_message.draft_id]);
 
     if (sent_message.type === "stream") {
+        if (!stream_data.is_subscribed(sent_message.stream_id)) {
+            // Channels you aren't subscribed to don't deliver live updates, so
+            // refresh the view to show the message in its current context, then
+            // warn that replies won't reach the user as notifications. The
+            // refresh clears message-sent banners, so it must run first.
+            message_view.maybe_reload_unsubscribed_channel_narrow(sent_message.stream_id);
+            compose_notifications.notify_sent_to_unsubscribed_channel(sent_message.stream_id);
+            return;
+        }
+
         if (data.automatic_new_visibility_policy) {
             if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
                 return;
