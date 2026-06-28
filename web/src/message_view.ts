@@ -111,6 +111,16 @@ export function reload_current_narrow(): void {
     });
 }
 
+// After sending or editing a message in a channel you're viewing but not
+// subscribed to, reload the narrow so the change (and any updates missed while
+// unsubscribed) appears. No-op unless that channel is the current narrow.
+export function maybe_reload_unsubscribed_channel_narrow(stream_id: number): void {
+    if (stream_data.is_subscribed(stream_id) || narrow_state.stream_id() !== stream_id) {
+        return;
+    }
+    reload_current_narrow();
+}
+
 export function changehash(
     newhash: string,
     trigger: string,
