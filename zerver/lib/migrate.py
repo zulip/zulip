@@ -2,10 +2,14 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from django.db import connection
+from django.conf import settings
+from django.contrib.postgres.operations import AddIndexConcurrently, RemoveIndexConcurrently
+from django.db import connection, migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.backends.utils import CursorWrapper
+from django.db.migrations.operations import AddIndex, RemoveIndex
 from django.db.migrations.state import StateApps
+from django.db.models import Index
 from psycopg2.sql import SQL, Composable, Identifier
 
 
@@ -135,3 +139,25 @@ def rename_indexes_constraints(
             )
 
     return inner_migration
+
+
+def add_index(model_name: str, index: Index) -> AddIndex:
+    """
+    Gracefully handle concurrent index migration setting
+    when adding indexes with ./manage.py migrate
+    """
+    if settings.MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY:
+        return AddIndexConcurrently(model_name, index)
+    else:
+        return migrations.AddIndex(model_name, index)
+
+
+def remove_index(model_name: str, name: str) -> RemoveIndex:
+    """
+    Gracefully handle concurrent index migration setting
+    when removing indexes with ./manage.py migrate
+    """
+    if settings.MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY:
+        return RemoveIndexConcurrently(model_name, name)
+    else:
+        return migrations.RemoveIndex(model_name, name)

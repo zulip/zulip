@@ -1,7 +1,11 @@
+from django.conf import settings
 from django.db import migrations, models
+
+from zerver.lib.migrate import remove_index
 
 
 class Migration(migrations.Migration):
+    atomic = not settings.MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY
     dependencies = [
         ("zilencer", "0037_alter_remoteinstallationcount_unique_together_and_more"),
     ]
@@ -15,7 +19,7 @@ class Migration(migrations.Migration):
                 name="unique_remote_installation_count_server_id_remote_id",
             ),
         ),
-        migrations.RemoveIndex(
+        remove_index(
             model_name="remoteinstallationcount",
             name="zilencer_remoteinstallat_server_id_remote_id_f72e4c30_idx",
         ),
@@ -27,7 +31,7 @@ class Migration(migrations.Migration):
                 name="unique_remote_realm_installation_count_server_id_remote_id",
             ),
         ),
-        migrations.RemoveIndex(
+        remove_index(
             model_name="remoterealmcount",
             name="zilencer_remoterealmcount_server_id_remote_id_de1573d8_idx",
         ),

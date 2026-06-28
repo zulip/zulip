@@ -6,6 +6,8 @@ from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import F, Q
 
+from zerver.lib.migrate import add_index
+
 
 def reset_is_private_flag(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     UserMessage = apps.get_model("zerver", "UserMessage")
@@ -93,7 +95,7 @@ class Migration(migrations.Migration):
                 default=0,
             ),
         ),
-        migrations.AddIndex(
+        add_index(
             model_name="usermessage",
             index=models.Index(
                 "user_profile",
