@@ -95,6 +95,22 @@ export function reset_ui_state(opts: {trigger?: string}): void {
     compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
 }
 
+// Reload the current narrow from the server, preserving the user's scroll
+// position. This is how we pull in updates for a channel that doesn't deliver
+// live events to this client (e.g. one you're viewing but not subscribed to).
+export function reload_current_narrow(): void {
+    const filter = narrow_state.filter();
+    if (filter === undefined) {
+        return;
+    }
+    show(filter.terms(), {
+        then_select_id: message_lists.current?.selected_id(),
+        then_select_offset: browser_history.current_scroll_offset(),
+        force_rerender: true,
+        trigger: "reload current narrow",
+    });
+}
+
 export function changehash(
     newhash: string,
     trigger: string,

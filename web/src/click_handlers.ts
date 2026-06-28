@@ -314,17 +314,7 @@ export function initialize(): void {
     $("body").on("click", ".not-subscribed-banner .load-newer-messages-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const filter = narrow_state.filter();
-        if (filter === undefined) {
-            return;
-        }
-
-        message_view.show(filter.terms(), {
-            then_select_id: message_lists.current?.selected_id(),
-            then_select_offset: browser_history.current_scroll_offset(),
-            force_rerender: true,
-            trigger: "bookend load updates",
-        });
+        message_view.reload_current_narrow();
     });
 
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
