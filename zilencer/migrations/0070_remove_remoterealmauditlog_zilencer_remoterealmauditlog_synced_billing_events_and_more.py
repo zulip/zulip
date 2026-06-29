@@ -3,7 +3,7 @@
 from django.db import migrations, models
 from django.conf import settings
 
-from . import add_index, remove_index
+from zerver.utils import add_index, remove_index
 
 
 class Migration(migrations.Migration):

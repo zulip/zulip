@@ -7,7 +7,7 @@ from django.db.models import Min
 from django.conf import settings
 from psycopg2.sql import SQL
 
-from . import add_index
+from zerver.utils import add_index
 
 BATCH_SIZE = 1000
 

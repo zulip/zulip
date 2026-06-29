@@ -5,7 +5,7 @@ from django.db.models import F
 from django.db.models.functions import Upper
 from django.conf import settings
 
-from . import add_index
+from zerver.utils import add_index
 
 
 class Migration(migrations.Migration):

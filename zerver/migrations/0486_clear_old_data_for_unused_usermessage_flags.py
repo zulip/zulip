@@ -4,7 +4,7 @@ from django.db.migrations.state import StateApps
 from django.conf import settings
 from psycopg2.sql import SQL
 
-from . import add_index, remove_index
+from zerver.utils import add_index, remove_index
 
 
 def clear_old_data_for_unused_usermessage_flags(

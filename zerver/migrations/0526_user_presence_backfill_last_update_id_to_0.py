@@ -3,7 +3,7 @@ from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.conf import settings
 
-from . import add_index
+from zerver.utils import add_index
 
 
 def backfill_user_presence_last_update_id(
