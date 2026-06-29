@@ -335,9 +335,27 @@ function handle_post_message_list_change(
 }
 
 function get_selected_message_top_offset(): number {
-    const navbar_height = $("#navbar-fixed-container").height()!;
-    // 30px height + 10px top margin.
-    const sticky_header_outer_height = 40;
+    // Use outerHeight so padding/border on the fixed navbar are included,
+    // matching message_viewport.message_viewport_info().
+    const navbar_height = $("#navbar-fixed-container").outerHeight()!;
+    // Place the selected message just below a sticky recipient header.
+    // Prefer measuring a rendered header so we track CSS changes; do not
+    // rely on the `.sticky_header` class, which may be missing or still
+    // attached to a header from a previous scroll position when we first
+    // land on a date-anchored narrow (especially when history exceeds the
+    // local backfill window and we force-rerender around a server anchor).
+    // Fall back to the historical 40px (= 30px header + 10px top margin).
+    const $selected_row = message_lists.current?.selected_row();
+    const $header_from_selection =
+        $selected_row !== undefined && $selected_row.length > 0
+            ? $selected_row.closest(".recipient_row").children(".message_header").first()
+            : $();
+    const $header =
+        $header_from_selection.length > 0
+            ? $header_from_selection
+            : $(".focused-message-list .message_header").first();
+    const sticky_header_outer_height =
+        $header.length > 0 ? util.the($header).getBoundingClientRect().height : 40;
     return navbar_height + sticky_header_outer_height;
 }
 
@@ -1443,14 +1461,20 @@ export function render_message_list_with_selected_message(opts: {
     }
     message_lists.current.view.update_sticky_recipient_headers();
     if (opts.anchor_for_date) {
-        // In some cases like rendering a new message list, the `.sticky_header` class
-        // becomes available only after running update_sticky_recipient_headers,
-        // which is important to calculate the correct `visible_top` via
-        // `message_viewport.message_viewport_info()`
-        // to place the anchored message via `date` at the top of the message pane.
-        message_lists.current.view.set_message_offset(
-            message_viewport.message_viewport_info().visible_top,
-        );
+        // Put the date-anchored message at the top of the visible message
+        // pane (just below the sticky recipient header), using the same
+        // offset helper as scroll-to-date / near-preserve paths.
+        //
+        // We intentionally do not use message_viewport_info().visible_top
+        // here: that value adds `.sticky_header`'s height, but after a
+        // force_rerender around a server date anchor that class may be
+        // absent or still on a header from the pre-scroll position, which
+        // under-counts the offset and clips the selected message under the
+        // (CSS) sticky recipient bar.
+        message_lists.current.view.set_message_offset(get_selected_message_top_offset());
+        // Recompute sticky headers for the final scroll position so later
+        // visible_top consumers and the sticky date label are correct.
+        message_lists.current.view.update_sticky_recipient_headers();
     }
 
     // For /near/ views, check whether reading can be resumed before
