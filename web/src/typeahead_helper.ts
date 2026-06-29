@@ -1027,19 +1027,23 @@ export function compare_by_activity(
         return diff;
     }
 
-    // Subscribed channels sort above unsubscribed ones, which aren't
-    // ranked further by the criteria below.
+    // Archived channels sort below all unarchived channels, and within
+    // each of those groups subscribed channels sort above unsubscribed
+    // ones.
+    diff = prefer_true(!stream_a.is_archived, !stream_b.is_archived);
+    if (diff !== 0) {
+        return diff;
+    }
     diff = prefer_true(stream_a.subscribed, stream_b.subscribed);
     if (diff !== 0) {
         return diff;
     }
+
     if (stream_a.subscribed) {
-        // Prioritize unmuted channels, then pinned channels, then
-        // recently active ones.
-        diff = prefer_true(!stream_a.is_muted, !stream_b.is_muted);
-        if (diff !== 0) {
-            return diff;
-        }
+        // Among subscribed channels of the same archived status, order
+        // them by the same priorities as the left sidebar: pinned, then
+        // recently active, then unmuted. Unsubscribed channels aren't
+        // ranked by these, falling through to the tiebreakers below.
         diff = prefer_true(stream_a.pin_to_top, stream_b.pin_to_top);
         if (diff !== 0) {
             return diff;
@@ -1048,6 +1052,10 @@ export function compare_by_activity(
             stream_list_sort.has_recent_activity(stream_a),
             stream_list_sort.has_recent_activity(stream_b),
         );
+        if (diff !== 0) {
+            return diff;
+        }
+        diff = prefer_true(!stream_a.is_muted, !stream_b.is_muted);
         if (diff !== 0) {
             return diff;
         }
