@@ -1,0 +1,70 @@
+name: Date-operator puppeteer
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  puppeteer:
+    runs-on: ubuntu-latest
+    name: Ubuntu 22.04 (date-operator puppeteer)
+    container: zulip/ci:jammy
+    env:
+      HOME: /home/github/
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-emoji-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
+      - name: Restore pnpm store
+        uses: actions/cache@v4
+        with:
+          path: /__w/.pnpm-store
+          key: v1-pnpm-store-jammy-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: uv-jammy-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-jammy-
+
+      - name: Restore emoji cache
+        uses: actions/cache@v4
+        with:
+          path: /srv/zulip-emoji-cache
+          key: v1-emoji-jammy-${{ hashFiles('tools/setup/emoji/emoji_map.json', 'tools/setup/emoji/build_emoji', 'tools/setup/emoji/emoji_setup_utils.py', 'tools/setup/emoji/emoji_names.py', 'package.json') }}
+          restore-keys: v1-emoji-jammy-
+
+      - name: Install dependencies
+        run: |
+          ./tools/ci/setup-backend --skip-dev-db-build
+          scripts/lib/clean_unused_caches.py --verbose --threshold=0
+
+      - name: Run date-operator puppeteer tests
+        run: |
+          source tools/ci/activate-venv
+          ./tools/test-js-with-puppeteer date-operator-scroll
+
+      - name: Store Puppeteer artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: puppeteer
+          path: ./var/puppeteer
+          retention-days: 14
