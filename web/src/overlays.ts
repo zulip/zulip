@@ -326,7 +326,7 @@ export function trap_focus_for_settings_overlay(): void {
     });
 
     const overlay_focus_trap_selector =
-        "#draft_overlay, #reminders-overlay, #scheduled_messages_overlay, #message-history-overlay";
+        "#draft_overlay, #reminders-overlay, #scheduled_messages_overlay, #message-history-overlay, #about-zulip";
     $("body").on("keydown", overlay_focus_trap_selector, function (this: HTMLElement, e) {
         if (e.key !== "Tab") {
             return;
