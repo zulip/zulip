@@ -215,7 +215,7 @@ table for the duration of the build. On large tables (`Message`,
 `UserMessage`, `Subscription`, `RealmAuditLog`, etc.) that lock
 can last long enough to affect production. Use
 `MIGRATE_WITH_CONCURRENT_INDICES = True` and
-`add_index` (from `zerver.utils` - corresponding to `CREATE INDEX CONCURRENTLY`)
+`add_index` (from `zerver.lib.migrate`)
 for any index on those tables, and as a default for any index on a
 table large enough that the lock would be noticeable.
 

@@ -100,7 +100,7 @@ rules:
 
   - id: use-addindexconcurrently
     pattern: django.db.migrations.AddIndex(...)
-    message: "Import and use add_index from zerver/utils.py rather than AddIndex"
+    message: "Import and use add_index from zerver/lib/migrate.py rather than AddIndex"
     languages: [python]
     severity: ERROR
     paths:
@@ -132,7 +132,7 @@ rules:
 
   - id: use-removeindexconcurrently
     pattern: django.db.migrations.RemoveIndex(...)
-    message: "Import and use remove_index from zerver/utils.py rather than RemoveIndex"
+    message: "Import and use remove_index from zerver/lib/migrate.py rather than RemoveIndex"
     languages: [python]
     severity: ERROR
     paths:
