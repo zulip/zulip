@@ -39,6 +39,7 @@ from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
 from zerver.lib.emoji_utils import emoji_to_hex_codepoint, unqualify_emoji
 from zerver.lib.exceptions import MarkdownRenderingError
+from zerver.lib.github import match_github_issue_or_pr_url
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
@@ -613,6 +614,28 @@ class DropboxMediaInfo(TypedDict):
     media_url: str
     title: NotRequired[str]
     desc: NotRequired[str]
+
+
+class GitHubPreviewLinkProcessor(markdown.treeprocessors.Treeprocessor):
+    """Tag links to GitHub issues and pull requests so the web app can show a
+    hover preview. The URL is validated here, once, at render time; the anchor
+    then carries everything the preview endpoint needs as data attributes, so
+    the client neither re-validates the URL nor manages the class itself.
+    """
+
+    @override
+    def run(self, root: Element) -> None:
+        for a_tag in root.iter("a"):
+            match = match_github_issue_or_pr_url(a_tag.get("href", ""))
+            if match is None:
+                continue
+            classes = a_tag.get("class", "").split()
+            classes.append("previewable")
+            a_tag.set("class", " ".join(classes))
+            a_tag.set("data-preview-platform", "github")
+            a_tag.set("data-preview-owner", match["owner"])
+            a_tag.set("data-preview-repo", match["repo"])
+            a_tag.set("data-preview-number", match["number"])
 
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
@@ -2417,6 +2440,7 @@ class ZulipMarkdown(markdown.Markdown):
         treeprocessors.register(
             InlineInterestingLinkProcessor(self), "inline_interesting_links", 15
         )
+        treeprocessors.register(GitHubPreviewLinkProcessor(self), "github_preview_links", 16)
         if settings.CAMO_URI:
             treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
             treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
