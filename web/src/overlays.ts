@@ -331,7 +331,7 @@ export function trap_focus_for_settings_overlay(): void {
     // delegated handler traps Tab within them using the wrap_overlay_tab_focus()
     // helper. They are rendered into their containers on open, hence the
     // delegation on "body".
-    const overlay_focus_trap_selector = "#draft_overlay";
+    const overlay_focus_trap_selector = "#draft_overlay, #reminders-overlay";
     $("body").on("keydown", overlay_focus_trap_selector, function (this: HTMLElement, e) {
         if (e.key !== "Tab") {
             return;
