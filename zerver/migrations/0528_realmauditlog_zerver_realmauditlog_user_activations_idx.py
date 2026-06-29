@@ -1,7 +1,7 @@
-from django.db import migrations, models
 from django.conf import settings
+from django.db import migrations, models
 
-from zerver.utils import add_index
+from zerver.lib.migrate import add_index
 
 
 class Migration(migrations.Migration):

@@ -1,9 +1,9 @@
+from django.conf import settings
 from django.db import migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from django.conf import settings
 
-from zerver.utils import add_index
+from zerver.lib.migrate import add_index
 
 
 def backfill_user_presence_last_update_id(

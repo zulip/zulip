@@ -1,6 +1,8 @@
-from django.db import migrations
 from django.conf import settings
-from zerver.utils import remove_index
+from django.db import migrations
+
+from zerver.lib.migrate import remove_index
+
 
 class Migration(migrations.Migration):
     atomic = settings.ATOMIC_PG_MIGRATIONS

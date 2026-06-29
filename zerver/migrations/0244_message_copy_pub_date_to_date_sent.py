@@ -1,13 +1,13 @@
 import time
 
+from django.conf import settings
 from django.db import connection, migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min
-from django.conf import settings
 from psycopg2.sql import SQL
 
-from zerver.utils import add_index
+from zerver.lib.migrate import add_index
 
 BATCH_SIZE = 1000
 

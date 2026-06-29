@@ -68,6 +68,7 @@ rules:
   - id: dont-import-models-in-migrations
     patterns:
       - pattern-not: from zerver.lib.migrate import $X
+      - pattern-not: from zerver.lib.migrate import $X
       - pattern-not: from zerver.lib.partial import partial
       - pattern-not: from zerver.lib.mime_types import $X
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
@@ -100,7 +101,7 @@ rules:
 
   - id: use-addindexconcurrently
     pattern: django.db.migrations.AddIndex(...)
-    message: "Import and use add_index from utils.py rather than AddIndex"
+    message: "Import and use add_index from zerver/utils.py rather than AddIndex"
     languages: [python]
     severity: ERROR
     paths:
@@ -132,7 +133,7 @@ rules:
 
   - id: use-removeindexconcurrently
     pattern: django.db.migrations.RemoveIndex(...)
-    message: "Import and use remove_index from utils.py rather than RemoveIndex"
+    message: "Import and use remove_index from zerver/utils.py rather than RemoveIndex"
     languages: [python]
     severity: ERROR
     paths:
@@ -263,6 +264,9 @@ rules:
       - pattern-not: |
           class Migration(migrations.Migration):
               atomic = False
+      - pattern-not: |
+          class Migration(migrations.Migration):
+              atomic = settings.ATOMIC_PG_MIGRATIONS
     paths:
       include:
         - "**/migrations"
