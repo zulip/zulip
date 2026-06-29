@@ -280,10 +280,10 @@ test("sort_streams", ({override}) => {
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Dev"); // Stream being composed to
     assert.deepEqual(test_streams[1].name, "Denmark"); // Pinned stream
-    assert.deepEqual(test_streams[2].name, "Docs"); // Active stream
-    assert.deepEqual(test_streams[3].name, "dead (almost)"); // Relatively inactive stream
-    assert.deepEqual(test_streams[4].name, "dead"); // Completely inactive stream
-    assert.deepEqual(test_streams[5].name, "Derp"); // Muted stream last
+    assert.deepEqual(test_streams[2].name, "Docs"); // Active stream, more traffic
+    assert.deepEqual(test_streams[3].name, "dead (almost)"); // Active stream, less traffic
+    assert.deepEqual(test_streams[4].name, "Derp"); // Active but muted stream
+    assert.deepEqual(test_streams[5].name, "dead"); // Inactive stream last
 
     // Sort streams by name
     test_streams = th.sort_streams_by_name(test_streams, "d");
@@ -411,6 +411,41 @@ test("sort_streams", ({override}) => {
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Dusk"); // More traffic
     assert.deepEqual(test_streams[1].name, "Dawn"); // Less traffic
+
+    // Archived channels sort below all unarchived channels, and within
+    // each group subscribed channels sort above unsubscribed ones.
+    test_streams = [
+        {
+            stream_id: 403,
+            name: "archived and subscribed",
+            subscribed: true,
+            is_archived: true,
+        },
+        {
+            stream_id: 404,
+            name: "unarchived and subscribed",
+            subscribed: true,
+            is_archived: false,
+        },
+        {
+            stream_id: 405,
+            name: "archived and unsubscribed",
+            subscribed: false,
+            is_archived: true,
+        },
+        {
+            stream_id: 406,
+            name: "unarchived and unsubscribed",
+            subscribed: false,
+            is_archived: false,
+        },
+    ];
+
+    test_streams = th.sort_streams(test_streams, "and");
+    assert.deepEqual(test_streams[0].name, "unarchived and subscribed");
+    assert.deepEqual(test_streams[1].name, "unarchived and unsubscribed");
+    assert.deepEqual(test_streams[2].name, "archived and subscribed");
+    assert.deepEqual(test_streams[3].name, "archived and unsubscribed");
 });
 
 function language_items(languages) {
