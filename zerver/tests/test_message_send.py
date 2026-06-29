@@ -3059,7 +3059,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A normal user sends the first message
         # to a new DirectMessageGroup.
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(28):
             self.send_group_direct_message(iago, recipients)
 
         # A normal user sends a message
@@ -3072,16 +3072,13 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.subscribe(polonius, "Verona")
 
         # polonius and prospero have already exchanged 1:1 DM
-        # via set_up_db_for_testing_user_access,
-        # and we need this interaction because:
-        # 1- It's very common for the message recipients
+        # via set_up_db_for_testing_user_access;
+        # it's very common for a message recipients
         # to have 1:1 DM partners.
-        # 2- This triggers 2 queries by get_users_involved_in_dms_with_target_users,
-        # so we can capture that.
 
         # A guest with limited user access sends the first message
         # to a new DirectMessageGroup.
-        with self.assert_database_query_count(32):
+        with self.assert_database_query_count(30):
             self.send_group_direct_message(polonius, recipients)
 
         # A guest with limited user access sends a message
