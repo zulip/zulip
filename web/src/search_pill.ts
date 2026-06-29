@@ -81,9 +81,6 @@ export function get_search_string_from_item(item: SearchPill): string {
             operand = util.get_final_topic_display_name(item.operand);
             break;
         case "channel":
-            if (item.operand === "") {
-                operand = "";
-            }
             operand = stream_data.get_valid_sub_by_id_string(item.operand).name;
             break;
         default:
