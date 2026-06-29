@@ -1317,6 +1317,23 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         changed = old_content !== new_content;
     }
 
+    if (
+        changed &&
+        new_content !== undefined &&
+        compose_validate.message_renders_blank(new_content)
+    ) {
+        // Block edits whose new content would render to nothing visible (an
+        // empty math or fenced block); the backend only rejects truly empty
+        // content. We only check changed content so an unchanged save still
+        // cancels cleanly below.
+        compose_banner.show_error_message(
+            $t({defaultMessage: "Message must not be empty."}),
+            compose_banner.CLASSNAMES.generic_compose_error,
+            $banner_container,
+        );
+        return;
+    }
+
     const already_has_stream_wildcard_mention = message.stream_wildcard_mentioned;
     if (stream_id !== undefined && !already_has_stream_wildcard_mention) {
         const stream_wildcard_mention = util.find_stream_wildcard_mentions(new_content ?? "");

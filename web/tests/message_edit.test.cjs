@@ -5,6 +5,18 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
+
+const compose_banner = mock_esm("../src/compose_banner", {
+    CLASSNAMES: {generic_compose_error: "generic_compose_error"},
+    get_compose_banner_container: () => $.create("banner-container"),
+    show_error_message() {},
+});
+mock_esm("../src/compose_tooltips", {
+    hide_compose_control_button_tooltips() {},
+});
+const message_lists = mock_esm("../src/message_lists");
+const rows = mock_esm("../src/rows");
 
 const message_edit = zrequire("message_edit");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -303,4 +315,26 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
         ),
         false,
     );
+});
+
+run_test("save_message_row_edit blocks blank-render content", async ({override}) => {
+    const message = {raw_content: "old content", stream_wildcard_mentioned: false};
+    message_lists.current = {get: () => message};
+    override(rows, "id", () => 42);
+    override(rows, "get_message_recipient_header", () => $.create("recipient-header"));
+
+    const $textarea = $.create("edit-content-input");
+    $textarea.val("```math\n\n```");
+    const $row = $.create("edit-row");
+    $row.set_find_results("textarea.message_edit_content", $textarea);
+    $row.set_find_results(".message_edit_form textarea", $.create("form-textarea"));
+
+    let error_html;
+    override(compose_banner, "show_error_message", (html) => {
+        error_html = html;
+    });
+
+    await message_edit.save_message_row_edit($row);
+    // The edit is blocked with an error instead of being saved.
+    assert.equal(error_html, "translated: Message must not be empty.");
 });
