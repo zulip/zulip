@@ -1004,43 +1004,56 @@ export function sort_slash_commands(
     return [...results.matches, ...results.rest];
 }
 
-function activity_score(sub: StreamSubscription): number {
-    // We assign the highest score to the stream being composed
-    // to, and the lowest score to unsubscribed streams. For others,
-    // we prioritise pinned unmuted streams > unpinned unmuted streams
-    // > pinned muted streams > unpinned muted streams, using recent
-    // activity as a tiebreaker.
-    if (sub.name === compose_state.stream_name()) {
-        return 8;
-    }
-    if (!sub.subscribed) {
-        return -1;
-    }
-
-    let stream_score = 0;
-    if (!sub.is_muted) {
-        stream_score += 4;
-    }
-    if (sub.pin_to_top) {
-        stream_score += 2;
-    }
-    if (stream_list_sort.has_recent_activity(sub)) {
-        stream_score += 1;
-    }
-    return stream_score;
+// Comparator for a boolean property that sorts truthy values before
+// falsy ones.
+function prefer_true(a: boolean, b: boolean): number {
+    return (b ? 1 : 0) - (a ? 1 : 0);
 }
 
-// Sort streams by ranking them by activity. If activity is equal,
-// as defined bv activity_score, decide based on our weekly traffic
-// stats.
+// Sort streams by checking each property below in priority order,
+// deciding as soon as the two streams differ on one of them.
 export function compare_by_activity(
     stream_a: StreamSubscription,
     stream_b: StreamSubscription,
 ): number {
-    let diff = activity_score(stream_b) - activity_score(stream_a);
+    // The channel currently selected in the compose box always sorts
+    // first.
+    const selected_stream_name = compose_state.stream_name();
+    let diff = prefer_true(
+        stream_a.name === selected_stream_name,
+        stream_b.name === selected_stream_name,
+    );
     if (diff !== 0) {
         return diff;
     }
+
+    // Subscribed channels sort above unsubscribed ones, which aren't
+    // ranked further by the criteria below.
+    diff = prefer_true(stream_a.subscribed, stream_b.subscribed);
+    if (diff !== 0) {
+        return diff;
+    }
+    if (stream_a.subscribed) {
+        // Prioritize unmuted channels, then pinned channels, then
+        // recently active ones.
+        diff = prefer_true(!stream_a.is_muted, !stream_b.is_muted);
+        if (diff !== 0) {
+            return diff;
+        }
+        diff = prefer_true(stream_a.pin_to_top, stream_b.pin_to_top);
+        if (diff !== 0) {
+            return diff;
+        }
+        diff = prefer_true(
+            stream_list_sort.has_recent_activity(stream_a),
+            stream_list_sort.has_recent_activity(stream_b),
+        );
+        if (diff !== 0) {
+            return diff;
+        }
+    }
+
+    // Fall back to recent traffic, and then the channel name.
     diff = (stream_b.stream_weekly_traffic ?? 0) - (stream_a.stream_weekly_traffic ?? 0);
     if (diff !== 0) {
         return diff;
