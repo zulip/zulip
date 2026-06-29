@@ -389,6 +389,28 @@ test("sort_streams", ({override}) => {
     assert.deepEqual(test_streams[3].name, "Ether"); // Unsubscribed and description starts with query
     assert.deepEqual(test_streams[4].name, "New"); // Subscribed and no match
     assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
+
+    // Unsubscribed channels are ordered by recent traffic, then name.
+    // "Dusk" sorts after "Dawn" by name, so leading with it confirms
+    // traffic takes precedence over the name tiebreaker.
+    test_streams = [
+        {
+            stream_id: 401,
+            name: "Dawn",
+            subscribed: false,
+            stream_weekly_traffic: 5,
+        },
+        {
+            stream_id: 402,
+            name: "Dusk",
+            subscribed: false,
+            stream_weekly_traffic: 50,
+        },
+    ];
+
+    test_streams = th.sort_streams(test_streams, "d");
+    assert.deepEqual(test_streams[0].name, "Dusk"); // More traffic
+    assert.deepEqual(test_streams[1].name, "Dawn"); // Less traffic
 });
 
 function language_items(languages) {
