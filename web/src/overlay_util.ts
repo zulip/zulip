@@ -14,14 +14,13 @@ export function enable_scrolling(): void {
     $(":root").css({"overflow-y": "scroll", "--disabled-scrollbar-width": "0px"});
 }
 
+export const OVERLAY_FOCUSABLE_SELECTOR =
+    "input, button, select, .input, .sidebar-item, .ind-tab.first, a[href], a[tabindex='0']";
+
 export function get_visible_focusable_elements_in_overlay_container(
     $container: JQuery,
 ): HTMLElement[] {
-    const visible_focusable_elements = [
-        ...$container.find(
-            "input, button, select, .input, .sidebar-item, .ind-tab.first, a[href], a[tabindex='0']",
-        ),
-    ].filter(
+    const visible_focusable_elements = [...$(OVERLAY_FOCUSABLE_SELECTOR, $container)].filter(
         (element) =>
             element.getClientRects().length > 0 && $(element).css("visibility") !== "hidden",
     );
