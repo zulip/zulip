@@ -325,7 +325,7 @@ export function trap_focus_for_settings_overlay(): void {
         }
     });
 
-    const overlay_focus_trap_selector = "#draft_overlay";
+    const overlay_focus_trap_selector = "#draft_overlay, #reminders-overlay";
     $("body").on("keydown", overlay_focus_trap_selector, function (this: HTMLElement, e) {
         if (e.key !== "Tab") {
             return;
