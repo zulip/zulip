@@ -615,6 +615,11 @@
            --right-sidebar-presence-circle-width with left spacing, and
            share that left spacing value here. */
         padding-left: calc(var(--right-sidebar-toggle-width-offset) + 0.3em);
+
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
     }
 }
 
