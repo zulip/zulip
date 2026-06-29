@@ -7,7 +7,7 @@ from . import add_index
 
 
 class Migration(migrations.Migration):
-    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
+    atomic = settings.ATOMIC_PG_MIGRATIONS
 
     dependencies = [
         ("zerver", "0678_remove_realm_allow_edit_history"),

@@ -48,7 +48,8 @@ def clear_old_data_for_unused_usermessage_flags(
 
 
 class Migration(migrations.Migration):
-    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
+    atomic = settings.ATOMIC_PG_MIGRATIONS
+
     dependencies = [
         ("zerver", "0485_alter_usermessage_flags_and_add_index"),
     ]

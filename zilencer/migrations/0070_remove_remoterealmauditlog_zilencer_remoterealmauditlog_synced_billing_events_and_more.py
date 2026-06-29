@@ -7,7 +7,7 @@ from . import add_index, remove_index
 
 
 class Migration(migrations.Migration):
-    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
+    atomic = settings.ATOMIC_PG_MIGRATIONS
 
     dependencies = [
         ("zilencer", "0069_remove_remotepushdevice_push_account_id"),

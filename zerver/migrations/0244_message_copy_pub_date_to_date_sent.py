@@ -58,7 +58,8 @@ def copy_pub_date_to_date_sent(apps: StateApps, schema_editor: BaseDatabaseSchem
 
 
 class Migration(migrations.Migration):
-    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
+    atomic = settings.ATOMIC_PG_MIGRATIONS
+
     dependencies = [
         ("zerver", "0243_message_add_date_sent_column"),
     ]

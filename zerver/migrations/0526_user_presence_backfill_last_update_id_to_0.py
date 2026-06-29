@@ -32,7 +32,7 @@ def backfill_user_presence_last_update_id(
 
 
 class Migration(migrations.Migration):
-    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
+    atomic = settings.ATOMIC_PG_MIGRATIONS
 
     dependencies = [
         ("zerver", "0525_userpresence_last_update_id"),

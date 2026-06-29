@@ -790,4 +790,9 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
 # send full subscriber data to the client.
 MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000
 
+"""
+Whether we should use `CREATE INDEX CONCURRENTLY` (and the associated
+ `AddIndexConcurrently`/`RemoveIndexConcurrently` functions)
+during database migrations.
+"""
 MIGRATE_WITH_CONCURRENT_INDICES = False

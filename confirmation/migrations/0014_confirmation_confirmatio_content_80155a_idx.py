@@ -5,7 +5,7 @@ from . import add_index
 
 
 class Migration(migrations.Migration):
-    atomic = False
+    atomic = settings.ATOMIC_PG_MIGRATIONS
 
     dependencies = [
         ("confirmation", "0013_alter_realmcreationkey_id"),

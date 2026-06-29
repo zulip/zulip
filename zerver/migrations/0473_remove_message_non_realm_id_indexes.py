@@ -3,7 +3,7 @@ from django.conf import settings
 from . import remove_index
 
 class Migration(migrations.Migration):
-    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
+    atomic = settings.ATOMIC_PG_MIGRATIONS
 
     dependencies = [
         ("zerver", "0472_add_message_realm_id_indexes"),

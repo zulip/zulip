@@ -5,7 +5,8 @@ from . import add_index
 
 
 class Migration(migrations.Migration):
-    atomic = settings.MIGRATE_WITH_CONCURRENT_INDICES
+    atomic = settings.ATOMIC_PG_MIGRATIONS
+
     dependencies = [
         ("zerver", "0741_pushdevice_zerver_pushdevice_user_bouncer_device_id_idx"),
     ]
