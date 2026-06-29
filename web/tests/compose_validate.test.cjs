@@ -16,6 +16,11 @@ const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
+const markdown = mock_esm("../src/markdown", {
+    // Non-blank by default so ordinary messages validate; the
+    // message_renders_blank test overrides this per case.
+    render: () => ({content: "<p>x</p>"}),
+});
 
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -552,6 +557,47 @@ test_ui("test_check_overflow_text", ({override, override_rewire}) => {
         compose_validate.check_overflow_text(fake_compose_box.$send_message_form);
         fake_compose_box.assert_message_size_is_under_the_limit();
     }
+});
+
+test_ui("message_renders_blank", ({override}) => {
+    // message_renders_blank inspects rendered HTML, so drive it with
+    // representative renderer output.
+    let renders = "";
+    override(markdown, "render", () => ({content: renders}));
+    function blank(html) {
+        renders = html;
+        return compose_validate.message_renders_blank("x");
+    }
+
+    // Empty math: an invisible KaTeX element (empty katex-html).
+    assert.ok(
+        blank(
+            '<p><span class="katex"><span class="katex-mathml">' +
+                "<annotation> </annotation></span>" +
+                '<span class="katex-html" aria-hidden="true"></span></span></p>',
+        ),
+    );
+    // Empty strikethrough with a collapsing space.
+    assert.ok(blank("<p><del> </del></p>"));
+
+    // A non-breaking space stays visible in HTML, so it is not blank.
+    assert.ok(!blank("<p><del>\u{00A0}</del></p>"));
+    // Real text.
+    assert.ok(!blank("<p>hello</p>"));
+    // Real math keeps its source in the annotation and glyphs in katex-html.
+    assert.ok(!blank('<p><span class="katex"><annotation>a</annotation></span></p>'));
+    // Indented `$$ $$` and empty fenced blocks still render a visible box.
+    assert.ok(!blank('<div class="codehilite"><pre><code>$$ $$\n</code></pre></div>'));
+    assert.ok(!blank('<div class="codehilite"><pre><code>\n</code></pre></div>'));
+    // A quote or spoiler container is visible even when empty.
+    assert.ok(!blank("<blockquote>\n</blockquote>"));
+    assert.ok(!blank('<div class="spoiler-block"><div class="spoiler-header"></div></div>'));
+    // Non-text content like an image is visible.
+    assert.ok(!blank('<p><img src="/x"></p>'));
+
+    // Genuinely empty input is an empty message, handled separately.
+    assert.ok(!compose_validate.message_renders_blank(""));
+    assert.ok(!compose_validate.message_renders_blank("   \n\n"));
 });
 
 test_ui("needs_subscribe_warning", async () => {
