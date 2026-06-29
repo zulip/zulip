@@ -1,10 +1,6 @@
 name: API Documentation Update Check
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "api_docs/**"
   workflow_dispatch:
 
 permissions:

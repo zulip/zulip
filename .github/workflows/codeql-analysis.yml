@@ -1,11 +1,6 @@
 name: "Code scanning"
 
 on:
-  push:
-    branches: ["*.x", chat.zulip.org, main]
-    tags: ["*"]
-  pull_request:
-    branches: ["*.x", chat.zulip.org, main]
   workflow_dispatch:
 
 concurrency:

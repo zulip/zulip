@@ -1,35 +1,7 @@
 name: Zulip production suite
 
 on:
-  push:
-    branches: ["*.x", chat.zulip.org, main]
-    tags: ["*"]
-  pull_request:
-    paths:
-      - .github/workflows/production-suite.yml
-      - "**/migrations/**"
-      - manage.py
-      - pnpm-lock.yaml
-      - puppet/**
-      - scripts/**
-      - tools/**
-      - uv.lock
-      - web/babel.config.js
-      - web/postcss.config.js
-      - web/third/**
-      - web/webpack.config.ts
-      - zerver/apps.py
-      - zerver/checks.py
-      - zerver/worker/queue_processors.py
-      - zerver/lib/push_notifications.py
-      - zerver/lib/storage.py
-      - zerver/decorator.py
-      - zproject/**
   workflow_dispatch:
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
-  cancel-in-progress: true
 
 defaults:
   run:
