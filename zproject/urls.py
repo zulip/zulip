@@ -70,6 +70,7 @@ from zerver.views.invite import (
     revoke_user_invite,
 )
 from zerver.views.llms_txt import llms_txt
+from zerver.views.mcp_tokens import create_mcp_token, delete_mcp_token, list_mcp_tokens
 from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
@@ -459,6 +460,9 @@ v1_api_and_json_patterns = [
     rest_path("typing", POST=send_notification_backend),
     # POST sends a message edit typing notification
     rest_path("messages/<int:message_id>/typing", POST=send_message_edit_notification_backend),
+    # mcp_tokens -> zerver.views.mcp (personal MCP token management)
+    rest_path("mcp_tokens", GET=list_mcp_tokens, POST=create_mcp_token),
+    rest_path("mcp_tokens/<int:token_id>", DELETE=delete_mcp_token),
     # Thumbnail metadata API
     rest_path(
         "thumbnail/status/<realm_id_str>/<path:filename>",

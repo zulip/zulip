@@ -222,6 +222,10 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/default_stream_groups/create",
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
+        #### Personal MCP token management; to be documented alongside the
+        #### native MCP server feature.
+        "/mcp_tokens",
+        "/mcp_tokens/{token_id}",
         #### Should be documented as part of interactive bots documentation
         "/submessage",
         "/zcommand",
