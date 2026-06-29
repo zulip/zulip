@@ -169,6 +169,22 @@ function initialize_focus(event_name: string, context: Context): void {
         return;
     }
 
+    const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+
+    // Focus can leave the list while its selection persists -- e.g. the
+    // user clicks elsewhere in the overlay, which clears focus but leaves
+    // the active item visually highlighted. Resume navigation from that
+    // active item rather than restarting at the first or last one.
+    const $active_box = $(`.${CSS.escape(context.box_item_selector)}.active`);
+    if ($active_box.length > 0) {
+        activate_element(util.the($active_box), context);
+        scroll_util.scroll_element_into_container(
+            $active_box.parent(`.${CSS.escape(context.row_item_selector)}`),
+            $items_list,
+        );
+        return;
+    }
+
     const modal_items_ids = context.get_items_ids();
     const id = modal_items_ids.at(event_name === "up_arrow" ? -1 : 0);
     if (id === undefined) {
@@ -180,7 +196,6 @@ function initialize_focus(event_name: string, context: Context): void {
     const focus_element = util.the($element).children[0];
     assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
-    const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
     scroll_util.scroll_element_into_container($element, $items_list);
     return;
 }
