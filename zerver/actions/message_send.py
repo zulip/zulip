@@ -100,7 +100,6 @@ from zerver.lib.users import (
     check_can_access_user,
     get_subscribers_of_target_user_subscriptions,
     get_user_ids_who_can_access_user,
-    get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
 )
 from zerver.lib.validator import check_widget_content
@@ -1796,11 +1795,10 @@ def get_recipients_for_user_creation_events(
     ).exists():
         return recipients_for_user_creation_events
 
-    # TODO: The following 2 functions execute 4 queries.
-    # While this is only for a new DirectMessageGroup,
-    # it's still worth optimizing, also because these functions
-    # are called in other code paths.
-    users_involved_in_dms = get_users_involved_in_dms_with_target_users(guest_recipients, realm)
+    # TODO: get_subscribers_of_target_user_subscriptions
+    # executes 2 queries. While this is only for a new DirectMessageGroup,
+    # it's still worth optimizing, also because it's called
+    # in other code paths.
     subscribers_of_guest_recipient_subscriptions = get_subscribers_of_target_user_subscriptions(
         guest_recipients
     )
@@ -1810,15 +1808,11 @@ def get_recipients_for_user_creation_events(
             if user.id == recipient_user.id or user.is_bot:
                 continue
 
-            if (
-                user.id not in users_involved_in_dms[recipient_user.id]
-                and user.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
-            ):
+            if user.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]:
                 recipients_for_user_creation_events[user].add(recipient_user.id)
 
         if (
             not sender.is_bot
-            and sender.id not in users_involved_in_dms[recipient_user.id]
             and sender.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
         ):
             recipients_for_user_creation_events[sender].add(recipient_user.id)
