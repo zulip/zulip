@@ -120,4 +120,81 @@
     [data-reference-hidden]:not(.show-when-reference-hidden) {
         display: none;
     }
+
+    /* Hover previews of links (e.g. GitHub issues and pull requests). */
+    .url-preview-tooltip-container {
+        display: flex;
+        max-width: 100%;
+    }
+
+    .url-preview-tooltip-icon {
+        flex: none;
+        width: 1em;
+        height: 1em;
+        /* Nudge the icon down to align with the title's cap height. */
+        margin: 0.15em 0.4em 0 0;
+    }
+
+    .url-preview-tooltip-text {
+        /* Let the title and details shrink and ellipsize inside the flexbox. */
+        min-width: 0;
+    }
+
+    .url-preview-tooltip-title,
+    .url-preview-tooltip-details {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .url-preview-tooltip-title {
+        font-weight: 600;
+    }
+
+    .url-preview-tooltip-details {
+        /* 13px at 14px/1em */
+        font-size: 0.9286em;
+        color: hsl(0deg 0% 100% / 65%);
+    }
+
+    /* Three-dot loading indicator shown while preview data is fetched. */
+    .tooltip-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* 30px and 15px at 14px/1em */
+        width: 2.1429em;
+        height: 1.0714em;
+    }
+
+    .tooltip-loader > div {
+        /* 7px at 14px/1em */
+        width: 0.5em;
+        height: 0.5em;
+        margin: 0 1px;
+        border-radius: 100%;
+        background-color: hsl(0deg 0% 100%);
+        animation: tooltip-loader-ball 1.2s infinite ease-in-out both;
+    }
+
+    .tooltip-loader > div:nth-child(1) {
+        animation-delay: -320ms;
+    }
+
+    .tooltip-loader > div:nth-child(2) {
+        animation-delay: -160ms;
+    }
+}
+
+@keyframes tooltip-loader-ball {
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
 }
