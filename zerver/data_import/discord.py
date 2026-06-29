@@ -640,6 +640,10 @@ def convert_messages(
             if attachment_markdown:
                 content = f"{content}\n\n{attachment_markdown}" if content else attachment_markdown
 
+            # Don't process messages with empty content.
+            if not content.strip():
+                continue
+
             zulip_message = build_message(
                 topic_name=MAIN_DISCORD_IMPORT_TOPIC,
                 date_sent=get_timestamp_from_message(message),

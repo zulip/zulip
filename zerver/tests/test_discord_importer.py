@@ -13,6 +13,7 @@ from zerver.data_import.discord import (
     MAIN_DISCORD_IMPORT_TOPIC,
     DiscordChannel,
     convert_channels,
+    convert_messages,
     do_convert_directory,
     get_discord_api_data,
     get_zulip_compatible_full_name,
@@ -122,9 +123,10 @@ class DiscordImporterTestCase(ZulipTestCase):
 
         This re-derives the importer's message selection independently of the
         importer: it merges a channel's export partitions and keeps only the
-        message types we convert, so tests can assert that the imported
-        messages match the export exactly. The fixture has no thread or direct
-        message exports, so every channel file becomes a Zulip stream.
+        message types we convert that have content to import, so tests can
+        assert that the imported messages match the export exactly. The fixture
+        has no thread or direct message exports, so every channel file becomes a
+        Zulip stream.
         """
         channels_dir = os.path.join(self.fixture_file_name("", self.FIXTURE_DIR), "channels")
         messages_by_channel_id: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -135,8 +137,13 @@ class DiscordImporterTestCase(ZulipTestCase):
                 channel_export = json.load(channel_export_file)
             channel_id = channel_export["channel"]["id"]
             for message in channel_export["messages"]:
-                if message["type"] in CONVERTIBLE_DISCORD_MESSAGE_TYPES:
-                    messages_by_channel_id[channel_id].append(message)
+                if message["type"] not in CONVERTIBLE_DISCORD_MESSAGE_TYPES:
+                    continue
+                # The importer drops a convertible message that would have no
+                # content: neither text nor an attachment to link below it.
+                if not message["content"].strip() and not message["attachments"]:
+                    continue
+                messages_by_channel_id[channel_id].append(message)
         return messages_by_channel_id
 
 
@@ -258,7 +265,8 @@ class DiscordImporterIntegrationTest(DiscordImporterTestCase):
             # Each channel's convertible messages are all imported into its
             # single "imported from Discord" topic with the right sender and
             # send time -- and nothing else is, so system messages like joins
-            # and pins, and the messages of dropped channels, are excluded.
+            # and pins, empty messages, and the messages of dropped channels,
+            # are excluded.
             self.assertEqual(
                 sorted(
                     (message.sender.delivery_email, message.date_sent.timestamp())
@@ -421,6 +429,54 @@ class DiscordImporterUnitTest(DiscordImporterTestCase):
         with self.assertLogs(level="WARNING") as logs:
             self.assertFalse(should_convert_message({"id": "4", "type": "20"}))
         self.assertIn("Skipping Discord message 4 of unsupported type 20", logs.output[0])
+
+    def test_convert_messages_drops_empty_messages(self) -> None:
+        # A convertible message with no text and no attachment to link would
+        # import as a blank Zulip message, so it is dropped; whitespace-only
+        # content counts as empty too.
+        discord_channel_id = "100"
+
+        def discord_message(message_id: str, content: str) -> dict[str, Any]:
+            return {
+                "id": message_id,
+                "type": "Default",
+                "timestamp": "2026-03-18T22:25:49.000+00:00",
+                "author": {"id": DISCORD_USER_ID["pieter"]},
+                "content": content,
+                "attachments": [],
+            }
+
+        discord_channels = [
+            DiscordChannel(
+                channel={"id": discord_channel_id},
+                messages=[
+                    discord_message("1", "Hello"),
+                    discord_message("2", ""),
+                    discord_message("3", "   \n  "),
+                ],
+                invite_only=False,
+            )
+        ]
+
+        output_dir = make_export_output_dir()
+        with self.assertLogs(level="INFO"):
+            convert_messages(
+                discord_channels=discord_channels,
+                recipient_id_by_discord_channel_id={discord_channel_id: 1},
+                discord_user_id_to_zulip_user_id={DISCORD_USER_ID["pieter"]: 5},
+                realm={"zerver_subscription": []},
+                realm_id=0,
+                discord_data_dir=tempfile.mkdtemp(),
+                output_dir=output_dir,
+                zerver_attachment=[],
+                uploads_list=[],
+            )
+
+        with open(os.path.join(output_dir, "messages-000001.json")) as messages_file:
+            zerver_message = json.load(messages_file)["zerver_message"]
+
+        # Only the message with text survives the two empty ones.
+        self.assertEqual([message["content"] for message in zerver_message], ["Hello"])
 
     @responses.activate
     def test_group_messages_into_channels(self) -> None:
