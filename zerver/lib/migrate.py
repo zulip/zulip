@@ -140,7 +140,14 @@ def rename_indexes_constraints(
     return inner_migration
 
 
-def add_index(**kwargs) -> AddIndex:
+"""
+The following functions utilize kwargs to pass through arguments.
+Because we can't fully control the details of the incoming object,
+we need to ignore some linting/typing rules for the parameters.
+"""
+
+
+def add_index(**kwargs) -> AddIndex:  # type: ignore[no-untyped-def]  # noqa: ANN003
     """
     Gracefully handle concurrent index migration setting
     when adding indices with ./manage.py migrate
@@ -151,7 +158,7 @@ def add_index(**kwargs) -> AddIndex:
         return migrations.AddIndex(**kwargs)
 
 
-def remove_index(**kwargs) -> RemoveIndex:
+def remove_index(**kwargs) -> RemoveIndex:  # type: ignore[no-untyped-def]  # noqa: ANN003
     """
     Gracefully handle concurrent index migration setting
     when removing indices with ./manage.py migrate
