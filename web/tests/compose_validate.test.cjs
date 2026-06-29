@@ -554,6 +554,29 @@ test_ui("test_check_overflow_text", ({override, override_rewire}) => {
     }
 });
 
+test_ui("message_renders_blank", () => {
+    // Empty inline math, and any fenced block (math, code, quote, spoiler)
+    // with a whitespace-only body, would post as a blank entry. The opening
+    // fence's language/header line does not count as content.
+    assert.ok(compose_validate.message_renders_blank("$$ $$"));
+    assert.ok(compose_validate.message_renders_blank("```math\n\n```"));
+    assert.ok(compose_validate.message_renders_blank("```\n```"));
+    assert.ok(compose_validate.message_renders_blank("```js\n \n```"));
+    assert.ok(compose_validate.message_renders_blank("```quote\n\n```"));
+    assert.ok(compose_validate.message_renders_blank("```quote\n \n```"));
+    assert.ok(compose_validate.message_renders_blank("```spoiler\n\n```"));
+    assert.ok(compose_validate.message_renders_blank("```spoiler Header\n```"));
+
+    // A block with real body content is not blank.
+    assert.ok(!compose_validate.message_renders_blank("hello world"));
+    assert.ok(!compose_validate.message_renders_blank("$$a$$"));
+    assert.ok(!compose_validate.message_renders_blank("```math\na^2\n```"));
+    assert.ok(!compose_validate.message_renders_blank("```js\nx = 1\n```"));
+    assert.ok(!compose_validate.message_renders_blank("```quote\nquoted\n```"));
+    assert.ok(!compose_validate.message_renders_blank("```spoiler Header\nbody\n```"));
+    assert.ok(!compose_validate.message_renders_blank("$$ $$ and some text"));
+});
+
 test_ui("needs_subscribe_warning", async () => {
     const invalid_user_id = 999;
 
