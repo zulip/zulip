@@ -44,6 +44,7 @@ from zerver.actions.streams import (
     do_set_stream_property,
     do_unarchive_stream,
     get_subscriber_ids,
+    send_subscription_change_notices,
 )
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.context_processors import get_valid_realm_from_request
@@ -639,6 +640,14 @@ def remove_subscriptions_backend(
     (removed, not_subscribed) = bulk_remove_subscriptions(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
+    # Announce the membership change in each private channel's "channel
+    # events" topic.
+    send_subscription_change_notices(
+        realm,
+        acting_user=user_profile,
+        changed_subs=removed,
+        subscribed=False,
+    )
 
     for subscriber, removed_stream in removed:
         result["removed"].append(removed_stream.name)
@@ -919,7 +928,11 @@ def add_subscriptions_backend(
             do_add_default_stream(stream)
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(
-        realm, streams, subscribers, acting_user=user_profile, color_map=color_map
+        realm,
+        streams,
+        subscribers,
+        acting_user=user_profile,
+        color_map=color_map,
     )
 
     id_to_user_profile: dict[str, UserProfile] = {}
@@ -941,6 +954,19 @@ def add_subscriptions_backend(
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
+
+    # Announce the membership change in each private channel's "channel events"
+    # topic.  Newly created channels are excluded: choosing a channel's initial
+    # members is part of creating it, not a join event.  This is sent before the
+    # direct-message notifications below so those stay the newly subscribed
+    # users' most recent message.
+    send_subscription_change_notices(
+        realm,
+        acting_user=user_profile,
+        changed_subs=[(sub_info.user, sub_info.stream) for sub_info in subscribed],
+        subscribed=True,
+        skip_stream_ids={stream.id for stream in created_streams},
+    )
 
     if send_new_subscription_messages:
         send_user_subscribed_direct_messages = (

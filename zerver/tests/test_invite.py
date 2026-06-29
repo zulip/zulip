@@ -31,7 +31,11 @@ from zerver.actions.create_user import (
     process_new_human_user,
     set_up_streams_and_groups_for_new_human_user,
 )
-from zerver.actions.default_streams import do_add_default_stream, do_remove_default_stream
+from zerver.actions.default_streams import (
+    do_add_default_stream,
+    do_create_default_stream_group,
+    do_remove_default_stream,
+)
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -67,6 +71,7 @@ from zerver.models import (
     RealmAuditLog,
     ScheduledEmail,
     Stream,
+    Subscription,
     UserMessage,
     UserProfile,
 )
@@ -1295,7 +1300,7 @@ class InviteUserTest(InviteUserBase):
         realm.save(update_fields=["signup_announcements_stream"])
 
         private_stream_name = "Secret"
-        self.make_stream(private_stream_name, invite_only=True)
+        private_stream = self.make_stream(private_stream_name, invite_only=True)
         self.subscribe(user_profile, private_stream_name)
         public_msg_id = self.send_stream_message(
             self.example_user("hamlet"),
@@ -1322,11 +1327,36 @@ class InviteUserTest(InviteUserBase):
         self.assertFalse(secret_msg_id in invitee_msg_ids)
         self.assertFalse(invitee_profile.is_realm_admin)
 
-        invitee_msg, signups_stream_msg, inviter_msg, secret_msg = Message.objects.all().order_by(
-            "-id"
-        )[0:4]
+        (
+            invitee_msg,
+            signups_stream_msg,
+            inviter_msg,
+            private_channel_join_msg,
+            secret_msg,
+        ) = Message.objects.all().order_by("-id")[0:5]
 
         self.assertEqual(secret_msg.id, secret_msg_id)
+
+        self.assertEqual(private_channel_join_msg.sender.email, "notification-bot@zulip.com")
+        self.assertEqual(private_channel_join_msg.recipient.type_id, private_stream.id)
+        self.assertEqual(private_channel_join_msg.topic_name(), "channel events")
+        self.assertEqual(
+            private_channel_join_msg.content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** subscribed "
+            f"@_**{invitee_profile.full_name}|{invitee_profile.id}** to this channel.",
+        )
+        self.assertIn(private_channel_join_msg.id, invitee_msg_ids)
+
+        # The invitee's own join notice is marked read; the existing member
+        # (the inviter) still sees it unread.
+        invitee_join_um = UserMessage.objects.get(
+            user_profile=invitee_profile, message=private_channel_join_msg
+        )
+        self.assertTrue(invitee_join_um.flags.read.is_set)
+        inviter_join_um = UserMessage.objects.get(
+            user_profile=user_profile, message=private_channel_join_msg
+        )
+        self.assertFalse(inviter_join_um.flags.read.is_set)
 
         self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
@@ -1345,6 +1375,78 @@ class InviteUserTest(InviteUserBase):
         self.assertEqual(invitee_msg.sender.email, "welcome-bot@zulip.com")
         self.assertTrue(invitee_msg.content.startswith("Hello, and welcome to Zulip!"))
         self.assertNotIn("demo organization", invitee_msg.content)
+
+    def get_channel_events_messages(self, stream: Stream) -> list[Message]:
+        return [
+            message
+            for message in Message.objects.filter(realm=stream.realm, recipient=stream.recipient)
+            if message.topic_name() == "channel events"
+        ]
+
+    def test_invite_from_deactivated_user_sends_no_private_channel_notice(self) -> None:
+        """
+        The private-channel join notice names the inviter, so we skip it
+        when the inviter has been deactivated between sending the invitation
+        and its acceptance, matching the invitation-accepted direct message.
+        """
+        inviter = self.example_user("hamlet")
+        self.login_user(inviter)
+        private_stream = self.make_stream("Secret", invite_only=True)
+        self.subscribe(inviter, "Secret")
+
+        invitee = self.nonreg_email("alice")
+        self.assert_json_success(self.invite(invitee, ["Secret"]))
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+
+        change_user_is_active(inviter, False)
+        invitee_profile = do_create_user(
+            invitee,
+            "password",
+            inviter.realm,
+            "full name",
+            prereg_user=prereg_user,
+            acting_user=None,
+        )
+
+        # The new user is subscribed, but the deactivated inviter is not named.
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=invitee_profile, recipient=private_stream.recipient, active=True
+            ).exists()
+        )
+        self.assert_length(self.get_channel_events_messages(private_stream), 0)
+
+    def test_default_stream_group_private_channel_not_attributed_to_inviter(self) -> None:
+        """
+        A private channel pulled in via a default channel group is the new
+        user's own signup selection, not a membership the inviter granted, so
+        it must not generate a join notice attributed to the inviter.
+        """
+        inviter = self.example_user("hamlet")
+        realm = inviter.realm
+        self.login_user(inviter)
+
+        # A private channel reachable only through a default channel group.
+        group_private_stream = self.make_stream("group-secret", invite_only=True)
+        do_create_default_stream_group(
+            realm, "onboarding", "onboarding description", [group_private_stream]
+        )
+
+        invitee = self.nonreg_email("alice")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.submit_reg_form_for_user(invitee, "password", default_stream_groups=["onboarding"])
+        invitee_profile = self.nonreg_user("alice")
+
+        # The new user is subscribed, but the group's private channel is not
+        # misattributed to the inviter.
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=invitee_profile,
+                recipient=group_private_stream.recipient,
+                active=True,
+            ).exists()
+        )
+        self.assert_length(self.get_channel_events_messages(group_private_stream), 0)
 
     def test_multi_user_invite(self) -> None:
         """

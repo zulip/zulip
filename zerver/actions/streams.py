@@ -7,13 +7,18 @@ from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.utils.translation import override as override_language
 
 from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_streams_from_default_stream_group,
 )
-from zerver.actions.message_send import maybe_send_channel_events_notice
+from zerver.actions.message_send import (
+    do_send_messages,
+    internal_prep_stream_message,
+    maybe_send_channel_events_notice,
+)
 from zerver.lib.cache import (
     cache_delete_many,
     cache_set,
@@ -22,7 +27,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user, silent_mention_syntax_for_user_group
-from zerver.lib.message import get_last_message_id
+from zerver.lib.message import SendMessageRequest, get_last_message_id
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_color import pick_colors
 from zerver.lib.stream_subscription import (
@@ -38,6 +43,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
+    channel_events_topic_name,
     check_basic_stream_access,
     get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_policy_key,
@@ -751,6 +757,136 @@ def send_user_creation_events_on_adding_subscriptions(
 
 
 SubT: TypeAlias = tuple[list[SubInfo], list[SubInfo]]
+
+
+# Subscription changes affecting up to this many users name everyone
+# inline; larger changes collapse to a count with the full roster in an
+# expandable spoiler block, so the "channel events" topic isn't flooded.
+MAX_INLINE_SUBSCRIPTION_NOTICE_USERS = 3
+
+
+def get_subscription_change_notice_content(
+    *, acting_user: UserProfile, users: list[UserProfile], subscribed: bool
+) -> str:
+    """Build the "channel events" notice for a subscription change.
+
+    A change affecting a few users names them inline.  A larger change
+    collapses to a count, with the full list of names tucked into an
+    expandable spoiler block, so the topic isn't flooded -- and we send a
+    single message instead of one per user.
+    """
+    acting_user_mention = silent_mention_syntax_for_user(acting_user)
+    # The acting user is named as the actor, so don't also list them among the
+    # targets (which would read as "Iago subscribed Iago and Hamlet ...").
+    targets = sorted(
+        (user for user in users if user.id != acting_user.id),
+        key=lambda user: (user.full_name.lower(), user.id),
+    )
+
+    # A user changing only their own membership reads without a target list.
+    if not targets:
+        if subscribed:
+            return _("{acting_user} subscribed to this channel.").format(
+                acting_user=acting_user_mention
+            )
+        return _("{acting_user} unsubscribed from this channel.").format(
+            acting_user=acting_user_mention
+        )
+
+    count = len(targets)
+    mentions = [silent_mention_syntax_for_user(user) for user in targets]
+
+    if count <= MAX_INLINE_SUBSCRIPTION_NOTICE_USERS:
+        if count == 1:
+            target_users = mentions[0]
+        elif count == 2:
+            target_users = _("{first} and {second}").format(first=mentions[0], second=mentions[1])
+        else:
+            target_users = _("{users}, and {last}").format(
+                users=", ".join(mentions[:-1]), last=mentions[-1]
+            )
+        if subscribed:
+            return _("{acting_user} subscribed {target_users} to this channel.").format(
+                acting_user=acting_user_mention, target_users=target_users
+            )
+        return _("{acting_user} unsubscribed {target_users} from this channel.").format(
+            acting_user=acting_user_mention, target_users=target_users
+        )
+
+    if subscribed:
+        header = ngettext(
+            "{acting_user} subscribed {count} user to this channel.",
+            "{acting_user} subscribed {count} users to this channel.",
+            count,
+        ).format(acting_user=acting_user_mention, count=count)
+    else:
+        header = ngettext(
+            "{acting_user} unsubscribed {count} user from this channel.",
+            "{acting_user} unsubscribed {count} users from this channel.",
+            count,
+        ).format(acting_user=acting_user_mention, count=count)
+
+    member_list = ", ".join(mentions)
+    return f"```spoiler {header}\n{member_list}\n```"
+
+
+def send_subscription_change_notices(
+    realm: Realm,
+    *,
+    acting_user: UserProfile,
+    changed_subs: list[tuple[UserProfile, Stream]],
+    subscribed: bool,
+    skip_stream_ids: Collection[int] = (),
+    mark_as_read_user_ids: Collection[int] = (),
+) -> None:
+    """Post a "channel events" notice for an interactive membership change.
+
+    Only private (invite-only), non-deactivated channels notify, and each
+    such channel gets a single grouped message regardless of how many users
+    changed.  This is deliberately triggered from the interactive
+    subscribe/unsubscribe flows (rather than from bulk_add_subscriptions /
+    bulk_remove_subscriptions, which are also called for user deletion,
+    stream merges, and management commands), matching how the other
+    channel-events notices are sent from their specific actions.
+
+    The notice is marked read for mark_as_read_user_ids and left unread for
+    everyone else (the invitation flow marks it read for the new user).
+    """
+    if not realm.send_channel_events_messages:
+        return
+
+    streams_by_id: dict[int, Stream] = {}
+    users_by_stream_id: dict[int, list[UserProfile]] = defaultdict(list)
+    for user, stream in changed_subs:
+        if not stream.invite_only or stream.deactivated or stream.id in skip_stream_ids:
+            continue
+        streams_by_id[stream.id] = stream
+        users_by_stream_id[stream.id].append(user)
+
+    if not streams_by_id:
+        return
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    with override_language(realm.default_language):
+        message_requests: list[SendMessageRequest | None] = []
+        for stream_id, stream in streams_by_id.items():
+            content = get_subscription_change_notice_content(
+                acting_user=acting_user,
+                users=users_by_stream_id[stream_id],
+                subscribed=subscribed,
+            )
+            message_requests.append(
+                internal_prep_stream_message(
+                    sender,
+                    stream,
+                    channel_events_topic_name(stream),
+                    content,
+                    acting_user=acting_user,
+                )
+            )
+
+        # Send every channel's notice in one batch, not one send per channel.
+        do_send_messages(message_requests, mark_as_read=list(mark_as_read_user_ids))
 
 
 @transaction.atomic(savepoint=False)
