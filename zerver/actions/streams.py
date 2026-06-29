@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.utils.translation import override as override_language
 
 from zerver.actions.default_streams import (
@@ -752,6 +753,86 @@ def send_user_creation_events_on_adding_subscriptions(
 SubT: TypeAlias = tuple[list[SubInfo], list[SubInfo]]
 
 
+# Subscription changes affecting up to this many users name everyone
+# inline; larger changes collapse to a count with the full roster in an
+# expandable spoiler block, so the "channel events" topic isn't flooded.
+MAX_INLINE_SUBSCRIPTION_NOTICE_USERS = 3
+
+
+def get_subscription_change_notice_content(
+    *, acting_user: UserProfile | None, users: list[UserProfile], subscribed: bool
+) -> str:
+    """Build the "channel events" notice for a subscription change.
+
+    A change affecting a few users names them inline.  A larger change
+    collapses to a count, with the full list of names tucked into an
+    expandable spoiler block, so the topic isn't flooded -- and we send a
+    single message instead of one per user.
+    """
+    sorted_users = sorted(users, key=lambda user: (user.full_name.lower(), user.id))
+    count = len(sorted_users)
+    mentions = [silent_mention_syntax_for_user(user) for user in sorted_users]
+    # A self-subscribe/unsubscribe (no acting user, or the lone target is the
+    # actor themselves) reads without naming an actor.
+    acted_on_others = acting_user is not None and not (
+        count == 1 and acting_user.id == sorted_users[0].id
+    )
+
+    if count <= MAX_INLINE_SUBSCRIPTION_NOTICE_USERS:
+        if count == 1:
+            target_users = mentions[0]
+        elif count == 2:
+            target_users = _("{first} and {second}").format(first=mentions[0], second=mentions[1])
+        else:
+            target_users = _("{users}, and {last}").format(
+                users=", ".join(mentions[:-1]), last=mentions[-1]
+            )
+        if acted_on_others:
+            assert acting_user is not None
+            acting_user_mention = silent_mention_syntax_for_user(acting_user)
+            if subscribed:
+                return _("{acting_user} subscribed {target_users} to this channel.").format(
+                    acting_user=acting_user_mention, target_users=target_users
+                )
+            return _("{acting_user} unsubscribed {target_users} from this channel.").format(
+                acting_user=acting_user_mention, target_users=target_users
+            )
+        if subscribed:
+            return _("{target_users} subscribed to this channel.").format(target_users=target_users)
+        return _("{target_users} unsubscribed from this channel.").format(target_users=target_users)
+
+    if acted_on_others:
+        assert acting_user is not None
+        acting_user_mention = silent_mention_syntax_for_user(acting_user)
+        if subscribed:
+            header = ngettext(
+                "{acting_user} subscribed {count} user to this channel.",
+                "{acting_user} subscribed {count} users to this channel.",
+                count,
+            ).format(acting_user=acting_user_mention, count=count)
+        else:
+            header = ngettext(
+                "{acting_user} unsubscribed {count} user from this channel.",
+                "{acting_user} unsubscribed {count} users from this channel.",
+                count,
+            ).format(acting_user=acting_user_mention, count=count)
+    elif subscribed:
+        header = ngettext(
+            "{count} user subscribed to this channel.",
+            "{count} users subscribed to this channel.",
+            count,
+        ).format(count=count)
+    else:
+        header = ngettext(
+            "{count} user unsubscribed from this channel.",
+            "{count} users unsubscribed from this channel.",
+            count,
+        ).format(count=count)
+
+    member_list = ", ".join(mentions)
+    return f"```spoiler {header}\n{member_list}\n```"
+
+
 @transaction.atomic(savepoint=False)
 def bulk_add_subscriptions(
     realm: Realm,
@@ -761,6 +842,7 @@ def bulk_add_subscriptions(
     from_user_creation: bool = False,
     *,
     acting_user: UserProfile | None,
+    newly_created_stream_ids: Collection[int] = (),
 ) -> SubT:
     users = list(users)
     user_ids = [user.id for user in users]
@@ -917,6 +999,41 @@ def bulk_add_subscriptions(
         stream_dict=stream_dict,
         subscriber_peer_info=subscriber_peer_info,
     )
+
+    # Send channel event notifications for users being subscribed to private
+    # streams.  Newly-created channels are skipped: choosing a channel's
+    # initial members is part of creating it rather than a series of join
+    # events, and there are no messages in the channel yet.
+    # Note: This is intentionally outside the `if not from_user_creation` block.
+    # Since private streams cannot be realm defaults, from_user_creation=True only
+    # overlaps with private streams when a user accepts an explicit email invitation
+    # to that channel, in which case existing members should see the join notification.
+    if realm.send_channel_events_messages:
+        private_subs_to_notify = [
+            sub_info
+            for sub_info in subs_to_add + subs_to_activate
+            if sub_info.stream.invite_only
+            and not sub_info.stream.deactivated
+            and sub_info.stream.id not in newly_created_stream_ids
+        ]
+        if private_subs_to_notify:
+            sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+            streams_by_id: dict[int, Stream] = {}
+            subscribed_users_by_stream_id: dict[int, list[UserProfile]] = defaultdict(list)
+            for sub_info in private_subs_to_notify:
+                streams_by_id[sub_info.stream.id] = sub_info.stream
+                subscribed_users_by_stream_id[sub_info.stream.id].append(sub_info.user)
+            with override_language(realm.default_language):
+                for stream_id, notified_users in subscribed_users_by_stream_id.items():
+                    content = get_subscription_change_notice_content(
+                        acting_user=acting_user, users=notified_users, subscribed=True
+                    )
+                    maybe_send_channel_events_notice(
+                        sender,
+                        streams_by_id[stream_id],
+                        content,
+                        acting_user=acting_user,
+                    )
 
     return (
         subs_to_add + subs_to_activate,
@@ -1169,6 +1286,32 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
+
+    # Send channel event notifications for users being removed from private streams.
+    if realm.send_channel_events_messages:
+        private_removed_subs = [
+            (user_profile, stream)
+            for user_profile, stream in removed_sub_tuples
+            if stream.invite_only and not stream.deactivated
+        ]
+        if private_removed_subs:
+            sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+            streams_by_id: dict[int, Stream] = {}
+            removed_users_by_stream_id: dict[int, list[UserProfile]] = defaultdict(list)
+            for user_profile, stream in private_removed_subs:
+                streams_by_id[stream.id] = stream
+                removed_users_by_stream_id[stream.id].append(user_profile)
+            with override_language(realm.default_language):
+                for stream_id, notified_users in removed_users_by_stream_id.items():
+                    content = get_subscription_change_notice_content(
+                        acting_user=acting_user, users=notified_users, subscribed=False
+                    )
+                    maybe_send_channel_events_notice(
+                        sender,
+                        streams_by_id[stream_id],
+                        content,
+                        acting_user=acting_user,
+                    )
 
     return (
         removed_sub_tuples,

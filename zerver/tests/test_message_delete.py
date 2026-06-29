@@ -81,6 +81,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertIn(msg_id, events[1]["event"]["message_ids"])
 
     def test_do_delete_stream_messages_with_acting_user(self) -> None:
+        self.disable_channel_events_notifications()
         realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
