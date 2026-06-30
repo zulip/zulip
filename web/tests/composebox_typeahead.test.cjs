@@ -2928,6 +2928,27 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // A channel that only allows the empty topic gets a complete channel
     // link with no topic completion offered.
     assert_typeahead_equals("#**Announce**", []);
+    // Once the user presses ">", completion is offered to just that
+    // single (empty) topic, and never to named ones.
+    const announce_empty_topic_suggestion = [
+        {
+            topic: "",
+            topic_display_name: get_final_topic_display_name(""),
+            is_empty_string_topic: true,
+            type: "topic_list",
+            is_channel_link: false,
+            used_syntax_prefix: "#**",
+            stream_data: {
+                ...stream_data.get_sub_by_name("Announce"),
+                rendered_description: "",
+            },
+            is_new_topic: false,
+        },
+    ];
+    assert_typeahead_equals("#**Announce>", announce_empty_topic_suggestion);
+    // Text typed after ">" cannot create a named topic; only the empty
+    // topic is still offered.
+    assert_typeahead_equals("#**Announce>random", announce_empty_topic_suggestion);
     compose_ui.compose_textarea_typeahead = undefined;
 
     // time_jump

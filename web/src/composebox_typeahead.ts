@@ -1212,14 +1212,31 @@ export function get_candidates(
             }
             // If we aren't composing to a channel, `sub` would be undefined.
             if (sub !== undefined) {
-                if (
-                    is_complete_channel_link &&
-                    stream_data.is_empty_topic_only_channel(sub.stream_id)
-                ) {
-                    // This channel only allows the empty topic, so the
-                    // complete channel link is the final form; don't offer
-                    // topic completion.
-                    return [];
+                if (stream_data.is_empty_topic_only_channel(sub.stream_id)) {
+                    if (is_complete_channel_link) {
+                        // The complete channel link is the final form, so
+                        // don't open topic completion by default; the user
+                        // must press ">" to reach the empty topic.
+                        return [];
+                    }
+                    // The user asked for a topic with ">", but this channel
+                    // only allows the empty topic, so offer just that single
+                    // topic rather than offering or creating named ones.
+                    const empty_topic_suggestion: TopicSuggestion = {
+                        topic: "",
+                        topic_display_name: util.get_final_topic_display_name(""),
+                        is_empty_string_topic: true,
+                        type: "topic_list",
+                        is_channel_link: false,
+                        used_syntax_prefix,
+                        stream_data: {
+                            ...sub,
+                            type: "stream",
+                            rendered_description: "",
+                        },
+                        is_new_topic: false,
+                    };
+                    return [empty_topic_suggestion];
                 }
                 // We always show topic suggestions after the user types a stream, and let them
                 // pick between just showing the stream (the first option, when nothing follows ">")
