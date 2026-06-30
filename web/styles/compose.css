@@ -552,7 +552,13 @@
 }
 
 .formatting-control-scroller-button {
-    z-index: 5;
+    /* These buttons only need to layer above the horizontally
+       scrolling formatting buttons (z-index 0) they overlay, so a
+       z-index of 1 is sufficient. Keeping it below #compose's z-index
+       (4) also ensures that when the message edit box is resized over
+       the compose box, its scroll arrows--which share a stacking
+       context with #compose--don't paint on top of it. */
+    z-index: 1;
     display: flex;
     align-items: center;
 
