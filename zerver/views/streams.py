@@ -131,6 +131,7 @@ def bulk_principals_to_user_profiles(
             allow_deactivated=False,
             allow_bots=True,
             for_admin=False,
+            acquire_lock=True,
         )
 
     # principals are user ids.
@@ -141,6 +142,7 @@ def bulk_principals_to_user_profiles(
             allow_deactivated=False,
             allow_bots=True,
             for_admin=False,
+            acquire_lock=True,
         )
 
 
@@ -584,26 +586,29 @@ def remove_subscriptions_backend(
         {"name": stream_name.strip()} for stream_name in streams_raw
     ]
 
-    unsubscribing_others = False
-    if principals:
-        people_to_unsub = bulk_principals_to_user_profiles(principals, user_profile)
-        unsubscribing_others = any(
-            not user_directly_controls_user(user_profile, target) for target in people_to_unsub
+    result: dict[str, list[str]] = dict(removed=[], not_removed=[])
+    with transaction.atomic(savepoint=False):
+        unsubscribing_others = False
+        if principals:
+            people_to_unsub = bulk_principals_to_user_profiles(principals, user_profile)
+            unsubscribing_others = any(
+                not user_directly_controls_user(user_profile, target) for target in people_to_unsub
+            )
+
+        else:
+            people_to_unsub = {
+                UserProfile.objects.select_for_update(no_key=True).get(id=user_profile.id)
+            }
+
+        streams, __ = list_to_streams(
+            streams_as_dict,
+            user_profile,
+            unsubscribing_others=unsubscribing_others,
         )
 
-    else:
-        people_to_unsub = {user_profile}
-
-    streams, __ = list_to_streams(
-        streams_as_dict,
-        user_profile,
-        unsubscribing_others=unsubscribing_others,
-    )
-
-    result: dict[str, list[str]] = dict(removed=[], not_removed=[])
-    (removed, not_subscribed) = bulk_remove_subscriptions(
-        realm, people_to_unsub, streams, acting_user=user_profile
-    )
+        (removed, not_subscribed) = bulk_remove_subscriptions(
+            realm, people_to_unsub, streams, acting_user=user_profile
+        )
 
     for subscriber, removed_stream in removed:
         result["removed"].append(removed_stream.name)
@@ -900,7 +905,7 @@ def add_subscriptions_backend(
     if is_subscribing_other_users:
         subscribers = bulk_principals_to_user_profiles(principals, user_profile)
     else:
-        subscribers = {user_profile}
+        subscribers = {UserProfile.objects.select_for_update(no_key=True).get(id=user_profile.id)}
 
     if is_default_stream:
         for stream in created_streams:
