@@ -90,6 +90,7 @@ class ChannelInfo:
     channel_id: int
     recipient_id: int
     history_public_to_subscribers: bool
+    topics_policy: int
     # TODO: Track whether the current user has only metadata access or
     # content access, so that we can allow mentioning channels with
     # only metadata access, while still enforcing content access to
@@ -203,11 +204,15 @@ class MentionBackend:
                     "name",
                     "recipient_id",
                     "history_public_to_subscribers",
+                    "topics_policy",
                 )
             )
             for row in rows:
                 self.stream_cache[row["name"]] = ChannelInfo(
-                    row["id"], row["recipient_id"], row["history_public_to_subscribers"]
+                    row["id"],
+                    row["recipient_id"],
+                    row["history_public_to_subscribers"],
+                    row["topics_policy"],
                 )
                 result[row["name"]] = row["id"]
         else:
@@ -227,7 +232,10 @@ class MentionBackend:
             for stream in content_access_streams:
                 assert stream.recipient_id is not None
                 self.stream_cache[stream.name] = ChannelInfo(
-                    stream.id, stream.recipient_id, stream.history_public_to_subscribers
+                    stream.id,
+                    stream.recipient_id,
+                    stream.history_public_to_subscribers,
+                    stream.topics_policy,
                 )
                 result[stream.name] = stream.id
 
@@ -461,6 +469,9 @@ class MentionData:
         self, stream_names: set[str], acting_user: UserProfile | None
     ) -> dict[str, int]:
         return self.mention_backend.get_stream_name_map(stream_names, acting_user=acting_user)
+
+    def get_channel_info_map(self) -> dict[str, ChannelInfo]:
+        return self.mention_backend.stream_cache
 
     def get_topic_info_map(
         self, channel_topics: set[ChannelTopicInfo], acting_user: UserProfile | None
