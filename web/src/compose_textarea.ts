@@ -22,17 +22,62 @@ export function restore_compose_cursor(): void {
     $("textarea#compose-textarea").trigger("focus").caret(saved_compose_cursor);
 }
 
-export function position_inside_code_block(content: string, position: number): boolean {
-    let unique_insert = "UNIQUEINSERT:" + Math.random();
-    while (content.includes(unique_insert)) {
-        unique_insert = "UNIQUEINSERT:" + Math.random();
+export type CodeBlockRange = readonly [number, number];
+
+export function get_code_block_ranges(content: string): CodeBlockRange[] {
+    let marker_prefix = "ZCBM" + Math.random().toString(36).slice(2);
+    while (content.includes(marker_prefix)) {
+        marker_prefix = "ZCBM" + Math.random().toString(36).slice(2);
     }
-    const unique_insert_content =
-        content.slice(0, position) + unique_insert + content.slice(position);
-    const rendered_content = markdown.parse_non_message(unique_insert_content);
-    const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
-    const code_blocks = rendered_html.querySelectorAll("pre > code");
-    return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
+    const newline_positions: number[] = [];
+    for (let i = content.indexOf("\n"); i !== -1; i = content.indexOf("\n", i + 1)) {
+        newline_positions.push(i);
+    }
+    if (newline_positions.length === 0) {
+        return [];
+    }
+
+    let annotated = "";
+    let cursor = 0;
+    for (const [idx, pos] of newline_positions.entries()) {
+        annotated += content.slice(cursor, pos + 1) + `${marker_prefix}${idx} `;
+        cursor = pos + 1;
+    }
+    annotated += content.slice(cursor);
+
+    const rendered = markdown.parse_non_message(annotated);
+    const doc = new DOMParser().parseFromString(rendered, "text/html");
+    const inside_indices = new Set<number>();
+    const re = new RegExp(`${marker_prefix}(\\d+)`, "g");
+    for (const block of doc.querySelectorAll("pre > code, code")) {
+        const text = block.textContent ?? "";
+        for (const match of text.matchAll(re)) {
+            inside_indices.add(Number(match[1]));
+        }
+    }
+
+    const ranges: [number, number][] = [];
+    let start_pos: number | undefined;
+    let last_inside_pos = 0;
+    for (const [idx, pos] of newline_positions.entries()) {
+        if (inside_indices.has(idx)) {
+            start_pos ??= pos;
+            last_inside_pos = pos;
+        } else if (start_pos !== undefined) {
+            ranges.push([start_pos, last_inside_pos + 1]);
+            start_pos = undefined;
+        }
+    }
+    if (start_pos !== undefined) {
+        ranges.push([start_pos, content.length]);
+    }
+    return ranges;
+}
+
+export function position_inside_code_block(content: string, position: number): boolean {
+    return get_code_block_ranges(content).some(
+        ([start, end]) => position >= start && position < end,
+    );
 }
 
 export function initialize(): void {
