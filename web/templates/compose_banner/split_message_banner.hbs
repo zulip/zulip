@@ -1,0 +1,23 @@
+<div
+  class="above_compose_banner main-view-banner {{banner_type}} {{classname}}"
+  >
+    <p class="banner_content">
+        {{#if message_count}}
+            {{#tr}}
+                The text in your compose box will be split at
+                <b>two consecutive blank lines</b>
+                into
+                <b>{message_count}</b>
+                messages.
+            {{/tr}}
+        {{else}}
+            {{#tr}}
+                The text in your compose box will be split at
+                <b>two consecutive blank lines</b>.
+            {{/tr}}
+        {{/if}}
+    </p>
+    <button class="main-view-banner-action-button">
+        {{button_text}}
+    </button>
+</div>
