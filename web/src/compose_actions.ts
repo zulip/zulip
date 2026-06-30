@@ -10,6 +10,7 @@ import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -50,6 +51,7 @@ type ComposeActionsStartOpts = {
     is_reply?: boolean;
     keep_composebox_empty?: boolean | undefined;
     defer_focus?: boolean | undefined;
+    split_messages_enabled?: boolean;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that
@@ -138,6 +140,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
 
 export let clear_textarea = (): void => {
     $("#compose").find("input[type=text], textarea").val("");
+    $("textarea#compose-textarea").prop("readonly", false);
 };
 
 export function rewire_clear_textarea(value: typeof clear_textarea): void {
@@ -152,6 +155,7 @@ function clear_box(): void {
     compose_validate.clear_stream_wildcard_warnings($("#compose_banners"));
     compose_validate.clear_guest_in_dm_recipient_warning();
     compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
+    compose_split_messages.set_split_messages_enabled(false);
     compose_banner.clear_split_messages_info_banner();
 
     compose_state.set_recipient_edited_manually(false);
@@ -447,6 +451,15 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             // whitespace whenever we save drafts.
             opts.content = possible_last_draft.content + " ";
         }
+    }
+
+    if (opts.split_messages_enabled !== undefined) {
+        compose_split_messages.set_split_messages_enabled(opts.split_messages_enabled);
+    } else if (opts.draft_id !== undefined) {
+        const draft = drafts.draft_model.getDraft(opts.draft_id);
+        compose_split_messages.set_split_messages_enabled(
+            draft !== false && draft.split_messages_enabled,
+        );
     }
 
     if (opts.content !== undefined) {
