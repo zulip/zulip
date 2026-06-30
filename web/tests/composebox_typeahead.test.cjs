@@ -20,7 +20,7 @@ const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 const message_lists = mock_esm("../src/message_lists");
 const pm_conversations = mock_esm("../src/pm_conversations", {
-    is_partner: () => false,
+    get_latest_direct_message_id_with_user: () => undefined,
 });
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea() {

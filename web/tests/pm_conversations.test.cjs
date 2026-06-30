@@ -66,7 +66,6 @@ function test(label, f) {
 
 test("partners", () => {
     const user1_id = 1;
-    const user2_id = 2;
     const user3_id = 3;
 
     pmc.set_partner(user1_id);
@@ -74,9 +73,6 @@ test("partners", () => {
     pmc.set_partner(user3_id);
 
     assert.deepEqual(pmc.get_partners(), [user1_id, user3_id]);
-    assert.equal(pmc.is_partner(user1_id), true);
-    assert.equal(pmc.is_partner(user2_id), false);
-    assert.equal(pmc.is_partner(user3_id), true);
 });
 
 test("insert_recent_private_message", () => {
@@ -108,6 +104,36 @@ test("insert_recent_private_message", () => {
         {user_ids_string: "1,2", max_message_id: 98},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["1", "1,2,3", "15", "3", "1,2"]);
+});
+
+test("latest_message_id_by_user_id", () => {
+    pmc.recent.initialize(params);
+
+    // Each user maps to the most recent DM conversation that includes
+    // them, whether that's a 1:1 or a group DM.
+    assert.equal(pmc.get_latest_direct_message_id_with_user(alice.user_id), 100);
+    assert.equal(pmc.get_latest_direct_message_id_with_user(alex.user_id), 99);
+    assert.equal(pmc.get_latest_direct_message_id_with_user(isaac.user_id), 98);
+
+    // The current user is excluded, even though there's a self-DM.
+    assert.equal(pmc.get_latest_direct_message_id_with_user(me.user_id), undefined);
+
+    // A user we have no direct message history with.
+    assert.equal(pmc.get_latest_direct_message_id_with_user(72), undefined);
+
+    // A newer group DM bumps both participants' latest ids.
+    pmc.recent.insert([isaac.user_id, alex.user_id], 200);
+    assert.equal(pmc.get_latest_direct_message_id_with_user(isaac.user_id), 200);
+    assert.equal(pmc.get_latest_direct_message_id_with_user(alex.user_id), 200);
+
+    // A new conversation older than an existing one does not lower the
+    // stored latest id.
+    pmc.recent.insert([isaac.user_id], 150);
+    assert.equal(pmc.get_latest_direct_message_id_with_user(isaac.user_id), 200);
+
+    // Backdating an existing conversation leaves the map unchanged.
+    pmc.recent.insert([alice.user_id], 50);
+    assert.equal(pmc.get_latest_direct_message_id_with_user(alice.user_id), 100);
 });
 
 test("muted_users", () => {

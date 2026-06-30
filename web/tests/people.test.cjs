@@ -809,17 +809,6 @@ run_test("user_can_change_their_own_role", ({override}) => {
     assert.ok(people.user_can_change_their_own_role());
 });
 
-run_test("recipient_counts", () => {
-    initialize();
-    const user_id = 99;
-    assert.equal(people.get_recipient_count({user_id}), 0);
-    people.incr_recipient_count(user_id);
-    people.incr_recipient_count(user_id);
-    assert.equal(people.get_recipient_count({user_id}), 2);
-
-    assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
-});
-
 run_test("filtered_users", () => {
     initialize();
     people.add_active_user(charles);
@@ -1193,39 +1182,6 @@ run_test("extract_people_from_message", () => {
     people.extract_people_from_message(message);
     assert.ok(people.is_known_user_id(maria.user_id));
     blueslip.reset();
-});
-
-run_test("maybe_incr_recipient_count", () => {
-    initialize();
-    const maria_recip = {
-        id: maria.user_id,
-    };
-    people.add_active_user(maria);
-
-    let message = {
-        type: "private",
-        display_recipient: [maria_recip],
-        sent_by_me: true,
-    };
-    assert.equal(people.get_recipient_count(maria), 0);
-    people.maybe_incr_recipient_count(message);
-    assert.equal(people.get_recipient_count(maria), 1);
-
-    // Test all the no-op conditions to get test
-    // coverage.
-    message = {
-        type: "private",
-        sent_by_me: false,
-        display_recipient: [maria_recip],
-    };
-    people.maybe_incr_recipient_count(message);
-    assert.equal(people.get_recipient_count(maria), 1);
-
-    message = {
-        type: "stream",
-    };
-    people.maybe_incr_recipient_count(message);
-    assert.equal(people.get_recipient_count(maria), 1);
 });
 
 run_test("get_people_for_search_bar", ({override}) => {
