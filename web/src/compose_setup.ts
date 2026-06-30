@@ -288,6 +288,15 @@ export function initialize(): void {
 
     $("body").on(
         "click",
+        `.${CSS.escape(compose_banner.CLASSNAMES.split_messages)} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            compose.toggle_split_messages();
+        },
+    );
+
+    $("body").on(
+        "click",
         `.${CSS.escape(
             compose_banner.CLASSNAMES.unmute_topic_notification,
         )} .main-view-banner-action-button`,
