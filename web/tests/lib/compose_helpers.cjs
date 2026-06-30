@@ -25,6 +25,7 @@ class FakeComposeBox {
         $compose.set_find_results(".undo_markdown_preview", $("#compose .undo_markdown_preview"));
         $compose.set_find_results(".preview_message_area", this.$preview_message_area);
         $compose.set_find_results(".preview_content", $("#compose .preview_content"));
+        $compose.set_matches("#compose", true);
 
         this.$send_message_form.set_find_results(
             ".message-limit-indicator",
