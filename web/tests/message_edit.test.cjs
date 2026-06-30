@@ -304,3 +304,41 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
         false,
     );
 });
+
+run_test("handle_message_edit_update", () => {
+    // With no message list, end_message_edit() just clears the editing-map
+    // entry, which lets us observe the close-vs-keep-open decisions here.
+    // The content comparison (adopt-new vs. warn) lives in maybe_show_edit,
+    // which runs on the re-render that follows; this function only decides
+    // whether to keep the form open, so it no longer touches the textarea.
+    // No edit form is open: nothing to keep in sync, no crash.
+    message_edit.handle_message_edit_update(111, true);
+    assert.ok(!message_edit.currently_editing_messages.has(111));
+
+    // The message moved (keep_form_open false) while a form is open: close
+    // the form and leave its content untouched.
+    // A stand-in textarea; handle_message_edit_update never mutates it.
+    const $textarea = {val: () => "old"};
+    message_edit.currently_editing_messages.set(111, $textarea);
+    message_edit.handle_message_edit_update(111, false);
+    assert.ok(!message_edit.currently_editing_messages.has(111));
+    assert.equal($textarea.val(), "old");
+
+    // External content edit while the form is open: keep the form open and
+    // leave the textarea alone (maybe_show_edit reconciles the content).
+    message_edit.currently_editing_messages.set(111, $textarea);
+    message_edit.handle_message_edit_update(111, true);
+    assert.ok(message_edit.currently_editing_messages.has(111));
+    assert.equal($textarea.val(), "old");
+
+    // Acknowledgement of this client's own edit, whose form stayed open
+    // during the save: the form is closed on acknowledgement, matching the
+    // original behavior.
+    message_edit.currently_editing_messages.set(111, $textarea);
+    message_edit.currently_editing_messages_echo_state.set(111, false);
+    message_edit.handle_message_edit_update(111, true);
+    assert.ok(!message_edit.currently_editing_messages_echo_state.has(111));
+    assert.ok(!message_edit.currently_editing_messages.has(111));
+
+    message_edit.currently_editing_messages.delete(111);
+});
