@@ -110,7 +110,7 @@ export function create<ItemType extends {type: string}>(
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
         get_display_value_from_item: opts.get_display_value_from_item,
-        focus_input_on_backspace_remove: opts.focus_input_on_backspace_remove ?? false,
+        focus_input_on_backspace_remove: opts.focus_input_on_backspace_remove ?? true,
         split_text_on_comma: opts.split_text_on_comma ?? true,
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
         generate_pill_html: opts.generate_pill_html,
