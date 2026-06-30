@@ -60,6 +60,7 @@ const compose_ui = zrequire("compose_ui");
 zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_recipient = zrequire("compose_recipient");
+const compose_split_messages = zrequire("compose_split_messages");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const compose_setup = zrequire("compose_setup");
@@ -418,6 +419,85 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
     })();
+});
+
+test_ui("split_message_preview_enumerated", ({override, mock_template}) => {
+    mock_banners();
+    initialize_handlers({override});
+
+    const fake_compose_box = new FakeComposeBox();
+    $("#compose .preview_content").set_find_results(
+        ".image-loading-placeholder",
+        $.create("no-images", {elements: []}),
+    );
+
+    compose_split_messages.set_split_messages_enabled(true);
+
+    override(markdown, "contains_backend_only_syntax", () => false);
+    override(markdown, "render", (raw_content) => ({content: "R:" + raw_content}));
+    override(loading, "destroy_indicator", noop);
+    override(rendered_markdown, "update_elements", noop);
+
+    const enumerated_calls = [];
+    mock_template("enumerated_split_message_part.hbs", false, (data) => {
+        enumerated_calls.push({
+            message_number: data.message_number,
+            rendered_preview_html: data.rendered_preview_html,
+        });
+        return `<div class="split_message_fragment">${data.rendered_preview_html}</div>`;
+    });
+
+    const rendered_contents = [];
+    override(channel, "post", (payload) => {
+        rendered_contents.push(payload.data.content);
+    });
+
+    fake_compose_box.set_textarea_val("part1\n\n\npart2");
+    fake_compose_box.hide_message_preview();
+
+    fake_compose_box.click_on_markdown_preview_icon({
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    fake_compose_box.assert_preview_mode_is_on();
+    assert.deepEqual(enumerated_calls, [
+        {message_number: 1, rendered_preview_html: "R:part1"},
+        {message_number: 2, rendered_preview_html: "R:part2"},
+    ]);
+    assert.deepEqual(rendered_contents, ["part1", "part2"]);
+
+    compose_split_messages.set_split_messages_enabled(false);
+});
+
+test_ui("message_edit_preview_is_not_split", ({override}) => {
+    compose_split_messages.set_split_messages_enabled(true);
+
+    override(markdown, "contains_backend_only_syntax", () => false);
+    const rendered_contents = [];
+    override(markdown, "render", (raw_content) => {
+        rendered_contents.push(raw_content);
+        return {content: "R:" + raw_content};
+    });
+    override(channel, "post", noop);
+    override(loading, "destroy_indicator", noop);
+    override(rendered_markdown, "update_elements", noop);
+
+    const $edit_row = $.create("edit-row-stub");
+    $edit_row.set_matches("#compose", false);
+    const $preview_content = $.create("edit-preview-content-stub");
+    $preview_content.set_find_results(
+        ".image-loading-placeholder",
+        $.create("no-images", {elements: []}),
+    );
+    $edit_row.set_find_results(".preview_content", $preview_content);
+    $edit_row.set_find_results(".markdown_preview_spinner", $.create("edit-spinner-stub"));
+
+    compose_ui.render_and_show_preview($edit_row, "part1\n\n\npart2");
+
+    assert.deepEqual(rendered_contents, ["part1\n\n\npart2"]);
+
+    compose_split_messages.set_split_messages_enabled(false);
 });
 
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {

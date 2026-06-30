@@ -13,10 +13,13 @@ import {
 } from "text-field-edit";
 import * as z from "zod/mini";
 
+import render_enumerated_split_message_part from "../templates/enumerated_split_message_part.hbs";
+
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -1704,23 +1707,88 @@ function apply_preview_render(
     }
 }
 
+function server_preview_html(content: string, rendered_content: string): string {
+    if (markdown.is_status_message(content)) {
+        // Handle previews of /me messages
+        return (
+            "<p><strong>" +
+            _.escape(current_user.full_name) +
+            "</strong>" +
+            rendered_content.slice("<p>/me".length)
+        );
+    }
+    return rendered_content;
+}
+
 function apply_server_preview_render(
     $preview_container: JQuery,
     content: string,
     rendered_content: string,
 ): void {
-    let rendered_preview_html;
-    if (markdown.is_status_message(content)) {
-        // Handle previews of /me messages
-        rendered_preview_html =
-            "<p><strong>" +
-            _.escape(current_user.full_name) +
-            "</strong>" +
-            rendered_content.slice("<p>/me".length);
+    apply_preview_render(
+        $preview_container,
+        content,
+        server_preview_html(content, rendered_content),
+    );
+}
+
+function split_preview_html(rendered_parts: string[]): string {
+    return rendered_parts
+        .map((rendered_preview_html, i) =>
+            render_enumerated_split_message_part({message_number: i + 1, rendered_preview_html}),
+        )
+        .join("");
+}
+
+async function post_render(content: string): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+        void channel.post({
+            url: "/json/messages/render",
+            data: {content, populate_url_embed_data: true},
+            success: resolve,
+            error: reject,
+        });
+    });
+}
+
+function render_and_show_split_preview(
+    $preview_container: JQuery,
+    content: string,
+    parts: string[],
+    show_spinner: boolean,
+    response_is_stale: () => boolean,
+): void {
+    if (parts.some((part) => markdown.contains_backend_only_syntax(part)) && show_spinner) {
+        const $spinner = $preview_container.find(".markdown_preview_spinner").expectOne();
+        loading.make_indicator($spinner);
     } else {
-        rendered_preview_html = rendered_content;
+        apply_preview_render(
+            $preview_container,
+            content,
+            split_preview_html(parts.map((part) => markdown.render(part).content)),
+        );
     }
-    apply_preview_render($preview_container, content, rendered_preview_html);
+
+    void (async () => {
+        const results = await Promise.allSettled(parts.map(async (part) => post_render(part)));
+        if (response_is_stale()) {
+            return;
+        }
+        // Rebuild the preview box in order. A single failed part gets
+        // its own inline error without wiping the others.
+        const rendered_parts = parts.map((part, i) => {
+            const result = results[i]!;
+            const parsed =
+                result.status === "fulfilled"
+                    ? message_render_response_schema.safeParse(result.value)
+                    : undefined;
+            if (parsed?.success) {
+                return server_preview_html(part, parsed.data.rendered);
+            }
+            return $t_html({defaultMessage: "Failed to generate preview"});
+        });
+        apply_preview_render($preview_container, content, split_preview_html(rendered_parts));
+    })();
 }
 
 const preview_render_counts = new WeakMap<HTMLElement, number>();
@@ -1750,6 +1818,20 @@ export function render_and_show_preview(
             preview_render_count !== get_preview_render_count($preview_container) ||
             !$preview_container.hasClass("preview_mode")
         );
+    }
+
+    const parts = $preview_container.is("#compose")
+        ? compose_split_messages.get_all_split_parts(content)
+        : [content];
+    if (parts.length > 1) {
+        render_and_show_split_preview(
+            $preview_container,
+            content,
+            parts,
+            show_spinner,
+            response_is_stale,
+        );
+        return;
     }
 
     if (content.length === 0) {
