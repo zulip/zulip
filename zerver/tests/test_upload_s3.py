@@ -1,3 +1,4 @@
+import importlib
 import os
 import re
 from io import BytesIO, StringIO
@@ -7,6 +8,7 @@ from urllib.parse import parse_qs, urlsplit
 import boto3
 import botocore.exceptions
 import pyvips
+from django.apps import apps
 from django.conf import settings
 from django.test import override_settings
 from moto.core.decorator import mock_aws
@@ -45,9 +47,13 @@ from zerver.lib.upload import (
 )
 from zerver.lib.upload.base import StreamingSourceWithSize
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import Attachment, OnboardingStep, RealmEmoji, UserProfile
+from zerver.models import Attachment, ImageAttachment, OnboardingStep, RealmEmoji, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
+
+# The migration module's filename starts with a digit, so it can't be a
+# normal `import`; load it by name.
+migration_0806 = importlib.import_module("zerver.migrations.0806_s3_metadata")
 
 
 class S3Test(ZulipTestCase):
@@ -96,6 +102,37 @@ class S3Test(ZulipTestCase):
         self.assertEqual(75, resized_image.width)
         self.assertEqual(75, resized_image.height)
         self.assertEqual(s3_thumbnail_image["Metadata"], {})
+
+    @use_s3_backend
+    def test_migration_0806_backfills_missing_content_type(self) -> None:
+        # Very old rows can have a null or empty content_type in both
+        # Attachment and its denormalized ImageAttachment copy. The
+        # migration recovers the type from the S3 object and writes it
+        # back to both tables.
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+        user_profile = self.example_user("hamlet")
+        with (
+            self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=False)),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            url = upload_message_attachment(
+                "img.png", "image/png", read_test_image_file("img.png"), user_profile
+            )[0]
+        path_id = url.removeprefix("/user_uploads/")
+        self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
+        self.assertEqual(bucket.Object(path_id).content_type, "image/png")
+
+        for missing_content_type in (None, ""):
+            Attachment.objects.filter(path_id=path_id).update(content_type=missing_content_type)
+            ImageAttachment.objects.filter(path_id=path_id).update(
+                content_type=missing_content_type
+            )
+
+            with patch("builtins.print"):
+                migration_0806.update_s3_metadata(apps, None)
+
+            self.assertEqual(Attachment.objects.get(path_id=path_id).content_type, "image/png")
+            self.assertEqual(ImageAttachment.objects.get(path_id=path_id).content_type, "image/png")
 
     @use_s3_backend
     def test_save_attachment_contents(self) -> None:
