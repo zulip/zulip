@@ -1126,19 +1126,25 @@ export function get_candidates(
             ];
         }
 
-        // Matches '#**stream name>some text' at the end of a split.
-        const stream_topic_regex = /#\*\*([^*>]+)>([^*\n]*)$/;
+        // Matches an in-progress (unterminated) '#**stream name>some text' mention
+        // where the closing '**' hasn't been typed yet.
+        const partial_stream_topic_regex = /#\*\*([^*>]+)>([^*\n]*)$/;
         // Matches '#>some text', which is a shortcut to
         // link to topics in the channel currently composing to.
         // `>` is enclosed in a capture group to use the below
         // code path for both syntaxes.
-        const shortcut_regex = /#(>)([^*\n]*)$/;
+        const topic_shortcut_regex = /#(>)([^*\n]*)$/;
         // Matches '[#channel](url)>some text' at the end of a split.
-        const fallback_stream_topic_regex = /(\[#)([^*>]+)]\(#[^)]*\)>([^*\n]*)$/;
-        const fallback_tokens = fallback_stream_topic_regex.exec(split[0]);
-        const stream_topic_tokens = stream_topic_regex.exec(split[0]);
-        const topic_shortcut_tokens = shortcut_regex.exec(split[0]);
-        const tokens = stream_topic_tokens ?? topic_shortcut_tokens ?? fallback_tokens;
+        const partial_fallback_stream_topic_regex = /(\[#)([^*>]+)]\(#[^)]*\)>([^*\n]*)$/;
+        const partial_fallback_stream_topic_tokens = partial_fallback_stream_topic_regex.exec(
+            split[0],
+        );
+        const partial_stream_topic_tokens = partial_stream_topic_regex.exec(split[0]);
+        const topic_shortcut_tokens = topic_shortcut_regex.exec(split[0]);
+        const tokens =
+            partial_stream_topic_tokens ?? // #**channel>topic
+            topic_shortcut_tokens ?? // #>topic
+            partial_fallback_stream_topic_tokens; // [#channel](url)>topic
         const should_begin_typeahead = tokens !== null;
         if (should_begin_typeahead) {
             completing = "topic_list";
