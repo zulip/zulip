@@ -1158,34 +1158,40 @@ test("content_typeahead_selected", ({override}) => {
         warned_for_stream_link = true;
     });
 
+    // Selecting a channel inserts a complete channel link; the topic
+    // typeahead then reopens to offer topic completion (see the
+    // get_candidates tests), so no broken `#**channel>` syntax is left
+    // behind if the user dismisses it without picking a topic.
     query = "#swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "#**Sweden>";
+    expected_value = "#**Sweden**";
     assert.equal(actual_value, expected_value);
 
     query = "Hello #swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "Hello #**Sweden>";
+    expected_value = "Hello #**Sweden**";
     assert.equal(actual_value, expected_value);
 
     query = "#**swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "#**Sweden>";
+    expected_value = "#**Sweden**";
     assert.equal(actual_value, expected_value);
 
+    // A channel name with special characters falls back to the markdown
+    // link syntax, still as a complete link.
     query = "#**A* al";
     ct.get_or_set_token_for_testing("A* al");
     actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
-    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)";
     assert.equal(actual_value, expected_value);
 
     query = "#>";
     ct.get_or_set_token_for_testing("#");
     actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
-    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)";
     assert.equal(actual_value, expected_value);
 
     // A channel that only allows the empty topic gets a complete channel
@@ -2904,6 +2910,18 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // rewrites the link into the partial-then-completed form. Typing after
     // the link filters topics just like the `>` syntax does.
     compose_ui.compose_textarea_typeahead = {shown: true};
+    assert_typeahead_equals(
+        "#**Sweden**",
+        typed_topics("Sweden", ["Sweden", ...sweden_topics_to_show]),
+    );
+    assert_typeahead_equals(
+        "#**Sweden**more ice",
+        typed_topics("Sweden", ["more ice", "even more ice"]),
+    );
+    assert_typeahead_equals(
+        "#**Sweden**totally new topic",
+        typed_topics("Sweden", ["totally new topic"], is_new_topic),
+    );
     // A space immediately after the complete link means the user has
     // moved on to the message body, so no topic typeahead is offered.
     assert_typeahead_equals("#**Sweden** more ice", []);

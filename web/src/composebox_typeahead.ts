@@ -1141,15 +1141,38 @@ export function get_candidates(
         const topic_shortcut_regex = /#(>)([^*\n]*)$/;
         // Matches '[#channel](url)>some text' at the end of a split.
         const partial_fallback_stream_topic_regex = /(\[#)([^*>]+)]\(#[^)]*\)>([^*\n]*)$/;
+        // Matches a complete '#**stream name**' link, optionally followed
+        // by a topic query; reopening the typeahead here offers topic
+        // completion. The trailing token excludes `>` to stay non-overlapping
+        // with the topic_jump trigger above.
+        const complete_stream_regex = /#\*\*([^*>]+)\*\*([^*>\n]*)$/;
+        // Matches the '[#channel](url)' fallback link for special characters.
+        const complete_fallback_stream_regex = /(\[#)([^*>]+)]\(#[^)]*\)([^*>\n]*)$/;
         const partial_fallback_stream_topic_tokens = partial_fallback_stream_topic_regex.exec(
             split[0],
         );
         const partial_stream_topic_tokens = partial_stream_topic_regex.exec(split[0]);
         const topic_shortcut_tokens = topic_shortcut_regex.exec(split[0]);
+        // A complete link is a valid final form, so only trigger topic
+        // completion while the typeahead is already open (the reopen flow
+        // after picking a channel), not when the cursor lands after an
+        // existing link.
+        const typeahead_already_shown = compose_ui.compose_textarea_typeahead?.shown ?? false;
+        const complete_channel_link_tokens = typeahead_already_shown
+            ? complete_stream_regex.exec(split[0])
+            : null;
+        const complete_fallback_link_tokens = typeahead_already_shown
+            ? complete_fallback_stream_regex.exec(split[0])
+            : null;
         const tokens =
             partial_stream_topic_tokens ?? // #**channel>topic
             topic_shortcut_tokens ?? // #>topic
-            partial_fallback_stream_topic_tokens; // [#channel](url)>topic
+            partial_fallback_stream_topic_tokens ?? // [#channel](url)>topic
+            complete_channel_link_tokens ?? // #**channel**
+            complete_fallback_link_tokens; // [#channel](url)
+        const is_complete_channel_link =
+            tokens !== null &&
+            (tokens === complete_channel_link_tokens || tokens === complete_fallback_link_tokens);
         const should_begin_typeahead = tokens !== null;
         if (should_begin_typeahead) {
             completing = "topic_list";
@@ -1189,6 +1212,15 @@ export function get_candidates(
             }
             // If we aren't composing to a channel, `sub` would be undefined.
             if (sub !== undefined) {
+                if (
+                    is_complete_channel_link &&
+                    stream_data.is_empty_topic_only_channel(sub.stream_id)
+                ) {
+                    // This channel only allows the empty topic, so the
+                    // complete channel link is the final form; don't offer
+                    // topic completion.
+                    return [];
+                }
                 // We always show topic suggestions after the user types a stream, and let them
                 // pick between just showing the stream (the first option, when nothing follows ">")
                 // or adding a topic.
@@ -1442,16 +1474,22 @@ export function content_typeahead_selected(
                 sub && stream_data.is_empty_topic_only_channel(sub.stream_id);
             const is_greater_than_key_pressed = event?.type === "keydown" && event.key === ">";
 
-            // For empty topic only channel, skip showing topic typeahead and
-            // insert direct channel link.
-            if (is_empty_topic_only_channel && !is_greater_than_key_pressed) {
-                beginning += topic_link_util.get_stream_link_syntax(item.name);
-            } else if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
-                // for stream links, we use markdown link syntax if the #**stream** syntax
-                // will generate a broken url.
-                beginning += topic_link_util.get_fallback_markdown_link(item.name) + ">";
+            // For an empty-topic-only channel, the user pressed ">" to
+            // explicitly request a topic, so insert the partial syntax to
+            // open topic completion.
+            if (is_empty_topic_only_channel && is_greater_than_key_pressed) {
+                if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
+                    // for stream links, we use markdown link syntax if the #**stream** syntax
+                    // will generate a broken url.
+                    beginning += topic_link_util.get_fallback_markdown_link(item.name) + ">";
+                } else {
+                    beginning += "#**" + item.name + ">";
+                }
             } else {
-                beginning += "#**" + item.name + ">";
+                // Insert a complete channel link; the topic typeahead reopens
+                // to offer topic completion, so dismissing it leaves a valid
+                // link rather than broken `#**channel>` syntax.
+                beginning += topic_link_util.get_stream_link_syntax(item.name);
             }
 
             void compose_validate.warn_if_private_stream_is_linked(item, $textbox);
