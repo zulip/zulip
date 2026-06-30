@@ -207,6 +207,32 @@ export function show_error_message(
     }
 }
 
+export function show_warning_message(
+    message: string,
+    classname: string,
+    $container: JQuery,
+    {
+        button_text = null,
+        stream_id = null,
+        topic_name = null,
+    }: {button_text?: string | null; stream_id?: number | null; topic_name?: string | null} = {},
+): boolean {
+    // The warning counterpart of show_error_message: same classname-dedupe,
+    // and like that function it intentionally does not support HTML messages.
+    // Returns whether the banner was appended.
+    $container.find(`.${CSS.escape(classname)}`).remove();
+
+    const new_row_html = render_compose_banner({
+        banner_type: WARNING,
+        stream_id,
+        topic_name,
+        banner_text: message,
+        button_text,
+        classname,
+    });
+    return append_compose_banner_to_banner_list($(new_row_html), $container);
+}
+
 export function cannot_send_direct_message_error(error_message: string): void {
     // If a banner with this classname already exists, avoid removing
     // and re-creating it.

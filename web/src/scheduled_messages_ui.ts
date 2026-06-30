@@ -1,8 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
-
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import {$t} from "./i18n.ts";
@@ -92,17 +90,13 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp: number): 
         new Date(scheduled_delivery_timestamp * 1000),
         "time",
     );
-    const unscheduled_banner_html = render_compose_banner({
-        banner_type: compose_banner.WARNING,
-        banner_text: $t({
+    compose_banner.show_warning_message(
+        $t({
             defaultMessage: "This message is no longer scheduled to be sent.",
         }),
-        button_text: $t({defaultMessage: "Schedule for {deliver_at}"}, {deliver_at}),
-        classname: compose_banner.CLASSNAMES.unscheduled_message,
-    });
-    compose_banner.append_compose_banner_to_banner_list(
-        $(unscheduled_banner_html),
+        compose_banner.CLASSNAMES.unscheduled_message,
         $("#compose_banners"),
+        {button_text: $t({defaultMessage: "Schedule for {deliver_at}"}, {deliver_at})},
     );
 }
 
