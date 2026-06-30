@@ -75,7 +75,7 @@ from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
 
 
@@ -3344,6 +3344,41 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic">#{denmark.name} &gt; some topic</a></p>',
         )
         # Empty string as topic name.
+        content = "#**Denmark>**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/">#{denmark.name} &gt; <em>{Message.EMPTY_TOPIC_FALLBACK_NAME}</em></a></p>',
+        )
+
+    def test_topic_link_in_empty_topic_only_channel(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        denmark.topics_policy = StreamTopicsPolicyEnum.empty_topic_only.value
+        denmark.save(update_fields=["topics_policy"])
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        # A non-empty topic can never exist in this channel, so its link
+        # is not formed (the leftover `**` then renders as bold).
+        content = "#**Denmark>some topic**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            "<p>#<strong>Denmark&gt;some topic</strong></p>",
+        )
+        # The message permalink variant is likewise not linkified.
+        content = "#**Denmark>some topic@12**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            "<p>#<strong>Denmark&gt;some topic@12</strong></p>",
+        )
+        # The channel link and the empty-topic link are still valid.
+        content = "#**Denmark**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark">#{denmark.name}</a></p>',
+        )
         content = "#**Denmark>**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
