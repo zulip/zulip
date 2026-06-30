@@ -5,11 +5,15 @@ const assert = require("node:assert/strict");
 const {RE2JS} = require("re2js");
 const Template = require("uri-template-lite");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const markdown = zrequire("markdown");
 const linkifiers = zrequire("linkifiers");
+const {set_realm} = zrequire("state_data");
+
+set_realm(make_realm({realm_empty_topic_display_name: "general chat"}));
 
 const my_id = 101;
 
@@ -67,10 +71,22 @@ const social = {
     name: "social",
 };
 
-const sub_map = new Map([[social.name, social]]);
+const empty_topic_only_channel = {
+    stream_id: 302,
+    name: "empty_topic_only_channel",
+};
+
+const sub_map = new Map([
+    [social.name, social],
+    [empty_topic_only_channel.name, empty_topic_only_channel],
+]);
 
 function get_stream_by_name(name) {
     return sub_map.get(name);
+}
+
+function is_empty_topic_only_channel(stream_id) {
+    return stream_id === empty_topic_only_channel.stream_id;
 }
 
 function stream_hash(stream_id) {
@@ -146,6 +162,7 @@ const helper_config = {
 
     // stream hashes
     get_stream_by_name,
+    is_empty_topic_only_channel,
     stream_hash,
     stream_topic_hash,
 
@@ -204,6 +221,31 @@ run_test("stream links", () => {
     assert_parse(
         "#**social>lunch**",
         '<p><a class="stream-topic" data-stream-id="301" href="stream-301-topic-lunch">#social &gt; lunch</a></p>',
+    );
+});
+
+run_test("empty-topic-only channel topic links", () => {
+    // A channel that only allows the empty topic can never contain a
+    // non-empty topic, so a non-empty topic link is left as plain text
+    // rather than linkified.
+    assert_parse(
+        "#**empty_topic_only_channel>lunch**",
+        "<p>#**empty_topic_only_channel&gt;lunch**</p>",
+    );
+    assert_parse(
+        "#**empty_topic_only_channel>lunch@12**",
+        "<p>#**empty_topic_only_channel&gt;lunch@12**</p>",
+    );
+    // The empty topic is still linkified, since it's the one topic
+    // such a channel can contain.
+    assert_parse(
+        "#**empty_topic_only_channel>**",
+        '<p><a class="stream-topic" data-stream-id="302" href="stream-302-topic-">#empty_topic_only_channel &gt; <span class="empty-topic-display">translated: general chat</span></a></p>',
+    );
+    // The channel link itself is still linkified.
+    assert_parse(
+        "#**empty_topic_only_channel**",
+        '<p><a class="stream" data-stream-id="302" href="/stream-302">#empty_topic_only_channel</a></p>',
     );
 });
 
