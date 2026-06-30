@@ -390,6 +390,35 @@ test("update_draft", ({override}) => {
     assert.ok(!tippy_destroy_called);
 });
 
+test("update_draft_during_split_send", ({override}) => {
+    const draft_model = drafts.draft_model;
+    override(Date, "now", () => 20);
+    override(Math, "random", () => 3);
+
+    drafts.set_compose_draft_id(undefined);
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(stream_1.stream_id);
+    compose_state.topic("split topic");
+    compose_state.message_content("part1\n\n\npart2\n\n\npart3");
+
+    const draft_id = drafts.update_draft({no_notify: true});
+    assert.equal(draft_model.getDraft(draft_id).content, "part1\n\n\npart2\n\n\npart3");
+
+    drafts.set_split_send_draft({draft_id, content: "part2\n\n\npart3"});
+    drafts.update_draft({no_notify: true});
+    assert.equal(draft_model.getDraft(draft_id).content, "part2\n\n\npart3");
+
+    drafts.set_split_send_draft({draft_id: "some-other-draft", content: "stale"});
+    drafts.update_draft({no_notify: true});
+    assert.equal(draft_model.getDraft(draft_id).content, "part1\n\n\npart2\n\n\npart3");
+
+    drafts.set_split_send_draft(undefined);
+    compose_state.message_content("");
+    drafts.update_draft({no_notify: true});
+    compose_state.set_message_type(undefined);
+    drafts.set_compose_draft_id(undefined);
+});
+
 test("rename_stream_recipient", () => {
     const draft_1 = {
         stream_id: stream_A.stream_id,

@@ -67,6 +67,7 @@ export const CLASSNAMES = {
     deactivated_user: "deactivated_user",
     topic_missing: "topic_missing",
     generic_compose_error: "generic_compose_error",
+    split_partial_failure: "split_partial_failure",
     user_not_subscribed: "user_not_subscribed",
     unknown_zoom_user: "unknown_zoom_user",
     split_messages: "split_messages",
@@ -370,7 +371,7 @@ export function show_partial_send_failure(sent_count: number): void {
         },
         {n: sent_count},
     );
-    show_error_message(text, CLASSNAMES.generic_compose_error, $("#compose_banners"));
+    show_error_message(text, CLASSNAMES.split_partial_failure, $("#compose_banners"));
 }
 
 function split_messages_info_banner_content(): string {
