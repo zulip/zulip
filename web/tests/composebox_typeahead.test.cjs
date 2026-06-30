@@ -1450,6 +1450,50 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "Hello #**Sweden** plan";
     assert.equal(actual_value, expected_value);
 
+    // Escape with the shortcut syntax for the channel being composed to.
+    compose_state.set_stream_id(sweden_stream.stream_id);
+    query = "Hello #>plan";
+    ct.get_or_set_token_for_testing("plan");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "planning",
+            topic_display_name: "planning",
+            type: "topic_list",
+            used_syntax_prefix: "#>",
+            is_channel_link: false,
+            stream_data: {
+                name: "Sweden",
+            },
+        },
+        query,
+        input_element,
+        {key: "Escape"},
+    );
+    expected_value = "Hello #**Sweden** plan";
+    assert.equal(actual_value, expected_value);
+
+    // Escape with the fallback markdown link syntax used for channel
+    // names that would produce broken `#**channel**` links.
+    query = "Hello [#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>fast";
+    ct.get_or_set_token_for_testing("fast");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "fast",
+            topic_display_name: "fast",
+            type: "topic_list",
+            used_syntax_prefix: "[#",
+            is_channel_link: false,
+            stream_data: {
+                name: "A* Algorithm",
+            },
+        },
+        query,
+        input_element,
+        {key: "Escape"},
+    );
+    expected_value = "Hello [#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm) fast";
+    assert.equal(actual_value, expected_value);
+
     // syntax
     ct.get_or_set_completing_for_tests("syntax");
 

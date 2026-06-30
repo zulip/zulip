@@ -1483,11 +1483,12 @@ export function content_typeahead_selected(
         }
         case "topic_list": {
             // If we use "Escape" we would want `#**design>this is a design topic` to be
-            // resolved to `#**design** this is a design topic`
+            // resolved to `#**design** this is a design topic`, i.e. a link to the
+            // channel followed by the partially typed topic as plain text.
             if (event?.key === "Escape") {
-                const topic_start_index = beginning.lastIndexOf(">");
-                const topic = beginning.slice(topic_start_index + 1);
-                beginning = beginning.slice(0, topic_start_index) + "** " + topic;
+                const syntax_start_index = beginning.lastIndexOf(item.used_syntax_prefix);
+                const stream_link = topic_link_util.get_stream_link_syntax(item.stream_data.name);
+                beginning = beginning.slice(0, syntax_start_index) + stream_link + " " + token;
                 break;
             }
 
