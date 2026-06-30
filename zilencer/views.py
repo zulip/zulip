@@ -738,7 +738,7 @@ def update_remote_realm_last_request_datetime_helper(
             remote_realm.save(update_fields=["last_request_datetime"])
 
 
-def delete_duplicate_registrations(
+def delete_duplicate_user_id_registrations(
     registrations: list[RemotePushDeviceToken], server_id: int, user_id: int, user_uuid: str
 ) -> list[RemotePushDeviceToken]:
     """
@@ -957,7 +957,7 @@ def remote_server_notify_push(
         ).order_by("id")
     )
     if android_devices and user_id is not None and user_uuid is not None:
-        android_devices = delete_duplicate_registrations(
+        android_devices = delete_duplicate_user_id_registrations(
             android_devices, server.id, user_id, user_uuid
         )
 
@@ -969,7 +969,9 @@ def remote_server_notify_push(
         ).order_by("id")
     )
     if apple_devices and user_id is not None and user_uuid is not None:
-        apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
+        apple_devices = delete_duplicate_user_id_registrations(
+            apple_devices, server.id, user_id, user_uuid
+        )
 
     logger.info(
         "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",
