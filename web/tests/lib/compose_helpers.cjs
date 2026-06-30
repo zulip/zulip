@@ -51,6 +51,7 @@ class FakeComposeBox {
 
         this.$content_textarea.set_height(50);
         this.$content_textarea.val("default message");
+        this.$content_textarea.prop("readonly", false);
         this.$content_textarea.trigger("blur");
 
         $(".compose-submit-button .loader").show();
@@ -108,6 +109,10 @@ class FakeComposeBox {
 
     is_textarea_focused() {
         return this.$content_textarea.is_focused();
+    }
+
+    is_textarea_readonly() {
+        return Boolean(this.$content_textarea.prop("readonly"));
     }
 
     is_submit_button_spinner_visible() {

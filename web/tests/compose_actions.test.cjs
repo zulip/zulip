@@ -79,7 +79,8 @@ mock_esm("../src/reload_state", {
     set_csrf_failed_handler: noop,
     is_pending: () => true,
 });
-mock_esm("../src/drafts", {
+const drafts = mock_esm("../src/drafts", {
+    draft_model: {getDraft: noop},
     update_draft: noop,
     update_compose_draft_count: noop,
     get_last_restorable_draft_based_on_compose_state: noop,
@@ -111,6 +112,7 @@ mock_esm("../src/dropdown_widget", {
 
 const people = zrequire("people");
 
+const compose_split_messages = zrequire("compose_split_messages");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const compose_reply = zrequire("compose_reply");
@@ -321,11 +323,28 @@ test("start", ({override, override_rewire, mock_template}) => {
     });
     $("textarea#compose-textarea").set_height(50);
 
+    compose_split_messages.set_split_messages_enabled(true);
     cancel();
     assert.ok(abort_xhr_called);
     assert.ok(pill_cleared);
     assert.ok(!$("#compose").hasClass("compose-box-open"));
     assert.ok(!compose_state.composing());
+    assert.ok(!compose_split_messages.is_split_messages_enabled());
+
+    override(drafts.draft_model, "getDraft", (draft_id) => {
+        assert.equal(draft_id, "draft-1");
+        return {split_messages_enabled: true};
+    });
+    start({message_type: "private", content: "part1\n\n\npart2", draft_id: "draft-1"});
+    assert.ok(compose_split_messages.is_split_messages_enabled());
+
+    start({
+        message_type: "private",
+        content: "part1\n\n\npart2",
+        draft_id: "draft-1",
+        split_messages_enabled: false,
+    });
+    assert.ok(!compose_split_messages.is_split_messages_enabled());
 });
 
 test("respond_to_message", ({override, override_rewire, mock_template}) => {

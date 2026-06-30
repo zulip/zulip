@@ -51,8 +51,11 @@ export function trim_except_whitespace_before_text(content: string): string {
     return content.replace(/^(\s*\n)+/, "").trimEnd();
 }
 
-export function split_message(raw_message_content: string): [string, string] {
-    if (!is_split_messages_enabled()) {
+export function split_message(
+    raw_message_content: string,
+    split = is_split_messages_enabled(),
+): [string, string] {
+    if (!split) {
         return [raw_message_content, ""];
     }
     // Trim leading newlines to avoid empty messages due to multiple delimiters.

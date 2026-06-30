@@ -7,6 +7,7 @@ import * as z from "zod/mini";
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -38,6 +39,7 @@ const draft_schema = z.intersection(
         content: z.string(),
         updatedAt: z.number(),
         is_sending_saving: z._default(z.boolean(), false),
+        split_messages_enabled: z._default(z.boolean(), false),
         // `drafts_version` is 0 for drafts that aren't auto-restored
         // and 1 for drafts created since that change, to avoid a flood
         // of old drafts showing up when this feature was introduced.
@@ -67,6 +69,7 @@ const possibly_buggy_draft_schema = z.intersection(
         content: z.string(),
         updatedAt: z.number(),
         is_sending_saving: z._default(z.boolean(), false),
+        split_messages_enabled: z._default(z.boolean(), false),
         drafts_version: z._default(z.number(), 0),
     }),
     z.discriminatedUnion("type", [
@@ -337,6 +340,12 @@ export function rename_stream_recipient(
     }
 }
 
+let split_send_draft: {draft_id: string; content: string} | undefined;
+
+export function set_split_send_draft(value: {draft_id: string; content: string} | undefined): void {
+    split_send_draft = value;
+}
+
 export function snapshot_message(force_save = false): LocalStorageDraft | undefined {
     const can_save_message = force_save || compose_state.has_savable_message_content();
     if (!compose_state.composing() || !can_save_message) {
@@ -351,6 +360,7 @@ export function snapshot_message(force_save = false): LocalStorageDraft | undefi
         type: compose_state.get_message_type(),
         content: compose_state.message_content(),
         updatedAt: getTimestamp(),
+        split_messages_enabled: compose_split_messages.is_split_messages_enabled(),
     };
     if (message.type === "private") {
         return {
@@ -476,6 +486,10 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
         draft.is_sending_saving = opts.is_sending_saving;
     } else {
         draft.is_sending_saving = old_draft ? old_draft.is_sending_saving : false;
+    }
+
+    if (split_send_draft !== undefined && split_send_draft.draft_id === draft_id) {
+        draft.content = split_send_draft.content;
     }
 
     // Now that it's been updated, we consider it to be the most recent version.
