@@ -259,26 +259,23 @@ export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string):
     return [...results.matches, ...results.rest];
 }
 
-export function compare_by_pms(user_a: User, user_b: User): number {
-    const count_a = people.get_recipient_count(user_a);
-    const count_b = people.get_recipient_count(user_b);
+export function compare_by_dms(user_a: User, user_b: User): number {
+    // Rank users by how recently you've exchanged direct messages with
+    // them, mirroring the mobile app. A more recent DM conversation,
+    // whether 1:1 or group, ranks higher, and any DM history ranks above
+    // none.
+    const a_message_id = pm_conversations.get_latest_direct_message_id_with_user(user_a.user_id);
+    const b_message_id = pm_conversations.get_latest_direct_message_id_with_user(user_b.user_id);
 
-    if (count_a > count_b) {
+    if (a_message_id !== undefined && b_message_id !== undefined) {
+        if (a_message_id > b_message_id) {
+            return -1;
+        } else if (a_message_id < b_message_id) {
+            return 1;
+        }
+    } else if (a_message_id !== undefined) {
         return -1;
-    } else if (count_a < count_b) {
-        return 1;
-    }
-
-    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
-    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
-
-    // This code will never run except in the rare case that one has no
-    // recent DM message history with a user, but does have some older
-    // message history that's outside the "recent messages only"
-    // data set powering people.get_recipient_count.
-    if (a_is_partner && !b_is_partner) {
-        return -1;
-    } else if (!a_is_partner && b_is_partner) {
+    } else if (b_message_id !== undefined) {
         return 1;
     }
 
@@ -357,7 +354,7 @@ export function compare_people_for_relevance(
         }
     }
 
-    return compare_by_pms(person_a.user, person_b.user);
+    return compare_by_dms(person_a.user, person_b.user);
 }
 
 export function sort_people_for_relevance<UserType extends UserOrMentionPillData | UserPillData>(

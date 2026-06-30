@@ -249,7 +249,7 @@ function compare_by_direct_message_group(
         if (diff !== 0) {
             return diff;
         }
-        return typeahead_helper.compare_by_pms(person1, person2);
+        return typeahead_helper.compare_by_dms(person1, person2);
     };
 }
 
@@ -352,7 +352,7 @@ function get_group_suggestions(
 
         persons.sort(compare_by_direct_message_group(existing_user_ids));
 
-        // Take top 15 persons, since they're ordered by pm_recipient_count.
+        // Take top 15 persons, since they're ordered by direct message recency.
         persons = persons.slice(0, 15);
 
         return persons.map((person) => {
@@ -395,7 +395,7 @@ function make_people_getter(last: NarrowCanonicalTermSuggestion): () => User[] {
         }
 
         persons = people.get_people_for_search_bar(query);
-        persons.sort(typeahead_helper.compare_by_pms);
+        persons.sort(typeahead_helper.compare_by_dms);
         return persons;
     };
 }

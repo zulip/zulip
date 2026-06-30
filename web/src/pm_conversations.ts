@@ -23,10 +23,6 @@ export function rewire_set_partner(value: typeof set_partner): void {
     set_partner = value;
 }
 
-export function is_partner(user_id: number): boolean {
-    return partners.has(user_id);
-}
-
 function filter_muted_pms(conversation: PMConversation): boolean {
     // We hide muted users from the top left corner, as well as those direct
     // message groups in which all participants are muted.
@@ -45,6 +41,12 @@ class RecentDirectMessages {
     // `message_id` sorting, since that's how we time-sort messages).
     recent_message_ids = new FoldDict<PMConversation>(); // key is user_ids_string
     recent_private_messages: PMConversation[] = [];
+
+    // Maps a user_id to the `message_id` of the most recent direct message
+    // conversation, whether a 1:1 or group DM, that includes that user. The
+    // current user is excluded. Typeahead uses this to rank users by how
+    // recently you've exchanged direct messages with them.
+    latest_message_id_by_user_id = new Map<number, number>();
 
     insert(user_ids: number[], message_id: number): void {
         if (user_ids.length === 0) {
@@ -81,6 +83,16 @@ class RecentDirectMessages {
             conversation.max_message_id = message_id;
         }
 
+        for (const user_id of user_ids) {
+            if (user_id === people.my_current_user_id()) {
+                continue;
+            }
+            const current_id = this.latest_message_id_by_user_id.get(user_id);
+            if (current_id === undefined || message_id > current_id) {
+                this.latest_message_id_by_user_id.set(user_id, message_id);
+            }
+        }
+
         this.recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
     }
 
@@ -113,6 +125,13 @@ class RecentDirectMessages {
 }
 
 export let recent = new RecentDirectMessages();
+
+export function get_latest_direct_message_id_with_user(user_id: number): number | undefined {
+    // Returns the `message_id` of your most recent direct message
+    // conversation that includes this user, or undefined if you have no
+    // recent direct message history with them.
+    return recent.latest_message_id_by_user_id.get(user_id);
+}
 
 export function process_message(message: Message): void {
     const user_ids = people.pm_with_user_ids(message);

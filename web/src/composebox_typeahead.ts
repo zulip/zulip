@@ -538,11 +538,6 @@ export function broadcast_mentions(): PseudoMentionUser[] {
         special_item_text: mention,
         secondary_text: get_wildcard_string(mention),
         email: mention,
-
-        // Always sort above, under the assumption that names will
-        // be longer and only contain "all" as a substring.
-        pm_recipient_count: Number.POSITIVE_INFINITY,
-
         full_name: mention,
 
         // used for sorting
