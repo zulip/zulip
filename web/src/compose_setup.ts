@@ -16,6 +16,7 @@ import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -114,6 +115,10 @@ export function initialize(): void {
         );
     });
 
+    const debounced_update_split_message_banner = _.debounce(() => {
+        compose_banner.update_split_messages_info_banner();
+    }, 300);
+
     $("textarea#compose-textarea").on(
         "input",
         _.throttle(() => {
@@ -155,6 +160,9 @@ export function initialize(): void {
 
             // We occasionally update the saved draft while the user is typing to minimize data loss risk.
             throttled_update_draft();
+            if (compose_split_messages.is_split_messages_enabled()) {
+                debounced_update_split_message_banner();
+            }
         }, 25),
     );
 
