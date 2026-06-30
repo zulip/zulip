@@ -138,6 +138,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
 
 export let clear_textarea = (): void => {
     $("#compose").find("input[type=text], textarea").val("");
+    $("textarea#compose-textarea").prop("readonly", false);
 };
 
 export function rewire_clear_textarea(value: typeof clear_textarea): void {
