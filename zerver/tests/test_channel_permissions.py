@@ -580,13 +580,19 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
                         acting_user=user,
                     )
             stream_name_list = [stream.name for stream in stream_list]
-            result = self.client_delete(
-                "/json/users/me/subscriptions",
-                {
-                    "subscriptions": orjson.dumps(stream_name_list).decode(),
-                    "principals": orjson.dumps([cordelia.id]).decode(),
-                },
-            )
+            # The unsubscribe endpoint takes the user-row lock inside a
+            # savepoint=False transaction, so a permission error rolls back
+            # to no savepoint and leaves the test transaction unusable.  Wrap
+            # the request in a savepoint so an expected failure doesn't break
+            # the rest of the test.
+            with self.artificial_transaction_savepoint():
+                result = self.client_delete(
+                    "/json/users/me/subscriptions",
+                    {
+                        "subscriptions": orjson.dumps(stream_name_list).decode(),
+                        "principals": orjson.dumps([cordelia.id]).decode(),
+                    },
+                )
             if expect_fail:
                 self.assert_json_error(result, "Insufficient permission")
                 return
