@@ -16,6 +16,7 @@ import render_topics_required_error_message from "../templates/topics_required_e
 import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
@@ -105,6 +106,8 @@ type StreamWildcardOptions = {
 
 export let wildcard_mention_threshold = 15;
 
+const APPROACHING_LIMIT_BUFFER = 900;
+
 export function set_upload_in_progress(status: boolean): void {
     upload_in_progress = status;
     validate_and_update_send_button_status();
@@ -128,6 +131,25 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
 
     $container.find(".message_edit_save").prop("disabled", save_is_disabled);
     $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
+}
+
+function ordinal_split_part_message(n: number, kind: "over" | "approaching"): string {
+    if (kind === "over") {
+        return $t(
+            {
+                defaultMessage:
+                    "The {n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} message is longer.",
+            },
+            {n},
+        );
+    }
+    return $t(
+        {
+            defaultMessage:
+                "The {n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} message is approaching the limit.",
+        },
+        {n},
+    );
 }
 
 export function get_disabled_send_tooltip_html(): string {
@@ -1061,53 +1083,65 @@ export function check_overflow_text($container: JQuery): number {
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
     const text = $textarea.val()!.trimEnd();
     const max_length = realm.max_message_length;
-    const remaining_characters = max_length - text.length;
     const $indicator = $container.find(".message-limit-indicator");
     const is_edit_container = $textarea.closest(".message_row").length > 0;
 
     const old_no_message_content = no_message_content;
     const old_message_too_long = message_too_long;
 
-    if (text.length > max_length) {
-        $indicator.removeClass("textarea-approaching-limit");
-        $textarea.removeClass("textarea-approaching-limit");
-        $indicator.addClass("textarea-over-limit");
-        $textarea.addClass("textarea-over-limit");
-        $indicator.html(
-            render_compose_limit_indicator({
-                remaining_characters,
-            }),
-        );
-        if (is_edit_container) {
-            set_message_too_long_for_edit(true, $container);
-        } else {
-            set_message_too_long_for_compose(true);
-        }
-    } else if (remaining_characters <= 900) {
-        $indicator.removeClass("textarea-over-limit");
-        $textarea.removeClass("textarea-over-limit");
-        $indicator.addClass("textarea-approaching-limit");
-        $textarea.addClass("textarea-approaching-limit");
-        $indicator.html(
-            render_compose_limit_indicator({
-                remaining_characters,
-            }),
-        );
-        if (is_edit_container) {
-            set_message_too_long_for_edit(false, $container);
-        } else {
-            set_message_too_long_for_compose(false);
-        }
-    } else {
-        $indicator.text("");
-        $textarea.removeClass("textarea-over-limit");
-        $textarea.removeClass("textarea-approaching-limit");
+    let split_parts: string[] = [text];
+    if (
+        !is_edit_container &&
+        (text.length > max_length || max_length - text.length <= APPROACHING_LIMIT_BUFFER)
+    ) {
+        split_parts = compose_split_messages.get_all_split_parts(text);
+    }
+    const over_limit_idx = split_parts.findIndex((part) => part.length > max_length);
+    const approaching_limit_idx = split_parts.findIndex(
+        (part) => part.length <= max_length && max_length - part.length <= APPROACHING_LIMIT_BUFFER,
+    );
+    const show_part_ordinal = split_parts.length > 1;
 
-        if (is_edit_container) {
-            set_message_too_long_for_edit(false, $container);
+    let limit_kind: "over" | "approaching" | undefined;
+    let active_idx = -1;
+    if (over_limit_idx !== -1) {
+        limit_kind = "over";
+        active_idx = over_limit_idx;
+    } else if (approaching_limit_idx !== -1) {
+        limit_kind = "approaching";
+        active_idx = approaching_limit_idx;
+    }
+
+    $indicator.toggleClass("textarea-over-limit", limit_kind === "over");
+    $textarea.toggleClass("textarea-over-limit", limit_kind === "over");
+    $indicator.toggleClass("textarea-approaching-limit", limit_kind === "approaching");
+    $textarea.toggleClass("textarea-approaching-limit", limit_kind === "approaching");
+
+    if (limit_kind === undefined) {
+        $indicator.text("");
+        $indicator.removeAttr("data-additional-text");
+    } else {
+        const split_part_length = split_parts[active_idx]?.length ?? 0;
+        $indicator.html(
+            render_compose_limit_indicator({
+                remaining_characters: max_length - split_part_length,
+            }),
+        );
+        if (show_part_ordinal) {
+            $indicator.attr(
+                "data-additional-text",
+                ordinal_split_part_message(active_idx + 1, limit_kind),
+            );
         } else {
-            set_message_too_long_for_compose(false);
+            $indicator.removeAttr("data-additional-text");
         }
+    }
+
+    const message_is_too_long = limit_kind === "over";
+    if (is_edit_container) {
+        set_message_too_long_for_edit(message_is_too_long, $container);
+    } else {
+        set_message_too_long_for_compose(message_is_too_long);
     }
 
     if (!is_edit_container) {
@@ -1148,15 +1182,14 @@ export function rewire_validate_and_update_send_button_status(
 }
 export function validate_message_length($container: JQuery, trigger_flash = true): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
-    // Match the behavior of compose_state.message_content of trimming trailing whitespace
-    const text = $textarea.val()!.trimEnd();
+    check_overflow_text($container);
 
-    const message_too_long_for_compose = text.length > realm.max_message_length;
-    // Usually, check_overflow_text maintains this, but since we just
-    // did the check, make sure it's up to date.
-    set_message_too_long_for_compose(message_too_long_for_compose);
+    const is_edit_container = $textarea.closest(".message_row").length > 0;
+    const too_long = is_edit_container
+        ? $textarea.val()!.trimEnd().length > realm.max_message_length
+        : message_too_long;
 
-    if (message_too_long_for_compose) {
+    if (too_long) {
         if (trigger_flash) {
             $textarea.addClass("flash");
             // This must be synchronized with the `flash` CSS.
