@@ -259,7 +259,7 @@ export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string):
     return [...results.matches, ...results.rest];
 }
 
-export function compare_by_pms(user_a: User, user_b: User): number {
+export function compare_by_dms(user_a: User, user_b: User): number {
     const count_a = people.get_recipient_count(user_a);
     const count_b = people.get_recipient_count(user_b);
 
@@ -357,7 +357,7 @@ export function compare_people_for_relevance(
         }
     }
 
-    return compare_by_pms(person_a.user, person_b.user);
+    return compare_by_dms(person_a.user, person_b.user);
 }
 
 export function sort_people_for_relevance<UserType extends UserOrMentionPillData | UserPillData>(
