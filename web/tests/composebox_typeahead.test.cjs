@@ -20,7 +20,7 @@ const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 const message_lists = mock_esm("../src/message_lists");
 const pm_conversations = mock_esm("../src/pm_conversations", {
-    is_partner: () => false,
+    get_latest_direct_message_id_with_user: () => undefined,
 });
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea() {
@@ -754,7 +754,7 @@ const make_emoji = (emoji_dict) => ({
 });
 
 // Empty query: compare_users_for_dms sorts alphabetically
-// by full_name (no recipient count, no partners, no name-length
+// by full_name (no direct message history, and no name-length
 // tiebreaker without a query).
 const sorted_user_list = [
     ali_item, // Ali
@@ -1577,8 +1577,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             case $("#private_message_recipient")[0]: {
                 pill_items = [];
 
-                // Empty query: alphabetical by full_name (no recipient
-                // count or PM partners), then groups, then bot.
+                // Empty query: alphabetical by full_name (no direct
+                // message history), then groups, then bot.
                 let actual_value = options.source("");
                 let expected_value = [
                     ali_item, // Ali
@@ -2354,8 +2354,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
     ]);
 
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
-    // No stream context and no PM partners: broadcast sorts before
-    // all non-partner users; bots alphabetical by full_name.
+    // No stream context and no direct message history: broadcast sorts
+    // before all these users; bots alphabetical by full_name.
     const users_and_all_mention = [
         mention_all,
         ...sorted_user_list,
@@ -2390,14 +2390,14 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@**", mentions_with_silent_marker(users_and_all_mention, false));
     assert_typeahead_equals("@_**", mentions_with_silent_marker(users_and_user_groups, true));
     // "o" is anywhere in each name; Othello starts with "o" so
-    // sorts first.  Broadcast before non-partner users (no PM
-    // partners in test), then bots by name length (shorter first).
+    // sorts first.  Broadcast before users with no direct message
+    // history (none in test), then bots by name length (shorter first).
     assert_typeahead_equals(
         "test @**o",
         mentions_with_silent_marker(
             [
                 othello_item, // Othello starts with "o"
-                mention_everyone, // broadcast: before non-partner users
+                mention_everyone, // broadcast: before users with no DMs
                 cordelia_item, // "Cordelia" contains "o"
                 welcome_bot_item, // Welcome Bot
                 notification_bot_item, // Notification Bot
@@ -2508,15 +2508,15 @@ test("begins_typeahead", ({override, override_rewire}) => {
         ),
     );
     // "l": King Lear and Cordelia have word-boundary match on "Lear"
-    // (best, shorter name first).  Broadcast before non-partner
-    // users (worst); remaining users by name length; then bot.
+    // (best, shorter name first).  Broadcast before users with no direct
+    // message history (worst); remaining users by name length; then bot.
     assert_typeahead_equals(
         "test\n @l",
         mentions_with_silent_marker(
             [
                 lear_item, // King *L*ear (9)
                 cordelia_item, // Cordelia, *L*ear's daughter (25)
-                mention_all, // broadcast "all" (before non-partners)
+                mention_all, // broadcast "all" (before users with no DMs)
                 ali_item, // Ali (3)
                 alice_item, // Alice (5)
                 hal_item, // Earl Hal (8)
@@ -2555,14 +2555,14 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(" @zuli", []);
     assert_typeahead_equals(" @_zuli", []);
     // Same ordering logic as @**o above: name-start match first, then
-    // the broadcast mention before non-partner users, then remaining
-    // matches by name length (shorter first).
+    // the broadcast mention before users with no direct message
+    // history, then remaining matches by name length (shorter first).
     assert_typeahead_equals(
         "test @o",
         mentions_with_silent_marker(
             [
                 othello_item, // Othello starts with "o"
-                mention_everyone, // broadcast: before non-partner users
+                mention_everyone, // broadcast: before users with no DMs
                 cordelia_item, // "Cordelia" contains "o"
                 welcome_bot_item, // Welcome Bot (11)
                 notification_bot_item, // Notification Bot (16)

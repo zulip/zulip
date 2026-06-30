@@ -265,7 +265,7 @@ export function compare_users_for_streams(
     current_stream_id: number,
     current_topic: string,
 ): number {
-    // Sort order: subscribers > recency in topic/stream > DM partners > alphabetical
+    // Sort order: subscribers > recency in topic/stream > direct message recency > alphabetical
     const a_is_subscribed = stream_data.is_user_loaded_and_subscribed(
         current_stream_id,
         user_a.user_id,
@@ -288,26 +288,29 @@ export function compare_users_for_streams(
         return recency_comparison;
     }
 
-    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
-    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
-    if (a_is_partner !== b_is_partner) {
-        return a_is_partner ? -1 : 1;
-    }
-    return user_a.full_name.localeCompare(user_b.full_name);
+    return compare_users_for_dms(user_a, user_b);
 }
 
 export function compare_users_for_dms(user_a: User, user_b: User, query = ""): number {
-    // Sort order: DM partners > message count > shorter name (if query) > alphabetical
-    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
-    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
-    if (a_is_partner !== b_is_partner) {
-        return a_is_partner ? -1 : 1;
+    // Rank users by how recently you've exchanged direct messages with
+    // them, mirroring the mobile app. A more recent DM conversation,
+    // whether 1:1 or group, ranks higher, and any DM history ranks above
+    // none.
+    const a_message_id = pm_conversations.get_latest_direct_message_id_with_user(user_a.user_id);
+    const b_message_id = pm_conversations.get_latest_direct_message_id_with_user(user_b.user_id);
+
+    if (a_message_id !== undefined && b_message_id !== undefined) {
+        if (a_message_id > b_message_id) {
+            return -1;
+        } else if (a_message_id < b_message_id) {
+            return 1;
+        }
+    } else if (a_message_id !== undefined) {
+        return -1;
+    } else if (b_message_id !== undefined) {
+        return 1;
     }
-    const count_a = people.get_recipient_count(user_a);
-    const count_b = people.get_recipient_count(user_b);
-    if (count_a !== count_b) {
-        return count_a > count_b ? -1 : 1;
-    }
+
     // Only apply name length comparison when user has started typing
     if (query.length > 0) {
         const name_len_diff = user_a.full_name.length - user_b.full_name.length;
@@ -320,7 +323,7 @@ export function compare_users_for_dms(user_a: User, user_b: User, query = ""): n
 
 export function compare_user_with_wildcard(user: User, stream_id?: number, topic?: string): number {
     if (stream_id === undefined || topic === undefined) {
-        return pm_conversations.is_partner(user.user_id) ? -1 : 1;
+        return pm_conversations.get_latest_direct_message_id_with_user(user.user_id) ? -1 : 1;
     }
 
     const is_subscriber = stream_data.is_user_loaded_and_subscribed(stream_id, user.user_id);
@@ -348,10 +351,10 @@ export function compare_user_with_wildcard(user: User, stream_id?: number, topic
     }
 
     // A user with no connection to this channel still ranks above the
-    // wildcard mention if they're a DM partner, since a frequent DM
+    // wildcard mention if there are DMs with them, since a frequent DM
     // contact is a more likely mention target than @all/@everyone for
-    // most users. Non-partners rank below the wildcard.
-    return pm_conversations.is_partner(user.user_id) ? -1 : 1;
+    // most users. Users without DM conversations rank below the wildcard.
+    return pm_conversations.get_latest_direct_message_id_with_user(user.user_id) ? -1 : 1;
 }
 
 export function compare_people_for_relevance(

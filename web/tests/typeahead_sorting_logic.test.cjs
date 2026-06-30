@@ -102,7 +102,6 @@ function test(label, f) {
         pm_conversations.clear_for_testing();
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
-        people.clear_recipient_counts_for_testing();
         peer_data.set_subscribers(stream1.stream_id, [], true);
         peer_data.set_subscribers(stream2.stream_id, [], true);
         f(helpers);
@@ -148,78 +147,72 @@ test("compare_users_for_streams: both subscribers, recency decides", () => {
     assert.ok(result < 0, "more recent user should come first");
 });
 
-test("compare_users_for_streams: same recency, DM partner comes first", () => {
+test("compare_users_for_streams: same recency, recent DM contact comes first", () => {
     const stream_id = stream1.stream_id;
     const topic = "test topic";
 
     peer_data.add_subscriber(stream_id, user1.user_id);
     peer_data.add_subscriber(stream_id, user2.user_id);
 
-    // Make user1 a DM partner
-    pm_conversations.set_partner(user1.user_id);
+    // Give user1 a recent direct message.
+    pm_conversations.recent.insert([user1.user_id], 100);
 
     const result = th.compare_users_for_streams(user1, user2, stream_id, topic);
-    assert.ok(result < 0, "DM partner should come first");
+    assert.ok(result < 0, "recent DM contact should come first");
 });
 
-test("compare_users_for_streams: non-subscriber without recency, then DM partner", () => {
+test("compare_users_for_streams: non-subscribers, recent DM contact comes first", () => {
     const stream_id = stream1.stream_id;
     const topic = "test topic";
 
     // Neither is a subscriber
-    pm_conversations.set_partner(user2.user_id);
+    pm_conversations.recent.insert([user2.user_id], 100);
 
     const result = th.compare_users_for_streams(user1, user2, stream_id, topic);
-    assert.ok(result > 0, "user2 with DM partnership should come first");
+    assert.ok(result > 0, "user2 with a recent direct message should come first");
 });
 
 // ============================================================================
 // Tests for compare_users_for_dms
 // ============================================================================
 // compare_users_for_dms is used when sorting DM recipients (no stream context).
-// Sort order: DM partners > message count > shorter name (if query) > alphabetical
+// Sort order: direct message recency > shorter name (if query) > alphabetical
 
-test("compare_users_for_dms: DM partners ranked before non-partners", () => {
-    pm_conversations.set_partner(user1.user_id);
-
-    const result = th.compare_users_for_dms(user1, user2);
-    assert.ok(result < 0, "DM partner should come before non-partner");
-});
-
-test("compare_users_for_dms: both partners, higher count comes first", () => {
-    pm_conversations.set_partner(user1.user_id);
-    pm_conversations.set_partner(user2.user_id);
-
-    people.set_recipient_count_for_testing(user1.user_id, 10);
-    people.set_recipient_count_for_testing(user2.user_id, 5);
+test("compare_users_for_dms: users with DM history ranked before those without", () => {
+    pm_conversations.recent.insert([user1.user_id], 100);
 
     const result = th.compare_users_for_dms(user1, user2);
-    assert.ok(result < 0, "higher message count should come first");
+    assert.ok(result < 0, "user with a direct message should come before one without");
 });
 
-test("compare_users_for_dms: same count and partner status, shorter name comes first", () => {
-    // This test verifies the NEW behavior: when users have the same partner
-    // status and message count, shorter names are preferred.
+test("compare_users_for_dms: both have DMs, more recent comes first", () => {
+    pm_conversations.recent.insert([user2.user_id], 100);
+    pm_conversations.recent.insert([user1.user_id], 200);
+
+    const result = th.compare_users_for_dms(user1, user2);
+    assert.ok(result < 0, "more recent direct message should come first");
+});
+
+test("compare_users_for_dms: a more recent group DM counts toward recency", () => {
+    // A newer group DM that includes user1 outranks an older 1:1 with user2.
+    pm_conversations.recent.insert([user2.user_id], 100);
+    pm_conversations.recent.insert([user1.user_id, user3.user_id], 200);
+
+    const result = th.compare_users_for_dms(user1, user2);
+    assert.ok(result < 0, "member of a more recent group DM should come first");
+});
+
+test("compare_users_for_dms: same DM recency, shorter name comes first", () => {
+    // When users tie on direct message recency, shorter names are preferred.
     // This rule ONLY applies when the user has started typing (query is non-empty).
-    pm_conversations.set_partner(short_name_user.user_id);
-    pm_conversations.set_partner(long_name_user.user_id);
-
-    people.set_recipient_count_for_testing(short_name_user.user_id, 5);
-    people.set_recipient_count_for_testing(long_name_user.user_id, 5);
-
     const result = th.compare_users_for_dms(short_name_user, long_name_user, "a");
     assert.ok(result < 0, "shorter name should come first");
 });
 
-test("compare_users_for_dms: same count and partner status, name length sorting only when query is non-empty", () => {
-    // This test verifies that name length comparison is ONLY applied when the
-    // user has started typing (query is non-empty). Without a query, users with
-    // equal DM partner status and message count fall through to alphabetical.
-    pm_conversations.set_partner(short_name_user.user_id);
-    pm_conversations.set_partner(long_name_user.user_id);
-
-    people.set_recipient_count_for_testing(short_name_user.user_id, 5);
-    people.set_recipient_count_for_testing(long_name_user.user_id, 5);
+test("compare_users_for_dms: name length sorting only when query is non-empty", () => {
+    // Name length comparison is ONLY applied when the user has started typing
+    // (query is non-empty). Without a query, users with equal direct message
+    // recency fall through to alphabetical.
 
     // With empty query, name length is skipped; alphabetical applies
     const result_empty = th.compare_users_for_dms(short_name_user, long_name_user, "");
@@ -230,30 +223,21 @@ test("compare_users_for_dms: same count and partner status, name length sorting 
     assert.ok(result_with_query < 0, "shorter name should come first when query is not empty");
 });
 
-test("compare_users_for_dms: not partners but with different counts", () => {
-    // Neither is a partner
-    people.set_recipient_count_for_testing(user1.user_id, 10);
-    people.set_recipient_count_for_testing(user2.user_id, 5);
-
-    const result = th.compare_users_for_dms(user1, user2);
-    assert.ok(result < 0, "higher count should come first");
-});
-
 // ============================================================================
 // Tests for compare_user_with_wildcard (DM context)
 // ============================================================================
 
-test("compare_user_with_wildcard (DM): DM partner gets preference", () => {
-    pm_conversations.set_partner(user1.user_id);
+test("compare_user_with_wildcard (DM): recent DM contact gets preference", () => {
+    pm_conversations.recent.insert([user1.user_id], 100);
 
     const result = th.compare_user_with_wildcard(user1);
-    assert.ok(result < 0, "DM partner should have priority over wildcard");
+    assert.ok(result < 0, "recent DM contact should have priority over wildcard");
 });
 
-test("compare_user_with_wildcard (DM): non-partner has less preference", () => {
-    // user2 is not a DM partner
+test("compare_user_with_wildcard (DM): user without DM history has less preference", () => {
+    // user2 has no direct message history.
     const result = th.compare_user_with_wildcard(user2);
-    assert.ok(result > 0, "non-partner should have less priority than wildcard");
+    assert.ok(result > 0, "user with no DM history should have less priority than wildcard");
 });
 
 // ============================================================================
@@ -300,14 +284,14 @@ test("compare_user_with_wildcard (Stream): posted in stream but not topic", () =
     assert.ok(result < 0, "stream participant should have priority over wildcard");
 });
 
-test("compare_user_with_wildcard (Stream): DM partner but nothing else", () => {
+test("compare_user_with_wildcard (Stream): recent DM contact but nothing else", () => {
     const stream_id = stream1.stream_id;
     const topic = "test topic";
 
-    pm_conversations.set_partner(user1.user_id);
+    pm_conversations.recent.insert([user1.user_id], 100);
 
     const result = th.compare_user_with_wildcard(user1, stream_id, topic);
-    assert.ok(result < 0, "DM partner should have priority over wildcard in stream context");
+    assert.ok(result < 0, "recent DM contact should have priority over wildcard in stream context");
 });
 
 test("compare_user_with_wildcard (Stream): no relevance should have less priority", () => {
@@ -364,36 +348,33 @@ test("compare_people_for_relevance (Stream): wildcard vs user (non-subscriber)",
 // Tests for compare_people_for_relevance (DM context)
 // ============================================================================
 
-test("compare_people_for_relevance (DM): two users both DM partners", () => {
-    pm_conversations.set_partner(user1.user_id);
-    pm_conversations.set_partner(user2.user_id);
-
-    people.set_recipient_count_for_testing(user1.user_id, 10);
-    people.set_recipient_count_for_testing(user2.user_id, 5);
+test("compare_people_for_relevance (DM): two users with DMs, more recent first", () => {
+    pm_conversations.recent.insert([user2.user_id], 100);
+    pm_conversations.recent.insert([user1.user_id], 200);
 
     const person_a = {type: "user", user: user1};
     const person_b = {type: "user", user: user2};
 
     const result = th.compare_people_for_relevance(person_a, person_b);
-    assert.ok(result < 0, "user with higher count should come first in DM context");
+    assert.ok(result < 0, "user with the more recent direct message should come first");
 });
 
-test("compare_people_for_relevance (DM): user vs wildcard (partner wins)", () => {
-    pm_conversations.set_partner(user1.user_id);
+test("compare_people_for_relevance (DM): user vs wildcard (recent DM wins)", () => {
+    pm_conversations.recent.insert([user1.user_id], 100);
 
     const person_user = {type: "user", user: user1};
     const person_wildcard = {type: "broadcast", user: {special_item_text: "@all", user_id: 0}};
 
     const result = th.compare_people_for_relevance(person_user, person_wildcard);
-    assert.ok(result < 0, "DM partner should come before wildcard in DM context");
+    assert.ok(result < 0, "recent DM contact should come before wildcard in DM context");
 });
 
-test("compare_people_for_relevance (DM): wildcard vs user (non-partner)", () => {
+test("compare_people_for_relevance (DM): wildcard vs user with no DM history", () => {
     const person_wildcard = {type: "broadcast", user: {special_item_text: "@all", user_id: 0}};
     const person_user = {type: "user", user: user1};
 
     const result = th.compare_people_for_relevance(person_wildcard, person_user);
-    assert.ok(result < 0, "wildcard should come before non-partner in DM context");
+    assert.ok(result < 0, "wildcard should come before a user with no DM history");
 });
 
 test("compare_people_for_relevance (DM): two wildcards", () => {
@@ -419,7 +400,7 @@ test("sort people for stream relevance - mixed users", () => {
     const topic = "test topic";
 
     peer_data.add_subscriber(stream_id, user1.user_id);
-    pm_conversations.set_partner(user2.user_id);
+    pm_conversations.recent.insert([user2.user_id], 100);
 
     const people_list = [
         {type: "user", user: user2},
@@ -429,13 +410,17 @@ test("sort people for stream relevance - mixed users", () => {
     people_list.sort((a, b) => th.compare_people_for_relevance(a, b, stream_id, topic));
 
     assert.equal(people_list[0].user.user_id, user1.user_id, "subscriber should come first");
-    assert.equal(people_list[1].user.user_id, user2.user_id, "DM partner should come second");
+    assert.equal(
+        people_list[1].user.user_id,
+        user2.user_id,
+        "recent DM contact should come second",
+    );
 });
 
 test("sort people for DM relevance - mixed users", () => {
-    pm_conversations.set_partner(user1.user_id);
-    people.set_recipient_count_for_testing(user1.user_id, 5);
-    people.set_recipient_count_for_testing(user2.user_id, 10);
+    // user1 has a more recent direct message than user2.
+    pm_conversations.recent.insert([user2.user_id], 100);
+    pm_conversations.recent.insert([user1.user_id], 200);
 
     const people_list = [
         {type: "user", user: user2},
@@ -444,16 +429,21 @@ test("sort people for DM relevance - mixed users", () => {
 
     people_list.sort((a, b) => th.compare_people_for_relevance(a, b));
 
-    assert.equal(people_list[0].user.user_id, user1.user_id, "DM partner should come first");
-    assert.equal(people_list[1].user.user_id, user2.user_id, "non-partner should come second");
+    assert.equal(
+        people_list[0].user.user_id,
+        user1.user_id,
+        "more recent DM contact should come first",
+    );
+    assert.equal(
+        people_list[1].user.user_id,
+        user2.user_id,
+        "less recent DM contact should come second",
+    );
 });
 
 test("sort users by name length - same other criteria", () => {
-    pm_conversations.set_partner(short_name_user.user_id);
-    pm_conversations.set_partner(long_name_user.user_id);
-    people.set_recipient_count_for_testing(short_name_user.user_id, 5);
-    people.set_recipient_count_for_testing(long_name_user.user_id, 5);
-
+    // Neither user has direct message history, so they tie on recency and the
+    // non-empty query makes name length the deciding factor.
     const people_list = [
         {type: "user", user: long_name_user},
         {type: "user", user: short_name_user},
@@ -473,7 +463,7 @@ test("sort users by name length - same other criteria", () => {
     );
 });
 
-test("stream sorting priority: subscriber > topic participant > stream participant > DM partner", () => {
+test("stream sorting priority: subscriber > topic participant > stream participant > DM contact", () => {
     const stream_id = stream1.stream_id;
     const topic = "test topic";
 
@@ -496,8 +486,8 @@ test("stream sorting priority: subscriber > topic participant > stream participa
         id: 250,
     });
 
-    // user4: not subscriber, no stream participation, DM partner
-    pm_conversations.set_partner(user4.user_id);
+    // user4: not subscriber, no stream participation, but a recent DM contact
+    pm_conversations.recent.insert([user4.user_id], 400);
 
     const people_list = [
         {type: "user", user: user3},
@@ -511,5 +501,5 @@ test("stream sorting priority: subscriber > topic participant > stream participa
     assert.equal(people_list[0].user.user_id, user1.user_id, "subscriber should be first");
     assert.equal(people_list[1].user.user_id, user2.user_id, "topic participant should be second");
     assert.equal(people_list[2].user.user_id, user3.user_id, "stream participant should be third");
-    assert.equal(people_list[3].user.user_id, user4.user_id, "DM partner should be fourth");
+    assert.equal(people_list[3].user.user_id, user4.user_id, "recent DM contact should be fourth");
 });

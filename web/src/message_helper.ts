@@ -85,7 +85,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
     people.extract_people_from_message(message_with_booleans.message);
 
     const sent_by_me = people.is_my_user_id(message_with_booleans.message.sender_id);
-    people.maybe_incr_recipient_count({...message_with_booleans.message, sent_by_me});
 
     let status_emoji_info;
     const sender = people.maybe_get_user_by_id(message_with_booleans.message.sender_id);
