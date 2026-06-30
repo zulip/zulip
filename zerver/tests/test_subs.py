@@ -4284,7 +4284,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Now add ourselves
         with (
             self.capture_send_event_calls(expected_num_events=2) as events,
-            self.assert_database_query_count(17),
+            self.assert_database_query_count(18),
         ):
             self.subscribe_via_post(
                 self.test_user,

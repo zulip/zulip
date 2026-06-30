@@ -179,6 +179,14 @@ def do_delete_user_core(
         # Then we hard-delete all the Subscription objects to avoid
         # preserving the user's previous personal metadata about
         # channel subscriptions (colors, notification preferences, etc.).
+        #
+        # Unlike the other bulk_remove_subscriptions callers, this one needs
+        # no user-row lock: do_deactivate_user above already marked the user
+        # inactive and decremented subscriber_count, so this call neither
+        # inserts a Subscription nor changes subscriber_count (the is_active
+        # guard in bulk_remove_subscriptions skips inactive users).  With no
+        # count delta and no insert, there is nothing for a concurrent
+        # (un)subscription to race against.
         bulk_remove_subscriptions(
             realm,
             [user_profile],
