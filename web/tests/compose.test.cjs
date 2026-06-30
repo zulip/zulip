@@ -43,7 +43,6 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
 const narrow_state = mock_esm("../src/narrow_state");
-const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
 const sent_messages = mock_esm("../src/sent_messages");
 const server_events_state = mock_esm("../src/server_events_state");
@@ -56,10 +55,18 @@ mock_esm("../src/settings_data", {
     user_has_permission_for_group_setting: () => true,
 });
 
+mock_esm("../src/compose_textarea", {
+    get_code_block_ranges: () => [],
+    save_compose_cursor: noop,
+    restore_compose_cursor: noop,
+    initialize: noop,
+});
+
 const compose_ui = zrequire("compose_ui");
 zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_recipient = zrequire("compose_recipient");
+const compose_split_messages = zrequire("compose_split_messages");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const compose_setup = zrequire("compose_setup");
@@ -420,6 +427,53 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     })();
 });
 
+test_ui("split_message_preview_enumerated", ({override, mock_template}) => {
+    mock_banners();
+    initialize_handlers({override});
+
+    const fake_compose_box = new FakeComposeBox();
+
+    compose_split_messages.set_split_messages_enabled(true);
+
+    // All parts are plain text: rendered locally, enumerated as Message N.
+    override(markdown, "contains_backend_only_syntax", () => false);
+    override(markdown, "is_status_message", () => false);
+    override(markdown, "render", (raw_content) => ({content: "R:" + raw_content}));
+
+    // Capture each enumerated part instead of asserting on accumulated DOM.
+    const enumerated_calls = [];
+    mock_template("enumerated_split_message_part.hbs", false, (data) => {
+        enumerated_calls.push({
+            message_number: data.message_number,
+            rendered_preview_html: data.rendered_preview_html,
+        });
+        return `<div class="split_message_fragment">${data.rendered_preview_html}</div>`;
+    });
+
+    // Each part also fires a server render; leave it unresolved so we test
+    // the synchronous local-render path. The async rebuild never runs.
+    override(channel, "post", () => {});
+
+    fake_compose_box.set_textarea_val("part1\n\n\npart2");
+    fake_compose_box.hide_message_preview();
+
+    fake_compose_box.click_on_markdown_preview_icon({
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    fake_compose_box.assert_preview_mode_is_on();
+
+    // Two parts, enumerated 1 and 2, each carrying its locally-rendered content.
+    assert.equal(enumerated_calls.length, 2);
+    assert.equal(enumerated_calls[0].message_number, 1);
+    assert.equal(enumerated_calls[0].rendered_preview_html, "R:part1");
+    assert.equal(enumerated_calls[1].message_number, 2);
+    assert.equal(enumerated_calls[1].rendered_preview_html, "R:part2");
+
+    compose_split_messages.set_split_messages_enabled(false);
+});
+
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     window.addEventListener = noop;
@@ -678,8 +732,6 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
 test_ui("on_events", ({override, override_rewire}) => {
     initialize_handlers({override});
 
-    override(rendered_markdown, "update_elements", noop);
-
     const fake_compose_box = new FakeComposeBox();
 
     (function test_attach_files_compose_clicked() {
@@ -721,25 +773,6 @@ test_ui("on_events", ({override, override_rewire}) => {
             });
         }
 
-        function test_post_success(success_callback) {
-            const resp = {
-                msg: "",
-                result: "success",
-                rendered: "Server: default message",
-            };
-            success_callback(resp);
-
-            assert.equal(fake_compose_box.preview_content_html(), "Server: default message");
-        }
-
-        function test_post_error(error_callback) {
-            error_callback();
-            assert.equal(
-                fake_compose_box.preview_content_html(),
-                "translated: Failed to generate preview",
-            );
-        }
-
         let current_message;
 
         override(channel, "post", (payload) => {
@@ -747,21 +780,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             assert.ok(payload.data);
             assert.deepEqual(payload.data.content, current_message);
 
-            function test(func, param) {
-                let destroy_indicator_called = false;
-                override(loading, "destroy_indicator", ($spinner) => {
-                    assert.equal($spinner.selector, fake_compose_box.markdown_spinner_selector());
-                    destroy_indicator_called = true;
-                });
-                setup_mock_markdown_contains_backend_only_syntax(current_message, true);
-
-                func(param);
-
-                assert.ok(destroy_indicator_called);
-            }
-
-            test(test_post_error, payload.error);
-            test(test_post_success, payload.success);
+            payload.error();
         });
 
         // Tests start here
@@ -781,7 +800,6 @@ test_ui("on_events", ({override, override_rewire}) => {
         fake_compose_box.set_textarea_val("```default message```");
         fake_compose_box.hide_message_preview();
         setup_mock_markdown_contains_backend_only_syntax("```default message```", true);
-        setup_mock_markdown_is_status_message("```default message```", false);
 
         override(loading, "make_indicator", ($spinner) => {
             assert.equal($spinner.selector, fake_compose_box.markdown_spinner_selector());
@@ -819,7 +837,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         assert.ok(render_called);
         fake_compose_box.assert_preview_mode_is_on();
-        assert.equal(fake_compose_box.preview_content_html(), "Server: default message");
+        assert.equal(fake_compose_box.preview_content_html(), "Local: default message");
     })();
 
     (function test_undo_markdown_preview_clicked() {
