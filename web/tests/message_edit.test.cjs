@@ -330,3 +330,33 @@ run_test("update_preview_embeds", ({override}) => {
 
     message_edit.currently_editing_messages.clear();
 });
+
+run_test("handle_message_edit_update", () => {
+    // With no message list, end_message_edit() just clears the editing-map
+    // entry, which lets us observe the close-vs-keep-open decisions here.
+    // No edit form open, so nothing happens.
+    message_edit.handle_message_edit_update(111, true);
+    assert.ok(!message_edit.currently_editing_messages.has(111));
+
+    const $textarea = {};
+
+    // The message moved, so the form closes.
+    message_edit.currently_editing_messages.set(111, $textarea);
+    message_edit.handle_message_edit_update(111, false);
+    assert.ok(!message_edit.currently_editing_messages.has(111));
+
+    // External content edit: the form stays open, and the re-render that
+    // follows lets maybe_show_edit reconcile its content.
+    message_edit.currently_editing_messages.set(111, $textarea);
+    message_edit.handle_message_edit_update(111, true);
+    assert.ok(message_edit.currently_editing_messages.has(111));
+
+    // Acknowledgement of our own edit closes the form, as it did before.
+    message_edit.currently_editing_messages.set(111, $textarea);
+    message_edit.currently_editing_messages_echo_state.set(111, false);
+    message_edit.handle_message_edit_update(111, true);
+    assert.ok(!message_edit.currently_editing_messages_echo_state.has(111));
+    assert.ok(!message_edit.currently_editing_messages.has(111));
+
+    message_edit.currently_editing_messages.delete(111);
+});

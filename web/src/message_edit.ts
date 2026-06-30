@@ -77,6 +77,13 @@ const pre_edit_raw_content = new Map<number, string>();
 const resized_edit_box_height = new Map<number, number>();
 let currently_topic_editing_message_ids: number[] = [];
 const currently_echoing_messages = new Map<number, EchoedMessageData>();
+// Raw content from the last known synced state. Used to detect edits made
+// by another client while this edit form is open.
+const last_synced_raw_content = new Map<number, string>();
+// Tracks edits from this client awaiting their update_message
+// acknowledgement, so we can tell our own edit's event from an external
+// one.
+export const currently_editing_messages_echo_state = new Map<number, boolean>();
 
 type EchoedMessageData = {
     raw_content: string;
@@ -415,6 +422,44 @@ function handle_message_edit_enter(
         composebox_typeahead.handle_enter($message_edit_content, e);
         return;
     }
+}
+
+export function handle_message_edit_update(message_id: number, keep_form_open: boolean): void {
+    const was_our_pending_edit = currently_editing_messages_echo_state.delete(message_id);
+
+    if (!currently_editing_messages.has(message_id)) {
+        // No edit form open, so there's nothing to close.
+        return;
+    }
+
+    if (!keep_form_open) {
+        // The message moved, so its row may leave the current narrow; close
+        // the form rather than keeping it open over a row that's going away.
+        end_message_edit(message_id);
+        return;
+    }
+
+    if (was_our_pending_edit) {
+        // Close non-echoed (e.g. attachment) edits. Note that events don't
+        // say which client made an edit, so an edit from another client that
+        // lands while ours is in flight is taken for our acknowledgement, and
+        // can close the form here.
+        end_message_edit(message_id);
+    }
+}
+
+function show_edit_conflict_warning($row: JQuery): void {
+    const $banner_container = compose_banner.get_compose_banner_container(
+        $row.find("textarea.message_edit_content"),
+    );
+    compose_banner.show_warning_message(
+        $t({
+            defaultMessage:
+                "This message was edited by another client. Cancel your edits here to preserve those changes.",
+        }),
+        compose_banner.CLASSNAMES.message_edited_elsewhere,
+        $banner_container,
+    );
 }
 
 function handle_message_row_edit_escape(e: JQuery.KeyDownEvent): void {
@@ -788,6 +833,7 @@ function start_edit_with_content(
     edit_box_open_callback?: () => void,
 ): void {
     pre_edit_raw_content.set(rows.id($row), content);
+    last_synced_raw_content.set(rows.id($row), content);
     start_edit_maintaining_scroll($row, content);
     if (edit_box_open_callback) {
         edit_box_open_callback();
@@ -1134,6 +1180,7 @@ export function end_message_row_edit($row: JQuery): void {
         typing.stop_message_edit_notifications(message.id);
         currently_editing_messages.delete(message.id);
         pre_edit_raw_content.delete(message.id);
+        last_synced_raw_content.delete(message.id);
         resized_edit_box_height.delete(message.id);
         message_lists.current.hide_edit_message($row);
         compose_call_session_manager.abandon_session(message.id.toString());
@@ -1169,6 +1216,7 @@ export function end_message_edit(message_id: number): void {
         // if it exists there but we cannot find the row.
         currently_editing_messages.delete(message_id);
         pre_edit_raw_content.delete(message_id);
+        last_synced_raw_content.delete(message_id);
     }
 }
 
@@ -1392,6 +1440,11 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     }
 
     assert(message !== undefined);
+    // Record this edit as in flight, with whether it was locally echoed, so
+    // the update_message event that acknowledges it is recognized as our
+    // own (see handle_message_edit_update) rather than treated as an
+    // external edit.
+    currently_editing_messages_echo_state.set(message_id, edit_locally_echoed);
     void channel.patch({
         url: "/json/messages/" + message.id,
         data: request,
@@ -1418,6 +1471,10 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             // The save is over, so stop indicating progress on the row
             // we started from, which may since have been detached.
             hide_message_edit_spinner($row);
+
+            // The save failed, so no acknowledgement event will clear
+            // the in-flight marker; clear it here.
+            currently_editing_messages_echo_state.delete(message_id);
 
             let echo_data: EchoedMessageData | undefined;
             if (edit_locally_echoed) {
@@ -1450,6 +1507,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                 if (!currently_editing_messages.has(message_id)) {
                     // Return to the message editing open UI state with the edited content.
                     pre_edit_raw_content.set(message_id, echo_data.orig_raw_content);
+                    last_synced_raw_content.set(message_id, echo_data.orig_raw_content);
                     start_edit_maintaining_scroll($row, echo_data.raw_content);
                 }
             }
@@ -1507,12 +1565,47 @@ export function maybe_show_edit($row: JQuery, id: number): void {
     }
 
     if (currently_editing_messages.has(id)) {
-        const $message_edit_content = currently_editing_messages.get(id);
-        edit_message($row, $message_edit_content?.val() ?? "");
+        const textarea_content = currently_editing_messages.get(id)?.val() ?? "";
+        const last_synced = last_synced_raw_content.get(id);
+        assert(last_synced !== undefined);
+        // By now message_events has run maybe_update_raw_content, so this is
+        // the server's post-edit content.
+        const server_content = message_lists.current.get(id)?.raw_content;
+
+        const edited_elsewhere = server_content !== undefined && server_content !== last_synced;
+        const has_unsaved_changes = textarea_content !== last_synced;
+        if (edited_elsewhere) {
+            // Saving should replace the content now on the server.
+            pre_edit_raw_content.set(id, server_content);
+        }
+
+        // If the message was edited elsewhere and the user hasn't touched the
+        // textarea, adopt the new content; otherwise keep their in-progress
+        // edits.
+        const content_to_restore =
+            edited_elsewhere && !has_unsaved_changes && server_content !== undefined
+                ? server_content
+                : textarea_content;
+        // Re-render the form and re-establish its handlers without the scroll
+        // adjustment start_edit_with_content does, since this runs on every
+        // re-render of the open form.
+        edit_message($row, content_to_restore);
         setup_edit_form_widgets($row);
+
         if ($row.hasClass("show_preview")) {
             show_preview_area($row);
             $row.removeClass("show_preview");
+        }
+
+        if (edited_elsewhere && has_unsaved_changes && textarea_content !== server_content) {
+            // Leave the last-synced content unchanged so the warning persists
+            // across later unrelated re-renders until the user resolves the
+            // conflict.
+            show_edit_conflict_warning($row);
+        } else if (edited_elsewhere && server_content !== undefined) {
+            // We adopted the new content, so we're back in sync; advance the
+            // last-synced content to avoid warning on a subsequent re-render.
+            last_synced_raw_content.set(id, server_content);
         }
     }
 }
