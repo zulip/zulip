@@ -37,7 +37,6 @@ export type PseudoMentionUser = {
     special_item_text: string;
     email: string;
     secondary_text: string;
-    pm_recipient_count: number;
     full_name: string;
     idx: number;
 };
@@ -48,7 +47,6 @@ let people_by_user_id_dict: Map<number, User>;
 let active_user_dict: Map<number, User>;
 let non_active_user_dict: Map<number, User>;
 let cross_realm_dict: Map<number, User>;
-let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
 let valid_user_ids: Set<number>;
@@ -100,7 +98,6 @@ export function init(): void {
     active_user_dict = new Map();
     non_active_user_dict = new Map();
     cross_realm_dict = new Map(); // keyed by user_id
-    pm_recipient_count_dict = new Map();
     valid_user_ids = new Set();
 
     // This maintains a set of ids of people with same full names.
@@ -1084,45 +1081,6 @@ export function get_non_active_realm_users(): User[] {
     return [...non_active_user_dict.values()];
 }
 
-export function get_recipient_count(person: User | PseudoMentionUser): number {
-    // We can have fake person objects like the "all"
-    // pseudo-person in at-mentions.  They will have
-    // the pm_recipient_count on the object itself.
-    if ("pm_recipient_count" in person) {
-        return person.pm_recipient_count;
-    }
-
-    /*
-        For searching in the search bar, we will
-        have true `person` objects with `user_id`.
-
-        Likewise, we'll have user_id if we are
-        tab-completing a user to send a direct message
-        to (but we only get called if we're not
-        currently in a stream view).
-
-        Finally, we'll have user_id if we are adding
-        people to a stream (w/typeahead).
-
-    */
-    const count = pm_recipient_count_dict.get(person.user_id);
-
-    return count ?? 0;
-}
-
-export function incr_recipient_count(user_id: number): void {
-    const old_count = pm_recipient_count_dict.get(user_id) ?? 0;
-    pm_recipient_count_dict.set(user_id, old_count + 1);
-}
-
-export function clear_recipient_counts_for_testing(): void {
-    pm_recipient_count_dict.clear();
-}
-
-export function set_recipient_count_for_testing(user_id: number, count: number): void {
-    pm_recipient_count_dict.set(user_id, count);
-}
-
 export function get_message_people(): User[] {
     /*
         message_people are roughly the people who have
@@ -1721,32 +1679,6 @@ export function predicate_for_user_settings_filters(
         matches_user_settings_search(person, query.text_search) &&
         matches_user_settings_role(person, query.role_code)
     );
-}
-
-export function maybe_incr_recipient_count(
-    message: MessageWithBooleans & {sent_by_me: boolean},
-): void {
-    if (message.type !== "private") {
-        return;
-    }
-
-    assert(
-        typeof message.display_recipient !== "string",
-        "Private messages should have list of recipients",
-    );
-
-    if (!message.sent_by_me) {
-        return;
-    }
-
-    assert(message.display_recipient !== undefined);
-
-    // Track the number of direct messages we've sent to this person
-    // to improve autocomplete
-    for (const recip of message.display_recipient) {
-        const user_id = recip.id;
-        incr_recipient_count(user_id);
-    }
 }
 
 export function set_full_name(person_obj: User, new_full_name: string): void {

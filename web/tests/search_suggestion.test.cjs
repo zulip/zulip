@@ -193,7 +193,7 @@ test("dm_suggestions", ({override}) => {
     let query = "is:dm";
     let suggestions = get_suggestions(query);
     // Empty query: compare_users_for_dms sorts alphabetically
-    // by full_name (no recipient count, no partners, no name-length
+    // by full_name (no direct message history, and no name-length
     // tiebreaker without a query).
     let expected = [
         "is:dm",

@@ -352,7 +352,7 @@ function get_group_suggestions(
 
         persons.sort(compare_by_direct_message_group(existing_user_ids));
 
-        // Take top 15 persons, since they're ordered by pm_recipient_count.
+        // Take top 15 persons, since they're ordered by direct message recency.
         persons = persons.slice(0, 15);
 
         return persons.map((person) => {
