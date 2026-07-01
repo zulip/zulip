@@ -2748,6 +2748,44 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to a long-term-idle user's clients when their
+                                account is no longer long-term idle, having had the
+                                messages they missed while idle backfilled.
+
+                                A client that registered with the
+                                `long_term_idle_reactivation`
+                                [client capability](/api/register-queue) shows a loading
+                                screen while the server backfills the messages the user
+                                missed while idle; once this event arrives, it should
+                                delete that event queue and register again to fetch the
+                                account's data.
+
+                                **Changes**: New in Zulip 13.0 (feature level ZF-6e0d20).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - long_term_idle
+                                value:
+                                  type: boolean
+                                  description: |
+                                    Whether the user is now long-term idle.
+
+                                    Currently always `false`, since the server only sends
+                                    this event when the user has stopped being long-term
+                                    idle.
+                              example:
+                                {
+                                  "type": "long_term_idle",
+                                  "value": false,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent when the set of onboarding steps to show for the current user
                                 has changed (e.g. because the user dismissed one).
 
@@ -18674,6 +18712,19 @@ paths:
                       <br />
                       **Changes**: New in Zulip 12.0 (feature level 491).
 
+                    - `long_term_idle_reactivation`: Boolean for whether the client
+                      supports the asynchronous flow for reactivating a returning
+                      long-term-idle user. If true, the server does not reactivate such
+                      a user synchronously during this request; instead it backfills the
+                      messages they missed while idle in the background and sends a
+                      [`long_term_idle`](/api/get-events#long_term_idle) event when the
+                      account is ready. This lets the client show a loading screen while
+                      reactivation completes, rather than blocking on the backfill. When
+                      the server takes this path, the response has `long_term_idle: true`
+                      and contains no other data about the organization or the user.
+                      <br />
+                      **Changes**: New in Zulip 13.0 (feature level ZF-6e0d20).
+
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
                     [events-linkifiers]: /api/get-events#realm_linkifiers
@@ -18772,6 +18823,23 @@ paths:
                         type: integer
                         description: |
                           The initial value of `last_event_id` to pass to `GET /api/v1/events`.
+                      long_term_idle:
+                        type: boolean
+                        description: |
+                          Whether the server is still reactivating the user's account in
+                          the background, rather than as part of this request.
+
+                          Present if `long_term_idle` is present in `fetch_event_types`,
+                          and in the response to a returning long-term-idle user's client
+                          that passed the `long_term_idle_reactivation` client capability.
+                          Only that response has it `true`, and it contains no data about
+                          the organization or the user beyond the fields that are always
+                          present; the client should show a loading screen, wait for the
+                          [`long_term_idle`](/api/get-events#long_term_idle) event on the
+                          allocated queue, and then delete that queue and register again
+                          to load the account normally.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-6e0d20).
                       zulip_feature_level:
                         type: integer
                         description: |

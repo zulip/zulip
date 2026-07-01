@@ -237,6 +237,11 @@ class InvitesChangedEvent(BaseEvent):
     type: Literal["invites_changed"]
 
 
+class LongTermIdleEvent(BaseEvent):
+    type: Literal["long_term_idle"]
+    value: bool
+
+
 class MessageFieldForMessageEvent(BaseModel):
     avatar_url: str | None
     client: str

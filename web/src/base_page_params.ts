@@ -32,6 +32,7 @@ const home_params_schema = z.object({
     embedded_bots_enabled: z.boolean(),
     furthest_read_time: z.nullable(z.number()),
     insecure_desktop_app: z.boolean(),
+    is_long_term_idle: z.boolean(),
     is_node_test: z.optional(z.literal(true)),
     is_spectator: z.boolean(),
     // `language_cookie_name` is only sent for spectators.
@@ -45,6 +46,7 @@ const home_params_schema = z.object({
         }),
     ),
     login_page: z.string(),
+    long_term_idle_days: z.nullable(z.number()),
     narrow: z.optional(z.array(narrow_term_schema)),
     narrow_stream: z.optional(z.string()),
     narrow_topic: z.optional(z.string()),
