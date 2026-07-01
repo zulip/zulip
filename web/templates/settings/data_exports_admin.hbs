@@ -1,6 +1,6 @@
 <div id="data-exports" class="settings-section" data-name="data-exports-admin">
     <div class="subsection-header">
-        <h3>{{t "Export organization" }}
+        <h3 class="settings-subsection-title">{{t "Export organization" }}
             {{> ../help_link_widget link="/help/export-your-organization" }}
         </h3>
     </div>
@@ -37,7 +37,7 @@
 
     <div class="export_section" data-export-section="data-exports">
         <div class="settings_panel_list_header">
-            <h3>{{t "Data exports"}}</h3>
+            <h3 class="settings-table-title">{{t "Data exports"}}</h3>
             <input type="hidden" class="search" placeholder="{{t 'Filter exports' }}"
               aria-label="{{t 'Filter exports' }}"/>
         </div>
@@ -64,7 +64,7 @@
 
     <div class="export_section" data-export-section="export-permissions">
         <div class="settings_panel_list_header">
-            <h3>{{t "Export permissions"}}</h3>
+            <h3 class="settings-table-title">{{t "Export permissions"}}</h3>
             <div class="user_filters">
                 {{> ../dropdown_widget widget_name="filter_by_consent"}}
                 {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter users')}}
