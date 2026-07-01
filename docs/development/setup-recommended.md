@@ -306,7 +306,7 @@ $ vagrant plugin install vagrant-vbguest
 $ vagrant up --provider=virtualbox
 ```
 
-```{include} setup/vagrant-up.md
+```{include} setup/vagrant-up-details.md
 
 ```
 
@@ -323,12 +323,8 @@ normal and is not a problem.
 :::{tab-item} macOS
 :sync: os-mac
 
-Change into the zulip directory and tell Vagrant to start the Zulip
-development environment with `vagrant up`:
+```{include} setup/vagrant-up.md
 
-```console
-$ cd zulip
-$ vagrant up --provider=docker
 ```
 
 **Important note**: There is a [known upstream issue on
@@ -342,7 +338,7 @@ Docker, you should return to using VirtioFS so that your files sync
 properly while developing, but you may need to revert to `osxfs (legacy)`
 whenever you need to re-provision.
 
-```{include} setup/vagrant-up.md
+```{include} setup/vagrant-up-details.md
 
 ```
 
@@ -355,15 +351,11 @@ whenever you need to re-provision.
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
 
-Change into the zulip directory and tell Vagrant to start the Zulip
-development environment with `vagrant up`:
+```{include} setup/vagrant-up.md
 
-```console
-$ cd zulip
-$ vagrant up --provider=docker
 ```
 
-```{include} setup/vagrant-up.md
+```{include} setup/vagrant-up-details.md
 
 ```
 
@@ -376,15 +368,11 @@ $ vagrant up --provider=docker
 :::{tab-item} Fedora
 :sync: os-fedora
 
-Change into the zulip directory and tell Vagrant to start the Zulip
-development environment with `vagrant up`:
+```{include} setup/vagrant-up.md
 
-```console
-$ cd zulip
-$ vagrant up --provider=docker
 ```
 
-```{include} setup/vagrant-up.md
+```{include} setup/vagrant-up-details.md
 
 ```
 
