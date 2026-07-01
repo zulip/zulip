@@ -1530,23 +1530,42 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                 echo_data = currently_echoing_messages.get(message_id);
                 assert(echo_data !== undefined);
 
+                // If our local echo was already replaced by a confirmed edit from
+                // another client, orig_content is stale. Restoring it would overwrite
+                // that confirmed edit, so only roll back while the content we echoed
+                // is still the content the message holds. We compare content rather
+                // than checking whether local_edit_timestamp survived, since
+                // message_events clears that for any update_message event, so a topic
+                // move would otherwise look like a superseding content edit.
+                // We don't cache raw_content for channels we're not subscribed
+                // to, but we also don't receive update_message events for
+                // them, so our echo can't have been replaced there.
+                const local_echo_was_replaced =
+                    message.raw_content !== undefined &&
+                    message.raw_content !== echo_data.raw_content;
+
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
 
+                const synced_raw_content = local_echo_was_replaced
+                    ? (message.raw_content ?? "")
+                    : echo_data.orig_raw_content;
                 // Set these even if the user reopened the edit form while
                 // the edit was saving, since that form recorded our
                 // echoed content, which the server never stored.
-                last_synced_raw_content.set(message_id, echo_data.orig_raw_content);
-                pre_edit_raw_content.set(message_id, echo_data.orig_raw_content);
+                last_synced_raw_content.set(message_id, synced_raw_content);
+                pre_edit_raw_content.set(message_id, synced_raw_content);
 
-                // Restore the original content.
-                echo.edit_locally(message, {
-                    content: echo_data.orig_content,
-                    raw_content: echo_data.orig_raw_content,
-                    mentioned: echo_data.mentioned,
-                    mentioned_me_directly: echo_data.mentioned_me_directly,
-                    alerted: echo_data.alerted,
-                });
+                if (!local_echo_was_replaced) {
+                    // Restore the original content.
+                    echo.edit_locally(message, {
+                        content: echo_data.orig_content,
+                        raw_content: echo_data.orig_raw_content,
+                        mentioned: echo_data.mentioned,
+                        mentioned_me_directly: echo_data.mentioned_me_directly,
+                        alerted: echo_data.alerted,
+                    });
+                }
                 clear_saving_state_of_reopened_edit_form(message_id);
             }
 
