@@ -46,6 +46,7 @@ import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
+import * as voice_record from "./voice_record.ts";
 import * as widget_modal from "./widget_modal.ts";
 
 export function abort_xhr(): void {
@@ -456,6 +457,16 @@ export function initialize(): void {
 
         compose_call_ui.generate_and_insert_audio_or_video_call_link($(this), true);
     });
+
+    $("body").on("click", ".compose_record_voice", function (this: HTMLElement, e): void {
+        e.preventDefault();
+        e.stopPropagation();
+        voice_record.toggle_recording($(this));
+    });
+
+    // Hide the voice-message button where recording is unavailable, such as an
+    // insecure context in which navigator.mediaDevices is undefined.
+    $("body").toggleClass("voice-recording-unsupported", !voice_record.is_supported());
 
     $("body").on("click", ".time_pick", function (this: HTMLElement, e) {
         e.preventDefault();
