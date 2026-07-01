@@ -3,7 +3,6 @@ label {
 }
 
 label,
-h4,
 h3,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
@@ -555,18 +554,8 @@ input[type="checkbox"] {
     margin-bottom: 0;
 }
 
-.admin-realm-form {
-    .subsection-header h3 {
-        display: inline;
-    }
-}
-
 .preferences-settings-form,
 .notification-settings-form {
-    .subsection-header h3 {
-        display: inline-block;
-    }
-
     .tip {
         width: fit-content;
         margin-top: 0;
@@ -2267,10 +2256,6 @@ label.preferences-radio-choice-label {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-
-    & h3 {
-        display: inline-block;
-    }
 
     .user_filters,
     .bot-filters {

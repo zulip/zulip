@@ -134,7 +134,6 @@
 /* TODO: Unify with settings.css definition */
 h3.stream_setting_subsection_title,
 h3.user_group_setting_subsection_title {
-    display: inline-block;
     font-size: 1.5em;
     font-weight: normal;
     line-height: 1.5;
@@ -436,7 +435,6 @@ h3.user_group_setting_subsection_title {
             font-weight: normal;
             line-height: 1.5;
             margin: 10px 0;
-            display: inline;
         }
     }
 
