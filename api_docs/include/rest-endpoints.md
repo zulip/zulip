@@ -161,6 +161,9 @@
 * [Get data export consent state](/api/get-realm-export-consents)
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
 * [Deactivate an organization](/api/deactivate-realm)
+* [Upload an organization icon](/api/upload-realm-icon)
+* [Delete an organization icon](/api/delete-realm-icon)
+* [Get an organization icon](/api/get-realm-icon)
 
 ## Real-time events
 
