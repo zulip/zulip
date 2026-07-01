@@ -416,15 +416,33 @@ export function create<ItemType extends {type: string}>(
 
             // Typing of the comma is prevented if the last field doesn't validate,
             // as well as when the new pill is created.
-            if (e.key === "," && !store.allow_comma_in_item_text) {
-                // if the pill is successful, it will create the pill and clear
-                // the input.
-                if (funcs.appendPill(store.$input.text().trim())) {
-                    funcs.clear(util.the(store.$input));
-                }
-                e.preventDefault();
+            if (e.key === ",") {
+                if (!store.allow_comma_in_item_text) {
+                    // if the pill is successful, it will create the pill and clear
+                    // the input.
+                    if (funcs.appendPill(store.$input.text().trim())) {
+                        funcs.clear(util.the(store.$input));
+                    }
+                    e.preventDefault();
 
-                return;
+                    return;
+                }
+
+                // If split_text_on_comma is false, we still want to create a pill
+                // if the text before the comma forms a valid item (e.g., an email address).
+                // If it is NOT valid, we allow the comma to be typed (e.g., for "Smith, John").
+                const text = store.$input.text().trim();
+                if (!text) {
+                    return;
+                }
+                const existing_items = funcs.items();
+                const item = store.create_item_from_text(text, existing_items, store.pill_config);
+                if (item) {
+                    funcs.appendValidatedData(item);
+                    funcs.clear(util.the(store.$input));
+                    e.preventDefault();
+                    return;
+                }
             }
         });
 
