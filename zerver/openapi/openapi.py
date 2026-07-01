@@ -414,6 +414,33 @@ def get_openapi_parameters(
                 )
             )
 
+    if "requestBody" in operation and "multipart/form-data" in (
+        content := operation["requestBody"]["content"]
+    ):
+        media_type = content["multipart/form-data"]
+        required = media_type["schema"].get("required", [])
+        for key, schema in media_type["schema"]["properties"].items():
+            if schema.get("format") == "binary":
+                # File upload properties aren't typed_endpoint arguments.
+                continue
+            json_encoded = (
+                media_type.get("encoding", {}).get(key, {}).get("contentType") == "application/json"
+                or schema.get("type") == "object"
+            )
+
+            parameters.append(
+                Parameter(
+                    kind="formData",
+                    name=key,
+                    description=schema["description"],
+                    json_encoded=json_encoded,
+                    value_schema=schema,
+                    example=schema.get("example"),
+                    required=key in required,
+                    deprecated=schema.get("deprecated", False),
+                )
+            )
+
     return parameters
 
 

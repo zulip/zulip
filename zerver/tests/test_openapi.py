@@ -627,6 +627,46 @@ class TestCurlExampleGeneration(ZulipTestCase):
         },
     }
 
+    spec_mock_with_multipart_and_extra_param = {
+        "security": [{"basicAuth": []}],
+        "paths": {
+            "/endpoint": {
+                "post": {
+                    "description": "Upload something, with an extra parameter.",
+                    "parameters": [
+                        {
+                            "name": "night",
+                            "in": "query",
+                            "description": "Whether to use the night version.",
+                            "schema": {
+                                "type": "boolean",
+                            },
+                            "example": False,
+                            "required": True,
+                        },
+                    ],
+                    "requestBody": {
+                        "content": {
+                            "multipart/form-data": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "file": {
+                                            "type": "string",
+                                            "format": "binary",
+                                            "example": "path/to/file.png",
+                                        },
+                                    },
+                                    "required": ["file"],
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+
     spec_mock_with_invalid_method: dict[str, object] = {
         "security": [{"basicAuth": []}],
         "paths": {
@@ -784,6 +824,22 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream_id=1 \\",
             "    --data-urlencode bool_param=false",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_generate_and_render_curl_with_multipart_and_extra_param(
+        self, spec_mock: MagicMock
+    ) -> None:
+        spec_mock.return_value = self.spec_mock_with_multipart_and_extra_param
+        generated_curl_example = self.curl_example("/endpoint", "POST")
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/endpoint \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    -F night=false \\",
+            "    -F file=@path/to/file.png",
             "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)

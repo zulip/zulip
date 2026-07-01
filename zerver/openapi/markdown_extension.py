@@ -223,7 +223,11 @@ def curl_method_arguments(endpoint: str, method: str, api_url: str) -> list[str]
 
 
 def get_openapi_param_example_value_as_string(
-    endpoint: str, method: str, parameter: Parameter, curl_argument: bool = False
+    endpoint: str,
+    method: str,
+    parameter: Parameter,
+    curl_argument: bool = False,
+    use_multipart: bool = False,
 ) -> str:
     if "type" in parameter.value_schema:
         param_type = parameter.value_schema["type"]
@@ -245,7 +249,8 @@ cURL example."""
         # We currently don't have any non-JSON encoded arrays.
         assert parameter.json_encoded
         if curl_argument:
-            return "    --data-urlencode " + shlex.quote(f"{parameter.name}={ordered_ex_val_str}")
+            flag = "-F" if use_multipart else "--data-urlencode"
+            return f"    {flag} " + shlex.quote(f"{parameter.name}={ordered_ex_val_str}")
         return ordered_ex_val_str  # nocoverage
     else:
         if parameter.example is NO_EXAMPLE:
@@ -261,7 +266,8 @@ cURL example."""
             assert isinstance(example_value, str)
 
         if curl_argument:
-            return "    --data-urlencode " + shlex.quote(f"{parameter.name}={example_value}")
+            flag = "-F" if use_multipart else "--data-urlencode"
+            return f"    {flag} " + shlex.quote(f"{parameter.name}={example_value}")
         return example_value
 
 
@@ -339,6 +345,10 @@ def generate_curl_example(
         auth_api_key = "ZULIP_ORG_KEY" if is_zilencer_endpoint else DEFAULT_AUTH_API_KEY
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
 
+    content = (operation_request_body or {}).get("content", {})
+    multipart_schema = content.get("multipart/form-data", {}).get("schema")
+    is_multipart = multipart_schema is not None
+
     for parameter in parameters:
         if parameter.kind == "path":
             continue
@@ -350,15 +360,16 @@ def generate_curl_example(
             continue
 
         example_value = get_openapi_param_example_value_as_string(
-            endpoint, method, parameter, curl_argument=True
+            endpoint, method, parameter, curl_argument=True, use_multipart=is_multipart
         )
         lines.append(example_value)
 
-    if "requestBody" in operation_entry and "multipart/form-data" in (
-        content := operation_entry["requestBody"]["content"]
-    ):
-        properties = content["multipart/form-data"]["schema"]["properties"]
-        for key, property in properties.items():
+    if is_multipart:
+        for key, property in multipart_schema["properties"].items():
+            if property.get("format") != "binary":
+                # Non-file properties are already rendered above, from
+                # get_openapi_parameters.
+                continue
             lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
 
     for i in range(1, len(lines) - 1):
