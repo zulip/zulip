@@ -42,6 +42,8 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-webex-video-call",
     # Redirects to the organization's icon rather than returning JSON.
     "get-realm-icon",
+    # Redirects to the organization's logo rather than returning JSON.
+    "get-realm-logo",
 }
 
 

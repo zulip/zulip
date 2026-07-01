@@ -15188,6 +15188,177 @@ paths:
               schema:
                 type: string
               example: "/user_avatars/2/realm/icon.png?version=2"
+  /realm/logo:
+    post:
+      operationId: upload-realm-logo
+      summary: Upload an organization logo
+      tags: ["server_and_organizations"]
+      description: |
+        [Change the organization's wide logo](/help/create-your-organization-profile#add-a-wide-logo).
+
+        The maximum allowed file size is available in the `max_logo_file_size_mib`
+        field in the [`POST /register`](/api/register-queue) response.
+
+        On Zulip Cloud, this endpoint requires an organization to be on a
+        [Zulip Cloud Standard](https://zulip.com/plans/) plan or higher.
+      x-requires-administrator: true
+      x-parameter-description: |
+        The logo image file must be provided in the request's body as
+        multipart form data.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  example: "zerver/tests/images/img.png"
+                night:
+                  allOf:
+                    - $ref: "#/components/schemas/Night"
+                  description: |
+                    Whether to change the organization's dark theme wide logo,
+                    instead of its default (light theme) wide logo.
+              required:
+                - file
+                - night
+            encoding:
+              night:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the organization's plan does
+                          not support a custom wide logo:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Available on Zulip Cloud Standard. Upgrade to access.",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the request did not include
+                          exactly one file:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "You must upload exactly one logo.",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the uploaded file exceeds the
+                          maximum allowed size:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Uploaded file is larger than the allowed limit of 5 MiB",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the uploaded file has an
+                          unsupported format:
+                        example:
+                          {
+                            "code": "BAD_IMAGE",
+                            "msg": "Invalid image format",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the uploaded file cannot be
+                          decoded as an image:
+                        example:
+                          {
+                            "code": "BAD_IMAGE",
+                            "msg": "Could not decode image; did you upload an image file?",
+                            "result": "error",
+                          }
+    delete:
+      operationId: delete-realm-logo
+      summary: Delete an organization logo
+      tags: ["server_and_organizations"]
+      description: |
+        Delete the organization's uploaded
+        [wide logo](/help/create-your-organization-profile#add-a-wide-logo),
+        reverting it to the default Zulip logo.
+      x-requires-administrator: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                night:
+                  allOf:
+                    - $ref: "#/components/schemas/Night"
+                  description: |
+                    Whether to delete the organization's dark theme wide logo,
+                    instead of its default (light theme) wide logo.
+              required:
+                - night
+            encoding:
+              night:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+    get:
+      operationId: get-realm-logo
+      summary: Get an organization logo
+      tags: ["server_and_organizations"]
+      description: |
+        Get the organization's current
+        [wide logo](/help/create-your-organization-profile#add-a-wide-logo).
+
+        Redirects to the logo's current image URL. Any authenticated user in
+        the organization can use this endpoint.
+      x-response-description: |
+        This endpoint responds with an HTTP 302 redirect to the logo's
+        current image URL, provided in the `Location` header, rather than
+        a JSON body.
+      parameters:
+        - name: night
+          in: query
+          description: |
+            Whether to fetch the organization's dark theme wide logo,
+            instead of its default (light theme) wide logo.
+          schema:
+            type: boolean
+          example: false
+          required: true
+      responses:
+        "302":
+          description: |
+            Found. Redirects to the organization's current wide logo image.
+          headers:
+            Location:
+              description: |
+                The URL of the organization's current wide logo image.
+              schema:
+                type: string
+              example: "/user_avatars/2/realm/logo.png?version=2&night=false"
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields
@@ -30991,6 +31162,9 @@ components:
 
         **Changes**: New in Zulip 13.0 (feature level 507).
       example: true
+    Night:
+      type: boolean
+      example: false
     TopicsPolicy:
       type: string
       enum:
