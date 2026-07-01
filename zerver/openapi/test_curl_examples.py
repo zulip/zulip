@@ -46,6 +46,8 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "deactivate-realm",
     # Redirects to the organization's icon rather than returning JSON.
     "get-realm-icon",
+    # Redirects to the organization's logo rather than returning JSON.
+    "get-realm-logo",
 }
 
 
