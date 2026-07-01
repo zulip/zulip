@@ -27,6 +27,7 @@ from zerver.models import (
 )
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.tornado.django_api import send_event_on_commit
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
@@ -348,6 +349,22 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> UserProfil
         return user_profile
 
 
+def reactivate_user_and_notify_client(user_profile: UserProfile, *, notify_client: bool) -> None:
+    """Backfill a returning long-term-idle user's missed UserMessage rows, and
+    when notify_client is set, send a long_term_idle event so a client waiting
+    on the loading screen can reload. The event is sent whenever notify_client
+    is set -- even if another path already reactivated the user -- so the
+    waiting client is always released.
+    """
+    reactivate_user_if_soft_deactivated(user_profile)
+    if notify_client:
+        send_event_on_commit(
+            user_profile.realm,
+            {"type": "long_term_idle", "op": "reactivated"},
+            [user_profile.id],
+        )
+
+
 def get_users_for_soft_deactivation(
     inactive_for_days: int, filter_kwargs: Any
 ) -> list[UserProfile]:
@@ -408,15 +425,37 @@ def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> QuerySet[User
     return users_to_catch_up
 
 
-def queue_soft_reactivation(user_profile_id: int) -> None:
+def queue_soft_reactivation(user_profile_id: int, *, notify_client: bool = False) -> None:
+    # notify_client is True only for the register reactivating flow, where a
+    # client waits on the loading screen for the long_term_idle event; it stays
+    # False for background reactivations, which must not broadcast that event.
     event = {
         "type": "soft_reactivate",
         "user_profile_id": user_profile_id,
+        "notify_client": notify_client,
     }
     if settings.DEDICATED_SOFT_REACTIVATION_QUEUE:
         queue_event_on_commit("soft_reactivation", event)
     else:
         queue_event_on_commit("deferred_work", event)
+
+
+def get_days_since_last_visit(user_profile: UserProfile) -> int | None:
+    """Whole days a returning long-term-idle user has been away, from their most
+    recent UserActivity. None if unknown or not at least a day.
+
+    UserActivity is flushed by a queue worker and so normally still reflects the
+    pre-idle visit rather than the current session, giving the away-time. But a
+    reload after it has caught up, or clock skew, can make the count
+    non-positive, which the client must not present as an away-time.
+    """
+    last_visit = UserActivity.objects.filter(user_profile=user_profile).aggregate(
+        last_visit=Max("last_visit")
+    )["last_visit"]
+    if last_visit is None:
+        return None
+    days = (timezone_now() - last_visit).days
+    return days if days >= 1 else None
 
 
 def soft_reactivate_if_personal_notification(
