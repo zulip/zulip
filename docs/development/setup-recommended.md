@@ -69,6 +69,12 @@ the internet.)
 - tested for Fedora 36
   :::
 
+:::{tab-item} Arch
+:sync: os-arch
+
+- Arch Linux (rolling release)
+  :::
+
 :::{tab-item} Other Linux
 :sync: os-other-linux
 
@@ -234,6 +240,34 @@ docker distribution, you can follow
 
 :::
 
+:::{tab-item} Arch
+:sync: os-arch
+
+##### 1. Install Vagrant, Docker, and Git
+
+Install Docker and Git from the official repositories:
+
+```console
+$ sudo pacman -S --needed docker git
+```
+
+Vagrant is not packaged in Arch's official repositories. Install it
+from the [AUR](https://wiki.archlinux.org/title/Arch_User_Repository)
+(for example with an AUR helper such as `yay` or `paru`):
+
+```console
+$ yay -S vagrant
+```
+
+Alternatively, you can download the binary from
+[HashiCorp](https://developer.hashicorp.com/vagrant/install).
+
+```{include} setup/install-docker.md
+
+```
+
+:::
+
 ::::
 
 ### Step 2: Get Zulip code
@@ -382,6 +416,23 @@ whenever you need to re-provision.
 
 :::
 
+:::{tab-item} Arch
+:sync: os-arch
+
+```{include} setup/vagrant-up.md
+
+```
+
+```{include} setup/vagrant-up-details.md
+
+```
+
+```{include} setup/vagrant-ssh.md
+
+```
+
+:::
+
 ::::
 
 ### Step 4: Developing
@@ -453,6 +504,15 @@ to open VS Code connected to your WSL environment. See the [Remote development i
 
 :::{tab-item} Fedora
 :sync: os-fedora
+
+```{include} setup/vscode-vagrant.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
 
 ```{include} setup/vscode-vagrant.md
 
@@ -543,6 +603,15 @@ help.
 
 :::
 
+:::{tab-item} Arch
+:sync: os-arch
+
+```{include} setup/vagrant-update.md
+
+```
+
+:::
+
 ::::
 
 #### Rebuilding the development environment
@@ -587,6 +656,15 @@ help.
 
 :::{tab-item} Fedora
 :sync: os-fedora
+
+```{include} setup/vagrant-rebuild.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
 
 ```{include} setup/vagrant-rebuild.md
 
@@ -650,6 +728,15 @@ Alternatively, you can use a command to terminate/shutdown your WSL2 environment
 
 :::
 
+:::{tab-item} Arch
+:sync: os-arch
+
+```{include} setup/vagrant-halt.md
+
+```
+
+:::
+
 ::::
 
 #### Resuming the development environment
@@ -699,6 +786,15 @@ $ source .venv/bin/activate
 
 :::{tab-item} Fedora
 :sync: os-fedora
+
+```{include} setup/vagrant-resume.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
 
 ```{include} setup/vagrant-resume.md
 
@@ -799,6 +895,19 @@ WSL instance) is also usually helpful.
 
 :::{tab-item} Fedora
 :sync: os-fedora
+
+```{include} setup/shared-vagrant-errors.md
+
+```
+
+```{include} setup/unix-troubleshoot.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
 
 ```{include} setup/shared-vagrant-errors.md
 
