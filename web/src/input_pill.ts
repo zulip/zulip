@@ -146,14 +146,16 @@ export function create<ItemType extends {type: string}>(
             return store.$input.text().trim() !== "";
         },
 
-        create_item(text: string) {
+        create_item(text: string, ignore_invalid_text = false) {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
             if (!item) {
-                store.$input.addClass("shake");
+                if (!ignore_invalid_text) {
+                    store.$input.addClass("shake");
 
-                if (store.show_outline_on_invalid_input) {
-                    store.$parent.addClass("invalid");
+                    if (store.show_outline_on_invalid_input) {
+                        store.$parent.addClass("invalid");
+                    }
                 }
                 return undefined;
             }
@@ -200,7 +202,7 @@ export function create<ItemType extends {type: string}>(
 
         // this appends a pill to the end of the container but before the
         // input block.
-        appendPill(value: string) {
+        appendPill(value: string, ignore_invalid_text = false) {
             if (value.length === 0) {
                 return true;
             }
@@ -209,7 +211,7 @@ export function create<ItemType extends {type: string}>(
                 return false;
             }
 
-            const payload = this.create_item(value);
+            const payload = this.create_item(value, ignore_invalid_text);
             // if the pill object is undefined, then it means the pill was
             // rejected so we should return out of this.
             if (payload === undefined) {
@@ -416,15 +418,17 @@ export function create<ItemType extends {type: string}>(
 
             // Typing of the comma is prevented if the last field doesn't validate,
             // as well as when the new pill is created.
-            if (e.key === "," && !store.allow_comma_in_item_text) {
-                // if the pill is successful, it will create the pill and clear
-                // the input.
-                if (funcs.appendPill(store.$input.text().trim())) {
+            if (e.key === ",") {
+                if (funcs.appendPill(store.$input.text().trim(), store.allow_comma_in_item_text)) {
                     funcs.clear(util.the(store.$input));
+                    e.preventDefault();
+                    return;
                 }
-                e.preventDefault();
 
-                return;
+                if (!store.allow_comma_in_item_text) {
+                    e.preventDefault();
+                    return;
+                }
             }
         });
 
