@@ -164,7 +164,7 @@ function resend_message(
 ): void {
     message_store.update_message_content(message, message.raw_content!);
     if (show_retry_spinner($row)) {
-        // retry already in in progress
+        // retry already in progress
         return;
     }
 
@@ -591,7 +591,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
             if (!msg_list.data.filter.can_apply_locally()) {
                 // If this message list is a search filter that we
                 // cannot apply locally, we will not have locally
-                // echoed echoed the message at all originally, and
+                // echoed the message at all originally, and
                 // must request the server now whether to add it to the view.
                 message_events_util.maybe_add_narrowed_messages(
                     msgs_to_rerender_or_add_to_narrow,

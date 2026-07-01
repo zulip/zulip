@@ -217,7 +217,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                     // (`text_query`), or is not the last term in the text input, and
                     //  therefore the empty operand represents "general chat".
                     //
-                    // (2) The user has selected a topic operator, and and thus has
+                    // (2) The user has selected a topic operator, and thus has
                     // exactly `topic:` or `-topic:` written out, and it's appropriate
                     // to suggest the "general chat" operand.
                     //

@@ -481,7 +481,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.subscribe(long_term_idle_user, stream_name)
         sent_message_list.append(send_fake_message("Test message 7", stream))
         # Again unsubscribe from stream and send a message.
-        # This will make sure that if initially in a unsubscribed state
+        # This will make sure that if initially in an unsubscribed state
         # a consecutive subscribe/unsubscribe doesn't misbehave.
         self.unsubscribe(long_term_idle_user, stream_name)
         send_fake_message("Test message 8", stream)
@@ -806,7 +806,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         )
 
         # Test UserMessage row is created while user is deactivated if there
-        # is a alert word in message.
+        # is an alert word in message.
         do_add_alert_words(long_term_idle_user, ["test_alert_word"])
         assert_stream_message_sent_to_idle_user("Testing test_alert_word")
 

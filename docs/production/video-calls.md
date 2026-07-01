@@ -54,7 +54,7 @@ This Zoom application type, introduced in Zulip 10.0, is easiest to
 set up, and is ideal for most installations that self-host Zulip. To
 [create Zoom meeting links in Zulip
 messages](https://zulip.com/help/start-a-call#start-a-call) using this
-integration, users will will need to be members of your Zoom
+integration, users will need to be members of your Zoom
 organization and use the same email address in Zulip that they have
 registered with Zoom.
 
