@@ -327,10 +327,37 @@ export function initialize(): void {
             ".spectator_narrow_login_button",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
-            ".popover-group-menu-member-list .popover-group-menu-user-presence",
             ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
+    });
+
+    // The channel/group card description is clamped to two lines; when it
+    // overflows, point users to settings for the full text. We only show
+    // the tooltip when the description is actually truncated.
+    tippy.delegate("body", {
+        target: ".stream-card-description, .popover-group-menu-description",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const description = instance.reference;
+            // Don't point users to settings when they have no way to open
+            // it: guests and spectators have no visible settings link in
+            // the card, so suppress the tooltip for them.
+            const popover = description.closest(".popover-menu");
+            if (popover === null) {
+                return false;
+            }
+            const settings_link = popover.querySelector(".popover-menu-link");
+            if (settings_link === null || settings_link.getClientRects().length === 0) {
+                return false;
+            }
+            const line_height = Number.parseFloat(getComputedStyle(description).lineHeight);
+            const tolerance = Number.isNaN(line_height) ? 2 : line_height / 2;
+            if (description.scrollHeight <= description.clientHeight + tolerance) {
+                return false;
+            }
+            return undefined;
+        },
     });
 
     tippy.delegate("body", {
