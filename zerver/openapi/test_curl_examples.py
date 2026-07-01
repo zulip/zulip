@@ -40,6 +40,8 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-constructor-groups-video-call",
     "create-nextcloud-talk-video-call",
     "create-webex-video-call",
+    # Redirects to the organization's icon rather than returning JSON.
+    "get-realm-icon",
 }
 
 
