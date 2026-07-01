@@ -52,9 +52,11 @@ class HomeTest(ZulipTestCase):
         "furthest_read_time",
         "insecure_desktop_app",
         "is_cloud_realm_with_discounted_plan",
+        "is_long_term_idle",
         "is_spectator",
         "language_list",
         "login_page",
+        "long_term_idle_days",
         "narrow",
         "narrow_stream",
         "no_event_queue",
@@ -383,10 +385,12 @@ class HomeTest(ZulipTestCase):
             "furthest_read_time",
             "insecure_desktop_app",
             "is_cloud_realm_with_discounted_plan",
+            "is_long_term_idle",
             "is_spectator",
             "language_cookie_name",
             "language_list",
             "login_page",
+            "long_term_idle_days",
             "no_event_queue",
             "non_workplace_pricing_eligible",
             "page_type",
@@ -1292,12 +1296,39 @@ class HomeTest(ZulipTestCase):
         sender = self.example_user(sender_name)
         return self.send_stream_message(sender, stream_name, content=content, topic_name=topic_name)
 
-    def soft_activate_and_get_unread_count(
-        self, stream: str = "Denmark", topic_name: str = "foo"
-    ) -> int:
-        stream_narrow = self._get_home_page(stream=stream, topic=topic_name)
-        page_params = self._get_page_params(stream_narrow)
-        return page_params["state_data"]["unread_msgs"]["count"]
+    def soft_activate_and_get_unread_count(self) -> int:
+        # The home page no longer reactivates a returning long-term-idle user
+        # synchronously; a client without the long_term_idle_reactivation
+        # capability is reactivated when it fetches state via /json/register.
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
+        with (
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
+            patch("zerver.lib.events.get_user_events", return_value=[]),
+        ):
+            result = self.client_post("/json/register", {})
+        return self.assert_json_success(result)["unread_msgs"]["count"]
+
+    def test_home_page_frame_first_for_long_term_idle_user(self) -> None:
+        # A returning long-term-idle user gets frame-first treatment: the home
+        # page renders without an event queue or state_data, signaling the
+        # client to show a loading screen and fetch state via /json/register.
+        user = self.example_user("hamlet")
+        self.send_test_message("Test message", sender_name="hamlet")
+        with self.assertLogs(logger_string, level="INFO"):
+            do_soft_deactivate_users([user])
+        user.refresh_from_db()
+        self.assertTrue(user.long_term_idle)
+
+        self.login_user(user)
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        self.assertTrue(page_params["is_long_term_idle"])
+        self.assertTrue(page_params["no_event_queue"])
+        self.assertIsNone(page_params["state_data"])
+        # Rendering the page did not run the expensive backfill; the client
+        # triggers it via /json/register.
+        user.refresh_from_db()
+        self.assertTrue(user.long_term_idle)
 
     def test_unread_count_user_soft_deactivation(self) -> None:
         # In this test we make sure if a soft deactivated user had unread

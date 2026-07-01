@@ -28,6 +28,11 @@ class AlertWordsEvent(BaseEvent):
     alert_words: list[str]
 
 
+class LongTermIdleEvent(BaseEvent):
+    type: Literal["long_term_idle"]
+    op: Literal["reactivated"]
+
+
 class Attachment(BaseModel):
     id: int
     name: str

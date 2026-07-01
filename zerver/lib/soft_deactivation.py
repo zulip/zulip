@@ -27,6 +27,7 @@ from zerver.models import (
 )
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.tornado.django_api import send_event_on_commit
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
@@ -334,6 +335,23 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> UserProfil
     return None
 
 
+def reactivate_user_and_notify_client(user_profile: UserProfile) -> None:
+    """Backfill a returning long-term-idle user's missed UserMessage rows, then
+    tell any client waiting on a loading screen (having received a
+    long_term_idle_reactivating register response) that the account is ready, so
+    it can reload into the normal experience. Used by the queue workers that
+    process background soft reactivations. The event is sent unconditionally --
+    even if the user was already reactivated by another path -- so a waiting
+    client is always released.
+    """
+    reactivate_user_if_soft_deactivated(user_profile)
+    send_event_on_commit(
+        user_profile.realm,
+        {"type": "long_term_idle", "op": "reactivated"},
+        [user_profile.id],
+    )
+
+
 def get_users_for_soft_deactivation(
     inactive_for_days: int, filter_kwargs: Any
 ) -> list[UserProfile]:
@@ -403,6 +421,21 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
         queue_event_on_commit("soft_reactivation", event)
     else:
         queue_event_on_commit("deferred_work", event)
+
+
+def get_days_since_last_visit(user_profile: UserProfile) -> int | None:
+    """How many days since the user's most recent recorded activity, used to
+    tell a returning long-term-idle user how long they've been away. Computed
+    from UserActivity -- the same signal used to soft-deactivate them -- which
+    doesn't yet reflect the current session, so it reports the pre-idle visit.
+    None if the user has no recorded activity.
+    """
+    last_visit = UserActivity.objects.filter(user_profile=user_profile).aggregate(
+        last_visit=Max("last_visit")
+    )["last_visit"]
+    if last_visit is None:
+        return None
+    return (timezone_now() - last_visit).days
 
 
 def soft_reactivate_if_personal_notification(
