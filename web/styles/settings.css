@@ -3,7 +3,8 @@ label {
 }
 
 label,
-h3,
+.settings-subsection-title,
+.settings-table-title,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
 .settings-section-title {
@@ -11,6 +12,27 @@ h3,
         top: 1px;
         position: relative;
     }
+}
+
+/* Shared font for the subsection and table/list-panel headings across the
+   settings, channel, and group settings overlays. */
+.settings-subsection-title,
+.settings-table-title {
+    font-size: 1.5em;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
+/* Subsection headings, used by both the settings panels and the channel
+   and group overlays. */
+.settings-subsection-title {
+    margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
+}
+
+/* Table/list-panel headings ('.settings_panel_list_header') use the larger
+   table heading margin rather than the subsection margin. */
+.settings-table-title {
+    margin: 10px 0;
 }
 
 /* TODO: This should ideally be added to help_link_widget.hbs,
@@ -42,7 +64,8 @@ a.help_link_widget {
     }
 }
 
-h3,
+.settings-subsection-title,
+.settings-table-title,
 .settings-section-title {
     .help_link_widget {
         margin-left: 5px;
@@ -278,18 +301,6 @@ h3,
             background-color: transparent;
             color: inherit;
         }
-    }
-
-    /* Bare <h3> section titles in settings panels (e.g. table-panel
-       headers in '.settings_panel_list_header') get their font-size,
-       font-weight, and line-height from the '#settings_page h3' rule
-       further down in this file; previously their margin came from the
-       universal h1-h4 reset in bootstrap.app.css. Set the margin
-       explicitly here so the spacing survives that reset's removal.
-       Headings inside a '.subsection-header' are overridden by the
-       higher-specificity '#settings_page .subsection-header h3' rule. */
-    & h3 {
-        margin: 10px 0;
     }
 
     .table-sticky-headers {
@@ -662,7 +673,7 @@ input[type="checkbox"] {
         align-items: center;
         gap: 0 0.625em;
 
-        .stream_setting_subsection_title {
+        .settings-subsection-title {
             margin: 4px 0;
         }
 
@@ -1436,19 +1447,6 @@ label.preferences-radio-choice-label {
 
     .realm-time-limit-label {
         vertical-align: middle;
-    }
-
-    & h3 {
-        font-size: 1.5em;
-        font-weight: normal;
-        line-height: 1.5;
-    }
-
-    /* All non-table section headings sit in a '.subsection-header' and
-       share this margin; table-panel headings ('.settings_panel_list_header
-       h3') keep their own spacing. */
-    .subsection-header h3 {
-        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     & h5 {

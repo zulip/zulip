@@ -4,7 +4,7 @@
     </div>
     {{#unless group.is_system_group}}
         <div class="subsection-header">
-            <h3 class="user_group_setting_subsection_title">
+            <h3 class="settings-subsection-title">
                 {{t "Add members" }}
             </h3>
         </div>
@@ -23,7 +23,7 @@
         </div>
     {{/unless}}
     <div class="settings_panel_list_header members-list-header">
-        <h3 class="user_group_setting_subsection_title">{{t "Members"}}</h3>
+        <h3 class="settings-table-title">{{t "Members"}}</h3>
         <div class="user_filters">
             {{> ../settings/filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter members') }}
         </div>

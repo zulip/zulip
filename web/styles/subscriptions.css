@@ -131,25 +131,6 @@
     margin-bottom: 20px;
 }
 
-/* TODO: Unify with settings.css definition */
-h3.stream_setting_subsection_title,
-h3.user_group_setting_subsection_title {
-    font-size: 1.5em;
-    font-weight: normal;
-    line-height: 1.5;
-    /* Match the org settings subsection h3 margin. */
-    margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
-}
-
-/* Member/subscriber list headers are table headings, not subsections, so
-   they keep the larger org settings table heading margin rather than the
-   subsection margin above. */
-.subscribers-heading h3,
-.members-list-header h3,
-.create_user_group_member_list_header h3 {
-    margin: 10px 0;
-}
-
 .subscriber_list_settings_container.no-display {
     display: none;
 }
@@ -429,13 +410,11 @@ h3.user_group_setting_subsection_title {
         margin: 10px 0;
     }
 
-    .subsection-header {
-        h3 {
-            font-size: 1.5em;
-            font-weight: normal;
-            line-height: 1.5;
-            margin: 10px 0;
-        }
+    /* Per-permission subsection headings; a larger margin than other
+       subsection headings, with font from the shared
+       '.settings-subsection-title' rule. */
+    .subsection-header .settings-subsection-title {
+        margin: 10px 0;
     }
 
     .subsection-settings {
