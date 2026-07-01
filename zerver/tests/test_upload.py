@@ -45,7 +45,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     ratelimit_rule,
 )
-from zerver.lib.upload import sanitize_name, upload_message_attachment
+from zerver.lib.upload import remove_control_characters, sanitize_name, upload_message_attachment
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
@@ -2263,6 +2263,18 @@ class SanitizeNameTests(ZulipTestCase):
         self.assertEqual(
             sanitize_name('~/."\\`\\?*"u0`000ssh/test.t**{}ar.gz'), ".u0000sshtest.tar.gz"
         )
+
+
+class RemoveControlCharactersTests(ZulipTestCase):
+    def test_remove_control_characters(self) -> None:
+        self.assertEqual(remove_control_characters("a\x00b.txt"), "ab.txt")
+        self.assertEqual(remove_control_characters("a\tb\x1f\x7f.txt"), "ab.txt")
+        self.assertEqual(remove_control_characters("my report.png"), "my report.png")
+        self.assertEqual(remove_control_characters("테스트.txt"), "테스트.txt")
+        # A trailing newline is the case Django's content_disposition_header
+        # fails to escape.
+        self.assertEqual(remove_control_characters("report.pdf\n"), "report.pdf")
+        self.assertEqual(remove_control_characters("\n"), "")
 
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
