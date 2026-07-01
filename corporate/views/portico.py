@@ -375,8 +375,8 @@ def communities_view(request: HttpRequest) -> HttpResponse:
         if Realm.ORG_TYPES[org_type]["id"] in unique_org_type_ids:
             org_types[org_type] = Realm.ORG_TYPES[org_type]
 
-    # This code is not required right bot could be useful in future.
-    # If we ever decided to show all the ORG_TYPES.
+    # This code is not required right now, but could be useful in the
+    # future if we ever decide to show all the ORG_TYPES.
     # Remove `Unspecified` ORG_TYPE
     # org_types.pop("unspecified", None)
 
