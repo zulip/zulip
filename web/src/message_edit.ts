@@ -1515,17 +1515,27 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                     const echo_data = currently_echoing_messages.get(message_id);
                     assert(echo_data !== undefined);
 
+                    // If our local echo was already replaced by a confirmed edit from
+                    // another client, orig_content is stale. Restoring it would overwrite
+                    // that confirmed edit, so only roll back when our local echo is still
+                    // current.
+                    const local_echo_was_replaced =
+                        echoed_message.local_edit_timestamp === undefined;
+
                     delete echoed_message.local_edit_timestamp;
                     currently_echoing_messages.delete(message_id);
 
-                    // Restore the original content.
-                    echo.edit_locally(echoed_message, {
-                        content: echo_data.orig_content,
-                        raw_content: echo_data.orig_raw_content,
-                        mentioned: echo_data.mentioned,
-                        mentioned_me_directly: echo_data.mentioned_me_directly,
-                        alerted: echo_data.alerted,
-                    });
+                    if (!local_echo_was_replaced) {
+                        last_synced_raw_content.set(message_id, echo_data.orig_raw_content);
+                        // Restore the original content.
+                        echo.edit_locally(echoed_message, {
+                            content: echo_data.orig_content,
+                            raw_content: echo_data.orig_raw_content,
+                            mentioned: echo_data.mentioned,
+                            mentioned_me_directly: echo_data.mentioned_me_directly,
+                            alerted: echo_data.alerted,
+                        });
+                    }
 
                     $row = message_lists.current.get_row(message_id);
                     if (!currently_editing_messages.has(message_id)) {
