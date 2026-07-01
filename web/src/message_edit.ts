@@ -1536,12 +1536,14 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             }
         },
         error(xhr) {
+            // The save failed, so no acknowledgement event will clear the
+            // in-flight marker; clear it here. This is outside the narrow
+            // check below, since the marker tracks our request rather than
+            // the state of the message's row.
+            currently_editing_messages_echo_state.delete(message_id);
+
             if (msg_list === message_lists.current) {
                 message_id = rows.id($row);
-
-                // The save failed, so no acknowledgement event will clear
-                // the in-flight marker; clear it here.
-                currently_editing_messages_echo_state.delete(message_id);
 
                 if (edit_locally_echoed) {
                     const echoed_message = message_store.get(message_id);
@@ -1549,24 +1551,39 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                     const echo_data = currently_echoing_messages.get(message_id);
                     assert(echo_data !== undefined);
 
+                    // If our local echo was already replaced by a confirmed edit from
+                    // another client, orig_content is stale. Restoring it would overwrite
+                    // that confirmed edit, so only roll back while the content we echoed
+                    // is still the content the message holds. We compare content rather
+                    // than checking whether local_edit_timestamp survived, since
+                    // message_events clears that for any update_message event, so a topic
+                    // move would otherwise look like a superseding content edit.
+                    const local_echo_was_replaced =
+                        echoed_message.raw_content !== echo_data.raw_content;
+
                     delete echoed_message.local_edit_timestamp;
                     currently_echoing_messages.delete(message_id);
 
-                    last_synced_raw_content.set(message_id, echo_data.orig_raw_content);
+                    const synced_raw_content = local_echo_was_replaced
+                        ? (echoed_message.raw_content ?? "")
+                        : echo_data.orig_raw_content;
+                    last_synced_raw_content.set(message_id, synced_raw_content);
 
-                    // Restore the original content.
-                    echo.edit_locally(echoed_message, {
-                        content: echo_data.orig_content,
-                        raw_content: echo_data.orig_raw_content,
-                        mentioned: echo_data.mentioned,
-                        mentioned_me_directly: echo_data.mentioned_me_directly,
-                        alerted: echo_data.alerted,
-                    });
+                    if (!local_echo_was_replaced) {
+                        // Restore the original content.
+                        echo.edit_locally(echoed_message, {
+                            content: echo_data.orig_content,
+                            raw_content: echo_data.orig_raw_content,
+                            mentioned: echo_data.mentioned,
+                            mentioned_me_directly: echo_data.mentioned_me_directly,
+                            alerted: echo_data.alerted,
+                        });
+                    }
 
                     // Set this even if the user reopened the edit form while
                     // the edit was saving, since that form recorded our
                     // echoed content, which the server never stored.
-                    pre_edit_raw_content.set(message_id, echo_data.orig_raw_content);
+                    pre_edit_raw_content.set(message_id, synced_raw_content);
 
                     $row = message_lists.current.get_row(message_id);
                     if (!currently_editing_messages.has(message_id)) {
