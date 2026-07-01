@@ -1,0 +1,400 @@
+#!/usr/bin/env python3
+"""Relay each new Bluesky post that contains the word "zulip",
+carries the #zulip hashtag, or @-mentions @zulip.bsky.social into
+a chat.zulip.org channel.
+
+Architecture: Every POLL_INTERVAL_SECONDS it searches Bluesky and posts
+matches to CZO. To manage state, we use a single cursor — the newest
+relayed post's `indexedAt` timestamp — in a one-line file, so it only
+moves forward and never reposts across polls or restarts.
+
+Data needed:
+1. Get `bluesky_app_password` from https://bsky.app/settings/app-passwords
+2. Download a zulip bot's `zuliprc` file - https://zulip.com/api/api-keys#download-a-zuliprc-file
+
+To run in dev env:
+* Put `bluesky_identifier` and `bluesky_app_password` in [secrets] of
+  zproject/dev-secrets.conf and the `zuliprc` at /srv/zulip/var/bluesky_bridge.zuliprc.
+* Run `./puppet/kandra/files/bluesky_bridge --lookback-minutes 120` (Ctrl+C to stop).
+
+Production:
+* Put `bluesky_identifier` in the [bluesky_bridge] section of /etc/zulip/zulip.conf,
+  `bluesky_app_password` in [secrets] of /etc/zulip/zulip-secrets.conf, and
+  `zuliprc` at /etc/zulip/bluesky_bridge.zuliprc.
+* runs under `uv run` with no arguments (see the puppet manifest).
+"""
+
+import argparse
+import configparser
+import contextlib
+import json
+import logging
+import os
+import re
+import time
+import urllib.parse
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
+import requests
+import zulip
+
+CHANNEL = "bluesky"
+TOPIC = 'new posts with "zulip"'
+POLL_INTERVAL_SECONDS = 5 * 60
+
+DEV_SECRETS_FILE = "/srv/zulip/zproject/dev-secrets.conf"
+_zulip_conf = configparser.RawConfigParser()
+_zulip_conf.read("/etc/zulip/zulip.conf")
+PRODUCTION = _zulip_conf.has_option("machine", "deploy_type")
+DEVELOPMENT = not PRODUCTION
+
+if PRODUCTION:
+    ZULIPRC = "/etc/zulip/bluesky_bridge.zuliprc"
+    CURSOR_FILE = "/var/lib/zulip/bluesky_bridge.cursor"
+else:
+    ZULIPRC = "/srv/zulip/var/bluesky_bridge.zuliprc"
+    CURSOR_FILE = "/srv/zulip/var/bluesky_bridge.cursor"
+
+TARGET_HANDLE = "zulip.bsky.social"
+BLUESKY_SERVICE = "https://bsky.social"
+USER_AGENT = "ZulipBlueskyBridge/1.0 (+https://chat.zulip.org)"
+TOKEN_ERRORS = frozenset({"ExpiredToken", "InvalidToken"})
+
+
+class BlueskyError(Exception):
+    def __init__(self, status: int, message: str) -> None:
+        super().__init__(f"HTTP {status}: {message}")
+        # status 0 marks a transport-level failure (no HTTP response).
+        self.status = status
+        self.error_name = ""
+        with contextlib.suppress(json.JSONDecodeError):
+            self.error_name = json.loads(message).get("error", "")
+
+    @property
+    def retryable(self) -> bool:
+        # Worth retrying: a transport failure (status 0),
+        # a rate limit (429), or a server error (5xx).
+        return self.status in (0, 429) or self.status >= 500
+
+
+@dataclass
+class BlueskyClient:
+    service: str
+    identifier: str
+    app_password: str
+    access_jwt: str = ""
+    refresh_jwt: str = ""
+
+    def _request(
+        self,
+        method: str,
+        nsid: str,
+        *,
+        params: dict[str, str | int] | None = None,
+        data: dict[str, str] | None = None,
+        token: str | None = None,
+    ) -> dict[str, Any]:
+        headers = {"Accept": "application/json", "User-Agent": USER_AGENT}
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        try:
+            response = requests.request(
+                method,
+                f"{self.service}/xrpc/{nsid}",
+                params=params,
+                json=data,
+                headers=headers,
+                timeout=30,
+            )
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as error:
+            raise BlueskyError(0, str(error)) from error
+        if not response.ok:
+            raise BlueskyError(response.status_code, response.text)
+        return response.json()
+
+    def login(self) -> None:
+        result = self._request(
+            "POST",
+            "com.atproto.server.createSession",
+            data={"identifier": self.identifier, "password": self.app_password},
+        )
+        self.access_jwt = result["accessJwt"]
+        self.refresh_jwt = result["refreshJwt"]
+
+    def refresh(self) -> None:
+        result = self._request("POST", "com.atproto.server.refreshSession", token=self.refresh_jwt)
+        self.access_jwt = result["accessJwt"]
+        self.refresh_jwt = result["refreshJwt"]
+
+    def _reauth(self) -> None:
+        try:
+            self.refresh()
+        except BlueskyError:
+            self.login()
+
+    def resolve_handle(self, handle: str) -> str:
+        result = self._request(
+            "GET", "com.atproto.identity.resolveHandle", params={"handle": handle}
+        )
+        return result["did"]
+
+    def search_posts(self, **params: str | int) -> dict[str, Any]:
+        try:
+            return self._request(
+                "GET", "app.bsky.feed.searchPosts", params=params, token=self.access_jwt
+            )
+        except BlueskyError as error:
+            if error.status == 401 or error.error_name in TOKEN_ERRORS:
+                self._reauth()
+                return self._request(
+                    "GET", "app.bsky.feed.searchPosts", params=params, token=self.access_jwt
+                )
+            raise
+
+
+@dataclass
+class Config:
+    identifier: str
+    app_password: str
+    lookback_minutes: int
+    # Filled in at startup once the handle is resolved.
+    target_did: str = ""
+
+
+# Relayed Bluesky text is untrusted plain text, but Zulip renders markdown, so
+# neutralize markup by substituting HTML entities, which render back to the literal
+# character without acting as markup (the technique used in zerver/lib/topic_link_util.py).
+MARKDOWN_ESCAPES = {
+    "`": "&#96;",
+    ">": "&gt;",
+    "*": "&#42;",
+    "&": "&amp;",
+    "[": "&#91;",
+    "]": "&#93;",
+    "~": "&#126;",
+    "$$": "&#36;&#36;",
+}
+_MARKDOWN_METACHARACTERS = re.compile(r"[`>*&\[\]~]|\$\$")
+
+
+def escape_markdown(text: str) -> str:
+    return _MARKDOWN_METACHARACTERS.sub(lambda m: MARKDOWN_ESCAPES[m.group(0)], text)
+
+
+def profile_link(handle: str) -> str:
+    return "https://bsky.app/profile/" + urllib.parse.quote(handle, safe="")
+
+
+def format_message(post_view: dict[str, Any]) -> str:
+    author = post_view["author"]
+    handle = author["handle"]
+    display = author.get("displayName") or handle
+    record = post_view["record"]
+    text = escape_markdown((record.get("text") or "").strip())
+    rkey = post_view["uri"].rsplit("/", 1)[-1]
+    web_url = f"{profile_link(handle)}/post/{urllib.parse.quote(rkey, safe='')}"
+
+    parts = [
+        f"**{escape_markdown(display)}** ([@{escape_markdown(handle)}]({profile_link(handle)}))"
+    ]
+    if text:
+        parts += ["", text]
+    parts += ["", f"[View on Bluesky]({web_url})"]
+    return "\n".join(parts)
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def to_iso(when: datetime) -> str:
+    return when.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
+def parse_iso(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def load_cursor(path: str, lookback_minutes: int) -> datetime:
+    # The cursor is the indexedAt of the newest post we've relayed.
+    # --lookback-minutes overrides it to start N minutes back; else
+    # resume from the saved cursor, or from now on the first run.
+    if lookback_minutes:
+        return utcnow() - timedelta(minutes=lookback_minutes)
+    try:
+        with open(path) as f:
+            return parse_iso(f.read().strip())
+    except FileNotFoundError:
+        return utcnow()
+
+
+def save_cursor(path: str, when: datetime) -> None:
+    # Write atomically so a crash mid-write can't corrupt the cursor.
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = f"{path}.tmp"
+    with open(tmp, "w") as f:
+        f.write(to_iso(when))
+    os.replace(tmp, path)
+
+
+def relay_to_zulip(zulip_client: zulip.Client, content: str) -> int | None:
+    # Any failure returns None so run_once retries next poll: transient errors
+    # self-heal, and permanent misconfig (unsubscribed channel, wrong zuliprc, etc.)
+    # is unlikely enough here that we don't bother classifying it.
+    # We let those repoll too and rely on the logged error.
+    try:
+        result = zulip_client.send_message(
+            {"type": "stream", "to": CHANNEL, "topic": TOPIC, "content": content}
+        )
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as error:
+        logging.warning("relay to CZO failed (network): %s; will retry next poll", error)
+        return None
+    if result.get("result") == "success":
+        logging.info("relayed to CZO: msg_id=%s", result.get("id"))
+        return result.get("id")
+    logging.error("relay to CZO failed: code=%s msg=%s", result.get("code"), result.get("msg"))
+    return None
+
+
+def search_queries(cursor: datetime, target_did: str) -> list[dict[str, str | int]]:
+    # Note: 100 is the max allowed value for 'limit'.
+    # In future, if the traffic reaches more than 100 posts per POLL_INTERVAL_SECONDS,
+    # we should decrease POLL_INTERVAL_SECONDS first. At very high scale, we can refer
+    # to pagination mechanism offered by the bluesky API.
+    # ref: https://endpoints.bsky.app/#bluesky-app/tag/appbskyfeed/GET/xrpc/app.bsky.feed.searchPosts.query.limit
+    base: dict[str, str | int] = {"sort": "latest", "limit": 100, "since": to_iso(cursor)}
+    return [
+        {**base, "q": "zulip"},
+        {**base, "q": "*", "mentions": target_did},
+    ]
+
+
+def run_once(
+    bsky: BlueskyClient, zulip_client: zulip.Client, cursor: datetime, config: Config
+) -> datetime:
+    """Relay every matching post newer than the cursor (the indexedAt of the
+    newest post we've already relayed), then return the advanced cursor.
+    """
+    posts: dict[str, dict[str, Any]] = {}
+    for params in search_queries(cursor, config.target_did):
+        try:
+            response = bsky.search_posts(**params)
+        except BlueskyError as error:
+            if not error.retryable:
+                # Client error like a malformed query won't be
+                # fixed by repolling; let it propagate so main exits.
+                raise
+            # A transient failure: the cursor doesn't move, so nothing
+            # is lost or duplicated.
+            logging.warning("search failed for %s: %s; skipping this poll", params, error)
+            return cursor
+        for post_view in response.get("posts", []):
+            posts.setdefault(post_view["uri"], post_view)
+
+    relayed = 0
+    candidates = 0
+    new_cursor = cursor
+    for post_view in sorted(posts.values(), key=lambda p: parse_iso(p["indexedAt"])):
+        indexed_dt = parse_iso(post_view["indexedAt"])
+        # The inclusive `since` re-fetches the last relayed post each poll;
+        # skip it (and anything older) so it isn't relayed again.
+        if indexed_dt <= cursor:
+            continue
+        candidates += 1
+        content = format_message(post_view)
+        if relay_to_zulip(zulip_client, content) is None:
+            break
+        new_cursor = indexed_dt
+        # We save after each relay, not once per poll: a crash between sending and
+        # saving re-sends at most this one post on restart.
+        # TODO: Implementation of Idempotency-Key header will help to avoid this.
+        # ref: https://chat.zulip.org/#narrow/channel/378-api-design/topic/Idempotency-Key.20HTTP.20header/with/2205409
+        save_cursor(CURSOR_FILE, new_cursor)
+        relayed += 1
+
+    logging.info("poll complete: %d candidates, %d relayed", candidates, relayed)
+    return new_cursor
+
+
+def load_config(args: argparse.Namespace) -> Config:
+    secrets = configparser.RawConfigParser()
+    if DEVELOPMENT:
+        secrets.read(DEV_SECRETS_FILE)
+        identifier = secrets.get("secrets", "bluesky_identifier", fallback=None)
+        app_password = secrets.get("secrets", "bluesky_app_password", fallback=None)
+        source = f"[secrets] of {DEV_SECRETS_FILE}"
+    else:
+        conf = configparser.RawConfigParser()
+        conf.read("/etc/zulip/zulip.conf")
+        secrets.read("/etc/zulip/zulip-secrets.conf")
+        identifier = conf.get("bluesky_bridge", "bluesky_identifier", fallback=None)
+        app_password = secrets.get("secrets", "bluesky_app_password", fallback=None)
+        source = (
+            "[bluesky_bridge] of /etc/zulip/zulip.conf and [secrets] of "
+            "/etc/zulip/zulip-secrets.conf"
+        )
+    if not identifier or not app_password:
+        raise SystemExit(
+            f"Missing Bluesky credentials: set bluesky_identifier and "
+            f"bluesky_app_password in {source}."
+        )
+
+    return Config(
+        identifier=identifier,
+        app_password=app_password,
+        lookback_minutes=args.lookback_minutes,
+    )
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Relay Bluesky posts mentioning Zulip to CZO.")
+    parser.add_argument(
+        "--lookback-minutes",
+        type=int,
+        default=0,
+        help="Start scanning Bluesky from this many minutes ago, "
+        "ignoring any saved cursor. Helpful in dev testing.",
+    )
+    return parser.parse_args()
+
+
+def run_bridge(config: Config) -> None:
+    bsky = BlueskyClient(BLUESKY_SERVICE, config.identifier, config.app_password)
+    bsky.login()
+    config.target_did = bsky.resolve_handle(TARGET_HANDLE)
+    cursor = load_cursor(CURSOR_FILE, config.lookback_minutes)
+    zulip_client = zulip.Client(config_file=ZULIPRC, client="ZulipBlueskyBridge")
+
+    logging.info("relaying Bluesky posts to CZO")
+    while True:
+        cursor = run_once(bsky, zulip_client, cursor, config)
+        time.sleep(POLL_INTERVAL_SECONDS)
+
+
+def main() -> None:
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)s bluesky_bridge: %(message)s", level=logging.INFO
+    )
+    config = load_config(parse_args())
+
+    backoff = zulip.RandomExponentialBackoff(timeout_success_equivalent=POLL_INTERVAL_SECONDS * 2)
+    while backoff.keep_going():
+        try:
+            run_bridge(config)
+        except BlueskyError as error:
+            if not error.retryable:
+                logging.error("unrecoverable Bluesky error: %s; exiting", error)
+                raise SystemExit(1) from error
+            logging.warning("recoverable Bluesky error: %s; backing off before retry", error)
+            backoff.fail()
+        except zulip.UnrecoverableNetworkError as error:
+            # zulip.Client() connects to CZO at construction, so
+            # an unreachable server at startup surfaces here
+            logging.warning("could not reach CZO at startup: %s; backing off before retry", error)
+            backoff.fail()
+
+
+if __name__ == "__main__":
+    main()
