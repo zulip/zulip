@@ -16,12 +16,7 @@ YOURUSERNAME adm cdrom sudo dip plugdev lpadmin sambashare docker
 ##### 3. Make sure the Docker daemon is running
 
 Docker runs as a background service (daemon), which must be running for Docker commands to work.
-
-If you had previously installed and removed an older version of
-Docker, an [Ubuntu
-bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
-may prevent Docker from being automatically enabled and started after
-installation. You can check using the following:
+You can check using the following:
 
 ```console
 $ systemctl status docker

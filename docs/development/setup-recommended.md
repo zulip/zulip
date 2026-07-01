@@ -186,7 +186,7 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 ##### 1. Install Vagrant, Docker, and Git
 
-Install vagrant:
+Install Vagrant:
 
 ```console
 $ wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -199,6 +199,13 @@ Install Docker and Git:
 ```console
 $ sudo apt install docker.io git
 ```
+
+If you had previously installed and removed an older version of
+Docker, an [Ubuntu
+bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
+may prevent Docker from being automatically enabled and started after
+installation. In that case, you'll need to enable and start it
+manually, as described below.
 
 ```{include} setup/install-docker.md
 
