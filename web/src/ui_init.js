@@ -830,6 +830,69 @@ $(() => {
         window.history.replaceState(window.history.state, "", url.toString());
     }
 
+    function show_long_term_idle_loading_message(days) {
+        const $container = $("#app-loading-long-term-idle");
+        $container.find(".app-loading-long-term-idle-body").text(
+            i18n.$t({
+                defaultMessage:
+                    "We'll need a minute to load your account. This page will update once it's loaded.",
+            }),
+        );
+        if (days !== null) {
+            $container
+                .find(".app-loading-long-term-idle-lead")
+                .text(
+                    i18n.$t(
+                        {
+                            defaultMessage:
+                                "You've been away for {days, plural, one {# day} other {# days}}!",
+                        },
+                        {days},
+                    ),
+                )
+                .removeAttr("hidden");
+        }
+        $container.removeAttr("hidden");
+    }
+
+    function wait_for_reactivation_and_reload(reactivating_data) {
+        // Long-poll the short-lived event queue we were given until the
+        // background backfill finishes (signaled by a long_term_idle event),
+        // then reload into the normal app. The current narrow is preserved
+        // because it lives in the URL hash, which reload retains.
+        let last_event_id = reactivating_data.last_event_id;
+        let failures = 0;
+        function poll() {
+            channel.get({
+                url: "/json/events",
+                data: {queue_id: reactivating_data.queue_id, last_event_id},
+                success(data) {
+                    failures = 0;
+                    for (const event of data.events) {
+                        last_event_id = Math.max(last_event_id, event.id);
+                        if (event.type === "long_term_idle") {
+                            window.location.reload();
+                            return;
+                        }
+                    }
+                    poll();
+                },
+                error(xhr) {
+                    if (xhr.status === 400 && xhr.responseJSON?.code === "BAD_EVENT_QUEUE_ID") {
+                        // Our short-lived queue expired; the account is (or
+                        // soon will be) ready, so reload to pick it up.
+                        window.location.reload();
+                        return;
+                    }
+                    failures += 1;
+                    const retry_delay_secs = get_retry_backoff_seconds(xhr, failures, false, true);
+                    setTimeout(poll, retry_delay_secs * 1000);
+                },
+            });
+        }
+        poll();
+    }
+
     if (page_params.no_event_queue) {
         // For spectators and client-triggered reloads, fetch
         // state_data via the API rather than reading it from the
@@ -876,8 +939,12 @@ $(() => {
                     empty_topic_name: true,
                     simplified_presence_events: true,
                     individual_emoji_changes: true,
+                    long_term_idle_reactivation: page_params.is_long_term_idle,
                 }),
             };
+        }
+        if (page_params.is_long_term_idle) {
+            show_long_term_idle_loading_message(page_params.long_term_idle_days);
         }
         let register_failures = 0;
         function fetch_state_data() {
@@ -885,6 +952,13 @@ $(() => {
                 url: "/json/register",
                 data,
                 success(response_data) {
+                    if (response_data.long_term_idle_reactivating) {
+                        // A returning long-term-idle user; the server is
+                        // backfilling the account in the background. Wait for
+                        // the ready signal, then reload into the normal app.
+                        wait_for_reactivation_and_reload(response_data);
+                        return;
+                    }
                     const state_data = state_data_schema.parse(response_data);
                     initialize_everything(state_data);
                     if (page_params.show_try_zulip_modal) {
