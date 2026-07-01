@@ -84,11 +84,11 @@ test("insert_recent_private_message", () => {
 
     // Base data
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 100},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "1", max_message_id: 100, pinned: false},
+        {user_ids_string: "3", max_message_id: 99, pinned: false},
+        {user_ids_string: "1,2", max_message_id: 98, pinned: false},
+        {user_ids_string: "1,2,3", max_message_id: 97, pinned: false},
+        {user_ids_string: "15", max_message_id: 96, pinned: false},
     ]);
 
     // Insert new messages (which should rearrange these entries).
@@ -101,13 +101,43 @@ test("insert_recent_private_message", () => {
     pmc.recent.insert([1], 555);
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 1000},
-        {user_ids_string: "1,2,3", max_message_id: 999},
-        {user_ids_string: "15", max_message_id: 101},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1", max_message_id: 1000, pinned: false},
+        {user_ids_string: "1,2,3", max_message_id: 999, pinned: false},
+        {user_ids_string: "15", max_message_id: 101, pinned: false},
+        {user_ids_string: "3", max_message_id: 99, pinned: false},
+        {user_ids_string: "1,2", max_message_id: 98, pinned: false},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["1", "1,2,3", "15", "3", "1,2"]);
+});
+
+test("pinned", ({override}) => {
+    override(current_user, "user_id", me.user_id);
+    pmc.recent.initialize({
+        recent_private_conversations: [
+            {user_ids: [alice.user_id], max_message_id: 100, pinned: true},
+            {user_ids: [alex.user_id], max_message_id: 99},
+        ],
+    });
+
+    // The pinned flag from the initial state is respected, and defaults
+    // to false when omitted.
+    assert.ok(pmc.recent.is_pinned("1"));
+    assert.ok(!pmc.recent.is_pinned("3"));
+
+    // set_pinned updates an existing conversation and reports success.
+    assert.ok(pmc.recent.set_pinned([alex.user_id], true));
+    assert.ok(pmc.recent.is_pinned("3"));
+    assert.ok(pmc.recent.set_pinned([alice.user_id], false));
+    assert.ok(!pmc.recent.is_pinned("1"));
+
+    // A direct message to oneself is keyed by the current user's id.
+    assert.ok(!pmc.recent.set_pinned([], true));
+    pmc.recent.insert([], 200);
+    assert.ok(pmc.recent.set_pinned([], true));
+    assert.ok(pmc.recent.is_pinned(String(me.user_id)));
+
+    // Unknown conversations report failure rather than throwing.
+    assert.ok(!pmc.recent.set_pinned([alice.user_id, alex.user_id], true));
 });
 
 test("muted_users", () => {
@@ -115,11 +145,11 @@ test("muted_users", () => {
 
     // Base data
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 100},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "1", max_message_id: 100, pinned: false},
+        {user_ids_string: "3", max_message_id: 99, pinned: false},
+        {user_ids_string: "1,2", max_message_id: 98, pinned: false},
+        {user_ids_string: "1,2,3", max_message_id: 97, pinned: false},
+        {user_ids_string: "15", max_message_id: 96, pinned: false},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "1,2", "1,2,3", "15"]);
 
@@ -131,9 +161,9 @@ test("muted_users", () => {
     // 1:1 direct messages in which the other user hasn't been muted.
     // Direct message groups where there's at least one non-muted participant.
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "3", max_message_id: 99, pinned: false},
+        {user_ids_string: "1,2,3", max_message_id: 97, pinned: false},
+        {user_ids_string: "15", max_message_id: 96, pinned: false},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2,3", "15"]);
 });

@@ -53,6 +53,7 @@ export type DisplayObject = {
     is_bot: boolean;
     has_unread_mention: boolean;
     includes_deactivated_user: boolean;
+    pinned: boolean;
 };
 
 export function get_conversations(search_string = ""): DisplayObject[] {
@@ -68,7 +69,11 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             .map((conversation) => conversation.user_ids_string)
             .includes(active_user_ids_string)
     ) {
-        conversations.unshift({user_ids_string: active_user_ids_string, max_message_id: -1});
+        conversations.unshift({
+            user_ids_string: active_user_ids_string,
+            max_message_id: -1,
+            pinned: false,
+        });
     }
 
     for (const conversation of conversations) {
@@ -128,6 +133,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             has_unread_mention,
             includes_deactivated_user,
             is_current_user,
+            pinned: conversation.pinned,
         };
         display_objects.push(display_object);
     }
@@ -142,22 +148,29 @@ export function get_list_info(
 ): {
     conversations_to_be_shown: DisplayObject[];
     more_conversations_unread_count: number;
+    pinned_count: number;
 } {
     const conversations = get_conversations(search_term);
+    // Pinned conversations are shown first, in recency order. Pinning is
+    // additive, but the combined list is still capped (below) at
+    // max_conversations_to_show_with_unreads.
+    const pinned_conversations = conversations.filter((conversation) => conversation.pinned);
+    const unpinned_conversations = conversations.filter((conversation) => !conversation.pinned);
 
     if (zoomed) {
         return {
-            conversations_to_be_shown: conversations,
+            conversations_to_be_shown: [...pinned_conversations, ...unpinned_conversations],
             more_conversations_unread_count: 0,
+            pinned_count: pinned_conversations.length,
         };
     }
 
-    const conversations_to_be_shown = [];
+    const pinned_count = pinned_conversations.length;
+    const conversations_to_be_shown = [...pinned_conversations];
     let more_conversations_unread_count = 0;
+    let unpinned_shown_count = 0;
 
-    function should_show_conversation(conversation: DisplayObject): boolean {
-        const current_to_be_shown_count = conversations_to_be_shown.length;
-
+    function should_show_unpinned_conversation(conversation: DisplayObject): boolean {
         // We always show the active conversation; see the similar
         // comment in topic_list_data.ts.
         if (conversation.is_active) {
@@ -175,20 +188,21 @@ export function get_list_info(
             return false;
         }
 
+        // Stop once the combined pinned + unpinned list hits the cap.
+        if (pinned_count + unpinned_shown_count >= max_conversations_to_show_with_unreads) {
+            return false;
+        }
+
         // We include the most recent max_conversations_to_show
-        // conversations, regardless of whether they have unread
-        // messages.
-        if (current_to_be_shown_count < max_conversations_to_show) {
+        // unpinned conversations, regardless of whether they have
+        // unread messages.
+        if (unpinned_shown_count < max_conversations_to_show) {
             return true;
         }
 
-        // We include older conversations with unread messages up
-        // until max_conversations_to_show_with_unreads total
-        // topics have been included.
-        if (
-            conversation.unread > 0 &&
-            current_to_be_shown_count < max_conversations_to_show_with_unreads
-        ) {
+        // We include older unpinned conversations with unread messages
+        // until the combined list reaches the cap above.
+        if (conversation.unread > 0) {
             return true;
         }
 
@@ -197,9 +211,10 @@ export function get_list_info(
         return false;
     }
 
-    for (const conversation of conversations) {
-        if (should_show_conversation(conversation)) {
+    for (const conversation of unpinned_conversations) {
+        if (should_show_unpinned_conversation(conversation)) {
             conversations_to_be_shown.push(conversation);
+            unpinned_shown_count += 1;
         } else {
             more_conversations_unread_count += conversation.unread;
         }
@@ -208,5 +223,6 @@ export function get_list_info(
     return {
         conversations_to_be_shown,
         more_conversations_unread_count,
+        pinned_count,
     };
 }

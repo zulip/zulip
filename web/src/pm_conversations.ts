@@ -7,6 +7,7 @@ import type {StateData} from "./state_data.ts";
 type PMConversation = {
     user_ids_string: string;
     max_message_id: number;
+    pinned: boolean;
 };
 
 const partners = new Set<number>();
@@ -46,7 +47,7 @@ class RecentDirectMessages {
     recent_message_ids = new FoldDict<PMConversation>(); // key is user_ids_string
     recent_private_messages: PMConversation[] = [];
 
-    insert(user_ids: number[], message_id: number): void {
+    insert(user_ids: number[], message_id: number, pinned = false): void {
         if (user_ids.length === 0) {
             // The server sends [] for direct messages to oneself.
             user_ids = [people.my_current_user_id()];
@@ -61,6 +62,7 @@ class RecentDirectMessages {
             conversation = {
                 user_ids_string,
                 max_message_id: message_id,
+                pinned,
             };
             this.recent_message_ids.set(user_ids_string, conversation);
 
@@ -82,6 +84,25 @@ class RecentDirectMessages {
         }
 
         this.recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
+    }
+
+    set_pinned(other_user_ids: number[], pinned: boolean): boolean {
+        let user_ids = other_user_ids;
+        if (user_ids.length === 0) {
+            // A direct message to oneself, keyed by our own id (as in insert()).
+            user_ids = [people.my_current_user_id()];
+        }
+        const user_ids_string = user_ids.toSorted((a, b) => a - b).join(",");
+        const conversation = this.recent_message_ids.get(user_ids_string);
+        if (conversation === undefined) {
+            return false;
+        }
+        conversation.pinned = pinned;
+        return true;
+    }
+
+    is_pinned(user_ids_string: string): boolean {
+        return this.recent_message_ids.get(user_ids_string)?.pinned ?? false;
     }
 
     get(): PMConversation[] {
@@ -107,7 +128,7 @@ class RecentDirectMessages {
 
     initialize(params: StateData["pm_conversations"]): void {
         for (const conversation of params.recent_private_conversations) {
-            this.insert(conversation.user_ids, conversation.max_message_id);
+            this.insert(conversation.user_ids, conversation.max_message_id, conversation.pinned);
         }
     }
 }
