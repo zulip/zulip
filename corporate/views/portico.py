@@ -353,7 +353,6 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             )
             eligible_realms.append(
                 {
-                    "id": realm.id,
                     "name": realm.name,
                     "realm_url": realm.url,
                     "logo_url": get_realm_icon_url(realm),
