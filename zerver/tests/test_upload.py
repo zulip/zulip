@@ -45,7 +45,12 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     ratelimit_rule,
 )
-from zerver.lib.upload import sanitize_name, upload_message_attachment
+from zerver.lib.upload import (
+    clean_uploaded_file_name,
+    remove_control_characters,
+    sanitize_name,
+    upload_message_attachment,
+)
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
@@ -170,6 +175,33 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         result = self.client_post("/json/user_uploads")
         self.assert_json_error(result, "You must specify a file to upload")
+
+    def test_file_name_with_control_characters(self) -> None:
+        """
+        Django's multipart parser drops non-printable characters from the
+        filename, but we percent-decode it afterwards, so they can
+        still reach us here.
+        """
+        self.login("hamlet")
+
+        for sent_name, stored_name in [("a%0Ab.txt", "ab.txt"), ("%0A%0A", "uploaded-file")]:
+            with self.subTest(file_name=sent_name):
+                uploaded_file = SimpleUploadedFile(sent_name, b"zulip!", content_type="text/plain")
+                result = self.api_post(
+                    self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
+                )
+                url = self.assert_json_success(result)["url"]
+
+                path_id = url.removeprefix("/user_uploads/")
+                attachment = Attachment.objects.get(path_id=path_id)
+                self.assertEqual(attachment.file_name, stored_name)
+                # path_id is derived from the same cleaned name.
+                self.assertTrue(path_id.endswith(stored_name))
+
+                result = self.client_get(url)
+                self.assertEqual(result.status_code, 200)
+                self.assertEqual(result["Content-Disposition"], f'inline; filename="{stored_name}"')
+                consume_response(result)
 
     def test_guess_content_type_from_filename(self) -> None:
         """
@@ -2263,6 +2295,29 @@ class SanitizeNameTests(ZulipTestCase):
         self.assertEqual(
             sanitize_name('~/."\\`\\?*"u0`000ssh/test.t**{}ar.gz'), ".u0000sshtest.tar.gz"
         )
+
+
+class RemoveControlCharactersTests(ZulipTestCase):
+    def test_remove_control_characters(self) -> None:
+        self.assertEqual(remove_control_characters("a\x00b.txt"), "ab.txt")
+        self.assertEqual(remove_control_characters("a\tb\x1f\x7f.txt"), "ab.txt")
+        self.assertEqual(remove_control_characters("my report.png"), "my report.png")
+        self.assertEqual(remove_control_characters("테스트.txt"), "테스트.txt")
+        # A trailing newline is the case Django's content_disposition_header
+        # fails to escape.
+        self.assertEqual(remove_control_characters("report.pdf\n"), "report.pdf")
+        self.assertEqual(remove_control_characters("\n"), "")
+
+
+class CleanUploadedFileNameTests(ZulipTestCase):
+    def test_clean_uploaded_file_name(self) -> None:
+        self.assertEqual(clean_uploaded_file_name("report.pdf\n"), "report.pdf")
+        self.assertEqual(clean_uploaded_file_name("테스트.txt"), "테스트.txt")
+        # Names which stripping leaves unusable get the placeholder
+        # that sanitize_name uses for them.
+        self.assertEqual(clean_uploaded_file_name("\n\n"), "uploaded-file")
+        self.assertEqual(clean_uploaded_file_name("\x01.\x02"), "uploaded-file")
+        self.assertEqual(clean_uploaded_file_name(".."), "uploaded-file")
 
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):

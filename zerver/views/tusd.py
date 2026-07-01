@@ -21,6 +21,7 @@ from zerver.lib.upload import (
     RealmUploadQuotaError,
     attachment_source,
     check_upload_within_quota,
+    clean_uploaded_file_name,
     create_attachment,
     delete_message_attachment,
     generate_message_upload_path,
@@ -145,12 +146,7 @@ def handle_upload_pre_finish_hook(
     path_id = data.id.partition("+")[0]
 
     tus_metadata = data.meta_data
-    filename = tus_metadata.get("filename", "")
-
-    # We want to store as the filename a version that clients are
-    # likely to be able to accept via "Save as..."
-    if filename in {"", ".", ".."}:
-        filename = "uploaded-file"
+    filename = clean_uploaded_file_name(tus_metadata.get("filename", ""))
 
     content_type = tus_metadata.get("filetype")
     if not content_type:

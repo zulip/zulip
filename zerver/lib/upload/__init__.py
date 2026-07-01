@@ -256,6 +256,33 @@ def sanitize_name(value: str, *, strict: bool = False) -> str:
     return value
 
 
+def remove_control_characters(filename: str) -> str:
+    """Strips ASCII control characters -- RFC 5234's CTL set, %x00-1F and
+    %x7F -- from a filename.
+    https://www.rfc-editor.org/rfc/rfc5234#appendix-B.1
+
+    NULL bytes can't be stored in the "file_name" column, and a
+    trailing newline yields a Content-Disposition header that S3, like
+    any HTTP recipient, rejects as an illegal field value (RFC 9110
+    section 5.5).
+
+    """
+    return re.sub(r"[\x00-\x1f\x7f]", "", filename)
+
+
+def clean_uploaded_file_name(file_name: str) -> str:
+    """The filename we store in Attachment.file_name and serve in
+    Content-Disposition. Unlike sanitize_name, which builds the path
+    component, this stays close to what the client sent, so that
+    "Save as..." offers a sensible name.
+
+    """
+    file_name = remove_control_characters(file_name)
+    if file_name in {"", ".", ".."}:
+        return "uploaded-file"
+    return file_name
+
+
 def upload_message_attachment(
     uploaded_file_name: str,
     content_type: str,
@@ -265,15 +292,14 @@ def upload_message_attachment(
 ) -> tuple[str, str]:
     if target_realm is None:
         target_realm = user_profile.realm
+    # Clean the name first, so that path_id is derived from the same
+    # value we store.
+    uploaded_file_name = clean_uploaded_file_name(uploaded_file_name)
     path_id = get_upload_backend().generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
     if needs_charset_detection(content_type):
         content_type = maybe_add_charset(content_type, file_data)
-
-    # NULL bytes are the one thing we can't store in the original
-    # filename column, due to PostgreSQL limitations
-    uploaded_file_name = re.sub(r"\x00", "", uploaded_file_name)
 
     with transaction.atomic(durable=True):
         get_upload_backend().store_message_attachment(
