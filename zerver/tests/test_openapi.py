@@ -228,7 +228,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/bots",
         "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
-        "/realm/icon",
         "/realm/logo",
         "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
@@ -936,6 +935,11 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 tag = operation["tags"][0]
                 assert tag in VALID_TAGS
                 for status_code, response in operation["responses"].items():
+                    if status_code.startswith("3"):
+                        # Redirect responses only set a Location header;
+                        # they have no JSON body to validate.
+                        assert "content" not in response
+                        continue
                     schema = response["content"]["application/json"]["schema"]
                     # Validate the documented examples for each event type
                     # in api/get-events for the documented event schemas.
