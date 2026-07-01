@@ -101,7 +101,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> ThumbnailingResult:
         uploading_seconds = 0.0
         for thumbnail_format in needed_thumbnails:
             # This will scale to fit within the given dimensions; it
-            # may be smaller one one or more of them.
+            # may be smaller in one or more of them.
             logger.debug(
                 "Resizing to %d x %d, from %d x %d",
                 thumbnail_format.max_width,

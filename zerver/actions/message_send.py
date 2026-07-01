@@ -880,7 +880,7 @@ def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
     # Given a set of user IDs (the recipients of a message), accesses
     # the UserPresence table to determine which of these users are
     # currently idle and should potentially get email notifications
-    # (and push notifications with with
+    # (and push notifications with
     # user_profile.enable_online_push_notifications=False).
 
     if not user_ids:

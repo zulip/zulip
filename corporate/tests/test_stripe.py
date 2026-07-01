@@ -1585,7 +1585,7 @@ class StripeTest(StripeTestCase):
     def test_customer_minimum_licenses_for_plan(self, *mocks: Mock) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        # We set set a 1 license minimum the initial upgrade.
+        # We set a 1 license minimum the initial upgrade.
         minimum_for_plan_tier = 1
         with (
             patch(

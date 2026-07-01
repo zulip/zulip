@@ -3555,7 +3555,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
     def test_patch_enforces_valid_stream_name_check(self) -> None:
         """
-        Only way to force an error is with a empty string.
+        Only way to force an error is with an empty string.
         """
         user = self.example_user("hamlet")
         self.login_user(user)

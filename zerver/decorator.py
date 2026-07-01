@@ -661,7 +661,7 @@ def require_server_admin_api(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not request.user.is_staff:
-            raise JsonableError(_("Must be an server administrator"))
+            raise JsonableError(_("Must be a server administrator"))
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view_func

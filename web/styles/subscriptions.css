@@ -637,7 +637,7 @@ h4.stream_setting_subsection_title {
                     }
 
                     .icon-button {
-                        /* Equal to to font sizes for other icon buttons
+                        /* Equal to font sizes for other icon buttons
                         in the channel and group settings UI. */
                         font-size: calc(1.2 * var(--base-font-size-px));
                     }

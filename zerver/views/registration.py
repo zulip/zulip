@@ -1354,7 +1354,7 @@ def realm_import_post_process(
 
             # Validate that this PreregistrationRealm object is in the
             # expected state, with no user matching the email address,
-            # and and having created this realm.
+            # and having created this realm.
             assert preregistration_realm.data_import_metadata["need_select_realm_owner"]
             assert preregistration_realm.created_realm_id == realm.id
             assert preregistration_realm.status != confirmation_settings.STATUS_USED

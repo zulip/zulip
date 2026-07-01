@@ -1737,7 +1737,7 @@ class UserProfileTest(ZulipTestCase):
         for onboarding_step in onboarding_steps_completed:
             OnboardingStep.objects.create(user=cordelia, onboarding_step=onboarding_step)
 
-        # Check that we didn't send an realm_user update events to
+        # Check that we didn't send a realm_user update events to
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
         # introducing the user to clients.
@@ -1795,7 +1795,7 @@ class UserProfileTest(ZulipTestCase):
         realm_user_default.enter_sends = True
         realm_user_default.save()
 
-        # Check that we didn't send an realm_user update events to
+        # Check that we didn't send a realm_user update events to
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
         # introducing the user to clients.
@@ -1821,7 +1821,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cross_realm_bot.email, bot.email)
         self.assertEqual(cross_realm_bot.id, bot.id)
 
-        # Pass in the ID of a cross-realm bot but with a invalid realm,
+        # Pass in the ID of a cross-realm bot but with an invalid realm,
         # note that the realm should be irrelevant here
         cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, None)
         self.assertEqual(cross_realm_bot.email, bot.email)

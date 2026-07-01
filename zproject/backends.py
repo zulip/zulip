@@ -2772,7 +2772,7 @@ def social_auth_finish(
             use_dummy_backend=True,
         )
         if validated_user_profile is None or validated_user_profile != user_profile:
-            # Log this as as a failure to authenticate via the social backend, since that's
+            # Log this as a failure to authenticate via the social backend, since that's
             # the correct way to think about this. ZulipDummyBackend is just an implementation
             # tool, not an actual backend a user could be authenticating through.
             log_auth_attempt(

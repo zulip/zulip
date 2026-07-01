@@ -895,7 +895,7 @@
 
         /* Hide the code buttons container when the user is
            clicking on the code block other than the buttons.
-           This allows the user to select part of the the code
+           This allows the user to select part of the code
            without the buttons interfering with the selection. */
         &:active .code-buttons-container:not(:hover) {
             visibility: hidden;

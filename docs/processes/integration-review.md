@@ -174,6 +174,6 @@ Some common mistakes to watch out for:
   typically, we squash the `merge-api-changelogs` commit when there's
   only one commit in a PR touching the API, to keep the history clean).
 
-- Merging a pull request with migrations without rebasing the the work
+- Merging a pull request with migrations without rebasing the work
   and running `tools/renumber-migrations`. PRs older than a couple
   weeks are very likely to have duplicate migration numbers.

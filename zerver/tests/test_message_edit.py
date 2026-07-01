@@ -2394,7 +2394,7 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_remove_attachment_while_editing(self) -> None:
-        # Try editing a message and removing an linked attachment that's
+        # Try editing a message and removing a linked attachment that's
         # uploaded by us. Users should be able to detach their own attachments
         CONST_UPLOAD_PATH_PREFIX = "/user_uploads/"
         user_profile = self.example_user("hamlet")
@@ -2466,7 +2466,7 @@ class EditMessageTest(ZulipTestCase):
         self.assert_length(result_content["detached_uploads"], 0)
 
     def test_remove_another_user_attachment_while_editing(self) -> None:
-        # Try editing a message and removing an linked attachment that's
+        # Try editing a message and removing a linked attachment that's
         # uploaded by another user. Users should not be able to detach another
         # user's attachments.
 
@@ -2510,7 +2510,7 @@ class EditMessageTest(ZulipTestCase):
         self.assert_length(result_content["detached_uploads"], 0)
 
     def test_remove_another_user_deleted_attachment_while_editing(self) -> None:
-        # Try editing a message and removing an linked attachment that's been
+        # Try editing a message and removing a linked attachment that's been
         # uploaded and deleted by the original user. Users should not be able
         # to detach another user's attachments.
 
