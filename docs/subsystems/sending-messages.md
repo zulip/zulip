@@ -392,4 +392,9 @@ There are a few details that require special care with this system:
   triggering a soft reactivation for users who receive email or push
   notification for direct messages or personal mentions, or who
   request a password reset, since these are good leading indicators
-  that a user is likely to return to Zulip.
+  that a user is likely to return to Zulip. A user who returns before
+  any of that happens is reactivated by their own `POST /register`
+  request; clients that pass the `long_term_idle_reactivation`
+  capability get an event queue instead of waiting for that backfill,
+  and register again once its `long_term_idle` event says the account
+  is ready.
