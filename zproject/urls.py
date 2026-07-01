@@ -56,6 +56,7 @@ from zerver.views.custom_profile_fields import (
 )
 from zerver.views.devices import register_device, remove_device
 from zerver.views.digest import digest_page
+from zerver.views.direct_message_groups import update_dm_conversation_pin
 from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
 from zerver.views.events_register import events_register_backend
@@ -590,6 +591,9 @@ v1_api_and_json_patterns = [
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
     # used to update the personal preferences for a topic -> zerver.views.user_topics
     rest_path("user_topics", POST=update_user_topic),
+    # used to update the personal display preferences for a direct message
+    # conversation (e.g. pinning it to the top of the left sidebar).
+    rest_path("users/me/dm_conversations/pin", POST=update_dm_conversation_pin),
     # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado

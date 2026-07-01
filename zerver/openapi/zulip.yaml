@@ -14147,6 +14147,50 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /users/me/dm_conversations/pin:
+    post:
+      operationId: update-dm-conversation-pin
+      summary: Pin or unpin a direct message conversation
+      tags: ["messages"]
+      description: |
+        Pin or unpin a direct message conversation to the top of the
+        "Direct messages" section in the left sidebar. This is a personal
+        preference that only affects the current user.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-9dad35).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                user_ids:
+                  description: |
+                    The list of users other than the current user in the direct
+                    message conversation. Use an empty list for a conversation
+                    with only oneself.
+                  type: array
+                  items:
+                    type: integer
+                  example: [9, 10]
+                pinned:
+                  description: |
+                    Whether the conversation should be pinned (`true`) or
+                    unpinned (`false`).
+                  type: boolean
+                  example: true
+              required:
+                - user_ids
+                - pinned
+            encoding:
+              user_ids:
+                contentType: application/json
+              pinned:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /user_topics:
     post:
       operationId: update-user-topic
@@ -19087,6 +19131,14 @@ paths:
                                 The list of users other than the current user in the direct message
                                 conversation. This will be an empty list for direct messages sent to
                                 oneself.
+                            pinned:
+                              type: boolean
+                              description: |
+                                Whether the current user has pinned this direct message
+                                conversation to the top of the "Direct messages" section in
+                                the left sidebar.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-9dad35).
                       navigation_views:
                         type: array
                         items:
