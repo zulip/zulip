@@ -22,6 +22,7 @@ type InputPillCreateOptions<ItemType> = {
     $container: JQuery;
     pill_config?: InputPillConfig | undefined;
     allow_comma_in_item_text?: boolean;
+    create_pill_on_comma?: boolean;
     convert_to_pill_on_enter?: boolean;
     create_item_from_text: (
         text: string,
@@ -62,6 +63,7 @@ type InputPillStore<ItemType> = {
     onPillExpand?: (pill: JQuery) => void;
     createPillonPaste?: () => void;
     allow_comma_in_item_text: boolean;
+    create_pill_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
     split_text_to_form_pills: InputPillCreateOptions<ItemType>["split_text_to_form_pills"];
@@ -109,6 +111,8 @@ export function create<ItemType extends {type: string}>(
         get_text_from_item: opts.get_text_from_item,
         get_display_value_from_item: opts.get_display_value_from_item,
         allow_comma_in_item_text: opts.allow_comma_in_item_text ?? false,
+        create_pill_on_comma:
+            opts.create_pill_on_comma ?? !(opts.allow_comma_in_item_text ?? false),
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
@@ -146,14 +150,16 @@ export function create<ItemType extends {type: string}>(
             return store.$input.text().trim() !== "";
         },
 
-        create_item(text: string) {
+        create_item(text: string, show_invalid_feedback = true) {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
             if (!item) {
-                store.$input.addClass("shake");
+                if (show_invalid_feedback) {
+                    store.$input.addClass("shake");
 
-                if (store.show_outline_on_invalid_input) {
-                    store.$parent.addClass("invalid");
+                    if (store.show_outline_on_invalid_input) {
+                        store.$parent.addClass("invalid");
+                    }
                 }
                 return undefined;
             }
@@ -200,7 +206,7 @@ export function create<ItemType extends {type: string}>(
 
         // this appends a pill to the end of the container but before the
         // input block.
-        appendPill(value: string) {
+        appendPill(value: string, show_invalid_feedback = true) {
             if (value.length === 0) {
                 return true;
             }
@@ -209,7 +215,7 @@ export function create<ItemType extends {type: string}>(
                 return false;
             }
 
-            const payload = this.create_item(value);
+            const payload = this.create_item(value, show_invalid_feedback);
             // if the pill object is undefined, then it means the pill was
             // rejected so we should return out of this.
             if (payload === undefined) {
@@ -416,15 +422,20 @@ export function create<ItemType extends {type: string}>(
 
             // Typing of the comma is prevented if the last field doesn't validate,
             // as well as when the new pill is created.
-            if (e.key === "," && !store.allow_comma_in_item_text) {
-                // if the pill is successful, it will create the pill and clear
-                // the input.
-                if (funcs.appendPill(store.$input.text().trim())) {
+            if (e.key === ",") {
+                if (
+                    store.create_pill_on_comma &&
+                    funcs.appendPill(store.$input.text().trim(), !store.allow_comma_in_item_text)
+                ) {
                     funcs.clear(util.the(store.$input));
+                    e.preventDefault();
+                    return;
                 }
-                e.preventDefault();
 
-                return;
+                if (!store.allow_comma_in_item_text) {
+                    e.preventDefault();
+                    return;
+                }
             }
         });
 
