@@ -332,6 +332,7 @@ p.n-margin {
     & h3 {
         font-size: 16pt;
         margin-top: 2px;
+        font-weight: 300;
     }
 
     .exit-me {
