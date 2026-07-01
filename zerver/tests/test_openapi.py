@@ -228,7 +228,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/bots",
         "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
-        "/realm/logo",
         "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
