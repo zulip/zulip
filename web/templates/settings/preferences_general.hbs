@@ -2,7 +2,7 @@
     <!-- this is inline block so that the alert notification can sit beside
     it. If there's not an alert, don't make it inline-block.-->
     <div class="subsection-header">
-        <h3>{{t "General" }}</h3>
+        <h3 class="settings-subsection-title">{{t "General" }}</h3>
         {{> settings_save_discard_widget section_name="general-settings" show_save_discard_buttons=for_realm_settings }}
     </div>
     {{#unless for_realm_settings}}

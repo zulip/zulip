@@ -175,7 +175,7 @@ export function build_widgets(): void {
             return render_new_user_group_subgroup(item);
         },
         filter: {
-            $element: $("#people_to_add_in_group .add-user-list-filter"),
+            $element: $("#people_to_add_in_group input.search"),
             predicate(member, search_term) {
                 return user_group_components.build_group_member_matcher(search_term)(member);
             },
