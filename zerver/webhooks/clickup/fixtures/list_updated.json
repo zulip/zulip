@@ -1,0 +1,27 @@
+{
+  "event": "listUpdated",
+  "history_items": [
+    {
+      "id": "9ba4c9af-414a-480a-bd14-ce462e9721e7",
+      "type": 6,
+      "date": "1781626653452",
+      "field": "name",
+      "parent_id": "901615428252",
+      "data": {},
+      "source": null,
+      "user": {
+        "id": 272608942,
+        "username": "Sathwik Suresh Shetty",
+        "email": "sathwikshetty1234@gmail.com",
+        "color": "#595d66",
+        "initials": "SS",
+        "profilePicture": null
+      },
+      "before": "Zulip Fixture List",
+      "after": "Zulip Fixture List (renamed)"
+    }
+  ],
+  "list_id": "901615428252",
+  "team_id": "90161438581",
+  "webhook_id": "7dd940c1-0525-42cb-8b7f-77627c1941b3"
+}

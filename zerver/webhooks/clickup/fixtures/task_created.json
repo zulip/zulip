@@ -1,0 +1,66 @@
+{
+  "event": "taskCreated",
+  "history_items": [
+    {
+      "id": "5130984089419902638",
+      "type": 1,
+      "date": "1781626623630",
+      "field": "status",
+      "parent_id": "901615428252",
+      "data": {
+        "status_type": "open"
+      },
+      "source": null,
+      "user": {
+        "id": 272608942,
+        "username": "Sathwik Suresh Shetty",
+        "email": "sathwikshetty1234@gmail.com",
+        "color": "#595d66",
+        "initials": "SS",
+        "profilePicture": null,
+        "role": 1,
+        "role_subtype": 0
+      },
+      "before": {
+        "status": null,
+        "color": "#000000",
+        "type": "removed",
+        "orderindex": -1
+      },
+      "after": {
+        "status": "to do",
+        "color": "#87909e",
+        "orderindex": 0,
+        "type": "open"
+      }
+    },
+    {
+      "id": "5130984089403125421",
+      "type": 1,
+      "date": "1781626623630",
+      "field": "task_creation",
+      "parent_id": "901615428252",
+      "data": {
+        "via": "api",
+        "trace_id": "1841258142596755196",
+        "subcategory_id": "901615428252"
+      },
+      "source": "api",
+      "user": {
+        "id": 272608942,
+        "username": "Sathwik Suresh Shetty",
+        "email": "sathwikshetty1234@gmail.com",
+        "color": "#595d66",
+        "initials": "SS",
+        "profilePicture": null,
+        "role": 1,
+        "role_subtype": 0
+      },
+      "before": null,
+      "after": null
+    }
+  ],
+  "task_id": "86d3cc9fu",
+  "team_id": "90161438581",
+  "webhook_id": "7dd940c1-0525-42cb-8b7f-77627c1941b3"
+}
