@@ -610,11 +610,27 @@
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-bottom: var(--sidebar-bottom-spacing);
 
+    &:has(:focus-visible) {
+        /* Apply focus and active styles to the parent container so the
+        entire invite-user row receives keyboard focus indication,
+        matching the behavior of other interactive sidebar rows.
+        We use :has with :focus-visible so that mouse-clicks
+        do not trigger the outline. */
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
     .invite-user-link {
         /* TODO: We should eventually change the grid to use the correct
            --right-sidebar-presence-circle-width with left spacing, and
            share that left spacing value here. */
         padding-left: calc(var(--right-sidebar-toggle-width-offset) + 0.3em);
+        text-decoration: none;
+
+        &:focus {
+            outline: none;
+        }
     }
 }
 
