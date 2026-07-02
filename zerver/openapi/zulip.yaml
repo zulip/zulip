@@ -3704,6 +3704,15 @@ paths:
                                           of the user.
 
                                           Present only if the message mentions the current user.
+                                      mentioned_me_directly:
+                                        type: boolean
+                                        description: |
+                                          A flag which indicates whether the message contains a personal
+                                          mention of the user.
+
+                                          Present only if the message mentions the current user personally.
+
+                                          **Changes**: New in Zulip 12.0 (feature level 475).
                                       user_ids:
                                         type: array
                                         items:
@@ -19398,6 +19407,15 @@ paths:
                               topic features were not handled correctly in calculating this field.
                             items:
                               type: integer
+                          personal_mentions:
+                            type: array
+                            description: |
+                              Array containing the IDs of all unread messages in which the user was
+                              mentioned personally.
+
+                              **Changes**: New in Zulip 12.0 (feature level 475).
+                            items:
+                              type: integer
                           old_unreads_missing:
                             type: boolean
                             description: |
@@ -30321,6 +30339,27 @@ components:
               "msg": "Channel 'nonexistent' does not exist",
               "result": "error",
               "stream": "nonexistent",
+            }
+    ChannelAccessDeniedError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            stream:
+              type: string
+              description: |
+                The name of the channel for which access was denied.
+
+                **Changes**: New in Zulip 12.0 (feature level 475).
+          example:
+            {
+              "code": "CHANNEL_ACCESS_DENIED",
+              "msg": "You do not have permission to access channel 'private-channel'.",
+              "result": "error",
+              "stream": "private-channel",
             }
     NonExistingChannelIdError:
       allOf:
