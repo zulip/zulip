@@ -16,6 +16,9 @@
                     <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                 {{/if}}
             </div>
+            {{#if user_pronouns}}
+                <div class="popover-menu-user-pronouns">{{user_pronouns}}</div>
+            {{/if}}
             <div class="popover-menu-user-type">
                 {{#if is_bot}}
                     {{#if is_system_bot}}

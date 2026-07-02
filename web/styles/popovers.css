@@ -908,6 +908,18 @@ ul.popover-group-menu-member-list {
         text-overflow: ellipsis;
         white-space: nowrap;
     }
+
+    .popover-menu-user-pronouns {
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
+        font-weight: 400;
+        /* 16px at 14px/1em */
+        line-height: 1.1428em;
+        color: var(--color-text-item);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 
 .user-card-popover-email-field {
