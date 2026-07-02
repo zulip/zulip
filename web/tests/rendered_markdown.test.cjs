@@ -28,6 +28,9 @@ mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
+mock_esm("../src/ui_util", {
+    parse_html: () => ({}),
+});
 
 const alert_words = zrequire("alert_words");
 const rm = zrequire("rendered_markdown");
@@ -138,6 +141,10 @@ const get_content_element = () => {
     $content.set_find_results(".emoji", []);
     $content.set_find_results("div.spoiler-header", []);
     $content.set_find_results("div.codehilite", []);
+    $content.set_find_results(
+        ".message_embed, .message-media-preview-image, .message-media-preview-video",
+        [],
+    );
     $content.set_find_results(".message_inline_video video", []);
     $content.set_find_results("audio", []);
 
@@ -1148,4 +1155,115 @@ run_test("rtl", () => {
     assert.ok(!$content.hasClass("rtl"));
     rm.update_elements($content);
     assert.ok($content.hasClass("rtl"));
+});
+
+function make_preview_element(name, link_href) {
+    const $preview = $.create(name);
+    const $link = $.create(name + "-link");
+    if (link_href !== undefined) {
+        $link.attr("href", link_href);
+    }
+    $preview.set_find_results("a", $link);
+    return $preview;
+}
+
+run_test("hide preview button - standard embed", () => {
+    const $content = get_content_element();
+    const $embed = make_preview_element("opengraph-embed", "https://example.com/article");
+
+    const selector = ".message_embed, .message-media-preview-image, .message-media-preview-video";
+    $content.set_find_results(selector, [$embed]);
+
+    set_message_for_message_content($content, {id: 100});
+
+    let appended = false;
+    $embed[0].append = () => {
+        appended = true;
+    };
+
+    rm.update_elements($content);
+    assert.ok(appended);
+});
+
+run_test("hide preview button - image preview", () => {
+    const $content = get_content_element();
+    const $img_preview = make_preview_element("image-preview", "https://external.com/photo.jpg");
+
+    const selector = ".message_embed, .message-media-preview-image, .message-media-preview-video";
+    $content.set_find_results(selector, [$img_preview]);
+
+    set_message_for_message_content($content, {id: 101});
+
+    let appended = false;
+    $img_preview[0].append = () => {
+        appended = true;
+    };
+
+    rm.update_elements($content);
+    assert.ok(appended);
+});
+
+run_test("hide preview button - YouTube video preview", () => {
+    const $content = get_content_element();
+    const $yt_preview = make_preview_element(
+        "youtube-preview",
+        "https://www.youtube.com/watch?v=abc123",
+    );
+
+    const selector = ".message_embed, .message-media-preview-image, .message-media-preview-video";
+    $content.set_find_results(selector, [$yt_preview]);
+
+    set_message_for_message_content($content, {id: 102});
+
+    let appended = false;
+    $yt_preview[0].append = () => {
+        appended = true;
+    };
+
+    rm.update_elements($content);
+    assert.ok(appended);
+});
+
+run_test("hide preview button - skipped for user uploads", () => {
+    const $content = get_content_element();
+    // User uploads have /user_uploads/ hrefs and should not get a hide button.
+    const $upload = make_preview_element("user-upload", "/user_uploads/thumb/abc/image.webp");
+
+    const selector = ".message_embed, .message-media-preview-image, .message-media-preview-video";
+    $content.set_find_results(selector, [$upload]);
+
+    set_message_for_message_content($content, {id: 103});
+
+    // append must not be called; assert.fail will throw if it is.
+    $upload[0].append = assert.fail;
+
+    rm.update_elements($content);
+});
+
+run_test("hide preview button - no message context", () => {
+    const $content = get_content_element();
+    const $embed = make_preview_element("embed-no-context", "https://example.com/article");
+
+    const selector = ".message_embed, .message-media-preview-image, .message-media-preview-video";
+    $content.set_find_results(selector, [$embed]);
+
+    set_message_for_message_content($content, undefined);
+
+    $embed[0].append = assert.fail;
+
+    rm.update_elements($content);
+});
+
+run_test("hide preview button - no URL found", () => {
+    const $content = get_content_element();
+    const $embed = make_preview_element("embed-no-url", undefined);
+
+    const selector = ".message_embed, .message-media-preview-image, .message-media-preview-video";
+    $content.set_find_results(selector, [$embed]);
+
+    set_message_for_message_content($content, {id: 104});
+
+    $embed[0].append = assert.fail;
+
+    rm.update_elements($content);
 });
