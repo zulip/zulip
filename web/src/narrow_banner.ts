@@ -48,6 +48,10 @@ const MENTIONS_VIEW_EMPTY_BANNER = {
     ),
 };
 
+const ALERT_WORDS_VIEW_EMPTY_BANNER = {
+    title: $t({defaultMessage: "You have no messages with alert words."}),
+};
+
 const STARRED_MESSAGES_VIEW_EMPTY_BANNER = {
     title: $t({defaultMessage: "You have no starred messages."}),
     html: $t_html(
@@ -337,6 +341,8 @@ export function pick_empty_narrow_banner(
                     return STARRED_MESSAGES_VIEW_EMPTY_BANNER;
                 case "mentioned":
                     return MENTIONS_VIEW_EMPTY_BANNER;
+                case "alerted":
+                    return ALERT_WORDS_VIEW_EMPTY_BANNER;
                 case "dm":
                     // You have no direct messages.
                     return {
