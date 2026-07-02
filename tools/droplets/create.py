@@ -113,7 +113,7 @@ def generate_dev_droplet_user_data(username: str, subdomain: str, public_keys: l
     setup_zulipdev_ssh_keys = f"printf '{ssh_keys_string}' > /home/zulipdev/.ssh/authorized_keys"
 
     # We pass the hostname as username.zulipdev.org to the DigitalOcean API.
-    # But some droplets (eg on 18.04) are created with with hostname set to just username.
+    # But some droplets (eg on 18.04) are created with hostname set to just username.
     # So we fix the hostname using cloud-init.
     hostname_setup = f"hostnamectl set-hostname {subdomain}.zulipdev.org"
 

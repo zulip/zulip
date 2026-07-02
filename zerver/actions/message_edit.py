@@ -1208,7 +1208,7 @@ def do_update_message(
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
             # enabled. Excluding these users from receiving this
-            # event helps us avoid a error traceback for our
+            # event helps us avoid an error traceback for our
             # clients. We should figure out a way to inform the
             # guest users of this new topic if sending a 'message'
             # event for these messages is not an option.

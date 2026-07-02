@@ -69,7 +69,7 @@ function get_selected_message_content_elements(): NodeListOf<HTMLElement> | unde
         .querySelectorAll(".message_content");
 }
 
-// Returns the the inner HTML of the `.message_content` element
+// Returns the inner HTML of the `.message_content` element
 // for the first or last message of a single range selection.
 // The caller is expected to only pass the first or last message
 // from a selection range, as the intermediate selected messages
