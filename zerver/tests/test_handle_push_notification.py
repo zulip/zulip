@@ -13,6 +13,7 @@ from analytics.models import RealmCount
 from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import check_update_message
+from zerver.actions.reactions import do_add_reaction
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -22,9 +23,10 @@ from zerver.lib.push_notifications import (
     handle_remove_push_notification,
 )
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.soft_deactivation import has_small_topic_wildcard_mention
 from zerver.lib.test_classes import PushNotificationTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
-from zerver.models import PushDeviceToken, Recipient, UserMessage, UserTopic
+from zerver.models import Message, PushDeviceToken, Recipient, UserMessage, UserTopic
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
@@ -965,7 +967,27 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
 
-    @override_settings(MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2)
+    def test_topic_wildcard_helper_false_for_non_stream_message(self) -> None:
+        othello = self.example_user("othello")
+        user = self.example_user("hamlet")
+        message_id = self.send_personal_message(othello, user, "DM body")
+        message = Message.objects.get(id=message_id)
+
+        self.assertFalse(
+            has_small_topic_wildcard_mention(
+                [
+                    {
+                        "message": message,
+                        "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                    }
+                ],
+                user,
+            )
+        )
+
+    @override_settings(
+        MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2, MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION=2
+    )
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_user_push_soft_reactivate_soft_deactivated_user(
         self, mock_push_notifications: mock.MagicMock
@@ -991,6 +1013,13 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             zulip_realm, "subgroup", [othello, cordelia], acting_user=othello
         )
         add_subgroups_to_user_group(large_user_group, [subgroup], acting_user=None)
+
+        for user in [othello, cordelia, self.user_profile]:
+            self.subscribe(user, "Denmark")
+            self.send_stream_message(user, "Denmark", "seeding", topic_name="large_topic")
+
+        self.send_stream_message(othello, "Denmark", "seeding", topic_name="small_topic")
+        self.send_stream_message(self.user_profile, "Denmark", "seeding", topic_name="small_topic")
 
         # Personal mention in a stream message should soft reactivate the user
         def mention_in_stream() -> None:
@@ -1117,6 +1146,76 @@ class HandlePushNotificationTest(PushNotificationTestCase):
 
         self.soft_deactivate_main_user()
         self.expect_to_stay_long_term_idle(self.user_profile, send_large_group_mention)
+
+        def send_small_topic_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="small_topic"
+            )
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, send_small_topic_mention)
+
+        def send_large_topic_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="large_topic"
+            )
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_large_topic_mention)
+
+        def send_reaction_heavy_topic_mention() -> None:
+            initial_msg_id = self.send_stream_message(
+                othello, "Denmark", "msg", topic_name="reaction_topic"
+            )
+            initial_msg = Message.objects.get(id=initial_msg_id)
+
+            do_add_reaction(cordelia, initial_msg, "smile", "1f642", "unicode_emoji")
+            do_add_reaction(self.user_profile, initial_msg, "tada", "1f389", "unicode_emoji")
+
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="reaction_topic"
+            )
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_reaction_heavy_topic_mention)
+
+        personal_message_id = self.send_personal_message(othello, self.user_profile, "This is a DM")
+
+        def fire_push_with_synthetic_trigger() -> None:
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": personal_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, fire_push_with_synthetic_trigger)
 
     @mock.patch("zerver.lib.push_notifications.logger.info")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)

@@ -1805,9 +1805,13 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         mentioned_user_group_name = mentioned_user_group.name
         mentioned_user_group_members_count = mentioned_user_group.members_count
 
-    # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
+    # Soft reactivate if pushing to a long_term_idle user that is personally mentioned.
+    # Pass the already-fetched message so the topic-size check needn't re-fetch it.
     soft_reactivate_if_personal_notification(
-        user_profile, {trigger}, mentioned_user_group_members_count
+        user_profile,
+        {trigger},
+        mentioned_user_group_members_count,
+        [{**missed_message, "message": message}],
     )
 
     if message.is_channel_message:
