@@ -13352,17 +13352,32 @@ paths:
           content:
             application/json:
               schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                BadRequest:
+                  value:
+                    result: error
+                    msg: Bad request.
+                    code: BAD_REQUEST
+        "403":
+          description: Permission denied.
+          content:
+            application/json:
+              schema:
                 allOf:
                   - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "msg": "Unable to access channel (private).",
-                        "result": "error",
-                        "code": "BAD_REQUEST",
-                      }
-                    description: |
-                      An example JSON response for when the requesting user does not have
-                      access to a private channel and `"authorization_errors_fatal": true`:
+                  - type: object
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - PERMISSION_DENIED
+              examples:
+                PermissionDenied:
+                  value:
+                    result: error
+                    msg: Permission denied.
+                    code: PERMISSION_DENIED
     patch:
       operationId: update-subscriptions
       summary: Update subscriptions
@@ -24938,6 +24953,31 @@ paths:
                         description: |
                           An example JSON response for when trying to set moderation request channel to
                           be public:
+        "403":
+          description: Permission denied.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - type: object
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - PERMISSION_DENIED
+                    description: |
+                      Returned when the new name collides with a channel the user
+                      cannot access, so that the channel's existence is not
+                      revealed.
+
+                      **Changes**: New in Zulip 13.0 (feature level ZF-e65a6c).
+              examples:
+                PermissionDenied:
+                  value:
+                    result: error
+                    msg: Permission denied.
+                    code: PERMISSION_DENIED
   /streams/{stream_id}/email_address:
     get:
       operationId: get-stream-email-address
@@ -25537,6 +25577,31 @@ paths:
                         type: integer
                         description: "The ID of the newly created channel."
                 example: {"result": "success", "msg": "", "id": 50}
+        "403":
+          description: Permission denied.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - type: object
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - PERMISSION_DENIED
+                    description: |
+                      Returned when the submitted name collides with a channel
+                      the user cannot access, so that the channel's existence is
+                      not revealed.
+
+                      **Changes**: New in Zulip 13.0 (feature level ZF-e65a6c).
+              examples:
+                PermissionDenied:
+                  value:
+                    result: error
+                    msg: Permission denied.
+                    code: PERMISSION_DENIED
         "409":
           description: Bad request.
           content:
@@ -25553,6 +25618,11 @@ paths:
                     description: |
                       An example JSON error response for when a channel with the submitted
                       name already exists.
+
+                      **Changes**: Prior to Zulip 13.0 (feature level ZF-e65a6c),
+                      this error was also returned when the existing channel was
+                      one the user could not access; that case now returns a
+                      `PERMISSION_DENIED` error instead.
   /user_groups/create:
     post:
       operationId: create-user-group

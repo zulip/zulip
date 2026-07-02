@@ -59,6 +59,7 @@ from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
     JsonableError,
     OrganizationOwnerRequiredError,
+    PermissionDeniedError,
 )
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
@@ -457,7 +458,7 @@ def update_stream_backend(
         if stream.name.lower() != new_name.lower():
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
-            check_stream_name_available(user_profile.realm, new_name)
+            check_stream_name_available(user_profile, new_name)
         do_rename_stream(stream, new_name, user_profile)
 
     if not isinstance(folder_id, MissingType):
@@ -705,8 +706,6 @@ def create_channel(
     realm = user_profile.realm
     request_settings_dict = locals()
 
-    check_stream_name_available(realm, name)
-
     folder: ChannelFolder | None = None
     if folder_id is not None:
         folder = get_channel_folder_by_id(folder_id, realm)
@@ -734,6 +733,8 @@ def create_channel(
         is_web_public=is_web_public,
         message_retention_days=parsed_message_retention_days,
     )
+
+    check_stream_name_available(user_profile, name)
 
     stream_group_settings_map, anonymous_group_membership = (
         access_requested_group_permissions_for_streams(
@@ -898,11 +899,7 @@ def add_subscriptions_backend(
     )
 
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        raise JsonableError(
-            _("Unable to access channel ({channel_name}).").format(
-                channel_name=unauthorized_streams[0].name,
-            )
-        )
+        raise PermissionDeniedError
     if len(streams_to_which_user_cannot_add_subscribers) > 0:
         raise JsonableError(_("Insufficient permission"))
 

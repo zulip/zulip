@@ -396,7 +396,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(result, "Unable to access channel (private_stream).")
+        self.assert_json_error(result, "Permission denied.", status_code=403)
 
     def test_stream_settings_for_subscribing(self) -> None:
         realm = get_realm("zulip")
@@ -407,14 +407,16 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
-        def check_user_can_subscribe(user: UserProfile, error_msg: str | None = None) -> None:
+        def check_user_can_subscribe(
+            user: UserProfile, error_msg: str | None = None, status_code: int = 400
+        ) -> None:
             result = self.subscribe_via_post(
                 user,
                 [stream.name],
                 allow_fail=error_msg is not None,
             )
             if error_msg:
-                self.assert_json_error(result, error_msg)
+                self.assert_json_error(result, error_msg, status_code=status_code)
                 return
 
             self.assertTrue(
@@ -478,10 +480,10 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
 
         stream = self.subscribe(self.example_user("iago"), "private_stream", invite_only=True)
 
-        check_user_can_subscribe(desdemona, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(desdemona, "Permission denied.", status_code=403)
+        check_user_can_subscribe(shiva, "Permission denied.", status_code=403)
+        check_user_can_subscribe(hamlet, "Permission denied.", status_code=403)
+        check_user_can_subscribe(othello, "Permission denied.", status_code=403)
 
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
@@ -490,9 +492,9 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             stream, "can_subscribe_group", owners_group, acting_user=othello
         )
 
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Permission denied.", status_code=403)
+        check_user_can_subscribe(hamlet, "Permission denied.", status_code=403)
+        check_user_can_subscribe(othello, "Permission denied.", status_code=403)
         check_user_can_subscribe(desdemona)
 
         hamletcharacters_group = NamedUserGroup.objects.get(
@@ -501,9 +503,9 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream, "can_subscribe_group", hamletcharacters_group, acting_user=othello
         )
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(desdemona, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Permission denied.", status_code=403)
+        check_user_can_subscribe(desdemona, "Permission denied.", status_code=403)
+        check_user_can_subscribe(othello, "Permission denied.", status_code=403)
         check_user_can_subscribe(hamlet)
 
         setting_group_member_dict = UserGroupMembersData(
@@ -512,8 +514,8 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream, "can_subscribe_group", setting_group_member_dict, acting_user=othello
         )
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Permission denied.", status_code=403)
+        check_user_can_subscribe(hamlet, "Permission denied.", status_code=403)
         check_user_can_subscribe(othello)
         check_user_can_subscribe(desdemona)
 
@@ -524,8 +526,8 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream, "can_add_subscribers_group", setting_group_member_dict, acting_user=othello
         )
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Permission denied.", status_code=403)
+        check_user_can_subscribe(hamlet, "Permission denied.", status_code=403)
         check_user_can_subscribe(othello)
         check_user_can_subscribe(desdemona)
 
@@ -537,10 +539,10 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream, "can_administer_channel_group", setting_group_member_dict, acting_user=othello
         )
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(desdemona, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Permission denied.", status_code=403)
+        check_user_can_subscribe(hamlet, "Permission denied.", status_code=403)
+        check_user_can_subscribe(othello, "Permission denied.", status_code=403)
+        check_user_can_subscribe(desdemona, "Permission denied.", status_code=403)
 
     def test_can_remove_subscribers_group(self) -> None:
         realm = get_realm("zulip")
@@ -1473,4 +1475,76 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
                 ).decode(),
             },
         )
-        self.assert_json_success(result)
+
+
+class ChannelNameCollisionLeakTest(ZulipTestCase):
+    def test_create_channel_name_collision_hides_inaccessible_channel(self) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        private_stream = self.make_stream("private", realm, invite_only=True)
+        self.subscribe(othello, "private")
+
+        result = self.create_channel_via_post(hamlet, name="private")
+        self.assert_json_error(result, "Permission denied.", status_code=403)
+
+        result = self.create_channel_via_post(othello, name="private")
+        self.assert_json_error(result, "Channel 'private' already exists", status_code=409)
+
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_add_subscribers_group",
+            UserGroupMembersData(direct_members=[hamlet.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+        result = self.create_channel_via_post(hamlet, name="private")
+        self.assert_json_error(result, "Channel 'private' already exists", status_code=409)
+
+        result = self.create_channel_via_post(iago, name="private")
+        self.assert_json_error(result, "Channel 'private' already exists", status_code=409)
+
+    def test_create_channel_without_permission_does_not_leak_collision(self) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        self.make_stream("private", realm, invite_only=True)
+        self.subscribe(othello, "private")
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_create_public_channel_group", admins_group, acting_user=None
+        )
+
+        result = self.create_channel_via_post(hamlet, name="private")
+        self.assert_json_error(result, "Insufficient permission")
+        result = self.create_channel_via_post(hamlet, name="brand-new-channel")
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_rename_channel_name_collision_hides_inaccessible_channel(self) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+
+        self.make_stream("private", realm, invite_only=True)
+        self.subscribe(othello, "private")
+
+        source_stream = self.make_stream("cordelia-channel", realm)
+        self.subscribe(cordelia, "cordelia-channel")
+        do_change_stream_group_based_setting(
+            source_stream,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+            acting_user=othello,
+        )
+        self.login_user(cordelia)
+
+        result = self.client_patch(f"/json/streams/{source_stream.id}", {"new_name": "private"})
+        self.assert_json_error(result, "Permission denied.", status_code=403)
+
+        result = self.client_patch(f"/json/streams/{source_stream.id}", {"new_name": "Denmark"})
+        self.assert_json_error(result, "Channel 'Denmark' already exists", status_code=409)

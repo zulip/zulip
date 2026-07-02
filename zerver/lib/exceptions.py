@@ -821,6 +821,20 @@ class CannotAdministerChannelError(JsonableError):
         return _("You do not have permission to administer this channel.")
 
 
+class PermissionDeniedError(JsonableError):
+    code = ErrorCode.PERMISSION_DENIED
+    http_status_code = 403
+    data_fields: list[str] = []
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Permission denied.")
+
+
 class CannotManageDefaultChannelError(JsonableError):
     def __init__(self) -> None:
         pass
