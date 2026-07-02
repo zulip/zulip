@@ -67,6 +67,7 @@ from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_name_keyed_dict_for_active_realm_emoji
+from zerver.models.streams import StreamTopicsPolicyEnum
 
 ReturnT = TypeVar("ReturnT")
 
@@ -135,6 +136,7 @@ class DbData:
     active_realm_emoji: dict[str, EmojiInfo]
     sent_by_bot: bool
     stream_names: dict[str, int]
+    stream_topics_policy: dict[str, int]
     topic_info: dict[ChannelTopicInfo, int | None]
     translate_emoticons: bool
     user_upload_previews: AttachmentData
@@ -1818,6 +1820,13 @@ class StreamTopicMessageProcessor(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+    def is_empty_topic_only_channel(self, name: str) -> bool:
+        db_data: DbData | None = self.zmd.zulip_db_data
+        if db_data is None:
+            return False
+        topics_policy = db_data.stream_topics_policy.get(name)
+        return topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value
+
 
 class StreamPattern(StreamTopicMessageProcessor):
     @override
@@ -1862,6 +1871,10 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         stream_id = self.find_stream_id(stream_name)
         if stream_id is None or topic_name is None:
             return None, None, None
+        if topic_name != "" and self.is_empty_topic_only_channel(stream_name):
+            # This channel only allows the empty topic, so a non-empty
+            # topic can never exist in it; don't linkify it.
+            return None, None, None
         el = Element("a")
         el.set("class", "stream-topic")
         el.set("data-stream-id", str(stream_id))
@@ -1901,6 +1914,10 @@ class StreamTopicMessagePattern(StreamTopicMessageProcessor):
 
         stream_id = self.find_stream_id(stream_name)
         if stream_id is None or topic_name is None:
+            return None, None, None
+        if topic_name != "" and self.is_empty_topic_only_channel(stream_name):
+            # This channel only allows the empty topic, so a non-empty
+            # topic can never exist in it; don't linkify it.
             return None, None, None
         el = Element("a")
         el.set("class", "message-link")
@@ -2672,6 +2689,15 @@ def do_convert(
 
         stream_names = possible_linked_stream_names(content)
         stream_name_info = mention_data.get_stream_name_map(stream_names, acting_user=acting_user)
+        # Resolve each linked channel's effective topics_policy, mapping
+        # `inherit` to the realm's policy, so the stream-topic handlers can
+        # avoid linkifying non-empty topics in empty-topic-only channels.
+        stream_topics_policy: dict[str, int] = {}
+        for channel_name, channel_info in mention_data.get_channel_info_map().items():
+            topics_policy = channel_info.topics_policy
+            if topics_policy == StreamTopicsPolicyEnum.inherit.value:
+                topics_policy = message_realm.topics_policy
+            stream_topics_policy[channel_name] = topics_policy
 
         linked_stream_topic_data = possible_linked_topics(content)
         topic_info = mention_data.get_topic_info_map(
@@ -2691,6 +2717,7 @@ def do_convert(
             realm_url=message_realm.url,
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
+            stream_topics_policy=stream_topics_policy,
             topic_info=topic_info,
             translate_emoticons=translate_emoticons,
             user_upload_previews=user_upload_previews,
