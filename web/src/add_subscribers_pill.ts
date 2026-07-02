@@ -32,6 +32,23 @@ export function create_item_from_text(
     return undefined;
 }
 
+// Variant for widgets that should not accept #channel pills, such as the
+// bulk-unsubscribe widget, where removing "everyone subscribed to another
+// channel" has no clear use case.
+function create_item_from_text_without_stream(
+    text: string,
+    current_items: CombinedPill[],
+): CombinedPill | undefined {
+    const funcs = [user_group_pill.create_item_from_group_name, user_pill.create_item_from_user_id];
+    for (const func of funcs) {
+        const item = func(text, current_items);
+        if (item) {
+            return item;
+        }
+    }
+    return undefined;
+}
+
 export function get_text_from_item(item: CombinedPill): string {
     let text: string;
     switch (item.type) {
@@ -54,27 +71,31 @@ export function set_up_pill_typeahead({
     get_users,
     get_user_groups,
     for_stream_subscribers,
+    include_stream_pill = true,
 }: {
     pill_widget: CombinedPillContainer;
     $pill_container: JQuery;
     get_users: () => User[];
     get_user_groups?: () => UserGroup[];
     for_stream_subscribers: boolean;
+    include_stream_pill?: boolean;
 }): void {
     const opts: {
         user_source: () => User[];
-        stream: boolean;
+        stream?: boolean;
         user_group: boolean;
         user: boolean;
         user_group_source?: () => UserGroup[];
         for_stream_subscribers: boolean;
     } = {
         user_source: get_users,
-        stream: true,
         user_group: true,
         user: true,
         for_stream_subscribers,
     };
+    if (include_stream_pill) {
+        opts.stream = true;
+    }
     if (get_user_groups !== undefined) {
         opts.user_group_source = get_user_groups;
     }
@@ -141,6 +162,7 @@ export function create({
     get_potential_subscribers,
     get_user_groups,
     with_add_button,
+    include_stream_pill = true,
     onPillCreateAction,
     onPillRemoveAction,
     add_button_pill_update_callback,
@@ -150,6 +172,7 @@ export function create({
     get_potential_subscribers: () => User[];
     get_user_groups: () => UserGroup[];
     with_add_button: boolean;
+    include_stream_pill?: boolean;
     onPillCreateAction?: (pill_user_ids: number[]) => void;
     onPillRemoveAction?: (pill_user_ids: number[]) => void;
     add_button_pill_update_callback?: () => void;
@@ -157,7 +180,9 @@ export function create({
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
-        create_item_from_text,
+        create_item_from_text: include_stream_pill
+            ? create_item_from_text
+            : create_item_from_text_without_stream,
         get_text_from_item,
         get_display_value_from_item,
         generate_pill_html,
@@ -209,6 +234,7 @@ export function create({
         get_users,
         get_user_groups: get_groups,
         for_stream_subscribers: true,
+        include_stream_pill,
     });
 
     if (with_add_button) {
