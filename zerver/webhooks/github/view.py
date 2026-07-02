@@ -1010,7 +1010,12 @@ def get_user_mention(helper: Helper, github_username: str) -> str:
 
 
 def get_sender_name(helper: Helper) -> str:
-    return get_user_mention(helper, helper.payload["sender"]["login"].tame(check_string))
+    payload = helper.payload
+    if "sender" not in payload:
+        # GitHub documents "sender" as required, but very rarely omits it
+        # (e.g. an event attributed from a deleted account).
+        return "Unknown"
+    return get_user_mention(helper, payload["sender"]["login"].tame(check_string))
 
 
 def get_sender_url(payload: WildValue) -> str:
