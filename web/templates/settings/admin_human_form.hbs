@@ -2,29 +2,45 @@
     <form class="name-setting">
         <div id="edit-user-form-error" class="banner-wrapper"></div>
         <input type="hidden" name="is_full_name" value="true" />
-        <div class="input-group name_change_container">
-            <label for="edit_user_full_name" class="modal-field-label">{{t "Name" }}</label>
-            <input type="text" autocomplete="off" name="full_name" id="edit_user_full_name" class="modal_text_input" value="{{ full_name }}" maxlength="{{max_user_name_length}}" />
+        <div class="top">
+            <div class="col-wrap col-left manage-user-standard-fields">
+                <div class="input-group name_change_container">
+                    <label for="edit_user_full_name" class="modal-field-label">{{t "Name" }}</label>
+                    <input type="text" autocomplete="off" name="full_name" id="edit_user_full_name" class="modal_text_input" value="{{ full_name }}" maxlength="{{max_user_name_length}}" />
+                </div>
+                {{#if email}}
+                <div class="input-group email_change_container">
+                    <label for="email" class="modal-field-label">{{t "Email" }}</label>
+                    <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
+                </div>
+                {{/if}}
+                <div class="input-group user_id_container">
+                    <label for="user_id" class="modal-field-label">{{t "User ID" }}</label>
+                    <input type="text" autocomplete="off" name="user_id" class="modal_text_input" value="{{ user_id }}" readonly/>
+                </div>
+                <div class="input-group">
+                    <label for="user-role-select" class="modal-field-label">{{t 'User role' }}
+                        {{> ../help_link_widget link="/help/user-roles" }}
+                    </label>
+                    <select name="user-role-select" class="bootstrap-focus-style modal_select" id="user-role-select" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=(object_values user_role_values)}}
+                    </select>
+                </div>
+            </div>
+            {{#unless is_me}}
+            <div class="col-wrap col-right manage-user-avatar-section">
+                {{> image_upload_widget
+                  widget = "admin-user-avatar"
+                  upload_text = (t "Upload new profile picture")
+                  delete_text = (t "Delete profile picture")
+                  is_editable_by_current_user = true
+                  image = user_avatar_url}}
+            </div>
+            {{/unless}}
         </div>
-        {{#if email}}
-        <div class="input-group email_change_container">
-            <label for="email" class="modal-field-label">{{t "Email" }}</label>
-            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
+        <div class="bottom">
+            <div class="custom-profile-field-form"></div>
         </div>
-        {{/if}}
-        <div class="input-group user_id_container">
-            <label for="user_id" class="modal-field-label">{{t "User ID" }}</label>
-            <input type="text" autocomplete="off" name="user_id" class="modal_text_input" value="{{ user_id }}" readonly/>
-        </div>
-        <div class="input-group">
-            <label for="user-role-select" class="modal-field-label">{{t 'User role' }}
-                {{> ../help_link_widget link="/help/user-roles" }}
-            </label>
-            <select name="user-role-select" class="bootstrap-focus-style modal_select" id="user-role-select" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=(object_values user_role_values)}}
-            </select>
-        </div>
-        <div class="custom-profile-field-form"></div>
     </form>
     <div class="input-group {{#if hide_deactivate_button}}hide{{/if}}">
         <div class="deactivate-user-container {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">

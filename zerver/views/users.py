@@ -30,6 +30,7 @@ from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_change_user_delivery_email,
     do_regenerate_api_key,
+    set_avatar_to_default,
 )
 from zerver.actions.users import (
     do_change_user_role,
@@ -103,6 +104,7 @@ from zerver.models.realms import (
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
     Realm,
+    avatar_changes_disabled,
 )
 from zerver.models.users import (
     get_user_by_delivery_email,
@@ -110,6 +112,7 @@ from zerver.models.users import (
     get_user_including_cross_realm,
     get_user_profile_by_id_in_realm,
 )
+from zerver.views.user_settings import AVATAR_CHANGES_DISABLED_ERROR
 from zproject.backends import check_password_strength
 
 RoleParamType: TypeAlias = Annotated[
@@ -368,6 +371,69 @@ def update_user_backend(
         do_change_user_delivery_email(target, new_email, acting_user=user_profile)
 
     return json_success(request)
+
+
+@typed_endpoint
+def set_avatar_backend_for_user_by_id(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_id: PathOnly[int],
+) -> HttpResponse:
+    target = access_user_by_id(
+        user_profile, user_id, allow_deactivated=True, allow_bots=False, for_admin=True
+    )
+
+    if len(request.FILES) != 1:
+        raise JsonableError(_("You must upload exactly one avatar."))
+
+    if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
+        raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
+
+    [user_file] = request.FILES.values()
+    assert isinstance(user_file, UploadedFile)
+    assert user_file.size is not None
+    if user_file.size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
+        raise JsonableError(
+            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
+            )
+        )
+    upload_avatar_image(user_file, target, content_type=user_file.content_type)
+    do_change_avatar_fields(target, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
+    user_avatar_url = avatar_url(target)
+    user_avatar_url_medium = avatar_url(target, medium=True)
+
+    json_result = dict(
+        avatar_url=user_avatar_url,
+        avatar_url_medium=user_avatar_url_medium,
+    )
+    return json_success(request, data=json_result)
+
+
+@typed_endpoint
+def delete_avatar_backend_for_user_by_id(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_id: PathOnly[int],
+) -> HttpResponse:
+    target = access_user_by_id(
+        user_profile, user_id, allow_deactivated=True, allow_bots=False, for_admin=True
+    )
+    if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
+        raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
+
+    if target.avatar_source == UserProfile.AVATAR_FROM_USER:
+        set_avatar_to_default(target, acting_user=user_profile)
+
+    default_avatar_url = avatar_url(target)
+    default_avatar_url_medium = avatar_url(target, medium=True)
+    json_result = dict(
+        avatar_url=default_avatar_url,
+        avatar_url_medium=default_avatar_url_medium,
+    )
+    return json_success(request, data=json_result)
 
 
 def avatar_by_id(
