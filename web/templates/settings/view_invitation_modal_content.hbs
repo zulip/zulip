@@ -1,0 +1,76 @@
+<div id="invite-details-default-section">
+    {{#if is_multiuse}}
+    <div class="default-field">
+        <div class="name">{{t "Invitee"}}</div>
+        <div class="value">
+            <a href="{{invitee_display}}" target="_blank" rel="noopener noreferrer">
+                {{t "Invite link"}}
+            </a>
+        </div>
+    </div>
+    {{else}}
+    <div class="default-field">
+        <div class="name">{{t "Invitee"}}</div>
+        <div class="value">{{invitee_display}}</div>
+    </div>
+    {{/if}}
+    <div class="default-field">
+        <div class="name">{{t "Invited as"}}</div>
+        <div class="value">{{invited_as_text}}</div>
+    </div>
+    {{#if is_admin}}
+    <div class="default-field">
+        <div class="name">{{t "Invited by"}}</div>
+        <span class="referred_by panel_user_list">
+            {{> ../user_display_only_pill display_value=referrer_name user_id=invited_by_user_id is_active=true}}
+        </span>
+    </div>
+    {{/if}}
+    <div class="default-field">
+        <div class="name">{{t "Invited at"}}</div>
+        <div class="value">{{invited_at}}</div>
+    </div>
+    {{#if expires_at}}
+    <div class="default-field">
+        <div class="name">{{t "Expires at"}}</div>
+        <div class="value">{{expires_at}}</div>
+    </div>
+    {{/if}}
+    {{#if welcome_message_custom_text}}
+    <div class="default-field">
+        <div class="name">{{t "Welcome message"}}</div>
+        <div class="value">{{welcome_message_custom_text}}</div>
+    </div>
+    {{/if}}
+    <div class="default-field">
+        <div class="name">{{t "Channels they will join"}}</div>
+        {{#if has_streams}}
+        <ul class="invite-details-stream-list">
+            {{#each streams}}
+                <li>
+                    {{> ../decorated_channel_name stream=this inline_with_text=true show_colored_icon=true}}
+                </li>
+            {{/each}}
+        </ul>
+        {{else}}
+        <div class="value">{{t "None"}}</div>
+        {{/if}}
+        <div class="invite-details-channel-list-notice">
+            {{t "This list may not include all channels if you don't have access to some private channels."}}
+        </div>
+    </div>
+    <div class="default-field">
+        <div class="name">{{t "Groups they will join"}}</div>
+        {{#if has_groups}}
+        <ul class="invite-details-group-list">
+            {{#each groups}}
+                <li>
+                    {{> ../user_group_display_only_pill group_id=id display_value=name}}
+                </li>
+            {{/each}}
+        </ul>
+        {{else}}
+        <div class="value">{{t "None"}}</div>
+        {{/if}}
+    </div>
+</div>

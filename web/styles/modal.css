@@ -241,21 +241,25 @@
 
 /* Modal-specific CSS belongs below this point. */
 
-#user-profile-modal {
-    .modal__container {
-        height: var(--user-profile-modal-height);
-    }
-
+#user-profile-modal,
+#invite-details-modal {
     .name {
         color: var(--color-user-profile-field-name);
         font-weight: 600;
-        margin-right: 10px;
+        /* 10px at 14px/1em */
+        margin-right: 0.7143em;
         overflow-wrap: break-word;
     }
 
     .value {
         vertical-align: top;
         overflow-wrap: anywhere;
+    }
+}
+
+#user-profile-modal {
+    .modal__container {
+        height: var(--user-profile-modal-height);
     }
 
     #exit-sign {
@@ -1264,3 +1268,28 @@ ul.modal-options-list {
 /* ==============================================================
  * END MODAL MARGIN OVERRIDES
  * ============================================================== */
+
+#invite-details-modal {
+    #invite-details-default-section {
+        .default-field {
+            /* 10px at 14px/1em */
+            margin-bottom: 0.7143em;
+        }
+    }
+
+    .invite-details-stream-list,
+    .invite-details-group-list {
+        /* Override browser default list styles. */
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .invite-details-channel-list-notice {
+        /* 4px at 14px/1em */
+        margin-top: 0.2857em;
+        font-style: italic;
+        color: var(--color-text-message-default);
+        opacity: 0.7;
+    }
+}

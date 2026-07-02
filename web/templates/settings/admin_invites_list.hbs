@@ -1,5 +1,5 @@
 {{#with invite}}
-<tr class="invite_row" data-invite-id="{{id}}" data-is-multiuse="{{#unless is_multiuse}}false{{else}}true{{/unless}}">
+<tr class="invite_row" data-invite-id="{{id}}" data-is-multiuse="{{#if is_multiuse}}true{{else}}false{{/if}}">
     <td>
         {{#if is_multiuse}}
         <span class="email">
@@ -32,6 +32,13 @@
         <span>{{invited_as_text}}</span>
     </td>
     <td class="actions">
+        {{> ../components/icon_button
+          icon="eye"
+          intent="neutral"
+          custom_classes="view-invite-details tippy-zulip-delayed-tooltip"
+          aria-label=(t "View details")
+          data-tippy-content=(t "View details")
+          }}
         {{> ../components/icon_button
           icon="trash"
           intent="danger"
