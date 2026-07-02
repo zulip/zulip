@@ -1689,6 +1689,7 @@ def do_import_realm(
         data,
         realm_emoji_default_author_id,
     )
+    fix_datetime_fields(data, "zerver_realmemoji")
     sanitize_realm_emoji_file_name(data)
 
     if settings.BILLING_ENABLED:
