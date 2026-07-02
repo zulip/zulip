@@ -44,8 +44,11 @@ export function get_email_from_item(item: EmailPill): string {
 export function get_current_email(
     pill_container: input_pill.InputPillContainer<EmailPill>,
 ): string | null {
-    const current_text = pill_container.getCurrentText();
-    if (current_text !== null) {
+    let current_text = pill_container.getCurrentText();
+    if (current_text) {
+        // Strip trailing comma and whitespace so that we can parse the pending email correctly
+        // when the user types a comma after a valid email.
+        current_text = current_text.replace(/,\s*$/, "");
         const parsed_address = parseOneAddress(current_text);
         if (parsed_address?.type === "mailbox") {
             return current_text;
@@ -91,7 +94,7 @@ export function create_pills(
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,
         get_display_value_from_item: get_email_from_item,
-        split_text_on_comma: false,
+        allow_comma_in_item_text: true,
         split_text_to_form_pills: split_text_to_form_email_pills,
         generate_pill_html,
     });

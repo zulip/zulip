@@ -287,6 +287,39 @@ run_test("comma", ({mock_template}) => {
     });
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
+
+    // Test with allow_comma_in_item_text: true
+    {
+        $.clear_all_elements();
+        const info = set_up();
+        const config = {
+            ...info.config,
+            allow_comma_in_item_text: true,
+        };
+        const widget = input_pill.create(config);
+        widget.appendValue("blue");
+
+        const key_handler = info.$container.get_on_handler("keydown", ".input");
+        const $pill_input = info.$pill_input;
+
+        // Invalid item should NOT clear the input when a comma is pressed
+        $pill_input.text(" yel");
+        key_handler({
+            key: ",",
+            preventDefault: noop,
+        });
+        assert.deepEqual(widget.items(), [items.blue]);
+        assert.equal($pill_input.text(), " yel");
+
+        // Valid item SHOULD be converted to a pill and the input cleared
+        $pill_input.text(" yellow");
+        key_handler({
+            key: ",",
+            preventDefault: noop,
+        });
+        assert.deepEqual(widget.items(), [items.blue, items.yellow]);
+        assert.equal($pill_input.text(), "");
+    }
 });
 
 run_test("Enter key with text", ({mock_template}) => {
