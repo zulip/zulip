@@ -31,6 +31,7 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
     const topic_display_name = util.get_final_topic_display_name(topic);
     if (stream) {
         const recipient_label: RecipientLabel = {
+            label_text: `#${stream.name} > ${topic_display_name}`,
             has_empty_string_topic: topic === "",
             stream,
             topic_display_name,

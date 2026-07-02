@@ -1,0 +1,77 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "livekit-call" %}
+
+{% block title %}
+<title>{{ _("Video call") }} | Zulip</title>
+{% endblock %}
+
+{% block content %}
+<div id="livekit-call-container">
+    <div id="livekit-prejoin">
+        <div id="livekit-prejoin-card">
+            <div id="livekit-prejoin-title">{{ page_params.room_display_name }}</div>
+            <div id="livekit-prejoin-preview">
+                <video id="livekit-prejoin-video" autoplay muted playsinline hidden></video>
+                <div id="livekit-prejoin-video-off">
+                    <div id="livekit-prejoin-avatar-letter">{{ (page_params.full_name or "?")[0]|upper }}</div>
+                </div>
+                <div id="livekit-prejoin-preview-controls">
+                    <button id="livekit-prejoin-toggle-mic" type="button" class="livekit-round-button livekit-prejoin-toggle" aria-label="{{ _('Toggle microphone') }}" aria-pressed="true">
+                        <i class="zulip-icon zulip-icon-mic" aria-hidden="true"></i>
+                    </button>
+                    <button id="livekit-prejoin-toggle-camera" type="button" class="livekit-round-button livekit-prejoin-toggle" aria-label="{{ _('Toggle camera') }}" aria-pressed="true">
+                        <i class="zulip-icon zulip-icon-video-call" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="livekit-prejoin-meter" aria-hidden="true">
+                <div id="livekit-prejoin-meter-bar"></div>
+            </div>
+            <div id="livekit-prejoin-status" aria-live="polite"></div>
+            <div id="livekit-prejoin-error" role="alert" hidden></div>
+            <div id="livekit-prejoin-devices">
+                <label id="livekit-prejoin-mic-row">
+                    <span>{{ _("Microphone") }}</span>
+                    <select id="livekit-prejoin-mic-select"></select>
+                </label>
+                <label id="livekit-prejoin-camera-row">
+                    <span>{{ _("Camera") }}</span>
+                    <select id="livekit-prejoin-camera-select"></select>
+                </label>
+                <label id="livekit-prejoin-speaker-row" hidden>
+                    <span>{{ _("Speaker") }}</span>
+                    <select id="livekit-prejoin-speaker-select"></select>
+                </label>
+            </div>
+            <div id="livekit-prejoin-actions">
+                <button id="livekit-prejoin-cancel" type="button">{{ _("Cancel") }}</button>
+                <button id="livekit-prejoin-join" type="button">{{ _("Join call") }}</button>
+            </div>
+        </div>
+    </div>
+    <div id="livekit-call-main" hidden>
+        <div id="livekit-call-header">
+            <div id="livekit-call-meeting-title">{{ page_params.room_display_name }}</div>
+        </div>
+        <div id="livekit-call-status" aria-live="polite"></div>
+        <div id="livekit-call-participants">
+            <div id="livekit-call-focus-stage"></div>
+            <div id="livekit-call-grid"></div>
+        </div>
+        <div id="livekit-call-controls">
+            <button id="livekit-call-toggle-mic" type="button" class="livekit-round-button" aria-label="{{ _('Toggle microphone') }}" aria-pressed="false">
+                <i class="zulip-icon zulip-icon-mic" aria-hidden="true"></i>
+            </button>
+            <button id="livekit-call-toggle-camera" type="button" class="livekit-round-button" aria-label="{{ _('Toggle camera') }}" aria-pressed="false">
+                <i class="zulip-icon zulip-icon-video-call" aria-hidden="true"></i>
+            </button>
+            <button id="livekit-call-toggle-screenshare" type="button" class="livekit-round-button" aria-label="{{ _('Toggle screen sharing') }}" aria-pressed="false">
+                <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+            </button>
+            <button id="livekit-call-leave" type="button" class="livekit-round-button" aria-label="{{ _('Leave call') }}">
+                <i class="zulip-icon zulip-icon-log-out" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

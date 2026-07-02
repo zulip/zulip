@@ -1,8 +1,11 @@
+import re
 from unittest import mock
 
+import jwt
 import orjson
 import requests
 import responses
+from django.conf import settings
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
 from django.test import override_settings
@@ -1004,3 +1007,195 @@ class NextcloudVideoCallTest(ZulipTestCase):
 
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+
+class LiveKitVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+
+    def test_create_livekit_video_call(self) -> None:
+        with mock.patch(
+            "zerver.views.video_calls.secrets.token_urlsafe",
+            return_value="fixedroomtoken12345",
+        ):
+            response = self.client_post(
+                "/json/calls/livekit/create",
+                {"is_video_call": "true", "room_display_name": "#general > deploy call"},
+            )
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(
+            response_dict["url"],
+            append_url_query_string(
+                "/calls/livekit/join",
+                "call="
+                + Signer().sign_object(
+                    {
+                        "room": "zulip-fixedroomtoken12345",
+                        "room_display_name": "#general > deploy call",
+                        "is_video_call": True,
+                        "realm_id": self.user.realm_id,
+                        "admin": self.user.id,
+                    }
+                ),
+            ),
+        )
+
+    def test_create_livekit_audio_call(self) -> None:
+        with mock.patch(
+            "zerver.views.video_calls.secrets.token_urlsafe",
+            return_value="fixedroomtoken12345",
+        ):
+            response = self.client_post(
+                "/json/calls/livekit/create",
+                {"is_video_call": "false", "room_display_name": "Alice, Bob call"},
+            )
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(
+            response_dict["url"],
+            append_url_query_string(
+                "/calls/livekit/join",
+                "call="
+                + Signer().sign_object(
+                    {
+                        "room": "zulip-fixedroomtoken12345",
+                        "room_display_name": "Alice, Bob call",
+                        "is_video_call": False,
+                        "realm_id": self.user.realm_id,
+                        "admin": self.user.id,
+                    }
+                ),
+            ),
+        )
+
+    def test_create_livekit_not_configured(self) -> None:
+        for setting_name in ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET"]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post(
+                    "/json/calls/livekit/create",
+                    {"is_video_call": "true", "room_display_name": "#general > deploy call"},
+                )
+                self.assert_json_error(response, "LiveKit credentials have not been configured")
+
+    def test_join_livekit_call(self) -> None:
+        response = self.client_post(
+            "/json/calls/livekit/create",
+            {"is_video_call": "true", "room_display_name": "#general > deploy call"},
+        )
+        json = self.assert_json_success(response)
+        join_url = json["url"]
+
+        response = self.client_get(join_url)
+        self.assertEqual(response.status_code, 200)
+
+        content = response.content.decode()
+        self.assertIn("page-params", content)
+
+    def test_join_livekit_call_generates_valid_jwt(self) -> None:
+        response = self.client_post(
+            "/json/calls/livekit/create",
+            {"is_video_call": "true", "room_display_name": "#general > deploy call"},
+        )
+        json = self.assert_json_success(response)
+        join_url = json["url"]
+
+        response = self.client_get(join_url)
+        content = response.content.decode()
+
+        match = re.search(r"data-params=\'(.*?)\'", content)
+        assert match is not None
+        params = orjson.loads(match.group(1))
+        token = params["token"]
+
+        assert settings.LIVEKIT_API_SECRET is not None
+        decoded = jwt.decode(token, settings.LIVEKIT_API_SECRET, algorithms=["HS256"])
+        self.assertEqual(decoded["iss"], "devkey")
+        self.assertEqual(decoded["sub"], f"{self.user.realm_id}:{self.user.id}")
+        self.assertEqual(decoded["name"], self.user.full_name)
+        self.assertTrue(decoded["video"]["roomJoin"])
+        self.assertTrue(decoded["video"]["roomCreate"])
+        self.assertTrue(decoded["video"]["canPublish"])
+        self.assertTrue(decoded["video"]["canSubscribe"])
+        self.assertTrue(decoded["video"]["roomAdmin"])
+
+    def test_join_livekit_audio_call(self) -> None:
+        response = self.client_post(
+            "/json/calls/livekit/create",
+            {"is_video_call": "false", "room_display_name": "Alice, Bob call"},
+        )
+        join_url = self.assert_json_success(response)["url"]
+
+        response = self.client_get(join_url)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+
+        match = re.search(r"data-params=\'(.*?)\'", content)
+        assert match is not None
+        params = orjson.loads(match.group(1))
+        self.assertFalse(params["is_video_call"])
+
+    def test_join_livekit_non_creator_is_not_admin(self) -> None:
+        response = self.client_post(
+            "/json/calls/livekit/create",
+            {"is_video_call": "true", "room_display_name": "#general > deploy call"},
+        )
+        join_url = self.assert_json_success(response)["url"]
+
+        othello = self.example_user("othello")
+        self.login_user(othello)
+        response = self.client_get(join_url)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+
+        match = re.search(r"data-params=\'(.*?)\'", content)
+        assert match is not None
+        params = orjson.loads(match.group(1))
+        token = params["token"]
+
+        assert settings.LIVEKIT_API_SECRET is not None
+        decoded = jwt.decode(token, settings.LIVEKIT_API_SECRET, algorithms=["HS256"])
+        self.assertEqual(decoded["sub"], f"{othello.realm_id}:{othello.id}")
+        self.assertFalse(decoded["video"]["roomAdmin"])
+        self.assertTrue(decoded["video"]["roomJoin"])
+        self.assertTrue(decoded["video"]["canPublish"])
+        self.assertTrue(decoded["video"]["canSubscribe"])
+
+    def test_join_livekit_invalid_signature(self) -> None:
+        response = self.client_get("/calls/livekit/join?call=invalid-token")
+        self.assertEqual(response.status_code, 400)
+
+    def test_join_livekit_cross_realm(self) -> None:
+        # Create a call as hamlet in the zulip realm.
+        response = self.client_post(
+            "/json/calls/livekit/create",
+            {"is_video_call": "true", "room_display_name": "#general > deploy call"},
+        )
+        json = self.assert_json_success(response)
+        join_url = json["url"]
+
+        # Tamper with the token to use a different realm_id.
+        # This simulates a user from another realm trying to use the link.
+        token_str = join_url.split("call=")[1]
+        data = Signer().unsign_object(token_str)
+        data["realm_id"] = 9999
+        tampered_token = Signer().sign_object(data)
+        tampered_url = "/calls/livekit/join?call=" + tampered_token
+
+        response = self.client_get(tampered_url)
+        self.assertEqual(response.status_code, 400)
+
+    def test_join_livekit_not_configured(self) -> None:
+        response = self.client_post(
+            "/json/calls/livekit/create",
+            {"is_video_call": "true", "room_display_name": "#general > deploy call"},
+        )
+        json = self.assert_json_success(response)
+        join_url = json["url"]
+
+        for setting_name in ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET"]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_get(join_url)
+                self.assertEqual(response.status_code, 400)
+                self.assert_json_error(response, "LiveKit credentials have not been configured")

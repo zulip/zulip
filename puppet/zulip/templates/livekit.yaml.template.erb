@@ -1,0 +1,12 @@
+# LiveKit server configuration — managed by Puppet.
+# See https://docs.livekit.io/transport/self-hosting/deployment/#configuration
+port: <%= @livekit_port %>
+rtc:
+  tcp_port: <%= @livekit_rtc_tcp_port %>
+  port_range_start: <%= @livekit_rtc_udp_port_start %>
+  port_range_end: <%= @livekit_rtc_udp_port_end %>
+  use_external_ip: true
+keys:
+  <%= @livekit_api_key.to_json %>: <%= @livekit_api_secret.to_json %>
+logging:
+  level: info

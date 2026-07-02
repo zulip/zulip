@@ -16,6 +16,7 @@ patchedDependencies:
   handlebars: patches/handlebars.patch # https://github.com/handlebars-lang/handlebars.js/pull/2053
   jdenticon: patches/jdenticon.patch # https://github.com/dmester/jdenticon/pull/56
   jquery-caret-plugin: patches/jquery-caret-plugin.patch
+  livekit-client: patches/livekit-client@2.19.1.patch
   svgicons2svgfont: patches/svgicons2svgfont.patch # https://github.com/nfroidure/svgicons2svgfont/pull/173
   textarea-caret: patches/textarea-caret@3.1.0.patch
   tippy.js: patches/tippy.js@6.3.7.patch # https://github.com/atomiks/tippyjs/pull/1166
