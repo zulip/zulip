@@ -7,6 +7,7 @@ const {make_stream} = require("./lib/example_stream.cjs");
 const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
@@ -494,4 +495,80 @@ run_test("test reify_message_id", ({override}) => {
     const history = stream_topic_history.find_or_create(general_sub.stream_id);
     assert.equal(history.max_message_id, 110);
     assert.equal(history.topics.get("test").message_id, 110);
+});
+
+function make_spinner_row() {
+    // A stand-in for the failed-message $row. The retry-spinner show/hide
+    // helpers look up ".refresh-failed-message" under it and toggle its
+    // "rotating" class.
+    const $row = $.create("failed-message-row-stub");
+    $row.set_find_results(".refresh-failed-message", $.create("refresh-failed-message-stub"));
+    return $row;
+}
+
+run_test("resend success clears the failed flag", ({override}) => {
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+
+    const local_id = "300.01";
+    const server_id = 310;
+    const message = {
+        id: Number.parseFloat(local_id),
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "retry me",
+        content: "<p>retry me</p>",
+        locally_echoed: true,
+        failed_request: true,
+    };
+    // The original send truly failed, so the message is still keyed under its
+    // local id, waiting to be retried.
+    stored_messages.set(message.id, message);
+
+    const on_send_message_success = (msg, data) => {
+        // Mirror the store re-keying that compose.send_message_success ->
+        // echo.reify_message_id performs once the server acks the resend.
+        stored_messages.delete(msg.id);
+        msg.id = data.id;
+        msg.locally_echoed = false;
+        stored_messages.set(data.id, msg);
+    };
+    const send_message = (_msg, on_success) => {
+        on_success({id: server_id});
+    };
+
+    echo.resend_message(message, make_spinner_row(), {on_send_message_success, send_message});
+
+    assert.equal(message.failed_request, false);
+    assert.equal(stored_messages.get(server_id), message);
+});
+
+run_test("resend error re-marks a present message as failed", ({override}) => {
+    // When the resend POST fails while the message is still in the store, the
+    // error handler surfaces the failure by setting failed_request back to true.
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+
+    const message = {
+        id: 280,
+        local_id: "280.01",
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "retry me",
+        content: "<p>retry me</p>",
+        locally_echoed: true,
+        failed_request: false,
+    };
+    stored_messages.set(message.id, message);
+
+    const send_message = (_msg, _on_success, on_error) => {
+        on_error("error response", "");
+    };
+
+    echo.resend_message(message, make_spinner_row(), {on_send_message_success: noop, send_message});
+
+    assert.equal(message.failed_request, true);
 });
