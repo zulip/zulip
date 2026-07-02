@@ -1038,7 +1038,12 @@ export function initialize(): void {
 
     // disable the draggability for left-sidebar components
     $("#stream_filters, #left-sidebar-navigation-list").on("dragstart", (e) => {
-        e.target.blur();
+        // e.target is the innermost node where the drag started, which is
+        // not necessarily an element with a blur() method; for instance,
+        // dragging a text selection makes it a Text node.
+        if (e.target instanceof HTMLElement) {
+            e.target.blur();
+        }
         return false;
     });
 
