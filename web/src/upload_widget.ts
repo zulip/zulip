@@ -139,7 +139,9 @@ function ensure_file(resized_img: File | Blob, original_file: File): File {
     return new File([resized_img], original_file.name, {type: resized_img.type});
 }
 
-function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_avatar"): void {
+function set_up_uppy_widget(
+    property_name: "realm_icon" | "realm_logo" | "user_avatar" | "bot_avatar",
+): void {
     uppy_widget = new Uppy<Meta, Body>({
         restrictions: {
             allowedFileTypes: [...SUPPORTED_IMAGE_TYPES],
@@ -174,9 +176,9 @@ function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_a
     });
 }
 
-function open_uppy_editor(
+export function open_uppy_editor(
     file: File,
-    property_name: "realm_icon" | "realm_logo" | "user_avatar",
+    property_name: "realm_icon" | "realm_logo" | "user_avatar" | "bot_avatar",
     $file_input: JQuery<HTMLInputElement>,
     $upload_button: JQuery,
     upload_function: UploadFunction,
@@ -255,6 +257,7 @@ function open_uppy_editor(
                 });
             });
         },
+
         on_hidden() {
             assert(uppy_widget !== undefined);
             uppy_widget.destroy();
@@ -272,7 +275,7 @@ export function build_direct_upload_widget(
     $upload_button: JQuery,
     upload_function: UploadFunction,
     max_file_upload_size: number,
-    property_name: "realm_icon" | "realm_logo" | "user_avatar",
+    property_name: "realm_icon" | "realm_logo" | "user_avatar" | "bot_avatar",
 ): void {
     // default value of max uploaded file size
     function accept(): void {

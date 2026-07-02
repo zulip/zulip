@@ -42,29 +42,17 @@
         <div id="service_data">
         </div>
         <div class="input-group edit-avatar-section">
-            <label class="modal-field-label">{{t "Avatar" }}</label>
-            {{!-- Shows the current avatar --}}
-            <img src="{{bot_avatar_url}}" id="current_bot_avatar_image" />
-            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
             <div class="edit_bot_avatar_file"></div>
-            <div class="edit_bot_avatar_preview_text">
-                <img class="edit_bot_avatar_preview_image" />
-            </div>
-            {{> ../components/action_button
-              label=(t "Change avatar")
-              variant="subtle"
-              intent="neutral"
-              custom_classes="edit_bot_avatar_upload_button"
-              }}
-            {{> ../components/action_button
-              label=(t "Clear profile picture")
-              variant="subtle"
-              intent="danger"
-              custom_classes="edit_bot_avatar_clear_button"
-              hidden=true
-              }}
-            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
+            {{> image_upload_widget
+              widget="bot-avatar"
+              upload_text=(t "Upload bot avatar")
+              delete_text=(t "Delete bot avatar")
+              disabled_text=(t "Avatar changes are disabled in this organization.")
+              is_editable_by_current_user=is_bot_owner_current_user
+              image=bot_avatar_url}}
         </div>
+        <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
     </form>
     {{#if is_incoming_webhook_bot}}
     <div class="input-group">
