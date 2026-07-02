@@ -3,6 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import * as blueslip from "./blueslip.ts";
+import * as browser_idle_detection from "./browser_idle_detection.ts";
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import {page_params} from "./page_params.ts";
@@ -56,6 +58,14 @@ export let client_is_active = document.hasFocus();
 export let new_user_input = true;
 
 export let received_new_messages = false;
+
+let idle_handler_setup_done = false;
+
+// Whether the browser's IdleDetector API currently owns idle tracking.
+// While true, we rely on its OS-level idle signal and suppress the
+// DOM-event heuristic (the `mark_client_idle_later` debounce). If the
+// detector ever fails to (re)start, we fall back to that heuristic.
+let idle_detector_active = false;
 
 type UserInputHook = () => void;
 const on_new_user_input_hooks: UserInputHook[] = [];
@@ -178,13 +188,95 @@ export function rewire_send_presence_to_server(value: typeof send_presence_to_se
     send_presence_to_server = value;
 }
 
-export function mark_client_active(): void {
-    // exported for testing
+function report_client_active(): void {
+    // Records that the user is active and notifies the server, without
+    // arming the `mark_client_idle_later` debounce. The IdleDetector
+    // path uses this once it has taken over idle tracking, so that its
+    // "active" transitions can't resurrect the cancelled debounce.
     if (!client_is_active) {
         client_is_active = true;
         send_presence_to_server();
     }
+}
+
+export function mark_client_active(): void {
+    // exported for testing
+    if (idle_detector_active) {
+        // The IdleDetector owns idle tracking, so we defer to its
+        // OS-level signal and ignore DOM-event activity rather than
+        // re-arming the idle timer it replaced.
+        return;
+    }
+    report_client_active();
     mark_client_idle_later();
+}
+
+export function setup_idle_handler(): void {
+    // This code is separated out of `initialize` to facilitate testing
+    if (!browser_idle_detection.supported()) {
+        blueslip.log("Browser idle detector not supported");
+        return;
+    }
+
+    if (idle_handler_setup_done) {
+        return;
+    }
+    idle_handler_setup_done = true;
+
+    $(document).one(
+        "keypress click",
+        /* istanbul ignore next */ () => {
+            void browser_idle_detection.request_permission();
+        },
+    );
+
+    void browser_idle_detection.on_permission_change(() => {
+        void browser_idle_detection
+            .init({
+                idle_timeout: DEFAULT_IDLE_TIMEOUT_MS,
+                on_idle: mark_client_idle,
+                on_active: report_client_active,
+            })
+            // eslint-disable-next-line promise/prefer-await-to-then
+            .then((result) => {
+                if (result === "started") {
+                    // The IdleDetector now owns idle tracking. We leave
+                    // the shared `window` input listeners bound (other
+                    // modules listen for these same events) but suppress
+                    // their debounce via `idle_detector_active`, and
+                    // cancel any idle timer they had already armed.
+                    idle_detector_active = true;
+                    mark_client_idle_later.cancel();
+                    blueslip.info("Browser IdleDetector started");
+                    return;
+                }
+                if (result.name === "AbortError") {
+                    // A newer init() superseded this detector (e.g. the
+                    // permission was revoked and granted again), so it is
+                    // not in charge; leave idle tracking untouched.
+                    return;
+                }
+                if (result.name === "NotAllowedError") {
+                    // Permission hasn't been granted yet; we requested it
+                    // above, and this callback runs again once it is.
+                    return;
+                }
+                // The detector genuinely failed to start. If we had
+                // already handed off to an earlier detector, fall back to
+                // the DOM-event heuristic so idle tracking keeps working.
+                if (idle_detector_active) {
+                    idle_detector_active = false;
+                    mark_client_idle_later();
+                }
+                blueslip.error("Browser IdleDetector failed to start: " + result.message);
+                return;
+            });
+    });
+}
+
+export function reset_idle_handler_for_testing(): void {
+    idle_handler_setup_done = false;
+    idle_detector_active = false;
 }
 
 export function initialize(): void {
@@ -199,4 +291,6 @@ export function initialize(): void {
     if (client_is_active) {
         mark_client_idle_later();
     }
+
+    setup_idle_handler();
 }
