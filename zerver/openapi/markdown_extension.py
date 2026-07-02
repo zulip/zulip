@@ -26,6 +26,7 @@ from zerver.openapi.openapi import (
     NO_EXAMPLE,
     Parameter,
     check_additional_imports,
+    check_non_api_v1_or_json_pattern,
     check_requires_administrator,
     check_requires_owner,
     generate_openapi_fixture,
@@ -35,6 +36,7 @@ from zerver.openapi.openapi import (
     get_openapi_summary,
     get_parameters_description,
     get_responses_description,
+    is_avatar_endpoint,
     openapi_spec,
 )
 
@@ -205,10 +207,22 @@ def render_javascript_code_example(
     return code_example
 
 
-def curl_method_arguments(endpoint: str, method: str, api_url: str) -> list[str]:
+def curl_method_arguments(
+    method: str, api_url: str, *, endpoint: str, example_endpoint: str
+) -> list[str]:
+    if check_non_api_v1_or_json_pattern(endpoint, method):
+        api_url = api_url.removesuffix("/api")
+        url = f"{api_url}{example_endpoint}"
+    else:
+        url = f"{api_url}/v1{example_endpoint}"
+
+    if is_avatar_endpoint(endpoint, method):
+        # Avatar endpoints redirect to the requested avatar URL, so we just need
+        # to show the details in the response header.
+        return ["-si", url]
+
     # We also include the -sS verbosity arguments here.
     method = method.upper()
-    url = f"{api_url}/v1{endpoint}"
     valid_methods = ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
     if method == "GET":
         # Then we need to make sure that each -d option translates to becoming
@@ -309,9 +323,16 @@ def generate_curl_example(
             continue
         example_value = get_openapi_param_example_value_as_string(endpoint, method, parameter)
         format_dict[parameter.name] = example_value
-    example_endpoint = endpoint.format_map(format_dict)
 
-    curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method, api_url)]
+    curl_first_line_parts = [
+        "curl",
+        *curl_method_arguments(
+            method,
+            api_url,
+            endpoint=endpoint,
+            example_endpoint=endpoint.format_map(format_dict),
+        ),
+    ]
     lines.append(shlex.join(curl_first_line_parts))
 
     if operation_security is None:
@@ -338,6 +359,8 @@ def generate_curl_example(
         auth_email = "ZULIP_ORG_ID" if is_zilencer_endpoint else DEFAULT_AUTH_EMAIL
         auth_api_key = "ZULIP_ORG_KEY" if is_zilencer_endpoint else DEFAULT_AUTH_API_KEY
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
+    if is_avatar_endpoint(endpoint, method):
+        lines.append("    | grep -i ^location:")
 
     for parameter in parameters:
         if parameter.kind == "path":
@@ -525,12 +548,19 @@ class APIHeaderPreprocessor(BasePreprocessor):
         path, method = function.rsplit(":", 1)
         raw_title = get_openapi_summary(path, method)
         description_dict = get_openapi_description(path, method)
+
+        if check_non_api_v1_or_json_pattern(path, method):
+            base_url = self.api_url.removesuffix("/api")
+        else:
+            base_url = f"{self.api_url}/v1"
+        method_and_url = f"`{method.upper()} {base_url}{path}`"
+
         return [
             *("# " + line for line in raw_title.splitlines()),
             *(["{!api-admin-only.md!}"] if check_requires_administrator(path, method) else []),
             *(["{!api-owner-only.md!}"] if check_requires_owner(path, method) else []),
             "",
-            f"`{method.upper()} {self.api_url}/v1{path}`",
+            method_and_url,
             "",
             *description_dict.splitlines(),
         ]
