@@ -30,6 +30,7 @@ const message_reaction_schema = z.array(
 
 const submessage_schema = z.array(
     z.object({
+        timestamp: z.optional(z.number()),
         msg_type: z.string(),
         content: z.string(),
         message_id: z.number(),
