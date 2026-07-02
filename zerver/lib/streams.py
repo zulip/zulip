@@ -90,6 +90,7 @@ class StreamDict(TypedDict, total=False):
     stream_post_policy: int
     history_public_to_subscribers: bool | None
     message_retention_days: int | None
+    default_push_notifications: bool
     topics_policy: int | None
     can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
@@ -373,6 +374,7 @@ def create_stream_if_needed(
     history_public_to_subscribers: bool | None = None,
     stream_description: str = "",
     message_retention_days: int | None = None,
+    default_push_notifications: bool = False,
     topics_policy: int | None = None,
     can_add_subscribers_group: UserGroup | None = None,
     can_administer_channel_group: UserGroup | None = None,
@@ -427,6 +429,7 @@ def create_stream_if_needed(
             is_web_public=is_web_public,
             history_public_to_subscribers=history_public_to_subscribers,
             message_retention_days=message_retention_days,
+            default_push_notifications=default_push_notifications,
             folder=folder,
             topics_policy=topics_policy,
             **group_setting_values,
@@ -503,6 +506,7 @@ def create_streams_if_needed(
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
+            default_push_notifications=stream_dict.get("default_push_notifications", False),
             topics_policy=stream_dict.get("topics_policy", None),
             can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
@@ -1879,6 +1883,7 @@ def stream_to_dict(
         is_web_public=stream.is_web_public,
         message_retention_days=stream.message_retention_days,
         name=stream.name,
+        default_push_notifications=stream.default_push_notifications,
         rendered_description=stream.rendered_description,
         stream_id=stream.id,
         stream_post_policy=stream_post_policy,

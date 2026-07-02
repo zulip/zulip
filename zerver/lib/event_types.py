@@ -980,6 +980,7 @@ class SingleSubscription(BaseModel):
     is_web_public: bool
     message_retention_days: int | None
     name: str
+    default_push_notifications: bool
     rendered_description: str
     stream_id: int
     stream_post_policy: int
