@@ -1080,6 +1080,11 @@
       "name": "explicit_link_asana_desktop",
       "input": "[Asana Task](asanadesktop://task/123456789)",
       "expected_output": "<p><a href=\"asanadesktop://task/123456789\">Asana Task</a></p>"
+    },
+    {
+      "name": "explicit_link_notes_app",
+      "input": "[Meeting Notes](notes://my-workspace/note/123)",
+      "expected_output": "<p><a href=\"notes://my-workspace/note/123\">Meeting Notes</a></p>"
     }
   ],
   "linkify_tests": [
@@ -1492,6 +1497,11 @@
       "Приветhttps://google.com",
       "<p>Привет<a href=\"https://google.com\">https://google.com</a></p>",
       "https://google.com"
+    ],
+    [
+      "notes://my-workspace/note/123",
+      "<p>%s</p>",
+      "notes://my-workspace/note/123"
     ]
   ]
 }
