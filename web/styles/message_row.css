@@ -354,6 +354,77 @@
     }
 }
 
+.message_link_tooltip {
+    max-height: min(12.5em, 40vh);
+    max-width: min(37.5em, 70vw);
+    overflow: hidden;
+
+    &.is-truncated {
+        mask-image: linear-gradient(
+            to bottom,
+            hsl(0deg 0% 0%) calc(100% - 2lh),
+            transparent
+        );
+    }
+
+    .messagebox-content {
+        /* 5px at 14px/1em */
+        padding-left: 0.3571em;
+        grid-template:
+            minmax(var(--message-box-sender-line-height), auto) repeat(1, auto)
+            /
+            var(--message-box-avatar-column-width) minmax(0, 1fr);
+        grid-template-areas:
+            "avatar sender "
+            "avatar message";
+
+        &.is-me-message {
+            grid-template-areas:
+                ".      .     "
+                "avatar sender"
+                "avatar sender";
+            grid-template-rows:
+                var(--message-box-vertical-margin) var(
+                    --message-box-avatar-height
+                )
+                minmax(0, auto);
+        }
+
+        .message_content {
+            color: hsl(0deg 0% 87%);
+
+            .user-mention {
+                background-color: hsl(240deg 21% 25%);
+            }
+
+            time {
+                background: hsl(0deg 0% 93%);
+                color: hsl(0deg 0% 15%);
+            }
+        }
+
+        .todo-task-list-title-header {
+            overflow-wrap: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    code {
+        color: hsl(0deg 0% 87%);
+        background-color: hsl(0deg 0% 100% / 8%);
+    }
+
+    .codehilite pre {
+        color: hsl(0deg 0% 100% / 85%);
+        background-color: light-dark(
+            hsl(0deg 0% 70% / 4%),
+            hsl(0deg 0% 100% / 4%)
+        );
+    }
+}
+
 .messagebox-includes-sender {
     .messagebox-content {
         grid-template-areas:
@@ -362,11 +433,6 @@
             ".      more      .        . .   "
             ".      reactions .        . .   "
             ".      reminders .        . .   ";
-
-        .message_edit {
-            /* No top margin when there's a sender row */
-            margin-top: 0;
-        }
 
         &.is-me-message {
             grid-template-areas:
@@ -378,6 +444,19 @@
             grid-template-rows:
                 var(--message-box-vertical-margin)
                 minmax(var(--message-box-avatar-height), auto) repeat(3, auto);
+        }
+    }
+}
+
+.message_link_tooltip,
+.messagebox-includes-sender {
+    .messagebox-content {
+        .message_edit {
+            /* No top margin when there's a sender row */
+            margin-top: 0;
+        }
+
+        &.is-me-message {
             /* We align items to the baseline on me messages,
                and unset the align-content property. */
             align-items: baseline;
