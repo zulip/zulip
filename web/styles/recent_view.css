@@ -36,6 +36,13 @@
 }
 
 #recent_view {
+    /* How much farther right the row grid starts than the header
+       grid; the header widens its first column by this to align. */
+    --recent-view-channel-row-header-minus-body: calc(
+        var(--recent-view-row-left-padding) +
+            var(--recent-view-body-border-width) -
+            var(--recent-view-header-border-width)
+    );
     display: none;
     padding-top: var(--navbar-fixed-height);
     /* Add bottom padding equal to `#bottom-whitespace`. This helps us keep #compose visible
@@ -200,7 +207,8 @@
 
     .table_fix_head {
         padding: 0 !important;
-        border: 1px solid var(--color-border-recent-view-table);
+        border: var(--recent-view-header-border-width) solid
+            var(--color-border-recent-view-table);
         border-radius: 5px 5px 0 0;
         overflow: hidden;
     }
@@ -522,7 +530,7 @@
         /* Extra left padding to make room for the unread marker bar
            alongside the keyboard selection outline, applied to all
            rows so content aligns between read and unread rows. */
-        padding-left: 0.75em; /* 12px at 16px/1em */
+        padding-left: var(--recent-view-row-left-padding);
     }
 
     .unread_topic {
@@ -660,34 +668,39 @@
         cursor: default;
 
         .recent-view-header-wrapper {
-            /* 0.75em left padding, 1px header width */
-            --recent-view-channel-row-header-minus-body: calc(
-                0.75em + var(--recent-view-body-border-width) - 1px
-            );
             /* Match the row grid so "Channel" and "Conversation" sort
                spans align with channel and topic text in rows. Sort
                arrows are inside the spans, so 3 columns suffice.
                1em = 16px at 16px/1em, matching the 1em (16px
-               at 16px/1em) privacy icon width in data rows. */
+               at 16px/1em) privacy icon width in data rows.
+
+               The first column is floored to the "Channel" header's
+               JS-measured width so the label never overlaps the next
+               column when channel names are short or absent. */
             display: grid;
             grid-template-columns:
-                calc(
-                    min(
-                            calc(
-                                var(--longest-subscribed-channel-name-width) +
-                                    1em + 8px
-                            ),
-                            calc(
+                max(
+                    var(--recent-view-channel-header-min-width, 0px),
+                    calc(
+                        min(
                                 calc(
-                                        100% -
-                                            var(
-                                                --recent-view-channel-row-header-minus-body
-                                            )
-                                    ) /
-                                    3
-                            )
-                        ) +
-                        var(--recent-view-channel-row-header-minus-body)
+                                    var(
+                                            --longest-subscribed-channel-name-width
+                                        ) +
+                                        1em + 8px
+                                ),
+                                calc(
+                                    calc(
+                                            100% -
+                                                var(
+                                                    --recent-view-channel-row-header-minus-body
+                                                )
+                                        ) /
+                                        3
+                                )
+                            ) +
+                            var(--recent-view-channel-row-header-minus-body)
+                    )
                 )
                 auto 1fr auto;
             align-items: stretch;
@@ -700,10 +713,8 @@
             align-items: center;
             gap: 4px;
             cursor: pointer;
-            /* Negative margin compensates the padding so the pill hover
-               highlight doesn't push adjacent elements out of alignment. */
+            /* Padding gives the hover pill its size. */
             padding: 0.25em; /* 4px at 16px/1em */
-            margin: 0;
             border-radius: 3px;
             transition: background-color 100ms ease-in-out;
 
@@ -728,10 +739,12 @@
 
         .recent-view-channel-sort-header {
             padding-left: 1em;
-            margin-left: 0;
         }
 
         .recent-view-conversation-sort-header {
+            /* Cancel the pill padding so the label aligns with topic
+               text in rows. */
+            margin-left: -0.25em; /* -4px at 16px/1em */
             /* Prevent hover pill highlight from extending into
                the adjacent unread sort column. */
             margin-right: 0.3125em; /* 5px at 16px/1em */
@@ -764,8 +777,11 @@
     }
 
     &.recent-view-participants-hidden {
+        --recent-view-row-left-padding: 0.5em; /* 8px at 16px/1em */
+
         td {
-            padding: 0.375em 0.5em; /* 6px 8px at 16px/1em */
+            /* 6px 8px at 16px/1em */
+            padding: 0.375em 0.5em 0.375em var(--recent-view-row-left-padding);
         }
 
         .recent_topic_users,
@@ -800,13 +816,21 @@
                 ".                 .             conversation-name .";
             width: 100%;
             /* We add 1em for the privacy icon and 8px for the flexbox
-               gap between the icon and the channel name. */
+               gap between the icon and the channel name. Floored to
+               match the header grid's "Channel" floor. */
             grid-template-columns:
-                min(
+                max(
                     calc(
-                        var(--longest-subscribed-channel-name-width) + 1em + 8px
+                        var(--recent-view-channel-header-min-width, 0px) -
+                            var(--recent-view-channel-row-header-minus-body)
                     ),
-                    calc(100% / 3)
+                    min(
+                        calc(
+                            var(--longest-subscribed-channel-name-width) + 1em +
+                                8px
+                        ),
+                        calc(100% / 3)
+                    )
                 )
                 auto 1fr auto;
             align-items: center;
