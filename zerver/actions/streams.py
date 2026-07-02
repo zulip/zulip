@@ -13,6 +13,7 @@ from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_streams_from_default_stream_group,
 )
+from zerver.actions.message_edit import update_user_topic_visibility_policies_on_move
 from zerver.actions.message_send import maybe_send_channel_events_notice
 from zerver.lib.cache import (
     cache_delete_many,
@@ -37,6 +38,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
+    can_access_stream_history,
     can_access_stream_metadata_user_ids,
     check_basic_stream_access,
     get_anonymous_group_membership_dict_for_streams,
@@ -49,7 +51,7 @@ from zerver.lib.streams import (
     stream_to_dict,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info, get_subscribers_query
-from zerver.lib.topic import get_topic_display_name
+from zerver.lib.topic import get_topic_display_name, messages_for_topic
 from zerver.lib.types import APISubscriptionDict, UserGroupMembersData
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
@@ -76,6 +78,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserProfile,
+    UserTopic,
 )
 from zerver.models.groups import NamedUserGroup, UserGroup
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -366,6 +369,37 @@ def merge_streams(
 
     if len(users_to_activate) > 0:
         bulk_add_subscriptions(realm, [stream_to_keep], users_to_activate, acting_user=None)
+
+    # Migrate per-topic visibility policies (muted/followed topics) to
+    # the surviving stream, with the same merge semantics and events as
+    # the message-move code path. Users who cannot access the surviving
+    # stream just have their rows for the old stream removed. This must
+    # happen before the messages move, so that the merge logic can see
+    # which target topics already had messages.
+    user_topic_rows = list(
+        UserTopic.objects.filter(stream=stream_to_destroy).select_related(
+            "user_profile", "user_profile__realm"
+        )
+    )
+    for topic_name in sorted({row.topic_name for row in user_topic_rows}):
+        users_losing_access = [
+            row.user_profile
+            for row in user_topic_rows
+            if row.topic_name == topic_name
+            and not can_access_stream_history(row.user_profile, stream_to_keep)
+        ]
+        target_topic_has_messages = messages_for_topic(
+            realm.id, recipient_to_keep.id, topic_name
+        ).exists()
+        update_user_topic_visibility_policies_on_move(
+            is_stream_edited=True,
+            stream_being_edited=stream_to_destroy,
+            orig_topic_name=topic_name,
+            target_stream=stream_to_keep,
+            target_topic_name=topic_name,
+            target_topic_has_messages=target_topic_has_messages,
+            users_losing_access=users_losing_access,
+        )
 
     # Move the messages, and delete the old copies from caches. We do
     # this before removing the subscription objects, to avoid messages
