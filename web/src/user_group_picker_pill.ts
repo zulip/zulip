@@ -65,6 +65,9 @@ function set_up_pill_typeahead(
         return user_group_pill.filter_taken_groups(groups_with_permission, pill_widget);
     };
     set_up_user_group($pill_container.find(".input"), pill_widget, {user_group_source});
+    pill_widget.setSetupTypeahead(($edit) => {
+        set_up_user_group($edit, pill_widget, {user_group_source});
+    });
 }
 
 function get_display_value_from_item(item: UserGroupPill): string {

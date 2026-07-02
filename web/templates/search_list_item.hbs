@@ -5,7 +5,7 @@
         {{else if (eq this.type "search_user")}}
             <span class="pill-container">{{> search_user_pill this}}</span>
         {{else}}
-            <span class="pill-container">{{> input_pill this}}</span>
+            <span class="pill-container">{{> input_pill this hide_edit_input=true}}</span>
         {{/if}}
     {{/each}}
     {{#if description_html}}<div class="description">{{{description_html}}}</div>{{/if}}

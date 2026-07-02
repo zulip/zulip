@@ -638,7 +638,15 @@ export function filter_and_sort_mentions(
     }));
 }
 
-export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
+export function get_pm_people(query: string, include_groups: false): UserPillData[];
+export function get_pm_people(
+    query: string,
+    include_groups?: true,
+): (UserGroupPillData | UserPillData)[];
+export function get_pm_people(
+    query: string,
+    include_groups = true,
+): (UserGroupPillData | UserPillData)[] {
     const opts = {
         want_broadcast: false,
         filter_pills: true,
@@ -646,6 +654,7 @@ export function get_pm_people(query: string): (UserGroupPillData | UserPillData)
         topic: compose_state.topic(),
         filter_groups_for_dm: true,
         filter_by_dm_permission: true,
+        include_groups,
     };
     const suggestions = get_person_suggestions(query, opts, true);
     const current_user_ids = compose_pm_pill.get_user_ids();
@@ -679,6 +688,7 @@ type PersonSuggestionOpts = {
     filter_groups_for_mention?: boolean;
     allow_custom_profile_field_matching?: boolean;
     filter_by_dm_permission?: boolean;
+    include_groups?: boolean;
 };
 
 function filter_persons<T>(
@@ -792,7 +802,9 @@ export function get_person_suggestions(
     const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     let groups: UserGroup[];
-    if (opts.filter_groups_for_mention) {
+    if (opts.include_groups === false) {
+        groups = [];
+    } else if (opts.filter_groups_for_mention) {
         groups = user_groups.get_user_groups_allowed_to_mention();
     } else if (opts.filter_groups_for_dm) {
         const can_access_all_users = settings_data.user_can_access_all_other_users();
@@ -1908,12 +1920,9 @@ export function initialize({
         },
     });
 
-    const private_message_typeahead_input: TypeaheadInputElement = {
-        $element: $("#private_message_recipient"),
-        type: "contenteditable",
-    };
-    private_message_recipient_typeahead = new Typeahead(private_message_typeahead_input, {
-        source: get_pm_people,
+    // Shared between the main PM input and editable pills.
+    const pm_recipient_typeahead_opts = {
+        source: (query: string) => get_pm_people(query),
         items: max_num_items,
         dropup: true,
         item_html(_query: string): (item: UserGroupPillData | UserPillData) => string {
@@ -1930,6 +1939,35 @@ export function initialize({
             set_recipient_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+    };
+
+    const private_message_typeahead_input: TypeaheadInputElement = {
+        $element: $("#private_message_recipient"),
+        type: "contenteditable",
+    };
+    private_message_recipient_typeahead = new Typeahead(
+        private_message_typeahead_input,
+        pm_recipient_typeahead_opts,
+    );
+    compose_pm_pill.widget.setSetupTypeahead(($edit) => {
+        new Typeahead(
+            {$element: $edit, type: "contenteditable"},
+            {
+                ...pm_recipient_typeahead_opts,
+                source(query: string): UserPillData[] {
+                    // Editing replaces one pill with one user pill, so only
+                    // show user suggestions when editing.
+                    return get_pm_people(query, false);
+                },
+                updater(item: UserGroupPillData | UserPillData): undefined {
+                    if (item.type === "user") {
+                        compose_pm_pill.widget.replaceEditingPill(
+                            user_pill.create_pill_data(item.user),
+                        );
+                    }
+                },
+            },
+        );
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));

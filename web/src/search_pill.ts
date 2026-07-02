@@ -358,6 +358,10 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         get_text_from_item: get_search_string_from_item,
         split_text_on_comma: false,
         convert_to_pill_on_enter: false,
+        // In-place editing isn't supported for search pills (the
+        // typeahead doesn't work in the editable element), so we disable
+        // it and omit the .pill-edit-input element from their HTML.
+        disable_pill_editing: true,
         generate_pill_html(item) {
             switch (item.operator) {
                 case "dm":
@@ -372,14 +376,17 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
                             is_empty_string_topic: true,
                             sign: item.negated ? "-" : "",
                             topic_display_name: util.get_final_topic_display_name(""),
+                            hide_edit_input: true,
                         });
                     }
                     return render_input_pill({
                         display_value: get_search_string_from_item(item),
+                        hide_edit_input: true,
                     });
                 default:
                     return render_input_pill({
                         display_value: get_search_string_from_item(item),
+                        hide_edit_input: true,
                     });
             }
         },
