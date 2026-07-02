@@ -673,6 +673,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 label="Include emoji indicators in the notifications",
                 input_type="checkbox_enabled",
             ),
+            WebhookUrlOption(
+                name="enable_topic_rename",
+                label="Rename topics when a pull request or issue title is edited",
+                input_type="checkbox_enabled",
+            ),
         ],
     ),
     IncomingWebhookIntegration(
