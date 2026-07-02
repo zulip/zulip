@@ -1100,8 +1100,13 @@ class TestCreateStreams(ZulipTestCase):
                 channel_creator, new_channel, "channel events"
             )
 
+            # Both public and private channels have a single channel events
+            # message: the channel creation message. Subscribing the creator
+            # while creating the channel does not post a join notification.
             self.assert_length(channel_events_messages, 1)
-            self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)
+            channel_creation_message = channel_events_messages[0]
+
+            self.assertIn(policy_key_map[policy_key], channel_creation_message.content)
 
     def test_adding_channels_to_folder_during_creation(self) -> None:
         realm = get_realm("zulip")

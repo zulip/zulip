@@ -786,6 +786,7 @@ def create_channel(
         [new_channel],
         new_subscribers,
         acting_user=user_profile,
+        newly_created_stream_ids={new_channel.id} if created else set(),
     )
     # We never send DM notifications about newly created channels, so we only
     # need to send the data for the new channel notification messages.
@@ -919,7 +920,12 @@ def add_subscriptions_backend(
             do_add_default_stream(stream)
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(
-        realm, streams, subscribers, acting_user=user_profile, color_map=color_map
+        realm,
+        streams,
+        subscribers,
+        acting_user=user_profile,
+        color_map=color_map,
+        newly_created_stream_ids={stream.id for stream in created_streams},
     )
 
     id_to_user_profile: dict[str, UserProfile] = {}
