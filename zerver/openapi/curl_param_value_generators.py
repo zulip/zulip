@@ -27,7 +27,7 @@ from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.upload import upload_message_attachment
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.channel_folders import ChannelFolder
-from zerver.models.realms import get_realm
+from zerver.models.realms import RealmExport, get_realm
 from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import Parameter
 
@@ -523,3 +523,17 @@ def remove_bot_storage_bot_auth() -> dict[str, object]:
     set_bot_storage(bot, [("foo", "bar")])
     AUTHENTICATION_LINE[0] = f"{bot.email}:{bot.api_key}"
     return {}
+
+
+@openapi_param_value_generator(["/export/realm/{export_id}:delete"])
+def delete_realm_export() -> dict[str, object]:
+    export = RealmExport.objects.create(
+        realm=get_realm("zulip"),
+        type=RealmExport.EXPORT_PUBLIC,
+        status=RealmExport.SUCCEEDED,
+        date_requested=timezone_now(),
+        date_started=timezone_now(),
+        date_succeeded=timezone_now(),
+        export_path="/dummy",
+    )
+    return {"export_id": export.id}
