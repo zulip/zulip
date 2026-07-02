@@ -1321,34 +1321,26 @@ def apply_event(
                                 subscriber_key = (
                                     "subscribers" if "subscribers" in sub else "partial_subscribers"
                                 )
-                                sub[subscriber_key] = [
-                                    user_id
-                                    for user_id in sub[subscriber_key]
-                                    if user_id != person_user_id
-                                ]
+                                if person_user_id in sub[subscriber_key]:
+                                    sub[subscriber_key].remove(person_user_id)
 
                     for user_group in state["realm_user_groups"]:
-                        user_group["members"] = [
-                            user_id
-                            for user_id in user_group["members"]
-                            if user_id != person_user_id
-                        ]
+                        if person_user_id in user_group["members"]:
+                            user_group["members"].remove(person_user_id)
 
                     for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-                        if not isinstance(state["realm_" + setting_name], int):
-                            state["realm_" + setting_name]["direct_members"] = [
-                                user_id
-                                for user_id in state["realm_" + setting_name]["direct_members"]
-                                if user_id != person_user_id
-                            ]
+                        if (
+                            not isinstance(state["realm_" + setting_name], int)
+                            and person_user_id in state["realm_" + setting_name]["direct_members"]
+                        ):
+                            state["realm_" + setting_name]["direct_members"].remove(person_user_id)
                     for group in state["realm_user_groups"]:
                         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-                            if not isinstance(group[setting_name], int):
-                                group[setting_name]["direct_members"] = [
-                                    user_id
-                                    for user_id in group[setting_name]["direct_members"]
-                                    if user_id != person_user_id
-                                ]
+                            if (
+                                not isinstance(group[setting_name], int)
+                                and person_user_id in group[setting_name]["direct_members"]
+                            ):
+                                group[setting_name]["direct_members"].remove(person_user_id)
         elif event["op"] == "remove":
             if person_user_id in state["raw_users"]:
                 if user_list_incomplete:
@@ -1736,6 +1728,9 @@ def apply_event(
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
                             subscribers = set(sub[subscriber_key]) | user_ids
+                            # Keep subscriber lists sorted by user_profile_id so peer_remove can
+                            # filter in place without re-sorting. See bulk_get_subscriber_user_ids
+                            # for the matching ORDER BY in the initial state.
                             sub[subscriber_key] = sorted(subscribers)
         elif event["op"] == "peer_remove":
             # Note: We don't update subscriber_count here, as with peer_add.
@@ -1753,8 +1748,12 @@ def apply_event(
                             subscriber_key = (
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
-                            subscribers = set(sub[subscriber_key]) - user_ids
-                            sub[subscriber_key] = sorted(subscribers)
+                            # Subscriber lists are maintained sorted by user_profile_id: the initial
+                            # state arrives sorted from bulk_get_subscriber_user_ids, and we preserve
+                            # that here so we can filter in place without re-sorting.
+                            sub[subscriber_key] = [
+                                uid for uid in sub[subscriber_key] if uid not in user_ids
+                            ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
