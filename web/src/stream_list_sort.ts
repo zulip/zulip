@@ -160,8 +160,14 @@ export function sort_groups(
         util.prefix_match({value: NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS, search_term});
 
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
-    const normalize = (s: string): string => s.replaceAll(/[:/_-]+/g, " ");
+    const normalize = (s: string): string => s.replaceAll(/[-:/_：／＿－]+/g, " ");
     const normalized_query = normalize(search_term);
+
+    const is_unspaced = typeahead.has_unspaced_script(search_term);
+    const query_for_includes = is_unspaced
+        ? normalized_query.toLowerCase().replaceAll(/\s+/g, "")
+        : "";
+
     // Use -, _, : and / as word separators apart from the default space character
     let matching_stream_ids: number[];
     if (is_topic_search) {
@@ -171,6 +177,12 @@ export function sort_groups(
     } else {
         matching_stream_ids = all_subscribed_stream_ids.filter((stream_id) => {
             const normalized_name = normalize(stream_id_to_name(stream_id));
+
+            // For unspaced scripts (e.g., Han), ignore word boundaries and perform a pure substring match
+            if (is_unspaced) {
+                const name_for_includes = normalized_name.toLowerCase().replaceAll(/\s+/g, "");
+                return name_for_includes.includes(query_for_includes);
+            }
 
             return typeahead.query_matches_string_in_any_order(
                 normalized_query,
