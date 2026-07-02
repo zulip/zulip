@@ -549,8 +549,10 @@ paths:
                                             - "G" = Hosted by Gravatar
                                             - "J" = Generated using Jdenticon
                                             - "U" = Uploaded by user
+                                            - "I" = Inaccessible user avatar (used for deactivated users)
 
-                                            **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
+                                            **Changes**: The "I" value is new in Zulip 12.0 (feature level ZF-1b973a).
+                                            The "J" value is new in Zulip 12.0 (feature level 466).
                                         avatar_url_medium:
                                           type: string
                                           description: |
@@ -21542,8 +21544,9 @@ paths:
                           - "G" = Hosted by Gravatar
                           - "J" = Generated using Jdenticon
 
-                          Note that "U" is not a supported value here, since there is
-                          no such thing as a "default" user-uploaded avatar.
+                          The "U" value (uploaded by user) will not appear here,
+                          since there is no such thing as a "default" user-uploaded avatar.
+                          The "I" value (inaccessible user avatar) will not appear here either.
 
                           **Changes**: New in Zulip 12.0 (feature level 456).
                       jitsi_server_url:
@@ -22477,8 +22480,10 @@ paths:
                           - "J" = Generated using Jdenticon
                           - "U" = Uploaded by user
 
+                          The "I" (inaccessible user avatar) value will not appear here,
+                          since deactivated users cannot authenticate.
+
                           **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
-                          The avatar data source type for the current user.
                       avatar_url_medium:
                         type: string
                         description: |

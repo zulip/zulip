@@ -66,7 +66,12 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
 def transfer_avatars_to_s3(processes: int) -> None:
     run_parallel(
         _transfer_avatar_to_s3,
-        UserProfile.objects.exclude(avatar_source=UserProfile.AVATAR_FROM_GRAVATAR),
+        UserProfile.objects.exclude(
+            avatar_source__in=[
+                UserProfile.AVATAR_FROM_GRAVATAR,
+                UserProfile.AVATAR_FROM_INACCESSIBLE,
+            ]
+        ),
         processes,
     )
 

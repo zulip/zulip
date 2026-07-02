@@ -116,6 +116,9 @@ def get_avatar_field(
     avatar source, and then we'll add version info to try to avoid
     stale caches.
     """
+    if avatar_source == UserProfile.AVATAR_FROM_INACCESSIBLE:
+        return get_avatar_for_inaccessible_user()
+
     if avatar_source in [UserProfile.AVATAR_FROM_USER, UserProfile.AVATAR_FROM_JDENTICON]:
         hash_key = user_avatar_base_path_from_ids(user_id, avatar_version, realm_id)
         return get_avatar_url(hash_key, medium=medium)
