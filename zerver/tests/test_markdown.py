@@ -39,6 +39,7 @@ from zerver.lib.markdown import (
     InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
+    TabIndentedListPreprocessor,
     clear_web_link_regex_for_testing,
     content_has_emoji_syntax,
     image_preview_enabled,
@@ -564,6 +565,47 @@ Outside. Should convert:<>
         """
         original, expected = self.split_message(msg)
         self.assertEqual(preprocessor.run(original), expected)
+
+
+class TabIndentedListPreprocessorTest(ZulipTestCase):
+    def test_single_level_nesting(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["- outer", "\t- inner"]
+        expected = ["- outer", "  - inner"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_multi_level_nesting(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["- outer", "\t- inner", "\t\t- deep"]
+        expected = ["- outer", "  - inner", "    - deep"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_numbered_list(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["1. outer", "\t1. inner"]
+        expected = ["1. outer", "  1. inner"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_tabs_inside_fence_are_untouched(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["```", "- outer", "\t- inner", "```"]
+        # Lines inside a fenced code block are left alone entirely.
+        self.assertEqual(preprocessor.run(original), original)
+
+    def test_indented_code_block_is_not_treated_as_a_list(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        # A tab-indented line that is *not* itself a list item (e.g. an
+        # indented code block) must be left untouched, since converting
+        # it to 2 spaces would break indented-code-block rendering.
+        original = ["Here is some code:", "", "\tdef f():", "\t\treturn 1"]
+        self.assertEqual(preprocessor.run(original), original)
+
+    def test_indented_code_block_end_to_end(self) -> None:
+        # Regression test: a tab-indented code block should still render
+        # as a <code> block, not get folded into list handling.
+        rendered = markdown_convert_wrapper("Here is some code:\n\n\tdef f():\n\t\treturn 1")
+        self.assertIn("<code>", rendered)
+        self.assertNotIn("<li>", rendered)
 
 
 class MarkdownFixtureTest(ZulipTestCase):
