@@ -2,7 +2,7 @@
 
 /* Begin Pygments Default Colors */
 
-%light-theme {
+%pygments-codehilite-default {
     .codehilite .hll {
         background-color: #ffc;
     }
@@ -235,10 +235,40 @@
     .codehilite .il {
         color: #666;
     } /* Literal.Number.Integer.Long */
+    .codehilite .esc {
+        color: #333;
+    } /* Escape */
+    .codehilite .g {
+        color: #333;
+    } /* Generic */
+    .codehilite .l {
+        color: #666;
+    } /* Literal */
+    .codehilite .n {
+        color: #000;
+    } /* Name */
+    .codehilite .x {
+        color: #333;
+    } /* Other */
+    .codehilite .p {
+        color: #333;
+    } /* Punctuation */
+    .codehilite .ld {
+        color: #ba2121;
+    } /* Literal.Date */
+    .codehilite .nx {
+        color: #687822;
+    } /* Name.Other */
+    .codehilite .py {
+        color: #19177c;
+    } /* Name.Property */
+    .codehilite .pm {
+        color: #666;
+    } /* Punctuation.Marker */
 }
 /* End Pygments Default Colors */
 
-%dark-theme {
+%pygments-codehilite-monokai {
     /* Begin Pygments Monokai Styles */
     .codehilite .hll {
         background-color: #49483e;
@@ -484,6 +514,23 @@
     .codehilite .il {
         color: #ae81ff;
     } /* Literal.Number.Integer.Long */
+}
+
+%light-theme {
+    @extend %pygments-codehilite-default;
+}
+
+/* Code lightbox: scoped Pygments (higher specificity than :root.dark-theme). */
+#lightbox_overlay.code-lightbox-mode.code-lightbox-syntax-light {
+    @extend %pygments-codehilite-default;
+}
+
+%dark-theme {
+    @extend %pygments-codehilite-monokai;
+}
+
+#lightbox_overlay.code-lightbox-mode.code-lightbox-syntax-dark {
+    @extend %pygments-codehilite-monokai;
 }
 /* stylelint-enable color-no-hex, no-duplicate-selectors */
 

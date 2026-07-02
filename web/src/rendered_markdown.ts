@@ -17,6 +17,7 @@ import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as lightbox from "./lightbox.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
@@ -400,6 +401,15 @@ export const update_elements = ($content: JQuery): void => {
                 show_check_icon: true,
             });
         });
+        const $expand_button = $buttonContainer.find(".expand_codeblock");
+        $expand_button.on("click", () => {
+            const $code = $codehilite.find("code");
+            const code_text = $code.text();
+            const code_inner_html = $code.html() ?? undefined;
+            const lang = fenced_code_lang ?? "";
+            lightbox.show_code_lightbox(code_text, lang, code_inner_html);
+        });
+
         $codehilite.addClass("zulip-code-block");
     });
 

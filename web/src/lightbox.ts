@@ -6,6 +6,7 @@ import type {PanZoom} from "panzoom";
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
@@ -35,6 +36,25 @@ let is_open = false;
 let open_image: ($media: JQuery<HTMLImageElement>) => void;
 let open_video: ($media: JQuery<HTMLMediaElement>) => void;
 let overlay_restore_callback: (() => void) | undefined;
+
+function get_lightbox_panzoom_content_element(): HTMLElement | undefined {
+    const $zoom = $(".image-preview .zoom-element");
+    if ($zoom.length === 0) {
+        return undefined;
+    }
+    const zoom_el = util.the($zoom);
+    const img = zoom_el.querySelector(":scope > img");
+    if (img instanceof HTMLImageElement) {
+        return img;
+    }
+    const hilite = zoom_el.querySelector(":scope > .code-lightbox-hilite");
+    if (hilite instanceof HTMLElement) {
+        return hilite;
+    }
+    return undefined;
+}
+
+let lightbox_pan_zoom: PanZoomControl | undefined;
 
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
 // being looked up multiple times. It is keyed by the message id with each value being the
@@ -126,8 +146,10 @@ export class PanZoomControl {
         // See https://github.com/anvaka/panzoom/issues/112 for upstream discussion.
 
         const {scale, x, y} = e.getTransform();
-        const image_width = util.the($(".zoom-element > img")).clientWidth * scale;
-        const image_height = util.the($(".zoom-element > img")).clientHeight * scale;
+        const content = get_lightbox_panzoom_content_element();
+        assert(content !== undefined);
+        const image_width = content.clientWidth * scale;
+        const image_height = content.clientHeight * scale;
         const zoom_element_width = util.the($(".zoom-element")).clientWidth * scale;
         const zoom_element_height = util.the($(".zoom-element")).clientHeight * scale;
         const max_translate_x = util.the($(".image-preview")).clientWidth;
@@ -203,7 +225,7 @@ export class PanZoomControl {
     }
 
     isActive(): boolean {
-        return $(".image-preview .zoom-element img").length > 0;
+        return get_lightbox_panzoom_content_element() !== undefined;
     }
 }
 
@@ -675,14 +697,103 @@ export function handle_overlay_media_element_click(
     handle_inline_media_element_click($media, true);
 }
 
-// this is a block of events that are required for the lightbox to work.
+function update_code_lightbox_syntax_toggle_label($overlay: JQuery): void {
+    const $toggle = $overlay.find(".code-lightbox-theme-toggle");
+    if ($overlay.hasClass("code-lightbox-syntax-dark")) {
+        const label = $t({defaultMessage: "Light code theme"});
+        $toggle.attr("aria-pressed", "true");
+        $toggle.attr("aria-label", label);
+        $toggle.text(label);
+    } else {
+        const label = $t({defaultMessage: "Dark code theme"});
+        $toggle.attr("aria-pressed", "false");
+        $toggle.attr("aria-label", label);
+        $toggle.text(label);
+    }
+}
+
+function is_dark_theme(): boolean {
+    const $root = $(":root");
+    if ($root.hasClass("dark-theme")) {
+        return true;
+    }
+    if ($root.hasClass("color-scheme-automatic")) {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return false;
+}
+
+export function show_code_lightbox(
+    code_text: string,
+    language: string,
+    code_inner_html?: string,
+): void {
+    if (is_open) {
+        return;
+    }
+    is_open = true;
+
+    const $overlay = $("#lightbox_overlay");
+    if (is_dark_theme()) {
+        $overlay.addClass("code-lightbox-mode code-lightbox-syntax-dark");
+        $overlay.removeClass("code-lightbox-syntax-light");
+    } else {
+        $overlay.addClass("code-lightbox-mode code-lightbox-syntax-light");
+        $overlay.removeClass("code-lightbox-syntax-dark");
+    }
+    $overlay.find(".video-player, .player-container").hide();
+    $overlay.find(".image-preview").show();
+    $overlay.find(".media-actions .open, .media-actions .download").hide();
+    update_code_lightbox_syntax_toggle_label($overlay);
+
+    const $zoom_element = $overlay.find(".zoom-element");
+    $zoom_element.empty();
+    const $hilite = $("<div>").addClass("codehilite code-lightbox-hilite");
+    const $pre = $("<pre>").addClass("code-lightbox-content");
+    const $code = $("<code>");
+    if (code_inner_html !== undefined) {
+        $code.html(code_inner_html);
+    } else {
+        $code.text(code_text);
+    }
+    $pre.append($code);
+
+    const line_count = code_text.trimEnd().split("\n").length;
+    const $gutter = $("<div>").addClass("code-lightbox-gutter");
+    for (let i = 1; i <= line_count; i += 1) {
+        $gutter.append($("<span>").text(String(i)));
+    }
+    $hilite.append($gutter);
+    $hilite.append($pre);
+    $zoom_element.append($hilite);
+
+    $overlay.find(".title").text(language || "Code");
+    $overlay.find(".user").text("");
+
+    overlays.open_overlay({
+        name: "lightbox",
+        $overlay,
+        on_close() {
+            is_open = false;
+            $overlay.removeClass(
+                "code-lightbox-mode code-lightbox-syntax-light code-lightbox-syntax-dark",
+            );
+            $overlay.find(".media-actions .open, .media-actions .download").show();
+            lightbox_pan_zoom?.reset();
+            $zoom_element.empty();
+        },
+    });
+
+    lightbox_pan_zoom?.reset();
+}
+
 export function initialize(): void {
     // Renders the DOM for the lightbox.
     const rendered_lightbox_overlay = render_lightbox_overlay();
     $("body").append($(rendered_lightbox_overlay));
 
     // Bind the pan/zoom control the newly created element.
-    const pan_zoom_control = new PanZoomControl(
+    lightbox_pan_zoom = new PanZoomControl(
         util.the($("#lightbox_overlay .image-preview > .zoom-element")),
     );
 
@@ -691,8 +802,8 @@ export function initialize(): void {
         is_open = false;
         assert(document.activeElement instanceof HTMLElement);
         document.activeElement.blur();
-        if (pan_zoom_control.isActive()) {
-            pan_zoom_control.reset();
+        if (lightbox_pan_zoom?.isActive()) {
+            lightbox_pan_zoom?.reset();
         }
         invoke_overlay_restore_callback();
     };
@@ -771,7 +882,7 @@ export function initialize(): void {
         }
 
         if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {
-            pan_zoom_control.reset();
+            lightbox_pan_zoom?.reset();
         }
 
         $(".image-list .image.selected").removeClass("selected");
@@ -811,9 +922,30 @@ export function initialize(): void {
 
     $("#lightbox_overlay").on("click", ".lightbox-zoom-reset", () => {
         if (!$("#lightbox_overlay .lightbox-zoom-reset").hasClass("disabled")) {
-            pan_zoom_control.reset();
+            lightbox_pan_zoom?.reset();
         }
     });
+
+    $("#lightbox_overlay").on(
+        "click",
+        ".code-lightbox-theme-toggle",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const $overlay = $("#lightbox_overlay");
+            if ($overlay.hasClass("code-lightbox-syntax-dark")) {
+                $overlay
+                    .removeClass("code-lightbox-syntax-dark")
+                    .addClass("code-lightbox-syntax-light");
+            } else {
+                $overlay
+                    .removeClass("code-lightbox-syntax-light")
+                    .addClass("code-lightbox-syntax-dark");
+            }
+            update_code_lightbox_syntax_toggle_label($overlay);
+            this.blur();
+        },
+    );
 
     $("#lightbox_overlay .player-container").on("click", function () {
         if ($(this).is(".player-container")) {
@@ -832,7 +964,11 @@ export function initialize(): void {
     $("#lightbox_overlay .image-preview").on("click", (e) => {
         // Ensure that the click isn't on the image itself, and that
         // the window isn't marked as disabled to click to close.
-        if (!$(e.target).is("img") && !$("#lightbox_overlay").data("noclose")) {
+        const $overlay = $("#lightbox_overlay");
+        const clicked_code_block =
+            $overlay.hasClass("code-lightbox-mode") &&
+            $(e.target).closest(".codehilite").length > 0;
+        if (!$(e.target).is("img") && !clicked_code_block && !$overlay.data("noclose")) {
             reset_lightbox_state();
             overlays.close_overlay("lightbox");
         }
