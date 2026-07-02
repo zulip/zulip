@@ -8,13 +8,12 @@ from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_user_mentions_for_display, truncate_content
-from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import (
     TOPIC_LINK_SYNTAX_FOR_DISPLAY,
     escape_invalid_stream_topic_characters,
 )
 from zerver.lib.types import UserDisplayRecipient
-from zerver.lib.url_encoding import message_link_url, stream_message_url
+from zerver.lib.url_encoding import near_message_url, near_stream_message_url, stream_message_url
 from zerver.models import Message, Stream, UserProfile
 from zerver.models.scheduled_jobs import ScheduledMessage
 from zerver.tornado.django_api import send_event_on_commit
@@ -48,7 +47,6 @@ def get_reminder_formatted_content(
 
     format_recipient_type_key: ReminderRecipientType
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
-    conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
 
     if message.is_channel_message:
         # We don't need to check access here since we already have the message
@@ -57,17 +55,10 @@ def get_reminder_formatted_content(
             id=message.recipient.type_id,
             realm=current_user.realm,
         )
-        url = stream_message_url(
-            realm=None,
-            message={
-                "id": message.id,
-                "stream_id": stream.id,
-                "display_recipient": stream.name,
-                "topic": message.topic_name(),
-            },
-            conversation_link=True,
-            include_base_url=False,
+        conversation_url = near_stream_message_url(
+            current_user.realm, message.id, stream.name, stream.id, message.topic_name()
         )
+        url = stream_message_url(None, message.id, stream.id, stream.name, message.topic_name())
         escape = escape_invalid_stream_topic_characters
         topic_pretty_link = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
             channel_name=escape(stream.name),
@@ -89,6 +80,9 @@ def get_reminder_formatted_content(
             topic_pretty_link=f"[{topic_pretty_link}]({url})",
         )
     else:
+        conversation_url = near_message_url(
+            current_user.realm, message.id, get_display_recipient(message.recipient)
+        )
         if note:
             content = _(
                 "You requested a reminder for the following direct message. Note:\n > {note}"

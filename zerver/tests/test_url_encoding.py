@@ -8,9 +8,9 @@ from zerver.lib.url_encoding import (
     encode_hash_component,
     encode_user_full_name_and_id,
     encode_user_ids,
+    near_stream_message_url,
     stream_message_url,
 )
-from zerver.models.messages import Message
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -72,26 +72,24 @@ class URLEncodeTest(ZulipTestCase):
         channel_message_id = self.send_stream_message(
             sender=self.example_user("hamlet"), stream_name=channel.name, topic_name=topic
         )
-        channel_message = Message.objects.get(id=channel_message_id, realm=realm)
-        message_dict = dict(
-            id=channel_message_id,
-            stream_id=channel.id,
-            display_recipient=channel_message.recipient.label(),
-            topic=topic,
-        )
         channel_message_url = stream_message_url(
-            realm,
-            message_dict,
+            realm, channel_message_id, channel.id, channel.name, topic
         )
-        expected_channel_message_url = f"{realm.url}/#narrow/{encode_channel(channel.id, channel.name, True)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
+        expected_channel_message_url = f"{realm.url}/#narrow/channel/{encode_channel(channel.id, channel.name)}/topic/{encode_hash_component(topic)}/with/{channel_message_id}"
         self.assertEqual(channel_message_url, expected_channel_message_url)
 
         relative_channel_message_url = stream_message_url(
-            realm, message_dict, include_base_url=False
+            None, channel_message_id, channel.id, channel.name, topic
         )
-        expected_relative_channel_message_url = f"#narrow/{encode_channel(channel.id, channel.name, True)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
+        expected_relative_channel_message_url = f"#narrow/channel/{encode_channel(channel.id, channel.name)}/topic/{encode_hash_component(topic)}/with/{channel_message_id}"
         self.assertEqual(relative_channel_message_url, expected_relative_channel_message_url)
 
-        with self.assertRaises(ValueError) as e:
-            stream_message_url(realm=None, message=message_dict, include_base_url=True)
-        self.assertEqual(str(e.exception), "realm is required when include_base_url=True")
+        near_url = near_stream_message_url(
+            realm=realm,
+            message_id=channel_message_id,
+            display_recipient=channel.name,
+            stream_id=channel.id,
+            topic_name=topic,
+        )
+        expected_near_url = f"{realm.url}/#narrow/channel/{encode_channel(channel.id, channel.name)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
+        self.assertEqual(near_url, expected_near_url)

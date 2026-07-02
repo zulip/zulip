@@ -13,7 +13,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic_link_util import get_message_link_syntax
-from zerver.lib.url_encoding import pm_message_url
+from zerver.lib.url_encoding import near_pm_message_url
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.recipients import Recipient
 from zerver.models.streams import StreamTopicsPolicyEnum
@@ -115,12 +115,10 @@ def send_message_report(
             channel_message_link=channel_message_link
         )
     else:
-        direct_message_link = pm_message_url(
+        direct_message_link = near_pm_message_url(
             realm,
-            dict(
-                id=reported_message.id,
-                display_recipient=get_display_recipient(reported_message.recipient),
-            ),
+            reported_message.id,
+            get_display_recipient(reported_message.recipient),
         )
         original_message_string = _("[Original message]({direct_message_link})").format(
             direct_message_link=direct_message_link

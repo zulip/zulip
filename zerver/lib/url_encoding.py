@@ -1,13 +1,11 @@
 # See the Zulip URL spec at https://zulip.com/api/zulip-urls
 
 import urllib.parse
-from typing import Any
 from urllib.parse import urlsplit
 
 import re2
 
-from zerver.lib.topic import get_topic_from_message_info
-from zerver.lib.types import UserDisplayRecipient
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
 
 hash_replacements = {
@@ -140,65 +138,65 @@ def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
     return f"{base_url}{encode_channel(stream.id, stream.name)}/topic/{encode_hash_component(topic_name)}"
 
 
-def message_link_url(
-    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+def near_message_url(
+    realm: Realm,
+    message_id: int,
+    display_recipient: DisplayRecipientT,
+    stream_id: int | None = None,
+    topic_name: str | None = None,
 ) -> str:
-    if message["type"] == "stream":
-        url = stream_message_url(
+    if stream_id:
+        assert isinstance(display_recipient, str)
+        assert topic_name is not None
+        url = near_stream_message_url(
             realm=realm,
-            message=message,
-            conversation_link=conversation_link,
+            message_id=message_id,
+            display_recipient=display_recipient,
+            stream_id=stream_id,
+            topic_name=topic_name,
         )
         return url
-
-    url = pm_message_url(
-        realm=realm,
-        message=message,
-        conversation_link=conversation_link,
+    assert not isinstance(display_recipient, str)
+    url = near_pm_message_url(
+        realm=realm, message_id=message_id, display_recipient=display_recipient
     )
     return url
 
 
+def near_stream_message_url(
+    realm: Realm,
+    message_id: int,
+    display_recipient: str,
+    stream_id: int,
+    topic_name: str,
+) -> str:
+    encoded_topic_name = encode_hash_component(topic_name)
+    encoded_stream = encode_channel(stream_id, display_recipient)
+    narrow_fragments = (
+        f"#narrow/channel/{encoded_stream}/topic/{encoded_topic_name}/near/{message_id}"
+    )
+    return f"{realm.url}/{narrow_fragments}"
+
+
 def stream_message_url(
     realm: Realm | None,
-    message: dict[str, Any],
-    *,
-    conversation_link: bool = False,
-    include_base_url: bool = True,
+    message_id: int,
+    stream_id: int,
+    stream_name: str,
+    topic_name: str,
 ) -> str:
-    if include_base_url and realm is None:
-        raise ValueError("realm is required when include_base_url=True")
-    if conversation_link:
-        with_or_near = "with"
-    else:
-        with_or_near = "near"
-    message_id = str(message["id"])
-    stream_id = message["stream_id"]
-    stream_name = message["display_recipient"]
-    topic_name = get_topic_from_message_info(message)
-    encoded_topic_name = encode_hash_component(topic_name)
     encoded_stream = encode_channel(stream_id, stream_name)
-
-    narrow_fragments = (
-        f"#narrow/channel/{encoded_stream}/topic/{encoded_topic_name}/{with_or_near}/{message_id}"
-    )
-    if include_base_url is True:
-        assert realm is not None
-        return f"{realm.url}/{narrow_fragments}"
-    return narrow_fragments
+    encoded_topic = encode_hash_component(topic_name)
+    fragment = f"#narrow/channel/{encoded_stream}/topic/{encoded_topic}/with/{message_id}"
+    if realm is None:
+        return fragment
+    return f"{realm.url}/{fragment}"
 
 
-def pm_message_url(
-    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+def near_pm_message_url(
+    realm: Realm, message_id: int, display_recipient: list[UserDisplayRecipient]
 ) -> str:
-    if conversation_link:
-        with_or_near = "with"
-    else:
-        with_or_near = "near"
-
-    message_id = str(message["id"])
-    user_ids = [recipient["id"] for recipient in message["display_recipient"]]
-
+    user_ids = [recipient["id"] for recipient in display_recipient]
     direct_message_slug = encode_user_ids(user_ids)
 
     parts = [
@@ -206,8 +204,8 @@ def pm_message_url(
         "#narrow",
         "dm",
         direct_message_slug,
-        with_or_near,
-        message_id,
+        "near",
+        str(message_id),
     ]
     full_url = "/".join(parts)
     return full_url
