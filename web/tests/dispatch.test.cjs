@@ -25,6 +25,7 @@ const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+const compose_ui = mock_esm("../src/compose_ui");
 const {electron_bridge} = mock_esm("../src/electron_bridge", {
     electron_bridge: {},
 });
@@ -1073,6 +1074,17 @@ run_test("submessage", ({override}) => {
 });
 
 // For subscriptions, see dispatch_subs.test.cjs
+
+run_test("compose_link_preview", ({override}) => {
+    const event = event_fixtures.compose_link_preview;
+    const stub = make_stub();
+    override(compose_ui, "update_compose_link_preview", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("content", "rendered_content");
+    assert_same(args.content, event.content);
+    assert_same(args.rendered_content, event.rendered_content);
+});
 
 run_test("typing", ({override}) => {
     // Simulate that we are not typing.

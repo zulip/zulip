@@ -25,7 +25,12 @@ from zerver.actions.user_topics import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
-from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
+from zerver.lib.cache import (
+    cache_get,
+    cache_with_key,
+    preview_url_cache_key,
+    user_profile_delivery_email_cache_key,
+)
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
@@ -124,7 +129,7 @@ from zerver.models.streams import (
     get_stream_by_id_in_realm,
 )
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
-from zerver.tornado.django_api import send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -191,6 +196,68 @@ def render_incoming_message(
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
     return rendering_result
+
+
+def render_message_for_compose_preview(
+    sender: UserProfile,
+    content: str,
+    *,
+    url_embed_data: dict[str, UrlEmbedData | None] | None = None,
+) -> MessageRenderingResult:
+    """Render an unsaved message stub for the compose preview.
+
+    Shared by the /json/messages/render endpoint and the embed_links
+    worker so a preview and its live update render identically.
+    """
+    message = Message()
+    message.sender = sender
+    message.realm = sender.realm
+    message.content = content
+    return render_message_markdown(
+        message, content, realm=sender.realm, url_embed_data=url_embed_data
+    )
+
+
+def get_compose_preview_embeds_and_enqueue_uncached(
+    sender: UserProfile,
+    content: str,
+    links_for_preview: set[str],
+) -> dict[str, UrlEmbedData | None]:
+    """Return cached embed data for the previewable links and enqueue an
+    embed_links job to fetch the rest; the worker then live-updates the
+    preview via a compose_link_preview event.
+    """
+    url_embed_data: dict[str, UrlEmbedData | None] = {}
+    uncached_urls: list[str] = []
+    for url in links_for_preview:
+        cache_entry = cache_get(preview_url_cache_key(url))
+        if cache_entry is not None:
+            # cache_with_key stores values in a singleton tuple.
+            url_embed_data[url] = cache_entry[0]
+        else:
+            uncached_urls.append(url)
+
+    if uncached_urls:
+        queue_event_on_commit(
+            "embed_links",
+            {
+                "compose_preview": True,
+                "user_id": sender.id,
+                "content": content,
+                "urls": uncached_urls,
+            },
+        )
+
+    return url_embed_data
+
+
+def do_send_compose_link_preview(sender: UserProfile, content: str, rendered_content: str) -> None:
+    event = {
+        "type": "compose_link_preview",
+        "content": content,
+        "rendered_content": rendered_content,
+    }
+    send_event_rollback_unsafe(sender.realm, event, [sender.id])
 
 
 @dataclass

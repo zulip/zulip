@@ -16,9 +16,10 @@ from zerver.actions.message_send import (
     create_mirror_user_if_needed,
     extract_private_recipients,
     extract_stream_indicator,
+    get_compose_preview_embeds_and_enqueue_uncached,
+    render_message_for_compose_preview,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import (
@@ -28,7 +29,7 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
 )
 from zerver.lib.zcommand import process_zcommands
-from zerver.models import Client, Message, RealmDomain, UserProfile
+from zerver.models import Client, RealmDomain, UserProfile
 from zerver.models.users import get_user_including_cross_realm
 
 
@@ -258,13 +259,17 @@ def render_message_backend(
     *,
     content: str,
 ) -> HttpResponse:
-    message = Message()
-    message.sender = user_profile
-    message.realm = user_profile.realm
-    message.content = content
-    client = RequestNotes.get_notes(request).client
-    assert client is not None
-    message.sending_client = client
+    rendering_result = render_message_for_compose_preview(user_profile, content)
 
-    rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
+    # If the draft has previewable links, re-render with any cached
+    # embeds baked in and enqueue the rest for the worker to fetch.
+    if rendering_result.links_for_preview:
+        url_embed_data = get_compose_preview_embeds_and_enqueue_uncached(
+            user_profile, content, rendering_result.links_for_preview
+        )
+        if url_embed_data:
+            rendering_result = render_message_for_compose_preview(
+                user_profile, content, url_embed_data=url_embed_data
+            )
+
     return json_success(request, data={"rendered": rendering_result.rendered_content})

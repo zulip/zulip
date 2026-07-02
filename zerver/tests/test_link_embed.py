@@ -376,6 +376,80 @@ class PreviewTestCase(ZulipTestCase):
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_link_embed(self) -> None:
+        # The compose preview enqueues an embed_links job for uncached
+        # links; the worker re-renders the draft and pushes it back via a
+        # compose_link_preview event once the fetch completes.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post("/json/messages/render", {"content": url})
+        self.assert_json_success(result)
+        # The initial preview render does not yet contain the embed.
+        self.assertNotIn("message_embed", result.json()["rendered"])
+
+        patched.assert_called_once()
+        self.assertEqual(patched.call_args[0][0], "embed_links")
+        event = patched.call_args[0][1]
+        self.assertEqual(
+            event,
+            {
+                "compose_preview": True,
+                "user_id": user.id,
+                "content": url,
+                "urls": [url],
+            },
+        )
+
+        self.create_mock_response(url)
+        with (
+            self.settings(TEST_SUITE=False),
+            self.assertLogs(level="INFO") as info_logs,
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            FetchLinksEmbedData().consume(event)
+        self.assertIn(
+            "INFO:root:Time spent on get_link_embed_data for http://test.org/: ",
+            info_logs.output[0],
+        )
+
+        # The event targets only the composing user and carries the
+        # re-rendered draft with the embed baked in.
+        self.assertEqual(events[0]["users"], [user.id])
+        preview_event = events[0]["event"]
+        self.assertEqual(preview_event["type"], "compose_link_preview")
+        self.assertEqual(preview_event["content"], url)
+        self.assertIn(
+            f'<a href="{url}" title="The Rock">The Rock</a>',
+            preview_event["rendered_content"],
+        )
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_uses_cached_embed(self) -> None:
+        # When embed data is already cached, the compose preview shows it
+        # immediately in the initial render and enqueues nothing.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post("/json/messages/render", {"content": url})
+        self.assert_json_success(result)
+        self.assertIn(
+            f'<a href="{url}" title="The Rock">The Rock</a>',
+            result.json()["rendered"],
+        )
+        patched.assert_not_called()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def _send_message_with_test_org_url(
         self,
         sender: UserProfile,
