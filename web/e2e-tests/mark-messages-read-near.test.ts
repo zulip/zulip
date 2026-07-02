@@ -18,7 +18,7 @@ async function navigate_to_settings_preferences(page: Page): Promise<void> {
     await common.open_personal_menu(page);
     await page.waitForSelector("#personal-menu-dropdown a[href^='#settings']", {visible: true});
     await page.click("#personal-menu-dropdown a[href^='#settings']");
-    await page.waitForSelector("#settings_overlay_container.show", {visible: true});
+    await page.waitForSelector("#settings_overlay_container .overlay.show", {visible: true});
     await page.waitForSelector('[data-section="preferences"]', {visible: true});
     await page.click('[data-section="preferences"]');
     await page.waitForSelector("#user_web_mark_read_on_scroll_policy", {visible: true});
@@ -29,7 +29,7 @@ async function change_mark_read_policy(page: Page, value: string): Promise<void>
     await page.select("#user_web_mark_read_on_scroll_policy", value);
     await page.waitForSelector("#user-preferences .general-settings-status", {visible: true});
     await page.click("#settings_page .content-wrapper .exit");
-    await page.waitForSelector("#settings_overlay_container", {hidden: true});
+    await page.waitForSelector("#settings_overlay_container .overlay", {hidden: true});
 }
 
 // Test 1: A /near/ narrow is treated as a conversation view.
