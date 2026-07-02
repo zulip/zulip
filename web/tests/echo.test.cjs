@@ -583,3 +583,100 @@ run_test("resend error re-marks a present message as failed", ({override}) => {
 
     assert.equal(message.failed_request, true);
 });
+
+run_test("resend doesn't crash when the message was already reconciled", ({override}) => {
+    // The original send appeared to fail on the client but had actually
+    // reached the server. The user resent it; then the original's get-events
+    // delivery arrived and reconciled the local echo to the real server id,
+    // consuming the local id. By the time the resend's response arrives,
+    // reify_message_id early-returns (the local id is gone), so the resent
+    // message is never stored under the id the response reports, and
+    // failed_message_success must tolerate that missing entry.
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+    override(message_store, "update_message_content", (message, content) => {
+        message.content = content;
+    });
+
+    const local_id = "250.01";
+    const reconciled_id = 260; // server id the message was reconciled to
+    // The resend reached the server too and, absent server-side
+    // deduplication, created a second message whose id its response reports.
+    const resend_response_id = 261;
+
+    // The message has already been reconciled: keyed under its real server id,
+    // no longer locally echoed, and no longer failed.
+    const message = {
+        id: reconciled_id,
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "hello world",
+        content: "<p>hello world</p>",
+        locally_echoed: false,
+        failed_request: false,
+    };
+    stored_messages.set(reconciled_id, message);
+
+    const on_send_message_success = (msg, data) => {
+        // compose.send_message_success calls echo.reify_message_id, which
+        // early-returns here because the local id was already consumed.
+        echo.reify_message_id(msg.local_id, data.id);
+    };
+    const send_message = (_msg, on_success) => {
+        on_success({id: resend_response_id});
+    };
+
+    echo.resend_message(message, make_spinner_row(), {on_send_message_success, send_message});
+
+    // The resend's success path only reconciles the message it resent; it does
+    // not store a message under the response's id. (A second message created
+    // on the server would instead arrive via its own get-events delivery.) So
+    // the store has no entry there, and the reconciled message stays un-failed.
+    assert.equal(stored_messages.get(resend_response_id), undefined);
+    assert.equal(message.failed_request, false);
+});
+
+run_test("resend error on a message removed from the store doesn't crash", ({override}) => {
+    // If the resend POST fails after the message was removed from the store
+    // (e.g. it was deleted while the resend was in flight), message_send_error
+    // must tolerate the missing entry rather than dereference undefined.
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+    override(message_store, "update_message_content", (message, content) => {
+        message.content = content;
+    });
+
+    const message = {
+        id: 270,
+        local_id: "270.01",
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "gone",
+        content: "<p>gone</p>",
+        locally_echoed: true,
+        failed_request: false,
+    };
+    // The message is no longer in the store (stored_messages is empty).
+
+    let error_path_completed = false;
+    const send_message = (_msg, _on_success, on_error) => {
+        on_error("error response", "");
+        // Only reached if message_send_error returned rather than throwing on
+        // the missing store entry.
+        error_path_completed = true;
+    };
+
+    echo.resend_message(message, make_spinner_row(), {
+        on_send_message_success: noop,
+        send_message,
+    });
+
+    // The resend's error path ran to completion without crashing...
+    assert.ok(error_path_completed);
+    // ...and left the detached message untouched, since there was no stored
+    // entry to mark as failed.
+    assert.equal(message.failed_request, false);
+});
