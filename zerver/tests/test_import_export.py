@@ -511,6 +511,44 @@ class RealmImportExportTest(ExportFile):
         self.verify_realm_logo_and_icon()
         self.verify_migration_status_json()
 
+    @use_s3_backend
+    def test_export_files_from_s3_legacy_underscore_metadata(self) -> None:
+        # Files uploaded before this change, and avatar files the migration
+        # skips, still use underscore metadata names. The exporter falls back
+        # to those; check such files still export.
+        uploads_bucket, avatar_bucket = create_s3_buckets(
+            settings.S3_AUTH_UPLOADS_BUCKET, settings.S3_AVATAR_BUCKET
+        )
+
+        user = self.example_user("hamlet")
+        realm = user.realm
+
+        self.upload_files_for_user(user)
+        self.upload_files_for_realm(user)
+
+        # Rewrite each object's metadata in place into the underscore form.
+        for bucket in (uploads_bucket, avatar_bucket):
+            for summary in bucket.objects.filter():
+                s3_object = bucket.Object(summary.key)
+                s3_object.load()
+                legacy_metadata = {
+                    key.replace("-", "_"): value for key, value in s3_object.metadata.items()
+                }
+                s3_object.copy_from(
+                    CopySource={"Bucket": bucket.name, "Key": summary.key},
+                    ContentType=s3_object.content_type,
+                    Metadata=legacy_metadata,
+                    MetadataDirective="REPLACE",
+                )
+
+        self.export_realm_and_create_auditlog(realm)
+
+        self.verify_attachment_json(user)
+        self.verify_uploads(user, is_s3=True)
+        self.verify_avatars(user)
+        self.verify_emojis(user, is_s3=True)
+        self.verify_realm_logo_and_icon()
+
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
 
