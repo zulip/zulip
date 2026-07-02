@@ -608,6 +608,7 @@ test("check_is_suggestions", ({override}) => {
 
 test("sent_by_me_suggestions", ({override}) => {
     override(narrow_state, "stream_id", noop);
+    override(stream_topic_history_util, "get_server_history", noop);
 
     let query = "";
     let suggestions = get_suggestions(query);
@@ -659,11 +660,14 @@ test("sent_by_me_suggestions", ({override}) => {
         stream_id: denmark_id,
     });
     stream_data.add_sub_for_tests(sub);
+    // `sent` is an exact keyword shorthand for the sent-by-me
+    // suggestion (`get_sent_by_me_suggestions` → `sender:me`), which
+    // tier 2 surfaces above the literal-input row.
     query = `channel:${denmark_id} topic:Denmark1 sent`;
     suggestions = get_suggestions(query);
     expected = [
-        `channel:${denmark_id} topic:Denmark1 sent`,
         `channel:${denmark_id} topic:Denmark1 sender:${me.user_id}`,
+        `channel:${denmark_id} topic:Denmark1 sent`,
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -992,6 +996,318 @@ test("channel_completion", ({override}) => {
     query = "hel";
     suggestions = get_suggestions(query);
     expected = ["hel", `channel:${dev_help_stream_id}`];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("channel_exact_name_surfaces_siblings", ({override}) => {
+    override(stream_topic_history_util, "get_server_history", noop);
+
+    const core_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: core_id, name: "core", subscribed: true}),
+    );
+    const core_team_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: core_team_id, name: "core team", subscribed: true}),
+    );
+
+    // Typing the exact name "core" resolves to its stream_id via
+    // `Filter.parse`, but we still phrase-match the name so the
+    // sibling channel "core team" surfaces as an alternative
+    // interpretation, just as it would for the still-incomplete
+    // "channel:cor".
+    let query = "channel:core";
+    let suggestions = get_suggestions(query);
+    let expected = [`channel:${core_id}`, `channel:${core_team_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    // The still-incomplete name behaves identically, confirming the
+    // exact-match case isn't a special-cased regression.
+    query = "channel:cor";
+    suggestions = get_suggestions(query);
+    expected = [`channel:${core_id}`, `channel:${core_team_id}`];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("channel_multi_word_completion", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+    override(stream_topic_history_util, "get_server_history", noop);
+
+    const automated_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: automated_id, name: "automated", subscribed: true}),
+    );
+    const automated_testing_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: automated_testing_id,
+            name: "automated testing",
+            subscribed: true,
+        }),
+    );
+    const q1_automated_testing_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: q1_automated_testing_id,
+            name: "Q1 automated testing",
+            subscribed: true,
+        }),
+    );
+
+    // Strong multi-word match ("automated testing" starts with the
+    // typed query) ranks above the literal-input row, weak match ("Q1
+    // automated testing" matches but doesn't start with the query)
+    // ranks below.
+    let query = "channel:automated testing";
+    let suggestions = get_suggestions(query);
+    let expected = [
+        `channel:${automated_testing_id}`,
+        `channel:${automated_id} testing`,
+        `channel:${q1_automated_testing_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // Trailing fragment is a prefix of `has:*` with no multi-word
+    // match, so tier 2 surfaces those completions above the
+    // literal-input row. Only fires because the single-word channel
+    // `automated` resolves.
+    query = "channel:automated h";
+    suggestions = get_suggestions(query);
+    expected = [
+        `channel:${automated_id} has:link`,
+        `channel:${automated_id} has:image`,
+        `channel:${automated_id} has:attachment`,
+        `channel:${automated_id} has:reaction`,
+        `channel:${automated_id} h`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // Single-word channel doesn't resolve. Strong multi-word match
+    // floats to the top. Tier 3 drops the un-resolvable channel and
+    // shows just the trailing fragment. The post-tier filterer loop
+    // also offers channels matching the trailing fragment alone.
+    query = "channel:Q1 automated";
+    suggestions = get_suggestions(query);
+    expected = [
+        `channel:${q1_automated_testing_id}`,
+        "automated",
+        `channel:${automated_id}`,
+        `channel:${automated_testing_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // No multi-word match and the typed channel doesn't resolve: tier
+    // 3 row degrades to just the trailing fragment.
+    query = "channel:nonexistent foo";
+    suggestions = get_suggestions(query);
+    expected = ["foo"];
+    assert.deepEqual(suggestions, expected);
+
+    // Resolved single-word channel with no multi-word match: tier 3
+    // shows the resolved channel + free-text search.
+    query = "channel:automated nonexistent";
+    suggestions = get_suggestions(query);
+    expected = [`channel:${automated_id} nonexistent`];
+    assert.deepEqual(suggestions, expected);
+
+    // When the channel resolves, the post-tier filterer loop runs with
+    // the resolved-channel context, surfacing e.g. topic suggestions.
+    stream_topic_history.add_message({stream_id: automated_id, topic_name: "release prep"});
+    query = "channel:automated release";
+    suggestions = get_suggestions(query);
+    expected = [`channel:${automated_id} release`, `channel:${automated_id} topic:release+prep`];
+    assert.deepEqual(suggestions, expected);
+
+    // `se` is an operator-prefix fragment: tier 2 surfaces both the
+    // `sender:` operator completion and the sent-by-me completion.
+    query = "channel:automated se";
+    suggestions = get_suggestions(query);
+    expected = [
+        `channel:${automated_id} sender:`,
+        `channel:${automated_id} sender:${me.user_id}`,
+        `channel:${automated_id} se`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // With the same channel already pilled, the tier-3 row shows the
+    // channel only once, and multi-word channel matches (which would
+    // add a second channel term) are suppressed as invalid.
+    suggestions = get_suggestions("channel:automated testing", "channel:automated");
+    expected = [`channel:${automated_id} testing`];
+    assert.deepEqual(suggestions, expected);
+
+    // An `is:dm` pill is incompatible with channel terms, so no
+    // multi-word channel matches are offered; only the literal input
+    // row remains.
+    suggestions = get_suggestions("channel:automated testing", "is:dm");
+    expected = [`is:dm channel:${automated_id} testing`];
+    assert.deepEqual(suggestions, expected);
+
+    // When the trailing fragment is both a strong multi-word match and
+    // an operator prefix ("h" prefixes `has:*`), the multi-word channel
+    // match ("deploy hooks") ranks above the operator completions: a
+    // two-word channel name is the likelier intent than starting a new
+    // operator.
+    const deploy_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: deploy_id, name: "deploy", subscribed: true}),
+    );
+    const deploy_hooks_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: deploy_hooks_id, name: "deploy hooks", subscribed: true}),
+    );
+    suggestions = get_suggestions("channel:deploy h");
+    expected = [
+        `channel:${deploy_hooks_id}`,
+        `channel:${deploy_id} has:link`,
+        `channel:${deploy_id} has:image`,
+        `channel:${deploy_id} has:attachment`,
+        `channel:${deploy_id} has:reaction`,
+        `channel:${deploy_id} h`,
+    ];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("channel_multi_word_renamed_completion", ({override, override_rewire}) => {
+    override(narrow_state, "stream_id", noop);
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
+
+    const pipelines_id = new_stream_id();
+    const pipelines_sub = make_stream({
+        stream_id: pipelines_id,
+        name: "pipeline",
+        subscribed: true,
+    });
+    stream_data.add_sub_for_tests(pipelines_sub);
+    stream_data.rename_sub(pipelines_sub, "pipelines");
+
+    // A channel's pre-rename name is not resolved (matching
+    // `Filter.parse`'s name resolution), so it reads as free text.
+    const suggestions = get_suggestions("channel:pipeline x");
+    const expected = ["x"];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("channel_multi_word_digit_prefix_completion", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+
+    // "7th floor" starts with digits. `get_sub_by_id_string` accepts
+    // only an exact canonical id, so "7th" isn't read as the unrelated
+    // channel with id 7 — it's matched by name to "7th floor"
+    // (channel:8). "7th" also isn't a valid channel id, so there's no
+    // `channel:7th` literal row.
+    stream_data.add_sub_for_tests(make_stream({stream_id: 7, name: "general", subscribed: true}));
+    stream_data.add_sub_for_tests(make_stream({stream_id: 8, name: "7th floor", subscribed: true}));
+
+    let suggestions = get_suggestions("channel:7th");
+    let expected = ["channel:8"];
+    assert.deepEqual(suggestions, expected);
+
+    suggestions = get_suggestions("channel:7th fl");
+    expected = ["channel:8", "fl"];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("topic_multi_word_completion", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+
+    const releases_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: releases_id, name: "releases", subscribed: true}),
+    );
+    stream_topic_history.add_message({stream_id: releases_id, topic_name: "release notes"});
+    stream_topic_history.add_message({
+        stream_id: releases_id,
+        message_id: 1,
+        topic_name: "release hotfix",
+    });
+
+    // Strong multi-word topic match (cross-channel, since no channel
+    // pill) ranks above the pinned default-row.
+    let query = "topic:release notes";
+    let suggestions = get_suggestions(query);
+    let expected = [`channel:${releases_id} topic:release+notes`, "topic:release notes"];
+    assert.deepEqual(suggestions, expected);
+
+    // When the trailing fragment is both a strong multi-word match and
+    // an operator prefix ("h" prefixes `has:*`), the multi-word topic
+    // match ("release hotfix") ranks above the operator completions,
+    // which precede the literal-input row.
+    query = "topic:release h";
+    suggestions = get_suggestions(query);
+    expected = [
+        `channel:${releases_id} topic:release+hotfix`,
+        "topic:release has:link",
+        "topic:release has:image",
+        "topic:release has:attachment",
+        "topic:release has:reaction",
+        "topic:release h",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // An `is:dm` pill is incompatible with topic terms, so no
+    // multi-word topic matches are offered; only the literal input
+    // row remains.
+    query = "topic:release notes";
+    suggestions = get_suggestions(query, "is:dm");
+    expected = ["is:dm topic:release notes"];
+    assert.deepEqual(suggestions, expected);
+
+    // A resolved topic ranks as a strong match: classification ignores
+    // the resolved-topic prefix, like the sort key does.
+    stream_topic_history.add_message({
+        stream_id: releases_id,
+        message_id: 2,
+        topic_name: "✔ release docs",
+    });
+    query = "topic:release docs";
+    suggestions = get_suggestions(query);
+    expected = [`channel:${releases_id} topic:✔+release+docs`, "topic:release docs"];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("topic_multi_word_match_budget", ({override}) => {
+    override(stream_topic_history_util, "get_server_history", noop);
+
+    const narrow_stream_id = new_stream_id();
+    override(narrow_state, "stream_id", () => narrow_stream_id);
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: narrow_stream_id, name: "core team", subscribed: true}),
+    );
+
+    const releases_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: releases_id, name: "releases", subscribed: true}),
+    );
+
+    // Enough weak matches in the narrowed channel to exhaust a
+    // 10-topic match budget on their own.
+    for (let i = 1; i <= 10; i += 1) {
+        stream_topic_history.add_message({
+            stream_id: narrow_stream_id,
+            message_id: i,
+            topic_name: `old release notes ${i}`,
+        });
+    }
+    stream_topic_history.add_message({
+        stream_id: releases_id,
+        message_id: 100,
+        topic_name: "release notes",
+    });
+
+    // The narrowed channel's topics and other channels' topics each
+    // get their own match budget, so the strong match from another
+    // channel still surfaces; the narrowed channel's weak matches
+    // follow in recency order.
+    const suggestions = get_suggestions("topic:release notes");
+    const expected = [
+        `channel:${releases_id} topic:release+notes`,
+        "topic:release notes",
+        ...Array.from(
+            {length: 10},
+            (_, i) => `channel:${narrow_stream_id} topic:old+release+notes+${10 - i}`,
+        ),
+    ];
     assert.deepEqual(suggestions, expected);
 });
 
