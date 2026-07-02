@@ -15027,6 +15027,96 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /realm/deactivate:
+    post:
+      operationId: deactivate-realm
+      summary: Deactivate an organization
+      tags: ["server_and_organizations"]
+      description: |
+        [Deactivate the organization](/help/deactivate-your-organization).
+
+        Deactivating an organization immediately logs out all of its users
+        and prevents them from logging in again. The organization's data is
+        preserved, so a deactivated organization can be reactivated later.
+
+        Pass `deletion_delay_days` to additionally schedule the
+        organization's data for permanent deletion.
+      x-requires-owner: true
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                deletion_delay_days:
+                  type: integer
+                  nullable: true
+                  description: |
+                    The number of days to wait before permanently deleting the
+                    deactivated organization's data. `0` deletes the data
+                    immediately, while `null` leaves the data with no scheduled
+                    deletion (it is retained indefinitely).
+
+                    The value must lie within the range permitted by the server,
+                    given by the `server_min_deactivated_realm_deletion_days` and
+                    `server_max_deactivated_realm_deletion_days` fields in the
+                    [`POST /register`](/api/register-queue) response. When the
+                    server configures a maximum, `null` is not permitted; when it
+                    configures a minimum greater than zero, `0` is not permitted.
+                    With the default configuration, the minimum is 14 days and
+                    there is no maximum.
+
+                    These limits do not apply to demo organizations, for which
+                    this parameter is instead required: it must be `0` when the
+                    organization owner has not configured an email address, and
+                    otherwise must not exceed the number of days remaining before
+                    the demo organization's scheduled deletion.
+
+                    **Changes**: New in Zulip 10.0 (feature level 332).
+                  example: 30
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessIgnoredParameters"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when `deletion_delay_days`
+                          is below the minimum permitted by the server:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Data deletion time must be at least 14 days in the future.",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when `deletion_delay_days`
+                          exceeds the maximum permitted by the server:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Data deletion time must be at most 30 days in the future.",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when an invalid
+                          `deletion_delay_days` is given for a demo organization:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid data deletion time for demo organization.",
+                            "result": "error",
+                          }
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields
