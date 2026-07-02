@@ -1794,6 +1794,10 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 33%)
     );
+    --color-background-message-embed-placeholder: light-dark(
+        hsl(0deg 0% 88%),
+        hsl(0deg 0% 20%)
+    );
 
     /* Tab-switcher colors */
     /* The non-selected colors here are shared with numerous other
