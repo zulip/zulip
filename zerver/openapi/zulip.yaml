@@ -10971,6 +10971,165 @@ paths:
                     description: |
                       An example JSON error response for when the organization's moderation
                       request channel is not configured:
+  /url_preview:
+    get:
+      operationId: get-url-preview
+      summary: Get a link preview
+      tags: ["messages"]
+      description: |
+        Fetch preview metadata for a supported link, such as the title,
+        author, and state of a GitHub issue or pull request. This powers the
+        hover previews shown for links in the message feed.
+
+        Currently, only public GitHub issue and pull request links are
+        supported.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-8e756b).
+      parameters:
+        - name: platform
+          in: query
+          description: |
+            The site the link points to. Currently only `github` is supported.
+          schema:
+            type: string
+            enum:
+              - github
+            example: github
+          required: true
+        - name: owner
+          in: query
+          description: |
+            The owner of the GitHub repository.
+          schema:
+            type: string
+            example: zulip
+          required: true
+        - name: repo
+          in: query
+          description: |
+            The name of the GitHub repository.
+          schema:
+            type: string
+            example: zulip
+          required: true
+        - name: number
+          in: query
+          description: |
+            The number of the issue or pull request.
+          schema:
+            type: string
+            example: "19710"
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      platform:
+                        type: string
+                        enum:
+                          - github
+                        description: |
+                          The site that the preview data comes from. Currently
+                          always `github`.
+                      type:
+                        type: string
+                        enum:
+                          - issue
+                          - pull_request
+                        description: |
+                          Whether the link points to an `issue` or a
+                          `pull_request`.
+                      owner:
+                        type: string
+                        description: |
+                          The owner of the GitHub repository.
+                      repo:
+                        type: string
+                        description: |
+                          The name of the GitHub repository.
+                      number:
+                        type: string
+                        description: |
+                          The number of the issue or pull request.
+                      title:
+                        type: string
+                        description: |
+                          The title of the issue or pull request.
+                      author:
+                        type: string
+                        description: |
+                          The GitHub username of the user who opened the issue
+                          or pull request.
+                      state:
+                        type: string
+                        enum:
+                          - open
+                          - closed
+                        description: |
+                          Whether the issue or pull request is `open` or
+                          `closed`.
+                      state_reason:
+                        type: string
+                        nullable: true
+                        description: |
+                          Only present when `type` is `issue`.
+
+                          The reason the issue is in its current state, such as
+                          `completed` or `not_planned`; `null` when GitHub
+                          reports no reason.
+                      draft:
+                        type: boolean
+                        description: |
+                          Only present when `type` is `pull_request`.
+
+                          Whether the pull request is a draft.
+                      merged_at:
+                        type: string
+                        nullable: true
+                        description: |
+                          Only present when `type` is `pull_request`.
+
+                          The time the pull request was merged, or `null` if it
+                          has not been merged.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "platform": "github",
+                        "type": "issue",
+                        "owner": "zulip",
+                        "repo": "zulip",
+                        "number": "19710",
+                        "title": "Show titles (previews) of GitHub issues on hover",
+                        "author": "alya",
+                        "state": "open",
+                        "state_reason": null,
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "URL is not previewable.",
+                        "code": "REQUEST_VARIABLE_INVALID",
+                      }
+                    description: |
+                      An example JSON error response when the URL cannot be
+                      previewed:
   /user_uploads:
     post:
       operationId: upload-file
