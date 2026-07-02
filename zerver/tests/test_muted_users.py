@@ -103,9 +103,9 @@ class MutedUsersTests(ZulipTestCase):
         self.assertIsNotNone(get_mute_object(hamlet, cordelia))
 
         audit_log_entries = list(
-            RealmAuditLog.objects.filter(acting_user=hamlet, modified_user=hamlet).values_list(
-                "event_type", "event_time", "extra_data"
-            )
+            RealmAuditLog.objects.filter(
+                acting_user=hamlet, modified_user=hamlet, event_type=AuditLogEventType.USER_MUTED
+            ).values_list("event_type", "event_time", "extra_data")
         )
         self.assert_length(audit_log_entries, 1)
         audit_log_entry = audit_log_entries[0]
@@ -163,7 +163,11 @@ class MutedUsersTests(ZulipTestCase):
         self.assertIsNone(get_mute_object(hamlet, cordelia))
 
         audit_log_entries = list(
-            RealmAuditLog.objects.filter(acting_user=hamlet, modified_user=hamlet)
+            RealmAuditLog.objects.filter(
+                acting_user=hamlet,
+                modified_user=hamlet,
+                event_type__in=[AuditLogEventType.USER_MUTED, AuditLogEventType.USER_UNMUTED],
+            )
             .values_list("event_type", "event_time", "extra_data")
             .order_by("id")
         )
