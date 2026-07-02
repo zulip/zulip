@@ -21,6 +21,9 @@ const people = zrequire("people");
 const search = zrequire("search_suggestion");
 const {set_current_user, set_realm} = zrequire("state_data");
 
+const emoji = zrequire("emoji");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
+
 const current_user = {};
 set_current_user(current_user);
 const realm = make_realm();
@@ -885,6 +888,64 @@ test("topic_suggestions", ({override, override_rewire}) => {
     suggestions = get_suggestions("hello channel:");
     expected = ["hello channel:5", "hello channel:6"];
     assert.deepEqual(suggestions, expected);
+});
+
+test("reaction_suggestions", () => {
+    const emoji_frequency_data = zrequire("emoji_frequency_data");
+    emoji.initialize({realm_emoji: {}, emoji_codes});
+
+    const octopus_code = emoji.get_emoji_details_by_name("octopus").emoji_code;
+    const zulip_code = emoji.get_emoji_details_by_name("zulip").emoji_code;
+
+    // Set up reaction data with message_ids to produce scores via the
+    // scoring formula. More current_user_reacted_message_ids = higher score.
+    // octopus: 10 messages reacted by current user -> higher score.
+    // zulip: 5 messages reacted by current user -> lower score.
+    const octopus_message_ids = new Set();
+    const octopus_my_ids = new Set();
+    for (let i = 1; i <= 10; i += 1) {
+        octopus_message_ids.add(i);
+        octopus_my_ids.add(i);
+    }
+    emoji_frequency_data.reaction_data.set(`unicode_emoji,${octopus_code}`, {
+        emoji_code: octopus_code,
+        emoji_type: "unicode_emoji",
+        message_ids: octopus_message_ids,
+        current_user_reacted_message_ids: octopus_my_ids,
+    });
+
+    const zulip_message_ids = new Set();
+    const zulip_my_ids = new Set();
+    for (let i = 11; i <= 15; i += 1) {
+        zulip_message_ids.add(i);
+        zulip_my_ids.add(i);
+    }
+    emoji_frequency_data.reaction_data.set(`zulip_extra_emoji,${zulip_code}`, {
+        emoji_code: zulip_code,
+        emoji_type: "zulip_extra_emoji",
+        message_ids: zulip_message_ids,
+        current_user_reacted_message_ids: zulip_my_ids,
+    });
+
+    // Test sorting by score
+    let query = "reaction:";
+    let suggestions = get_suggestions(query);
+    // Verify octopus comes before zulip (higher score)
+    assert.ok(suggestions.indexOf("reaction:octopus") < suggestions.indexOf("reaction:zulip"));
+    // Verify zulip comes before atm (atm has default score 0)
+    assert.ok(suggestions.indexOf("reaction:zulip") < suggestions.indexOf("reaction:atm"));
+
+    query = "reaction:octo";
+    suggestions = get_suggestions(query);
+    let expected = ["reaction:octopus"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "reaction:tad";
+    suggestions = get_suggestions(query);
+    expected = ["reaction:tada"];
+    assert.deepEqual(suggestions, expected);
+
+    emoji_frequency_data.reaction_data.clear();
 });
 
 test("topic_suggestions (limits)", () => {

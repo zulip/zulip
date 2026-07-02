@@ -16,6 +16,7 @@ from pydantic import BaseModel, model_validator
 from typing_extensions import override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
+from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.message import (
     access_message,
@@ -280,6 +281,7 @@ class NarrowBuilder:
             "sender": self.by_sender,
             "near": self.by_near,
             "id": self.by_id,
+            "reaction": self.by_reaction,
             "search": self.by_search,
             "dm": self.by_dm,
             # "pm-with:" is a legacy alias for "dm:"
@@ -345,6 +347,25 @@ class NarrowBuilder:
             maybe_negate = lambda cond: cond
 
         return method(query, operand, maybe_negate)
+
+    def by_reaction(
+        self, query: QuerySet[Message], operand: str, maybe_negate: ConditionTransform
+    ) -> QuerySet[Message]:
+        try:
+            emoji_data = get_emoji_data(self.realm.id, operand)
+        except JsonableError:
+            raise BadNarrowOperatorError("unknown emoji " + operand)
+
+        exists_cond = Q(
+            Exists(
+                Reaction.objects.filter(
+                    message_id=OuterRef("id"),
+                    emoji_code=emoji_data.emoji_code,
+                    reaction_type=emoji_data.reaction_type,
+                )
+            )
+        )
+        return query.filter(maybe_negate(exists_cond))
 
     def by_has(
         self, query: QuerySet[Message], operand: str, maybe_negate: ConditionTransform

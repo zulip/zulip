@@ -58,6 +58,9 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 12.0 (feature level ZF-00039f), add the `reaction` operator,
+  matching messages that contain a reaction of the specified emoji.
+
 * In Zulip 12.0 (feature level 489), support was added for a new
   filter, `channels:archived`, which returns messages the current user
   received in channels that have been [archived](/help/archive-a-channel).
