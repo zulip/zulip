@@ -263,7 +263,8 @@ function ajaxUnsubscribe(
     $stream_row: JQuery | undefined,
     $button_elem: JQuery | undefined,
 ): void {
-    // TODO: use stream_id when backend supports it
+    // Unsubscribe by stream ID for resilience against stream renames
+    // and name collisions (e.g., from HipChat imports).
     if ($stream_row !== undefined) {
         display_subscribe_toggle_spinner($stream_row);
     }
@@ -272,7 +273,7 @@ function ajaxUnsubscribe(
     }
     void channel.del({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([sub.name])},
+        data: {subscriptions: JSON.stringify([sub.stream_id])},
         success() {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get

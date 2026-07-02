@@ -553,12 +553,15 @@ def list_subscriptions_backend(
 
 
 class AddSubscriptionData(BaseModel):
-    name: str
+    name: str | None = None
+    stream_id: int | None = None
     color: str | None = None
     description: ChannelDescription = None
 
     @model_validator(mode="after")
     def validate_terms(self) -> "AddSubscriptionData":
+        if self.name is None and self.stream_id is None:
+            raise ValueError('One of "name" or "stream_id" must be provided')
         if self.color is not None:
             self.color = check_color("add.color", self.color)
         return self
@@ -570,7 +573,7 @@ def update_subscriptions_backend(
     user_profile: UserProfile,
     *,
     add: Json[list[AddSubscriptionData]] | None = None,
-    delete: Json[list[str]] | None = None,
+    delete: Json[list[str | int]] | None = None,
 ) -> HttpResponse:
     if delete is None:
         delete = []
@@ -611,13 +614,16 @@ def remove_subscriptions_backend(
     user_profile: UserProfile,
     *,
     principals: Json[list[str] | list[int]] | None = None,
-    streams_raw: Annotated[Json[list[str]], ApiParamConfig("subscriptions")],
+    streams_raw: Annotated[Json[list[str | int]], ApiParamConfig("subscriptions")],
 ) -> HttpResponse:
     realm = user_profile.realm
 
-    streams_as_dict: list[StreamDict] = [
-        {"name": stream_name.strip()} for stream_name in streams_raw
-    ]
+    streams_as_dict: list[StreamDict] = []
+    for stream in streams_raw:
+        if isinstance(stream, int):
+            streams_as_dict.append({"stream_id": stream})
+        else:
+            streams_as_dict.append({"name": stream.strip()})
 
     unsubscribing_others = False
     if principals:
@@ -852,10 +858,22 @@ def add_subscriptions_backend(
         # 'color' field is optional
         # check for its presence in the streams_raw first
         if stream_obj.color is not None:
-            color_map[stream_obj.name] = stream_obj.color
+            # Use stream name as color_map key when available,
+            # fall back to stream_id string for ID-only subscriptions.
+            color_key = (
+                stream_obj.name if stream_obj.name is not None else str(stream_obj.stream_id)
+            )
+            color_map[color_key] = stream_obj.color
 
         stream_dict_copy: StreamDict = {}
-        stream_dict_copy["name"] = stream_obj.name.strip()
+
+        # Support subscribing by stream_id (for existing streams) or
+        # by name (for existing or new streams). When stream_id is
+        # provided, list_to_streams will use it for lookup.
+        if stream_obj.stream_id is not None:
+            stream_dict_copy["stream_id"] = stream_obj.stream_id
+        if stream_obj.name is not None:
+            stream_dict_copy["name"] = stream_obj.name.strip()
 
         if stream_obj.description is not None:
             stream_dict_copy["description"] = stream_obj.description
