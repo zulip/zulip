@@ -11,6 +11,7 @@ class zulip::app_frontend_once {
   } else {
     $proxy = ''
   }
+  $supervisor_output = zulipconf('application_server', 'supervisor_output', 'file')
   file { "${zulip::common::supervisor_conf_dir}/zulip-once.conf":
     ensure  => file,
     require => [Package[supervisor], Exec['stage_updated_sharding']],
