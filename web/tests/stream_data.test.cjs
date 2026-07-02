@@ -1709,6 +1709,81 @@ test("can_resolve_topics", ({override}) => {
     assert.equal(stream_data.can_resolve_topics(archived_sub), false);
 });
 
+test("is_support_stream", () => {
+    const everyone = make_user_group({
+        name: "role:everyone",
+        id: 3,
+        members: new Set([me.user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const moderators = make_user_group({
+        name: "role:moderators",
+        id: 2,
+        members: new Set([moderator_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    user_groups.initialize({realm_user_groups: [everyone, moderators]});
+
+    const sub = {
+        name: "social",
+        stream_id: 2,
+        subscribed: true,
+        can_access_stream_topics_group: everyone.id,
+    };
+
+    // Not a support stream when everyone can access topics.
+    assert.equal(stream_data.is_support_stream(sub), false);
+
+    // Support stream when access is restricted to a narrower group.
+    sub.can_access_stream_topics_group = moderators.id;
+    assert.equal(stream_data.is_support_stream(sub), true);
+
+    // Anonymous group (object form) is also a support stream.
+    sub.can_access_stream_topics_group = {
+        direct_members: [me.user_id],
+        direct_subgroups: [],
+    };
+    assert.equal(stream_data.is_support_stream(sub), true);
+});
+
+test("can_access_topics_in_stream", ({override}) => {
+    const sub = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        can_access_stream_topics_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(sub);
+
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), false);
+
+    sub.can_access_stream_topics_group = moderators_group.id;
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), false);
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    override(current_user, "is_admin", false);
+
+    sub.can_access_stream_topics_group = everyone_group.id;
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+});
+
 test("can_unsubscribe_others", ({override}) => {
     const sub = {
         name: "Denmark",

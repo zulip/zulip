@@ -849,6 +849,7 @@ paths:
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
                                         "can_subscribe_group": 2,
+                                        "can_access_stream_topics_group": 11,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1599,6 +1600,7 @@ paths:
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
                                         "can_subscribe_group": 2,
+                                        "can_access_stream_topics_group": 11,
                                         "stream_weekly_traffic": null,
                                         "subscriber_count": 0,
                                       },
@@ -13220,6 +13222,8 @@ paths:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
                 can_create_topic_group:
                   $ref: "#/components/schemas/CanCreateTopicGroup"
+                can_access_stream_topics_group:
+                  $ref: "#/components/schemas/CanAccessStreamTopicsGroup"
                 folder_id:
                   description: |
                     This parameter adds the newly created channel to the specified
@@ -13272,6 +13276,8 @@ paths:
               can_resolve_topics_group:
                 contentType: application/json
               can_create_topic_group:
+                contentType: application/json
+              can_access_stream_topics_group:
                 contentType: application/json
               folder_id:
                 contentType: application/json
@@ -19187,6 +19193,7 @@ paths:
                                 can_subscribe_group: {}
                                 can_resolve_topics_group: {}
                                 can_create_topic_group: {}
+                                can_access_stream_topics_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -24242,6 +24249,7 @@ paths:
                                 can_resolve_topics_group: {}
                                 can_subscribe_group: {}
                                 can_create_topic_group: {}
+                                can_access_stream_topics_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -24286,6 +24294,7 @@ paths:
                                 - is_announcement_only
                                 - can_remove_subscribers_group
                                 - can_subscribe_group
+                                - can_access_stream_topics_group
                                 - stream_weekly_traffic
                                 - is_recently_active
                                 - subscriber_count
@@ -24316,6 +24325,7 @@ paths:
                               "rendered_description": "<p>A private channel</p>",
                               "stream_id": 2,
                               "stream_post_policy": 1,
+                              "can_access_stream_topics_group": 10,
                               "stream_weekly_traffic": null,
                               subscriber_count: 20,
                             },
@@ -24340,6 +24350,7 @@ paths:
                               "rendered_description": "<p>A default public channel</p>",
                               "stream_id": 1,
                               "stream_post_policy": 1,
+                              "can_access_stream_topics_group": 11,
                               "stream_weekly_traffic": null,
                               subscriber_count: 10,
                             },
@@ -24399,6 +24410,7 @@ paths:
                             "can_add_subscribers_group": 2,
                             "can_remove_subscribers_group": 2,
                             "can_subscribe_group": 2,
+                            "can_access_stream_topics_group": 11,
                             "stream_weekly_traffic": null,
                             subscriber_count: 12,
                           },
@@ -24869,6 +24881,25 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_access_stream_topics_group:
+                  allOf:
+                    - description: |
+                        The set of users who have access to all topics in this channel,
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        Users not in this group can only access topics they themselves
+                        created within the channel.
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        **Changes**: New in Zulip 13.0 (feature level ZF-a463cd).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
 
             encoding:
               is_private:
@@ -24902,6 +24933,8 @@ paths:
               can_resolve_topics_group:
                 contentType: application/json
               can_create_topic_group:
+                contentType: application/json
+              can_access_stream_topics_group:
                 contentType: application/json
       responses:
         "200":
@@ -25481,11 +25514,15 @@ paths:
                   $ref: "#/components/schemas/CanSubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
+                can_access_stream_topics_group:
+                  $ref: "#/components/schemas/CanAccessStreamTopicsGroup"
               required:
                 - name
                 - subscribers
             encoding:
               announce:
+                contentType: application/json
+              can_access_stream_topics_group:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json
@@ -27433,6 +27470,7 @@ components:
             can_subscribe_group: {}
             can_resolve_topics_group: {}
             can_create_topic_group: {}
+            can_access_stream_topics_group: {}
             subscriber_count: {}
             stream_weekly_traffic:
               type: integer
@@ -27468,6 +27506,7 @@ components:
             - is_recently_active
             - is_announcement_only
             - can_remove_subscribers_group
+            - can_access_stream_topics_group
             - stream_weekly_traffic
             - can_subscribe_group
     BasicChannelBase:
@@ -27665,6 +27704,8 @@ components:
             server.
 
             **Changes**: New in Zulip 11.0 (feature level 394).
+        can_access_stream_topics_group:
+          $ref: "#/components/schemas/CanAccessStreamTopicsGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -28823,6 +28864,8 @@ components:
             server.
 
             **Changes**: New in Zulip 11.0 (feature level 394).
+        can_access_stream_topics_group:
+          $ref: "#/components/schemas/CanAccessStreamTopicsGroup"
     DefaultChannelGroup:
       type: object
       description: |
@@ -31074,6 +31117,19 @@ components:
             [setting-values]: /api/group-setting-values
             [private-channels]: /help/channel-permissions/#private-channels
             [system-groups]: /api/group-setting-values#system-groups
+    CanAccessStreamTopicsGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have access to all topics within the channel.
+
+            Users not in this group can only access topics they themselves
+            created within the channel.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-a463cd).
+
+            [setting-values]: /api/group-setting-values
     LinkifierPattern:
       description: |
         The [Python regular

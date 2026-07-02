@@ -13,7 +13,7 @@ from typing_extensions import override
 from zerver.lib.cache import flush_stream
 from zerver.lib.types import GroupPermissionSetting
 from zerver.models.channel_folders import ChannelFolder
-from zerver.models.groups import SystemGroups, UserGroup
+from zerver.models.groups import SystemGroups, UserGroup, get_realm_system_groups_name_dict
 from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
@@ -152,6 +152,11 @@ class Stream(models.Model):
     can_resolve_topics_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_access_stream_topics_group = models.ForeignKey(
+        UserGroup,
+        on_delete=models.RESTRICT,
+        related_name="+",
+    )
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -221,6 +226,11 @@ class Stream(models.Model):
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
         ),
+        "can_access_stream_topics_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+        ),
     }
 
     stream_permission_group_settings_requiring_content_access = [
@@ -258,6 +268,18 @@ class Stream(models.Model):
     def is_history_public_to_subscribers(self) -> bool:
         return self.history_public_to_subscribers
 
+    def is_support_stream(self) -> bool:
+        # A channel restricts topic access (is a "support stream") when its
+        # can_access_stream_topics_group is anything other than the "everyone"
+        # system group -- including any named non-everyone group or an
+        # anonymous group. We compare group ids against the realm's cached
+        # system-group map, which keeps this O(1) and avoids a per-stream join
+        # to the group and named_user_group rows.
+        system_group_names = get_realm_system_groups_name_dict(self.realm_id)
+        return (
+            system_group_names.get(self.can_access_stream_topics_group_id) != SystemGroups.EVERYONE
+        )
+
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
@@ -291,6 +313,7 @@ class Stream(models.Model):
         "can_resolve_topics_group_id",
         "is_recently_active",
         "topics_policy",
+        "can_access_stream_topics_group_id",
     ]
 
 
