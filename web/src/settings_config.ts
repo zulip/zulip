@@ -705,6 +705,7 @@ export const preferences_settings_labels = {
     web_navigate_to_sent_message: $t({
         defaultMessage: "Automatically go to conversation where you sent a message",
     }),
+    file_preview_extensions: $t({defaultMessage: "Additional text preview extensions"}),
 };
 
 export const notification_settings_labels = {
