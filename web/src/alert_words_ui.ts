@@ -21,7 +21,7 @@ export function rerender_alert_words_ui(): void {
     }
 
     const words = alert_words.get_word_list();
-    words.sort();
+    words.sort((a, b) => Number(a.word > b.word) - Number(a.word < b.word));
     const $word_list = $("#alert-words-table");
 
     ListWidget.create($word_list, words, {
