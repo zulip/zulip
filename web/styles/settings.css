@@ -1951,6 +1951,12 @@ label.preferences-radio-choice-label {
     margin-bottom: 20px;
 }
 
+#data-exports .tab-container {
+    border-top: 1px solid var(--color-border-modal-bar);
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
 .settings-textarea,
 .modal-textarea {
     color: var(--color-text-default);

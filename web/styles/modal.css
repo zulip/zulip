@@ -793,8 +793,17 @@
         padding-bottom: 10px;
     }
 
+    #prefer-html-input-group {
+        border-top: 1px solid var(--color-border-modal-bar);
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+
     .stream-email-header {
         font-size: 1.125em; /* 18px at 16px/em */
+        border-top: 1px solid var(--color-border-modal-bar);
+        margin-top: 20px;
+        padding-top: 20px;
     }
 }
 
@@ -1093,6 +1102,13 @@
         /* Same bottom margin as that of input-group,
            to maintain consistent gap between fields. */
         margin-bottom: 1.25em; /* 20px at 16px/em */
+    }
+
+    .integration-url-header {
+        border-top: 1px solid var(--color-border-modal-bar);
+        margin-top: 20px;
+        padding-top: 20px;
+        font-weight: 600;
     }
 }
 
