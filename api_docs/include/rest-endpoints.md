@@ -193,6 +193,7 @@
 * [Remove an FCM registration token](/api/remove-fcm-token)
 * [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
 * [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
+* [Create Google Meet video call](/api/create-google-meet-video-call)
 * [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
 * [Create Webex video call](/api/create-webex-video-call)
 * [Outgoing webhook payloads](/api/outgoing-webhook-payload)
