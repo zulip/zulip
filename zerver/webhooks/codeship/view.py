@@ -20,6 +20,12 @@ CODESHIP_STATUS_MAPPER = {
     "success": "succeeded",
 }
 
+CODESHIP_STATUS_EMOJI_MAP: dict[str, str] = {
+    "success": ":check:",
+    "error": ":cross_mark:",
+    "testing": ":arrows_counterclockwise:",
+}
+
 
 @webhook_view("Codeship")
 @typed_endpoint
@@ -44,12 +50,17 @@ def get_topic_for_http_request(payload: WildValue) -> str:
 
 
 def get_body_for_http_request(payload: WildValue) -> str:
-    return CODESHIP_MESSAGE_TEMPLATE.format(
+    build_status = payload["status"].tame(check_string)
+    message = CODESHIP_MESSAGE_TEMPLATE.format(
         build_url=payload["build_url"].tame(check_string),
         committer=payload["committer"].tame(check_string),
         branch=payload["branch"].tame(check_string),
         status=get_status_message(payload),
     )
+    emoji = CODESHIP_STATUS_EMOJI_MAP.get(build_status, "")
+    if emoji:
+        return f"{emoji} {message}"
+    return message
 
 
 def get_status_message(payload: WildValue) -> str:
