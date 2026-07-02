@@ -13,6 +13,7 @@ import orjson
 import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
+from django.test import override_settings
 from typing_extensions import override
 
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
@@ -33,6 +34,7 @@ from zerver.worker.email_senders import ImmediateEmailSenderWorker
 from zerver.worker.embed_links import FetchLinksEmbedData
 from zerver.worker.missedmessage_emails import MissedMessageWorker
 from zerver.worker.missedmessage_mobile_notifications import PushNotificationsWorker
+from zerver.worker.queue_processors import get_active_worker_queues
 from zerver.worker.user_activity import UserActivityWorker
 
 Event: TypeAlias = dict[str, Any]
@@ -828,3 +830,11 @@ class WorkerTest(ZulipTestCase):
 
         with self.assertRaises(base_worker.WorkerDeclarationError):
             TestWorker()
+
+    def test_soft_reactivation_queue_is_opt_in(self) -> None:
+        # The soft_reactivation worker only runs when a server opts into a
+        # dedicated queue; otherwise it must not appear in the active set, so
+        # the production-install queue-processor consistency check passes.
+        self.assertNotIn("soft_reactivation", get_active_worker_queues())
+        with override_settings(DEDICATED_SOFT_REACTIVATION_QUEUE=True):
+            self.assertIn("soft_reactivation", get_active_worker_queues())

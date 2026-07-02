@@ -685,9 +685,9 @@ group DM conversations.
 
 **Feature level 427**
 
-* [`POST /register`](/api/register-queue): `stream_creator_or_nobody`
+* [`POST /register`](/api/register-queue): `"stream_creator_or_nobody"`
   value for `default_group_name` field in `server_supported_permission_settings`
-  object is renamed to `channel_creator`.
+  object is renamed to `"channel_creator"`.
 
 **Feature level 426**
 

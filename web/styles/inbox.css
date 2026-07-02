@@ -19,10 +19,6 @@
         .unread_count {
             opacity: 1;
             outline: 0 solid var(--color-background-unread-counter);
-
-            &:hover {
-                outline-width: var(--focus-ring-width-in-views);
-            }
         }
 
         .search_group {
@@ -374,6 +370,15 @@
                    count from affecting overall row
                    size as test scales up. */
                 align-self: stretch;
+            }
+
+            /* Channels, topics, and direct messages mark their unread
+               messages as read when their count is clicked. Folder
+               headers (channel folders and the direct messages section)
+               only show a combined count for everything inside them, so
+               they don't get the clickable affordance. */
+            :is(.inbox-row, .inbox-header:not(.inbox-folder))
+                .unread-count-focus-outline {
                 /* Whole 30×stretched hit area is clickable; surface
                    the same pointer cursor users had on the smaller
                    badge before the click target was expanded. */
@@ -751,12 +756,7 @@
 
 .inbox-container #inbox-pane .inbox-folder .unread_count {
     transition: none;
-    cursor: default;
     display: none;
-
-    &:hover {
-        outline: 0;
-    }
 }
 
 #inbox-pane #inbox-list .collapsible-button {

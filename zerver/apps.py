@@ -34,6 +34,23 @@ def create_zulip_schema(sender: AppConfig, **kwargs: Any) -> None:  # nocoverage
         cursor.execute("SET search_path = zulip,public")
 
 
+def skip_smokescreen_proxy_for_boto3() -> None:
+    # https://github.com/boto/botocore/issues/2644: the request boto3
+    # makes to fetch EC2 instance credentials from the IMDS endpoint
+    # always reads the proxy configuration from the environment,
+    # ignoring any per-client setting. Our application processes route
+    # outgoing HTTP through Smokescreen, so that metadata request would
+    # be proxied; and Smokescreen would refuse the internal
+    # IMDS address (169.254.169.254). Disable proxying for boto3 so the
+    # metadata request (and other boto3 traffic) goes direct.
+    #
+    # This must run at process startup so that it takes effect in every
+    # process, including queue workers.
+    import botocore.utils
+
+    botocore.utils.should_bypass_proxies = lambda url: True
+
+
 class ZerverConfig(AppConfig):
     name: str = "zerver"
 
@@ -53,6 +70,9 @@ class ZerverConfig(AppConfig):
         from django.contrib.auth.forms import SetPasswordMixin
 
         django_stubs_ext.monkeypatch(extra_classes=[SetPasswordMixin])
+
+        if settings.S3_SKIP_PROXY is True and settings.LOCAL_UPLOADS_DIR is None:  # nocoverage
+            skip_smokescreen_proxy_for_boto3()
 
         # We import zerver.signals here for the side effect of
         # registering the user_logged_in signal receiver.  This import
