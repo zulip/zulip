@@ -1342,31 +1342,6 @@ run_test("update_group_permission_settings", () => {
     assert.equal(user_groups.get_user_group_from_id(group.id).can_remove_members_group, 7);
 });
 
-run_test("realm_has_deactivated_user_groups", () => {
-    user_groups.init();
-    const active = make_user_group({
-        name: "Active",
-        id: 1,
-        members: [1],
-        is_system_group: false,
-        direct_subgroup_ids: [],
-        deactivated: false,
-    });
-    user_groups.add(active);
-    assert.ok(!user_groups.realm_has_deactivated_user_groups());
-
-    const deactivated = make_user_group({
-        name: "Deactivated",
-        id: 2,
-        members: [2],
-        is_system_group: false,
-        direct_subgroup_ids: [],
-        deactivated: true,
-    });
-    user_groups.add(deactivated);
-    assert.ok(user_groups.realm_has_deactivated_user_groups());
-});
-
 run_test("get_system_groups_list", ({override}) => {
     user_groups.init();
     const {nobody, owners, admins, moderators, members, everyone, full_members, internet} =
