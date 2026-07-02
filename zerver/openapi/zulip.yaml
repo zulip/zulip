@@ -7629,6 +7629,11 @@ paths:
       tags: ["navigation_views"]
       summary: Add a navigation view
       description: |
+        !!! warn ""
+
+            **Note:** The Zulip web application implementation of
+            this feature is pending.
+
         Adds a new custom left sidebar navigation view configuration
         for the current user.
 
@@ -7674,6 +7679,11 @@ paths:
       tags: ["navigation_views"]
       summary: Update the navigation view
       description: |
+        !!! warn ""
+
+            **Note:** The Zulip web application implementation of
+            this feature is pending.
+
         Update the details of an existing configured navigation view,
         such as its name or whether it's pinned.
 
