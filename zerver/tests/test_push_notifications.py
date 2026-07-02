@@ -88,6 +88,7 @@ from zilencer.views import DevicesToCleanUpDict, get_deleted_devices
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
+        RemotePushDevice,
         RemotePushDeviceToken,
         RemoteRealm,
         RemoteRealmAuditLog,
@@ -1272,6 +1273,241 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         remote_realm.refresh_from_db()
         self.assertEqual(remote_realm.last_request_datetime, time_sent)
+
+    def test_delete_registrations_missed_by_e2ee_cleanup(self) -> None:
+        hamlet = self.example_user("hamlet")
+        server = self.server
+        remote_realm = RemoteRealm.objects.get(server=server, uuid=hamlet.realm.uuid)
+
+        apns_token = "ABCDEF0123456789"
+        fcm_token = "fcm-token-aaaa"
+
+        def cleanup_log(count: int, kind_str: str) -> str:
+            return (
+                f"INFO:zilencer.views:Cleaning up {count} stale legacy {kind_str} "
+                f"registration(s) on remote_realm id:{remote_realm.id} "
+                "(device already has an E2EE registration)"
+            )
+
+        def sending_log(fcm: int, apns: int) -> str:
+            return (
+                f"INFO:zilencer.views:Sending mobile push notifications for remote user "
+                f"{self.server_uuid}:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
+                f"{fcm} via FCM devices, {apns} via APNs devices"
+            )
+
+        def call_notify_endpoint(expected_logs: list[str]) -> None:
+            payload = {
+                "user_id": hamlet.id,
+                "user_uuid": str(hamlet.uuid),
+                "realm_uuid": str(hamlet.realm.uuid),
+                "gcm_payload": {"event": "test"},
+                "apns_payload": {"badge": 0, "custom": {"zulip": {"event": "test"}}},
+                "gcm_options": {},
+            }
+            with (
+                mock.patch("zilencer.views.send_android_push_notification", return_value=0),
+                mock.patch("zilencer.views.send_apple_push_notification", return_value=0),
+                mock.patch(
+                    "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                    return_value=BillingUserCounts(10, 0),
+                ),
+                self.assertLogs("zilencer.views", level="INFO") as logger,
+            ):
+                result = self.uuid_post(
+                    self.server_uuid,
+                    "/api/v1/remotes/push/notify",
+                    payload,
+                    content_type="application/json",
+                )
+            self.assert_json_success(result)
+            self.assertEqual(logger.output, expected_logs)
+
+        def reset() -> None:
+            RemotePushDevice.objects.all().delete()
+            RemotePushDeviceToken.objects.all().delete()
+
+        # APNs legacy with the same casing as an
+        # E2EE registration on the same remote_realm is cleaned up.
+        RemotePushDevice.objects.create(
+            remote_realm=remote_realm,
+            token=apns_token,
+            token_id=1,
+            token_kind=RemotePushDevice.TokenKind.APNS,
+            ios_app_id="org.zulip.Zulip",
+        )
+        legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=apns_token,
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+            ios_app_id="org.zulip.Zulip",
+        )
+        call_notify_endpoint([cleanup_log(1, "APNs"), sending_log(0, 0)])
+        self.assertFalse(RemotePushDeviceToken.objects.filter(id=legacy.id).exists())
+        reset()
+
+        # APNs legacy with mismatched casing
+        # (lowercase legacy vs. uppercase E2EE) is cleaned up.
+        RemotePushDevice.objects.create(
+            remote_realm=remote_realm,
+            token=apns_token,
+            token_id=2,
+            token_kind=RemotePushDevice.TokenKind.APNS,
+            ios_app_id="org.zulip.Zulip",
+        )
+        legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=apns_token.lower(),
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+            ios_app_id="org.zulip.Zulip",
+        )
+        call_notify_endpoint([cleanup_log(1, "APNs"), sending_log(0, 0)])
+        self.assertFalse(RemotePushDeviceToken.objects.filter(id=legacy.id).exists())
+        reset()
+
+        # FCM legacy whose token matches an E2EE FCM
+        # registration on the same realm is cleaned up (FCM match is
+        # exact, not case-insensitive).
+        RemotePushDevice.objects.create(
+            remote_realm=remote_realm,
+            token=fcm_token,
+            token_id=3,
+            token_kind=RemotePushDevice.TokenKind.FCM,
+        )
+        legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.FCM,
+            token=fcm_token,
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+        )
+        call_notify_endpoint([cleanup_log(1, "FCM"), sending_log(0, 0)])
+        self.assertFalse(RemotePushDeviceToken.objects.filter(id=legacy.id).exists())
+        reset()
+
+        # FCM legacy that matches an E2EE FCM token
+        # only after lowercasing is preserved (FCM is case-sensitive,
+        # so the tokens are considered different).
+        RemotePushDevice.objects.create(
+            remote_realm=remote_realm,
+            token=fcm_token.upper(),
+            token_id=4,
+            token_kind=RemotePushDevice.TokenKind.FCM,
+        )
+        legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.FCM,
+            token=fcm_token,
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+        )
+        call_notify_endpoint([sending_log(1, 0)])
+        self.assertTrue(RemotePushDeviceToken.objects.filter(id=legacy.id).exists())
+        reset()
+
+        # legacy whose token doesn't match any E2EE
+        # registration in the realm is preserved.
+        RemotePushDevice.objects.create(
+            remote_realm=remote_realm,
+            token=apns_token,
+            token_id=5,
+            token_kind=RemotePushDevice.TokenKind.APNS,
+            ios_app_id="org.zulip.Zulip",
+        )
+        legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token="some-other-apns-token",
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+            ios_app_id="org.zulip.Zulip",
+        )
+        call_notify_endpoint([sending_log(0, 1)])
+        self.assertTrue(RemotePushDeviceToken.objects.filter(id=legacy.id).exists())
+        reset()
+
+        # legacy on a different remote_realm of the same server is
+        # preserved -- per-realm scoping protects unrelated accounts
+        # on shared self-hosted servers.
+        other_realm = RemoteRealm.objects.create(
+            server=server,
+            uuid=uuid.uuid4(),
+            uuid_owner_secret="secret",
+            host="other.example.com",
+            realm_date_created=now(),
+        )
+        RemotePushDevice.objects.create(
+            remote_realm=other_realm,
+            token=apns_token,
+            token_id=6,
+            token_kind=RemotePushDevice.TokenKind.APNS,
+            ios_app_id="org.zulip.Zulip",
+        )
+        legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=apns_token,
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+            ios_app_id="org.zulip.Zulip",
+        )
+        call_notify_endpoint([sending_log(0, 1)])
+        self.assertTrue(RemotePushDeviceToken.objects.filter(id=legacy.id).exists())
+        reset()
+
+        # an E2EE FCM registration in the same realm does not affect
+        # an APNs legacy row with the same token text (and vice versa).
+        RemotePushDevice.objects.create(
+            remote_realm=remote_realm,
+            token=apns_token,
+            token_id=7,
+            token_kind=RemotePushDevice.TokenKind.FCM,
+        )
+        legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=apns_token,
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+            ios_app_id="org.zulip.Zulip",
+        )
+        call_notify_endpoint([sending_log(0, 1)])
+        self.assertTrue(RemotePushDeviceToken.objects.filter(id=legacy.id).exists())
+        reset()
+
+        # When the user has multiple legacy APNs rows on the same
+        # remote_realm and only one of them matches an E2EE
+        # registration, only the matching row is cleaned up.
+        RemotePushDevice.objects.create(
+            remote_realm=remote_realm,
+            token=apns_token,
+            token_id=8,
+            token_kind=RemotePushDevice.TokenKind.APNS,
+            ios_app_id="org.zulip.Zulip",
+        )
+        matching_legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=apns_token,
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+            ios_app_id="org.zulip.Zulip",
+        )
+        non_matching_legacy = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token="some-other-apns-token",
+            user_uuid=str(hamlet.uuid),
+            server=server,
+            remote_realm=remote_realm,
+            ios_app_id="org.zulip.Zulip",
+        )
+        call_notify_endpoint([cleanup_log(1, "APNs"), sending_log(0, 1)])
+        self.assertFalse(RemotePushDeviceToken.objects.filter(id=matching_legacy.id).exists())
+        self.assertTrue(RemotePushDeviceToken.objects.filter(id=non_matching_legacy.id).exists())
 
 
 class TestAPNs(PushNotificationTestCase):
