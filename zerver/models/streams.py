@@ -170,56 +170,67 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_administer_channel_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="channel_creator",
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_create_topic_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_delete_any_message_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_delete_own_message_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_move_messages_out_of_channel_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_move_messages_within_channel_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_remove_subscribers_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_send_message_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_subscribe_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_resolve_topics_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
     }
 

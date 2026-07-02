@@ -51,6 +51,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_invite_users, do_revoke_user_invite
 from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -8583,6 +8584,20 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_deactivate_reactivate_user_with_deactivated_attr(self) -> None:
         self.change_ldap_user_attr("hamlet", "someCustomAttr", "TRUE")
 
+        hamlet = self.example_user("hamlet")
+        # hamlet is the only member of the anonymous group used for
+        # can_manage_all_groups, a setting that cannot be set to the
+        # "Nobody" group. LDAP sync still deactivates hamlet, resetting the
+        # setting to its replacement group ("role:owners").
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            hamlet.realm, "can_manage_all_groups", setting_group, acting_user=None
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=hamlet.realm, is_system_group=True
+        )
+
         with (
             self.settings(
                 AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "deactivated": "someCustomAttr"}
@@ -8598,6 +8613,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 "INFO:zulip.ldap:Deactivating user hamlet@zulip.com because they are disabled in LDAP."
             ],
         )
+
+        realm = hamlet.realm
+        realm.refresh_from_db()
+        self.assertEqual(realm.can_manage_all_groups_id, owners_group.id)
 
         self.change_ldap_user_attr("hamlet", "someCustomAttr", "FALSE")
         with (
@@ -8791,11 +8810,30 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_deactivate_non_matching_users(self) -> None:
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com", LDAP_DEACTIVATE_NON_MATCHING_USERS=True):
             # othello isn't in our test directory
-            result = sync_user_from_ldap(self.example_user("othello"), mock.Mock())
+            othello = self.example_user("othello")
+            # othello is the only member of the anonymous group used for
+            # can_manage_all_groups, a setting that cannot be set to the
+            # "Nobody" group. LDAP sync still deactivates othello, resetting
+            # the setting to its replacement group ("role:owners").
+            setting_group = self.create_or_update_anonymous_group_for_setting([othello], [])
+            do_change_realm_permission_group_setting(
+                othello.realm, "can_manage_all_groups", setting_group, acting_user=None
+            )
 
+            owners_group = NamedUserGroup.objects.get(
+                name=SystemGroups.OWNERS,
+                realm_for_sharding=othello.realm,
+                is_system_group=True,
+            )
+
+            result = sync_user_from_ldap(othello, mock.Mock())
             self.assertTrue(result)
             othello = self.example_user("othello")
             self.assertFalse(othello.is_active)
+
+            realm = othello.realm
+            realm.refresh_from_db()
+            self.assertEqual(realm.can_manage_all_groups_id, owners_group.id)
 
     def test_update_custom_profile_field(self) -> None:
         with self.settings(
