@@ -295,6 +295,11 @@
     );
 }
 
+#integration-url-custom-fields .pill-container {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 #invitee_emails_container .pill-container.not-editable-by-user {
     height: var(--height-input-pill);
     background-color: var(--color-background-pill-container-input-disabled);
