@@ -5556,6 +5556,140 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertNotIn("new_subscription_messages_sent", data)
 
 
+class PrivateChannelSubscriptionNotificationTest(ZulipTestCase):
+    """Tests for channel events notices sent when subscribing/unsubscribing from private channels."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.hamlet = self.example_user("hamlet")
+        self.iago = self.example_user("iago")
+        self.realm = self.hamlet.realm
+        do_set_realm_property(self.realm, "send_channel_events_messages", True, acting_user=None)
+
+    def _make_private_stream(self, stream_name: str) -> Stream:
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(self.iago, stream_name)
+        return stream
+
+    def test_admin_subscribes_another_user_sends_notification(self) -> None:
+        """When an admin subscribes another user to a private channel, a notification is sent."""
+        stream = self._make_private_stream("private_stream")
+        self.login_user(self.iago)
+
+        result = self.subscribe_via_post(
+            self.iago,
+            ["private_stream"],
+            extra_post_data={"principals": orjson.dumps([self.hamlet.id]).decode()},
+        )
+        self.assert_json_success(result)
+
+        # Use get_topic_messages rather than get_last_message because
+        # subscribe_via_post also sends a "you were subscribed" DM to
+        # the newly subscribed user, which would otherwise be last.
+        messages = get_topic_messages(stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0].sender_id, self.notification_bot(self.realm).id)
+        expected_content = (
+            f"@_**Iago|{self.iago.id}** subscribed "
+            f"@_**King Hamlet|{self.hamlet.id}** to this channel."
+        )
+        self.assertEqual(messages[0].content, expected_content)
+
+    def test_self_subscribe_to_private_channel_sends_no_notification(self) -> None:
+        """When a user subscribes themselves, no notification is sent (they already know)."""
+        stream = self._make_private_stream("private_stream2")
+        # Grant hamlet permission to subscribe to this stream.
+        setting_group_members_dict = UserGroupMembersData(
+            direct_members=[self.hamlet.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_subscribe_group",
+            setting_group_members_dict,
+            acting_user=self.iago,
+        )
+
+        self.login_user(self.hamlet)
+        result = self.subscribe_via_post(self.hamlet, ["private_stream2"])
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+        self.assert_length(messages, 0)
+
+    def test_public_channel_subscription_sends_no_notification(self) -> None:
+        """Subscription notifications are only sent for private channels."""
+        stream = self.make_stream("public_stream")
+        self.login_user(self.iago)
+
+        result = self.subscribe_via_post(
+            self.iago,
+            ["public_stream"],
+            extra_post_data={"principals": orjson.dumps([self.hamlet.id]).decode()},
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+        self.assert_length(messages, 0)
+
+    def test_admin_unsubscribes_another_user_sends_notification(self) -> None:
+        """When an admin removes another user from a private channel, a notification is sent."""
+        stream = self._make_private_stream("private_stream3")
+        self.subscribe(self.hamlet, "private_stream3")
+        self.login_user(self.iago)
+
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps(["private_stream3"]).decode(),
+                "principals": orjson.dumps([self.hamlet.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0].sender_id, self.notification_bot(self.realm).id)
+        expected_content = (
+            f"@_**Iago|{self.iago.id}** unsubscribed "
+            f"@_**King Hamlet|{self.hamlet.id}** from this channel."
+        )
+        self.assertEqual(messages[0].content, expected_content)
+
+    def test_user_unsubscribes_self_sends_notification(self) -> None:
+        """When a user unsubscribes themselves from a private channel, a notification is sent."""
+        stream = self._make_private_stream("private_stream4")
+        self.subscribe(self.hamlet, "private_stream4")
+        self.login_user(self.hamlet)
+
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps(["private_stream4"]).decode()},
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0].sender_id, self.notification_bot(self.realm).id)
+        expected_content = f"@_**King Hamlet|{self.hamlet.id}** unsubscribed from this channel."
+        self.assertEqual(messages[0].content, expected_content)
+
+    def test_notification_not_sent_when_setting_disabled(self) -> None:
+        """No notification is sent when send_channel_events_messages is False."""
+        do_set_realm_property(self.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self._make_private_stream("private_stream5")
+        self.login_user(self.iago)
+
+        result = self.subscribe_via_post(
+            self.iago,
+            ["private_stream5"],
+            extra_post_data={"principals": orjson.dumps([self.hamlet.id]).decode()},
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+        self.assert_length(messages, 0)
+
+
 class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self) -> None:
         """
