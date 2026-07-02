@@ -14,6 +14,7 @@ from requests.models import PreparedRequest, Response
 from typing_extensions import override
 from urllib3.util import Retry
 
+from zerver.lib.event_types import BaseEvent
 from zerver.lib.partial import partial
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.models import Client, Realm, UserProfile
@@ -215,11 +216,30 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
 # with the schema verified in `zerver/lib/event_schema.py`.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
+#
+# The event argument accepts either a Pydantic BaseEvent or a legacy
+# dict, while we are migrating call sites. Once the migration is done,
+# this should narrow to BaseEvent so mypy enforces that every event
+# sent to clients has a complete, declared schema.
+def _event_to_dict(event: Mapping[str, Any] | BaseEvent) -> Mapping[str, Any]:
+    if isinstance(event, BaseEvent):
+        # exclude_unset preserves the legacy "absent vs explicit null" shape:
+        # a field passed by the caller appears in the dict (even if its value
+        # is None), while a field not passed (and falling back to the class
+        # default) is omitted. BaseEvent.model_post_init marks non-None
+        # defaults as "set" so discriminator fields like type/op still appear.
+        return event.model_dump(exclude_unset=True)
+    return event
+
+
 def send_event_rollback_unsafe(
-    realm: Realm, event: Mapping[str, Any], users: Iterable[int] | Iterable[Mapping[str, Any]]
+    realm: Realm,
+    event: Mapping[str, Any] | BaseEvent,
+    users: Iterable[int] | Iterable[Mapping[str, Any]],
 ) -> None:
     """`users` is a list of user IDs, or in some special cases like message
     send/update or embeds, dictionaries containing extra data."""
+    event = _event_to_dict(event)
     realm_ports = get_realm_tornado_ports(realm)
     if len(realm_ports) == 1:
         port_user_map = {realm_ports[0]: list(users)}
@@ -238,8 +258,11 @@ def send_event_rollback_unsafe(
 
 
 def send_event_on_commit(
-    realm: Realm, event: Mapping[str, Any], users: Iterable[int] | Iterable[Mapping[str, Any]]
+    realm: Realm,
+    event: Mapping[str, Any] | BaseEvent,
+    users: Iterable[int] | Iterable[Mapping[str, Any]],
 ) -> None:
+    event = _event_to_dict(event)
     if not settings.USING_RABBITMQ:
         # In tests, round-trip the event through JSON, as happens with
         # RabbitMQ.  zerver.lib.queue also enforces this, but the

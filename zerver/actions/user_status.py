@@ -1,6 +1,9 @@
+from typing import Any, Literal, cast
+
 from django.db import transaction
 
 from zerver.actions.user_settings import do_change_user_setting
+from zerver.lib.event_types import UserStatusEvent
 from zerver.lib.user_status import update_user_status
 from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import UserProfile
@@ -37,19 +40,20 @@ def do_update_user_status(
         reaction_type=reaction_type,
     )
 
-    event = dict(
-        type="user_status",
-        user_id=user_profile.id,
-    )
-
+    # Only fields the caller explicitly opted into go on the event, so
+    # that the serialized event omits keys that weren't requested.
+    event_kwargs: dict[str, Any] = {"user_id": user_profile.id}
     if away is not None:
-        event["away"] = away
-
+        event_kwargs["away"] = away
     if status_text is not None:
-        event["status_text"] = status_text
-
+        event_kwargs["status_text"] = status_text
     if emoji_name is not None:
-        event["emoji_name"] = emoji_name
-        event["emoji_code"] = emoji_code
-        event["reaction_type"] = reaction_type
+        event_kwargs["emoji_name"] = emoji_name
+        event_kwargs["emoji_code"] = emoji_code
+        # The Reaction.reaction_type column is restricted to these values via
+        # CharField choices, so the cast is safe.
+        event_kwargs["reaction_type"] = cast(
+            Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"] | None, reaction_type
+        )
+    event = UserStatusEvent(**event_kwargs)
     send_event_on_commit(realm, event, get_user_ids_who_can_access_user(user_profile))
