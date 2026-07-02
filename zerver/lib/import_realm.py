@@ -384,6 +384,22 @@ def fix_stream_permission_group_settings(
             )
 
 
+def fix_realm_name_change_permission_group_setting(data: ImportedTableData) -> None:
+    realm_data = data["zerver_realm"][0]
+    name_changes_disabled = realm_data.pop("name_changes_disabled", None)
+
+    if "can_change_own_name_group" in realm_data or name_changes_disabled is None:
+        return
+
+    group_name = SystemGroups.ADMINISTRATORS if name_changes_disabled else SystemGroups.EVERYONE
+    for group in data.get("zerver_namedusergroup", []):
+        if group["name"] == group_name and group["is_system_group"]:
+            realm_data["can_change_own_name_group"] = group["usergroup_ptr"]
+            return
+
+    raise AssertionError(f"Could not find system group {group_name} in import data.")
+
+
 def create_subscription_events(data: ImportedTableData, realm_id: int) -> None:
     """
     When the export data doesn't contain the table `zerver_realmauditlog`,
@@ -1479,6 +1495,7 @@ def do_import_realm(
     re_map_foreign_keys(
         data, "zerver_realm", "zulip_update_announcements_stream", related_table="stream"
     )
+    fix_realm_name_change_permission_group_setting(data)
     if "zerver_usergroup" in data:
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             re_map_foreign_keys(data, "zerver_realm", setting_name, related_table="usergroup")
