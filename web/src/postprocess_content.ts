@@ -1,13 +1,35 @@
 import assert from "minimalistic-assert";
 
+import render_message_reply from "../templates/message_reply.hbs";
+
+import * as emoji from "./emoji.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as message_store from "./message_store.ts";
+import {
+    type ReplySnippet,
+    classify_media_message,
+    classify_widget_message,
+    condense_reply_line_html,
+    drop_leading_quote_context,
+    drop_leading_reply_block,
+    html_has_visible_text,
+    render_reply_snippet,
+} from "./reply_snippet.ts";
+import * as stream_data from "./stream_data.ts";
 import * as thumbnail from "./thumbnail.ts";
+import * as topic_link_util from "./topic_link_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
 
-export function postprocess_content(html: string): string {
+export function postprocess_content(
+    html: string,
+    stream?: string,
+    topic?: string,
+    include_reply_action_buttons?: boolean,
+): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
@@ -399,7 +421,357 @@ export function postprocess_content(html: string): string {
         }
     }
 
+    // A reply prefixes its first paragraph with a mention and a link to the
+    // referenced message; a single-node message can't be one, so skip it.
+    // The message-edit-history diff wraps the whole message in one <div>;
+    // unwrap that so the reply line inside still renders as the reply card
+    // instead of a stray link. A normal single-<div> message (e.g. a spoiler
+    // or an inline image) doesn't match below, since its first child isn't a
+    // mention + link.
+    let reply_container: ParentNode = template.content;
+    if (
+        template.content.childNodes.length === 1 &&
+        template.content.firstElementChild?.tagName === "DIV"
+    ) {
+        reply_container = template.content.firstElementChild;
+    }
+    const first_element = reply_container.firstElementChild;
+    if (
+        reply_container.childNodes.length > 1 &&
+        first_element?.tagName === "P" &&
+        first_element.children.length >= 2
+    ) {
+        // The reply line is a user mention followed by a link to the referenced
+        // message. Normally the mention is a single `.user-mention`; in a
+        // message-edit-history diff that toggled the mention, it's split across
+        // `highlight_text_inserted` / `highlight_text_deleted` spans, so accept
+        // those before the link too (and keep them, so the toggle still shows).
+        const elements = [...first_element.children];
+        const second_child = elements.at(-1);
+        const mention_elements = elements.slice(0, -1);
+        const is_diff_highlight = (el: Element): boolean =>
+            el.classList.contains("highlight_text_inserted") ||
+            el.classList.contains("highlight_text_deleted");
+        const mention_part_is_reply =
+            mention_elements.length > 0 &&
+            mention_elements.every(
+                (el) => el.classList.contains("user-mention") || is_diff_highlight(el),
+            ) &&
+            mention_elements.some(
+                (el) =>
+                    el.classList.contains("user-mention") ||
+                    el.querySelector(".user-mention") !== null,
+            );
+
+        // Reject anything with other (non-whitespace) text between the mention
+        // and the link.
+        let extra_nodes_exist = false;
+        for (const node of first_element.childNodes) {
+            if (node.nodeType === Node.TEXT_NODE && (node.textContent?.trim() ?? "") !== "") {
+                extra_nodes_exist = true;
+                break;
+            }
+        }
+        if (!extra_nodes_exist && mention_part_is_reply && second_child?.tagName === "A") {
+            // A lone `.user-mention` is the normal case; otherwise the mention
+            // was diffed (toggled), and we reuse the diff spans' HTML directly.
+            const is_mention_diff = !(
+                mention_elements.length === 1 &&
+                mention_elements[0]!.classList.contains("user-mention")
+            );
+            const mention_el = is_mention_diff ? undefined : mention_elements[0]!;
+            const topic_url_info = {
+                show_topic_url: false,
+                topic_url: "",
+                topic_url_text: "",
+            };
+            const referenced_message_url = second_child.getAttribute("href");
+            assert(referenced_message_url !== null);
+            const referenced_message_stream_topic =
+                hash_util.decode_stream_topic_from_url(referenced_message_url);
+            let is_message_url_valid = false;
+            let referenced_message: ReturnType<typeof message_store.get>;
+            if (
+                referenced_message_stream_topic?.topic_name !== undefined &&
+                referenced_message_stream_topic.message_id !== undefined
+            ) {
+                // Prefer the referenced message's current location from the
+                // store, so a moved message links to where it now lives; fall
+                // back to the channel/topic in the (possibly stale) URL when
+                // it hasn't been fetched locally.
+                let referenced_message_stream_id = referenced_message_stream_topic.stream_id;
+                let referenced_message_topic = referenced_message_stream_topic.topic_name;
+                let referenced_message_id: string | undefined =
+                    referenced_message_stream_topic.message_id;
+
+                referenced_message = message_store.get(Number.parseInt(referenced_message_id, 10));
+                if (referenced_message?.is_stream) {
+                    referenced_message_stream_id = referenced_message.stream_id;
+                    referenced_message_topic = referenced_message.topic;
+                    referenced_message_id = undefined;
+                }
+
+                const {label_text_markdown, url} =
+                    topic_link_util.get_topic_link_content_with_stream_id({
+                        stream_id: referenced_message_stream_id,
+                        topic_name: referenced_message_topic,
+                        message_id: referenced_message_id,
+                    });
+                topic_url_info.topic_url = url;
+                topic_url_info.topic_url_text = label_text_markdown;
+                if (
+                    stream !== stream_data.get_stream_name_from_id(referenced_message_stream_id) ||
+                    topic !== referenced_message_topic
+                ) {
+                    topic_url_info.show_topic_url = true;
+                }
+                is_message_url_valid = true;
+            } else if (
+                hash_util.decode_dm_recipient_user_ids_from_narrow_url(referenced_message_url) !==
+                null
+            ) {
+                is_message_url_valid = true;
+                // Recover the message ID from the URL so a media-only DM still
+                // gets its thumbnail; DM URLs don't decode to a channel/topic.
+                const dm_message_id = decode_near_message_id(referenced_message_url);
+                if (dm_message_id !== undefined) {
+                    referenced_message = message_store.get(dm_message_id);
+                }
+            }
+
+            if (is_message_url_valid) {
+                // Strip a leading `@` from the user-mention's rendered text:
+                // server-side markdown drops it for silent mentions and keeps
+                // it for non-silent, but we display it consistently from
+                // data-full-name (so the toggle button doesn't shift the
+                // line on click). For a diffed mention we instead reuse the
+                // diff spans' HTML verbatim so the change stays highlighted.
+                const mention_text = mention_el?.textContent?.replace(/^@/, "") ?? "";
+                const mention_html = is_mention_diff
+                    ? mention_elements.map((el) => el.outerHTML).join(" ")
+                    : undefined;
+
+                let content_html: string;
+                let thumbnail_html = "";
+                // A reply to a media-only / widget-only message shows a type
+                // badge and thumbnail classified from the referenced message
+                // itself, so the badge is locale-correct rather than parsed
+                // from the sender's stored snippet text.
+                const media_snippet = get_referenced_media_snippet(referenced_message);
+                const text_snippet_html = get_referenced_text_snippet_html(referenced_message);
+                if (media_snippet !== undefined) {
+                    ({content_html, thumbnail_html} = render_reply_snippet(media_snippet));
+                } else if (text_snippet_html !== undefined) {
+                    // Re-derive the snippet from the referenced message itself so
+                    // mentions, emphasis, and emoji render richly — matching the
+                    // compose preview. The sender's stored snippet (the link
+                    // label) is flattened to plain text because the server wraps
+                    // link labels in AtomicString; the referenced message's own
+                    // content is not. The content is already markdown-rendered
+                    // (and sanitized), so it's safe to inline.
+                    content_html = text_snippet_html;
+                } else {
+                    // Fallback when the referenced message isn't available
+                    // locally: keep the sender's stored snippet, substituting
+                    // realm emoji shortcodes that the AtomicString link label
+                    // blocked. The anchor's innerHTML has already been through
+                    // markdown, so it's safe to inline.
+                    substitute_realm_emoji_shortcodes(second_child);
+                    content_html = second_child.innerHTML;
+                }
+                first_element.innerHTML = render_message_reply({
+                    include_reply_action_buttons,
+                    silent_mention: mention_el?.classList.contains("silent") ?? false,
+                    full_name: mention_text,
+                    user_id: mention_el?.getAttribute("data-user-id") ?? null,
+                    mention_html,
+                    link_to_message: referenced_message_url,
+                    thumbnail_html,
+                    content_html,
+                    ...topic_url_info,
+                });
+            }
+        }
+    }
+
+    delink_nested_reply_lines(template.content);
+
     return template.innerHTML;
+}
+
+function delink_nested_reply_lines(content: DocumentFragment): void {
+    // A reply message's content starts with a `@user [snippet](near)` pointer
+    // line. When such a message is quoted inside a blockquote — in practice a
+    // server-generated scheduled reminder, since forwards and manual quotes are
+    // already de-linked when composed — that pointer renders as a stray blue
+    // link. Replace the link with its text so the snippet reads as plain text,
+    // the way a quoted reply looks everywhere else.
+    for (const blockquote of content.querySelectorAll("blockquote")) {
+        const first_paragraph = blockquote.querySelector(":scope > p");
+        if (first_paragraph?.children.length !== 2) {
+            continue;
+        }
+        const [mention, link] = first_paragraph.children;
+        if (
+            mention?.classList.contains("user-mention") === true &&
+            link?.tagName === "A" &&
+            (link.getAttribute("href") ?? "").includes("/near/")
+        ) {
+            link.replaceWith(link.ownerDocument.createTextNode(link.textContent ?? ""));
+        }
+    }
+}
+
+function substitute_realm_emoji_shortcodes(parent: Element): void {
+    const text_nodes: Text[] = [];
+    collect_text_descendants(parent, text_nodes);
+    for (const text_node of text_nodes) {
+        const text = text_node.textContent;
+        if (!text?.includes(":")) {
+            continue;
+        }
+        const fragments: Node[] = [];
+        let last_index = 0;
+        let matched = false;
+        for (const match of text.matchAll(/:([\w+-]+):/g)) {
+            const name = match[1]!;
+            const url = emoji.get_realm_emoji_url(name);
+            if (url === undefined) {
+                continue;
+            }
+            matched = true;
+            const match_index = match.index;
+            if (match_index > last_index) {
+                fragments.push(
+                    text_node.ownerDocument.createTextNode(text.slice(last_index, match_index)),
+                );
+            }
+            const img = text_node.ownerDocument.createElement("img");
+            img.setAttribute("class", "emoji");
+            img.setAttribute("alt", match[0]);
+            img.setAttribute("src", url);
+            img.setAttribute("title", name.replaceAll("_", " "));
+            fragments.push(img);
+            last_index = match_index + match[0].length;
+        }
+        if (!matched) {
+            continue;
+        }
+        if (last_index < text.length) {
+            fragments.push(text_node.ownerDocument.createTextNode(text.slice(last_index)));
+        }
+        text_node.replaceWith(...fragments);
+    }
+}
+
+function collect_text_descendants(node: Node, out: Text[]): void {
+    for (const child of node.childNodes) {
+        if (child instanceof Text) {
+            out.push(child);
+        } else if (child instanceof Element) {
+            collect_text_descendants(child, out);
+        }
+    }
+}
+
+function decode_near_message_id(narrow_url: string): number | undefined {
+    // Pulls the message ID out of a `/near/<id>` segment in a narrow URL,
+    // independent of whether it's a stream or DM narrow.
+    try {
+        const url = new URL(narrow_url, window.location.origin);
+        const near_match = /\/near\/(\d+)(?:\/|$)/.exec(url.hash);
+        if (near_match === null) {
+            return undefined;
+        }
+        const message_id = Number.parseInt(near_match[1]!, 10);
+        return Number.isNaN(message_id) ? undefined : message_id;
+    } catch /* istanbul ignore next -- new URL can't throw with a fixed valid base */ {
+        return undefined;
+    }
+}
+
+function get_referenced_media_snippet(
+    referenced_message: ReturnType<typeof message_store.get>,
+): ReplySnippet | undefined {
+    // Classify a media-only / widget-only referenced message into a reply
+    // snippet. Returns undefined — so callers keep the sender's stored snippet
+    // text — when the message isn't locally available or has inline text the
+    // sender would have quoted instead.
+    if (referenced_message === undefined) {
+        return undefined;
+    }
+    // Poll/todo messages are classified from their submessages, not their
+    // rendered text, so handle them first — their rendered content is the
+    // "/poll …" command text, which would otherwise count as inline text.
+    const widget = classify_widget_message(referenced_message);
+    if (widget !== undefined) {
+        return widget;
+    }
+    const inert = new DOMParser().parseFromString(referenced_message.content, "text/html");
+    if (referenced_message_has_inline_text(inert.body)) {
+        return undefined;
+    }
+    return classify_media_message(inert.body);
+}
+
+function get_referenced_text_snippet_html(
+    referenced_message: ReturnType<typeof message_store.get>,
+): string | undefined {
+    // Re-derive a one-line text snippet from the referenced message's own
+    // content, so mentions/emphasis/emoji render richly (matching compose)
+    // rather than the sender's flattened link-label text. Returns undefined
+    // when the message isn't available locally, so the caller falls back to the
+    // stored snippet.
+    if (referenced_message === undefined) {
+        return undefined;
+    }
+    const inert = new DOMParser().parseFromString(referenced_message.content, "text/html");
+    drop_leading_quote_context(inert.body);
+    drop_leading_reply_block(inert.body);
+    const condensed = condense_reply_line_html(inert.body);
+    return html_has_visible_text(condensed) ? condensed : undefined;
+}
+
+function referenced_message_has_inline_text(root: HTMLElement): boolean {
+    // True if a top-level block holds text the sender would have quoted as the
+    // snippet rather than falling back to a media badge.
+    //
+    // An upload written as a `[filename](url)` link renders its filename as
+    // anchor text (`<p><a href="/user_uploads/…">filename</a></p>`); strip
+    // those so the filename isn't mistaken for real message text. (Modern
+    // `![…]` uploads render as a bare `<img>` with no text and aren't
+    // affected.)
+    const clone = root.cloneNode(true);
+    assert(clone instanceof HTMLElement);
+    for (const caption_link of clone.querySelectorAll('a[href*="/user_uploads/"]')) {
+        caption_link.remove();
+    }
+    // Display math renders as `<p><span class="katex-display">…</span></p>`;
+    // its MathML carries text, but it's media we classify into a Math badge,
+    // not quotable text. Drop it so the badge path runs, matching how compose
+    // builds the snippet (other media — code, spoilers, embeds, images —
+    // render as their own block elements and so aren't caught here).
+    for (const display_math of clone.querySelectorAll(".katex-display")) {
+        display_math.remove();
+    }
+    const text_block = clone.querySelector(
+        ":scope > p, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > blockquote, :scope > ul, :scope > ol",
+    );
+    if (text_block === null) {
+        return false;
+    }
+    // A block holding only a single link (a bare URL or a titled link preview,
+    // whose preview renders as a separate block) has no quotable text; treat
+    // it as media so its thumbnail isn't suppressed.
+    if (text_block.querySelectorAll("a").length === 1) {
+        const block_clone = text_block.cloneNode(true);
+        assert(block_clone instanceof Element);
+        block_clone.querySelector("a")?.remove();
+        if ((block_clone.textContent ?? "").trim() === "") {
+            return false;
+        }
+    }
+    return (text_block.textContent ?? "").trim() !== "";
 }
 
 // If an image is run inline with text--that is, there are non-whitespace

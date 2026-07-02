@@ -2,6 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
+import render_message_reply from "../templates/message_reply.hbs";
+
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_paste from "./compose_paste.ts";
 import * as compose_recipient from "./compose_recipient.ts";
@@ -13,6 +15,7 @@ import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
+import {localstorage} from "./localstorage.ts";
 import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -21,11 +24,15 @@ import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as reply_snippet from "./reply_snippet.ts";
 import * as rows from "./rows.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as unread_ops from "./unread_ops.ts";
+
+export const ls_mention_key = "silent-mention";
 
 type QuoteMessageOpts = {
     message_id?: number;
@@ -35,6 +42,9 @@ type QuoteMessageOpts = {
     trigger?: string;
     forward_message?: boolean;
     highlighted_message_ids?: number[];
+    reply_to_message?: boolean;
+    // Overrides the saved preference: `r` forces silent, `@` forces non-silent.
+    force_silent_mention?: boolean;
 };
 
 type ReplaceContentOpts = {
@@ -52,6 +62,7 @@ export let respond_to_message = (opts: {
     message_id?: number;
     reply_type?: "personal";
     trigger?: string;
+    reply_to_message?: boolean;
 }): void => {
     let message;
     let msg_type: "private" | "stream";
@@ -317,7 +328,9 @@ function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMe
         });
     }
 
-    compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+    if (!opts.reply_to_message) {
+        compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+    }
 }
 
 // Default to channel message when we can't determine
@@ -501,9 +514,164 @@ function generate_replace_content(info: ReplaceContentOpts): string {
             break;
     }
 
-    const fence = fenced_code.get_unused_fence(raw_markdown);
-    content += `${fence}quote\n${raw_markdown}\n${fence}`;
+    // A reply message's raw markdown starts with a `@**user** [snippet](near-url)`
+    // line; inside the quote its snippet would render as a stray blue link, so
+    // de-link it to plain text while keeping the body intact.
+    const quoted_markdown = compose_state.delink_leading_reply_snippet(raw_markdown);
+    const fence = fenced_code.get_unused_fence(quoted_markdown);
+    content += `${fence}quote\n${quoted_markdown}\n${fence}`;
     return content;
+}
+
+function get_initial_silent_mention_preference(opts: QuoteMessageOpts): boolean {
+    if (opts.force_silent_mention !== undefined) {
+        return opts.force_silent_mention;
+    }
+    const ls = localstorage();
+    const stored_preference = ls.get(ls_mention_key);
+    if (typeof stored_preference === "boolean") {
+        return stored_preference;
+    }
+    return false;
+}
+
+export function toggle_silent_mention($toggle_button: JQuery): void {
+    const $reply = $toggle_button.closest(".reply");
+    const $user_mention = $reply.children(".user-mention");
+    const $mention_icon = $toggle_button.find(".zulip-icon");
+    const is_silent = !$user_mention.hasClass("silent");
+
+    // Carry silent state in a class, never the displayed text, so the reply
+    // line doesn't shift when the toggle is clicked.
+    $user_mention.toggleClass("silent", is_silent);
+
+    const ls = localstorage();
+    ls.set(ls_mention_key, is_silent);
+
+    // Icon shows the next action: plain `@` while silent (click notifies),
+    // crossed `@` while non-silent (click silences).
+    $mention_icon.toggleClass("zulip-icon-at-sign", is_silent);
+    $mention_icon.toggleClass("zulip-icon-at-sign-crossed", !is_silent);
+}
+
+function extract_reply_line_content_html(message: Message): {
+    content_html: string;
+    thumbnail_html: string;
+} {
+    // Derive the snippet from the referenced message's own rendered content
+    // (`message.content`), not from its live DOM row. The stored content still
+    // carries emoji/code/emphasis, but — unlike the rendered row — it has none
+    // of the post-render decorations (muted-sender hide/reveal chrome, the
+    // channel-name pill and "go to message" icon that `rendered_markdown`
+    // injects) that would otherwise leak into the snippet and make the compose
+    // preview diverge from the sent message, which renders from `message.content`
+    // the same way.
+    const inert = new DOMParser().parseFromString(message.content, "text/html");
+    const root = inert.body;
+    // Reduce a quoted/forwarded source to its comment (or quoted content), and
+    // drop a leading reply pointer if the source is itself a reply, so the
+    // snippet previews the real content rather than an "X said:" / pointer line.
+    reply_snippet.drop_leading_quote_context(root);
+    reply_snippet.drop_leading_reply_block(root);
+    // Classify poll/todo from submessages first — their rendered text is just
+    // the "/poll …" command.
+    const widget = reply_snippet.classify_widget_message(message);
+    if (widget !== undefined) {
+        return reply_snippet.render_reply_snippet(widget);
+    }
+    const condensed = reply_snippet.condense_reply_line_html(root);
+    // Prefer the message's own inline text; a lone link/preview reads better
+    // as a labeled thumbnail (see first_block_is_single_link).
+    if (reply_snippet.html_has_visible_text(condensed) && !first_block_is_single_link(root)) {
+        return {content_html: condensed, thumbnail_html: ""};
+    }
+    // Media-only / link preview: a type badge derived from the message itself
+    // (same in the feed, independent of the viewer's locale).
+    const snippet = reply_snippet.classify_media_message(root);
+    if (snippet !== undefined) {
+        return reply_snippet.render_reply_snippet(snippet);
+    }
+    // Unrecognized (e.g. a bare link with no preview): show the text or a placeholder.
+    if (reply_snippet.html_has_visible_text(condensed)) {
+        return {content_html: condensed, thumbnail_html: ""};
+    }
+    return {
+        content_html: reply_snippet.escape_html_text($t({defaultMessage: "Message"})),
+        thumbnail_html: "",
+    };
+}
+
+function first_block_is_single_link(root: HTMLElement): boolean {
+    // True when the first block is a single anchor with no other text (a bare
+    // URL or link preview); text alongside a link returns false and is used.
+    const source = root.querySelector(reply_snippet.FIRST_BLOCK_SELECTOR) ?? root;
+    if (source.querySelectorAll("a").length !== 1) {
+        return false;
+    }
+    const clone = source.cloneNode(true);
+    if (!(clone instanceof Element)) {
+        return false;
+    }
+    clone.querySelector("a")?.remove();
+    return (clone.textContent ?? "").trim() === "";
+}
+
+function insert_reply_in_composebox(message: Message, opts: QuoteMessageOpts): void {
+    const {content_html, thumbnail_html} = extract_reply_line_content_html(message);
+    const is_mention_silent = get_initial_silent_mention_preference(opts);
+
+    const topic_url_info = {
+        show_topic_url: false,
+        topic_url: "",
+        topic_url_text: "",
+    };
+
+    const $textarea = get_textarea_to_quote(opts.forward_message);
+    const $message_container = $textarea.closest(
+        "#message-content-container, .edit-content-container",
+    );
+
+    // Show the topic link only when the referenced message is in a different
+    // conversation than the one being composed to.
+    if (!$message_container.hasClass("edit-content-container") && message.is_stream) {
+        const {label_text_markdown, url} = topic_link_util.get_topic_link_content_with_stream_id({
+            stream_id: message.stream_id,
+            topic_name: message.topic,
+            message_id: undefined,
+        });
+        topic_url_info.topic_url = url;
+        topic_url_info.topic_url_text = label_text_markdown;
+
+        // Compare by stream id, not name: a moved message keeps a stale
+        // `message.stream` name, which would wrongly flag a same-channel reply
+        // as cross-channel and show the link in compose even though the sent
+        // message (rendered from the current stream id) hides it.
+        if (
+            message.stream_id !== compose_state.stream_id() ||
+            message.topic !== compose_state.topic()
+        ) {
+            topic_url_info.show_topic_url = true;
+        }
+    }
+
+    const $reply_container = $message_container.find(".reply-container");
+    $reply_container.find(".reply").remove();
+    $reply_container.html(
+        render_message_reply({
+            include_reply_action_buttons: true,
+            silent_mention: is_mention_silent,
+            user_id: message.sender_id,
+            full_name: message.sender_full_name,
+            link_to_message: hash_util.by_conversation_and_time_url(message),
+            thumbnail_html,
+            content_html,
+            ...topic_url_info,
+        }),
+    );
+    rendered_markdown.wrap_mention_content_in_dom_element(
+        $reply_container.find(".user-mention")[0]!,
+        people.sender_is_bot(message),
+    );
 }
 
 function replace_quoting_placeholder_with(info: {
@@ -545,12 +713,30 @@ export function quote_messages(opts: QuoteMessageOpts): void {
 }
 
 function quote_single_message(opts: QuoteMessageOpts): void {
+    // The `r` hotkey fires even with no message to reply to — an empty narrow, a
+    // conversation with no messages yet, recent view, or inbox. There's nothing
+    // to quote there, so just open the compose box (respond_to_message handles
+    // all those views) instead of asserting a target message exists.
+    if (
+        opts.reply_to_message &&
+        opts.message_id === undefined &&
+        opts.highlighted_message_ids === undefined &&
+        message_lists.current?.selected_message() === undefined
+    ) {
+        respond_to_message(opts);
+        return;
+    }
     const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
 
     if (opts.forward_message) {
         setup_compose_to_forward_single_message(message, opts);
     } else {
         setup_compose_to_quote_single_message(message_id, opts);
+    }
+
+    if (message && opts.reply_to_message) {
+        insert_reply_in_composebox(message, opts);
+        return;
     }
 
     if (message && quote_content) {

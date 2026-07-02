@@ -137,12 +137,16 @@ run_test("maybe_transform_html", () => {
 });
 
 run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
-    global.document = window.document;
-    global.window = window;
-    global.Node = window.Node;
-    global.HTMLElement = window.HTMLElement;
-    global.HTMLAnchorElement = window.HTMLAnchorElement;
-    global.HTMLTextAreaElement = window.HTMLTextAreaElement;
+    // Route these through set_global (not raw `global.X =`) so the namespace
+    // harness restores them after this module. This JSDOM `window` is a
+    // different realm than the shared test globals, and a leaked HTMLElement
+    // breaks `instanceof` checks in modules that run later in serial mode.
+    set_global("document", window.document);
+    set_global("window", window);
+    set_global("Node", window.Node);
+    set_global("HTMLElement", window.HTMLElement);
+    set_global("HTMLAnchorElement", window.HTMLAnchorElement);
+    set_global("HTMLTextAreaElement", window.HTMLTextAreaElement);
 
     linkifiers.update_linkifier_rules([
         {
@@ -272,11 +276,11 @@ run_test("paste_handler_converter", () => {
     /*
         Pasting from another Zulip message
     */
-    global.document = window.document;
-    global.window = window;
-    global.Node = window.Node;
-    global.HTMLElement = window.HTMLElement;
-    global.HTMLAnchorElement = window.HTMLAnchorElement;
+    set_global("document", window.document);
+    set_global("window", window);
+    set_global("Node", window.Node);
+    set_global("HTMLElement", window.HTMLElement);
+    set_global("HTMLAnchorElement", window.HTMLAnchorElement);
     // Bold text
     let input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;"><span> </span>love the<span> </span><b>Zulip</b><b> </b></span><b style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">Organization</b><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">.</span>';

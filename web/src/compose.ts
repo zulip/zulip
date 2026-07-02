@@ -85,8 +85,14 @@ export function show_preview_area(): void {
 
 export function render_preview_area(): void {
     const $compose_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-    const content = compose_state.message_content();
     const $preview_message_area = $("#compose .preview_message_area");
+    // The reply line is context for the message you're writing, not a message
+    // on its own, and an empty body can't be sent. So preview the body with its
+    // reply line only once there's something to send; otherwise show the empty
+    // preview, matching what sending would do.
+    const content = compose_state.has_message_content()
+        ? compose_state.get_message_with_raw_reply_content($compose_textarea)
+        : compose_state.message_content();
     compose_ui.render_and_show_preview(
         $("#compose"),
         $("#compose .markdown_preview_spinner"),
@@ -109,6 +115,7 @@ export function clear_compose_box(): void {
     }
     clear_preview_area();
     $("textarea#compose-textarea").val("").trigger("focus");
+    $("#compose-reply-container").find(".reply").remove();
     compose_ui.compose_textarea_typeahead?.hide();
     compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
@@ -190,7 +197,9 @@ export let send_message = (): void => {
         const recipient_ids = compose_state.private_message_recipient_ids();
         message_data = {
             type: message_type,
-            content: compose_state.message_content(),
+            content: compose_state.get_message_with_raw_reply_content(
+                $("textarea#compose-textarea"),
+            ),
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: "",
@@ -207,7 +216,9 @@ export let send_message = (): void => {
         const topic = compose_state.topic();
         message_data = {
             type: message_type,
-            content: compose_state.message_content(),
+            content: compose_state.get_message_with_raw_reply_content(
+                $("textarea#compose-textarea"),
+            ),
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: util.is_topic_name_considered_empty(topic) ? "" : topic,
@@ -416,7 +427,7 @@ function schedule_message_to_custom_date(): void {
         type: req_type,
         to: JSON.stringify(message_to),
         topic: message_type === "stream" ? compose_state.topic() : "",
-        content: compose_state.message_content(),
+        content: compose_state.get_message_with_raw_reply_content($("textarea#compose-textarea")),
         scheduled_delivery_timestamp,
     };
 
