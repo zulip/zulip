@@ -713,7 +713,6 @@
     .failed_message_action {
         color: var(--color-failed-message-send-icon);
         font-weight: bold;
-        padding: 1px;
         opacity: 1;
         visibility: visible;
 
