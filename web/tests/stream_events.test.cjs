@@ -300,8 +300,15 @@ test("update_property", ({override, override_rewire}) => {
     {
         const stub = make_stub();
         override(stream_settings_ui, "update_stream_permission_group_setting", stub.f);
+        const update_subscription_elements_stub = make_stub();
+        override(
+            stream_settings_ui,
+            "update_subscription_elements",
+            update_subscription_elements_stub.f,
+        );
         stream_events.update_property(stream_id, "can_remove_subscribers_group", 3);
         assert.equal(stub.num_calls, 1);
+        assert.equal(update_subscription_elements_stub.num_calls, 1);
         const args = stub.get_args("setting_name", "sub", "val");
         assert.equal(args.setting_name, "can_remove_subscribers_group");
         assert.equal(args.sub.stream_id, stream_id);
@@ -312,6 +319,12 @@ test("update_property", ({override, override_rewire}) => {
     {
         const stub = make_stub();
         override(stream_settings_ui, "update_stream_permission_group_setting", stub.f);
+        const update_subscription_elements_stub = make_stub();
+        override(
+            stream_settings_ui,
+            "update_subscription_elements",
+            update_subscription_elements_stub.f,
+        );
         override(stream_settings_data, "get_sub_for_settings", () => ({
             can_add_subscribers: false,
             ...sub,
@@ -376,6 +389,27 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal(args.setting_name, "can_subscribe_group");
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 3);
+        args = update_subscription_elements_stub.get_args("sub");
+        assert.equal(args.sub, sub);
+    }
+
+    // Test stream can_unsubscribe_group change event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_stream_permission_group_setting", stub.f);
+        const update_subscription_elements_stub = make_stub();
+        override(
+            stream_settings_ui,
+            "update_subscription_elements",
+            update_subscription_elements_stub.f,
+        );
+        stream_events.update_property(stream_id, "can_unsubscribe_group", 2);
+        assert.equal(stub.num_calls, 1);
+        assert.equal(update_subscription_elements_stub.num_calls, 1);
+        let args = stub.get_args("setting_name", "sub", "val");
+        assert.equal(args.setting_name, "can_unsubscribe_group");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, 2);
         args = update_subscription_elements_stub.get_args("sub");
         assert.equal(args.sub, sub);
     }
