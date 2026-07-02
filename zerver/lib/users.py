@@ -592,6 +592,7 @@ class APIUserDict(TypedDict):
     is_active: bool
     date_joined: str
     avatar_url: NotRequired[str | None]
+    avatar_source: NotRequired[str]
     delivery_email: str | None
     bot_type: NotRequired[int | None]
     bot_owner_id: NotRequired[int | None]
@@ -608,6 +609,7 @@ def format_user_row(
     row: RawUserDict,
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
+    include_avatar_source: bool = False,
     custom_profile_field_data: dict[str, Any] | None = None,
 ) -> APIUserDict:
     """Formats a user row returned by a database fetch using
@@ -684,6 +686,8 @@ def format_user_row(
             medium=False,
             client_gravatar=client_gravatar,
         )
+        if include_avatar_source:
+            result["avatar_source"] = row["avatar_source"]
 
     if is_bot:
         result["bot_type"] = row["bot_type"]
@@ -1089,6 +1093,7 @@ def get_users_for_api(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
+    include_avatar_source: bool = False,
     user_list_incomplete: bool = True,
     user_ids: list[int] | None = None,
 ) -> dict[int, APIUserDict]:
@@ -1133,6 +1138,7 @@ def get_users_for_api(
             row=row,
             client_gravatar=client_gravatar_for_user,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
+            include_avatar_source=include_avatar_source,
             custom_profile_field_data=custom_profile_field_data,
         )
 
