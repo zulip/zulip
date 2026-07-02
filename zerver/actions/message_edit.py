@@ -631,6 +631,42 @@ def update_user_topic_visibility_policies_on_move(
     target_topic_has_messages: bool,
     users_losing_access: Iterable[UserProfile],
 ) -> dict[UserProfile, int]:
+    if not is_stream_edited and orig_topic_name.lower() == target_topic_name.lower():
+        # A case-only topic rename within the same stream is not a real
+        # move: topic matching is case-insensitive, so the existing
+        # UserTopic rows already apply to the renamed topic. The general
+        # logic below would resolve both topics to that one row, delete
+        # it, then skip recreating it (seeing the target as already set)
+        # and clear the policy. Recreate each row under the new casing.
+        preserved_visibility_policy = {
+            row.user_profile: row.visibility_policy
+            for row in get_users_with_user_topic_visibility_policy(
+                stream_being_edited.id, orig_topic_name
+            )
+        }
+
+        # bulk_do_set_user_topic_visibility_policy is a no-op when the
+        # policy is unchanged, so the casing can't be rewritten in place.
+        bulk_do_set_user_topic_visibility_policy(
+            list(preserved_visibility_policy.keys()),
+            stream_being_edited,
+            orig_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+            # The per-policy calls below send the muted_topics events.
+            skip_muted_topics_event=True,
+        )
+        user_profiles_for_visibility_policy: dict[int, list[UserProfile]] = defaultdict(list)
+        for user_profile, visibility_policy in preserved_visibility_policy.items():
+            user_profiles_for_visibility_policy[visibility_policy].append(user_profile)
+        for visibility_policy, user_profiles in user_profiles_for_visibility_policy.items():
+            bulk_do_set_user_topic_visibility_policy(
+                user_profiles,
+                stream_being_edited,
+                target_topic_name,
+                visibility_policy=visibility_policy,
+            )
+        return preserved_visibility_policy
+
     stream_inaccessible_to_user_profiles: list[UserProfile] = []
     orig_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
     target_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
