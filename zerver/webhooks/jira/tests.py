@@ -3,6 +3,7 @@ from unittest.mock import patch
 from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models.realms import get_realm
+from zerver.webhooks.jira.view import convert_jira_markup
 
 
 class JiraHookTests(WebhookTestCase):
@@ -164,3 +165,11 @@ Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https:/
         expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
         expected_message = f"""@_**{hamlet.full_name}|{hamlet.id}** commented on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~!\n**Niloth**\n@_**{hamlet.full_name}|{hamlet.id}**\n```"""
         self.check_webhook("comment_created", expected_topic_name, expected_message)
+
+    def test_convert_jira_markup_preserves_code_block_content(self) -> None:
+        content = "Here is some sample text.\n{code}\n*not bold*\n{{literal}}\n{code}\nAnd bold *yes*."
+        result = convert_jira_markup(content, self.test_user.realm)
+        self.assertEqual(
+            result,
+            "Here is some sample text.\n~~~\n*not bold*\n{{literal}}\n~~~\nAnd bold **yes**."
+        )
