@@ -1051,6 +1051,40 @@ class StripeTest(StripeTestCase):
             # No additional ledger entries are created.
             self.assertEqual(before_ledger_count, after_ledger_count)
 
+    @mock_stripe()
+    def test_free_trial_upgrade_by_invoice_voided(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60), time_machine.travel(self.now, tick=False):
+            self.upgrade(invoice=True)
+
+        customer = Customer.objects.get(realm=user.realm)
+        stripe_customer_id = assert_is_not_none(customer.stripe_customer_id)
+        [stripe_invoice] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        assert stripe_invoice.id is not None
+        self.assertEqual(stripe_invoice.status, "open")
+
+        invoice = Invoice.objects.get(customer=customer, stripe_invoice_id=stripe_invoice.id)
+        self.assertEqual(invoice.status, Invoice.SENT)
+        # A SENT invoice has no associated event yet.
+        self.assertIsNone(invoice.get_last_associated_event())
+
+        # Support voids the unpaid invoice in Stripe, which delivers an
+        # invoice.voided webhook event.
+        cursor = self.pin_event_cursor()
+        stripe.Invoice.void_invoice(stripe_invoice.id)
+        self.send_stripe_webhook_events(cursor, "invoice.voided")
+
+        # Our local Invoice is marked void, so it no longer blocks the
+        # customer's upgrade process.
+        invoice.refresh_from_db()
+        self.assertEqual(invoice.status, Invoice.VOID)
+        event = invoice.get_last_associated_event()
+        assert event is not None
+        self.assertEqual(event.type, "invoice.voided")
+        self.assertEqual(event.status, Event.EVENT_HANDLER_SUCCEEDED)
+
     def test_make_end_of_cycle_updates_errors_without_free_trial_invoice(self) -> None:
         realm = get_realm("zulip")
         customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_123")
