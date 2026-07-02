@@ -1574,6 +1574,36 @@ class Fence:
     is_code: bool
 
 
+# Zulip's list block processors (OListProcessor, UListProcessor, and
+# ListIndentProcessor below) temporarily set `tab_length = 2` so a single
+# level of list nesting only needs 2-space indentation instead of
+# Markdown's usual 4. Keep this constant in sync with that value.
+ZULIP_LIST_TAB_LENGTH = 2
+
+# Matches a bullet or numbered list item: marker, whitespace, then content.
+LIST_ITEM_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
+
+
+def scan_fence_state(line: str, open_fences: list[Fence]) -> bool:
+    """Update `open_fences` in place based on `line`, and return whether
+    we are currently inside a non-quote fenced code block. Shared by
+    preprocessors that need to skip fenced code while scanning lines."""
+    m = FENCE_RE.match(line)
+    if m:
+        fence_str = m.group("fence")
+        lang: str | None = m.group("lang")
+        is_code = lang not in ("quote", "quoted")
+        matches_last_fence = fence_str == open_fences[-1].fence_str if open_fences else False
+        closes_last_fence = not lang and matches_last_fence
+
+        if closes_last_fence:
+            open_fences.pop()
+        else:
+            open_fences.append(Fence(fence_str, is_code))
+
+    return any(fence.is_code for fence in open_fences)
+
+
 class TabIndentedListPreprocessor(markdown.preprocessors.Preprocessor):
     """Convert leading tabs to 2-space indentation for nested lists.
 
@@ -1582,9 +1612,11 @@ class TabIndentedListPreprocessor(markdown.preprocessors.Preprocessor):
     causing tab-indented nested lists to fail to nest correctly.
 
     This preprocessor runs before NormalizeWhitespace and converts
-    each leading tab to 2 spaces, so one tab equals one level of
-    list nesting, matching Zulip's 2-space convention. Lines inside
-    fenced code blocks are left untouched.
+    leading tabs to 2-space indentation -- but only on lines that are
+    themselves list items once converted. This avoids breaking Zulip's
+    indented code blocks, where a leading tab means "this is code," not
+    "this is a nested list item." Lines inside fenced code blocks are
+    also left untouched.
     """
 
     LEADING_TABS_RE = re.compile(r"^\t+")
@@ -1592,25 +1624,15 @@ class TabIndentedListPreprocessor(markdown.preprocessors.Preprocessor):
     @override
     def run(self, lines: list[str]) -> list[str]:
         result: list[str] = []
-        in_code_fence: bool = False
         open_fences: list[Fence] = []
         for line in lines:
-            m = FENCE_RE.match(line)
-            if m:
-                fence_str = m.group("fence")
-                lang: str | None = m.group("lang")
-                is_code = lang not in ("quote", "quoted")
-                matches_last_fence = (
-                    fence_str == open_fences[-1].fence_str if open_fences else False
-                )
-                closes_last_fence = not lang and matches_last_fence
-                if closes_last_fence:
-                    open_fences.pop()
-                else:
-                    open_fences.append(Fence(fence_str, is_code))
-                in_code_fence = any(fence.is_code for fence in open_fences)
+            in_code_fence = scan_fence_state(line, open_fences)
             if not in_code_fence:
-                line = self.LEADING_TABS_RE.sub(lambda m: "  " * len(m.group()), line)
+                m = self.LEADING_TABS_RE.match(line)
+                if m:
+                    converted = m.group().expandtabs(ZULIP_LIST_TAB_LENGTH) + line[m.end() :]
+                    if LIST_ITEM_RE.match(converted):
+                        line = converted
             result.append(line)
         return result
 
@@ -1629,28 +1651,12 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     def run(self, lines: list[str]) -> list[str]:
         """Insert a newline between a paragraph and ulist if missing"""
         inserts = 0
-        in_code_fence: bool = False
         open_fences: list[Fence] = []
         copy = lines[:]
         for i in range(len(lines) - 1):
             # Ignore anything that is inside a fenced code block but not quoted.
             # We ignore all lines where some parent is a non-quote code block.
-            m = FENCE_RE.match(lines[i])
-            if m:
-                fence_str = m.group("fence")
-                lang: str | None = m.group("lang")
-                is_code = lang not in ("quote", "quoted")
-                matches_last_fence = (
-                    fence_str == open_fences[-1].fence_str if open_fences else False
-                )
-                closes_last_fence = not lang and matches_last_fence
-
-                if closes_last_fence:
-                    open_fences.pop()
-                else:
-                    open_fences.append(Fence(fence_str, is_code))
-
-                in_code_fence = any(fence.is_code for fence in open_fences)
+            in_code_fence = scan_fence_state(lines[i], open_fences)
 
             # If we're not in a fenced block and we detect an upcoming list
             # hanging off any block (including a list of another type), add
