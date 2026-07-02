@@ -1456,8 +1456,15 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
     override(pm_conversations, "get_partners", () => [100]);
     override(bootstrap_typeahead, "Typeahead", (input_element, options) => {
-        switch (input_element.$element[0]) {
-            case $("input#stream_message_recipient_topic")[0]: {
+        switch (input_element.$element) {
+            case $("input#stream_message_recipient_topic"): {
+                override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
+                    if (stream_id === sweden_stream.stream_id) {
+                        return sweden_topics_to_show;
+                    }
+                    return [];
+                });
+
                 compose_state.set_stream_id(sweden_stream.stream_id);
                 const lear_user_data = [
                     {
@@ -1759,7 +1766,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     return 7;
                 };
                 let actual_value = options.source("test #s", input_element);
-                assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
+                const stream_matches = actual_value.filter((item) => item.type === "stream");
+                assert.deepEqual(sorted_names_from(stream_matches), ["Sweden", "The Netherlands"]);
                 assert.ok(caret_called);
 
                 othello.delivery_email = "othello@zulip.com";
@@ -2102,6 +2110,12 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(compose_textarea_typeahead_called);
 });
 
+test("begins_typeahead", ({override, override_rewire}) => {
+    override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
+        if (stream_id === sweden_stream.stream_id) {
+            return sweden_topics_to_show;
+        }
+        return [];
 test("get_person_suggestion_for_topic_typeahead excludes deactivated users", ({override}) => {
     override(pm_conversations, "get_partners", () => []);
 
