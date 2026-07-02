@@ -3896,7 +3896,57 @@ class MarkdownErrorTests(ZulipTestCase):
 
 
 class TestHtmlToMarkdown(ZulipTestCase):
-    def test_unicode(self) -> None:
+    def test_html_entity_decoding(self) -> None:
         self.assertEqual(
             convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
         )
+
+    def test_unordered_list_renders_as_bullets(self) -> None:
+        # Zulip requires "* item" (with space) to render as a bullet; html2text
+        # produced "*item" (no space), which rendered as a literal asterisk.
+        html = "<ul><li>foo</li><li>bar</li></ul>"
+        self.assertEqual(convert_html_to_markdown(html), "* foo\n* bar")
+
+    def test_atx_style_headings(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<h1>Title</h1>"), "# Title")
+        self.assertEqual(convert_html_to_markdown("<h2>Sub</h2>"), "## Sub")
+
+    def test_external_img_with_alt_becomes_link(self) -> None:
+        # Zulip only inline-renders images served from /user_uploads/, so an
+        # external <img> must become a [label](url) link to render at all.
+        html = '<img src="http://example.com/img.png" alt="photo">'
+        self.assertEqual(convert_html_to_markdown(html), "[photo](http://example.com/img.png)")
+
+    def test_external_img_without_alt_uses_filename_label(self) -> None:
+        html = '<img src="http://foo.com/image.png?12345">'
+        self.assertEqual(
+            convert_html_to_markdown(html), "[image.png](http://foo.com/image.png?12345)"
+        )
+
+    def test_external_img_alt_brackets_are_stripped(self) -> None:
+        # Brackets in link text break Zulip's escaping-free Markdown.
+        html = '<img src="http://x.com/a.png" alt="see [details]">'
+        self.assertEqual(convert_html_to_markdown(html), "[see details](http://x.com/a.png)")
+
+    def test_zulip_upload_img_stays_inline(self) -> None:
+        html = '<img src="/user_uploads/1/ab/x.png" alt="pasted">'
+        self.assertEqual(convert_html_to_markdown(html), "![pasted](/user_uploads/1/ab/x.png)")
+
+    def test_linked_external_img_becomes_single_link(self) -> None:
+        html = '<a href="https://example.com"><img src="https://foo.com/a.png" alt="logo"></a>'
+        self.assertEqual(convert_html_to_markdown(html), "[logo](https://example.com)")
+
+    def test_external_img_kept_inline_when_not_linking(self) -> None:
+        html = '<img src="https://foo.com/a.png" alt="x">'
+        self.assertEqual(
+            convert_html_to_markdown(html, link_external_images=False),
+            "![x](https://foo.com/a.png)",
+        )
+
+    def test_anchor_tag_preserved_as_markdown_link(self) -> None:
+        html = '<a href="http://example.com">click here</a>'
+        self.assertEqual(convert_html_to_markdown(html), "[click here](http://example.com)")
+
+    def test_bold_and_italic(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<strong>bold</strong>"), "**bold**")
+        self.assertEqual(convert_html_to_markdown("<em>italic</em>"), "*italic*")
