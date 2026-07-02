@@ -120,7 +120,7 @@ run_test("update_messages", ({override, override_rewire}) => {
     };
 
     const side_effects = [
-        [message_edit, "end_message_edit"],
+        [message_edit, "handle_message_edit_update"],
         [message_notifications, "received_messages"],
         [unread_ui, "update_unread_counts"],
         [stream_list, "update_streams_sidebar"],
