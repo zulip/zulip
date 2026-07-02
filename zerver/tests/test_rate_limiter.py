@@ -5,6 +5,7 @@ from unittest import mock
 
 from typing_extensions import override
 
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.rate_limiter import (
     RateLimitedIPAddr,
     RateLimitedObject,
@@ -311,6 +312,17 @@ class RateLimiterStringFormattingTest(ZulipTestCase):
         self.assertEqual(readable_expiry_string_for_plaintext(86400), "23 hours, 59 minutes")
         self.assertEqual(readable_expiry_string_for_plaintext(90000), "1 day")
 
+
+class RateLimitedErrorTest(ZulipTestCase):
+    def test_retry_after_is_rounded_up(self) -> None:
+        error = RateLimitedError(secs_to_freedom=0.008374929428100586)
+        self.assertEqual(error.data["retry-after"], 0.01)
+        self.assertEqual(error.extra_headers["Retry-After"], 0.01)
+
+    def test_retry_after_none(self) -> None:
+        error = RateLimitedError(secs_to_freedom=None)
+        self.assertIsNone(error.data["retry-after"])
+        self.assertNotIn("Retry-After", error.extra_headers)
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
 del RateLimiterBackendBase
