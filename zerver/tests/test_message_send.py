@@ -876,7 +876,9 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_length(recent_conversations, 1)
         user_id_set = next(iter(recent_conversations))
         self.assertEqual(user_id_set, {othello.id})
-        self.assertEqual(recent_conversations[user_id_set], message_id)
+        self.assertEqual(
+            recent_conversations[user_id_set], {"max_message_id": message_id, "pinned": False}
+        )
 
         # Now send a message to yourself and see how that interacts with the data structure
         result = self.client_post(
@@ -892,10 +894,16 @@ class MessagePOSTTest(ZulipTestCase):
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assert_length(recent_conversations, 2)
-        self.assertEqual(recent_conversations[frozenset([othello.id])], message_id)
+        self.assertEqual(
+            recent_conversations[frozenset([othello.id])],
+            {"max_message_id": message_id, "pinned": False},
+        )
 
         # Now verify we have the appropriate self-pm data structure
-        self.assertEqual(recent_conversations[frozenset()], self_message_id)
+        self.assertEqual(
+            recent_conversations[frozenset()],
+            {"max_message_id": self_message_id, "pinned": False},
+        )
 
     def test_personal_message_by_id(self) -> None:
         """
@@ -2663,7 +2671,9 @@ class StreamMessagesTest(ZulipTestCase):
 
         recent_conversations = get_recent_private_conversations(users[1])
         user_set = frozenset(user.id for user in users if user != users[1])
-        self.assertEqual(recent_conversations[user_set], message2_id)
+        self.assertEqual(
+            recent_conversations[user_set], {"max_message_id": message2_id, "pinned": False}
+        )
 
     def test_get_raw_unread_data_for_1_to_1_dms_using_group_direct_message(self) -> None:
         sender = self.example_user("hamlet")
@@ -2681,7 +2691,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertIn(message2_id, msg_data["pm_dict"].keys())
 
         recent_conversations = get_recent_private_conversations(receiver)
-        self.assertEqual(recent_conversations[frozenset([sender.id])], message2_id)
+        self.assertEqual(
+            recent_conversations[frozenset([sender.id])],
+            {"max_message_id": message2_id, "pinned": False},
+        )
 
     def test_stream_becomes_active_on_message_send(self) -> None:
         # Mark a stream as inactive

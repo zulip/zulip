@@ -649,6 +649,7 @@ export const split_state_data_schema = z.object({
             z.object({
                 max_message_id: z.number(),
                 user_ids: z.array(z.number()),
+                pinned: z.optional(z.boolean()),
             }),
         ),
     }),

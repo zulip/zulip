@@ -3,12 +3,15 @@ import _ from "lodash";
 import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import type {Filter} from "./filter.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import {ListCursor} from "./list_cursor.ts";
 import {localstorage} from "./localstorage.ts";
 import * as mouse_drag from "./mouse_drag.ts";
+import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import * as pm_list_data from "./pm_list_data.ts";
 import type {DisplayObject} from "./pm_list_data.ts";
 import * as pm_list_dom from "./pm_list_dom.ts";
@@ -129,6 +132,13 @@ export function _build_direct_messages_list(opts: {
     );
     const pm_list_info = pm_list_data.get_list_info(zoomed, opts.search_term);
     const more_conversations_unread_count = pm_list_info.more_conversations_unread_count;
+    const pinned_count = pm_list_info.pinned_count;
+
+    // Divider between the pinned and unpinned sections, only when both
+    // sections have at least one conversation shown.
+    if (pinned_count > 0 && pinned_count < opts.conversations_to_be_shown.length) {
+        pm_list_nodes.splice(pinned_count, 0, pm_list_dom.pinned_dms_divider_li());
+    }
 
     if (!opts.all_conversations_shown) {
         pm_list_nodes.push(
@@ -431,6 +441,33 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
+function get_other_user_ids(user_ids_string: string): number[] {
+    const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
+    if (user_ids.length === 1 && user_ids[0] === people.my_current_user_id()) {
+        // Direct message to oneself; the endpoint expects an empty list.
+        return [];
+    }
+    return user_ids;
+}
+
+function toggle_pin(user_ids_string: string): void {
+    const pinned = pm_conversations.recent.is_pinned(user_ids_string);
+    void channel.post({
+        url: "/json/users/me/dm_conversations/pin",
+        data: {
+            user_ids: JSON.stringify(get_other_user_ids(user_ids_string)),
+            pinned: JSON.stringify(!pinned),
+        },
+    });
+}
+
+function toggle_pin_from_icon(icon: HTMLElement): void {
+    const user_ids_string = $(icon).closest(".dm-list-item").attr("data-user-ids-string");
+    if (user_ids_string !== undefined) {
+        toggle_pin(user_ids_string);
+    }
+}
+
 export function initialize(): void {
     // Restore collapsed status.
     private_messages_collapsed = ls_schema.parse(ls.get(ls_key));
@@ -489,6 +526,22 @@ export function initialize(): void {
         // To avoid the click behavior if a dm box is selected.
         if (mouse_drag.is_drag(e)) {
             e.preventDefault();
+        }
+    });
+
+    // The pin/unpin control lives inside the row's link, so we stop the
+    // click from navigating to the conversation.
+    $("body").on("click", ".dm-list .dm-pin-icon", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        e.preventDefault();
+        toggle_pin_from_icon(this);
+    });
+
+    $("body").on("keydown", ".dm-list .dm-pin-icon", function (this: HTMLElement, e) {
+        if (keydown_util.is_enter_event(e)) {
+            e.stopPropagation();
+            e.preventDefault();
+            toggle_pin_from_icon(this);
         }
     });
 

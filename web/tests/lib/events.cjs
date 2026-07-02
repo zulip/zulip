@@ -295,6 +295,12 @@ exports.fixtures = {
         ],
     },
 
+    direct_message_conversation: {
+        type: "direct_message_conversation",
+        user_ids: [5],
+        pinned: true,
+    },
+
     navigation_view__add: {
         type: "navigation_view",
         op: "add",

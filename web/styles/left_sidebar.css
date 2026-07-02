@@ -279,6 +279,19 @@
     margin: 0;
 }
 
+.dm-pinned-unpinned-divider-container {
+    display: block;
+    margin-right: var(--left-sidebar-right-margin);
+    padding: var(--left-sidebar-direct-messages-bottom-divider-padding) 0;
+}
+
+.dm-pinned-unpinned-divider {
+    opacity: 1 !important; /* override .dark-theme:root hr */
+    border-color: var(--color-left-sidebar-direct-messages-bottom-divider);
+    border-width: 0.5px;
+    margin: 0;
+}
+
 #left-sidebar-modal-content #direct-messages-modal,
 #left-sidebar-modal-content #more-topics-modal {
     display: grid;

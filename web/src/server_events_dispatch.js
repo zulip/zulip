@@ -43,6 +43,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
 import * as realm_icon from "./realm_icon.ts";
@@ -223,6 +224,12 @@ export function dispatch_normal_event(event) {
 
         case "muted_users":
             muted_users_ui.handle_user_updates(event.muted_users);
+            break;
+
+        case "direct_message_conversation":
+            if (pm_conversations.recent.set_pinned(event.user_ids, event.pinned)) {
+                pm_list.update_private_messages();
+            }
             break;
 
         case "navigation_view":
