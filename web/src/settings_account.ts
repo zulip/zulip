@@ -847,6 +847,33 @@ export function set_up(): void {
         },
     );
 
+    $("#profile-settings").on(
+        "change",
+        ".custom_user_field_value_multiple",
+        function (this: HTMLElement, _e: JQuery.Event) {
+            const $input_elem = $(this);
+            const field_id = Number.parseInt($input_elem.attr("name")!, 10);
+            const $container = $input_elem.closest(".custom_user_field_value_multiple_container");
+            const values: string[] = [];
+
+            $container.find<HTMLInputElement>("input:checked").each(function () {
+                values.push(this.value);
+            });
+
+            if (values.length === 0) {
+                custom_profile_fields_ui.update_user_custom_profile_fields(
+                    [{id: field_id}],
+                    channel.del,
+                );
+            } else {
+                custom_profile_fields_ui.update_user_custom_profile_fields(
+                    [{id: field_id, value: values}],
+                    channel.patch,
+                );
+            }
+        },
+    );
+
     $("#account-settings .deactivate_realm_button").on(
         "click",
         settings_org.deactivate_organization,
