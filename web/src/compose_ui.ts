@@ -962,8 +962,13 @@ export let format_text = (
         const sections = section_off_selected_lines();
         let {before_lines, selected_lines, after_lines} = sections;
         const {separating_new_line_before, separating_new_line_after} = sections;
-        // If there is even a single unmarked line selected, we mark all.
-        const should_mark = selected_lines.split("\n").some((line) => !is_marked(line));
+        // Blank lines never have markers, so exclude them when deciding whether
+        // to mark or unmark. Otherwise a selection containing blank lines would
+        // always be detected as "needs marking", causing the marker to be
+        // prepended again on every click instead of toggling off.
+        const non_blank_lines = selected_lines.split("\n").filter((line) => line.trim() !== "");
+        const should_mark =
+            non_blank_lines.length === 0 || non_blank_lines.some((line) => !is_marked(line));
         if (should_mark) {
             const lines = selected_lines.split("\n");
             // Only skip blank lines for multi-line selections, where blanks
