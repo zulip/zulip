@@ -349,6 +349,7 @@
 
     .alert-word {
         background-color: var(--color-background-alert-word);
+        color: var(--color-text-alert-word);
     }
 
     /* Timestamps */
@@ -873,6 +874,26 @@
                 color: var(--color-markdown-code-link-hover);
             }
         }
+
+        /* Link styles that are also related to alert words */
+        &:has(.alert-word) {
+            &:hover,
+            &:focus {
+                text-decoration-color: var(
+                    --color-markdown-link-alert-word-hover
+                );
+            }
+        }
+
+        & .alert-word {
+            color: var(--color-markdown-link-alert-word);
+            font-weight: 500;
+        }
+
+        &:hover .alert-word,
+        &:focus .alert-word {
+            color: var(--color-markdown-link-alert-word-hover);
+        }
     }
 
     & pre {
@@ -1083,7 +1104,28 @@
 
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
-    background-color: hsl(51deg 100% 79%);
+    background-color: var(--color-background-search-highlight);
+    color: var(--color-text-search-highlight);
+}
+
+/* Link styles that are also related to search highlights */
+a:not(.icon-button) {
+    &:has(.highlight) {
+        &:hover,
+        &:focus {
+            text-decoration-color: var(--color-markdown-link-highlight-hover);
+        }
+    }
+
+    & .highlight {
+        color: var(--color-markdown-link-highlight);
+        font-weight: 500;
+    }
+
+    &:hover .highlight,
+    &:focus .highlight {
+        color: var(--color-markdown-link-highlight-hover);
+    }
 }
 
 /* For elements where we want to show as much markdown content we can
