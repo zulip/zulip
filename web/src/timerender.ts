@@ -24,6 +24,15 @@ export let display_time_zone = browser_time_zone();
 export let display_tz = tz(display_time_zone);
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
+const relative_formatter_map = new Map<string, Intl.RelativeTimeFormat>();
+
+function get_relative_time_formatter(locale: string): Intl.RelativeTimeFormat {
+    if (!relative_formatter_map.has(locale)) {
+        relative_formatter_map.set(locale, new Intl.RelativeTimeFormat(locale, {numeric: "auto"}));
+    }
+
+    return relative_formatter_map.get(locale)!;
+}
 
 export function browser_time_zone(): string {
     return new Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -289,8 +298,12 @@ export function relative_time_string_from_date(date: Date, use_minutes_short_for
 export function last_seen_status_from_date(last_active_date: Date): string {
     const current_date = new Date();
     const minutes = differenceInMinutes(current_date, last_active_date);
+    const rtf = get_relative_time_formatter(user_settings.default_language);
+    const label = $t({defaultMessage: "Last active"});
+
     if (minutes < 60) {
-        return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
+        const time = rtf.format(-minutes, "minute");
+        return `${label} ${time}`;
     }
 
     const days_old = differenceInCalendarDays(current_date, last_active_date, {
@@ -299,18 +312,13 @@ export function last_seen_status_from_date(last_active_date: Date): string {
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
-        if (hours === 1) {
-            return $t({defaultMessage: "Active an hour ago"});
-        }
-        return $t({defaultMessage: "Active {hours} hours ago"}, {hours});
-    }
-
-    if (days_old === 1) {
-        return $t({defaultMessage: "Active yesterday"});
+        const time = rtf.format(-hours, "hour");
+        return `${label} ${time}`;
     }
 
     if (days_old < 90) {
-        return $t({defaultMessage: "Active {days_old} days ago"}, {days_old});
+        const time = rtf.format(-days_old, "day");
+        return `${label} ${time}`;
     } else if (
         days_old > 90 &&
         days_old < 365 &&
