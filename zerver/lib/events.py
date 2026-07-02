@@ -94,6 +94,7 @@ from zerver.lib.users import (
     max_message_id_for_user,
 )
 from zerver.lib.utils import optional_bytes_to_mib
+from zerver.lib.video_calls import get_effective_jitsi_server_url, get_jitsi_jwt_config
 from zerver.models import (
     ChannelFolder,
     Client,
@@ -569,11 +570,8 @@ def fetch_initial_state_data(
             settings.JITSI_SERVER_URL.rstrip("/") if settings.JITSI_SERVER_URL is not None else None
         )
         state["server_jitsi_server_url"] = server_default_jitsi_server_url
-        state["jitsi_server_url"] = (
-            realm.jitsi_server_url
-            if realm.jitsi_server_url is not None
-            else server_default_jitsi_server_url
-        )
+        state["jitsi_server_url"] = get_effective_jitsi_server_url(realm)
+        state["jitsi_jwt_enabled"] = get_jitsi_jwt_config(state["jitsi_server_url"]) is not None
 
         state["server_can_summarize_topics"] = settings.TOPIC_SUMMARIZATION_MODEL is not None
 
@@ -1529,13 +1527,6 @@ def apply_event(
             field = "realm_" + event["property"]
             state[field] = event["value"]
 
-            if field == "realm_jitsi_server_url":
-                state["jitsi_server_url"] = (
-                    state["realm_jitsi_server_url"]
-                    if state["realm_jitsi_server_url"] is not None
-                    else state["server_jitsi_server_url"]
-                )
-
             if field == "realm_message_edit_history_visibility_policy":
                 state["realm_allow_edit_history"] = (
                     event["value"] != MessageEditHistoryVisibilityPolicyEnum.none.name
@@ -1555,7 +1546,18 @@ def apply_event(
                     # returned to clients in build_page_params_for_home_load.
                     continue
 
+                if key == "jitsi_jwt_enabled":
+                    # Stored unprefixed alongside server_jitsi_server_url
+                    # (it's a server-computed flag, not a realm property).
+                    state["jitsi_jwt_enabled"] = value
+                    continue
+
                 state["realm_" + key] = value
+
+                if key == "jitsi_server_url":
+                    state["jitsi_server_url"] = (
+                        value if value is not None else state["server_jitsi_server_url"]
+                    )
                 # It's a bit messy, but this is where we need to
                 # update the state for whether password authentication
                 # is enabled on this server.
