@@ -1387,6 +1387,22 @@ class MarkdownEmojiTest(ZulipTestCase):
         converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted.rendered_content, "<p>:green_tick:</p>")
 
+    def test_animated_realm_emoji(self) -> None:
+        realm = get_realm("zulip")
+        realm_emoji = RealmEmoji.objects.filter(
+            realm=realm, name="green_tick", deactivated=False
+        ).get()
+        realm_emoji.is_animated = True
+        realm_emoji.save(update_fields=["is_animated"])
+
+        msg = Message(sender=self.example_user("hamlet"), realm=realm)
+        converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
+        assert realm_emoji.file_name is not None
+        animated_url = get_emoji_url(realm_emoji.file_name, realm.id)
+        still_url = get_emoji_url(realm_emoji.file_name, realm.id, still=True)
+        self.assertIn(f'data-animated-url="{animated_url}"', converted.rendered_content)
+        self.assertIn(f'data-still-url="{still_url}"', converted.rendered_content)
+
     def test_deactivated_realm_emoji(self) -> None:
         # Deactivate realm emoji.
         realm = get_realm("zulip")
