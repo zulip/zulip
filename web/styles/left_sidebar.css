@@ -706,7 +706,7 @@
 #streams_list .stream-list-section-container.collapsed {
     .narrow-filter:not(.stream-expanded),
     .stream-list-toggle-inactive-or-muted-channels,
-    .topic-list-item:not(.active-sub-filter),
+    .narrow-filter:not(.stream-expanded) .topic-list-item,
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::before,
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::after {
         display: none;
