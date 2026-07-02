@@ -109,7 +109,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                         return source;
                     }
 
-                    ids.sort();
+                    ids.sort(([a], [b]) => Number(a > b) - Number(a < b));
                     return webpack.Template.asString([
                         source,
                         `__webpack_require__.debugRequireIds = ${JSON.stringify(

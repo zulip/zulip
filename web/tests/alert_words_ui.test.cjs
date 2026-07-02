@@ -23,7 +23,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
 
     mock_esm("../src/list_widget", {
         create(_container, words, opts) {
-            assert.deepEqual(words, [{word: "foo"}, {word: "bar"}]);
+            assert.deepEqual(words, [{word: "bar"}, {word: "foo"}]);
             for (const word of words) {
                 opts.modifier_html(word);
             }
