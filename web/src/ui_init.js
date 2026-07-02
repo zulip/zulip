@@ -97,6 +97,7 @@ import * as people from "./people.ts";
 import * as personal_menu_popover from "./personal_menu_popover.ts";
 import * as playground_links_popover from "./playground_links_popover.ts";
 import * as pm_conversations from "./pm_conversations.ts";
+import * as pm_conversations_util from "./pm_conversations_util.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
@@ -552,6 +553,12 @@ export async function initialize_everything(state_data) {
             stream_id,
             topic_name,
             stream_list.update_streams_sidebar,
+        );
+    });
+    pm_conversations.set_update_dm_last_message_id((user_ids_string) => {
+        pm_conversations_util.update_dm_last_message_id(
+            user_ids_string,
+            pm_list.update_private_messages,
         );
     });
 

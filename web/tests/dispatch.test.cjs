@@ -157,6 +157,7 @@ const channel_folders = zrequire("channel_folders");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
 const presence = zrequire("presence");
 const user_status = zrequire("user_status");
 const onboarding_steps = zrequire("onboarding_steps");
@@ -1572,6 +1573,66 @@ run_test("delete_message", ({override}) => {
     assert_same(args.opts.topic_name, "topic1");
     assert_same(args.opts.num_messages, 1);
     assert_same(args.opts.max_removed_msg_id, 1337);
+});
+
+run_test("delete_message_private", ({override}) => {
+    // display_recipient items need .id (pm_with_user_ids reads .id).
+    const user4 = {user_id: 4, id: 4, email: "user4@example.com", full_name: "User 4"};
+    people.add_active_user(user4);
+
+    const dm = {
+        id: 501,
+        type: "private",
+        to_user_ids: "4,20",
+        display_recipient: [user4, {...me, id: me.user_id}],
+        sender_id: 4,
+        content: "hi",
+    };
+    message_store.update_message_cache({type: "server_message", message: dm});
+
+    override(unread_ops, "process_read_messages_event", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+    override(message_events, "remove_messages", noop);
+
+    const maybe_remove_stub = make_stub();
+    override(pm_conversations.recent, "maybe_remove", maybe_remove_stub.f);
+    const pm_list_stub = make_stub();
+    override(pm_list, "update_private_messages", pm_list_stub.f);
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [501],
+    });
+
+    // We derive the conversation (excluding our own id, 20) from the
+    // deleted message and refresh the direct messages sidebar.
+    assert.equal(maybe_remove_stub.num_calls, 1);
+    const args = maybe_remove_stub.get_args("user_ids", "num_messages");
+    assert_same(args.user_ids, [4]);
+    assert_same(args.num_messages, 1);
+    assert.equal(pm_list_stub.num_calls, 1);
+});
+
+run_test("delete_message_private_not_cached", ({override}) => {
+    // When none of the deleted messages are in our local cache, we can't
+    // identify the conversation, so we take no DM-specific action.
+    override(unread_ops, "process_read_messages_event", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+    override(message_events, "remove_messages", noop);
+
+    const maybe_remove_stub = make_stub();
+    override(pm_conversations.recent, "maybe_remove", maybe_remove_stub.f, {
+        unused: false,
+    });
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [99999],
+    });
+
+    assert.equal(maybe_remove_stub.num_calls, 0);
 });
 
 run_test("user_status", ({override}) => {
