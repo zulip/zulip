@@ -3,11 +3,14 @@ from datetime import datetime
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import AnomalousWebhookPayloadError
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
+    WildValueDict,
+    WildValueList,
     check_anything,
     check_float,
     check_int,
@@ -70,7 +73,20 @@ def api_grafana_webhook(
         # - https://grafana.com/docs/grafana/v9.0/alerting/contact-points/notifiers/webhook-notifier/
         # - https://grafana.com/docs/grafana/v10.0/alerting/alerting-rules/manage-contact-points/webhook-notifier/
         # - https://grafana.com/docs/grafana/v11.0/alerting/configure-notifications/manage-contact-points/integrations/webhook-notifier/
+
+        # Verify that alerts is a list
+        if not isinstance(payload["alerts"], WildValueList):  # nocoverage
+            raise AnomalousWebhookPayloadError
+
         for alert in payload["alerts"]:
+            if not (
+                isinstance(alert, WildValueDict)
+                and all(
+                    key in alert
+                    for key in ("status", "labels", "fingerprint", "startsAt", "endsAt")
+                )
+            ):
+                raise AnomalousWebhookPayloadError
             status = alert["status"].tame(check_string_in(["firing", "resolved"]))
             if status == "firing":
                 body = ALERT_STATUS_TEMPLATE.format(
@@ -147,7 +163,7 @@ def api_grafana_webhook(
 
         return json_success(request)
 
-    else:
+    elif all(key in payload for key in ("title", "state", "ruleName", "ruleUrl")):
         # Grafana 7.0 alerts:
         # https://grafana.com/docs/grafana/v7.0/alerting/notifications/#webhook
         topic_name = OLD_TOPIC_TEMPLATE.format(alert_title=payload["title"].tame(check_string))
@@ -199,3 +215,6 @@ def api_grafana_webhook(
         check_send_webhook_message(request, user_profile, topic_name, body, state)
 
         return json_success(request)
+
+    else:
+        raise AnomalousWebhookPayloadError
