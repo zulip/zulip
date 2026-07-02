@@ -111,9 +111,12 @@ else:
 WEBPACK_BUNDLES = "webpack-bundles/"
 
 if not PUPPETEER_TESTS:
-    # Use local memory cache for backend tests.
+    # Use local memory cache for backend tests. The CASCapableLocMemCache
+    # subclass adds the memcached-style gets/cas operations that the
+    # read-through helpers in zerver.lib.cache rely on to avoid
+    # stale-cache races; the stock LocMemCache has no such concept.
     CACHES["default"] = {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "BACKEND": "zerver.lib.test_cache_backends.CASCapableLocMemCache",
     }
 
     # Here we set various loggers to be less noisy for unit tests.
