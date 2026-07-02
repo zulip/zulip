@@ -526,7 +526,7 @@ export function set_search_bar_contents(
     }
     set_search_bar_text(search_bar_text_strings.join(" "));
     if (invalid_inputs.length > 0) {
-        $("#search_query").addClass("shake");
+        $("#search_query").addClass("input-validation-shake");
     }
 }
 
