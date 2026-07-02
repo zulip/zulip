@@ -220,4 +220,19 @@ run_test("get_deletability", ({override}) => {
 
     message.sender_id = moderator.user_id;
     assert.equal(message_delete.get_deletability(message), false);
+
+    // A stream message whose channel isn't available locally is treated as
+    // non-deletable rather than crashing; the message list now consults this
+    // for every rendered message, including ones whose channel isn't loaded.
+    const message_in_unknown_channel = {
+        type: "stream",
+        stream_id: 9999,
+        sender_id: me.user_id,
+        sent_by_me: true,
+        locally_echoed: false,
+    };
+    override(realm, "realm_can_delete_any_message_group", nobody_group.id);
+    override(realm, "realm_can_delete_own_message_group", nobody_group.id);
+    initialize_and_override_current_user(me.user_id, override);
+    assert.equal(message_delete.get_deletability(message_in_unknown_channel), false);
 });

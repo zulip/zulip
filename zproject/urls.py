@@ -72,8 +72,10 @@ from zerver.views.invite import (
 from zerver.views.llms_txt import llms_txt
 from zerver.views.message_edit import (
     delete_message_backend,
+    delete_messages_backend,
     get_message_edit_history,
     json_fetch_raw_message,
+    restore_messages_backend,
     update_message_backend,
 )
 from zerver.views.message_fetch import get_messages_backend, messages_in_narrow_backend
@@ -419,6 +421,7 @@ v1_api_and_json_patterns = [
         "messages",
         GET=(get_messages_backend, {"allow_anonymous_user_web"}),
         POST=(send_message_backend, {"allow_incoming_webhooks"}),
+        DELETE=delete_messages_backend,
     ),
     rest_path(
         "messages/<int:message_id>",
@@ -435,6 +438,7 @@ v1_api_and_json_patterns = [
         ),
     ),
     rest_path("messages/render", POST=render_message_backend),
+    rest_path("messages/restore", POST=restore_messages_backend),
     rest_path("messages/flags", POST=update_message_flags),
     rest_path("messages/flags/narrow", POST=update_message_flags_for_narrow),
     rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),

@@ -94,6 +94,7 @@ from zerver.lib.event_types import (
     RemindersAddEvent,
     RemindersRemoveEvent,
     RestartEvent,
+    RestoredMessageEvent,
     SavedSnippetsAddEvent,
     SavedSnippetsRemoveEvent,
     SavedSnippetsUpdateEvent,
@@ -216,6 +217,7 @@ check_realm_user_remove = make_checker(RealmUserRemoveEvent)
 check_reminder_add = make_checker(RemindersAddEvent)
 check_reminder_remove = make_checker(RemindersRemoveEvent)
 check_restart = make_checker(RestartEvent)
+check_restored_message = make_checker(RestoredMessageEvent)
 check_saved_snippets_add = make_checker(SavedSnippetsAddEvent)
 check_saved_snippets_remove = make_checker(SavedSnippetsRemoveEvent)
 check_saved_snippets_update = make_checker(SavedSnippetsUpdateEvent)

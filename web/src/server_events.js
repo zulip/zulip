@@ -35,6 +35,7 @@ let event_queue_expired = false;
 
 function get_events_success(events) {
     let raw_messages = [];
+    let restored_raw_messages = [];
     const update_message_events = [];
     const post_message_events = [];
 
@@ -74,6 +75,14 @@ function get_events_success(events) {
                     msg.local_id = event.local_message_id;
                 }
                 raw_messages.push(msg);
+                break;
+            }
+
+            case "restored_message": {
+                // Batched and handled via insert_restored_messages below.
+                const msg = server_message_schema.parse(event.message);
+                msg.flags = event.flags;
+                restored_raw_messages.push(msg);
                 break;
             }
 
@@ -130,6 +139,15 @@ function get_events_success(events) {
             }
         } catch (error) {
             blueslip.error("Failed to insert new messages", undefined, error);
+        }
+    }
+
+    if (restored_raw_messages.length > 0) {
+        restored_raw_messages = _.sortBy(restored_raw_messages, "id");
+        try {
+            message_events.insert_restored_messages(restored_raw_messages);
+        } catch (error) {
+            blueslip.error("Failed to insert restored messages", undefined, error);
         }
     }
 

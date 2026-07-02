@@ -30,6 +30,10 @@ mock_esm("../src/people", {
     maybe_get_user_by_id: noop,
 });
 
+mock_esm("../src/message_delete", {
+    get_deletability: () => true,
+});
+
 const {Filter} = zrequire("../src/filter");
 const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");

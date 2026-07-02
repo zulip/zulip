@@ -145,6 +145,15 @@ class ArchiveTransaction(models.Model):
     # If type is set to MANUAL, this should be null.
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
+    # For MANUAL transactions, the user who triggered the deletion, when one is
+    # known. This is used to authorize a user-facing "undo" that restores a
+    # deletion the same user just performed. Null for retention-policy archiving
+    # and for deletions with no acting user (e.g. user deactivation cleanup or
+    # management commands).
+    acting_user = models.ForeignKey(
+        UserProfile, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
     @override
     def __str__(self) -> str:
         return "id: {id}, type: {type}, realm: {realm}, timestamp: {timestamp}".format(

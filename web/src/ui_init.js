@@ -77,6 +77,7 @@ import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as message_scroll from "./message_scroll.ts";
+import * as message_selection from "./message_selection.ts";
 import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -504,6 +505,7 @@ export async function initialize_everything(state_data) {
     };
     message_actions_popover.initialize({message_reminder_click_handler});
     compose_send_menu_popover.initialize();
+    message_selection.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
 

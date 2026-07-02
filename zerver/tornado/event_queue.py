@@ -1348,6 +1348,73 @@ def process_message_event(
         client.add_event(user_event)
 
 
+def process_restored_message_event(
+    event_template: Mapping[str, Any], users: Collection[Mapping[str, Any]]
+) -> None:
+    """Deliver a message restored from the archive (a user-facing undo of a
+    deletion) to its original recipients, so their clients re-display it.
+
+    This mirrors process_message_event's per-client payload personalization,
+    but emits a "restored_message" event and deliberately sends no
+    notifications: the recipients already saw (and were notified about) these
+    messages before they were deleted.
+    """
+    send_to_clients = get_client_info_for_message_event(event_template, users)
+
+    user_ids_without_access_to_sender = set(
+        event_template.get("user_ids_without_access_to_sender", [])
+    )
+    realm_host = event_template.get("realm_host", "")
+
+    wide_dict: dict[str, Any] = event_template["message_dict"]
+
+    @cache
+    def get_client_payload(
+        *,
+        apply_markdown: bool,
+        client_gravatar: bool,
+        allow_empty_topic_name: bool,
+        can_access_sender: bool,
+    ) -> dict[str, Any]:
+        return MessageDict.finalize_payload(
+            wide_dict,
+            apply_markdown=apply_markdown,
+            client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
+            can_access_sender=can_access_sender,
+            realm_host=realm_host,
+        )
+
+    # Unlike the message-send path, there is no mirror-bot handling here:
+    # mirror bots only act on "message" events, never "restored_message".
+    for client_data in send_to_clients.values():
+        client = client_data["client"]
+        flags = client_data["flags"]
+
+        if not client.accepts_messages():
+            # The actual check is the accepts_event() check below;
+            # this line is just an optimization to avoid copying
+            # message data unnecessarily
+            continue
+
+        can_access_sender = client.user_profile_id not in user_ids_without_access_to_sender
+        message_dict = get_client_payload(
+            apply_markdown=client.apply_markdown,
+            client_gravatar=client.client_gravatar,
+            allow_empty_topic_name=client.empty_topic_name,
+            can_access_sender=can_access_sender,
+        )
+
+        user_event: dict[str, Any] = dict(
+            type="restored_message", message=message_dict, flags=flags
+        )
+
+        if not client.accepts_event(user_event):
+            continue
+
+        client.add_event(user_event)
+
+
 def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     if "user_id" not in event:
         # We only recently added `user_id` to presence data.
@@ -1792,6 +1859,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
 
     if event["type"] == "message":
         process_message_event(event, cast(list[Mapping[str, Any]], users))
+    elif event["type"] == "restored_message":
+        process_restored_message_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "update_message":
         process_message_update_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":
