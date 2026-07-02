@@ -21,7 +21,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.typed_endpoint import ApiParamConfig, OptionalTopic, PathOnly, typed_endpoint
 from zerver.models import Recipient, UserProfile
-from zerver.models.recipients import get_direct_message_group_user_ids
+from zerver.models.recipients import get_direct_message_group_sorted_user_ids
 
 
 @typed_endpoint
@@ -105,7 +105,7 @@ def send_message_edit_notification_backend(
         if not user_profile.send_private_typing_notifications:
             raise JsonableError(_("User has disabled typing notifications for direct messages"))
 
-        recipient_ids = list(get_direct_message_group_user_ids(recipient))
+        recipient_ids = list(get_direct_message_group_sorted_user_ids(recipient))
 
         do_send_direct_message_edit_typing_notification(
             user_profile, recipient_ids, message_id, operator
