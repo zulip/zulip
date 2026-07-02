@@ -17,6 +17,8 @@ ISSUE_CREATE_OR_UPDATE_TEMPLATE = "[{type}]({url}) was {action} in team {team_na
 ISSUE_REMOVE_TEMPLATE = "This issue has been removed from team {team_name}."
 COMMENT_CREATE_OR_UPDATE_TEMPLATE = "{user} [{action}]({url}) on issue **{issue_title}**:"
 COMMENT_REMOVE_TEMPLATE = "{user} has removed a comment."
+PROJECT_CREATE_OR_UPDATE_TEMPLATE = "[Project]({url}) **{name}** was {action}."
+PROJECT_REMOVE_TEMPLATE = "Project **{name}** has been removed."
 
 
 def get_issue_created_or_updated_message(event: str, payload: WildValue, action: str) -> str:
@@ -97,13 +99,26 @@ def get_comment_message(payload: WildValue, event: str) -> str:
     )
 
 
+def get_project_message(payload: WildValue, event: str) -> str:
+    action = payload["action"].tame(check_string)
+    name = payload["data"]["name"].tame(check_string)
+    if action == "remove":
+        return PROJECT_REMOVE_TEMPLATE.format(name=name)
+    return PROJECT_CREATE_OR_UPDATE_TEMPLATE.format(
+        url=payload["url"].tame(check_string),
+        name=name,
+        action="created" if action == "create" else "updated",
+    )
+
+
 EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, str], str]] = {
     "issue": get_issue_or_sub_issue_message,
     "sub_issue": get_issue_or_sub_issue_message,
     "comment": get_comment_message,
+    "project": get_project_message,
 }
 
-IGNORED_EVENTS = ["IssueLabel", "Project", "ProjectUpdate", "Cycle", "Reaction"]
+IGNORED_EVENTS = ["IssueLabel", "ProjectUpdate", "Cycle", "Reaction"]
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
@@ -143,6 +158,9 @@ def get_topic(user_specified_topic: str | None, event: str, payload: WildValue) 
     elif event == "issue":
         title = payload["data"]["title"].tame(check_string)
         return f"Issue: {title}"
+    elif event == "project":
+        name = payload["data"]["name"].tame(check_string)
+        return f"Project: {name}"
 
     raise UnsupportedWebhookEventTypeError(event)
 
@@ -155,6 +173,8 @@ def get_event_type(payload: WildValue) -> str | None:
         return "issue" if not has_parent_id else "sub_issue"
     elif event_type == "Comment":
         return "comment"
+    elif event_type == "Project":
+        return "project"
     elif event_type in IGNORED_EVENTS:
         return None
 
