@@ -821,6 +821,29 @@ def regenerate_api_key(client: Client) -> None:
     client.session = None
 
 
+@openapi_test_function("/bots/{bot_id}:patch")
+def update_bot(client: Client) -> None:
+    bot_id = 17
+    new_owner_id = 10
+    ensure_users([bot_id, new_owner_id], ["default-bot", "hamlet"])
+
+    # {code_example|start}
+    # Update a bot's full name, role, and owner, given the bot's ID.
+    request = {
+        "full_name": "The New Bot Name",
+        "role": 400,
+        "bot_owner_id": new_owner_id,
+    }
+    result = client.call_endpoint(
+        url=f"/bots/{bot_id}",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bots/{bot_id}", "patch", "200")
+
+
 @openapi_test_function("/bots/{bot_id}/api_key:get")
 def get_bot_api_key(client: Client) -> None:
     bot_id = 17
@@ -2309,6 +2332,7 @@ def test_invitations(client: Client) -> None:
 
 
 def test_api_key_endpoints(client: Client) -> None:
+    update_bot(client)
     get_bot_api_key(client)
     regenerate_bot_api_key(client)
     regenerate_api_key(client)

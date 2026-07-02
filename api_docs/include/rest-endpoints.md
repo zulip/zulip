@@ -123,6 +123,8 @@
 * [Add alert words](/api/add-alert-words)
 * [Remove alert words](/api/remove-alert-words)
 * [Regenerate your API key](/api/regenerate-api-key)
+* [Update a bot](/api/update-bot)
+* [Deactivate a bot](/api/deactivate-bot)
 * [Get a bot's API key](/api/get-bot-api-key)
 * [Regenerate a bot's API key](/api/regenerate-bot-api-key)
 

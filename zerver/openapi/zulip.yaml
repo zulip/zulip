@@ -26840,6 +26840,329 @@ paths:
                       }
                     description: |
                       An example JSON response when the channel folder ID is invalid:
+  /bots/{bot_id}:
+    patch:
+      operationId: update-bot
+      summary: Update a bot
+      tags: ["users"]
+      description: |
+        Update a [bot user](/help/manage-a-bot). Only the bot's owner and
+        [organization administrators](/help/user-roles) can update a bot.
+
+        Use this endpoint to rename a bot, transfer ownership, change the
+        bot's [role](/help/user-roles) or avatar, configure default channels,
+        update an [outgoing webhook](/help/outgoing-webhooks) bot's service
+        URL, or update the configuration data of an embedded bot or
+        incoming webhook.
+
+        Any parameters omitted from the request are left unchanged.
+
+        The `service_payload_url` and `service_interface` fields apply
+        only to [outgoing webhook](/help/outgoing-webhooks) bots, and
+        `config_data` applies only to embedded bots and incoming webhooks.
+
+        To update the bot's avatar, send the request as `multipart/form-data`.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - full_name
+                - role
+                - bot_owner_id
+      x-parameter-description: |
+        To update the bot's avatar, the new avatar image must be sent as
+        the `file` part of a `multipart/form-data` request body. Only one
+        file may be included per request.
+
+        Any of the parameters documented above for
+        `application/x-www-form-urlencoded` requests may also be sent as
+        additional multipart parts in the same request.
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  description: |
+                    The bot's new full name.
+                  type: string
+                  example: The New Bot Name
+                short_name:
+                  description: |
+                    The bot's new short name. The bot's email address is
+                    automatically updated based on this value.
+
+                    The new email must be unique among users in the
+                    organization, and the server's `FAKE_EMAIL_DOMAIN` setting
+                    must be configured for this field to be modifiable.
+
+                    **Changes**: New in Zulip 12.0 (feature level 447).
+                  type: string
+                  example: new-bot
+                role:
+                  description: |
+                    New [role](/api/roles-and-permissions) for the bot,
+                    encoded as:
+
+                    - Organization owner: 100
+                    - Organization administrator: 200
+                    - Organization moderator: 300
+                    - Member: 400
+                    - Guest: 600
+
+                    Only organization owners can assign or remove the owner
+                    role.
+
+                    **Changes**: New in Zulip 6.0 (feature level 130). In
+                    previous versions, a bot's role could only be changed via
+                    [`PATCH /users/{user_id}`](/api/update-user).
+                  type: integer
+                  enum: [100, 200, 300, 400, 600]
+                  example: 400
+                bot_owner_id:
+                  description: |
+                    User ID of the bot's new owner. The new owner must be an
+                    active, non-bot user in the same organization.
+
+                    **Changes**: Prior to Zulip 10.0 (feature level 359),
+                    changing a bot's owner also unsubscribed the bot from
+                    any channels that the new owner was not subscribed to.
+                  type: integer
+                  example: 8
+                config_data:
+                  description: |
+                    A dictionary mapping string keys to string values used to
+                    store configuration for an embedded bot or an incoming webhook
+                    integration.
+
+                    This parameter performs a **partial update**: each key in
+                    the dictionary is inserted or overwritten in the bot's
+                    stored configuration, and keys that are not present in
+                    the request are left unchanged. There is no way to delete
+                    a configuration key through this endpoint; sending an
+                    empty string for a key stores an empty string.
+                  type: object
+                  additionalProperties:
+                    description: |
+                      `{key}`: The stored string value for this key.
+                    type: string
+                  example: {"key": "12345678"}
+                service_payload_url:
+                  description: |
+                    The new URL to which the bot's
+                    [outgoing webhook](/api/outgoing-webhook-payload) requests should
+                    be sent. Only applies to outgoing webhook bots.
+                  type: string
+                  format: uri
+                  example: https://example.com/bots/foo
+                service_interface:
+                  description: |
+                    The interface type for the bot's
+                    [outgoing webhook](/api/outgoing-webhook-payload):
+
+                    - `1`: Generic
+                    - `2`: Slack-compatible
+                  type: integer
+                  enum: [1, 2]
+                  default: 1
+                  example: 1
+                default_sending_stream:
+                  description: |
+                    The name of the channel that the bot will send messages to
+                    by default. Pass the empty string to clear the default
+                    sending channel.
+                  type: string
+                  example: Denmark
+                default_events_register_stream:
+                  description: |
+                    The default channel for which the bot receives
+                    [`POST /register`](/api/register-queue) and
+                    [`GET /events`](/api/get-events) data. Pass the empty
+                    string to clear the default events-register channel.
+                  type: string
+                  example: Denmark
+                default_all_public_streams:
+                  description: |
+                    Whether the bot can send messages to all channels by default.
+                  type: boolean
+                  example: true
+            encoding:
+              role:
+                contentType: application/json
+              bot_owner_id:
+                contentType: application/json
+              config_data:
+                contentType: application/json
+              service_payload_url:
+                contentType: application/json
+              service_interface:
+                contentType: application/json
+              default_all_public_streams:
+                contentType: application/json
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  example: /path/to/img.png
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      full_name:
+                        type: string
+                        description: |
+                          The bot's full name after the update.
+                      avatar_url:
+                        type: string
+                        description: |
+                          The URL of the bot's avatar after the update.
+                      service_interface:
+                        type: integer
+                        description: |
+                          The `service_interface` value submitted in the request,
+                          or `1` if the request did not include this field.
+                      service_payload_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          The URL for the bot's outgoing webhook, or `null`
+                          if the request did not modify this field.
+                      config_data:
+                        type: object
+                        nullable: true
+                        additionalProperties:
+                          type: string
+                          description: |
+                            `{key}`: The stored string value for this configuration key.
+                        description: |
+                          The configuration data submitted in the request,
+                          or `null` if the request did not modify this field. This does
+                          not necessarily reflect the entire bot's `config_data`, only the
+                          updated values.
+                      default_sending_stream:
+                        type: string
+                        nullable: true
+                        description: |
+                          The name of the bot's default sending channel, or
+                          `null` if the bot does not have one.
+                      default_events_register_stream:
+                        type: string
+                        nullable: true
+                        description: |
+                          The name of the bot's default events-register
+                          channel, or `null` if the bot does not have one.
+                      default_all_public_streams:
+                        type: boolean
+                        description: |
+                          Whether the bot is subscribed to all public channels
+                          by default.
+                      bot_owner:
+                        type: string
+                        description: |
+                          The email address of the bot's owner. Omitted when
+                          the bot has no owner.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "full_name": "The New Bot Name",
+                        "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                        "service_interface": 1,
+                        "service_payload_url": null,
+                        "config_data": null,
+                        "default_sending_stream": null,
+                        "default_events_register_stream": null,
+                        "default_all_public_streams": false,
+                        "bot_owner": "iago@zulip.com",
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such bot",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response when the bot ID is invalid
+                          or refers to a user who is not a bot:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Email address already in use",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response when changing `short_name`
+                          would result in a duplicate bot email address:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Failed to change owner, bots can't own other bots",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response when the requested new
+                          `bot_owner_id` refers to a bot user:
+    delete:
+      operationId: deactivate-bot
+      summary: Deactivate a bot
+      tags: ["users"]
+      description: |
+        [Deactivate a bot user](/help/deactivate-or-reactivate-a-bot)
+        given the bot's user ID.
+
+        Only the bot's owner and
+        [organization administrators](/help/user-roles) can deactivate
+        a bot.
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "No such bot",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response when the bot ID is invalid
+                      or refers to a user who is not a bot:
   /bots/{bot_id}/api_key:
     get:
       operationId: get-bot-api-key
