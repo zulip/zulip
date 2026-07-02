@@ -1,0 +1,68 @@
+{
+    "action": "update",
+    "actor": {
+        "id": "e825c109-f691-4716-a85f-b68a2626531c",
+        "name": "Dhruv Shetty",
+        "email": "dhruvshetty2203@gmail.com",
+        "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
+        "type": "user"
+    },
+    "createdAt": "2026-05-28T09:59:40.257Z",
+    "data": {
+        "id": "e65b2421-bad1-4075-bfd4-24be439c83f9",
+        "createdAt": "2026-05-28T05:53:50.732Z",
+        "updatedAt": "2026-05-28T09:59:40.256Z",
+        "frequencyResolution": "weekly",
+        "name": "Zulip-Test-Project",
+        "description": "Summary for the Project",
+        "slugId": "532c1333013b",
+        "color": "#bec2c8",
+        "statusId": "82e50c50-04c3-424a-89ea-abd832530d1c",
+        "creatorId": "e825c109-f691-4716-a85f-b68a2626531c",
+        "startDate": "2026-05-28",
+        "startDateResolution": null,
+        "targetDate": "2026-06-02",
+        "targetDateResolution": null,
+        "startedAt": "2026-05-28T09:59:40.255Z",
+        "sortOrder": -48.27,
+        "prioritySortOrder": -1032,
+        "priority": 2,
+        "issueCountHistory": [],
+        "completedIssueCountHistory": [],
+        "scopeHistory": [],
+        "completedScopeHistory": [],
+        "inProgressScopeHistory": [],
+        "labelIds": [],
+        "url": "https://linear.app/zulipdhruv/project/zulip-test-project-532c1333013b",
+        "teamIds": [
+            "3f2043ea-4f81-4feb-a970-743c92028a07"
+        ],
+        "memberIds": [
+            "e825c109-f691-4716-a85f-b68a2626531c"
+        ],
+        "milestones": [
+            {
+                "id": "17cd9287-8bee-4581-9a52-202e1fb8e990",
+                "name": "Phase 1"
+            }
+        ],
+        "initiatives": [],
+        "status": {
+            "id": "82e50c50-04c3-424a-89ea-abd832530d1c",
+            "color": "#F2C94C",
+            "name": "In Progress",
+            "type": "started"
+        },
+        "content": "This is the project description."
+    },
+    "updatedFrom": {
+        "statusId": "2bd9226f-7d3a-4987-bea7-190e37029ccc",
+        "startedAt": null,
+        "updatedAt": "2026-05-28T09:59:12.781Z"
+    },
+    "url": "https://linear.app/zulipdhruv/project/zulip-test-project-532c1333013b",
+    "type": "Project",
+    "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
+    "webhookTimestamp": 1779962381554,
+    "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
+}
