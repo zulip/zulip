@@ -1,0 +1,50 @@
+{
+  "id": "evt_1Tcef5JEe0yY0QKryPb86CKZ",
+  "object": "event",
+  "api_version": "2026-04-22.dahlia",
+  "created": 1780115895,
+  "data": {
+    "object": {
+      "id": "ii_1Tcef5JEe0yY0QKr36usPoJ3",
+      "object": "invoiceitem",
+      "amount": 12100,
+      "currency": "usd",
+      "customer": "cus_UZ11RVzkmLf6Cf",
+      "customer_account": null,
+      "date": 1780115895,
+      "description": "wqre",
+      "discountable": true,
+      "discounts": [
+        "di_1Tcef5JEe0yY0QKruIQEK0rH"
+      ],
+      "invoice": "in_1TceefJEe0yY0QKrKgc29TeP",
+      "livemode": false,
+      "metadata": {},
+      "parent": null,
+      "period": {
+        "end": 1780115895,
+        "start": 1780115895
+      },
+      "pricing": {
+        "price_details": {
+          "price": "price_1TZtH5JEe0yY0QKrNgCWDrCD",
+          "product": "prod_UZ1DpExTQfai36"
+        },
+        "type": "price_details",
+        "unit_amount_decimal": "12100"
+      },
+      "proration": false,
+      "quantity": 1,
+      "quantity_decimal": "1",
+      "tax_rates": [],
+      "test_clock": null
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": "req_Zhi6MOREJYJVRf",
+    "idempotency_key": "f3cef8ff-591d-4993-a20a-e53e75d6e570"
+  },
+  "type": "invoiceitem.created"
+}
