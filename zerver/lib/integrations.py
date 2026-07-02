@@ -14,6 +14,7 @@ from django_stubs_ext import StrPromise
 from typing_extensions import override
 
 from zerver.lib.storage import static_path
+from zerver.lib.validator import check_string
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 from zerver.webhooks import fixtureless_integrations
 
@@ -490,6 +491,7 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration("followup", []),
 ]
 
+
 INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "airbrake", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
@@ -586,6 +588,22 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         # Compare payload format similarity with its replacement
         # CloudBees Unify to consider conversion instead of deletion.
         legacy=True,
+    ),
+    IncomingWebhookIntegration(
+        "confluence",
+        ["project-management"],
+        [WebhookScreenshotConfig("page_created.json")],
+        display_name="Confluence Server/Data Center",
+        url_options=[
+            WebhookUrlOption(name="base_url", label="Confluence base URL", input_type="text"),
+        ],
+        config_options=[
+            WebhookConfigOption(
+                name="confluence_token",
+                label="Personal access token",
+                validator=check_string,
+            ),
+        ],
     ),
     IncomingWebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
