@@ -470,8 +470,29 @@ select.settings_select {
         }
     }
 
+    .api-key-details-container {
+        /* Pin the button row to a constant width so revealing the inline
+           Cancel + "Confirm key rotation" controls can't reflow it: Cancel
+           then renders where the regenerate icon was, keeping the pointer on
+           Cancel (a stray double-click hits Cancel, not Confirm). 13.5em
+           holds Cancel + the confirm label; the key field absorbs it. */
+        .buttons-container {
+            min-width: 13.5em;
+            flex-shrink: 0;
+        }
+
+        .api-key {
+            min-width: 0;
+        }
+    }
+
     .modal_text_input {
         margin-bottom: 0;
+    }
+
+    .bot-api-key-regenerate-warning {
+        color: var(--color-text-warning-banner);
+        margin-top: 0.25em;
     }
 }
 
