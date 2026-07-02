@@ -307,6 +307,36 @@ def handle_tusd_hook(
         raise AccessDeniedError
 
     hook_name = payload.type
+
+    # A self-serve realm-import upload carries the registration's
+    # confirmation key in its metadata. Route those to the preregistration
+    # handlers based on that key, regardless of whether the request also
+    # happens to be authenticated -- e.g. when the user is signed in to an
+    # existing organization -- so the upload is recorded against the prereg
+    # rather than stored as an ordinary attachment.
+    key = payload.event.upload.meta_data.get("key")
+    if key:
+        try:
+            prereg_object = get_object_from_key(
+                key, [Confirmation.NEW_REALM_USER_REGISTRATION], mark_object_used=False
+            )
+        except ConfirmationKeyError:
+            return reject_upload("Unauthenticated upload", 401)
+
+        assert isinstance(prereg_object, PreregistrationRealm)
+        assert prereg_object.created_realm is None
+
+        if hook_name == "pre-create":
+            return handle_preregistration_pre_create_hook(
+                request, prereg_object, payload.event.upload
+            )
+        elif hook_name == "pre-finish":
+            return handle_preregistration_pre_finish_hook(
+                request, prereg_object, payload.event.upload
+            )
+        else:  # nocoverage
+            return HttpResponseNotFound()
+
     maybe_user = authenticate_user(request)
     if maybe_user.is_authenticated:
         # Authenticated requests are file upload requests
@@ -319,23 +349,4 @@ def handle_tusd_hook(
         else:
             return HttpResponseNotFound()
 
-    # Check if unauthenticated requests are for realm creation
-    key = payload.event.upload.meta_data.get("key")
-    if key is None:
-        return reject_upload("Unauthenticated upload", 401)
-    try:
-        prereg_object = get_object_from_key(
-            key, [Confirmation.NEW_REALM_USER_REGISTRATION], mark_object_used=False
-        )
-    except ConfirmationKeyError:
-        return reject_upload("Unauthenticated upload", 401)
-
-    assert isinstance(prereg_object, PreregistrationRealm)
-    assert prereg_object.created_realm is None
-
-    if hook_name == "pre-create":
-        return handle_preregistration_pre_create_hook(request, prereg_object, payload.event.upload)
-    elif hook_name == "pre-finish":
-        return handle_preregistration_pre_finish_hook(request, prereg_object, payload.event.upload)
-    else:  # nocoverage
-        return HttpResponseNotFound()
+    return reject_upload("Unauthenticated upload", 401)
