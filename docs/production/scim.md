@@ -50,8 +50,8 @@ The Zulip server-side configuration is straightforward:
    `/home/zulip/deployments/current/scripts/restart-server`.
 
    The SCIM IdP will authenticate its requests to your Zulip server by
-   sending a `WWW-Authenticate` header like this:
-   `WWW-Authenticate: Bearer <secret token>`. `name_formatted_included` needs to be set
+   sending an `Authorization` header like this:
+   `Authorization: Bearer <secret token>`. `name_formatted_included` needs to be set
    to `False` for Okta. It tells Zulip whether the IdP includes
    `name.formatted` in its `User` representation.
 
