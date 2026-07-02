@@ -686,7 +686,16 @@ function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
         // messages, go back to use the actual last message.
         if ($endc.parents(".message_row").length > 0) {
             const $parent_msg = $endc.parents(".message_row").first();
-            return $parent_msg.prev(".message_row");
+            // `.prev(".message_row")` would miss messages in a different
+            // `.sender-block`, so fall back to walking through the
+            // recipient row's full message-row list.
+            const $sibling = $parent_msg.prev(".message_row");
+            if ($sibling.length > 0) {
+                return $sibling;
+            }
+            const $rows_in_recipient = $parent_msg.closest(".recipient_row").find(".message_row");
+            const idx = $rows_in_recipient.index($parent_msg);
+            return idx > 0 ? $rows_in_recipient.eq(idx - 1) : $();
         }
         // If it's not in a .message_row, it's probably in a .message_header and
         // we can use the last message from the previous recipient_row.
@@ -696,7 +705,7 @@ function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
         // function to handle.
         if ($endc.parents(".message_header").length > 0) {
             const $overflow_recipient_row = $endc.parents(".recipient_row").first();
-            return $overflow_recipient_row.prev(".recipient_row").children(".message_row").last();
+            return $overflow_recipient_row.prev(".recipient_row").find(".message_row").last();
         }
         // If somehow we get here, do the default return.
     }
