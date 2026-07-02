@@ -2,9 +2,12 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from django.db import connection
+from django.conf import settings
+from django.contrib.postgres.operations import AddIndexConcurrently, RemoveIndexConcurrently
+from django.db import connection, migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.backends.utils import CursorWrapper
+from django.db.migrations.operations import AddIndex, RemoveIndex
 from django.db.migrations.state import StateApps
 from psycopg2.sql import SQL, Composable, Identifier
 
@@ -135,3 +138,32 @@ def rename_indexes_constraints(
             )
 
     return inner_migration
+
+
+"""
+The following functions utilize kwargs to pass through arguments.
+Because we can't fully control the details of the incoming object,
+we need to ignore some linting/typing rules for the parameters.
+"""
+
+
+def add_index(**kwargs) -> AddIndex:  # type: ignore[no-untyped-def]  # noqa: ANN003
+    """
+    Gracefully handle concurrent index migration setting
+    when adding indices with ./manage.py migrate
+    """
+    if settings.MIGRATE_WITH_CONCURRENT_INDICES:
+        return AddIndexConcurrently(**kwargs)
+    else:
+        return migrations.AddIndex(**kwargs)
+
+
+def remove_index(**kwargs) -> RemoveIndex:  # type: ignore[no-untyped-def]  # noqa: ANN003
+    """
+    Gracefully handle concurrent index migration setting
+    when removing indices with ./manage.py migrate
+    """
+    if settings.MIGRATE_WITH_CONCURRENT_INDICES:
+        return RemoveIndexConcurrently(**kwargs)
+    else:
+        return migrations.RemoveIndex(**kwargs)

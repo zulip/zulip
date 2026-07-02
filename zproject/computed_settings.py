@@ -46,6 +46,7 @@ from .configured_settings import (
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
+    MIGRATE_WITH_CONCURRENT_INDICES,
     PUSH_NOTIFICATION_BOUNCER_URL,
     RATE_LIMITING_RULES,
     REALM_HOSTS,
@@ -1319,3 +1320,6 @@ SCIM_SERVICE_PROVIDER = {
 TOPIC_SUMMARIZATION_API_KEY = get_secret("topic_summarization_api_key", None)
 
 PARTIAL_USERS = bool(os.environ.get("PARTIAL_USERS"))
+
+# Atomic transactions can only happen when we *aren't* using concurrent indices in migrations
+ATOMIC_PG_MIGRATIONS = not MIGRATE_WITH_CONCURRENT_INDICES

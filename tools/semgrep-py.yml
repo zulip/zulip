@@ -100,7 +100,7 @@ rules:
 
   - id: use-addindexconcurrently
     pattern: django.db.migrations.AddIndex(...)
-    message: "Import and use AddIndexConcurrently from django.contrib.postgres.operations rather than AddIndex"
+    message: "Import and use add_index from zerver/lib/migrate.py rather than AddIndex"
     languages: [python]
     severity: ERROR
     paths:
@@ -132,7 +132,7 @@ rules:
 
   - id: use-removeindexconcurrently
     pattern: django.db.migrations.RemoveIndex(...)
-    message: "Import and use RemoveIndexConcurrently from django.contrib.postgres.operations rather than RemoveIndex"
+    message: "Import and use remove_index from zerver/lib/migrate.py rather than RemoveIndex"
     languages: [python]
     severity: ERROR
     paths:
@@ -263,6 +263,9 @@ rules:
       - pattern-not: |
           class Migration(migrations.Migration):
               atomic = False
+      - pattern-not: |
+          class Migration(migrations.Migration):
+              atomic = settings.ATOMIC_PG_MIGRATIONS
     paths:
       include:
         - "**/migrations"
