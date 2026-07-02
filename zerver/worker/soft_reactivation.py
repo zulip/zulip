@@ -4,7 +4,7 @@ from typing import Any
 
 from typing_extensions import override
 
-from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.soft_deactivation import reactivate_user_and_notify_client
 from zerver.models.users import get_user_profile_by_id
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -38,4 +38,4 @@ class SoftReactivationWorker(QueueProcessingWorker):
             event["user_profile_id"],
         )
         user_profile = get_user_profile_by_id(event["user_profile_id"])
-        reactivate_user_if_soft_deactivated(user_profile)
+        reactivate_user_and_notify_client(user_profile)

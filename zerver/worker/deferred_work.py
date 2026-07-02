@@ -22,7 +22,7 @@ from zerver.lib.remote_server import (
     PushNotificationBouncerRetryLaterError,
     send_server_data_to_push_bouncer,
 )
-from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.soft_deactivation import reactivate_user_and_notify_client
 from zerver.lib.upload import handle_reupload_emojis_event
 from zerver.models import Realm, RealmAuditLog, RealmExport
 from zerver.models.users import get_system_bot, get_user_profile_by_id
@@ -185,7 +185,7 @@ class DeferredWorker(QueueProcessingWorker):
                 event["user_profile_id"],
             )
             user_profile = get_user_profile_by_id(event["user_profile_id"])
-            reactivate_user_if_soft_deactivated(user_profile)
+            reactivate_user_and_notify_client(user_profile)
         elif event["type"] == "push_bouncer_update_for_realm":
             # In the future we may use the realm_id to send only that single realm's info.
             realm_id = event["realm_id"]

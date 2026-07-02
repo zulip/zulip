@@ -61,7 +61,26 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
     }
     }
     #app-loading-unsupported-browser, #app-loading-unsupported-desktop-app {
-        margin-top: 25px;
+    margin-top: 25px;
+    }
+    #app-loading-long-term-idle {
+    margin: 25px auto 0;
+    max-width: 25em;
+    padding: 0.625em 0.8125em;
+    font-size: 0.875em;
+    line-height: 1.25;
+    text-align: center;
+    background-color: hsl(204, 58%, 92%);
+    color: hsl(241, 95%, 25%);
+    border: 1px solid hsla(204, 49%, 29%, 0.4);
+    border-radius: 6px;
+    }
+    #app-loading-long-term-idle p {
+    margin: 0;
+    }
+    #app-loading-long-term-idle .app-loading-long-term-idle-lead {
+    margin-bottom: 0.25em;
+    font-weight: 600;
     }
     #app-loading-bottom-content {
     top: unset;
@@ -93,6 +112,18 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
     :root.color-scheme-automatic #app-loading {
     background-color: hsl(0, 0%, 11%);
     color: hsl(236, 33%, 90%);
+    }
+    }
+    :root.dark-theme #app-loading-long-term-idle {
+    background-color: hsl(204, 100%, 12%);
+    color: hsl(221, 93%, 89%);
+    border-color: hsla(205, 58%, 69%, 0.4);
+    }
+    @media (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic #app-loading-long-term-idle {
+    background-color: hsl(204, 100%, 12%);
+    color: hsl(221, 93%, 89%);
+    border-color: hsla(205, 58%, 69%, 0.4);
     }
     }
 
@@ -156,6 +187,10 @@ Accessing messages requires an account and Zulip API key.
                 <a href="https://zulip.com/apps/" target="_blank" rel="noopener noreferrer">Download the latest version.</a>
                 {% endtrans %}
             </p>
+        </div>
+        <div id="app-loading-long-term-idle" hidden>
+            <p class="app-loading-long-term-idle-lead" hidden></p>
+            <p class="app-loading-long-term-idle-body"></p>
         </div>
     </div>
     <div id="app-loading-bottom-content">

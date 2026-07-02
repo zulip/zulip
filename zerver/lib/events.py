@@ -62,7 +62,11 @@ from zerver.lib.scheduled_messages import (
     get_undelivered_reminders,
     get_undelivered_scheduled_messages,
 )
-from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.soft_deactivation import (
+    get_days_since_last_visit,
+    queue_soft_reactivation,
+    reactivate_user_if_soft_deactivated,
+)
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.streams import do_get_streams, get_web_public_streams
@@ -1064,6 +1068,12 @@ def apply_event(
     elif event["type"] == "heartbeat":
         # It may be impossible for a heartbeat event to actually reach
         # this code path. But in any case, they're noops.
+        pass
+
+    elif event["type"] == "long_term_idle":
+        # Signals a returning long-term-idle user that their account has
+        # finished reactivating; the client reloads in response. There is no
+        # initial state or state update associated with it.
         pass
 
     elif event["type"] == "saved_snippets":
@@ -2093,6 +2103,11 @@ class ClientCapabilities(TypedDict):
     empty_topic_name: NotRequired[bool]
     simplified_presence_events: NotRequired[bool]
     individual_emoji_changes: NotRequired[bool]
+    # When set, a returning long-term-idle user is not reactivated
+    # synchronously during register; instead the backfill is enqueued and a
+    # `long_term_idle` event is sent when it finishes, so the client can show
+    # a loading screen and reload once the account is ready.
+    long_term_idle_reactivation: NotRequired[bool]
     # Deprecated and no longer has any effect
     user_settings_object: NotRequired[bool]
 
@@ -2182,6 +2197,35 @@ def do_events_register(
             allow_empty_topic_name=empty_topic_name,
         )
         return ret
+
+    if user_profile.long_term_idle and client_capabilities.get(
+        "long_term_idle_reactivation", False
+    ):
+        # A returning long-term-idle user faces a potentially minute-long
+        # UserMessage backfill. Rather than block this request on it, enqueue
+        # the reactivation and return a minimal response with an event queue.
+        # The client shows a loading screen and waits for the `long_term_idle`
+        # event that SoftReactivationWorker sends when the backfill finishes,
+        # then reloads into the normal experience.
+        queue_soft_reactivation(user_profile.id)
+        result = request_event_queue(
+            user_profile,
+            user_client,
+            apply_markdown,
+            client_gravatar,
+            slim_presence,
+            idle_queue_timeout,
+            ["long_term_idle"],
+            all_public_streams,
+        )
+        if result is None:
+            raise JsonableError(_("Could not allocate event queue"))
+        return {
+            "queue_id": result.queue_id,
+            "last_event_id": -1,
+            "long_term_idle_reactivating": True,
+            "long_term_idle_days": get_days_since_last_visit(user_profile),
+        }
 
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)

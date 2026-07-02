@@ -18,6 +18,7 @@ from zerver.lib.i18n import (
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
+from zerver.lib.soft_deactivation import get_days_since_last_visit
 from zerver.lib.workplace_users import (
     realm_eligible_for_non_workplace_pricing,
     realm_on_discounted_cloud_plan,
@@ -117,7 +118,15 @@ def build_page_params_for_home_page_load(
     # from laptop suspend). See #36094.
     is_client_reload = request.GET.get("state_data") == "deferred" and user_profile is not None
 
-    if user_profile is not None and not is_client_reload:
+    # A returning long-term-idle user faces a potentially minute-long
+    # UserMessage backfill during register. Rather than block the HTML
+    # response on it, render the app frame immediately (like a reload) and
+    # let the client fetch state via /json/register, where it opts into the
+    # reactivating flow: a loading screen while the backfill runs in the
+    # background, then a reload once the account is ready.
+    is_long_term_idle = user_profile is not None and user_profile.long_term_idle
+
+    if user_profile is not None and not is_client_reload and not is_long_term_idle:
         client = RequestNotes.get_notes(request).client
         assert client is not None
         state_data = do_events_register(
@@ -137,8 +146,8 @@ def build_page_params_for_home_page_load(
         queue_id = state_data["queue_id"]
         default_language = state_data["user_settings"]["default_language"]
     elif user_profile is not None:
-        # Client-triggered reload: the client will fetch state_data
-        # via /json/register after the page loads.
+        # Client-triggered reload or a returning long-term-idle user: the
+        # client will fetch state_data via /json/register after the page loads.
         state_data = None
         queue_id = None
         default_language = user_profile.default_language
@@ -191,9 +200,18 @@ def build_page_params_for_home_page_load(
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
         is_spectator=user_profile is None,
         presence_history_limit_days_for_web_app=settings.PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP,
-        # The client will fetch state_data (and create an event
-        # queue) via /json/register for spectators and reloads.
-        no_event_queue=user_profile is None or is_client_reload,
+        # The client will fetch state_data (and create an event queue)
+        # via /json/register for spectators, reloads, and returning
+        # long-term-idle users.
+        no_event_queue=user_profile is None or is_client_reload or is_long_term_idle,
+        # A returning long-term-idle user; the client shows a loading screen
+        # while the account reactivates in the background, then reloads.
+        is_long_term_idle=is_long_term_idle,
+        long_term_idle_days=(
+            get_days_since_last_visit(user_profile)
+            if user_profile is not None and user_profile.long_term_idle
+            else None
+        ),
         show_try_zulip_modal=show_try_zulip_modal,
         non_workplace_pricing_eligible=realm_eligible_for_non_workplace_pricing(realm),
         is_cloud_realm_with_discounted_plan=realm_on_discounted_cloud_plan(realm),
