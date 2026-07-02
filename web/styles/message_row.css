@@ -342,6 +342,11 @@
             );
             scale: 0.98;
         }
+
+        .zulip-icon {
+            vertical-align: -3px;
+            margin-right: 4px;
+        }
     }
 
     &.content_edit_mode .message_length_controller {
