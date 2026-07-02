@@ -578,10 +578,10 @@ test("basics", () => {
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
 
-    // "group-pm-with" was replaced with "dm-including"
+    // "group-pm-with" was replaced with "dm-with"
     terms = [{operator: "group-pm-with", operand: [joe.user_id]}];
     filter = new Filter(terms);
-    assert.ok(filter.has_operator("dm-including"));
+    assert.ok(filter.has_operator("dm-with"));
     assert.ok(!filter.has_operator("group-pm-with"));
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
@@ -1115,9 +1115,13 @@ test("canonicalization", () => {
     assert.equal(term.operator, "dm");
     assert.deepEqual(term.operand, [me.user_id]);
 
-    // "group-pm-with" was replaced with "dm-including"
+    // "group-pm-with" was replaced with "dm-with"
     term = Filter.canonicalize_term({operator: "group-pm-with", operand: [joe.user_id]});
-    assert.equal(term.operator, "dm-including");
+    assert.equal(term.operator, "dm-with");
+    assert.deepEqual(term.operand, [joe.user_id]);
+
+    term = Filter.canonicalize_term({operator: "dm-including", operand: [joe.user_id]});
+    assert.equal(term.operator, "dm-with");
     assert.deepEqual(term.operand, [joe.user_id]);
 
     term = Filter.canonicalize_term({operator: "search", operand: "foo"});
@@ -1475,7 +1479,7 @@ test("predicate_basics", ({override}) => {
         }),
     );
 
-    predicate = get_predicate([["dm-including", [1000]]]);
+    predicate = get_predicate([["dm-with", [1000]]]);
     assert.ok(
         !predicate({
             type: direct_message,
@@ -1483,7 +1487,7 @@ test("predicate_basics", ({override}) => {
         }),
     );
 
-    predicate = get_predicate([["dm-including", [joe.user_id]]]);
+    predicate = get_predicate([["dm-with", [joe.user_id]]]);
     assert.ok(
         predicate({
             type: direct_message,
@@ -2102,7 +2106,11 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(terms, true), string);
 
     terms = [{operator: "dm-including", operand: ""}];
-    string = "direct messages including";
+    string = "direct messages with";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "dm-with", operand: ""}];
+    string = "direct messages with";
     assert.equal(Filter.search_description_as_html(terms, true), string);
 
     terms = [{operator: "mentions", operand: ""}];
@@ -2332,7 +2340,8 @@ test("convert_suggestion_to_term", () => {
         ["channels:public", true],
         ["channels:private", false],
         ["topic:GhostTown", true],
-        [`dm-including:${alice.user_id}`, true],
+        [`dm-with:${alice.user_id}`, true],
+        [`dm-with:-1`, false],
         ["sender:-1", false],
         ["sender:me", true],
         [`dm:${[alice.user_id, -1]}`, false],
@@ -2358,7 +2367,7 @@ test("convert_suggestion_to_term", () => {
         [
             `dm-including:"${karl.full_name}, ${shubham.full_name}"`,
             true,
-            {operator: "dm-including", operand: [karl.user_id, shubham.user_id]},
+            {operator: "dm-with", operand: [karl.user_id, shubham.user_id]},
         ],
         // A name that matches no user is invalid.
         ['dm:"No Such Person"', false],
@@ -3188,7 +3197,7 @@ run_test("is_spectator_compatible", () => {
     assert.ok(Filter.is_spectator_compatible([{operator: "stream", operand: "Denmark"}]));
     // "streams" was renamed to "channels"
     assert.ok(Filter.is_spectator_compatible([{operator: "streams", operand: "public"}]));
-    // "group-pm-with:" was replaced with "dm-including:"
+    // "group-pm-with:" was replaced with "dm-with:"
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
     );
