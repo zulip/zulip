@@ -13,11 +13,15 @@ import {
 } from "text-field-edit";
 import * as z from "zod/mini";
 
+import render_enumerated_split_message_part from "../templates/enumerated_split_message_part.hbs";
+
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_textarea from "./compose_textarea.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -744,20 +748,7 @@ export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>)
     const cursor_position = $textarea.caret();
     const current_content = $textarea.val()!;
 
-    return position_inside_code_block(current_content, cursor_position);
-}
-
-export function position_inside_code_block(content: string, position: number): boolean {
-    let unique_insert = "UNIQUEINSERT:" + Math.random();
-    while (content.includes(unique_insert)) {
-        unique_insert = "UNIQUEINSERT:" + Math.random();
-    }
-    const unique_insert_content =
-        content.slice(0, position) + unique_insert + content.slice(position);
-    const rendered_content = markdown.parse_non_message(unique_insert_content);
-    const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
-    const code_blocks = rendered_html.querySelectorAll("pre > code");
-    return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
+    return compose_textarea.position_inside_code_block(current_content, cursor_position);
 }
 
 // A function with the same name implements this on the Python side.
@@ -1702,9 +1693,14 @@ export function render_and_show_preview(
     const preview_render_count = compose_state.get_preview_render_count() + 1;
     compose_state.set_preview_render_count(preview_render_count);
 
-    function show_preview(rendered_content: string, raw_content?: string): void {
-        // content is passed to check for status messages ("/me ...")
-        // and will be undefined in case of errors
+    function build_preview_html(
+        rendered_content: string,
+        message_number: number | "single",
+        // Raw source text for the part being previewed. Required to detect
+        // /me status messages (which need special rendering). Pass undefined
+        // when the content is unavailable (e.g. on server error).
+        raw_content?: string,
+    ): string {
         let rendered_preview_html;
         if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
             // Handle previews of /me messages
@@ -1717,13 +1713,89 @@ export function render_and_show_preview(
             rendered_preview_html = rendered_content;
         }
 
-        $preview_content_box.html(postprocess_content(rendered_preview_html));
+        if (message_number !== "single") {
+            // A positive number means that the message should be enumerated.
+            return postprocess_content(
+                render_enumerated_split_message_part({message_number, rendered_preview_html}),
+            );
+        }
+        return postprocess_content(rendered_preview_html);
+    }
+
+    if (content.length === 0) {
+        $preview_content_box.html(
+            build_preview_html($t_html({defaultMessage: "Nothing to preview"}), "single"),
+        );
+        return;
+    }
+
+    const parts = compose_split_messages.get_all_split_parts(content);
+    const should_enumerate = parts.length > 1;
+
+    const any_needs_backend = parts.some((part) => markdown.contains_backend_only_syntax(part));
+    if (any_needs_backend) {
+        if (show_spinner) {
+            const $spinner = $preview_spinner.expectOne();
+            loading.make_indicator($spinner);
+        }
+    } else {
+        let local_preview_html = "";
+        for (const [i, part] of parts.entries()) {
+            const message_number: number | "single" = should_enumerate ? i + 1 : "single";
+            local_preview_html += build_preview_html(
+                markdown.render(part).content,
+                message_number,
+                part,
+            );
+        }
+        $preview_content_box.html(local_preview_html);
+    }
+
+    async function post_render(part: string): Promise<unknown> {
+        return new Promise((resolve, reject) => {
+            void channel.post({
+                url: "/json/messages/render",
+                data: {content: part},
+                success: resolve,
+                error: reject,
+            });
+        });
+    }
+
+    void (async () => {
+        const results = await Promise.allSettled(parts.map(async (part) => post_render(part)));
+        if (
+            preview_render_count !== compose_state.get_preview_render_count() ||
+            !$preview_container.hasClass("preview_mode")
+        ) {
+            return;
+        }
+        if (any_needs_backend) {
+            loading.destroy_indicator($preview_spinner);
+        }
+
+        // Rebuild the preview box in order. A single failed part gets
+        // its own inline error without wiping the others.
+        let preview_html = "";
+        for (const [i, result] of results.entries()) {
+            const message_number: number | "single" = should_enumerate ? i + 1 : "single";
+            if (result.status === "fulfilled") {
+                const data = message_render_response_schema.parse(result.value);
+                preview_html += build_preview_html(data.rendered, message_number, parts[i]);
+            } else {
+                preview_html += build_preview_html(
+                    $t_html({defaultMessage: "Failed to generate preview"}),
+                    message_number,
+                    undefined,
+                );
+            }
+        }
+        $preview_content_box.html(preview_html);
         rendered_markdown.update_elements($preview_content_box);
 
         // Check for thumbnail loading placeholders and start polling
         clear_thumbnail_polling();
         pending_thumbnail_paths = extract_thumbnail_paths($preview_content_box);
-
         if (pending_thumbnail_paths.size > 0) {
             void poll_thumbnail_status(
                 $preview_container,
@@ -1732,52 +1804,5 @@ export function render_and_show_preview(
                 content,
             );
         }
-    }
-
-    if (content.length === 0) {
-        show_preview($t_html({defaultMessage: "Nothing to preview"}));
-    } else {
-        if (markdown.contains_backend_only_syntax(content) && show_spinner) {
-            const $spinner = $preview_spinner.expectOne();
-            loading.make_indicator($spinner);
-        } else {
-            // For messages that don't appear to contain syntax that
-            // is only supported by our backend Markdown processor, we
-            // render using the frontend Markdown processor (but still
-            // render server-side to ensure the preview is accurate;
-            // if the `markdown.contains_backend_only_syntax` logic is
-            // wrong, users will see a brief flicker of the locally
-            // echoed frontend rendering before receiving the
-            // authoritative backend rendering from the server).
-            const rendered_content = markdown.render(content).content;
-            show_preview(rendered_content);
-        }
-        void channel.post({
-            url: "/json/messages/render",
-            data: {content},
-            success(response_data) {
-                if (
-                    preview_render_count !== compose_state.get_preview_render_count() ||
-                    !$preview_container.hasClass("preview_mode")
-                ) {
-                    // The user is no longer in preview mode or the compose
-                    // input has already been updated with new raw Markdown
-                    // since this rendering request was sent off to the server, so
-                    // there's nothing to do.
-                    return;
-                }
-                const data = message_render_response_schema.parse(response_data);
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview(data.rendered, content);
-            },
-            error() {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
-            },
-        });
-    }
+    })();
 }
