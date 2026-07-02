@@ -64,6 +64,7 @@ from zerver.actions.user_settings import do_change_password, do_change_user_sett
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -94,7 +95,7 @@ from zerver.lib.user_groups import (
     get_system_user_group_for_user,
     is_user_in_group,
 )
-from zerver.lib.users import get_users_for_api
+from zerver.lib.users import get_api_key, get_users_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -1313,9 +1314,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(query_params["user_id"], [str(hamlet.id)])
 
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        api_key = get_api_key(hamlet)
         self.assertEqual(
             otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
-            self.example_user("hamlet").api_key,
+            api_key,
         )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
@@ -1483,9 +1485,11 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
             self.assertEqual(query_params["email"], [email])
             encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+            user_profile = get_user_by_delivery_email(email, realm)
+            api_key = get_api_key(user_profile)
             self.assertIn(
                 otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
-                get_user_by_delivery_email(email, realm).api_key,
+                api_key,
             )
             return
         elif desktop_flow_otp:
@@ -3475,7 +3479,7 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
 
     def test_saml_idp_initiated_logout_success(self) -> None:
         hamlet = self.example_user("hamlet")
-        old_api_key = hamlet.api_key
+        old_api_key = get_api_key(hamlet)
         self.login("hamlet")
 
         self.assert_logged_in_user_id(hamlet.id)
@@ -3502,8 +3506,9 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
         )
 
         hamlet.refresh_from_db()
+        api_key = get_api_key(hamlet)
         # Ensure that the user's api_key was rotated:
-        self.assertNotEqual(hamlet.api_key, old_api_key)
+        self.assertNotEqual(api_key, old_api_key)
 
     def test_saml_idp_initiated_logout_request_for_different_user(self) -> None:
         """
@@ -3512,7 +3517,7 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
         """
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
-        cordelia_old_api_key = cordelia.api_key
+        cordelia_old_api_key = get_api_key(cordelia)
         self.login("hamlet")
 
         self.assert_logged_in_user_id(hamlet.id)
@@ -3522,8 +3527,9 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
         self.assert_logged_in_user_id(hamlet.id)
 
         cordelia.refresh_from_db()
+        cordelia_api_key = get_api_key(cordelia)
         # Cordelia's api_key should have been rotated:
-        self.assertNotEqual(cordelia.api_key, cordelia_old_api_key)
+        self.assertNotEqual(cordelia_api_key, cordelia_old_api_key)
 
     def test_saml_idp_initiated_logout_invalid_nameid_format(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -6042,13 +6048,16 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(query_params["realm"], ["http://zulip-mobile.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        hamlet = self.example_user("hamlet")
+        api_key = get_api_key(hamlet)
         self.assertEqual(
             otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
-            self.example_user("hamlet").api_key,
+            api_key,
         )
 
     def test_social_auth_mobile_success_legacy_url(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
+        hamlet = self.example_user("hamlet")
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
         self.assert_length(mail.outbox, 0)
         self.user_profile.date_joined = timezone_now() - timedelta(
@@ -6089,9 +6098,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        api_key = get_api_key(hamlet)
         self.assertIn(
             otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
-            self.example_user("hamlet").api_key,
+            api_key,
         )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
@@ -6711,13 +6721,14 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         super().setUp()
         self.user_profile = self.example_user("hamlet")
         self.email = self.user_profile.delivery_email
+        self.api_key = get_api_key(self.user_profile)
 
     def test_success(self) -> None:
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         data = self.assert_json_success(result)
         self.assertEqual(data["email"], self.email)
         self.assertEqual(data["user_id"], self.user_profile.id)
-        self.assertEqual(data["api_key"], self.user_profile.api_key)
+        self.assertEqual(data["api_key"], self.api_key)
 
     def test_invalid_email(self) -> None:
         email = "hamlet"
@@ -7418,9 +7429,10 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        api_key = get_api_key(user_profile)
         self.assertIn(
             otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
-            self.example_user("hamlet").api_key,
+            api_key,
         )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
@@ -7474,9 +7486,11 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        hamlet = self.example_user("hamlet")
+        api_key = get_api_key(hamlet)
         self.assertIn(
             otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
-            self.example_user("hamlet").api_key,
+            api_key,
         )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
@@ -9575,7 +9589,7 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
         self.email = self.example_email("hamlet")
         self.realm = get_realm("zulip")
         self.user_profile = get_user_by_delivery_email(self.email, self.realm)
-        self.api_key = self.user_profile.api_key
+        self.api_key = get_api_key(self.user_profile)
         self.raw_user_data = get_users_for_api(
             self.user_profile.realm,
             self.user_profile,
@@ -9935,6 +9949,32 @@ class LDAPGroupSyncTest(ZulipTestCase):
         self.assertIn(
             'DEBUG:django_auth_ldap:Failed to populate user cordelia: search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0)',
             django_ldap_log.output,
+        )
+
+
+class ListAPIKeysTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        self.user_profile = self.example_user("hamlet")
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        user_api_key = create_user_api_key(self.user_profile, "Test API key")
+
+        result = self.api_get(self.user_profile, "/api/v1/users/me/api_keys")
+        self.assert_json_success(result)
+        json = result.json()
+        # Users should have at least one API key
+        self.assertGreaterEqual(len(json["api_keys"]), 1)
+        # Make sure that the API keys themselves are never shown
+        self.assertNotIn("api_key", json["api_keys"][0].keys())
+        # Check that the API key we created is in the list
+        self.assertTrue(any(item["id"] == user_api_key.id for item in json["api_keys"]))
+
+    def test_not_loggedin(self) -> None:
+        result = self.client_get("/api/v1/users/me/api_keys")
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
         )
 
 

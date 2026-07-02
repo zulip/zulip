@@ -33,7 +33,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.user_settings import set_avatar_to_default
 from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
-from zerver.lib.bulk_create import bulk_set_stream_recipient_fields
+from zerver.lib.bulk_create import bulk_set_stream_recipient_fields, create_api_keys_for_users
 from zerver.lib.export import Field, Path, Record, TableName, date_fields_for_table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
@@ -1619,7 +1619,6 @@ def do_import_realm(
     )
     for user_profile_dict in data["zerver_userprofile"]:
         user_profile_dict["password"] = None
-        user_profile_dict["api_key"] = generate_api_key()
         for field_name in UserProfile.SPECIAL_PERMISSIONS_TO_RESET_AT_IMPORT:
             del user_profile_dict[field_name]
 
@@ -1640,7 +1639,9 @@ def do_import_realm(
         validate_email(user_profile.email)
         user_profile.set_unusable_password()
         user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
-    UserProfile.objects.bulk_create(user_profiles)
+
+    created_profiles = UserProfile.objects.bulk_create(user_profiles)
+    create_api_keys_for_users(created_profiles)
 
     # Update date_joined field here so that we do not need to worry about
     # conversion time and import time being different.

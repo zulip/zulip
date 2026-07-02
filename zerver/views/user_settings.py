@@ -31,7 +31,8 @@ from zerver.actions.user_settings import (
     do_change_password,
     do_change_user_delivery_email,
     do_change_user_setting,
-    do_regenerate_api_key,
+    do_regenerate_all_api_keys,
+    do_regenerate_single_api_key,
     do_start_email_change_process,
     set_avatar_to_default,
 )
@@ -56,10 +57,11 @@ from zerver.lib.rate_limiter import (
     readable_expiry_string_for_plaintext,
     should_rate_limit,
 )
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
-from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.typed_endpoint_validators import (
     check_int_in_validator,
     check_string_in_validator,
@@ -592,7 +594,25 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 # a bot regenerating its own API key.
 @typed_endpoint_without_parameters
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    new_api_key = do_regenerate_api_key(user_profile, user_profile)
+    description = RequestNotes.get_notes(request).client_name
+    new_api_key = do_regenerate_all_api_keys(user_profile, user_profile, description)
+    json_result = dict(
+        api_key=new_api_key,
+    )
+    return json_success(request, data=json_result)
+
+
+@typed_endpoint
+def regenerate_single_api_key(
+    request: HttpRequest, user_profile: UserProfile, *, key_id: PathOnly[int]
+) -> HttpResponse:
+    description = RequestNotes.get_notes(request).client_name
+    new_api_key = do_regenerate_single_api_key(
+        user_profile=user_profile,
+        acting_user=user_profile,
+        key_id=key_id,
+        description=description,
+    )
     json_result = dict(
         api_key=new_api_key,
     )

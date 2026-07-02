@@ -58,7 +58,7 @@ class GetStreamsTest(ZulipTestCase):
             include_public="false",
             include_subscribed="false",
         )
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(10):
             result = self.api_get(test_bot, "/api/v1/streams", filters)
         owner_subs = self.api_get(hamlet, "/api/v1/users/me/subscriptions")
 
@@ -82,7 +82,7 @@ class GetStreamsTest(ZulipTestCase):
             include_public="false",
             include_subscribed="true",
         )
-        with self.assert_database_query_count(8):
+        with self.assert_database_query_count(11):
             result = self.api_get(test_bot, "/api/v1/streams", filters)
 
         json = self.assert_json_success(result)
@@ -99,7 +99,7 @@ class GetStreamsTest(ZulipTestCase):
         # Check it correctly lists the bot owner's subs + all public streams
         self.make_stream("private_stream", realm=realm, invite_only=True)
         self.subscribe(test_bot, "private_stream")
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(10):
             result = self.api_get(
                 test_bot,
                 "/api/v1/streams",
@@ -123,7 +123,7 @@ class GetStreamsTest(ZulipTestCase):
 
         # Check it correctly lists the bot owner's subs + all public streams +
         # the bot's subs
-        with self.assert_database_query_count(8):
+        with self.assert_database_query_count(11):
             result = self.api_get(
                 test_bot,
                 "/api/v1/streams",
@@ -165,7 +165,7 @@ class GetStreamsTest(ZulipTestCase):
         )
         # Check it correctly lists the bot owner's subs + the channels
         # bot has content access to.
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(13):
             result = self.api_get(
                 test_bot,
                 "/api/v1/streams",
@@ -229,7 +229,7 @@ class GetStreamsTest(ZulipTestCase):
         result_stream_names.extend(
             [private_stream_1.name, private_stream_2.name, private_stream_3.name]
         )
-        with self.assert_database_query_count(8):
+        with self.assert_database_query_count(10):
             result = self.api_get(normal_user, url, data)
         json = self.assert_json_success(result)
         self.assertEqual(sorted(s["name"] for s in json["streams"]), sorted(result_stream_names))
@@ -272,7 +272,7 @@ class GetStreamsTest(ZulipTestCase):
         # `can_add_subscribers_group` or `can_administer_channel_group`
         # since `allow_everyone_group` if false for both of those groups.
         result_stream_names = ["Verona", "private_stream_1", "design", "Rome"]
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             result = self.api_get(guest_user, url, data)
         json = self.assert_json_success(result)
         self.assertEqual(sorted(s["name"] for s in json["streams"]), sorted(result_stream_names))
@@ -282,7 +282,7 @@ class GetStreamsTest(ZulipTestCase):
         admin_user = self.example_user("iago")
         self.assertTrue(admin_user.is_realm_admin)
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             result = self.api_get(admin_user, url, data)
         json = self.assert_json_success(result)
 
@@ -309,7 +309,7 @@ class GetStreamsTest(ZulipTestCase):
         # Realm admin users can see all streams if `exclude_archived`
         # is set to false.
         data = {"include_all": "true", "exclude_archived": "false"}
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             result = self.api_get(admin_user, url, data)
         json = self.assert_json_success(result)
         stream_names = {s["name"] for s in json["streams"]}
@@ -328,7 +328,7 @@ class GetStreamsTest(ZulipTestCase):
             do_deactivate_stream(stream, acting_user=None)
 
         data = {"include_all": "true"}
-        with self.assert_database_query_count(3):
+        with self.assert_database_query_count(5):
             result = self.api_get(admin_user, url, data)
         json = self.assert_json_success(result)
         stream_names = {s["name"] for s in json["streams"]}
@@ -402,7 +402,7 @@ class GetStreamsTest(ZulipTestCase):
         # Check it correctly lists all content access streams with
         # include_can_access_content=false
         filters = dict(include_can_access_content="true")
-        with self.assert_database_query_count(8):
+        with self.assert_database_query_count(10):
             result = self.api_get(user, "/api/v1/streams", filters)
         json = self.assert_json_success(result)
         result_streams = [
@@ -833,7 +833,7 @@ class GetSubscribersTest(ZulipTestCase):
         for user in [bot, othello, self.user_profile, *idle_users]:
             self.subscribe(user, stream_names[1])
 
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(13):
             result = self.api_get(
                 self.user_profile,
                 "/api/v1/users/me/subscriptions",
@@ -883,7 +883,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(73):
+        with self.assert_database_query_count(75):
             self.subscribe_via_post(
                 self.user_profile,
                 stream_names,

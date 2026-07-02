@@ -362,7 +362,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(8):
             reactivate_user_if_soft_deactivated(long_term_idle_user)
         self.assertFalse(long_term_idle_user.long_term_idle)
         self.assertEqual(

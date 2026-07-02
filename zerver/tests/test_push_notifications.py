@@ -25,8 +25,9 @@ from analytics.models import RealmCount
 from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.user_settings import do_regenerate_api_key
+from zerver.actions.user_settings import do_regenerate_single_api_key
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     DeviceToken,
@@ -1092,7 +1093,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
         user = self.example_user("cordelia")
         self.login_user(user)
         server = self.server
-
+        api_key_1 = create_user_api_key(user, "Zulip Mobile Test")
+        api_key_2 = create_user_api_key(user, "Zulip Mobile Test")
         endpoints: list[tuple[str, str, int, Mapping[str, str]]] = [
             (
                 "/json/users/me/apns_device_token",
@@ -1253,7 +1255,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             mock.patch("zerver.worker.deferred_work.retry_event") as mock_retry,
         ):
             with self.captureOnCommitCallbacks(execute=True):
-                do_regenerate_api_key(user, user)
+                do_regenerate_single_api_key(user, user, api_key_1.id)
             mock_retry.assert_called()
 
             # We didn't manage to communicate with the bouncer, to the tokens are still there:
@@ -1266,7 +1268,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             time_machine.travel(time_sent, tick=False),
             self.captureOnCommitCallbacks(execute=True),
         ):
-            do_regenerate_api_key(user, user)
+            do_regenerate_single_api_key(user, user, api_key_2.id)
         tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
         self.assert_length(tokens, 0)
 

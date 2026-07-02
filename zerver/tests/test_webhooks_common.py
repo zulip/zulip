@@ -19,6 +19,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
     INVALID_JSON_MESSAGE,
     MISSING_EVENT_HEADER_MESSAGE,
@@ -83,7 +84,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         webhook_bot_email = "webhook-bot@zulip.com"
         webhook_bot_realm = get_realm("zulip")
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
-        webhook_bot_api_key = webhook_bot.api_key
+        webhook_bot_api_key = get_api_key(webhook_bot)
         request = HostRequestMock()
         request.POST["api_key"] = webhook_bot_api_key
         request.host = "zulip.testserver"
