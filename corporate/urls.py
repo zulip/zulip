@@ -30,6 +30,7 @@ from corporate.views.plan_activity import get_plan_ledger
 from corporate.views.portico import (
     app_download_link_redirect,
     apps_view,
+    communities_api_view,
     communities_view,
     customer_portal,
     hello_view,
@@ -125,6 +126,7 @@ v1_api_and_json_patterns = [
         POST=start_card_update_stripe_session_for_realm_upgrade,
     ),
     rest_path("billing/event/status", GET=event_status),
+    rest_path("communities", GET=(communities_api_view, {"allow_anonymous_user_web"})),
 ]
 
 landing_page_urls = [
