@@ -96,6 +96,19 @@ export const update_message_event_schema = z.object({
 });
 export type UpdateMessageEvent = z.output<typeof update_message_event_schema>;
 
+export const message_edit_history_delete_event_schema = z.object({
+    id: z.number(),
+    type: z.literal("message_edit_history"),
+    op: z.literal("delete"),
+    message_id: z.number(),
+    scope: z.literal("all_content_revisions"),
+    user_id: z.number(),
+    timestamp: z.number(),
+});
+export type MessageEditHistoryDeleteEvent = z.output<
+    typeof message_edit_history_delete_event_schema
+>;
+
 export const message_details_schema = z.record(
     z.coerce.number<string>(),
     z.intersection(

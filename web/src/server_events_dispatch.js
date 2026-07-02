@@ -29,6 +29,7 @@ import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events from "./message_events.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
@@ -194,6 +195,19 @@ export function dispatch_normal_event(event) {
                 stream_list.update_streams_sidebar();
             }
 
+            break;
+        }
+
+        case "message_edit_history": {
+            switch (event.op) {
+                case "delete":
+                    message_edit_history.handle_message_edit_history_delete_event(event.message_id);
+                    break;
+                default:
+                    blueslip.error("Unexpected op for message_edit_history event", {
+                        op: event.op,
+                    });
+            }
             break;
         }
 
