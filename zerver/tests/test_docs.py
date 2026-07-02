@@ -551,6 +551,25 @@ class DocPageTest(ZulipTestCase):
         og_title = '<meta property="og:title" content="Zulip integrations" />'
         self._test(url, [og_title, og_description, get_canonical_url(url)])
 
+    def test_integration_search_placeholder(self) -> None:
+        # Default catalog has a generic placeholder.
+        url = "/integrations/"
+        placeholder = 'class="search_input" placeholder="Search integrations"'
+        self._test(url, [placeholder])
+
+        # Category pages use the category name in the placeholder; meta
+        # categories omit the trailing "integrations".
+        for category in CATEGORIES:
+            url = f"/integrations/category/{category}"
+            category_name = str(CATEGORIES[category]).lower()
+            if category in META_CATEGORY or category_name.endswith("integration"):
+                placeholder = f'class="search_input" placeholder="Search {category_name}"'
+            else:
+                placeholder = (
+                    f'class="search_input" placeholder="Search {category_name} integrations"'
+                )
+            self._test(url, [placeholder])
+
     def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:
