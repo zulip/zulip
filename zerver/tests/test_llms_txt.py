@@ -38,6 +38,17 @@ class LlmsTxtTest(ZulipTestCase):
         # can build narrows directly.
         rome_id = get_stream("Rome", realm).id
         self.assertIn(f"Rome ({rome_id})", content)
+        # The worked example must URL-encode the entire narrow value; a raw
+        # JSON array in the query string is not a valid request.
+        self.assertIn(
+            "narrow=%5B%7B%22operator%22%3A%22channels%22%2C%22operand%22%3A%22web-public%22%7D",
+            content,
+        )
+        self.assertNotIn("narrow=[", content)
+        # The `#narrow/...` URL segments use Zulip's hash-encoding, which
+        # the doc must not conflate with the URL-encoding of API requests.
+        self.assertIn("hash-encoded", content)
+        self.assertNotIn("URL-encoded channel name", content)
 
     def test_llms_txt_spectator_access_disabled(self) -> None:
         """
