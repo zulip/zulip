@@ -67,7 +67,6 @@ from zerver.lib.users import (
     get_accounts_for_email,
     get_cross_realm_dicts,
     get_inaccessible_user_ids,
-    get_users_involved_in_dms_with_target_users,
     user_ids_to_users,
 )
 from zerver.lib.utils import assert_is_not_none
@@ -3588,7 +3587,7 @@ class GetProfileTest(ZulipTestCase):
         self.set_up_db_for_testing_user_access()
 
         self.login("polonius")
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(7):
             result = orjson.loads(self.client_get("/json/users").content)
         accessible_users = result["members"]
         # The user can access 3 bot users and 7 human users.
@@ -3643,7 +3642,7 @@ class GetProfileTest(ZulipTestCase):
         accessible_user_ids_subset = [hamlet.id, iago.id, aaron.id, zoe.id, webhook_bot.id]
         inaccessible_user_ids_subset = [cordelia.id, desdemona.id]
         user_ids_to_fetch = accessible_user_ids_subset + inaccessible_user_ids_subset
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(7):
             result = orjson.loads(
                 self.client_get(
                     "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
@@ -3712,7 +3711,7 @@ class GetProfileTest(ZulipTestCase):
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
 
-        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(9):
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(7):
             result = self.client_get("/json/users")
         self.assert_json_success(result)
 
@@ -3781,69 +3780,6 @@ class GetProfileTest(ZulipTestCase):
 
         # no personal messages history between desdemona and polonius
         self.assertFalse(check_can_access_user(desdemona, polonius))
-
-    def test_get_users_involved_in_dms_excludes_deactivated_users(self) -> None:
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-        cordelia = self.example_user("cordelia")
-        realm = hamlet.realm
-
-        self.send_personal_message(hamlet, othello, "Hello othello!")
-        self.send_personal_message(hamlet, cordelia, "Hello cordelia!")
-        self.send_personal_message(othello, hamlet, "Hello back from othello!")
-
-        # Before deactivation, both users should be in DM participants
-        users_involved_before = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=False
-        )
-        self.assertIn(othello.id, users_involved_before[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_before[hamlet.id])
-
-        do_deactivate_user(othello, acting_user=None)
-
-        # After deactivation with include_deactivated_users=False,
-        # othello should be excluded
-        users_involved_after = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=False
-        )
-        self.assertNotIn(othello.id, users_involved_after[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_after[hamlet.id])
-
-        # With include_deactivated_users=True, othello should be included
-        users_involved_with_deactivated = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=True
-        )
-        self.assertIn(othello.id, users_involved_with_deactivated[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_with_deactivated[hamlet.id])
-
-    def test_get_users_involved_in_dms_with_dm_group_recipients(self) -> None:
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-        cordelia = self.example_user("cordelia")
-        realm = hamlet.realm
-
-        self.send_personal_message(hamlet, othello, "Hello othello!")
-        self.send_personal_message(hamlet, cordelia, "Hello cordelia!")
-
-        users_involved = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=False
-        )
-        self.assertIn(othello.id, users_involved[hamlet.id])
-        self.assertIn(cordelia.id, users_involved[hamlet.id])
-
-        do_deactivate_user(othello, acting_user=None)
-
-        users_involved_after = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=False
-        )
-        self.assertNotIn(othello.id, users_involved_after[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_after[hamlet.id])
-
-        users_involved_with_deactivated = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=True
-        )
-        self.assertIn(othello.id, users_involved_with_deactivated[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_with_deactivated[hamlet.id])
 
     def test_get_users_for_spectators(self) -> None:
         # Checks that spectators can fetch users data.

@@ -55,7 +55,6 @@ from zerver.lib.user_groups import (
 from zerver.lib.users import (
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
-    get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
 )
 from zerver.models import (
@@ -384,7 +383,6 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         return
 
     non_guest_user_ids = active_non_guest_user_ids(realm.id)
-    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([user_profile], realm)
 
     # This code path is parallel to
     # get_subscribers_of_target_user_subscriptions, but can't reuse it
@@ -411,9 +409,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
             peer_stream_subscribers.add(user_id)
 
     users_with_access_to_deactivated_user = (
-        set(non_guest_user_ids)
-        | users_involved_in_dms_dict[user_profile.id]
-        | peer_direct_message_group_subscribers
+        set(non_guest_user_ids) | peer_direct_message_group_subscribers
     )
     if users_with_access_to_deactivated_user:
         send_event_on_commit(
