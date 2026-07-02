@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
 import {$t} from "./i18n.ts";
+import {bytes_to_size} from "./attachments_ui.ts";
 import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -110,6 +111,21 @@ export function postprocess_content(html: string): string {
                 "title",
                 ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
             );
+
+            // Add visible file size text for non-media attachments
+            const size_attribute = elt.getAttribute("data-file-size");
+            if (size_attribute) {
+                const size_bytes = Number(size_attribute);
+                if (!isNaN(size_bytes)) {
+                    let size_elt = elt.nextElementSibling;
+                    if (!size_elt || !size_elt.classList.contains("user-upload-file-size")) {
+                        size_elt = inertDocument.createElement("span");
+                        size_elt.classList.add("user-upload-file-size");
+                        size_elt.textContent = ` (${bytes_to_size(size_bytes)})`;
+                        elt.after(size_elt);
+                    }
+                }
+            }
         }
     }
 

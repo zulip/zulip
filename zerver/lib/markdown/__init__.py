@@ -2030,6 +2030,20 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         # Make changes to <a> tag attributes
         el.set("href", href)
 
+        if db_data:
+            path_id = href
+            if path_id.startswith("/user_uploads/"):
+                path_id = path_id.removeprefix("/user_uploads/")
+            elif path_id.startswith("user_uploads/"):
+                path_id = path_id.removeprefix("user_uploads/")
+            else:
+                path_id = None
+
+            if path_id is not None:
+                size = db_data.user_upload_previews.path_ids_to_sizes.get(path_id)
+                if size is not None:
+                    el.set("data-file-size", str(size))
+
         # Show link href if title is empty
         if not el.text or not el.text.strip():
             el.text = href
