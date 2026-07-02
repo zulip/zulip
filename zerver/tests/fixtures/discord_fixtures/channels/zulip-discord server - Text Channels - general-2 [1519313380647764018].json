@@ -1,0 +1,137 @@
+{
+  "guild": {
+    "id": "1519311536839983195",
+    "name": "zulip-discord server",
+    "iconUrl": "media\\0-eb806f2bcf037a33.png"
+  },
+  "channel": {
+    "id": "1519313380647764018",
+    "type": "GuildTextChat",
+    "categoryId": "1519311538035490956",
+    "category": "Text Channels",
+    "name": "general-2",
+    "topic": null
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "exportedAt": "2026-06-24T21:07:15.8331688+07:00",
+  "messages": [
+    {
+      "id": "1519313412461559968",
+      "type": "Default",
+      "timestamp": "2026-06-24T19:09:05.009+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "",
+      "author": {
+        "id": "1000000000000000001",
+        "name": "pieter",
+        "discriminator": "0000",
+        "nickname": "pieter",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\5-e9bdbc123bbdd5b5.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "reference": {
+        "type": "Forward",
+        "messageId": "1519313281611862046",
+        "channelId": "1519311538035490958",
+        "guildId": "1519311536839983195"
+      },
+      "forwardedMessage": {
+        "timestamp": "2026-06-24T19:08:33.812+07:00",
+        "timestampEdited": null,
+        "content": "Reactions",
+        "attachments": [],
+        "embeds": [],
+        "stickers": []
+      },
+      "inlineEmojis": []
+    },
+    {
+      "id": "1519313437023273081",
+      "type": "Default",
+      "timestamp": "2026-06-24T19:09:10.865+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Forwarded message",
+      "author": {
+        "id": "1000000000000000001",
+        "name": "pieter",
+        "discriminator": "0000",
+        "nickname": "pieter",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\5-e9bdbc123bbdd5b5.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "inlineEmojis": []
+    },
+    {
+      "id": "1519313458183540776",
+      "type": "Default",
+      "timestamp": "2026-06-24T19:09:15.91+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Thread",
+      "author": {
+        "id": "1000000000000000001",
+        "name": "pieter",
+        "discriminator": "0000",
+        "nickname": "pieter",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\5-e9bdbc123bbdd5b5.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "inlineEmojis": []
+    },
+    {
+      "id": "1519337211181531226",
+      "type": "Default",
+      "timestamp": "2026-06-24T20:43:39.066+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Hi",
+      "author": {
+        "id": "1000000000000000002",
+        "name": "hamlet",
+        "discriminator": "0000",
+        "nickname": "hamlet",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\8c4e1e62ddcf9f302b96ee34ace7a857-316b13b517b81a03.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "inlineEmojis": []
+    }
+  ],
+  "messageCount": 4
+}
