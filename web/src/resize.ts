@@ -227,6 +227,33 @@ function resize_navbar_alerts(): void {
 // height of subheader which is smaller to the height of subheader that
 // has larger height.
 // This feels a bit hacky and a cleaner solution would be nice to find.
+
+let visual_viewport_resize_handler: (() => void) | null = null;
+
+export function watch_compose_box_for_virtual_keyboard(): void {
+    if (!window.visualViewport || visual_viewport_resize_handler !== null) {
+        return;
+    }
+    visual_viewport_resize_handler = (): void => {
+        const keyboard_height = Math.max(
+            0,
+            window.innerHeight - window.visualViewport!.height - window.visualViewport!.offsetTop,
+        );
+        $("#compose").css("bottom", `${keyboard_height}px`);
+    };
+    window.visualViewport.addEventListener("resize", visual_viewport_resize_handler);
+    visual_viewport_resize_handler();
+}
+
+export function unwatch_compose_box_for_virtual_keyboard(): void {
+    if (!window.visualViewport || visual_viewport_resize_handler === null) {
+        return;
+    }
+    window.visualViewport.removeEventListener("resize", visual_viewport_resize_handler);
+    visual_viewport_resize_handler = null;
+    $("#compose").css("bottom", "");
+}
+
 export function resize_settings_overlay_subheader($container: JQuery): void {
     const $left_subheader = $container.find(".left .two-pane-settings-subheader");
     const $right_subheader = $container.find(".right .two-pane-settings-subheader");
