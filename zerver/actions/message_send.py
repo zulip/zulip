@@ -92,9 +92,9 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
+    bulk_get_subscribers_of_target_user_subscriptions,
     check_can_access_user,
     get_inaccessible_user_ids,
-    get_subscribers_of_target_user_subscriptions,
     get_user_ids_who_can_access_user,
     get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
@@ -1707,8 +1707,8 @@ def get_recipients_for_user_creation_events(
         return recipients_for_user_creation_events
 
     users_involved_in_dms = get_users_involved_in_dms_with_target_users(guest_recipients, realm)
-    subscribers_of_guest_recipient_subscriptions = get_subscribers_of_target_user_subscriptions(
-        guest_recipients
+    subscribers_of_guest_recipient_subscriptions = (
+        bulk_get_subscribers_of_target_user_subscriptions(guest_recipients)
     )
 
     for recipient_user in guest_recipients:
