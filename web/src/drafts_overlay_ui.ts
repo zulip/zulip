@@ -141,8 +141,8 @@ function remove_drafts($draft_rows: JQuery): void {
         show_delete_banner();
     }
 
-    if ($("#drafts_table .overlay-message-row").length === 0) {
-        $("#drafts_table .no-drafts").show();
+    if ($(".drafts-tab-pane .overlay-message-row").length === 0) {
+        $(".drafts-tab-pane .no-drafts").show();
     }
     update_rendered_drafts(
         $("#drafts-from-conversation .overlay-message-row").length > 0,
@@ -171,7 +171,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
         const draft_ids: string[] = [];
         for (const row of document.querySelectorAll<HTMLElement>(
-            "#drafts_table .overlay-message-row",
+            ".drafts-tab-pane .overlay-message-row",
         )) {
             const id = row.dataset["draftId"];
             assert(id !== undefined);
@@ -330,8 +330,8 @@ function render_widgets(
         });
         $(".drafts-list").replaceWith($(rendered));
     }
-    if ($("#drafts_table .overlay-message-row").length > 0) {
-        $("#drafts_table .no-drafts").hide();
+    if ($(".drafts-tab-pane .overlay-message-row").length > 0) {
+        $(".drafts-tab-pane .no-drafts").hide();
         // Update possible dynamic elements.
         const $rendered_drafts = $drafts_table.find(
             ".message_content.rendered_markdown.restore-overlay-message",
