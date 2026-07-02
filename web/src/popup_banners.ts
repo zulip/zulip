@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 
 import * as banners from "./banners.ts";
@@ -90,6 +91,14 @@ const FOUND_MISSING_UNREADS_IN_CURRENT_NARROW: Banner = {
     custom_classes: "found-missing-unreads popup-banner",
 };
 
+const error_popup_banner = (error_html: string): Banner => ({
+    intent: "danger",
+    label: new Handlebars.SafeString(error_html),
+    buttons: [],
+    close_button: true,
+    custom_classes: "global-error-popup-banner popup-banner",
+});
+
 const reloading_application_banner = (reason: ReloadingReason): Banner => {
     let label = $t({defaultMessage: "Reloading…"});
     if (reason === "update") {
@@ -158,6 +167,17 @@ const update_read_flags_for_narrow_banner = (
         custom_classes: "update-read-flags-for-narrow-banner popup-banner",
     };
 };
+
+export function open_error_popup_banner(error_html: string, remove_after?: number): void {
+    banners.append(error_popup_banner(error_html), $("#popup_banners_wrapper"));
+
+    if (remove_after !== undefined) {
+        const $banner = $("#popup_banners_wrapper .global-error-popup-banner").last();
+        setTimeout(() => {
+            fade_out_popup_banner($banner);
+        }, remove_after);
+    }
+}
 
 export function open_update_read_flags_for_narrow_banner(
     operation: "read" | "unread",
