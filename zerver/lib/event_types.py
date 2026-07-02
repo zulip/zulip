@@ -102,7 +102,9 @@ class DetailedCustomProfileCore(BaseModel):
     id: int
     type: int
     name: str
+    rendered_name: str = ""
     hint: str
+    rendered_hint: str = ""
     field_data: str
     order: int
     required: bool

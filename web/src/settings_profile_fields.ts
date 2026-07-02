@@ -19,6 +19,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
+import {update_elements} from "./rendered_markdown.ts";
 import * as settings_components from "./settings_components.ts";
 import type {FieldData, SelectFieldData} from "./settings_components.ts";
 import * as settings_ui from "./settings_ui.ts";
@@ -170,6 +171,8 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
     assert(profile_field !== undefined);
     const modal_content_html = render_confirm_delete_profile_field({
         profile_field_name: profile_field.name,
+        rendered_profile_field_name:
+            profile_field.rendered_name !== "" ? profile_field.rendered_name : undefined,
         count: users_using_deleting_profile_field,
     });
 
@@ -879,7 +882,9 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
                 profile_field: {
                     id: profile_field.id,
                     name: profile_field.name,
+                    rendered_name: profile_field.rendered_name,
                     hint: profile_field.hint,
+                    rendered_hint: profile_field.rendered_hint,
                     type: field_type_id_to_string(profile_field.type),
                     display_in_profile_summary,
                     valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
@@ -906,6 +911,7 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
     }
 
     update_profile_fields_checkboxes();
+    update_elements($profile_fields_table);
     loading.destroy_indicator($("#admin_page_profile_fields_loading_indicator"));
 }
 
