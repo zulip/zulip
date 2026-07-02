@@ -844,4 +844,23 @@ export function initialize(): void {
             overlays.close_overlay("lightbox");
         }
     });
+
+    document.addEventListener(
+        "keydown",
+        (e) => {
+            if (is_open && (e.key === "Enter" || e.code === "Space")) {
+                const video = $("#lightbox_overlay .video-player video")[0];
+                if (video instanceof HTMLVideoElement) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    if (video.paused) {
+                        void video.play();
+                    } else {
+                        video.pause();
+                    }
+                }
+            }
+        },
+        true,
+    );
 }
