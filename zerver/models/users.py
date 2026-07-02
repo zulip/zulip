@@ -472,7 +472,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         EMBEDDED_BOT: "Embedded bot",
     }
 
-    SERVICE_BOT_TYPES = [
+    MESSAGE_HANDLING_BOT_TYPES = [
         OUTGOING_WEBHOOK_BOT,
         EMBEDDED_BOT,
     ]
