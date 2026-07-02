@@ -13436,13 +13436,15 @@ paths:
                       subscribed:
                         type: object
                         description: |
-                          A dictionary where the key is the Zulip API email
-                          address of the user/bot and the value is a
-                          list of the names of the channels that were
-                          subscribed to as a result of the query.
+                          A dictionary where the key is the ID of the user and
+                          the value is a list of the names of the channels that
+                          were subscribed to as a result of the query.
+
+                          **Changes**: Before Zulip 10.0 (feature level 289), the user
+                          keys were Zulip API email addresses, not user ID.
                         additionalProperties:
                           description: |
-                            `{email_id}`: A list of the names of channels that
+                            `{id}`: A list of the names of channels that
                             the user was subscribed to as a result of the query.
                           type: array
                           items:
@@ -13450,13 +13452,15 @@ paths:
                       already_subscribed:
                         type: object
                         description: |
-                          A dictionary where the key is the Zulip API email
-                          address of the user/bot and the value is a
-                          list of the names of the channels that the
-                          user/bot is already subscribed to.
+                          A dictionary where the key is the ID of the user and
+                          the value is a list of the names of the channels that
+                          the user is already subscribed to.
+
+                          **Changes**: Before Zulip 10.0 (feature level 289), the user
+                          keys were Zulip API email addresses, not user IDs.
                         additionalProperties:
                           description: |
-                            `{email_id}`: A list of the names of channels that
+                            `{id}`: A list of the names of channels that
                             the user was already subscribed to.
                           type: array
                           items:
