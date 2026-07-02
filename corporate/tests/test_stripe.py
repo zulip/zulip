@@ -1081,6 +1081,86 @@ class StripeTest(StripeTestCase):
         self.assertEqual(event.type, "invoice.voided")
         self.assertEqual(event.status, Event.EVENT_HANDLER_SUCCEEDED)
 
+    def test_free_trial_billing_page_after_invoice_voided(self) -> None:
+        # An invoice-billed free trial whose invoice is later voided should
+        # show the pending downgrade instead of a stale prompt to pay it.
+        user = self.example_user("desdemona")
+        self.login_user(user)
+        realm = user.realm
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD
+        realm.save(update_fields=["plan_type"])
+
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_123")
+        free_trial_end_date = self.now + timedelta(days=60)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            status=CustomerPlan.FREE_TRIAL,
+            charge_automatically=False,
+            automanage_licenses=False,
+            billing_cycle_anchor=self.now,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            price_per_license=8000,
+            next_invoice_date=free_trial_end_date,
+        )
+        LicenseLedger.objects.create(
+            plan=plan,
+            is_renewal=True,
+            event_time=self.now,
+            licenses=self.seat_count,
+            licenses_at_next_renewal=self.seat_count,
+        )
+        invoice = Invoice.objects.create(
+            customer=customer,
+            plan=plan,
+            stripe_invoice_id="in_123",
+            status=Invoice.SENT,
+            is_created_for_free_trial_upgrade=True,
+        )
+
+        mock_customer = Mock(email=user.delivery_email)
+        with (
+            time_machine.travel(self.now, tick=False),
+            patch("corporate.lib.stripe.stripe_get_customer", return_value=mock_customer),
+        ):
+            response = self.client_get("/billing/")
+            self.assert_in_success_response(["To ensure continuous access", "please pay"], response)
+
+            # Void the invoice, as the invoice.voided webhook does.
+            invoice.status = Invoice.VOID
+            invoice.save(update_fields=["status"])
+
+            response = self.client_get("/billing/")
+            self.assert_in_success_response(
+                [
+                    "will be downgraded to <strong>Zulip Cloud Free</strong> "
+                    "at the end of the free trial"
+                ],
+                response,
+            )
+            self.assert_not_in_success_response(
+                ["To ensure continuous access", "please pay"], response
+            )
+
+            # A newer unpaid invoice from a fresh upgrade supersedes the voided
+            # one, so the page prompts to pay again instead of showing a downgrade.
+            Invoice.objects.create(
+                customer=customer,
+                plan=plan,
+                stripe_invoice_id="in_456",
+                status=Invoice.SENT,
+                is_created_for_free_trial_upgrade=True,
+            )
+            response = self.client_get("/billing/")
+            self.assert_in_success_response(["To ensure continuous access", "please pay"], response)
+            self.assert_not_in_success_response(
+                [
+                    "will be downgraded to <strong>Zulip Cloud Free</strong> "
+                    "at the end of the free trial"
+                ],
+                response,
+            )
+
     def test_make_end_of_cycle_updates_errors_without_free_trial_invoice(self) -> None:
         realm = get_realm("zulip")
         customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_123")
