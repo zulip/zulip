@@ -274,11 +274,6 @@
         line-height: 1.1;
     }
 
-    .popover-stream-name,
-    .stream-privacy.filter-icon {
-        margin-top: 4px;
-    }
-
     .zulip-icon-lock {
         /* Override the margin-top set on the stream lock icon
            at the top-level, since we don't need to pull up this
@@ -288,6 +283,28 @@
 
     .popover-stream-info-menu-description {
         color: var(--color-text-popover-menu);
+    }
+}
+
+#stream-actions-menu-popover {
+    .popover-stream-name,
+    .stream-privacy.filter-icon {
+        margin-top: 4px;
+    }
+}
+
+#stream-card-popover {
+    .simplebar-content {
+        min-width: var(--stream-card-popover-min-width);
+    }
+
+    .popover-stream-header.text-item,
+    .popover-stream-info-menu-description.text-item {
+        min-height: 0;
+    }
+
+    .popover-stream-info-menu-description.text-item {
+        padding-top: 0;
     }
 }
 
@@ -321,12 +338,10 @@
     display: flex;
     align-items: flex-start;
     gap: 5px;
-    /* 18px at 15px/1em */
-    font-size: 1.2em;
     font-weight: 600;
     /* 20px at 18px/1em */
     line-height: 1.1111em;
-    color: var(--color-text-full-name);
+    color: var(--color-text-popover-menu);
     overflow-wrap: anywhere;
 }
 
@@ -335,69 +350,39 @@
     font-size: 1em;
     /* 16px at 15px/1em */
     line-height: 1.0667em;
+    color: var(--color-text-popover-menu);
 }
 
-ul.popover-group-menu-member-list {
-    max-height: 300px;
+.stream-card-description,
+.popover-group-menu-description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.popover-group-menu-members-summary {
     display: flex;
-    flex-direction: column;
-
-    .simplebar-content {
-        display: grid;
-        grid-template-areas: "group-member-icon gap group-member-name";
-        grid-template-columns:
-            max-content var(--user-group-popover-icon-text-gap)
-            minmax(0, 1fr);
-        width: unset;
-    }
-
-    .popover-group-menu-member {
-        display: grid;
-        grid-template-columns: subgrid;
-        grid-column: 1 / -1;
-        align-items: center;
-        padding: 0 var(--user-group-popover-horizontal-padding);
-    }
-
-    .popover-group-member-icon {
-        justify-self: center;
-        grid-area: group-member-icon;
-    }
-
-    .popover-group-menu-member-name {
-        grid-area: group-member-name;
-    }
+    min-width: 0;
 }
 
-.popover-group-menu-placeholder {
-    padding: 0 var(--user-group-popover-horizontal-padding);
-}
-
-.popover-group-menu-member {
-    .zulip-icon-user-group {
-        color: var(--color-icon-purple);
-    }
-}
-
-.popover-group-menu-member-name {
+.popover-group-menu-member-names {
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
     white-space: nowrap;
 }
 
-.popover-group-menu-description,
-.popover-group-menu-member-name,
-.popover-group-menu-placeholder {
-    color: var(--color-text-popover-menu);
+.popover-group-menu-more-count {
+    /* Always keep the "and N more" count on the same line as the names. */
+    white-space: nowrap;
+    flex: none;
 }
 
 .user-status-icon-wrapper {
     display: flex;
-}
-
-.popover-group-menu-user-presence {
-    /* 11px at 16px/1em */
-    font-size: 0.6875em;
 }
 
 .user_profile_presence {
@@ -1190,11 +1175,9 @@ ul.popover-group-menu-member-list {
     .simplebar-content {
         min-width: var(--user-group-info-popover-min-width);
     }
-}
 
-#stream-card-popover {
-    .simplebar-content {
-        min-width: var(--stream-card-popover-min-width);
+    .popover-menu-icon {
+        top: 0;
     }
 }
 
