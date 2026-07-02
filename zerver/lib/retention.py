@@ -29,7 +29,9 @@
 import copy
 import logging
 import time
-from collections.abc import Iterable, Mapping
+from collections import defaultdict
+from collections.abc import Callable, Iterable, Mapping
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
@@ -100,6 +102,12 @@ models_with_message_key: list[dict[str, Any]] = [
 EXCLUDE_FIELDS = {Message._meta.get_field("search_tsvector")}
 
 
+@dataclass
+class DirectMessageGroupArchiveData:
+    recipient_id: int
+    archived_message_count: int
+
+
 @transaction.atomic(savepoint=False)
 def move_rows(
     base_model: type[Model],
@@ -140,6 +148,7 @@ def run_archiving(
     chunk_size: int | None = MESSAGE_BATCH_SIZE,
     skip_notify: bool = False,
     acting_user: UserProfile | None = None,
+    chunk_callback: Callable[[list[int]], None] | None = None,
     **kwargs: Composable,
 ) -> int:
     # This function is carefully designed to achieve our
@@ -168,6 +177,8 @@ def run_archiving(
             )
             if new_chunk:
                 move_related_objects_to_archive(new_chunk)
+                if chunk_callback is not None:
+                    chunk_callback(new_chunk)
                 delete_messages(new_chunk, realm, skip_notify=skip_notify, acting_user=acting_user)
                 message_count += len(new_chunk)
             else:
@@ -207,6 +218,7 @@ def move_expired_messages_to_archive_by_recipient(
     chunk_size: int = MESSAGE_BATCH_SIZE,
 ) -> int:
     assert message_retention_days != -1
+    check_date = timezone_now() - timedelta(days=message_retention_days)
 
     # Uses index: zerver_message_realm_recipient_date_sent
     query = SQL(
@@ -222,7 +234,14 @@ def move_expired_messages_to_archive_by_recipient(
     RETURNING id
     """
     )
-    check_date = timezone_now() - timedelta(days=message_retention_days)
+
+    # DM-group recipients need per-chunk stats updates. Other recipient types
+    # (stream, personal) don't have DirectMessageGroup stats to maintain.
+    chunk_callback = (
+        update_dm_group_stats_for_archived_chunk
+        if recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        else None
+    )
 
     return run_archiving(
         query,
@@ -232,6 +251,7 @@ def move_expired_messages_to_archive_by_recipient(
         recipient_id=Literal(recipient.id),
         check_date=Literal(check_date.isoformat()),
         chunk_size=chunk_size,
+        chunk_callback=chunk_callback,
     )
 
 
@@ -266,6 +286,7 @@ def move_expired_direct_messages_to_archive(
         realm_id=Literal(realm.id),
         check_date=Literal(check_date.isoformat()),
         chunk_size=chunk_size,
+        chunk_callback=update_dm_group_stats_for_archived_chunk,
     )
 
     return message_count
@@ -650,6 +671,7 @@ def move_messages_to_archive(
             chunk_size=None,
             skip_notify=skip_notify,
             acting_user=acting_user,
+            chunk_callback=update_dm_group_stats_for_archived_chunk,
         )
         # Clean up attachments:
         archived_attachments = ArchivedAttachment.objects.filter(
@@ -661,6 +683,165 @@ def move_messages_to_archive(
 
     if message_ids and count == 0:
         raise Message.DoesNotExist
+
+
+def update_dm_group_stats_for_archived_chunk(message_ids_chunk: list[int]) -> None:
+    archive_data = extract_dm_group_archive_data_by_message_ids(message_ids_chunk)
+    if archive_data:
+        update_direct_message_group_stats_of_archived_messages(message_ids_chunk, archive_data)
+
+
+def extract_dm_group_archive_data_by_message_ids(
+    message_ids: list[int],
+    chunk_size: int = MESSAGE_BATCH_SIZE,
+) -> dict[int, DirectMessageGroupArchiveData]:
+    archive_data: dict[int, DirectMessageGroupArchiveData] = {}
+
+    # Process in chunks to avoid overwhelming the database
+    message_ids_head = message_ids
+    while message_ids_head:
+        message_ids_chunk = message_ids_head[0:chunk_size]
+        message_ids_head = message_ids_head[chunk_size:]
+
+        affected_recipients = Message.objects.filter(
+            id__in=message_ids_chunk,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        ).values_list("recipient_id", "recipient__type_id")
+
+        for recipient_id, dm_group_id in affected_recipients:
+            if dm_group_id not in archive_data:
+                archive_data[dm_group_id] = DirectMessageGroupArchiveData(
+                    recipient_id=recipient_id,
+                    archived_message_count=0,
+                )
+            archive_data[dm_group_id].archived_message_count += 1
+
+    return archive_data
+
+
+def update_direct_message_group_stats_of_archived_messages(
+    archived_message_ids: list[int],
+    archive_data: dict[int, DirectMessageGroupArchiveData],
+) -> None:
+    if not archive_data:
+        return  # nocoverage
+
+    rows = sorted((dmg_id, data.archived_message_count) for dmg_id, data in archive_data.items())
+    values_clause = SQL(", ").join(
+        SQL("({}, {})").format(Literal(dmg_id), Literal(archived_count))
+        for dmg_id, archived_count in rows
+    )
+
+    archived_ids_literal = Literal(list(archived_message_ids))
+
+    sql = SQL("""
+        WITH
+        archived_ids AS (
+            SELECT id FROM UNNEST({archived}::bigint[]) AS t(id)
+        ),
+        adjustments(dmg_id, archived_count) AS (
+            VALUES {values}
+        ),
+        locked AS (
+            SELECT id, recipient_id, first_message_id, last_message_id, total_messages
+            FROM zerver_huddle
+            WHERE id IN (SELECT dmg_id FROM adjustments)
+            ORDER BY id
+            FOR NO KEY UPDATE
+        ),
+        remaining_stats AS (
+            SELECT l.id AS dmg_id,
+                MIN(m.id) AS new_first,
+                MAX(m.id) AS new_last
+            FROM zerver_message m
+            JOIN locked l ON l.recipient_id = m.recipient_id
+            JOIN adjustments a ON a.dmg_id = l.id
+            WHERE l.total_messages > a.archived_count
+            AND (l.first_message_id IN (SELECT id FROM archived_ids)
+                OR l.last_message_id IN (SELECT id FROM archived_ids))
+            AND m.id NOT IN (SELECT id FROM archived_ids)
+            GROUP BY l.id
+        )
+        UPDATE zerver_huddle h
+        SET total_messages = l.total_messages - a.archived_count,
+            first_message_id = CASE
+                WHEN l.total_messages - a.archived_count = 0 THEN NULL
+                WHEN l.first_message_id IN (SELECT id FROM archived_ids)
+                    THEN rs.new_first
+                ELSE l.first_message_id
+            END,
+            last_message_id = CASE
+                WHEN l.total_messages - a.archived_count = 0 THEN NULL
+                WHEN l.last_message_id IN (SELECT id FROM archived_ids)
+                    THEN rs.new_last
+                ELSE l.last_message_id
+            END
+        FROM adjustments a
+        JOIN locked l ON l.id = a.dmg_id
+        LEFT JOIN remaining_stats rs ON rs.dmg_id = l.id
+        WHERE h.id = a.dmg_id;
+    """).format(
+        archived=archived_ids_literal,
+        values=values_clause,
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+
+
+def update_direct_message_group_stats_of_restored_messages(
+    message_ids: list[int], chunk_size: int = MESSAGE_BATCH_SIZE
+) -> None:
+    # a map from direct message group id to set of restored message ids
+    restore_data: defaultdict[int, set[int]] = defaultdict(set)
+
+    # Process in chunks to avoid overwhelming the database
+    message_ids_head = message_ids
+    while message_ids_head:
+        message_ids_chunk = message_ids_head[0:chunk_size]
+        message_ids_head = message_ids_head[chunk_size:]
+
+        affected_dm_groups = Message.objects.filter(
+            id__in=message_ids_chunk,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        ).values_list("id", "recipient__type_id")
+
+        for message_id, dm_group_id in affected_dm_groups:
+            restore_data[dm_group_id].add(message_id)
+
+    if not restore_data:
+        return
+
+    rows = sorted(
+        (dmg_id, min(msg_ids), max(msg_ids), len(msg_ids))
+        for dmg_id, msg_ids in restore_data.items()
+    )
+    values_clause = SQL(", ").join(
+        SQL("({}, {}, {}, {})").format(Literal(dmg_id), Literal(mn), Literal(mx), Literal(cnt))
+        for dmg_id, mn, mx, cnt in rows
+    )
+
+    sql = SQL("""
+        WITH adjustments(dmg_id, min_msg, max_msg, cnt) AS (
+            VALUES {values}
+        ),
+        locked AS (
+            SELECT id FROM zerver_huddle
+            WHERE id IN (SELECT dmg_id FROM adjustments)
+            ORDER BY id
+            FOR NO KEY UPDATE
+        )
+        UPDATE zerver_huddle h
+        SET total_messages = h.total_messages + a.cnt,
+            first_message_id = LEAST(h.first_message_id, a.min_msg),
+            last_message_id = GREATEST(h.last_message_id, a.max_msg)
+        FROM adjustments a
+        WHERE h.id = a.dmg_id
+        AND h.id IN (SELECT id FROM locked);
+    """).format(values=values_clause)
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
 
 
 def restore_messages_from_archive(archive_transaction_id: int) -> list[int]:
@@ -755,6 +936,7 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
     # the block ends.
     with transaction.atomic(durable=True):
         msg_ids = restore_messages_from_archive(archive_transaction.id)
+        update_direct_message_group_stats_of_restored_messages(msg_ids)
         restore_models_with_message_key_from_archive(archive_transaction.id)
         restore_attachments_from_archive(archive_transaction.id)
         restore_attachment_messages_from_archive(archive_transaction.id)

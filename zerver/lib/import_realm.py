@@ -1800,6 +1800,8 @@ def do_import_realm(
 
     if "zerver_huddle" in data:
         process_direct_message_group_hash(data, "zerver_huddle")
+        re_map_foreign_keys(data, "zerver_huddle", "first_message", related_table="message")
+        re_map_foreign_keys(data, "zerver_huddle", "last_message", related_table="message")
         bulk_import_model(data, DirectMessageGroup)
         for direct_message_group in DirectMessageGroup.objects.filter(recipient=None):
             recipient = Recipient.objects.get(
