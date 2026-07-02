@@ -7,6 +7,7 @@ import render_message_history_overlay from "../templates/message_history_overlay
 
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import {by_stream_topic_url} from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_lists from "./message_lists.ts";
@@ -16,6 +17,7 @@ import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
+import {is_resolved, unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
@@ -44,7 +46,12 @@ type EditHistoryEntry = {
     stream_changed: boolean | undefined;
     prev_stream: string | undefined;
     prev_stream_id: number | undefined;
+    prev_stream_sub: sub_store.StreamSubscription | undefined;
     new_stream: string | undefined;
+    new_stream_sub: sub_store.StreamSubscription | undefined;
+    prev_stream_topic_url: string | undefined;
+    new_stream_topic_url: string | undefined;
+    topic_resolved_or_unresolved: "resolved" | "unresolved" | "none";
 };
 
 const server_message_history_schema = z.object({
@@ -64,6 +71,9 @@ const server_message_history_schema = z.object({
         }),
     ),
 });
+
+type ServerMessageHistoryData = z.infer<typeof server_message_history_schema>;
+type ServerMessageHistoryEntry = ServerMessageHistoryData["message_history"][number];
 
 // This will be used to handle up and down keyws
 const keyboard_handling_context: messages_overlay_ui.Context = {
@@ -114,6 +124,201 @@ function hide_loading_indicator(): void {
     );
 }
 
+function get_topic_change_fields(
+    server_entry: ServerMessageHistoryEntry,
+): Pick<
+    EditHistoryEntry,
+    | "topic_edited"
+    | "prev_topic_display_name"
+    | "new_topic_display_name"
+    | "is_empty_string_prev_topic"
+    | "is_empty_string_new_topic"
+    | "new_stream"
+    | "new_stream_sub"
+    | "prev_stream"
+    | "prev_stream_sub"
+    | "prev_stream_topic_url"
+    | "new_stream_topic_url"
+    | "stream_changed"
+    | "prev_stream_id"
+> {
+    assert(server_entry.prev_topic !== undefined);
+
+    const base_params = {
+        topic_edited: true,
+        prev_topic_display_name: util.get_final_topic_display_name(server_entry.prev_topic),
+        new_topic_display_name: util.get_final_topic_display_name(server_entry.topic),
+        is_empty_string_prev_topic: server_entry.prev_topic === "",
+        is_empty_string_new_topic: server_entry.topic === "",
+    };
+
+    if (server_entry.prev_stream) {
+        const prev_stream_id = server_entry.prev_stream;
+        const new_stream_id = server_entry.stream;
+        assert(new_stream_id !== undefined);
+        return {
+            ...base_params,
+            stream_changed: true,
+            prev_stream_id,
+            prev_stream: get_display_stream_name(server_entry.prev_stream),
+            prev_stream_sub: sub_store.get(prev_stream_id),
+            prev_stream_topic_url: by_stream_topic_url(prev_stream_id, server_entry.prev_topic),
+            new_stream: get_display_stream_name(new_stream_id),
+            new_stream_sub: sub_store.get(new_stream_id),
+            new_stream_topic_url: by_stream_topic_url(new_stream_id, server_entry.topic),
+        };
+    }
+
+    // For topic-only moves and content+topic edits: stream and URL info is
+    // computed in the reverse-chronological pass once we know the stream
+    // context for each historical event.
+    return {
+        ...base_params,
+        stream_changed: undefined,
+        prev_stream_id: undefined,
+        prev_stream: undefined,
+        prev_stream_sub: undefined,
+        new_stream: undefined,
+        new_stream_sub: undefined,
+        prev_stream_topic_url: undefined,
+        new_stream_topic_url: undefined,
+    };
+}
+
+function build_initial_entry(
+    server_entry: ServerMessageHistoryEntry,
+    full_name: string,
+    move_history_only: boolean,
+): Partial<EditHistoryEntry> {
+    if (move_history_only) {
+        return {
+            edited_by_notice: $t({defaultMessage: "Posted by {full_name}"}, {full_name}),
+            initial_entry_for_move_history: true,
+            new_topic_display_name: util.get_final_topic_display_name(server_entry.topic),
+        };
+    }
+
+    return {
+        edited_by_notice: $t({defaultMessage: "Posted by {full_name}"}, {full_name}),
+        body_to_render: server_entry.rendered_content,
+    };
+}
+
+function build_topic_and_content_edit_entry(
+    server_entry: ServerMessageHistoryEntry,
+    full_name: string,
+): Partial<EditHistoryEntry> {
+    return {
+        edited_by_notice: $t({defaultMessage: "Edited by {full_name}"}, {full_name}),
+        body_to_render: server_entry.content_html_diff,
+        ...get_topic_change_fields(server_entry),
+    };
+}
+
+function build_topic_and_stream_move_entry(
+    server_entry: ServerMessageHistoryEntry,
+    full_name: string,
+): Partial<EditHistoryEntry> {
+    assert(server_entry.prev_stream !== undefined);
+
+    return {
+        edited_by_notice: $t({defaultMessage: "Moved by {full_name}"}, {full_name}),
+        ...get_topic_change_fields(server_entry),
+    };
+}
+
+function build_topic_move_entry(
+    server_entry: ServerMessageHistoryEntry,
+    full_name: string,
+): Partial<EditHistoryEntry> {
+    let edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
+    assert(server_entry.prev_topic !== undefined);
+    let topic_resolved_or_unresolved: "resolved" | "unresolved" | "none" = "none";
+    const prev_topic_resolved = is_resolved(server_entry.prev_topic);
+    const current_topic_resolved = is_resolved(server_entry.topic);
+    // Only treat this as a resolve/unresolve toggle when the base topic name
+    // (stripped of the resolved prefix) is unchanged; otherwise it's a rename
+    // that also happened to add/remove the prefix.
+    if (
+        prev_topic_resolved !== current_topic_resolved &&
+        unresolve_name(server_entry.prev_topic) === unresolve_name(server_entry.topic)
+    ) {
+        if (current_topic_resolved) {
+            topic_resolved_or_unresolved = "resolved";
+            edited_by_notice = $t({defaultMessage: "Topic resolved by {full_name}"}, {full_name});
+        } else {
+            topic_resolved_or_unresolved = "unresolved";
+            edited_by_notice = $t({defaultMessage: "Topic unresolved by {full_name}"}, {full_name});
+        }
+    }
+    return {
+        edited_by_notice,
+        topic_resolved_or_unresolved,
+        ...get_topic_change_fields(server_entry),
+    };
+}
+
+function build_stream_move_entry(
+    server_entry: ServerMessageHistoryEntry,
+    full_name: string,
+): Partial<EditHistoryEntry> {
+    assert(server_entry.prev_stream !== undefined);
+    const new_stream_id = server_entry.stream;
+    assert(new_stream_id !== undefined);
+
+    return {
+        edited_by_notice: $t({defaultMessage: "Moved by {full_name}"}, {full_name}),
+        stream_changed: true,
+        prev_stream_id: server_entry.prev_stream,
+        prev_stream: get_display_stream_name(server_entry.prev_stream),
+        prev_stream_sub: sub_store.get(server_entry.prev_stream),
+        new_stream: get_display_stream_name(new_stream_id),
+        new_stream_sub: sub_store.get(new_stream_id),
+    };
+}
+
+function build_content_edit_entry(
+    server_entry: ServerMessageHistoryEntry,
+    full_name: string,
+): Partial<EditHistoryEntry> {
+    return {
+        edited_by_notice: $t({defaultMessage: "Edited by {full_name}"}, {full_name}),
+        body_to_render: server_entry.content_html_diff,
+    };
+}
+
+function make_edit_history_entry(
+    server_entry: ServerMessageHistoryEntry,
+    edited_at_time: string,
+    is_stream: boolean,
+    entry_data: Partial<EditHistoryEntry>,
+): EditHistoryEntry {
+    return {
+        initial_entry_for_move_history: false,
+        edited_at_time,
+        edited_by_notice: "",
+        timestamp: server_entry.timestamp,
+        is_stream,
+        recipient_bar_color: undefined,
+        body_to_render: undefined,
+        topic_edited: undefined,
+        prev_topic_display_name: undefined,
+        new_topic_display_name: undefined,
+        is_empty_string_prev_topic: undefined,
+        is_empty_string_new_topic: undefined,
+        stream_changed: undefined,
+        prev_stream: undefined,
+        prev_stream_id: undefined,
+        prev_stream_sub: undefined,
+        new_stream: undefined,
+        new_stream_sub: undefined,
+        prev_stream_topic_url: undefined,
+        new_stream_topic_url: undefined,
+        topic_resolved_or_unresolved: "none",
+        ...entry_data,
+    };
+}
+
 export function fetch_and_render_message_history(message: Message): void {
     assert(message_lists.current !== undefined);
     const message_container = message_lists.current.view.message_containers.get(message.id);
@@ -148,140 +353,141 @@ export function fetch_and_render_message_history(message: Message): void {
             const data = server_message_history_schema.parse(raw_data);
 
             const content_edit_history: EditHistoryEntry[] = [];
-            let prev_stream_item: EditHistoryEntry | null = null;
-            for (const [index, msg] of data.message_history.entries()) {
+
+            for (const [index, server_entry] of data.message_history.entries()) {
                 // Format times and dates nicely for display
-                const time = new Date(msg.timestamp * 1000);
+                const time = new Date(server_entry.timestamp * 1000);
                 const edited_at_time = timerender.get_full_datetime(time, "time");
 
-                if (!msg.user_id) {
+                if (!server_entry.user_id) {
                     continue;
                 }
 
-                const person = people.get_user_by_id_assert_valid(msg.user_id);
+                const person = people.get_user_by_id_assert_valid(server_entry.user_id);
                 const full_name = person.full_name;
 
-                let edited_by_notice;
-                let body_to_render;
-                let topic_edited;
-                let prev_topic_display_name;
-                let new_topic_display_name;
-                let is_empty_string_prev_topic;
-                let is_empty_string_new_topic;
-                let stream_changed;
-                let prev_stream;
-                let prev_stream_id;
-                let initial_entry_for_move_history = false;
-
+                let entry_data: Partial<EditHistoryEntry>;
                 if (index === 0) {
-                    edited_by_notice = $t({defaultMessage: "Posted by {full_name}"}, {full_name});
-                    if (move_history_only) {
-                        // If message history is limited to moves only, then we
-                        // display the original topic and channel for the message.
-                        initial_entry_for_move_history = true;
-                        new_topic_display_name = util.get_final_topic_display_name(msg.topic);
-                    } else {
-                        // Otherwise, we display the original message content.
-                        body_to_render = msg.rendered_content;
-                    }
-                } else if (msg.prev_topic !== undefined && msg.prev_content) {
-                    edited_by_notice = $t({defaultMessage: "Edited by {full_name}"}, {full_name});
-                    body_to_render = msg.content_html_diff;
-                    topic_edited = true;
-                    prev_topic_display_name = util.get_final_topic_display_name(msg.prev_topic);
-                    new_topic_display_name = util.get_final_topic_display_name(msg.topic);
-                    is_empty_string_prev_topic = msg.prev_topic === "";
-                    is_empty_string_new_topic = msg.topic === "";
-                } else if (msg.prev_topic !== undefined && msg.prev_stream) {
-                    edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
-                    topic_edited = true;
-                    prev_topic_display_name = util.get_final_topic_display_name(msg.prev_topic);
-                    new_topic_display_name = util.get_final_topic_display_name(msg.topic);
-                    is_empty_string_prev_topic = msg.prev_topic === "";
-                    is_empty_string_new_topic = msg.topic === "";
-                    stream_changed = true;
-                    prev_stream_id = msg.prev_stream;
-                    prev_stream = get_display_stream_name(msg.prev_stream);
-                    if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
-                    }
-                } else if (msg.prev_topic !== undefined) {
-                    edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
-                    topic_edited = true;
-                    prev_topic_display_name = util.get_final_topic_display_name(msg.prev_topic);
-                    new_topic_display_name = util.get_final_topic_display_name(msg.topic);
-                    is_empty_string_prev_topic = msg.prev_topic === "";
-                    is_empty_string_new_topic = msg.topic === "";
-                } else if (msg.prev_stream) {
-                    edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
-                    stream_changed = true;
-                    prev_stream_id = msg.prev_stream;
-                    prev_stream = get_display_stream_name(msg.prev_stream);
-                    if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
-                    }
+                    entry_data = build_initial_entry(server_entry, full_name, move_history_only);
+                } else if (server_entry.prev_topic !== undefined && server_entry.prev_content) {
+                    entry_data = build_topic_and_content_edit_entry(server_entry, full_name);
+                } else if (server_entry.prev_topic !== undefined && server_entry.prev_stream) {
+                    entry_data = build_topic_and_stream_move_entry(server_entry, full_name);
+                } else if (server_entry.prev_topic !== undefined) {
+                    entry_data = build_topic_move_entry(server_entry, full_name);
+                } else if (server_entry.prev_stream) {
+                    entry_data = build_stream_move_entry(server_entry, full_name);
                 } else {
-                    // just a content edit
-                    edited_by_notice = $t({defaultMessage: "Edited by {full_name}"}, {full_name});
-                    body_to_render = msg.content_html_diff;
+                    entry_data = build_content_edit_entry(server_entry, full_name);
                 }
-                const item: EditHistoryEntry = {
-                    initial_entry_for_move_history,
+                const item = make_edit_history_entry(
+                    server_entry,
                     edited_at_time,
-                    edited_by_notice,
-                    timestamp: msg.timestamp,
-                    is_stream: message.is_stream,
-                    recipient_bar_color: undefined,
-                    body_to_render,
-                    topic_edited,
-                    prev_topic_display_name,
-                    new_topic_display_name,
-                    is_empty_string_prev_topic,
-                    is_empty_string_new_topic,
-                    stream_changed,
-                    prev_stream,
-                    prev_stream_id,
-                    new_stream: undefined,
-                };
-
-                if (msg.prev_stream) {
-                    prev_stream_item = item;
-                }
+                    message.is_stream,
+                    entry_data,
+                );
 
                 content_edit_history.push(item);
             }
-            if (prev_stream_item !== null) {
-                assert(message.type === "stream");
-                prev_stream_item.new_stream = get_display_stream_name(message.stream_id);
-            }
 
-            // In order to correctly compute the recipient_bar_color
-            // values, it is convenient to iterate through the array of edit history
+            // In order to correctly compute the recipient_bar_color values and entries for topic
+            // only moves, it is convenient to iterate through the array of edit history
             // entries in reverse chronological order.
             if (message.is_stream) {
                 // Start with the message's current location.
+                let current_stream_id = message.stream_id;
+                // Track the topic in effect at the time of each historical event.
+                // Going backwards, we step current_topic back whenever a topic
+                // rename is encountered, just as we step current_stream_id back
+                // for stream moves.
+                let current_topic = message.topic;
                 let stream_display_name: string = get_display_stream_name(message.stream_id);
                 let stream_color: string = get_color(message.stream_id);
                 let recipient_bar_color: string = get_recipient_bar_color(stream_color);
+                // Iterate in reverse chronological order so we can track which
+                // stream and topic the message was in at the time of each event.
                 for (const edit_history_entry of content_edit_history.toReversed()) {
                     // The stream following this move is the one whose color we already have.
                     edit_history_entry.recipient_bar_color = recipient_bar_color;
                     if (edit_history_entry.stream_changed) {
-                        // If this event moved the message, then immediately
-                        // prior to this event, the message must have been in
-                        // edit_history_event.prev_stream_id; fetch its color.
+                        // Immediately prior to this event the message was in
+                        // prev_stream_id; capture the post-move stream before updating.
+                        const new_stream_id = current_stream_id;
                         assert(edit_history_entry.prev_stream_id !== undefined);
                         stream_display_name = get_display_stream_name(
                             edit_history_entry.prev_stream_id,
                         );
                         stream_color = get_color(edit_history_entry.prev_stream_id);
                         recipient_bar_color = get_recipient_bar_color(stream_color);
+                        current_stream_id = edit_history_entry.prev_stream_id;
+                        if (!edit_history_entry.topic_edited) {
+                            // Stream-only move: the topic did not change in this event,
+                            // so the topic on both sides is current_topic (the topic in
+                            // effect at this point in history, already stepped back past
+                            // any later topic renames).
+                            const topic = current_topic;
+                            edit_history_entry.new_topic_display_name =
+                                util.get_final_topic_display_name(topic);
+                            edit_history_entry.prev_topic_display_name =
+                                util.get_final_topic_display_name(topic);
+                            edit_history_entry.is_empty_string_new_topic = topic === "";
+                            edit_history_entry.is_empty_string_prev_topic = topic === "";
+                            edit_history_entry.prev_stream_sub = sub_store.get(current_stream_id);
+                            edit_history_entry.prev_stream_topic_url = by_stream_topic_url(
+                                current_stream_id,
+                                topic,
+                            );
+                            edit_history_entry.new_stream_sub = sub_store.get(new_stream_id);
+                            edit_history_entry.new_stream_topic_url = by_stream_topic_url(
+                                new_stream_id,
+                                topic,
+                            );
+                        }
+                    }
+                    // After processing a topic-editing event, step current_topic back
+                    // to what it was immediately before this event.
+                    if (edit_history_entry.topic_edited) {
+                        assert(edit_history_entry.prev_topic_display_name !== undefined);
+                        current_topic =
+                            edit_history_entry.is_empty_string_prev_topic === true
+                                ? ""
+                                : edit_history_entry.prev_topic_display_name;
+                    }
+                    if (edit_history_entry.topic_edited && !edit_history_entry.stream_changed) {
+                        // Topic-only and content+topic edits: now that we know the
+                        // stream context, fill in stream names and generate URLs.
+                        // Use is_empty_string_* to recover the raw topic since
+                        // display names differ from raw topics for empty-string topics.
+                        const stream_sub = sub_store.get(current_stream_id);
+                        edit_history_entry.prev_stream = stream_display_name;
+                        edit_history_entry.prev_stream_sub = stream_sub;
+                        edit_history_entry.new_stream = stream_display_name;
+                        edit_history_entry.new_stream_sub = stream_sub;
+                        assert(edit_history_entry.prev_topic_display_name !== undefined);
+                        assert(edit_history_entry.new_topic_display_name !== undefined);
+                        const prev_topic_raw =
+                            edit_history_entry.is_empty_string_prev_topic === true
+                                ? ""
+                                : edit_history_entry.prev_topic_display_name;
+                        const new_topic_raw =
+                            edit_history_entry.is_empty_string_new_topic === true
+                                ? ""
+                                : edit_history_entry.new_topic_display_name;
+                        edit_history_entry.prev_stream_topic_url = by_stream_topic_url(
+                            current_stream_id,
+                            prev_topic_raw,
+                        );
+                        edit_history_entry.new_stream_topic_url = by_stream_topic_url(
+                            current_stream_id,
+                            new_topic_raw,
+                        );
                     }
                 }
                 if (move_history_only) {
                     // If message history is limited to moves only, then we
                     // display the original topic and channel for the message.
                     content_edit_history[0]!.new_stream = stream_display_name;
+                    content_edit_history[0]!.new_stream_sub = sub_store.get(current_stream_id);
                 }
             }
             const rendered_list_html = render_message_edit_history({
