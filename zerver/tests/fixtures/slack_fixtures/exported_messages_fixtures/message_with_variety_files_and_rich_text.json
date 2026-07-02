@@ -1,0 +1,147 @@
+{
+    "text": "message with *files  <@U074VRHQ11T>* \nF07A32DC2GG",
+    "files": [
+        {
+            "id": "F07A32DC2GG",
+            "created": 1719212228,
+            "timestamp": 1719212228,
+            "name": "Untitled",
+            "title": "Weekly Sync",
+            "mimetype": "application/vnd.slack-docs",
+            "filetype": "quip",
+            "pretty_type": "Canvas",
+            "user": "U06NU4E26M9",
+            "user_team": "T06NRA6HM3P",
+            "editable": true,
+            "size": 602,
+            "mode": "quip",
+            "is_external": false,
+            "external_type": "",
+            "is_public": true,
+            "public_url_shared": false,
+            "display_as_bot": false,
+            "username": "",
+            "url_private": "https://files.slack.com/files-pri/T06NRA6HM3P-F07A32DC2GG/canvas?token=xoxe-6773346599125-10627512423494-10622973772373-3297a1441684b168ed941456c939c391",
+            "url_private_download": "https://files.slack.com/files-pri/T06NRA6HM3P-F07A32DC2GG/download/canvas?token=xoxe-6773346599125-10627512423494-10622973772373-3297a1441684b168ed941456c939c391",
+            "permalink": "https://ds-py62195.slack.com/docs/T06NRA6HM3P/F07A32DC2GG",
+            "permalink_public": "https://slack-files.com/T06NRA6HM3P-F07A32DC2GG-0acf0ea037",
+            "url_static_preview": "https://ds-py62195.slack.com/docs/T06NRA6HM3P/F07A32DC2GG/mobile",
+            "quip_thread_id": "RaO9AA21YEm",
+            "updated": 1724304153,
+            "update_notification": 0,
+            "canvas_readtime": 0.30991569650743,
+            "is_starred": false,
+            "skipped_shares": true,
+            "teams_shared_with": [],
+            "is_restricted_sharing_enabled": true,
+            "has_rich_preview": false,
+            "file_access": "visible",
+            "access": "owner",
+            "org_or_workspace_access": "none",
+            "title_blocks": [
+                {
+                    "type": "rich_text",
+                    "block_id": "DOYmi",
+                    "elements": [
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "Untitled"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "canvas_creator_id": "U06NU4E26M9",
+            "team_pref_version_history_enabled": true,
+            "canvas_printing_enabled": true,
+            "source_canvas_id": "F06NWMACFE0",
+            "is_ai_suggested": false
+        },
+        {
+            "id": "F07A2TVQ7C0",
+            "created": 1719210132,
+            "timestamp": 1719210132,
+            "name": "channels.json",
+            "title": "channels.json",
+            "mimetype": "text/plain",
+            "filetype": "json",
+            "pretty_type": "JSON",
+            "user": "U06NU4E26M9",
+            "user_team": "T06NRA6HM3P",
+            "editable": true,
+            "size": 1563,
+            "mode": "snippet",
+            "is_external": false,
+            "external_type": "",
+            "is_public": true,
+            "public_url_shared": false,
+            "display_as_bot": false,
+            "username": "",
+            "url_private": "https://files.slack.com/files-pri/T06NRA6HM3P-F07A2TVQ7C0/channels.json?token=xoxe-6773346599125-10627512423494-10622973772373-3297a1441684b168ed941456c939c391",
+            "url_private_download": "https://files.slack.com/files-pri/T06NRA6HM3P-F07A2TVQ7C0/download/channels.json?token=xoxe-6773346599125-10627512423494-10622973772373-3297a1441684b168ed941456c939c391",
+            "permalink": "https://ds-py62195.slack.com/files/U06NU4E26M9/F07A2TVQ7C0/channels.json",
+            "permalink_public": "https://slack-files.com/T06NRA6HM3P-F07A2TVQ7C0-5b1d277896",
+            "edit_link": "https://ds-py62195.slack.com/files/U06NU4E26M9/F07A2TVQ7C0/channels.json/edit",
+            "is_starred": false,
+            "skipped_shares": true,
+            "has_rich_preview": false,
+            "file_access": "visible"
+        }
+    ],
+    "upload": false,
+    "user": "U06NU4E26M9",
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "euFEj",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "message with "
+                        },
+                        {
+                            "type": "text",
+                            "text": "files  ",
+                            "style": {
+                                "bold": true
+                            }
+                        },
+                        {
+                            "type": "user",
+                            "user_id": "U074VRHQ11T",
+                            "style": {
+                                "bold": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": " ",
+                            "style": {
+                                "bold": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "canvas",
+                            "file_id": "F07A32DC2GG"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "type": "message",
+    "ts": "1772636065.551219",
+    "client_msg_id": "54bea93c-8a96-4f6b-9b52-f64af8b8e6a9"
+}
