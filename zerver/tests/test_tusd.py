@@ -663,6 +663,59 @@ class TusdPreFinishTest(ZulipTestCase):
         self.assertEqual(response["ContentType"], "binary/octet-stream")
 
     @use_s3_backend
+    def test_s3_upload_filename_with_control_characters(self) -> None:
+        # Some upload clients send filenames with a trailing newline,
+        # which must not reach the Content-Disposition header.
+        hamlet = self.example_user("hamlet")
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        upload_backend = S3UploadBackend()
+        filename = "report.png\n"
+        clean_filename = "report.png"
+        path_id = upload_backend.generate_message_upload_path(
+            str(hamlet.realm.id), sanitize_name(filename, strict=True)
+        )
+        info = TusUpload(
+            id=path_id,
+            size=len("zulip!"),
+            offset=0,
+            size_is_deferred=False,
+            meta_data={
+                "filename": filename,
+                "filetype": "image/png",
+                "name": filename,
+                "type": "image/png",
+            },
+            is_final=False,
+            is_partial=False,
+            partial_uploads=None,
+            storage=None,
+        )
+        bucket.Object(path_id).put(Body=b"zulip!", ContentType="application/octet-stream")
+        bucket.Object(f"{path_id}.info").put(Body=info.model_dump_json().encode())
+
+        self.login("hamlet")
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(info).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        result_json = result.json()
+        self.assertEqual(result_json["HttpResponse"]["StatusCode"], 200)
+        self.assertEqual(
+            orjson.loads(result_json["HttpResponse"]["Body"]),
+            {"url": f"/user_uploads/{path_id}", "filename": clean_filename},
+        )
+
+        attachment = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(attachment.file_name, clean_filename)
+
+        content_disposition = bucket.Object(path_id).get()["ContentDisposition"]
+        self.assertEqual(content_disposition, f'inline; filename="{clean_filename}"')
+        self.assertNotIn("\n", content_disposition)
+
+    @use_s3_backend
     def test_s3_upload_streaming_chardet(self) -> None:
         assert settings.LOCAL_FILES_DIR is None
         self.login("hamlet")

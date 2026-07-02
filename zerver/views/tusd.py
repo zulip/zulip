@@ -26,6 +26,7 @@ from zerver.lib.upload import (
     generate_message_upload_path,
     get_upload_backend,
     maybe_add_charset,
+    remove_control_characters,
     sanitize_name,
 )
 from zerver.models import ArchivedAttachment, Attachment, PreregistrationRealm, Realm, UserProfile
@@ -144,7 +145,7 @@ def handle_upload_pre_finish_hook(
     path_id = data.id.partition("+")[0]
 
     tus_metadata = data.meta_data
-    filename = tus_metadata.get("filename", "")
+    filename = remove_control_characters(tus_metadata.get("filename", ""))
 
     # We want to store as the filename a version that clients are
     # likely to be able to accept via "Save as..."

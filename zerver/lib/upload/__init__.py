@@ -245,6 +245,16 @@ def sanitize_name(value: str, *, strict: bool = False) -> str:
     return value
 
 
+def remove_control_characters(filename: str) -> str:
+    # Strip ASCII control characters -- RFC 5234's CTL set, %x00-1F and
+    # %x7F -- which break downstream consumers of the filename: NULL
+    # bytes can't be stored in the "file_name" column, and a trailing
+    # newline yields a Content-Disposition header that S3, like any HTTP
+    # recipient, rejects as an illegal field value (RFC 9110 section 5.5).
+    # https://www.rfc-editor.org/rfc/rfc5234#appendix-B.1
+    return re.sub(r"[\x00-\x1f\x7f]", "", filename)
+
+
 def upload_message_attachment(
     uploaded_file_name: str,
     content_type: str,
@@ -259,9 +269,7 @@ def upload_message_attachment(
     )
     content_type = maybe_add_charset(content_type, file_data)
 
-    # NULL bytes are the one thing we can't store in the original
-    # filename column, due to PostgreSQL limitations
-    uploaded_file_name = re.sub(r"\x00", "", uploaded_file_name)
+    uploaded_file_name = remove_control_characters(uploaded_file_name)
 
     with transaction.atomic(durable=True):
         get_upload_backend().store_message_attachment(
