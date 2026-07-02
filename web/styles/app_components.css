@@ -836,7 +836,7 @@ input.settings_text_input {
         background-color: var(--color-background-modal-bar);
         border-bottom: 1px solid var(--color-border-modal-bar);
 
-        & h1 {
+        .overlay-messages-title {
             margin: 0;
             font-size: 1.1em;
             font-weight: bold;

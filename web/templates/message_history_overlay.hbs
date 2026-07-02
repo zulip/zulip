@@ -3,16 +3,16 @@
         <div class="message-edit-history-container overlay-messages-container overlay-container">
             <div class="overlay-messages-header">
                 {{#if move_history_only}}
-                <h1>{{t "Message move history" }}</h1>
+                <h1 class="overlay-messages-title">{{t "Message move history"}}</h1>
                 {{else}}
                 {{#if edited}}
                     {{#if moved}}
-                    <h1>{{t "Message edit and move history" }}</h1>
+                    <h1>{{t "Message edit and move history"}}</h1>
                     {{else}}
-                    <h1>{{t "Message edit history" }}</h1>
+                    <h1>{{t "Message edit history"}}</h1>
                     {{/if}}
                 {{else if moved}}
-                    <h1>{{t "Message move history" }}</h1>
+                    <h1>{{t "Message move history"}}</h1>
                 {{/if}}
                 {{/if}}
                 <div class="exit">
@@ -27,4 +27,5 @@
         </div>
     </div>
 </div>
+
 
