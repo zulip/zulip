@@ -151,7 +151,7 @@ function failed_message_success(message_id: number): void {
     show_failed_message_success(message_id);
 }
 
-function resend_message(
+export function resend_message(
     message: LocalMessage,
     $row: JQuery,
     {
