@@ -467,6 +467,7 @@ def send_subscription_add_events(
                 can_move_messages_within_channel_group=stream_dict[
                     "can_move_messages_within_channel_group"
                 ],
+                can_mention_many_users_group=stream_dict["can_mention_many_users_group"],
                 can_send_message_group=stream_dict["can_send_message_group"],
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
                 can_resolve_topics_group=stream_dict["can_resolve_topics_group"],
