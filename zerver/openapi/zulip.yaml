@@ -18439,6 +18439,25 @@ paths:
                           This will be `""` if the server does not know its `merge-base`.
 
                           **Changes**: New in Zulip 5.0 (feature level 88).
+                      miatsuco_version:
+                        type: string
+                        description: |
+                          This fork's own release version, independent of `zulip_version`.
+                          See `zerver/lib/miatsuco.py` and
+                          `docs/contributing/miatsuco-fork-conventions.md`.
+
+                          **Changes**: New in Miatsuco 0.1-dev.
+                      miatsuco_capabilities:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          Named capability flags for fork-specific features this server
+                          supports. Clients should check for the specific capability they
+                          need by name, rather than inferring feature availability from
+                          `miatsuco_version` alone.
+
+                          **Changes**: New in Miatsuco 0.1-dev.
                       alert_words:
                         type: array
                         description: |
@@ -22956,6 +22975,25 @@ paths:
                           This will be `""` if unavailable.
 
                           **Changes**: New in Zulip 5.0 (feature level 88).
+                      miatsuco_version:
+                        type: string
+                        description: |
+                          This fork's own release version, independent of `zulip_version`.
+                          See `zerver/lib/miatsuco.py` and
+                          `docs/contributing/miatsuco-fork-conventions.md`.
+
+                          **Changes**: New in Miatsuco 0.1-dev.
+                      miatsuco_capabilities:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          Named capability flags for fork-specific features this server
+                          supports. Clients should check for the specific capability they
+                          need by name, rather than inferring feature availability from
+                          `miatsuco_version` alone.
+
+                          **Changes**: New in Miatsuco 0.1-dev.
                       push_notifications_enabled:
                         type: boolean
                         description: |
