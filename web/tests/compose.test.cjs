@@ -74,6 +74,7 @@ const compose_setup = zrequire("compose_setup");
 const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
+const scheduled_messages = zrequire("scheduled_messages");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_validate = zrequire("compose_validate");
@@ -713,6 +714,245 @@ test_ui(
         compose_split_messages.set_split_messages_enabled(false);
     },
 );
+
+test_ui(
+    "schedule_split_message_multi_part",
+    ({override, override_rewire, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        let update_draft_count = 0;
+        override_rewire(drafts, "update_draft", () => {
+            update_draft_count += 1;
+            return 100;
+        });
+        const deleted_draft_ids = [];
+        override(drafts.draft_model, "deleteDrafts", (ids) => deleted_draft_ids.push(...ids));
+        disallow_rewire(echo, "try_deliver_locally");
+        mock_template(
+            "compose_banner/success_split_messages_scheduled_banner.hbs",
+            false,
+            () => "<banner-stub>",
+        );
+
+        const base_ts = fake_now + 600;
+        scheduled_messages.set_selected_schedule_timestamp(base_ts);
+
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        const posted = [];
+        override(channel, "post", (payload) => {
+            assert.equal(payload.url, "/json/scheduled_messages");
+            posted.push(payload.data);
+            if (posted.length === 1) {
+                // The box stays intact and read-only between parts, until the
+                // final part clears it.
+                assert.ok(fake_compose_box.textarea_val() !== "");
+                assert.ok(fake_compose_box.is_textarea_readonly());
+            }
+            payload.success({scheduled_message_id: posted.length});
+        });
+
+        fake_compose_box.set_textarea_val("part1\n\n\npart2\n\n\npart3");
+        const scheduled = compose.schedule_message_to_custom_date();
+
+        assert.ok(scheduled);
+        assert.deepEqual(
+            posted.map((data) => data.content),
+            ["part1", "part2", "part3"],
+        );
+        // All parts share one timestamp; delivery order is guaranteed by the
+        // ascending scheduled-message ids that sequential posting produces.
+        assert.deepEqual(
+            posted.map((data) => data.scheduled_delivery_timestamp),
+            [base_ts, base_ts, base_ts],
+        );
+        assert.equal(update_draft_count, 1);
+        assert.deepEqual(deleted_draft_ids, [100]);
+        assert.equal(fake_compose_box.textarea_val(), "");
+        assert.ok(!fake_compose_box.is_textarea_readonly());
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui(
+    "schedule_split_message_rewrites_draft_to_remainder",
+    ({override, override_rewire, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        override_rewire(drafts, "update_draft", () => 100);
+        const stored_draft = {content: "part1\n\n\npart2\n\n\npart3", is_sending_saving: true};
+        override(drafts.draft_model, "getDraft", () => stored_draft);
+        const draft_content_after_edit = [];
+        override(drafts.draft_model, "editDraft", (_id, draft) => {
+            draft_content_after_edit.push(draft.content);
+            return true;
+        });
+        const deleted_draft_ids = [];
+        override(drafts.draft_model, "deleteDrafts", (ids) => deleted_draft_ids.push(...ids));
+        disallow_rewire(echo, "try_deliver_locally");
+        mock_template(
+            "compose_banner/success_split_messages_scheduled_banner.hbs",
+            false,
+            () => "<banner-stub>",
+        );
+
+        scheduled_messages.set_selected_schedule_timestamp(fake_now + 600);
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        override(channel, "post", (payload) => payload.success({scheduled_message_id: 1}));
+
+        fake_compose_box.set_textarea_val("part1\n\n\npart2\n\n\npart3");
+        compose.schedule_message_to_custom_date();
+
+        // Each scheduled part rewrites the draft to only the still-unscheduled
+        // remainder; the final part deletes it.
+        assert.deepEqual(draft_content_after_edit, ["part2\n\n\npart3", "part3"]);
+        assert.deepEqual(deleted_draft_ids, [100]);
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui(
+    "schedule_split_message_error_recovery",
+    ({override, override_rewire, disallow, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        const update_draft_opts = [];
+        override_rewire(drafts, "update_draft", (opts = {}) => {
+            update_draft_opts.push(opts);
+            return 100;
+        });
+        disallow(drafts.draft_model, "deleteDrafts");
+        disallow_rewire(echo, "try_deliver_locally");
+        override_rewire(compose_ui, "autosize_textarea", noop);
+        override(channel, "xhr_error_message", () => "translated: Error");
+
+        scheduled_messages.set_selected_schedule_timestamp(fake_now + 600);
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        let post_count = 0;
+        override(channel, "post", (payload) => {
+            post_count += 1;
+            if (post_count === 1) {
+                payload.success({scheduled_message_id: 1});
+            } else {
+                payload.error({});
+            }
+        });
+
+        const banner_texts = [];
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            if (data.classname === compose_banner_module.CLASSNAMES.generic_compose_error) {
+                banner_texts.push(data.banner_text);
+            }
+            return "<banner-stub>";
+        });
+
+        fake_compose_box.set_textarea_val("part1\n\n\npart2\n\n\npart3");
+        compose.schedule_message_to_custom_date();
+
+        assert.equal(post_count, 2);
+        // Part 1 is scheduled; only the unscheduled remainder is restored.
+        assert.equal(fake_compose_box.textarea_val(), "part2\n\n\npart3");
+        assert.equal(update_draft_opts.at(-1).is_sending_saving, false);
+        // The partial-schedule-failure banner reports the one shipped part.
+        assert.ok(banner_texts.some((text) => text.includes("already scheduled")));
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui(
+    "schedule_split_message_refuses_too_many_parts",
+    ({disallow, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        disallow_rewire(echo, "try_deliver_locally");
+        // Too many parts must be refused before anything is scheduled.
+        disallow(channel, "post");
+        mock_template("compose_banner/compose_banner.hbs", false, () => "<banner-stub>");
+
+        scheduled_messages.set_selected_schedule_timestamp(fake_now + 600);
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        const parts = [];
+        for (let i = 0; i <= compose_split_messages.MAX_SPLIT_PARTS; i += 1) {
+            parts.push(`p${i}`);
+        }
+        fake_compose_box.set_textarea_val(parts.join("\n\n\n"));
+
+        const scheduled = compose.schedule_message_to_custom_date();
+
+        assert.equal(scheduled, false);
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui("schedule_single_message_unchanged", ({override, override_rewire, mock_template}) => {
+    mock_banners();
+    clock.setSystemTime(new Date(fake_now * 1000));
+    simulate_draft_ui_interactions();
+
+    const fake_compose_box = new FakeComposeBox();
+
+    override_rewire(drafts, "update_draft", () => 100);
+    const deleted_draft_ids = [];
+    override(drafts.draft_model, "deleteDrafts", (ids) => deleted_draft_ids.push(...ids));
+    let banner_context;
+    mock_template("compose_banner/success_message_scheduled_banner.hbs", false, (data) => {
+        banner_context = data;
+        return "<banner-stub>";
+    });
+
+    scheduled_messages.set_selected_schedule_timestamp(fake_now + 600);
+    // Splitting disabled: a single scheduled message, keeping the existing
+    // Undo banner.
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(social.stream_id);
+
+    const posted = [];
+    override(channel, "post", (payload) => {
+        posted.push(payload.data);
+        payload.success({scheduled_message_id: 77});
+    });
+
+    fake_compose_box.set_textarea_val("just one message");
+    const scheduled = compose.schedule_message_to_custom_date();
+
+    assert.ok(scheduled);
+    assert.equal(posted.length, 1);
+    assert.equal(posted[0].content, "just one message");
+    assert.equal(banner_context.scheduled_message_id, 77);
+    assert.deepEqual(deleted_draft_ids, [100]);
+    assert.equal(fake_compose_box.textarea_val(), "");
+});
 
 test_ui("split_message_preview_enumerated", ({override, mock_template}) => {
     mock_banners();

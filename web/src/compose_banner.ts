@@ -335,6 +335,17 @@ export function show_partial_send_failure(sent_count: number): void {
     show_error_message(text, CLASSNAMES.generic_compose_error, $("#compose_banners"));
 }
 
+export function show_partial_schedule_failure(scheduled_count: number): void {
+    const text = $t(
+        {
+            defaultMessage:
+                "{n, plural, one {# message was} other {# messages were}} already scheduled before this one failed. The remaining content is back in your compose box.",
+        },
+        {n: scheduled_count},
+    );
+    show_error_message(text, CLASSNAMES.generic_compose_error, $("#compose_banners"));
+}
+
 function split_messages_info_banner_content(): string {
     const context = {
         banner_type: INFO,
