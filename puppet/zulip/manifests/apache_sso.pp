@@ -3,12 +3,12 @@ class zulip::apache_sso {
 
   case $facts['os']['family'] {
     'Debian': {
-      $apache_packages = [ 'apache2', 'libapache2-mod-wsgi-py3', ]
+      $apache_packages = [ 'apache2', ]
       $conf_dir = '/etc/apache2'
       $apache2 = 'apache2'
     }
     'RedHat': {
-      $apache_packages = [ 'httpd', 'python36u-mod_wsgi', ]
+      $apache_packages = [ 'httpd', ]
       $conf_dir = '/etc/httpd'
       $apache2 = 'httpd'
     }
@@ -18,7 +18,7 @@ class zulip::apache_sso {
   }
   package { $apache_packages: ensure => installed }
 
-  apache2mod { [ 'headers', 'proxy', 'proxy_http', 'rewrite', 'ssl', 'wsgi', ]:
+  apache2mod { [ 'headers', 'proxy', 'proxy_http', 'proxy_uwsgi', 'rewrite', 'ssl', ]:
     ensure  => present,
     require => Package[$apache2],
   }

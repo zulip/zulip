@@ -26,8 +26,8 @@ module=zproject.wsgi:application
 
 # Start a master process listening on this socket
 master=true
-chmod-socket=700
-chown-socket=zulip:zulip
+chmod-socket=<%= @uwsgi_socket_mode %>
+chown-socket=zulip:<%= @uwsgi_socket_group %>
 socket=/home/zulip/deployments/uwsgi-socket
 listen=<%= @uwsgi_listen_backlog_limit %>
 

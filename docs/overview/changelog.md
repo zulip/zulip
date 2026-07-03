@@ -15,7 +15,14 @@ _Unreleased_
 
 ### Upgrade notes for 13.0
 
-- None yet.
+- The example configuration for the [Apache-based SSO
+  authentication](../production/authentication-methods.md#apache-based-sso-with-remote_user)
+  integration now has Apache forward authenticated requests to the
+  main Zulip server, rather than serving them with a second copy of
+  the Zulip application running under `mod_wsgi`. If you use this
+  integration, update your
+  `/etc/apache2/sites-available/zulip-sso.conf` to match the new
+  `zulip-sso.example` when upgrading.
 
 ## Zulip Server 12.x series
 
