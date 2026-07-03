@@ -121,26 +121,25 @@ def get_work_item_description(payload: WildValue) -> str | None:
     return stringified_description
 
 
-def get_issue_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
-    stringified_description = get_work_item_description(payload)
-
-    return get_issue_event_message(
-        user_name=get_user_name(payload, realm),
-        action="created",
-        url=get_object_url(payload),
-        number=payload["object_attributes"]["iid"].tame(check_int),
-        message=stringified_description,
-        assignees=replace_assignees_username_with_name(get_assignees(payload)),
-        title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
-    )
+def get_created_message_and_assignees(
+    action: str, payload: WildValue
+) -> tuple[str | None, list[dict[str, str]] | None]:
+    if action != "created":
+        return None, None
+    message = get_work_item_description(payload)
+    assignees = replace_assignees_username_with_name(get_assignees(payload))
+    return message, assignees
 
 
 def get_issue_event_body(action: str, payload: WildValue, include_title: bool, realm: Realm) -> str:
+    message, assignees = get_created_message_and_assignees(action, payload)
     return get_issue_event_message(
         user_name=get_user_name(payload, realm),
         action=action,
         url=get_object_url(payload),
         number=payload["object_attributes"]["iid"].tame(check_int),
+        message=message,
+        assignees=assignees,
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
 
@@ -148,12 +147,7 @@ def get_issue_event_body(action: str, payload: WildValue, include_title: bool, r
 def get_work_item_event_body(
     action: str, payload: WildValue, include_title: bool, realm: Realm
 ) -> str:
-    message: str | None = None
-    assignees: list[dict[str, str]] | None = None
-    if action == "created":
-        message = get_work_item_description(payload)
-        assignees = replace_assignees_username_with_name(get_assignees(payload))
-
+    message, assignees = get_created_message_and_assignees(action, payload)
     return get_pull_request_event_message(
         user_name=get_user_name(payload, realm),
         action=action,
@@ -712,7 +706,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Push Hook": get_push_event_body,
     "Tag Push Hook": get_tag_push_event_body,
     "Test Hook": get_test_event_body,
-    "Issue Hook open": get_issue_created_event_body,
+    "Issue Hook open": partial(get_issue_event_body, "created"),
     "Issue Hook close": partial(get_issue_event_body, "closed"),
     "Issue Hook reopen": partial(get_issue_event_body, "reopened"),
     "Issue Hook update": partial(get_issue_event_body, "updated"),
@@ -744,7 +738,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Issue Hook Epic close": partial(get_work_item_event_body, "closed"),
     "Issue Hook Epic reopen": partial(get_work_item_event_body, "reopened"),
     "Issue Hook Epic update": partial(get_work_item_event_body, "updated"),
-    "Confidential Issue Hook open": get_issue_created_event_body,
+    "Confidential Issue Hook open": partial(get_issue_event_body, "created"),
     "Confidential Issue Hook close": partial(get_issue_event_body, "closed"),
     "Confidential Issue Hook reopen": partial(get_issue_event_body, "reopened"),
     "Confidential Issue Hook update": partial(get_issue_event_body, "updated"),
