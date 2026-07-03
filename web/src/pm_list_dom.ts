@@ -2,6 +2,7 @@ import _ from "lodash";
 
 import render_more_private_conversations from "../templates/more_pms.hbs";
 import render_pm_list_item from "../templates/pm_list_item.hbs";
+import render_pm_list_pinned_divider from "../templates/pm_list_pinned_divider.hbs";
 
 import type {PMListConversation} from "./pm_list_data.ts";
 import * as vdom from "./vdom.ts";
@@ -14,6 +15,9 @@ export type PMNode =
     | {
           type: "more_items";
           more_conversations_unread_count: number;
+      }
+    | {
+          type: "pinned_divider";
       };
 
 export function keyed_pm_li(conversation: PMListConversation): vdom.Node<PMNode> {
@@ -54,6 +58,23 @@ export function more_private_conversations_li(
         eq,
         type: "more_items",
         more_conversations_unread_count,
+    };
+}
+
+export function pinned_dms_divider_li(): vdom.Node<PMNode> {
+    const render = (): string => render_pm_list_pinned_divider();
+
+    // The divider is static, so it never needs re-rendering while present.
+    const eq = (other: PMNode): boolean => other.type === "pinned_divider";
+
+    // This special key must be impossible as a user_ids_string.
+    const key = "pinned_dms_divider";
+
+    return {
+        key,
+        render,
+        eq,
+        type: "pinned_divider",
     };
 }
 

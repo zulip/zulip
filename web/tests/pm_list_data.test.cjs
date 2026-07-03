@@ -130,6 +130,7 @@ test("get_conversations", ({override}) => {
                 emoji_code: "20",
             },
             has_unread_mention: true,
+            pinned: false,
         },
         {
             recipients: "Alice, Bob",
@@ -145,6 +146,7 @@ test("get_conversations", ({override}) => {
             is_bot: false,
             status_emoji_info: undefined,
             has_unread_mention: false,
+            pinned: false,
         },
     ];
 
@@ -177,6 +179,7 @@ test("get_conversations", ({override}) => {
         is_group: false,
         is_bot: false,
         has_unread_mention: false,
+        pinned: false,
     });
     set_pm_with_filter([iago.user_id]);
     pm_data = pm_list_data.get_conversations();
@@ -219,6 +222,7 @@ test("get_conversations bot", ({override}) => {
             is_group: false,
             is_bot: true,
             has_unread_mention: false,
+            pinned: false,
         },
         {
             recipients: "Alice, Bob",
@@ -234,6 +238,7 @@ test("get_conversations bot", ({override}) => {
             is_group: true,
             is_bot: false,
             has_unread_mention: false,
+            pinned: false,
         },
     ];
 
@@ -515,4 +520,123 @@ test("get_list_info_deactivated_users", ({override}) => {
 
     // Reactivate Bob to not affect other tests.
     people.add_active_user(bob);
+});
+
+test("get_list_info_pinned_conversations", ({override}) => {
+    override(unread, "num_unread_for_user_ids_string", () => 0);
+
+    // Insert 12 conversations; the two oldest (Alice and Bob 1:1s)
+    // will be pinned below.
+    pm_conversations.recent.insert([alice.user_id], 1);
+    pm_conversations.recent.insert([bob.user_id], 2);
+    pm_conversations.recent.insert([zoe.user_id], 3);
+    pm_conversations.recent.insert([cardelio.user_id], 4);
+    pm_conversations.recent.insert([iago.user_id], 5);
+    pm_conversations.recent.insert([alice.user_id, bob.user_id], 6);
+    pm_conversations.recent.insert([alice.user_id, zoe.user_id], 7);
+    pm_conversations.recent.insert([bob.user_id, zoe.user_id], 8);
+    pm_conversations.recent.insert([cardelio.user_id, zoe.user_id], 9);
+    pm_conversations.recent.insert([cardelio.user_id, bob.user_id], 10);
+    pm_conversations.recent.insert([cardelio.user_id, alice.user_id], 11);
+    pm_conversations.recent.insert([iago.user_id, alice.user_id], 12);
+
+    assert.ok(pm_conversations.recent.set_pinned([alice.user_id], true));
+    assert.ok(pm_conversations.recent.set_pinned([bob.user_id], true));
+
+    // Pinned conversations appear first, in recency order (Bob, then
+    // Alice), and the unpinned section still shows its usual maximum of
+    // max_conversations_to_show (8). Pinning is additive: the total is
+    // 2 pinned + 8 unpinned = 10, rather than pins eating into the 8.
+    let list_info = pm_list_data.get_list_info(false);
+    assert.equal(list_info.pinned_count, 2);
+    check_list_info(list_info, 10, 0, [
+        "Bob",
+        "Alice",
+        "Alice, Iago",
+        "Alice, Cardelio",
+        "Bob, Cardelio",
+        "Cardelio, Zoe",
+        "Bob, Zoe",
+        "Alice, Zoe",
+        "Alice, Bob",
+        "Iago",
+    ]);
+
+    // The zoomed view also shows pinned first, then every unpinned
+    // conversation by recency.
+    list_info = pm_list_data.get_list_info(true);
+    assert.equal(list_info.pinned_count, 2);
+    check_list_info(list_info, 12, 0, [
+        "Bob",
+        "Alice",
+        "Alice, Iago",
+        "Alice, Cardelio",
+        "Bob, Cardelio",
+        "Cardelio, Zoe",
+        "Bob, Zoe",
+        "Alice, Zoe",
+        "Alice, Bob",
+        "Iago",
+        "Cardelio",
+        "Zoe",
+    ]);
+
+    // Unpinning moves a conversation back into the unpinned section.
+    assert.ok(pm_conversations.recent.set_pinned([alice.user_id], false));
+    list_info = pm_list_data.get_list_info(false);
+    assert.equal(list_info.pinned_count, 1);
+    assert.equal(list_info.conversations_to_be_shown[0].recipients, "Bob");
+
+    // set_pinned reports when there's no matching conversation.
+    assert.ok(!pm_conversations.recent.set_pinned([zoe.user_id, iago.user_id], true));
+});
+
+test("get_list_info_pinned_cap", ({override}) => {
+    override(unread, "num_unread_for_user_ids_string", () => 0);
+
+    // Ten conversations to pin, plus six more-recent unpinned ones.
+    const pinned_ids = [
+        [alice.user_id],
+        [bob.user_id],
+        [zoe.user_id],
+        [cardelio.user_id],
+        [iago.user_id],
+        [alice.user_id, bob.user_id],
+        [alice.user_id, zoe.user_id],
+        [bob.user_id, zoe.user_id],
+        [zoe.user_id, cardelio.user_id],
+        [bob.user_id, cardelio.user_id],
+    ];
+    const unpinned_ids = [
+        [alice.user_id, cardelio.user_id],
+        [alice.user_id, iago.user_id],
+        [bob.user_id, iago.user_id],
+        [zoe.user_id, iago.user_id],
+        [cardelio.user_id, iago.user_id],
+        [alice.user_id, bob.user_id, zoe.user_id],
+    ];
+
+    let message_id = 1;
+    for (const ids of [...pinned_ids, ...unpinned_ids]) {
+        pm_conversations.recent.insert(ids, message_id);
+        message_id += 1;
+    }
+    for (const ids of pinned_ids) {
+        assert.ok(pm_conversations.recent.set_pinned(ids, true));
+    }
+
+    // Pins are additive, but the combined list is capped at 15 rows:
+    // 10 pinned + only 5 unpinned show, even though everything is read.
+    const list_info = pm_list_data.get_list_info(false);
+    assert.equal(list_info.pinned_count, 10);
+    assert.equal(list_info.conversations_to_be_shown.length, 15);
+    assert.ok(
+        list_info.conversations_to_be_shown
+            .slice(0, 10)
+            .every((conversation) => conversation.pinned),
+    );
+    assert.ok(
+        list_info.conversations_to_be_shown.slice(10).every((conversation) => !conversation.pinned),
+    );
+    assert.equal(list_info.more_conversations_unread_count, 0);
 });

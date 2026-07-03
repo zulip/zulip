@@ -157,6 +157,7 @@ const channel_folders = zrequire("channel_folders");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
 const presence = zrequire("presence");
 const user_status = zrequire("user_status");
 const onboarding_steps = zrequire("onboarding_steps");
@@ -219,6 +220,19 @@ run_test("alert_words", ({override}) => {
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+});
+
+run_test("direct_message_conversation", ({override}) => {
+    const event = event_fixtures.direct_message_conversation;
+    // The conversation must be known for its pin state to update.
+    pm_conversations.recent.insert(event.user_ids, 1);
+
+    const stub = make_stub();
+    override(pm_list, "update_private_messages", stub.f);
+
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    assert.ok(pm_conversations.recent.is_pinned("5"));
 });
 
 run_test("navigation_views", ({override}) => {
