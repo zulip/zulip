@@ -103,7 +103,7 @@ prod = [
   "dnspython",
 
   # Install Python Social Auth
-  "social-auth-app-django",
+  "social-auth-app-django<6.0.0", # https://github.com/python-social-auth/social-app-django/issues/1020
   "social-auth-core[saml]",
   "python3-saml",
 
