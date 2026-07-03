@@ -6344,6 +6344,9 @@ version = "0.1.0"
 source = { editable = "." }
 
 [package.dev-dependencies]
+database = [
+    { name = "psycopg2" },
+]
 dev = [
     { name = "aioapns" },
     { name = "aiohttp" },
@@ -6583,6 +6586,7 @@ release-tools = [
 [package.metadata]
 
 [package.metadata.requires-dev]
+database = [{ name = "psycopg2" }]
 dev = [
     { name = "aioapns" },
     { name = "aiohttp" },

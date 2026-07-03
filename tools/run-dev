@@ -201,6 +201,7 @@ def server_processes() -> list[list[str]]:
         [
             "env",
             "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
+            sys.executable,
             "./puppet/zulip/files/postgresql/process_fts_updates",
             "--quiet",
         ],

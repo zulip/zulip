@@ -12,7 +12,14 @@ module-name = []
 module-root = ""
 
 [dependency-groups]
+database = [
+  # Needed to access our database
+  "psycopg2",
+]
+
 prod = [
+  { include-group = "database" },
+
   # Django itself
   "django[argon2]==5.2.*",
   "asgiref",
@@ -70,9 +77,6 @@ prod = [
 
   # Needed to access RabbitMQ
   "pika",
-
-  # Needed to access our database
-  "psycopg2",
 
   # Needed for memcached usage
   "python-binary-memcached",
