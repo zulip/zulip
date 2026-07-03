@@ -40,6 +40,7 @@ from zerver.lib.user_groups import (
     parse_group_setting_value,
     user_has_permission_for_group_setting,
 )
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     ChannelFolder,
     DefaultStreamGroup,
@@ -1359,7 +1360,7 @@ def bulk_can_remove_subscribers_from_streams(
     if not bool(permission_failure_streams):
         return True
 
-    existing_recipient_ids = [stream.recipient_id for stream in streams]
+    existing_recipient_ids = [assert_is_not_none(stream.recipient_id) for stream in streams]
     sub_recipient_ids = Subscription.objects.filter(
         user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
     ).values_list("recipient_id", flat=True)
@@ -1454,7 +1455,7 @@ def get_metadata_access_streams(
     if len(streams) == 0:
         return []
 
-    recipient_ids = [stream.recipient_id for stream in streams]
+    recipient_ids = [assert_is_not_none(stream.recipient_id) for stream in streams]
     subscribed_recipient_ids = set(
         Subscription.objects.filter(
             user_profile=user_profile, recipient_id__in=recipient_ids, active=True
@@ -1491,7 +1492,7 @@ def get_content_access_streams(
     if len(streams) == 0:
         return []
 
-    recipient_ids = [stream.recipient_id for stream in streams]
+    recipient_ids = [assert_is_not_none(stream.recipient_id) for stream in streams]
     subscribed_recipient_ids = set(
         Subscription.objects.filter(
             user_profile=user_profile, recipient_id__in=recipient_ids, active=True
