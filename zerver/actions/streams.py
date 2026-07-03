@@ -62,6 +62,7 @@ from zerver.lib.users import (
     get_subscribers_of_target_user_subscriptions,
     get_users_involved_in_dms_with_target_users,
 )
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
@@ -772,8 +773,8 @@ def bulk_add_subscriptions(
     for user in users:
         assert user.realm_id == realm.id
 
-    recipient_ids = [stream.recipient_id for stream in streams]
-    recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
+    recipient_ids = [assert_is_not_none(stream.recipient_id) for stream in streams]
+    recipient_id_to_stream = {assert_is_not_none(stream.recipient_id): stream for stream in streams}
 
     recipient_color_map = {}
     recipient_ids_set: set[int] = set()

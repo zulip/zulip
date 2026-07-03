@@ -47,6 +47,7 @@ from zerver.lib.users import (
     user_access_restricted_in_realm,
     user_profile_to_user_row,
 )
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     DefaultStreamGroup,
     Message,
@@ -206,7 +207,9 @@ def add_new_user_history(
     # TODO: This will do database queries in a loop if many private
     # streams are involved.
     recipient_ids = [
-        stream.recipient_id for stream in streams if can_access_stream_history(user_profile, stream)
+        assert_is_not_none(stream.recipient_id)
+        for stream in streams
+        if can_access_stream_history(user_profile, stream)
     ]
 
     # Start by finding recent messages matching those recipients.
