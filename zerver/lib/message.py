@@ -1460,29 +1460,43 @@ def _get_recent_conversations_via_direct_message_group(
     )
 
 
-def get_recent_private_conversations(user_profile: UserProfile) -> dict[frozenset[int], int]:
+class RecentPrivateConversationDict(TypedDict):
+    max_message_id: int
+    pinned: bool
+
+
+def get_recent_private_conversations(
+    user_profile: UserProfile,
+) -> dict[frozenset[int], RecentPrivateConversationDict]:
     """
     We return a dictionary structure for convenient modification
     below; this structure is converted into its final form by
     post_process.
     """
     recent_conversations = _get_recent_conversations_via_direct_message_group(user_profile.id)
+    recipient_to_max_message_id = dict(recent_conversations)
+    all_recipients = set(recipient_to_max_message_id)
 
-    all_recipients = {recipient_id for recipient_id, _ in recent_conversations}
-
-    # Now we need to map all the recipient_id objects to lists of user IDs
+    # A single scan of these subscriptions yields both the other
+    # participants (others' rows) and whether we've pinned it (our row).
     recipient_map: dict[int, list[int]] = defaultdict(list)
-    subscriptions = (
-        Subscription.objects.filter(recipient_id__in=all_recipients)
-        .exclude(user_profile_id=user_profile.id)
-        .values_list("recipient_id", "user_profile_id")
+    pinned_recipient_ids: set[int] = set()
+    subscriptions = Subscription.objects.filter(recipient_id__in=all_recipients).values_list(
+        "recipient_id", "user_profile_id", "pin_to_top"
     )
-    for recipient_id, user_profile_id in subscriptions:
-        recipient_map[recipient_id].append(user_profile_id)
+    for recipient_id, subscriber_id, pin_to_top in subscriptions:
+        if subscriber_id == user_profile.id:
+            if pin_to_top:
+                pinned_recipient_ids.add(recipient_id)
+        else:
+            recipient_map[recipient_id].append(subscriber_id)
 
     return {
-        frozenset(recipient_map[recipient_id]): max_message_id
-        for recipient_id, max_message_id in recent_conversations
+        frozenset(recipient_map[recipient_id]): {
+            "max_message_id": max_message_id,
+            "pinned": recipient_id in pinned_recipient_ids,
+        }
+        for recipient_id, max_message_id in recipient_to_max_message_id.items()
     }
 
 

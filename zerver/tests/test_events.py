@@ -53,6 +53,7 @@ from zerver.actions.default_streams import (
     lookup_default_stream_groups,
 )
 from zerver.actions.devices import do_register_device, do_remove_device
+from zerver.actions.direct_message_groups import do_set_direct_message_group_pin
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_invite_users,
@@ -181,6 +182,7 @@ from zerver.lib.event_schema import (
     check_device_remove,
     check_device_update,
     check_direct_message,
+    check_direct_message_conversation,
     check_draft_add,
     check_draft_remove,
     check_draft_update,
@@ -735,6 +737,23 @@ class NormalActionsTest(BaseAction):
                 skip_capture_on_commit_callbacks=True,
             )
         self.assertEqual(events[0]["message"][TOPIC_NAME], "")
+
+    def test_pinned_direct_message_conversation_events(self) -> None:
+        cordelia = self.example_user("cordelia")
+        # A prior direct message makes this a recent conversation, so its
+        # pinned state is tracked in recent_private_conversations.
+        self.send_personal_message(self.user_profile, cordelia)
+
+        with self.verify_action() as events:
+            do_set_direct_message_group_pin(self.user_profile, [cordelia.id], pinned=True)
+        check_direct_message_conversation("events[0]", events[0])
+        self.assertEqual(events[0]["user_ids"], [cordelia.id])
+        self.assertTrue(events[0]["pinned"])
+
+        with self.verify_action() as events:
+            do_set_direct_message_group_pin(self.user_profile, [cordelia.id], pinned=False)
+        check_direct_message_conversation("events[0]", events[0])
+        self.assertFalse(events[0]["pinned"])
 
     def test_user_creation_events_on_sending_messages(self) -> None:
         self.set_up_db_for_testing_user_access()

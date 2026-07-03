@@ -21,6 +21,7 @@
 * [Get temporary URL for an uploaded file](/api/get-file-temporary-url)
 * [Check thumbnail status](/api/check-thumbnail-status)
 * [Report a message](/api/report-message)
+* [Pin or unpin a direct message conversation](/api/update-dm-conversation-pin)
 
 ## Scheduled messages
 

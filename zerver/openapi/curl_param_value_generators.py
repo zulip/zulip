@@ -219,6 +219,19 @@ def delete_subscription_data() -> dict[str, object]:
     return {}
 
 
+@openapi_param_value_generator(["/users/me/dm_conversations/pin:post"])
+def pin_direct_message_conversation() -> dict[str, object]:
+    iago = helpers.example_user("iago")
+    hamlet = helpers.example_user("hamlet")
+    cordelia = helpers.example_user("cordelia")
+    # A conversation must exist before it can be pinned, so send a
+    # group direct message to create it.
+    helpers.send_group_direct_message(iago, [hamlet, cordelia])
+    return {
+        "user_ids": [hamlet.id, cordelia.id],
+    }
+
+
 @openapi_param_value_generator(["/events:get"])
 def get_events() -> dict[str, object]:
     profile = helpers.example_user("iago")
