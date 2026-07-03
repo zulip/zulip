@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/srv/zulip-database-env/.venv/bin/python3
 # Processes updates to PostgreSQL full-text search for new/edited messages.
 #
 # Zulip manages its PostgreSQL full-text search as follows.  When the
@@ -9,26 +9,29 @@
 #
 # There are four cases this has to cover:
 #
-# 1. Running in development, with a venv but no
-#    /home/zulip/deployments/current nor /etc/zulip/zulip.conf
+# 1. Running in development, with the development environment (from
+#    tools/run-dev) but no /srv/zulip-database-env nor
+#    /etc/zulip/zulip.conf
 #
 # 2. Running in production, with postgresql on the same machine as the
-#    frontend, with a venv and both /home/zulip/deployments/current
-#    and /etc/zulip/zulip.conf
+#    frontend, where /srv/zulip-database-env (referenced by the
+#    shebang above) links to the full environment of the current
+#    Zulip deployment, and /etc/zulip/zulip.conf exists
 #
 # 3. Running in production, on a postgresql machine which is not the
-#    frontend, with a /etc/zulip/zulip.conf but no venv nor
-#    /home/zulip/deployments/current
+#    frontend, with a /etc/zulip/zulip.conf, where
+#    /srv/zulip-database-env is a minimal environment containing only
+#    psycopg2, provided by
+#    puppet/zulip/manifests/process_fts_updates.pp
 #
 # 4. Running in production, on an application frontend server connected
 #    to a remote postgresql server, because we cannot run code _on_ the
 #    PostgreSQL server, such as in docker-zulip.
 #
 # Because of case (3), we cannot rely on functions from outside this
-# file (e.g. provided by scripts.lib.zulip_tools).  For case (1),
-# however, we wish to import `zerver.settings` since we have no
-# /etc/zulip/zulip.conf to read, and that case _requires_ loading the
-# venv.
+# file (e.g. provided by scripts.lib.zulip_tools), nor on Django being
+# importable.  For case (1), however, we wish to import
+# `zerver.settings` since we have no /etc/zulip/zulip.conf to read.
 #
 # We also must handle the cases where we are run as the `nagios` user,
 # which may not have permission to read all configuration files, and
