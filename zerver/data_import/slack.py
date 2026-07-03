@@ -16,6 +16,7 @@ from urllib.parse import urlsplit
 
 import orjson
 import requests
+from bs4 import BeautifulSoup
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
@@ -60,6 +61,7 @@ from zerver.data_import.slack_message_conversion import (
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.parallel import run_parallel_queue
@@ -762,9 +764,10 @@ def process_long_term_idle_users(
     added_mpims: AddedMPIMsT,
     added_dms: AddedDMsT,
     zerver_userprofile: list[ZerverFieldsT],
+    token: str,
 ) -> set[int]:
     return long_term_idle_helper(
-        get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms),
+        get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms, token),
         get_message_sending_user,
         get_timestamp_from_message,
         lambda id: slack_user_id_to_zulip_user_id[id],
@@ -789,6 +792,7 @@ def convert_slack_workspace_messages(
     output_dir: str,
     convert_slack_threads: bool,
     do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
+    token: str,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> tuple[list[ZerverFieldsT], list[UploadRecordData], list[AttachmentRecordData]]:
     """
@@ -806,9 +810,12 @@ def convert_slack_workspace_messages(
         added_mpims,
         added_dms,
         zerver_userprofile,
+        token,
     )
 
-    all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms)
+    all_messages = get_messages_iterator(
+        slack_data_dir, added_channels, added_mpims, added_dms, token
+    )
     logging.info("######### IMPORTING MESSAGES STARTED #########\n")
 
     total_reactions: list[ZerverFieldsT] = []
@@ -856,11 +863,43 @@ def convert_slack_workspace_messages(
     return total_reactions, total_uploads, total_attachments
 
 
+def is_canvas_file(fileinfo: ZerverFieldsT) -> bool:
+    return (
+        fileinfo.get("pretty_type") == "Canvas"
+        and fileinfo.get("mimetype") == "application/vnd.slack-docs"
+    )
+
+
+def fetch_canvas_markdown(file_url: str, token: str) -> str | None:
+    # Fetch a Slack canvas HTML file and return it as Zulip Markdown.
+    try:
+        response = request_file_stream(
+            file_url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        html = response.content.decode()
+        # Strip all img tags from the canvas HTML.  Slack embeds JPEG canvas
+        # previews as inline images; these are not readable content and make
+        # the message very large.
+        soup = BeautifulSoup(html, "html.parser")
+        for img in soup.find_all("img"):
+            img.decompose()
+        html = str(soup)
+        return convert_html_to_markdown(html)
+    except Exception:
+        logging.warning(
+            "Failed to fetch canvas content from %s; skipping.",
+            file_url,
+        )
+        return None
+
+
 def get_messages_iterator(
     slack_data_dir: str,
     added_channels: dict[str, Any],
     added_mpims: AddedMPIMsT,
     added_dms: AddedDMsT,
+    token: str,
 ) -> Iterator[ZerverFieldsT]:
     """This function is an iterator that returns all the messages across
     all Slack channels, in order by timestamp.  It's important to
@@ -893,10 +932,45 @@ def get_messages_iterator(
                     # skipping those messages is simpler.
                     continue
                 if message.get("mimetype") == "application/vnd.slack-docs":
-                    # This is a Slack "Post" which is HTML-formatted,
-                    # and we don't have a clean way to import at the
-                    # moment.  We skip them on import.
+                    # In older Slack exports, a Canvas could appear as a
+                    # standalone message with a top-level mimetype field
+                    # (as opposed to a file attachment inside "files").
+                    # We don't have a clean way to import these, so skip.
                     continue
+                canvas_files = []
+                message_has_canvas = False
+                for fileinfo in message.get("files", []):
+                    if not is_canvas_file(fileinfo):
+                        continue
+                    message_has_canvas = True
+                    # This file is a Slack "Post" (Canvas), stored as HTML at a
+                    # private download URL.  Fetch and convert it to Markdown.
+                    file_url = fileinfo.get("url_private_download")
+                    if file_url is None:
+                        continue
+                    markdown = fetch_canvas_markdown(file_url, token)
+                    # Drop canvases with no convertible content, e.g. an
+                    # image-only canvas (images are stripped, see
+                    # fetch_canvas_markdown), so we don't import a blank
+                    # message.
+                    if markdown and markdown.strip():
+                        canvas_files.append(
+                            {
+                                "name": fileinfo.get("title") or fileinfo.get("name") or "Canvas",
+                                "markdown": markdown,
+                            }
+                        )
+                if message_has_canvas:
+                    # Store canvas markdown separately so the original
+                    # Slack text can go through formatting conversion
+                    # without corrupting the already-valid Zulip Markdown
+                    # (e.g. "* item" bullets treated as Slack *bold*).  Each
+                    # canvas is later imported as its own message in a topic
+                    # named after the canvas.  The list may be empty when no
+                    # canvas produced content; its presence still marks this
+                    # as a canvas-carrying message so an empty carrier isn't
+                    # imported into the main topic.
+                    message["canvas_files"] = canvas_files
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
@@ -1107,6 +1181,51 @@ def channel_message_to_zerver_message(
     total_skipped_user_messages = 0
     thread_counter: dict[str, int] = defaultdict(int)
     thread_map: dict[str, ThreadMetadata] = {}
+
+    def append_message(
+        *,
+        message_id: int,
+        topic_name: str,
+        content: str,
+        date_sent: float,
+        user_id: int,
+        recipient_id: int,
+        is_direct_message_type: bool,
+        mentioned_user_ids: list[int],
+        has_image: bool,
+        has_link: bool,
+        has_attachment: bool,
+    ) -> None:
+        nonlocal total_user_messages, total_skipped_user_messages
+        zulip_message = build_message(
+            topic_name=topic_name,
+            date_sent=date_sent,
+            message_id=message_id,
+            content=content,
+            rendered_content=None,
+            user_id=user_id,
+            recipient_id=recipient_id,
+            realm_id=realm_id,
+            is_channel_message=not is_direct_message_type,
+            has_image=has_image,
+            has_link=has_link,
+            has_attachment=has_attachment,
+            is_direct_message_type=is_direct_message_type,
+        )
+        zerver_message.append(zulip_message)
+
+        (num_created, num_skipped) = build_usermessages(
+            zerver_usermessage=zerver_usermessage,
+            subscriber_map=subscriber_map,
+            recipient_id=recipient_id,
+            mentioned_user_ids=mentioned_user_ids,
+            message_id=message_id,
+            is_private=is_direct_message_type,
+            long_term_idle=long_term_idle,
+        )
+        total_user_messages += num_created
+        total_skipped_user_messages += num_skipped
+
     for message in all_messages:
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
@@ -1138,7 +1257,6 @@ def channel_message_to_zerver_message(
             print("Slack message unexpectedly missing text representation:")
             print(orjson.dumps(message, option=orjson.OPT_INDENT_2).decode())
             continue
-        rendered_content = None
 
         channel_name: str | None = None
         if "channel_name" in message:
@@ -1154,15 +1272,6 @@ def channel_message_to_zerver_message(
 
         message_id = NEXT_ID("message")
 
-        if "reactions" in message:
-            build_reactions(
-                reaction_list,
-                message["reactions"],
-                slack_user_id_to_zulip_user_id,
-                message_id,
-                zerver_realmemoji,
-            )
-
         # Process different subtypes of slack messages
 
         # Subtypes which have only the action in the message should
@@ -1175,6 +1284,11 @@ def channel_message_to_zerver_message(
             # The file_comment message type only indicates the
             # responsible user in a subfield.
             message["user"] = message["comment"]["user"]
+        if subtype == "canvas_sharing_message":
+            # Slack auto-generates the text "Shared this canvas: <file id>"
+            # for these; that raw file id is noise in Zulip.  Drop it so only
+            # the canvas itself (below) is imported, into its own topic.
+            content = ""
 
         file_info = process_message_files(
             message=message,
@@ -1195,46 +1309,78 @@ def channel_message_to_zerver_message(
         has_attachment = file_info["has_attachment"]
         has_image = file_info["has_image"]
 
-        topic_name = create_topic_name_for_message(
-            channel_name=channel_name,
-            content=content,
-            convert_slack_threads=convert_slack_threads,
-            is_direct_message_type=is_direct_message_type,
-            message=message,
-            recipient_id=recipient_id,
-            thread_counter=thread_counter,
-            thread_map=thread_map,
-            zerver_message_length=len(zerver_message),
-        )
+        canvas_files = message.get("canvas_files")
+        message_has_canvas = canvas_files is not None
+        canvas_files = canvas_files or []
+        # A canvas-carrying message with no text or other files should not
+        # produce an empty message in the main topic; each canvas becomes its
+        # own message below.  If none of its canvases produced content, the
+        # whole message is dropped.
+        emit_main_message = bool(content) or not message_has_canvas
 
-        zulip_message = build_message(
-            topic_name=topic_name,
-            date_sent=get_timestamp_from_message(message),
-            message_id=message_id,
-            content=content,
-            rendered_content=rendered_content,
-            user_id=slack_user_id_to_zulip_user_id[slack_user_id],
-            recipient_id=recipient_id,
-            realm_id=realm_id,
-            is_channel_message=not is_direct_message_type,
-            has_image=has_image,
-            has_link=has_link,
-            has_attachment=has_attachment,
-            is_direct_message_type=is_direct_message_type,
-        )
-        zerver_message.append(zulip_message)
+        # Attach reactions to whichever message is actually emitted: the main
+        # message, or the first canvas message when this is a canvas-only
+        # message.  A dropped canvas-only message keeps no reactions.
+        if "reactions" in message and (emit_main_message or canvas_files):
+            build_reactions(
+                reaction_list,
+                message["reactions"],
+                slack_user_id_to_zulip_user_id,
+                message_id,
+                zerver_realmemoji,
+            )
 
-        (num_created, num_skipped) = build_usermessages(
-            zerver_usermessage=zerver_usermessage,
-            subscriber_map=subscriber_map,
-            recipient_id=recipient_id,
-            mentioned_user_ids=mentioned_user_ids,
-            message_id=message_id,
-            is_private=is_direct_message_type,
-            long_term_idle=long_term_idle,
-        )
-        total_user_messages += num_created
-        total_skipped_user_messages += num_skipped
+        if emit_main_message:
+            topic_name = create_topic_name_for_message(
+                channel_name=channel_name,
+                content=content,
+                convert_slack_threads=convert_slack_threads,
+                is_direct_message_type=is_direct_message_type,
+                message=message,
+                recipient_id=recipient_id,
+                thread_counter=thread_counter,
+                thread_map=thread_map,
+                zerver_message_length=len(zerver_message),
+            )
+            append_message(
+                message_id=message_id,
+                topic_name=topic_name,
+                content=content,
+                date_sent=get_timestamp_from_message(message),
+                user_id=slack_user_id_to_zulip_user_id[slack_user_id],
+                recipient_id=recipient_id,
+                is_direct_message_type=is_direct_message_type,
+                mentioned_user_ids=mentioned_user_ids,
+                has_image=has_image,
+                has_link=has_link,
+                has_attachment=has_attachment,
+            )
+
+        # Each canvas becomes its own message, in a topic named after the
+        # canvas.  The markdown is already valid Zulip Markdown, so it is not
+        # run through convert_to_zulip_markdown again.
+        for index_in_message, canvas in enumerate(canvas_files):
+            if not emit_main_message and index_in_message == 0:
+                # Reuse the message_id already allocated (and any reactions
+                # built against it) for the first canvas of a canvas-only
+                # message.
+                canvas_message_id = message_id
+            else:
+                canvas_message_id = NEXT_ID("message")
+            canvas_markdown = canvas["markdown"]
+            append_message(
+                message_id=canvas_message_id,
+                topic_name=truncate_content(canvas["name"], MAX_TOPIC_NAME_LENGTH, "…"),
+                content=canvas_markdown,
+                date_sent=get_timestamp_from_message(message),
+                user_id=slack_user_id_to_zulip_user_id[slack_user_id],
+                recipient_id=recipient_id,
+                is_direct_message_type=is_direct_message_type,
+                mentioned_user_ids=[],
+                has_image=False,
+                has_link="http://" in canvas_markdown or "https://" in canvas_markdown,
+                has_attachment=False,
+            )
 
     # Link the original thread message to its branched off thread topic
     for thread_metadata in thread_map.values():
@@ -1306,6 +1452,12 @@ def process_message_files(
         if fileinfo.get("file_access", "") in ["access_denied", "file_not_found"]:
             # Slack sometimes includes file stubs for files it declares
             # inaccessible and does not further reference.
+            continue
+
+        if is_canvas_file(fileinfo):
+            # Canvas content is fetched and converted to Markdown text in
+            # get_messages_iterator; skip it here to avoid treating it as a
+            # file attachment.
             continue
 
         url = fileinfo["url_private"]
@@ -1541,7 +1693,7 @@ def fetch_shared_channel_users(
                 if user_id not in normal_user_ids:
                     mirror_dummy_user_ids.add(user_id)
 
-    all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {})
+    all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {}, token)
     for message in all_messages:
         if is_integration_bot_message(message):
             # This message is likely from an integration bot. Since Slack's integration
@@ -1790,6 +1942,7 @@ def do_convert_directory(
             output_dir,
             convert_slack_threads,
             do_download_and_export_upload_file,
+            token,
         )
 
     # Attachment and upload records are built before the download runs,
