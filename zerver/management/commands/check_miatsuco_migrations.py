@@ -59,7 +59,9 @@ for the full rationale."""
             node = graph.node_map[key]
             zerver_parents = [p[1] for p in node.parents if p[0] == "zerver"]
             miatsuco_parents = [p for p in zerver_parents if p.startswith("miatsuco_")]
-            non_miatsuco_zerver_parents = [p for p in zerver_parents if not p.startswith("miatsuco_")]
+            non_miatsuco_zerver_parents = [
+                p for p in zerver_parents if not p.startswith("miatsuco_")
+            ]
 
             if not non_miatsuco_zerver_parents:
                 # No direct dependency on an upstream zerver migration:
@@ -76,16 +78,16 @@ for the full rationale."""
                 )
                 continue
 
-            for parent_name in non_miatsuco_zerver_parents:
-                if parent_name != tip_name:
-                    violations.append(
-                        f"{key[1]}: depends on zerver migration "
-                        f"'{parent_name}', but the current actual tip is "
-                        f"'{tip_name}'. Update this migration's "
-                        "dependencies tuple to point at the tip -- do not "
-                        "rename the file itself (see "
-                        "docs/contributing/miatsuco-fork-conventions.md)."
-                    )
+            violations.extend(
+                f"{key[1]}: depends on zerver migration "
+                f"'{parent_name}', but the current actual tip is "
+                f"'{tip_name}'. Update this migration's "
+                "dependencies tuple to point at the tip -- do not "
+                "rename the file itself (see "
+                "docs/contributing/miatsuco-fork-conventions.md)."
+                for parent_name in non_miatsuco_zerver_parents
+                if parent_name != tip_name
+            )
 
         if violations:
             self.stdout.write("miatsuco migration convention violations found:\n")
