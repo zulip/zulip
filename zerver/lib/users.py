@@ -834,6 +834,7 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 def get_subscribers_of_target_user_subscriptions(
     target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
 ) -> dict[int, set[int]]:
+    """Get all users involved in stream and direct message groups with target_users."""
     target_user_ids = [user.id for user in target_users]
     target_user_subscriptions = (
         Subscription.objects.filter(
