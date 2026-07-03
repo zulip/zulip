@@ -1,6 +1,6 @@
-# Miatsu.co fork conventions
+# MiAtSu.Co fork conventions
 
-This is Miatsu.co's fork of Zulip. We track upstream release tags and rebase
+This is MiAtSu.Co's fork of Zulip. We track upstream release tags and rebase
 our own features on top of each new release, rather than merging. If you're
 contributing to this fork, please read this page first, as it covers the
 handful of conventions that make that rebase workflow sustainable, on top of

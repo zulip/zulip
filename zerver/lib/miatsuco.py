@@ -1,4 +1,4 @@
-"""Miatsuco fork-specific version and capability constants.
+"""MiAtSu.Co fork-specific version and capability constants.
 
 See docs/contributing/miatsuco-fork-conventions.md for the full convention
 this module exists to support.

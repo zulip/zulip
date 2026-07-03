@@ -3,7 +3,7 @@ import re
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import upload_message_attachment
 
-# Tests for Miatsuco fork-specific features, kept in their own file
+# Tests for MiAtSu.Co fork-specific features, kept in their own file
 # rather than being added directly to Zulip's own test files, so
 # that upstream can freely reorganize its own test files across
 # releases without our tests ever needing to be touched during a
