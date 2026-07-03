@@ -157,7 +157,7 @@ class Stream(models.Model):
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
     can_mention_many_users_group = models.ForeignKey(
-        UserGroup, on_delete=models.RESTRICT, related_name="+", null=True
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
 
     # The very first message ID in the stream.  Used to help clients
