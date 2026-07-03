@@ -118,6 +118,8 @@ class HomeTest(ZulipTestCase):
         "max_stream_description_length",
         "max_stream_name_length",
         "max_topic_length",
+        "miatsuco_capabilities",
+        "miatsuco_version",
         "muted_topics",
         "muted_users",
         "navigation_tour_video_url",

@@ -56,6 +56,7 @@ from zerver.lib.exceptions import (
     RealmDeactivatedError,
     UserDeactivatedError,
 )
+from zerver.lib.miatsuco import MIATSUCO_CAPABILITIES, MIATSUCO_VERSION
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.pysa import mark_sanitized
@@ -1239,6 +1240,8 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         zulip_version=ZULIP_VERSION,
         zulip_merge_base=ZULIP_MERGE_BASE,
         zulip_feature_level=API_FEATURE_LEVEL,
+        miatsuco_version=MIATSUCO_VERSION,
+        miatsuco_capabilities=list(MIATSUCO_CAPABILITIES),
         push_notifications_enabled=push_notifications_configured(),
         is_incompatible=check_server_incompatibility(request),
     )
