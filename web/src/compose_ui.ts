@@ -977,10 +977,20 @@ export let format_text = (
                 if (line.trim() === "") {
                     processed_lines.push(line);
                 } else {
+                    // Strip any existing list marker first, so switching
+                    // between bulleted and numbered doesn't stack markers
+                    // (e.g. "- x" + numbered click should give "1. x", not
+                    // "1. - x").
+                    let stripped = line;
+                    if (bulleted_numbered_list_util.is_bulleted(line)) {
+                        stripped = bulleted_numbered_list_util.strip_bullet(line);
+                    } else if (bulleted_numbered_list_util.is_numbered(line)) {
+                        stripped = bulleted_numbered_list_util.strip_numbering(line);
+                    }
                     if (type === "bulleted") {
-                        processed_lines.push("- " + line);
+                        processed_lines.push("- " + stripped);
                     } else {
-                        processed_lines.push(counter + ". " + line);
+                        processed_lines.push(counter + ". " + stripped);
                         counter += 1;
                     }
                 }
