@@ -856,6 +856,12 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     compose_ui.format_text($textarea, "bulleted");
     assert.equal(get_textarea_state(), "<first_item\n\nsecond_item\n\nthird_item>");
 
+    // Converting a numbered list to a bulleted list should replace the
+    // markers, not stack them (e.g. "- 1. item").
+    init_textarea_state("<1. first_item\n2. second_item>");
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(get_textarea_state(), "<- first_item\n- second_item>");
+
     // Toggling off bulleted list
     init_textarea_state("<- first_item\n- second_item>");
     compose_ui.format_text($textarea, "bulleted");
@@ -907,6 +913,12 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     init_textarea_state("<1. first_item\n\n2. second_item\n\n3. third_item>");
     compose_ui.format_text($textarea, "numbered");
     assert.equal(get_textarea_state(), "<first_item\n\nsecond_item\n\nthird_item>");
+
+    // Converting a bulleted list to a numbered list should replace the
+    // markers, not stack them (e.g. "1. - item").
+    init_textarea_state("<- first_item\n- second_item>");
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(get_textarea_state(), "<1. first_item\n2. second_item>");
 
     // Toggling off numbered list
     init_textarea_state("<1. first_item\n2. second_item>");
