@@ -74,7 +74,8 @@
         color: hsl(236deg 33% 90%);
     }
 
-    .pill-container.not-editable-by-user {
+    .pill-container.not-editable-by-user,
+    .group_setting_disabled .pill-container {
         opacity: 0.5;
     }
 
