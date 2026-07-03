@@ -3314,7 +3314,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=18,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,

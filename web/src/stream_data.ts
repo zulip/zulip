@@ -562,7 +562,10 @@ export function is_new_stream_announcements_stream_muted(): boolean {
 // This function can be used to allow callers to log blueslip errors
 // when the client seems to have a group it shouldn't have access to,
 // in order to find server bugs.
-export function has_metadata_access(sub: StreamSubscription): boolean {
+export function has_metadata_access(
+    sub: StreamSubscription,
+    user: CurrentUser | User = current_user,
+): boolean {
     if (sub.is_web_public) {
         return true;
     }
@@ -571,7 +574,7 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (!current_user.is_guest && !sub.invite_only) {
+    if (!user.is_guest && !sub.invite_only) {
         return true;
     }
 
@@ -579,7 +582,7 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         return true;
     }
 
-    if (can_administer_channel(sub)) {
+    if (can_administer_channel(sub, user)) {
         return true;
     }
 
@@ -587,6 +590,7 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         sub.can_add_subscribers_group,
         "can_add_subscribers_group",
         "stream",
+        user,
     );
     if (can_add_subscribers) {
         return true;
@@ -596,6 +600,7 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         sub.can_subscribe_group,
         "can_subscribe_group",
         "stream",
+        user,
     );
     if (can_subscribe) {
         return true;
@@ -672,12 +677,15 @@ export function rewire_has_content_access(value: typeof has_content_access): voi
     has_content_access = value;
 }
 
-export function can_administer_channel(sub: StreamSubscription): boolean {
+export function can_administer_channel(
+    sub: StreamSubscription,
+    user: CurrentUser | User = current_user,
+): boolean {
     // Note that most callers should use wrappers like
     // can_change_permissions_requiring_content_access, since actions
     // that can grant access to message content require content access
     // in addition to being a channel administrator.
-    if (current_user.is_admin) {
+    if (user.is_admin) {
         return true;
     }
 
@@ -685,6 +693,7 @@ export function can_administer_channel(sub: StreamSubscription): boolean {
         sub.can_administer_channel_group,
         "can_administer_channel_group",
         "stream",
+        user,
     );
 }
 
@@ -724,14 +733,36 @@ export function user_can_set_topics_policy(sub?: StreamSubscription): boolean {
     return user_can_set_topics_policy && can_administer_channel(sub);
 }
 
+export function can_unsubscribe_themselves(
+    sub: StreamSubscription,
+    user: CurrentUser | User = current_user,
+): boolean {
+    if (can_unsubscribe_others(sub, user)) {
+        return true;
+    }
+
+    if (settings_data.user_can_unsubscribe_from_channels(user)) {
+        return true;
+    }
+
+    return settings_data.user_has_permission_for_group_setting(
+        sub.can_unsubscribe_group,
+        "can_unsubscribe_group",
+        "stream",
+        user,
+    );
+}
+
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
     if (page_params.is_spectator) {
         return false;
     }
 
-    // Currently, you can always remove your subscription if you're subscribed.
+    // If the user is subscribed, they can unsubscribe themselves only if they are
+    // an organization admin, or in one of these groups: can_administer_channel_group,
+    // can_remove_subscribers_group, or can_unsubscribe_group.
     if (sub.subscribed) {
-        return true;
+        return can_unsubscribe_themselves(sub);
     }
 
     if (has_content_access(sub)) {
@@ -796,8 +827,11 @@ export function can_archive_stream(sub: StreamSubscription): boolean {
     return can_administer_channel(sub);
 }
 
-export function can_view_subscribers(sub: StreamSubscription): boolean {
-    return has_metadata_access(sub);
+export function can_view_subscribers(
+    sub: StreamSubscription,
+    user: CurrentUser | User = current_user,
+): boolean {
+    return has_metadata_access(sub, user);
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
@@ -844,27 +878,24 @@ export function can_subscribe_user(sub: StreamSubscription, user_id: number): bo
     return can_subscribe_others(sub);
 }
 
-export function can_unsubscribe_others(sub: StreamSubscription): boolean {
-    // Whether the current user has permission to remove other users
-    // from the stream. Organization administrators can remove users
-    // from any stream; additionally, users who can access the stream
-    // and are in the stream's can_remove_subscribers_group can do so
-    // as well.
-    //
-    // TODO: The API allows the current user to remove bots that it
-    // administers from streams; so we might need to refactor this
-    // logic to accept a target_user_id parameter in order to support
-    // that in the UI.
+export function can_unsubscribe_others(
+    sub: StreamSubscription,
+    user: CurrentUser | User = current_user,
+): boolean {
+    // Whether `user` has permission to remove other users from the
+    // stream. Organization administrators can remove users from any
+    // stream; additionally, users who can access the stream and are in
+    // the stream's can_remove_subscribers_group can do so as well.
 
     // A user must be able to view subscribers in a stream in order to
     // remove them. This check may never fire in practice, since the
     // UI for removing subscribers generally is a list of the stream's
     // subscribers.
-    if (!can_view_subscribers(sub)) {
+    if (!can_view_subscribers(sub, user)) {
         return false;
     }
 
-    if (can_administer_channel(sub)) {
+    if (can_administer_channel(sub, user)) {
         return true;
     }
 
@@ -872,6 +903,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         sub.can_remove_subscribers_group,
         "can_remove_subscribers_group",
         "stream",
+        user,
     );
 }
 
