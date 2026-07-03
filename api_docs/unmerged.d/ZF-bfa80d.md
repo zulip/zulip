@@ -19,3 +19,10 @@
   `can_mention_many_users_group` to channel objects, a
   [group-setting value](/api/group-setting-values) with the above
   semantics.
+* [`POST /messages`](/api/send-message),
+  [`PATCH /messages/{message_id}`](/api/update-message): The
+  `STREAM_WILDCARD_MENTION_NOT_ALLOWED` and
+  `TOPIC_WILDCARD_MENTION_NOT_ALLOWED` errors are now returned only
+  when the user is not permitted by either the realm-level or the new
+  channel-level `can_mention_many_users_group` setting. Previously,
+  only the realm-level setting was consulted.

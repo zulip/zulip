@@ -1929,7 +1929,7 @@ def check_message(
     if (
         stream is not None
         and message_send_dict.rendering_result.mentions_topic_wildcard
-        and not topic_wildcard_mention_allowed(sender, topic_participant_count, realm)
+        and not topic_wildcard_mention_allowed(sender, topic_participant_count, realm, stream)
     ):
         raise TopicWildcardMentionNotAllowedError
 

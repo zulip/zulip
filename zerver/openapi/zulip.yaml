@@ -9313,12 +9313,17 @@ paths:
                           }
                         description: |
                           An example JSON error response for when the message was rejected because
-                          the message contains a stream wildcard mention, but the user doesn't have
-                          permission to use such a mention in this channel as the user is not present
-                          in `can_mention_many_users_group` and the channel contains a large number
-                          of subscribers.
+                          the message contains a channel wildcard mention, but the user doesn't have
+                          permission to use such a mention in this channel; the channel contains a
+                          large number of subscribers, and the user is not permitted by either the
+                          realm-level or channel-level `can_mention_many_users_group` setting.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
+                          **Changes**: In Zulip 13.0 (feature level ZF-bfa80d), added a
+                          channel-level `can_mention_many_users_group` setting; the error is now
+                          returned only when the user is not permitted by either the realm-level or
+                          channel-level setting.
+
+                          New in Zulip 8.0 (feature level 229). Previously, this
                           error returned the `"BAD_REQUEST"` code.
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
@@ -9331,9 +9336,14 @@ paths:
                         description: |
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
-                          permission to use such a mention in this topic as the user is not present
-                          in `can_mention_many_users_group` and the topic contains a large number
-                          of participants.
+                          permission to use such a mention in this topic; the topic contains a large
+                          number of participants, and the user is not permitted by either the
+                          realm-level or channel-level `can_mention_many_users_group` setting.
+
+                          **Changes**: In Zulip 13.0 (feature level ZF-bfa80d), added a
+                          channel-level `can_mention_many_users_group` setting; the error is now
+                          returned only when the user is not permitted by either the realm-level or
+                          channel-level setting.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
@@ -10818,12 +10828,17 @@ paths:
                           }
                         description: |
                           An example JSON error response for when the message was rejected because
-                          the message contains a stream wildcard mention, but the user doesn't have
-                          permission to use such a mention in this channel as the user is not present
-                          in `can_mention_many_users_group` and the channel contains a large number
-                          of subscribers.
+                          the message contains a channel wildcard mention, but the user doesn't have
+                          permission to use such a mention in this channel; the channel contains a
+                          large number of subscribers, and the user is not permitted by either the
+                          realm-level or channel-level `can_mention_many_users_group` setting.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
+                          **Changes**: In Zulip 13.0 (feature level ZF-bfa80d), added a
+                          channel-level `can_mention_many_users_group` setting; the error is now
+                          returned only when the user is not permitted by either the realm-level or
+                          channel-level setting.
+
+                          New in Zulip 8.0 (feature level 229). Previously, this
                           error returned the `"BAD_REQUEST"` code.
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
@@ -10836,9 +10851,14 @@ paths:
                         description: |
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
-                          permission to use such a mention in this topic as the user is not present
-                          in `can_mention_many_users_group` and the topic contains a large number
-                          of participants.
+                          permission to use such a mention in this topic; the topic contains a large
+                          number of participants, and the user is not permitted by either the
+                          realm-level or channel-level `can_mention_many_users_group` setting.
+
+                          **Changes**: In Zulip 13.0 (feature level ZF-bfa80d), added a
+                          channel-level `can_mention_many_users_group` setting; the error is now
+                          returned only when the user is not permitted by either the realm-level or
+                          channel-level setting.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
