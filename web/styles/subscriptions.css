@@ -1188,7 +1188,9 @@ h4.stream_setting_subsection_title {
         }
 
         .pill-container {
-            opacity: 0.7;
+            background-color: var(
+                --color-background-pill-container-input-disabled
+            );
 
             .pill {
                 .exit {

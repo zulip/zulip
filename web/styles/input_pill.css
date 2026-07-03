@@ -231,6 +231,7 @@
 
     &.not-editable-by-user {
         cursor: not-allowed;
+        background-color: var(--color-background-pill-container-input-disabled);
 
         .pill {
             cursor: not-allowed;
