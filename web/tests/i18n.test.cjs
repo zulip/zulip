@@ -14,6 +14,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 page_params.request_language = "en";
 page_params.translation_data = {
     "Quote message": "Citer le message",
+    "Copy link to message": "Copier le lien vers le message",
     "Notification triggers": "Déclencheurs de notification",
     "You subscribed to channel {name}": "Vous n'êtes pas abonnés au canal {name}",
     "<p>The channel <b>{name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Channels page</z-link>.</p>":
@@ -58,9 +59,16 @@ run_test("$t_html", () => {
 });
 
 run_test("t_tag", ({mock_template}) => {
+    // Quote/Forward labels are passed in already translated (via $t) so the
+    // menu can switch wording based on selection. Assert on a real {{t}}
+    // string the template still renders so this test guards the translation
+    // tag helper.
     const args = {
         message_id: "99",
         should_display_quote_message: true,
+        quote_menu_label: "Citer le message",
+        forward_menu_label: "Transférer le message",
+        show_quote_and_forward_hotkey_hints: true,
         editability_menu_item: "Edit message",
         conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/channel/101-devel/topic/testing/near/99",
@@ -68,7 +76,7 @@ run_test("t_tag", ({mock_template}) => {
 
     mock_template("popovers/message_actions_popover.hbs", true, (data, html) => {
         assert.equal(data, args);
-        assert.ok(html.includes("Citer le message"));
+        assert.ok(html.includes("Copier le lien vers le message"));
         return "<message-actions-popover-stub>";
     });
 

@@ -227,6 +227,148 @@ export function rewire_get_highlighted_message_ids(
     get_highlighted_message_ids = value;
 }
 
+export type QuoteMenuSelectionKind =
+    | "full_message"
+    | "highlighted_content_within_a_single_message"
+    | "highlighted_messages";
+
+// Result of classifying the text selection for a message actions menu open.
+export type QuoteMenuSelectionOpts =
+    | {kind: "full_message"; show_hotkey_hints: boolean}
+    | {
+          kind: "highlighted_content_within_a_single_message";
+          quote_content: string;
+          show_hotkey_hints: true;
+      }
+    | {
+          kind: "highlighted_messages";
+          highlighted_message_ids: number[];
+          show_hotkey_hints: true;
+      };
+
+// Shared classification of the current DOM text selection for quote/forward.
+// Used by both the actions-menu label/action path and quote_messages.
+type HighlightedSelection =
+    | {type: "none"}
+    | {type: "single_message"; message_id: number; content: string}
+    | {type: "multi_message"; message_ids: number[]};
+
+function get_highlighted_selection(): HighlightedSelection {
+    const ids = get_highlighted_message_ids();
+    if (ids === undefined || ids.length === 0) {
+        return {type: "none"};
+    }
+    if (ids.length === 1) {
+        const message_id = ids[0];
+        assert(message_id !== undefined);
+        return {
+            type: "single_message",
+            message_id,
+            content: get_message_selection(),
+        };
+    }
+    return {type: "multi_message", message_ids: ids};
+}
+
+// This function returns how the message actions menu should quote or forward
+// for `message_id`, based on the current text selection.
+export function get_quote_menu_selection_opts(message_id: number): QuoteMenuSelectionOpts {
+    const selection = get_highlighted_selection();
+    switch (selection.type) {
+        case "none":
+            return {kind: "full_message", show_hotkey_hints: true};
+        case "single_message": {
+            if (selection.message_id !== message_id) {
+                // Selection is elsewhere; don't imply `>` / `<` match this menu item.
+                return {kind: "full_message", show_hotkey_hints: false};
+            }
+            // Selecting only the username (or other non-content) yields empty
+            // content; quoting the full message matches the `>` hotkey.
+            if (selection.content.trim().length === 0) {
+                return {kind: "full_message", show_hotkey_hints: true};
+            }
+            return {
+                kind: "highlighted_content_within_a_single_message",
+                quote_content: selection.content,
+                show_hotkey_hints: true,
+            };
+        }
+        case "multi_message":
+            if (!selection.message_ids.includes(message_id)) {
+                // Selection is elsewhere; don't imply `>` / `<` match this menu item.
+                return {kind: "full_message", show_hotkey_hints: false};
+            }
+            return {
+                kind: "highlighted_messages",
+                highlighted_message_ids: selection.message_ids,
+                show_hotkey_hints: true,
+            };
+        default: {
+            const _exhaustive: never = selection;
+            throw new Error(
+                `Unexpected highlighted selection type: ${JSON.stringify(_exhaustive)}`,
+            );
+        }
+    }
+}
+
+// Snapshot of quote/forward opts taken on ⋮ mousedown, before click clears
+// the DOM selection. Consumed when the actions menu opens for that message.
+export type QuoteMenuMousedownSnapshot = {
+    message_id: number;
+    opts: QuoteMenuSelectionOpts;
+};
+
+// Resolve quote/forward opts when the message actions menu opens.
+//
+// Mouse opens may reuse a mousedown snapshot (click clears the selection
+// before onShow). Keyboard opens (`i`) synthesize a jQuery click that does
+// not re-capture mousedown, so they must never reuse a leftover snapshot —
+// always classify from the live selection. Callers should also clear any
+// orphaned snapshot when opening via keyboard.
+export function get_quote_menu_selection_opts_for_menu_open(
+    message_id: number,
+    {
+        opened_via_keyboard,
+        mousedown_snapshot,
+    }: {
+        opened_via_keyboard: boolean;
+        mousedown_snapshot: QuoteMenuMousedownSnapshot | undefined;
+    },
+): QuoteMenuSelectionOpts {
+    if (!opened_via_keyboard && mousedown_snapshot?.message_id === message_id) {
+        return mousedown_snapshot.opts;
+    }
+    return get_quote_menu_selection_opts(message_id);
+}
+
+export function get_quote_menu_labels(kind: QuoteMenuSelectionKind): {
+    quote_menu_label: string;
+    forward_menu_label: string;
+} {
+    switch (kind) {
+        case "highlighted_content_within_a_single_message":
+            return {
+                quote_menu_label: $t({defaultMessage: "Quote selection"}),
+                forward_menu_label: $t({defaultMessage: "Forward selection"}),
+            };
+        case "highlighted_messages":
+            return {
+                quote_menu_label: $t({defaultMessage: "Quote selected messages"}),
+                forward_menu_label: $t({defaultMessage: "Forward selected messages"}),
+            };
+        case "full_message":
+            return {
+                quote_menu_label: $t({defaultMessage: "Quote message"}),
+                forward_menu_label: $t({defaultMessage: "Forward message"}),
+            };
+        default: {
+            const _exhaustive: never = kind;
+            throw new Error(`Unexpected quote menu selection kind: ${JSON.stringify(_exhaustive)}`);
+        }
+    }
+}
+
 function get_quote_target_for_single_message(opts: {
     message_id?: number;
     quote_content?: string | undefined;
@@ -528,19 +670,29 @@ function replace_quoting_placeholder_with(info: {
 }
 
 export function quote_messages(opts: QuoteMessageOpts): void {
-    if (opts.message_id) {
+    // Prefer an explicit multi-message id list from the caller when present.
+    const explicit_ids = opts.highlighted_message_ids;
+    if (explicit_ids !== undefined && explicit_ids.length > 1) {
+        quote_multiple_messages(opts);
+        return;
+    }
+    if (opts.message_id !== undefined) {
         quote_single_message(opts);
         return;
     }
-    const highlighted_message_ids = get_highlighted_message_ids();
-    if (highlighted_message_ids === undefined || highlighted_message_ids.length === 0) {
-        quote_single_message(opts);
-    } else if (highlighted_message_ids.length === 1) {
-        opts.highlighted_message_ids = highlighted_message_ids;
-        quote_single_message(opts);
-    } else {
-        opts.highlighted_message_ids = highlighted_message_ids;
-        quote_multiple_messages(opts);
+    const selection = get_highlighted_selection();
+    switch (selection.type) {
+        case "none":
+            quote_single_message(opts);
+            return;
+        case "single_message":
+            opts.highlighted_message_ids = [selection.message_id];
+            quote_single_message(opts);
+            return;
+        case "multi_message":
+            opts.highlighted_message_ids = selection.message_ids;
+            quote_multiple_messages(opts);
+            return;
     }
 }
 
