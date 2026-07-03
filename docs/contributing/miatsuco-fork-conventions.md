@@ -25,8 +25,8 @@ exists to try and make that kind of collision impossible.
 
 We prefix every identifier that this fork introduces with `miatsuco`. Examples:
 
-- Django model fields, e.g. `miatsuco_inline_upload_preview`
-- CSS classes we invent, e.g. `.miatsuco-message-media-collapsed-image`
+- Django model fields, e.g., `miatsuco_inline_upload_preview`
+- CSS classes we invent, e.g., `.miatsuco-message-media-collapsed-image`
 - Settings and API parameter names (should match the underlying field name)
 - `property_types` dict keys
 - Internal function and attribute names, even ones with low collision risk
@@ -44,7 +44,7 @@ own doesn't protect anything and just makes the diff harder to review.
 Every fork migration lives in `zerver/migrations/`. Django doesn't have a
 clean way for a separate app's migration to add fields to another app's
 models, so a genuinely separate migrations directory isn't practical for a
-change to an *existing* upstream model (e.g. a new field on `Realm`).
+change to an _existing_ upstream model (e.g., a new field on `Realm`).
 
 A fork feature that instead adds an entirely new table of its own has no such
 constraint and can use a fully separate Django app with its own migration
@@ -59,7 +59,7 @@ For the common case (a new field on an existing model), the convention is:
 - **Dependency**: whatever `zerver` migration is the actual current tip at
   the time of the last rebase.
 
-**Important:** naming migrations with our own prefix does *not*, by itself,
+**Important:** naming migrations with our own prefix does _not_, by itself,
 mean the dependency can be set once and forgotten. Django's migration graph is
 built purely from whichever files exist on disk and what they declare, and it
 has no concept of git history. If a `miatsuco_*` migration depends on some
@@ -79,7 +79,7 @@ is out of date.
 This has to be a management command rather than a standalone script, as
 `zerver/migrations/` contains both individually numbered pre-squash migrations
 and the squashed migration that replaces them, side by side. Which one Django
-treats as canonical depends on which are already applied in a *specific*
+treats as canonical depends on which are already applied in a _specific_
 database, which is a state that a static, file-only analysis cannot correctly
 resolve. However, Django's own `MigrationLoader` handles correctly via a real
 connection, the same way `showmigrations` and `migrate` do.
@@ -109,13 +109,13 @@ files, rather than being added into a file that upstream maintains. For example:
   in one file rather than split per feature. If a test needs a helper
   method that already exists on an upstream test class, duplicate the
   (small, stable) helper rather than sub-classing the upstream class.
-  Sub-classing would silently inherit and re-run all of *its* test methods
+  Sub-classing would silently inherit and re-run all of _its_ test methods
   too under your new class, which is easy to miss in code review.
 
 This isn't a hard rule with no exceptions. A bug fix that changes existing
 upstream function behavior inherently requires editing the file that
 function lives in, and that's fine and expected. The goal is eliminating
-*unnecessary* shared-file surface area, not editing zero upstream files at
+_unnecessary_ shared-file surface area, not editing zero upstream files at
 any cost.
 
 ## Signaling Fork Features
@@ -162,7 +162,7 @@ In addition to Zulip's own [review guide](review-process.md):
    and that the resulting tree is identical either way
    (`git apply patch-a; git apply patch-b` vs. the reverse order, then
    `diff -rq`). If your change has a genuine, intentional dependency on
-   another fork feature, confirm it fails *clearly and immediately* without
+   another fork feature, confirm it fails _clearly and immediately_ without
    that dependency present, a change that silently partially applies is
    worse than one that visibly refuses to.
 3. Run `./manage.py check_miatsuco_migrations` if you've touched a migration.

@@ -3,11 +3,11 @@
 This is MiAtSu.Co's fork of [Zulip](https://zulip.com), an open-source
 organized team chat app. It tracks upstream Zulip releases and rebases a
 small number of fork-specific features on top of each one. See
-[`docs/contributing/miatsuco-fork-conventions.md`](docs/contributing/miatsuco-fork-conventions.md)
+[`docs/contributing/miatsuco-fork-conventions.md`](https://github.com/BearlyBelievable/Miatsu.co/blob/main/docs/contributing/miatsuco-fork-conventions.md)
 for how this fork is organized and why.
 
 **Contributing to this fork?** Read
-[`docs/contributing/miatsuco-fork-conventions.md`](docs/contributing/miatsuco-fork-conventions.md)
+[`docs/contributing/miatsuco-fork-conventions.md`](https://github.com/BearlyBelievable/Miatsu.co/blob/main/docs/contributing/miatsuco-fork-conventions.md)
 first. It covers the handful of things specific to this fork — naming
 conventions, migration conventions, how we signal fork-specific features to
 our companion mobile client, and how we structure PRs — layered on top of
@@ -56,7 +56,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
 ## Getting started
 
 - **Contributing to this fork**. Read
-  [`docs/contributing/miatsuco-fork-conventions.md`](docs/contributing/miatsuco-fork-conventions.md)
+  [`docs/contributing/miatsuco-fork-conventions.md`](https://github.com/BearlyBelievable/Miatsu.co/blob/main/docs/contributing/miatsuco-fork-conventions.md)
   first, then follow upstream Zulip's [guide for new
   contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
   for everything general. Upstream has invested in making Zulip's code highly
@@ -84,7 +84,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
   [Render](https://render.com/docs/deploy-zulip). Learn more about
   [self-hosting Zulip](https://zulip.com/self-hosting/). This fork doesn't
   maintain separate self-hosting documentation beyond
-  [`docs/contributing/miatsuco-fork-conventions.md`](docs/contributing/miatsuco-fork-conventions.md).
+  [`docs/contributing/miatsuco-fork-conventions.md`](https://github.com/BearlyBelievable/Miatsu.co/blob/main/docs/contributing/miatsuco-fork-conventions.md).
 
 - **Using Zulip without setting up a server**. Learn about [Zulip
   Cloud](https://zulip.com/zulip-cloud/) hosting options. Zulip sponsors free [Zulip
