@@ -50,8 +50,8 @@ type EditHistoryEntry = {
 const server_message_history_schema = z.object({
     message_history: z.array(
         z.object({
-            content: z.string(),
-            rendered_content: z.string(),
+            content: z.optional(z.string()),
+            rendered_content: z.optional(z.string()),
             timestamp: z.number(),
             topic: z.string(),
             user_id: z.nullable(z.number()),
