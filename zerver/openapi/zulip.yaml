@@ -18446,7 +18446,7 @@ paths:
                           See `zerver/lib/miatsuco.py` and
                           `docs/contributing/miatsuco-fork-conventions.md`.
 
-                          **Changes**: New in Miatsu.co 0.1-dev.
+                          **Changes**: New in Miatsuco 0.1-dev.
                       miatsuco_capabilities:
                         type: array
                         items:
@@ -18457,7 +18457,7 @@ paths:
                           need by name, rather than inferring feature availability from
                           `miatsuco_version` alone.
 
-                          **Changes**: New in Miatsu.co 0.1-dev.
+                          **Changes**: New in Miatsuco 0.1-dev.
                       alert_words:
                         type: array
                         description: |
@@ -23003,26 +23003,6 @@ paths:
                         description: |
                           Whether the Zulip client that has sent a request to this endpoint is
                           deemed incompatible with the server.
-                      miatsu_version:
-                        type: string
-                        description: |
-                          The release version of the Miatsu.co fork running on this server, or
-                          `""` if the server is not running Miatsu.co. This is independent of
-                          `zulip_version`.
-
-                          **Changes**: New in Miatsu.co 0.1.
-                      miatsu_capabilities:
-                        type: array
-                        items:
-                          type: string
-                        description: |
-                          A list of named capability flags identifying Miatsu.co fork features
-                          supported by this server. Clients should detect Miatsu.co features by
-                          checking for a capability name in this list, never by comparing
-                          `zulip_feature_level` (whose values are owned by upstream Zulip).
-                          Empty if the server is not running Miatsu.co.
-
-                          **Changes**: New in Miatsu.co 0.1.
                       email_auth_enabled:
                         type: boolean
                         description: |
