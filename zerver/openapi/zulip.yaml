@@ -26171,9 +26171,12 @@ paths:
 
                                 A `null` value means the user group has no recorded creator, which is often
                                 because the group predates the metadata being tracked starting in Zulip 8.0,
-                                or because it was created via a data import tool.
+                                or because it was created via a data import tool
+                                or [management command][management-commands].
 
                                 **Changes**: New in Zulip 10.0 (feature level 292).
+
+                                [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
                             members:
                               type: array
                               description: |
@@ -28216,9 +28219,10 @@ components:
 
             A `null` value means the user group has no recorded creator, which is often
             because the user group is very old, or because it was created via a data
-            import tool.
+            import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 10.0 (feature level 292).
+            [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
         description:
           type: string
           description: |
