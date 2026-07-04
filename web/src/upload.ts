@@ -678,8 +678,8 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
             }
         }
 
-        const filtered_filename = file.name.replaceAll("[", "").replaceAll("]", "");
-        let syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
+        const filtered_filename = upload_result.filename.replaceAll("[", "").replaceAll("]", "");
+        let syntax_to_insert = "[" + filtered_filename + "](" + upload_result.url + ")";
         if (is_supported_image_type(file.type) || is_supported_audio_type(file.type, file.name)) {
             syntax_to_insert = "!" + syntax_to_insert;
         }
