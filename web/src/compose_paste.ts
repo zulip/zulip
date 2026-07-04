@@ -422,7 +422,7 @@ export function paste_handler_converter(
             let consecutive_empty_display_count = 0;
             for (const child of parent.children) {
                 const annotation_element = child.querySelector(
-                    '.katex-mathml annotation[encoding="application/x-tex"]',
+                    ':scope .katex-mathml annotation[encoding="application/x-tex"]',
                 );
                 if (annotation_element?.textContent) {
                     const katex_source = annotation_element.textContent.trim();
