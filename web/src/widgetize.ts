@@ -36,7 +36,7 @@ export function set_widget_for_tests(message_id: number, widget: GenericWidget):
 }
 
 export function get_message_ids(): number[] {
-    return [...generic_widget_map.keys()];
+    return generic_widget_map.keys().toArray();
 }
 
 function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {

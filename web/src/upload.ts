@@ -433,7 +433,7 @@ class InMemoryUrlStorage {
     }
 
     async findAllUploads(): Promise<PreviousUpload[]> {
-        return await Promise.resolve([...this.urlStorage.values()]);
+        return await Promise.resolve(this.urlStorage.values().toArray());
     }
 
     async findUploadsByFingerprint(fingerprint: string): Promise<PreviousUpload[]> {

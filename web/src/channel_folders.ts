@@ -46,8 +46,8 @@ export function initialize(params: StateData["channel_folders"]): void {
 }
 
 export function get_channel_folders(include_archived = false): ChannelFolder[] {
-    const channel_folders = [...channel_folder_by_id_dict.values()];
-    return channel_folders
+    return channel_folder_by_id_dict
+        .values()
         .filter((channel_folder) => {
             if (!include_archived && channel_folder.is_archived) {
                 return false;
@@ -55,6 +55,7 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
 
             return true;
         })
+        .toArray()
         .toSorted((folder_a, folder_b) => folder_a.order - folder_b.order);
 }
 

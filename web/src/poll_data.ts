@@ -256,8 +256,8 @@ export class PollData {
         const options: PollOptionData[] = [];
 
         for (const [key, obj] of this.key_to_option) {
-            const voters = [...obj.votes.keys()];
-            const current_user_vote = voters.includes(this.me);
+            const voters = obj.votes.keys().toArray();
+            const current_user_vote = obj.votes.has(this.me);
 
             options.push({
                 option: obj.option,

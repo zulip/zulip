@@ -75,7 +75,7 @@ export function add(message_list_data: MessageListData): void {
 }
 
 export function all(): MessageListData[] {
-    return [...cache.values()];
+    return cache.values().toArray();
 }
 
 export function clear(): void {

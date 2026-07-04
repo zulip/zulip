@@ -207,7 +207,7 @@ async function get_full_subscriber_set(
         if (fetched_subscribers === null || fetched_subscribers === false) {
             return null;
         }
-        set_subscribers(stream_id, [...fetched_subscribers.keys()]);
+        set_subscribers(stream_id, fetched_subscribers.keys().toArray());
     }
     return get_loaded_subscriber_subset(stream_id);
 }
@@ -367,7 +367,7 @@ export function get_subscriber_ids_assert_loaded(stream_id: number): number[] {
     // want an array of user_ids who are subscribed to a stream.
     const subscribers = get_loaded_subscriber_subset(stream_id);
 
-    return [...subscribers.keys()];
+    return subscribers.keys().toArray();
 }
 
 export async function get_subscribers_with_possible_fetch(
@@ -382,7 +382,7 @@ export async function get_subscribers_with_possible_fetch(
     if (subscribers === null) {
         return null;
     }
-    return [...subscribers.keys()];
+    return subscribers.keys().toArray();
 }
 
 export function set_subscribers(stream_id: number, user_ids: number[], full_data = true): void {

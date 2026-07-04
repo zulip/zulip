@@ -953,7 +953,7 @@ export function filter_all_users(pred: (person: User) => boolean): User[] {
 
 export function get_realm_users(): User[] {
     // includes humans and bots from your realm
-    return [...active_user_dict.values()];
+    return active_user_dict.values().toArray();
 }
 
 export function get_realm_users_and_welcome_bot(): User[] {
@@ -1060,11 +1060,11 @@ export function rewire_get_active_human_count(value: typeof get_active_human_cou
 
 export function get_active_user_ids(): number[] {
     // This includes active users and active bots.
-    return [...active_user_dict.keys()];
+    return active_user_dict.keys().toArray();
 }
 
 export function get_non_active_realm_users(): User[] {
-    return [...non_active_user_dict.values()];
+    return non_active_user_dict.values().toArray();
 }
 
 export function get_message_people(): User[] {
