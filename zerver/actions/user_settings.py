@@ -33,7 +33,6 @@ from zerver.lib.users import (
     get_users_with_access_to_real_email,
     user_access_restricted_in_realm,
 )
-from zerver.lib.utils import generate_api_key
 from zerver.models import (
     Device,
     Draft,
@@ -318,17 +317,31 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) ->
 
 
 @transaction.atomic(durable=True)
-def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -> str:
-    old_api_key = user_profile.api_key
-    new_api_key = generate_api_key()
-    user_profile.api_key = new_api_key
-    user_profile.save(update_fields=["api_key"])
+def do_regenerate_all_api_keys(
+    user_profile: UserProfile, acting_user: UserProfile, description: str | None = None
+) -> str:
+    user_api_keys = UserAPIKey.objects.filter(user=user_profile)
+    has_legacy_key = user_api_keys.filter(
+        description=UserAPIKey.LEGACY_API_KEY_DESCRIPTION
+    ).exists()
 
-    # We need to explicitly delete the old API key from our caches,
-    # because the on-save handler for flushing the UserProfile object
-    # in zerver/lib/cache.py only has access to the new API key.
-    cache_delete(user_profile_by_api_key_cache_key(old_api_key))
+    for user_api_key in user_api_keys:
+        # We need to explicitly delete the old API key from our caches,
+        # because the on-save handler for flushing the UserProfile object
+        # in zerver/lib/cache.py only has access to the new API key.
+        cache_delete(user_profile_by_api_key_cache_key(user_api_key.api_key))
+        # Revoke instead of delete to preserve audit trail.
+        # A revoked key is rejected at authentication time but still
+        # visible for security investigations.
+        user_api_key.is_revoked = True
+        user_api_key.save(update_fields=["is_revoked"])
 
+    description = (
+        UserAPIKey.LEGACY_API_KEY_DESCRIPTION
+        if has_legacy_key
+        else (description or UserAPIKey.LEGACY_API_KEY_DESCRIPTION)
+    )
+    new_api_key = create_user_api_key(user_profile, description).api_key
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
@@ -394,7 +407,7 @@ def do_regenerate_single_api_key(
 def bulk_regenerate_api_keys(user_profile_ids: Iterable[int]) -> None:
     for user_profile_id in user_profile_ids:
         user_profile = get_user_profile_by_id(user_profile_id)
-        do_regenerate_api_key(user_profile, user_profile)
+        do_regenerate_all_api_keys(user_profile, user_profile)
 
 
 def notify_avatar_url_change(user_profile: UserProfile) -> None:

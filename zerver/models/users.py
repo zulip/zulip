@@ -1052,14 +1052,15 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> UserProfile | None:
-    try:
-        return base_get_user_queryset().get(api_key=api_key)
-    except UserProfile.DoesNotExist:
-        # We will cache failed lookups with None.  The
-        # use case here is that broken API clients may
-        # continually ask for the same wrong API key, and
-        # we want to handle that as quickly as possible.
+    # Cache None for failed lookups to handle broken API clients
+    # that continually ask for the same wrong API key.
+    user_api_key = (
+        UserAPIKey.objects.select_related("user").filter(api_key=api_key, is_revoked=False).first()
+    )
+    if user_api_key is None:
         return None
+
+    return user_api_key.user
 
 
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:

@@ -65,6 +65,7 @@ from zerver.lib.users import (
     access_user_by_id_including_cross_realm,
     check_can_access_user,
     get_accounts_for_email,
+    get_api_key,
     get_cross_realm_dicts,
     get_inaccessible_user_ids,
     get_users_involved_in_dms_with_target_users,
@@ -84,6 +85,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
+    UserAPIKey,
     UserGroupMembership,
     UserProfile,
     UserTopic,
@@ -1147,7 +1149,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(99),
+            self.assert_database_query_count(103),
             self.assert_memcached_count(24),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -1993,7 +1995,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertTrue(polonius.is_guest)
         self.assertTrue(stream.is_web_public)
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(8):
             result = orjson.loads(
                 self.api_get(polonius, f"/api/v1/users/{iago.id}/channels").content
             )
@@ -2002,7 +2004,7 @@ class UserProfileTest(ZulipTestCase):
         # Test case when guest cannot access all users in the realm.
         self.set_up_db_for_testing_user_access()
         cordelia = self.example_user("cordelia")
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(8):
             result = self.api_get(polonius, f"/api/v1/users/{cordelia.id}/channels")
         self.assert_json_error(result, "Insufficient permission")
 
@@ -4100,18 +4102,25 @@ class TestBulkRegenerateAPIKey(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
+        iago = self.example_user("iago")
 
-        hamlet_old_api_key = hamlet.api_key
-        cordelia_old_api_key = cordelia.api_key
-        othello_old_api_key = othello.api_key
+        hamlet_old_api_key = get_api_key(hamlet)
+        cordelia_old_api_key = get_api_key(cordelia)
+        othello_old_api_key = get_api_key(othello)
 
         bulk_regenerate_api_keys([hamlet.id, cordelia.id])
+
+        UserAPIKey.objects.filter(user=iago).update(is_revoked=True)
 
         hamlet.refresh_from_db()
         cordelia.refresh_from_db()
         othello.refresh_from_db()
+        iago.refresh_from_db()
 
-        self.assertNotEqual(hamlet_old_api_key, hamlet.api_key)
-        self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)
+        self.assertNotEqual(hamlet_old_api_key, get_api_key(hamlet))
+        self.assertNotEqual(cordelia_old_api_key, get_api_key(cordelia))
 
-        self.assertEqual(othello_old_api_key, othello.api_key)
+        self.assertEqual(othello_old_api_key, get_api_key(othello))
+
+        with self.assertRaises(JsonableError):
+            get_api_key(iago)

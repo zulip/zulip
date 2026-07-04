@@ -1619,7 +1619,6 @@ def do_import_realm(
     )
     for user_profile_dict in data["zerver_userprofile"]:
         user_profile_dict["password"] = None
-        user_profile_dict["api_key"] = generate_api_key()
         for field_name in UserProfile.SPECIAL_PERMISSIONS_TO_RESET_AT_IMPORT:
             del user_profile_dict[field_name]
 

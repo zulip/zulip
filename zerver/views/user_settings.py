@@ -31,7 +31,7 @@ from zerver.actions.user_settings import (
     do_change_password,
     do_change_user_delivery_email,
     do_change_user_setting,
-    do_regenerate_api_key,
+    do_regenerate_all_api_keys,
     do_regenerate_single_api_key,
     do_start_email_change_process,
     set_avatar_to_default,
@@ -594,7 +594,8 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 # a bot regenerating its own API key.
 @typed_endpoint_without_parameters
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    new_api_key = do_regenerate_api_key(user_profile, user_profile)
+    description = RequestNotes.get_notes(request).client_name
+    new_api_key = do_regenerate_all_api_keys(user_profile, user_profile, description=description)
     json_result = dict(
         api_key=new_api_key,
     )
