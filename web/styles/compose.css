@@ -392,8 +392,8 @@
 }
 
 #message-content-container:has(
-        .new_message_textarea.textarea-approaching-limit
-    ),
+    .new_message_textarea.textarea-approaching-limit
+),
 .edit-content-container:has(.message_edit_content.textarea-approaching-limit) {
     box-shadow: 0 0 0 1pt
         var(--color-message-content-container-border-approaching-limit);
@@ -401,12 +401,12 @@
 
 #message-content-container:has(.new_message_textarea.textarea-over-limit.flash),
 #message-content-container:has(
-        .new_message_textarea.textarea-approaching-limit.flash
-    ),
+    .new_message_textarea.textarea-approaching-limit.flash
+),
 .edit-content-container:has(.message_edit_content.textarea-over-limit.flash),
 .edit-content-container:has(
-        .message_edit_content.textarea-approaching-limit.flash
-    ) {
+    .message_edit_content.textarea-approaching-limit.flash
+) {
     /* This should align with the timing in compose_validate.validate_message_length. */
     animation: message-limit-flash 0.5s ease-in-out 1;
 }
@@ -628,8 +628,8 @@
    scroller buttons reappear once focus has moved out
    of the formatting bar. */
 .compose-scrolling-buttons-container:has(
-        .compose-scrollable-buttons:focus-within
-    ) {
+    .compose-scrollable-buttons:focus-within
+) {
     .formatting-scroller-backward,
     .formatting-scroller-forward {
         opacity: 0;

@@ -619,9 +619,9 @@
 
 .stream-list-section-container:not(.showing-inactive-or-muted) {
     .inactive-or-muted-in-channel-folder:not(
-            .active-filter,
-            :has(.active-sub-filter)
-        ) {
+        .active-filter,
+        :has(.active-sub-filter)
+    ) {
         display: none;
     }
 
@@ -662,8 +662,8 @@
    .stream-expanded in a .stream-list-section-container, and if none
    then hide .stream-list-toggle-inactive-or-muted-channels). */
 .stream-list-section-container:not(
-        :has(.inactive-or-muted-in-channel-folder:not(.stream-expanded))
-    ) {
+    :has(.inactive-or-muted-in-channel-folder:not(.stream-expanded))
+) {
     .stream-list-toggle-inactive-or-muted-channels {
         display: none;
     }
@@ -718,10 +718,10 @@
    the header, or when the header is the current arrow-key target. */
 #streams_list .stream-list-section-container:not(.collapsed) {
     .stream-list-subsection-header:not(
-            :hover,
-            :focus-within,
-            .highlighted_row
-        ) {
+        :hover,
+        :focus-within,
+        .highlighted_row
+    ) {
         .unread_count,
         .masked_unread_count {
             visibility: hidden;
@@ -1831,8 +1831,8 @@ li.active-sub-filter {
         0;
 
     .left-sidebar-navigation-condensed-item:not(
-            .top_left_condensed_unread_marker
-        ),
+        .top_left_condensed_unread_marker
+    ),
     .left-sidebar-navigation-menu-icon {
         display: none;
     }

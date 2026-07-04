@@ -6,14 +6,7 @@
 // Size bounds and any mobile-disable behavior live in CSS.
 
 type Direction =
-    | "top"
-    | "right"
-    | "bottom"
-    | "left"
-    | "top_left"
-    | "top_right"
-    | "bottom_left"
-    | "bottom_right";
+    "top" | "right" | "bottom" | "left" | "top_left" | "top_right" | "bottom_left" | "bottom_right";
 
 type HandleSpec = {
     grows_width: boolean;

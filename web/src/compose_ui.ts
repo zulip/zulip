@@ -261,12 +261,10 @@ export let smart_insert_inline = ($textarea: JQuery<HTMLTextAreaElement>, syntax
 
     // If there isn't whitespace either at the end of the syntax or the
     // start of the content after the syntax, add one.
-    if (
-        !(
-            (after_str.length > 0 && is_space(after_str[0])) ||
-            (syntax.length > 0 && is_space(syntax.slice(-1)))
-        )
-    ) {
+    if (!(
+        (after_str.length > 0 && is_space(after_str[0])) ||
+        (syntax.length > 0 && is_space(syntax.slice(-1)))
+    )) {
         syntax += " ";
     }
 

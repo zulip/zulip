@@ -60,9 +60,7 @@ type Task = {
 };
 
 export type TodoWidgetOutboundData =
-    | NewTaskTitleOutboundData
-    | NewTaskOutboundData
-    | TaskStrikeOutboundData;
+    NewTaskTitleOutboundData | NewTaskOutboundData | TaskStrikeOutboundData;
 
 export class TaskData {
     message_sender_id: number;

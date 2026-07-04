@@ -584,8 +584,7 @@ export function filter_drafts_by_compose_box_and_recipient(
 }
 
 export function get_last_restorable_draft_based_on_compose_state():
-    | LocalStorageDraftWithId
-    | undefined {
+    LocalStorageDraftWithId | undefined {
     const current_drafts = draft_model.get();
     const drafts_map_for_compose_state = filter_drafts_by_compose_box_and_recipient(current_drafts);
     const drafts_for_compose_state = Object.entries(drafts_map_for_compose_state).map(

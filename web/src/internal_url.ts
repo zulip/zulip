@@ -18,9 +18,8 @@ const hashReplacements = new Map([
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str: string): string {
-    return encodeURIComponent(str).replaceAll(
-        /[%!'()*.]/g,
-        (matched) => hashReplacements.get(matched)!,
+    return encodeURIComponent(str).replaceAll(/[%!'()*.]/g, (matched) =>
+        hashReplacements.get(matched)!,
     );
 }
 

@@ -15,7 +15,6 @@ packageExtensions:
       type-fest: "*"
 
 patchedDependencies:
-  "@types/jquery@4.0.0": patches/@types__jquery@4.0.0.patch # https://github.com/DefinitelyTyped/DefinitelyTyped/pull/74984
   autosize: patches/autosize.patch
   email-addresses: patches/email-addresses.patch # https://github.com/jackbearheart/email-addresses/pull/81
   eslint-plugin-import-x: patches/eslint-plugin-import-x.patch # https://github.com/un-ts/eslint-plugin-import-x/pull/492

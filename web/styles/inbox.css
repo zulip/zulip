@@ -276,8 +276,8 @@
                (~3.4:1) and dark (~3.9:1) inbox row backgrounds. */
             .channel-visibility-policy-indicator,
             .visibility-policy-indicator:not(
-                    .inbox-row-visibility-policy-inherit
-                ) {
+                .inbox-row-visibility-policy-inherit
+            ) {
                 opacity: 0.45;
             }
 
@@ -311,9 +311,9 @@
                    rule sets the direct-interaction tier instead. */
                 &:focus-within:not(:focus, :hover) {
                     :is(
-                            .inbox-action-button,
-                            .inbox-row-visibility-policy-inherit
-                        ):not(:focus-visible) {
+                        .inbox-action-button,
+                        .inbox-row-visibility-policy-inherit
+                    ):not(:focus-visible) {
                         opacity: 0.2;
                     }
                 }
