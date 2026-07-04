@@ -193,6 +193,19 @@ run_test("get_tz_with_UTC_offset", () => {
     timerender.set_display_time_zone("UTC");
 });
 
+run_test("get_utc_offset_string", () => {
+    // Offsets depend on the date: standard time vs. daylight saving time.
+    assert.equal(timerender.get_utc_offset_string("America/New_York", date_2025), "UTC-05:00");
+    assert.equal(timerender.get_utc_offset_string("America/New_York", date_2019), "UTC-04:00");
+
+    // Fractional-hour offsets, positive and negative.
+    assert.equal(timerender.get_utc_offset_string("Asia/Kolkata", date_2025), "UTC+05:30");
+    assert.equal(timerender.get_utc_offset_string("America/St_Johns", date_2025), "UTC-03:30");
+    assert.equal(timerender.get_utc_offset_string("America/St_Johns", date_2019), "UTC-02:30");
+
+    assert.equal(timerender.get_utc_offset_string("UTC", date_2025), "UTC+00:00");
+});
+
 run_test("render_now_returns_today", () => {
     clock.setSystemTime(date_2019.getTime());
 
