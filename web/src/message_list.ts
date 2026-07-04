@@ -386,11 +386,9 @@ export class MessageList {
             !this.reading_prevented &&
             user_settings.web_mark_read_on_scroll_policy !==
                 web_mark_read_on_scroll_policy_values.never.code &&
-            !(
-                user_settings.web_mark_read_on_scroll_policy ===
-                    web_mark_read_on_scroll_policy_values.conversation_only.code &&
-                !is_conversation_view
-            )
+            (user_settings.web_mark_read_on_scroll_policy !==
+                web_mark_read_on_scroll_policy_values.conversation_only.code ||
+                is_conversation_view)
         );
     }
 
