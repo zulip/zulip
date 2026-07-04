@@ -112,7 +112,7 @@ export class PerStreamHistory {
     }
 
     has_resolved_topics(): boolean {
-        return [...this.topics.keys()].some((topic) => resolved_topics.is_resolved(topic));
+        return this.topics.keys().some((topic) => resolved_topics.is_resolved(topic));
     }
 
     has_topics(): boolean {
