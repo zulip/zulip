@@ -277,17 +277,12 @@ function get_edit_modal_folder_id_if_open(): number | undefined {
 function get_channel_folder_candidates(folder_id: number): dropdown_widget.Option[] {
     return stream_data
         .get_unsorted_subs()
-        .flatMap((stream) =>
-            stream.folder_id !== folder_id
-                ? [
-                      {
-                          name: stream.name,
-                          unique_id: stream.stream_id,
-                          stream,
-                      },
-                  ]
-                : [],
-        )
+        .filter((stream) => stream.folder_id !== folder_id)
+        .map((stream) => ({
+            name: stream.name,
+            unique_id: stream.stream_id,
+            stream,
+        }))
         .toSorted((a, b) => util.compare_stream_by_archived_then_name(a.stream, b.stream));
 }
 
