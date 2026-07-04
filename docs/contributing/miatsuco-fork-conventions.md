@@ -184,6 +184,56 @@ In addition to Zulip's own [review guide](review-process.md):
    correctly, especially for anything client-side that unit tests don't
    reach.
 
+## Passing CI
+
+Most of what CI enforces is upstream Zulip's own tooling, and upstream
+already documents it well. This fork does not restate that; read those pages
+and run the same commands. In particular:
+
+- [Linters](../testing/linters.md) covers Ruff, Prettier, and the custom
+  source checks (trailing whitespace, the `e.g.,` comma rule, and so on).
+  Before you push, run `./tools/lint -m` to lint just your modified files,
+  and `./tools/lint --fix` to autofix what can be autofixed. `--verbose`
+  explains how to fix errors that can't.
+- [Testing with Django](../testing/testing-with-django.md) covers the
+  backend suite and the 100% line-coverage requirement, including
+  `test-backend --coverage` and the `# nocoverage` pragma.
+- [Continuous integration](../testing/continuous-integration.md) covers
+  how the CI jobs themselves are structured.
+
+Fork test files are discovered automatically, with no registration step.
+The backend runner collects every `zerver/tests/test_*.py`, so a feature's
+`zerver/tests/test_miatsuco_<feature>.py` runs as part of the normal backend
+suite. The frontend runner collects every `web/tests/*.test.cjs`, so a
+`web/tests/miatsuco_<feature>.test.cjs` runs the same way. You do not add
+these to any list.
+
+On top of that upstream tooling, a couple of failure modes are specific to
+maintaining this fork, and are easy to trip because upstream's own files
+happen not to hit them:
+
+- **A shared helper module that ships before the tests that use it needs
+  `# nocoverage`.** `zerver/lib/test_miatsuco.py` is a helper mixin with no
+  tests of its own, and coverage is enforced across `zerver/` including
+  `zerver/lib/`. Until a feature's test module actually calls its helpers,
+  those lines are uncovered and fail the coverage gate, so the file is
+  marked `# nocoverage`. For the whole-file exclusion to apply, the very
+  first line must be _exactly_ `# nocoverage` with nothing after it (see
+  `tools/coveragerc`), a marker with a trailing explanation on the same
+  line only excludes that one line. Once feature tests exercise every
+  helper, the marker can be dropped so the helpers are held to real
+  coverage through their callers.
+- **`check_miatsuco_migrations` is fork-only, but it is wired into CI.**
+  It runs from `tools/test-migrations` (alongside upstream's own migration
+  consistency checks), so a `miatsuco_*` migration left pointing at a stale
+  zerver tip fails CI rather than slipping through. Run
+  `./manage.py check_miatsuco_migrations` locally if you have touched a
+  migration, as covered under Applying Migrations above.
+
+A green `git apply` or `git rebase` only means the text merged. It is not
+evidence that lint, coverage, the docs build, or the tests still pass, so
+run the checks above locally rather than relying on a clean apply.
+
 ## Questions
 
 If something here is unclear, or you've hit a case this page doesn't cover, then

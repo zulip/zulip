@@ -35,4 +35,19 @@ if ! ./manage.py makemigrations --check --dry-run; then
     exit 1
 fi
 
+# MiAtSu.Co fork check: every miatsuco_* migration's zerver dependency
+# must point at the actual current migration tip, not a stale one. This
+# is fork-specific (upstream has no miatsuco_* migrations) and is not
+# covered by makemigrations --check above, so we run it here alongside
+# upstream's own migration consistency checks. See
+# docs/contributing/miatsuco-fork-conventions.md.
+if ! ./manage.py check_miatsuco_migrations; then
+    echo
+    echo 'ERROR: A miatsuco_* migration depends on a stale zerver migration tip.'
+    echo 'Re-point its dependencies tuple at the current tip (do not rename the file).'
+    echo 'See docs/contributing/miatsuco-fork-conventions.md.'
+    echo
+    exit 1
+fi
+
 echo "Success!  Migrations are consistent with models."
