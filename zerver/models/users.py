@@ -979,6 +979,18 @@ class PasswordTooWeakError(Exception):
     pass
 
 
+class UserAPIKey(models.Model):
+    LEGACY_API_KEY_DESCRIPTION = "Legacy API key"
+
+    user = models.ForeignKey(UserProfile, on_delete=CASCADE, db_index=True)
+    description = models.CharField(max_length=100)
+    api_key = models.CharField(
+        max_length=UserProfile.API_KEY_LENGTH, default=generate_api_key, unique=True
+    )
+    is_revoked = models.BooleanField(default=False)
+    date_created = models.DateTimeField(default=timezone_now)
+
+
 def remote_user_to_email(remote_user: str) -> str:
     if settings.SSO_APPEND_DOMAIN is not None:
         return Address(username=remote_user, domain=settings.SSO_APPEND_DOMAIN).addr_spec
