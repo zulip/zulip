@@ -144,7 +144,7 @@ Handlebars.registerHelper("object_entries", (o: unknown) => {
     if (Symbol.iterator in o) {
         blueslip.error("object_entries requires a plain object");
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        return [...[...(o as Iterable<unknown>)].entries()];
+        return [...(o as Iterable<unknown>)].entries().toArray();
     }
     return Object.entries(o);
 });

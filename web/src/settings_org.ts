@@ -853,8 +853,7 @@ export function discard_group_property_element_changes($elem: JQuery, group: Use
         group,
     );
 
-    const group_widget_settings = [...settings_components.group_setting_widget_map.keys()];
-    if (group_widget_settings.includes(property_name)) {
+    if (settings_components.group_setting_widget_map.has(property_name)) {
         const pill_widget = settings_components.get_group_setting_widget(property_name);
         assert(pill_widget !== null);
         settings_components.set_group_setting_widget_value(

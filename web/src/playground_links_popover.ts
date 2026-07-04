@@ -43,7 +43,7 @@ function toggle_playground_links_popover(
             // We extract all the values out of playground_store map into
             // the playground_info array. Each element of the array is an
             // object with all properties the template needs for rendering.
-            const playground_info = [...playground_store.values()];
+            const playground_info = playground_store.values().toArray();
             playground_links_popover_instance = instance;
             instance.setContent(
                 ui_util.parse_html(render_playground_links_popover({playground_info})),

@@ -516,7 +516,7 @@ export function get_emojis_used_by_user_for_message_id(message_id: number): stri
 
 export function get_message_reactions(message: Message): MessageCleanReaction[] {
     update_clean_reactions(message);
-    return [...message.clean_reactions.values()];
+    return message.clean_reactions.values().toArray();
 }
 
 export function generate_clean_reactions(
@@ -559,14 +559,17 @@ export function generate_clean_reactions(
 
     const clean_reactions = new Map<string, MessageCleanReaction>();
 
-    const reaction_counts_and_user_ids = [...distinct_reactions.keys()].map((local_id) => {
-        const user_ids = user_map.get(local_id);
-        assert(user_ids !== undefined);
-        return {
-            count: user_ids.length,
-            user_ids,
-        };
-    });
+    const reaction_counts_and_user_ids = distinct_reactions
+        .keys()
+        .map((local_id) => {
+            const user_ids = user_map.get(local_id);
+            assert(user_ids !== undefined);
+            return {
+                count: user_ids.length,
+                user_ids,
+            };
+        })
+        .toArray();
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
 
     for (const local_id of distinct_reactions.keys()) {
@@ -677,10 +680,13 @@ type ReactionUserIdAndCount = {
 };
 
 function get_reaction_counts_and_user_ids(message: Message): ReactionUserIdAndCount[] {
-    return [...message.clean_reactions.values()].map((reaction) => ({
-        count: reaction.count,
-        user_ids: reaction.user_ids,
-    }));
+    return message.clean_reactions
+        .values()
+        .map((reaction) => ({
+            count: reaction.count,
+            user_ids: reaction.user_ids,
+        }))
+        .toArray();
 }
 
 export function get_vote_text(user_ids: number[], should_display_reactors: boolean): string {
