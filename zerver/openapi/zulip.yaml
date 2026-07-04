@@ -20760,6 +20760,14 @@ paths:
 
                           Whether this organization has been configured to enable
                           [previews of linked websites](/help/image-video-and-website-previews).
+                      realm_miatsuco_inline_upload_preview:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether this organization has been configured to show inline
+                          previews of uploaded images and videos. Specific to the
+                          MiAtSu.Co fork.
                       realm_topics_policy:
                         type: string
                         enum:

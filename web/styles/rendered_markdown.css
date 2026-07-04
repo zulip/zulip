@@ -763,6 +763,21 @@
     .media-audio-wrapper {
         vertical-align: middle;
         display: inline-flex;
+        flex-direction: column;
+        max-width: 100%;
+    }
+
+    .miatsuco-media-audio-filename {
+        overflow: hidden;
+        max-width: 100%;
+        margin-bottom: 2px;
+        font-size: 0.85em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .miatsuco-media-audio-controls-row {
+        display: inline-flex;
         align-items: center;
         max-width: 100%;
     }

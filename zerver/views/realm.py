@@ -154,6 +154,7 @@ def update_realm(
     gif_rating_policy: Json[int] | None = None,
     media_preview_size: Json[RealmMediaPreviewSizeEnum] | None = None,
     inline_image_preview: Json[bool] | None = None,
+    miatsuco_inline_upload_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
     invite_required: Json[bool] | None = None,
     jitsi_server_url_raw: Annotated[

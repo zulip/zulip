@@ -371,6 +371,24 @@ def image_preview_enabled(
     return realm.inline_image_preview
 
 
+def miatsuco_upload_preview_enabled(
+    message: Message | None = None, realm: Realm | None = None, no_previews: bool = False
+) -> bool:
+    if no_previews:
+        return False
+
+    if realm is None and message is not None:
+        realm = message.get_realm()
+
+    if realm is None:
+        # realm can be None for odd use cases
+        # like generating documentation or running
+        # test code
+        return True
+
+    return realm.miatsuco_inline_upload_preview
+
+
 def list_of_tlds() -> list[str]:
     # Skip a few overly-common false-positives from file extensions
     common_false_positives = {"java", "md", "mov", "py", "zip"}
@@ -761,8 +779,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return url
 
     def is_image(self, url: str) -> bool:
-        if not self.zmd.image_preview_enabled:
-            return False
         parsed_url = urlsplit(url)
         # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
@@ -771,9 +787,22 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # Check against the previews we generated -- if we didn't have
         # a row for the ImageAttachment, then its header didn't parse
         # as a valid image type which libvips handles.
+        #
+        # Uploaded-file previews are controlled solely by
+        # miatsuco_upload_preview_enabled, independent of image_preview_enabled
+        # below: this is what stops a plain link to an uploaded file
+        # (either typed directly, or produced as the fallback when
+        # ImageInlineProcessor declines to render a preview) from
+        # having its preview regenerated here when upload previews
+        # are turned off, regardless of the link-preview setting.
         if url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
+            if not self.zmd.miatsuco_upload_preview_enabled:
+                return False
             path_id = url.removeprefix("/user_uploads/")
             return path_id in self.zmd.zulip_db_data.user_upload_previews.image_metadata
+
+        if not self.zmd.image_preview_enabled:
+            return False
 
         return any(parsed_url.path.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
 
@@ -1040,9 +1069,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return insertion_index
 
     def is_video(self, url: str) -> bool:
-        if not self.zmd.image_preview_enabled:
-            return False
-
         url_type = guess_type(url)[0]
         # Video container formats broadly supported across browsers; see
         # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
@@ -1050,7 +1076,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # inside the container; the frontend hides the preview on a
         # playback error and falls back to the download link.
         supported_mimetypes = ["video/mp4", "video/quicktime", "video/webm"]
-        return url_type in supported_mimetypes
+        if url_type not in supported_mimetypes:
+            return False
+
+        if url.startswith("/user_uploads/"):
+            return self.zmd.miatsuco_upload_preview_enabled
+
+        return self.zmd.image_preview_enabled
 
     def add_video(
         self,
@@ -2169,6 +2201,21 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
             assert path_id in db_data.user_upload_previews.image_metadata
             metadata = db_data.user_upload_previews.image_metadata[path_id]
 
+        # Note that we intentionally do NOT skip the metadata lookup
+        # above before this check: thumbnailing (maybe_thumbnail /
+        # ImageAttachment) happens independently in the upload
+        # pipeline regardless of this setting. This flag only
+        # controls whether we render an inline preview element;
+        # when disabled, we still want the ![text](url) syntax to
+        # render as a normal link to the file, so we build an <a>
+        # element rather than returning None (which would leave the
+        # raw markdown syntax completely unprocessed).
+        if not self.zmd.miatsuco_upload_preview_enabled:
+            link = Element("a")
+            link.set("href", src)
+            link.text = img.get("alt")
+            return link
+
         # Insert a placeholder image spinner.  We post-process
         # this content (see rewrite_thumbnailed_images in
         # zerver.lib.thumbnail), looking specifically for this
@@ -2227,6 +2274,7 @@ class ZulipMarkdown(markdown.Markdown):
     zulip_db_data: DbData | None
     zulip_rendering_result: MessageRenderingResult
     image_preview_enabled: bool
+    miatsuco_upload_preview_enabled: bool
     url_embed_preview_enabled: bool
     url_embed_data: dict[str, UrlEmbedData | None] | None
 
@@ -2645,6 +2693,9 @@ def do_convert(
     md_engine.zulip_realm = message_realm
     md_engine.zulip_db_data = None  # for now
     md_engine.image_preview_enabled = image_preview_enabled(message, message_realm, no_previews)
+    md_engine.miatsuco_upload_preview_enabled = miatsuco_upload_preview_enabled(
+        message, message_realm, no_previews
+    )
     md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
         message, message_realm, no_previews
     )

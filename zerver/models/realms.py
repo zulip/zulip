@@ -232,6 +232,14 @@ class Realm(models.Model):
     inline_image_preview = models.BooleanField(default=True)
     inline_url_embed_preview = models.BooleanField(default=False)
 
+    # Whether uploaded image and video file attachments display an
+    # inline preview in the message feed. Thumbnails/previews are
+    # still generated regardless of this setting; this only
+    # controls whether the generated preview is shown, versus a
+    # plain link to the file. Does not affect uploaded audio files,
+    # which are always shown as a playable embed.
+    miatsuco_inline_upload_preview = models.BooleanField(default=True, db_default=True)
+
     media_preview_size = models.PositiveSmallIntegerField(
         default=RealmMediaPreviewSizeEnum.SMALL.value
     )
@@ -770,6 +778,7 @@ class Realm(models.Model):
         gif_rating_policy=int,
         media_preview_size=int,
         inline_image_preview=bool,
+        miatsuco_inline_upload_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
         jitsi_server_url=str | None,

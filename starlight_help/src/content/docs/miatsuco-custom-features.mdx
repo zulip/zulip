@@ -1,0 +1,43 @@
+---
+title: Miatsuco custom features
+---
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+
+This page documents features specific to Miatsuco's fork of Zulip. They are
+not part of upstream Zulip, and won't appear in Zulip's own documentation.
+
+## Configure whether previews of uploaded images and videos are shown
+
+<AdminOnly />
+
+You can configure whether uploaded images and videos are shown as inline
+thumbnail previews in the message feed, or as plain links to the file. This
+does not affect uploaded audio files, which are always shown as a playable
+inline preview.
+
+See also: [Image, video and website
+previews](/help/image-video-and-website-previews) for the related, upstream
+Zulip settings controlling previews of linked (non-uploaded) images, videos,
+and websites.
+
+<ZulipNote>
+  Thumbnails are generated for uploaded images and videos regardless of this
+  setting. However, Zulip renders each message's content once and caches it;
+  changing this setting does not retroactively update how already-sent
+  messages are displayed. It affects new messages going forward, and any
+  existing message that is later edited.
+</ZulipNote>
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Message feed settings**, toggle **Show thumbnail previews of
+     uploaded images and videos**.
+
+  <SaveChanges />
+</FlattenedSteps>

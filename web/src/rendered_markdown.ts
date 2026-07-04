@@ -407,7 +407,22 @@ export const update_elements = ($content: JQuery): void => {
         // We grab the audio source and title for
         // inserting into the template
         const audio_src = $(this).attr("src");
-        const audio_title = $(this).attr("title");
+        let audio_title = $(this).attr("title");
+
+        // Messages sent via the compose box always include the
+        // filename as alt text, but hand-written ![](url) markdown
+        // can omit it. Fall back to a name derived from the URL so
+        // the filename label is never blank.
+        if (!audio_title && audio_src) {
+            const last_segment = audio_src.split("/").pop();
+            if (last_segment) {
+                try {
+                    audio_title = decodeURIComponent(last_segment);
+                } catch {
+                    audio_title = last_segment;
+                }
+            }
+        }
 
         const rendered_audio = render_markdown_audio({
             audio_src,

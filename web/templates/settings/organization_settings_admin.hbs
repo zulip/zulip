@@ -278,6 +278,13 @@
                     </select>
                 </div>
 
+                {{> settings_checkbox
+                  setting_name="realm_miatsuco_inline_upload_preview"
+                  prefix="id_"
+                  is_checked=realm_miatsuco_inline_upload_preview
+                  label=admin_settings_label.realm_miatsuco_inline_upload_preview
+                  help_link="/help/miatsuco-custom-features#configure-whether-previews-of-uploaded-images-and-videos-are-shown"}}
+
                 {{#if server_inline_image_preview}}
                 {{> settings_checkbox
                   setting_name="realm_inline_image_preview"

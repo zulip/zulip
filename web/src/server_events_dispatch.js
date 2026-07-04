@@ -319,6 +319,7 @@ export function dispatch_normal_event(event) {
                 disallow_disposable_email_addresses: noop,
                 media_preview_size: message_live_update.update_thumbnails,
                 inline_image_preview: noop,
+                miatsuco_inline_upload_preview: noop,
                 inline_url_embed_preview: noop,
                 invite_required: noop,
                 message_content_edit_limit_seconds: noop,

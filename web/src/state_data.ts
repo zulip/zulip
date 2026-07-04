@@ -559,6 +559,7 @@ export const realm_schema = z.object({
     ),
     realm_media_preview_size: z.number(),
     realm_inline_image_preview: z.boolean(),
+    realm_miatsuco_inline_upload_preview: z.boolean(),
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),
     realm_jitsi_server_url: z.nullable(z.string()),

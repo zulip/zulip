@@ -196,6 +196,7 @@ class HomeTest(ZulipTestCase):
         "realm_incoming_webhook_bots",
         "realm_inline_image_preview",
         "realm_inline_url_embed_preview",
+        "realm_miatsuco_inline_upload_preview",
         "realm_invite_required",
         "realm_jitsi_server_url",
         "realm_linkifiers",
