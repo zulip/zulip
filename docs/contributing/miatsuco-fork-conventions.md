@@ -195,6 +195,14 @@ and run the same commands. In particular:
   Before you push, run `./tools/lint -m` to lint just your modified files,
   and `./tools/lint --fix` to autofix what can be autofixed. `--verbose`
   explains how to fix errors that can't.
+  One surprise worth knowing: a bare `./tools/lint` also runs `gitlint`,
+  which checks your commit _messages_ (not just code) against `.gitlint`,
+  most notably that the title is capitalized and ends with a period. CI
+  skips this check (it is run with `--skip=gitlint` because it is flaky),
+  so it never fails your PR, but it can fail a local full lint run in a way
+  that looks unrelated to your changes. Follow Zulip's
+  [commit discipline](commit-discipline.md) for message style regardless;
+  it is good practice even though CI does not enforce it.
 - [Testing with Django](../testing/testing-with-django.md) covers the
   backend suite and the 100% line-coverage requirement, including
   `test-backend --coverage` and the `# nocoverage` pragma.
