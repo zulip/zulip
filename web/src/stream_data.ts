@@ -75,7 +75,7 @@ class BinaryDict<T> {
         this.pred = pred;
     }
 
-    true_values(): IterableIterator<T> {
+    true_values(): IteratorObject<T, BuiltinIteratorReturn> {
         return this.trues.values();
     }
 
@@ -83,11 +83,11 @@ class BinaryDict<T> {
         return this.trues.size;
     }
 
-    false_values(): IterableIterator<T> {
+    false_values(): IteratorObject<T, BuiltinIteratorReturn> {
         return this.falses.values();
     }
 
-    *values(): IterableIterator<T> {
+    *values(): IteratorObject<T, BuiltinIteratorReturn> {
         yield* this.trues.values();
         yield* this.falses.values();
     }

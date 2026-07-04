@@ -42,19 +42,19 @@ export class FoldDict<V> {
         return this._items.delete(this._munge(key));
     }
 
-    *keys(): IterableIterator<string> {
+    *keys(): IteratorObject<string, BuiltinIteratorReturn> {
         for (const {k} of this._items.values()) {
             yield k;
         }
     }
 
-    *values(): IterableIterator<V> {
+    *values(): IteratorObject<V, BuiltinIteratorReturn> {
         for (const {v} of this._items.values()) {
             yield v;
         }
     }
 
-    *[Symbol.iterator](): IterableIterator<[string, V]> {
+    *[Symbol.iterator](): IteratorObject<[string, V], BuiltinIteratorReturn> {
         for (const {k, v} of this._items.values()) {
             yield [k, v];
         }
