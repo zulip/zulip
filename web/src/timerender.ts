@@ -158,6 +158,15 @@ export function get_localized_date_or_time_for_format(
     return formatter_map.get(format_key)!.format(date);
 }
 
+// Returns the UTC offset of the given time zone at the given time,
+// formatted like "UTC+05:30".
+export function get_utc_offset_string(time_zone: string, time: Date): string {
+    const offset_minutes = tzOffset(time_zone, time);
+    return `UTC${offset_minutes < 0 ? "-" : "+"}${String(
+        Math.floor(Math.abs(offset_minutes) / 60),
+    ).padStart(2, "0")}:${String(Math.abs(offset_minutes) % 60).padStart(2, "0")}`;
+}
+
 // Exported for tests only.
 export function get_tz_with_UTC_offset(time: Date): string {
     let timezone = new Intl.DateTimeFormat(user_settings.default_language, {
@@ -176,10 +185,7 @@ export function get_tz_with_UTC_offset(time: Date): string {
     // show that along with (UTC+x:y)
     timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;
 
-    const offset_minutes = tzOffset(display_time_zone, time);
-    const tz_UTC_offset = `(UTC${offset_minutes < 0 ? "-" : "+"}${String(
-        Math.floor(Math.abs(offset_minutes) / 60),
-    ).padStart(2, "0")}:${String(Math.abs(offset_minutes) % 60).padStart(2, "0")})`;
+    const tz_UTC_offset = `(${get_utc_offset_string(display_time_zone, time)})`;
 
     if (timezone) {
         return timezone + " " + tz_UTC_offset;
