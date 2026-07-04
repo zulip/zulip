@@ -49,7 +49,7 @@ export class LazySet {
         return data.arr.length;
     }
 
-    keys(): IterableIterator<number> {
+    keys(): IteratorObject<number, BuiltinIteratorReturn> {
         const {data} = this;
         if (data.set !== undefined) {
             return data.set.keys();
