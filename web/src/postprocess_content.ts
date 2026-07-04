@@ -34,7 +34,9 @@ export function postprocess_content(html: string): string {
     // We want to do this processing up front, so that embeds benefit
     // from other processing below for links and images
     for (const message_embed of template.content.querySelectorAll(".message_embed")) {
-        const message_embed_title_link = message_embed.querySelector(".message_embed_title a");
+        const message_embed_title_link = message_embed.querySelector(
+            ":scope .message_embed_title a",
+        );
         // Add a class to the anchor tag on embed-title links for easier
         // reference from CSS
         message_embed_title_link?.classList.add("message-embed-title-link");

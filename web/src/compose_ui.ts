@@ -758,7 +758,7 @@ export function position_inside_code_block(content: string, position: number): b
         content.slice(0, position) + unique_insert + content.slice(position);
     const rendered_content = markdown.parse_non_message(unique_insert_content);
     const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
-    const code_blocks = rendered_html.querySelectorAll("pre > code");
+    const code_blocks = rendered_html.querySelectorAll(":scope pre > code");
     return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
 }
 
