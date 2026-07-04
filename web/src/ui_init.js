@@ -375,7 +375,7 @@ export function initialize_kitchen_sink_stuff() {
                         message_lists.current
                             .all_messages()
                             .map((message) => message.id)
-                            .toSorted(),
+                            .toSorted((a, b) => a - b),
                     ),
                     found_in_dom: $row_from_dom.length,
                 });
