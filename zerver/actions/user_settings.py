@@ -18,7 +18,7 @@ from zerver.lib.cache import (
     delete_user_profile_caches,
     user_profile_by_api_key_cache_key,
 )
-from zerver.lib.create_user import get_display_email_address
+from zerver.lib.create_user import create_user_api_key, get_display_email_address
 from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
@@ -42,6 +42,7 @@ from zerver.models import (
     RealmAuditLog,
     ScheduledEmail,
     ScheduledMessageNotificationEmail,
+    UserAPIKey,
     UserPresence,
     UserProfile,
 )
@@ -341,6 +342,50 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
     queue_event_on_commit("deferred_work", event)
 
     # Delete all of the user's Device records to stop sending E2EE push notifications.
+    Device.objects.filter(user_id=user_profile.id).delete()
+
+    return new_api_key
+
+
+@transaction.atomic(durable=True)
+def do_regenerate_single_api_key(
+    user_profile: UserProfile, acting_user: UserProfile, key_id: int, description: str | None = None
+) -> str:
+
+    api_key_obj = UserAPIKey.objects.get(
+        user=user_profile,
+        id=key_id,
+        is_revoked=False,
+    )
+
+    # Explicitly delete from cache before revoking, because the on-save
+    # handler in zerver/lib/cache.py only has access to the new API key,
+    # not the one being revoked.
+    cache_delete(user_profile_by_api_key_cache_key(api_key_obj.api_key))
+
+    api_key_obj.is_revoked = True
+    api_key_obj.save(update_fields=["is_revoked"])
+
+    # if the user has a legacy API key, we want to keep it as the legacy key.
+    description = (
+        UserAPIKey.LEGACY_API_KEY_DESCRIPTION
+        if api_key_obj.description == UserAPIKey.LEGACY_API_KEY_DESCRIPTION
+        else (description or UserAPIKey.LEGACY_API_KEY_DESCRIPTION)
+    )
+    new_api_key = create_user_api_key(user_profile, description).api_key
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        event_type=AuditLogEventType.USER_API_KEY_CHANGED,
+        event_time=event_time,
+    )
+
+    event = {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id}
+    queue_event_on_commit("deferred_work", event)
+
+    # Deprecated: Need to delete particular device records for the user to stop sending E2EE push notifications.
     Device.objects.filter(user_id=user_profile.id).delete()
 
     return new_api_key

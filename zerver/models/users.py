@@ -20,6 +20,7 @@ from zerver.lib.cache import (
     bot_dicts_in_realm_cache_key,
     bot_profile_cache_key,
     cache_with_key,
+    flush_bot_api_key,
     flush_user_profile,
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
@@ -1000,6 +1001,7 @@ def remote_user_to_email(remote_user: str) -> str:
 # Make sure we flush the UserProfile object from our remote cache
 # whenever we save it.
 post_save.connect(flush_user_profile, sender=UserProfile)
+post_save.connect(flush_bot_api_key, sender=UserAPIKey)
 
 
 def base_bulk_get_user_queryset() -> QuerySet[UserProfile]:

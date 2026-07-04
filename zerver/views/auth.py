@@ -72,7 +72,7 @@ from zerver.lib.subdomains import (
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_users_for_api, is_2fa_verified
+from zerver.lib.users import get_api_key_data, get_users_for_api, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import validate_login_email
 from zerver.models import (
@@ -1195,6 +1195,20 @@ def api_fetch_api_key(request: HttpRequest, *, username: str, password: str) -> 
     return json_success(
         request,
         data={"api_key": api_key, "email": user_profile.delivery_email, "user_id": user_profile.id},
+    )
+
+
+@csrf_exempt
+def get_user_api_keys(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    """This is for listing all the API keys associated to a user. The keys
+    themselves aren't displayed, just the basic information to identify each
+    one.
+    """
+    api_keys_data = get_api_key_data(user_profile)
+
+    return json_success(
+        request,
+        data={"api_keys": api_keys_data, "email": user_profile.delivery_email},
     )
 
 

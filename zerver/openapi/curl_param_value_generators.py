@@ -28,7 +28,7 @@ from zerver.lib.upload import upload_message_attachment
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.channel_folders import ChannelFolder
 from zerver.models.realms import get_realm
-from zerver.models.users import UserProfile, get_user
+from zerver.models.users import UserAPIKey, UserProfile, get_user
 from zerver.openapi.openapi import Parameter
 
 GENERATOR_FUNCTIONS: dict[str, Callable[[], dict[str, object]]] = {}
@@ -523,3 +523,25 @@ def remove_bot_storage_bot_auth() -> dict[str, object]:
     set_bot_storage(bot, [("foo", "bar")])
     AUTHENTICATION_LINE[0] = f"{bot.email}:{bot.api_key}"
     return {}
+
+
+@openapi_param_value_generator(["/users/me/api_keys/{key_id}/regenerate:post"])
+def regenerate_single_api_key_test_user() -> dict[str, object]:
+    test_user_email = "regenerate-single-api-key-test@zulip.com"
+    test_user = do_create_user(
+        test_user_email,
+        "secret",
+        get_realm("zulip"),
+        "Mr. Regenerate Single",
+        role=200,
+        acting_user=None,
+    )
+    test_user_api_key = get_api_key(test_user)
+    # Change authentication line to allow test_client to regenerate its own key.
+    AUTHENTICATION_LINE[0] = f"{test_user.email}:{test_user_api_key}"
+
+    regenerate_test_key = UserAPIKey.objects.create(
+        user=test_user,
+        description="Test API key",
+    )
+    return {"key_id": regenerate_test_key.id}

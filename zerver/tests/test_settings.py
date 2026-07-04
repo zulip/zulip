@@ -788,10 +788,29 @@ class UserChangesTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.assertEqual(new_api_key, user.api_key)
 
+    def test_update_single_api_key(self) -> None:
+        """Test regenerating a specific API key by ID."""
+        user = self.example_user("hamlet")
+        email = user.email
+        key_obj = create_user_api_key(user, "ZulipMobile")
+        old_api_key = key_obj.api_key
+
+        # Ensure old key is in cache.
+        self.assertEqual(get_user_profile_by_api_key(old_api_key).email, email)
+
+        result = self.api_post(user, f"/api/v1/users/me/api_keys/{key_obj.id}/regenerate")
+        new_api_key = self.assert_json_success(result)["api_key"]
+        self.assertNotEqual(new_api_key, old_api_key)
+
+        # Old key should be revoked and flushed from cache.
+        key_obj.refresh_from_db()
+        self.assertTrue(key_obj.is_revoked)
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_profile_by_api_key(old_api_key)
 
         self.assertEqual(get_user_profile_by_api_key(user.api_key).email, email)
+        # New key should be resolvable in cache.
+        self.assertEqual(get_user_profile_by_api_key(new_api_key).email, email)
 
 
 class UserDraftSettingsTests(ZulipTestCase):

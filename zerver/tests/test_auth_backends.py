@@ -64,6 +64,7 @@ from zerver.actions.user_settings import do_change_password, do_change_user_sett
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -9935,6 +9936,32 @@ class LDAPGroupSyncTest(ZulipTestCase):
         self.assertIn(
             'DEBUG:django_auth_ldap:Failed to populate user cordelia: search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0)',
             django_ldap_log.output,
+        )
+
+
+class ListAPIKeysTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        self.user_profile = self.example_user("hamlet")
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        user_api_key = create_user_api_key(self.user_profile, "Test API key")
+
+        result = self.api_get(self.user_profile, "/api/v1/users/me/api_keys")
+        self.assert_json_success(result)
+        json = result.json()
+        # Users should have at least one API key
+        self.assertGreaterEqual(len(json["api_keys"]), 1)
+        # Make sure that the API keys themselves are never shown
+        self.assertNotIn("api_key", json["api_keys"][0].keys())
+        # Check that the API key we created is in the list
+        self.assertTrue(any(item["id"] == user_api_key.id for item in json["api_keys"]))
+
+    def test_not_loggedin(self) -> None:
+        result = self.client_get("/api/v1/users/me/api_keys")
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
         )
 
 
