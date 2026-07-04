@@ -22,7 +22,7 @@ ignore_logger(logger.name)
 
 
 class SentryTunnelSession(OutgoingSession):
-    def __init__(self) -> None:
+    def __init__(self) -> None: # nocoverage
         super().__init__(role="sentry_tunnel", timeout=1)
 
 
@@ -116,7 +116,7 @@ def open_circuit_for(exc_value: Exception) -> bool:
     name="Sentry tunnel",
     exclude=(open_circuit_for,),
 )
-def sentry_request(url: str, data: bytes) -> None:
+def sentry_request(url: str, data: bytes) -> None: # nocoverage
     SentryTunnelSession().post(
         url=url,
         data=data,
