@@ -833,6 +833,13 @@
         max-width: calc(100% - 30px);
     }
 
+    /* Hide the player for browsers that cannot play the format;
+       the download link (a sibling, not a child of this element)
+       remains visible either way. */
+    .media-audio-element.miatsuco-audio-format-unsupported {
+        display: none;
+    }
+
     .media-audio-download {
         flex: 0 0 20px;
         margin-left: 5px;

@@ -55,14 +55,32 @@ const SUPPORTED_AUDIO_TYPES = new Set([
     "audio/flac",
     "audio/mp4",
     "audio/mpeg",
+    "audio/ogg",
+    // Legacy, pre-RFC-5334 generic Ogg container type. Some
+    // browsers still report this via the File API instead of
+    // audio/ogg.
+    "application/ogg",
     "audio/vnd.wave",
     "audio/wav",
     "audio/webm",
     "audio/x-wav",
 ]);
 
-function is_supported_audio_type(file_type: string): boolean {
-    return SUPPORTED_AUDIO_TYPES.has(file_type);
+function is_supported_audio_type(file_type: string, filename: string): boolean {
+    if (SUPPORTED_AUDIO_TYPES.has(file_type)) {
+        return true;
+    }
+    // Unlike widely-registered formats such as .mp3 or .wav, many
+    // operating systems have no MIME type registered for
+    // .ogg/.oga/.opus, so browsers can report an empty (or
+    // otherwise unrecognized) File.type for a perfectly valid,
+    // server-supported Ogg file. file.type reflects the OS's
+    // extension registry, not the actual file contents (unlike
+    // e.g. the `file` command, which sniffs the bytes) so we
+    // fall back to checking the extension here, matching how the
+    // server itself falls back to guessing from the extension when
+    // the browser sends no content type at all.
+    return /\.(?:ogg|oga|opus)$/i.test(filename);
 }
 
 export function compose_upload_cancel(): void {
@@ -660,9 +678,9 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
             }
         }
 
-        const filtered_filename = upload_result.filename.replaceAll("[", "").replaceAll("]", "");
-        let syntax_to_insert = "[" + filtered_filename + "](" + upload_result.url + ")";
-        if (is_supported_image_type(file.type) || is_supported_audio_type(file.type)) {
+        const filtered_filename = file.name.replaceAll("[", "").replaceAll("]", "");
+        let syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
+        if (is_supported_image_type(file.type) || is_supported_audio_type(file.type, file.name)) {
             syntax_to_insert = "!" + syntax_to_insert;
         }
 

@@ -27,7 +27,7 @@ const preview_regexes = [
     // Inline media previews, check for contiguous chars ending in media suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm|\.aac|\.flac|\.mp3|\.mpeg|\.wav)\)?(\s+|$)/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm|\.aac|\.flac|\.mp3|\.mpeg|\.ogg|\.wav)\)?(\s+|$)/m,
 
     // YouTube links are given previews
 

@@ -29,6 +29,10 @@ AUDIO_INLINE_MIME_TYPES = [
     "audio/flac",
     "audio/mp4",
     "audio/mpeg",
+    "audio/ogg",
+    # Legacy, pre-RFC-5334 generic Ogg container type. Some browsers
+    # still report this via the File API instead of audio/ogg.
+    "application/ogg",
     "audio/vnd.wave",
     "audio/wav",
     "audio/webm",

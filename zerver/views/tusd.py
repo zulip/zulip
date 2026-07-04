@@ -152,7 +152,14 @@ def handle_upload_pre_finish_hook(
         filename = "uploaded-file"
 
     content_type = tus_metadata.get("filetype")
-    if not content_type:
+    # Some browsers send this generic catch-all, rather than a
+    # specific type, for extensions their OS has no MIME type
+    # registered for (this is a different mechanism than, and not
+    # always consistent with, how the browser's File API reports
+    # file.type client-side), even for files, like .ogg, that we
+    # otherwise know how to preview. Treat it the same as no type at
+    # all, so we still get a chance to guess from the extension.
+    if not content_type or content_type == "application/octet-stream":
         content_type = guess_type(filename)[0]
         if content_type is None:
             content_type = "application/octet-stream"

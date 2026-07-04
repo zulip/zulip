@@ -432,6 +432,19 @@ export const update_elements = ($content: JQuery): void => {
         $(this).replaceWith($(rendered_audio));
     });
 
+    // Hide the audio player for browsers that cannot play the
+    // format (e.g. Safari with Ogg files). Unlike the video case,
+    // we only hide the <audio> element itself, not its
+    // .media-audio-wrapper container, since the download link
+    // sitting alongside it in that wrapper works regardless of
+    // whether the browser can decode the file, and should stay
+    // visible.
+    $content.find<HTMLMediaElement>(".media-audio-element").each((_index, audio) => {
+        $(audio).on("error", () => {
+            $(audio).addClass("miatsuco-audio-format-unsupported");
+        });
+    });
+
     // Display emoji (including realm emoji) as text if
     // user_settings.emojiset is 'text'.
     if (user_settings.emojiset === "text") {
