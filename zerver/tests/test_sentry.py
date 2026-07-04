@@ -1,15 +1,18 @@
+import base64
 from unittest import mock
 
 import orjson
 from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 from pybreaker import CircuitBreakerError
-from requests.exceptions import Timeout
+from requests import HTTPError
+from requests.exceptions import ProxyError, Timeout
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_response_from_error
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.views.sentry import sentry_tunnel
+from zerver.worker.sentry_events import SentryEventsWorker, open_circuit_for
 
 TEST_USER_IP = "203.0.113.42"
 # We make this valid by overriding SENTRY_FRONTEND_DSN in the test class below.
@@ -71,10 +74,11 @@ def build_envelope(
 @override_settings(SENTRY_FRONTEND_DSN=TEST_VALID_DSN)
 class SentryTunnelTest(ZulipTestCase):
     """
-    Tests the current (synchronous) sentry_tunnel view, prior to
-    migrating Sentry submission to a queue worker per zulip#26229.
-    Tests call the view directly via RequestFactory to avoid depending
-    on conditional URL registration.
+    Tests for the sentry_tunnel view. The view validates the envelope,
+    injects the client IP, and publishes to the sentry_events queue;
+    the actual HTTP forwarding to Sentry happens in SentryEventsWorker.
+    Tests mock queue_event_on_commit to keep tests hermetic and assert
+    on exactly what gets enqueued.
     """
 
     def _post_envelope(
@@ -93,46 +97,48 @@ class SentryTunnelTest(ZulipTestCase):
         except JsonableError as e:
             return json_response_from_error(e)
 
-    def test_valid_envelope_is_forwarded_to_sentry(self) -> None:
+    def test_valid_envelope_is_enqueued(self) -> None:
         envelope = build_envelope()
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(envelope)
 
         self.assertEqual(response.status_code, 200)
-        mock_request.assert_called_once()
-        (called_url, _), _kwargs = mock_request.call_args
-        self.assertIn("/api/789/envelope/", called_url)
+        mock_queue.assert_called_once()
+        queue_name, event = mock_queue.call_args[0]
+        self.assertEqual(queue_name, "sentry_events")
+        self.assertIn("/api/789/envelope/", event["url"])
 
     def test_invalid_dsn_is_rejected(self) -> None:
         envelope = build_envelope(dsn=TEST_INVALID_DSN)
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(envelope)
 
         self.assert_json_error(response, "Invalid DSN", 400)
-        mock_request.assert_not_called()
+        mock_queue.assert_not_called()
 
     def test_malformed_envelope_is_rejected(self) -> None:
         # No newline at all -- the initial `request.body.split(b"\n", 1)`
         # will fail to produce two parts.
         malformed_envelope = b"not a real envelope"
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(malformed_envelope)
 
         self.assert_json_error(response, "Invalid request format", 400)
-        mock_request.assert_not_called()
+        mock_queue.assert_not_called()
 
     def test_ip_address_is_injected_into_user_payload(self) -> None:
         envelope = build_envelope(user_ip="should-be-overwritten")
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(envelope, remote_addr=TEST_USER_IP)
 
         self.assertEqual(response.status_code, 200)
-        mock_request.assert_called_once()
-        (_, called_body), _kwargs = mock_request.call_args
+        mock_queue.assert_called_once()
+        _, event = mock_queue.call_args[0]
+        called_body = base64.b64decode(event["body"])
         # The body is: header\n, item_header\n, item_body\n
         _header_line, rest = called_body.split(b"\n", 1)
         _item_header_line, item_body_and_rest = rest.split(b"\n", 1)
@@ -145,12 +151,13 @@ class SentryTunnelTest(ZulipTestCase):
         # but via the explicit-length parsing branch.
         envelope = build_envelope(user_ip="should-be-overwritten", explicit_length=True)
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(envelope, remote_addr=TEST_USER_IP)
 
         self.assertEqual(response.status_code, 200)
-        mock_request.assert_called_once()
-        (_, called_body), _kwargs = mock_request.call_args
+        mock_queue.assert_called_once()
+        _, event = mock_queue.call_args[0]
+        called_body = base64.b64decode(event["body"])
         _header_line, rest = called_body.split(b"\n", 1)
         item_header_line, item_body_and_rest = rest.split(b"\n", 1)
         item_header = orjson.loads(item_header_line)
@@ -177,12 +184,13 @@ class SentryTunnelTest(ZulipTestCase):
         item_header = orjson.dumps({"type": "event", "length": len(item_body_bytes)})
         envelope = envelope_header + b"\n" + item_header + b"\n" + item_body_bytes
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(envelope)
 
         self.assertEqual(response.status_code, 200)
-        mock_request.assert_called_once()
-        (_called_url, called_body), _kwargs = mock_request.call_args
+        mock_queue.assert_called_once()
+        _, event = mock_queue.call_args[0]
+        called_body = base64.b64decode(event["body"])
         _header_line, rest = called_body.split(b"\n", 1)
         item_header_line, item_body_and_rest = rest.split(b"\n", 1)
         parsed_header = orjson.loads(item_header_line)
@@ -200,14 +208,38 @@ class SentryTunnelTest(ZulipTestCase):
         item_body = b"arbitrary binary-ish payload, not even valid JSON"
         envelope = envelope_header + b"\n" + item_header + b"\n" + item_body + b"\n"
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(envelope, remote_addr=TEST_USER_IP)
 
         self.assertEqual(response.status_code, 200)
-        mock_request.assert_called_once()
-        (_called_url, called_body), _kwargs = mock_request.call_args
+        mock_queue.assert_called_once()
+        _, event = mock_queue.call_args[0]
+        called_body = base64.b64decode(event["body"])
         # Forwarded exactly as-is -- no parsing/mutation attempted for this item type.
         self.assertEqual(called_body, envelope)
+
+    def test_ip_address_is_injected_before_enqueueing(self) -> None:
+        # Verifies that the view enqueues via queue_event_on_commit
+        # rather than calling sentry_request directly, and that IP
+        # injection happens before enqueueing.
+        envelope = build_envelope(user_ip="should-be-overwritten")
+
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
+            response = self._post_envelope(envelope, remote_addr=TEST_USER_IP)
+
+        self.assertEqual(response.status_code, 200)
+        mock_queue.assert_called_once()
+        queue_name, event = mock_queue.call_args[0]
+        self.assertEqual(queue_name, "sentry_events")
+        self.assertIn("/api/789/envelope/", event["url"])
+
+        # Confirm IP injection happened before enqueueing.
+        decoded_body = base64.b64decode(event["body"])
+        _header_line, rest = decoded_body.split(b"\n", 1)
+        _item_header_line, item_body_and_rest = rest.split(b"\n", 1)
+        item_body = item_body_and_rest.split(b"\n", 1)[0]
+        payload = orjson.loads(item_body)
+        self.assertEqual(payload["user"]["ip_address"], TEST_USER_IP)
 
     def test_unparseable_item_body_is_forwarded_unmodified(self) -> None:
         # This is a valid DSN and header, but the payload is not a valid
@@ -222,12 +254,13 @@ class SentryTunnelTest(ZulipTestCase):
             + b"not valid JSON\n"
         )
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(garbage)
 
         self.assertEqual(response.status_code, 200)
-        mock_request.assert_called_once()
-        (_called_url, called_body), _kwargs = mock_request.call_args
+        mock_queue.assert_called_once()
+        _, event = mock_queue.call_args[0]
+        called_body = base64.b64decode(event["body"])
         # The key assertion: the fallback forwards the *original* body
         # byte-for-byte, not a partially-mutated or truncated version.
         self.assertEqual(called_body, garbage)
@@ -243,63 +276,93 @@ class SentryTunnelTest(ZulipTestCase):
             length_override=5,
         )
 
-        with mock.patch("zerver.views.sentry.sentry_request") as mock_request:
+        with mock.patch("zerver.views.sentry.queue_event_on_commit") as mock_queue:
             response = self._post_envelope(envelope)
 
         self.assertEqual(response.status_code, 200)
-        mock_request.assert_called_once()
-        (_called_url, called_body), _kwargs = mock_request.call_args
+        mock_queue.assert_called_once()
+        _, event = mock_queue.call_args[0]
+        called_body = base64.b64decode(event["body"])
         self.assertEqual(called_body, envelope)
 
-    def test_circuit_breaker_open_is_logged_and_swallowed(self) -> None:
-        envelope = build_envelope()
 
-        with mock.patch(
-            "zerver.views.sentry.sentry_request",
-            side_effect=CircuitBreakerError("Sentry tunnel"),
-        ):
-            with self.assertLogs(level="WARNING") as warning_logs:
-                response = self._post_envelope(envelope)
-            self.assertIn(
-                "WARNING:zerver.views.sentry:Dropped a client exception due to circuit-breaking",
-                warning_logs.output[0],
+class SentryEventsWorkerTest(ZulipTestCase):
+    """
+    Tests for SentryEventsWorker.consume(), which decodes the queued
+    event and forwards it to Sentry via sentry_request.
+    """
+
+    def test_consume_calls_sentry_request(self) -> None:
+        worker = SentryEventsWorker()
+        test_url = "https://o123456.ingest.sentry.io/api/789/envelope/"
+        test_body = b"some envelope bytes"
+
+        with mock.patch("zerver.worker.sentry_events.sentry_request") as mock_request:
+            worker.consume(
+                {
+                    "url": test_url,
+                    "body": base64.b64encode(test_body).decode("ascii"),
+                }
             )
-        # Per current behavior: even when the breaker is open, the
-        # client always gets a 200, since this is fire-and-forget.
-        self.assertEqual(response.status_code, 200)
+
+        mock_request.assert_called_once_with(test_url, test_body)
+
+    def test_circuit_breaker_open_is_logged_and_swallowed(self) -> None:
+        worker = SentryEventsWorker()
+
+        with (
+            mock.patch(
+                "zerver.worker.sentry_events.sentry_request",
+                side_effect=CircuitBreakerError("Sentry tunnel"),
+            ),
+            self.assertLogs(level="WARNING") as warning_logs,
+        ):
+            worker.consume(
+                {
+                    "url": "https://o123456.ingest.sentry.io/api/789/envelope/",
+                    "body": base64.b64encode(b"test").decode("ascii"),
+                }
+            )
+
+        self.assertIn(
+            "WARNING:zerver.worker.sentry_events:Dropped a client exception due to circuit-breaking",
+            warning_logs.output,
+        )
 
     def test_request_exception_is_logged_and_swallowed(self) -> None:
-        envelope = build_envelope()
+        worker = SentryEventsWorker()
 
-        with mock.patch(
-            "zerver.views.sentry.sentry_request",
-            side_effect=Timeout("simulated timeout"),
+        with (
+            mock.patch(
+                "zerver.worker.sentry_events.sentry_request",
+                side_effect=Timeout("simulated timeout"),
+            ),
+            self.assertLogs(level="ERROR") as error_logs,
         ):
-            with self.assertLogs(level="ERROR") as error_logs:
-                response = self._post_envelope(envelope)
-            self.assertIn(
-                "ERROR:zerver.views.sentry:simulated timeout",
-                error_logs.output[0],
+            worker.consume(
+                {
+                    "url": "https://o123456.ingest.sentry.io/api/789/envelope/",
+                    "body": base64.b64encode(b"test").decode("ascii"),
+                }
             )
-        self.assertEqual(response.status_code, 200)
+
+        self.assertIn(
+            "ERROR:zerver.worker.sentry_events:simulated timeout",
+            error_logs.output[0],
+        )
 
     def test_open_circuit_for(self) -> None:
-        from requests.exceptions import ProxyError, Timeout
-        from requests import HTTPError
-        from unittest.mock import MagicMock
-        from zerver.views.sentry import open_circuit_for
-
         self.assertTrue(open_circuit_for(ProxyError()))
         self.assertTrue(open_circuit_for(Timeout()))
 
         # 429 and 5xx trip the breaker
         for status_code in [429, 500, 503]:
-            response = MagicMock()
+            response = mock.MagicMock()
             response.status_code = status_code
             self.assertTrue(open_circuit_for(HTTPError(response=response)))
 
         # 4xx (other than 429) do not trip the breaker
-        response = MagicMock()
+        response = mock.MagicMock()
         response.status_code = 401
         self.assertFalse(open_circuit_for(HTTPError(response=response)))
 
