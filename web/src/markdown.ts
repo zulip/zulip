@@ -56,8 +56,8 @@ export function contains_backend_only_syntax(content: string): boolean {
 export let web_app_helpers: MarkdownHelpers | undefined;
 
 export type AbstractMap<K, V> = {
-    keys: () => IterableIterator<K>;
-    entries: () => IterableIterator<[K, V]>;
+    keys: () => IteratorObject<K, BuiltinIteratorReturn>;
+    entries: () => IteratorObject<[K, V], BuiltinIteratorReturn>;
     get: (k: K) => V | undefined;
 };
 
