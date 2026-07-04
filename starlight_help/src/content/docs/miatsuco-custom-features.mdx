@@ -2,6 +2,8 @@
 title: Miatsuco custom features
 ---
 
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
@@ -41,3 +43,31 @@ and websites.
 
   <SaveChanges />
 </FlattenedSteps>
+
+## Configure whether you see image, video, and website preview thumbnails
+
+You can turn off inline thumbnail previews in your own view for uploaded
+images and videos, linked images and videos, and website previews, showing a
+compact link you can click to load the preview on demand instead. This can
+help save bandwidth, or reduce how much visual space media takes up in the
+message feed. This is a personal preference; it does not change what other
+people in the conversation see.
+
+<ZulipNote>
+  This does not affect uploaded audio files, which are always shown as a
+  playable inline preview. Previews of uploaded images and videos
+  specifically are also subject to your organization's own [upload preview
+  setting](#configure-whether-previews-of-uploaded-images-and-videos-are-shown),
+  if it has been turned off there.
+</ZulipNote>
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/preferences" />
+
+      1. Under **Information**, toggle **Show image, video, and website
+         preview thumbnails**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

@@ -560,6 +560,50 @@
         }
     }
 
+    .miatsuco-message-media-collapsed-image {
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+    }
+
+    .miatsuco-message-media-collapsed-image-link {
+        display: inline-flex;
+        align-items: center;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        padding: 1px 8px;
+        border: solid 1px var(--color-border-rendered-markdown-table);
+        border-radius: 4px;
+        overflow: hidden;
+        font-size: 0.9em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .miatsuco-message-media-expand-button {
+        display: flex;
+        flex: 0 0 20px;
+        width: 20px;
+        height: 20px;
+        margin-left: 5px;
+    }
+
+    .miatsuco-message-media-expanded-image-row {
+        display: inline-flex;
+        align-items: flex-end;
+        max-width: 100%;
+    }
+
+    .miatsuco-message-media-recollapse-button {
+        display: flex;
+        flex: 0 0 20px;
+        width: 20px;
+        height: 20px;
+        margin-bottom: 3px;
+        margin-left: 5px;
+    }
+
     .twitter-image,
     .message-media-gallery-image,
     .message-media-preview-image,

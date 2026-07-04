@@ -84,6 +84,15 @@
       show_reset_button=for_realm_settings}}
 
     {{> settings_checkbox
+      setting_name="miatsuco_web_show_upload_thumbnails"
+      is_checked=settings_object.miatsuco_web_show_upload_thumbnails
+      label=settings_label.miatsuco_web_show_upload_thumbnails
+      render_only=settings_render_only.miatsuco_web_show_upload_thumbnails
+      help_link="/help/miatsuco-custom-features#configure-whether-you-see-image-video-and-website-preview-thumbnails"
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
+
+    {{> settings_checkbox
       setting_name="hide_ai_features"
       is_checked=settings_object.hide_ai_features
       label=settings_label.hide_ai_features

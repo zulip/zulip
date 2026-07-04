@@ -974,6 +974,7 @@ export function dispatch_normal_event(event) {
                 "web_home_view",
                 "web_mark_read_on_scroll_policy",
                 "web_navigate_to_sent_message",
+                "miatsuco_web_show_upload_thumbnails",
                 "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
                 "web_left_sidebar_unreads_count_summary",
@@ -1024,6 +1025,13 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_animate_image_previews") {
                 // Rerender the whole message list UI
+                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    msg_list.rerender();
+                }
+            }
+            if (event.property === "miatsuco_web_show_upload_thumbnails") {
+                // Rerender the whole message list UI so already-displayed
+                // messages pick up the new collapsed/expanded state.
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
                 }

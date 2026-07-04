@@ -6,10 +6,12 @@ import type {PanZoom} from "panzoom";
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
 
@@ -720,6 +722,79 @@ export function initialize(): void {
         const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
         handle_inline_media_element_click($video);
     });
+
+    $("#main_div, #compose .preview_content").on(
+        "click",
+        ".miatsuco-message-media-collapsed-image-link, .miatsuco-message-media-expand-button",
+        (e) => {
+            // Personal preference: previews were collapsed to a
+            // plain link to save bandwidth. Expand this one preview
+            // in place on demand, rather than navigating away.
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $wrapper = $(e.currentTarget).closest(".miatsuco-message-media-collapsed-image");
+            const original_html = $wrapper[0]?.dataset.collapsedImageHtml;
+            if (original_html === undefined) {
+                blueslip.warn("Collapsed media wrapper is missing its original markup.");
+                return;
+            }
+
+            const expanded_html = postprocess_content(original_html, {
+                force_show_upload_thumbnails: true,
+            });
+            const $expanded = $($.parseHTML(expanded_html));
+
+            // Let the user undo this and re-collapse the preview
+            // back to a link, regardless of whatever the personal
+            // preference is currently set to; clicking this button
+            // is itself an unambiguous, one-off request that applies
+            // only to this one preview.
+            //
+            // This button is a sibling of $expanded within the row
+            // wrapper below, not nested inside it: several other
+            // click handlers here key off of any <a> found inside
+            // .message-media-preview-image or
+            // .message-media-inline-image to assume an <img> is
+            // present, which isn't true of this button.
+            const $collapse_button = $(
+                '<a role="button" tabindex="0" class="miatsuco-message-media-recollapse-button icon-button icon-button-square icon-button-neutral">' +
+                    '<i class="zulip-icon zulip-icon-collapse" aria-hidden="true"></i>' +
+                    "</a>",
+            );
+            $collapse_button.attr("aria-label", $t({defaultMessage: "Hide preview"}));
+            const collapse_button_elt = $collapse_button[0];
+            assert(collapse_button_elt !== undefined);
+            collapse_button_elt.dataset.collapsedImageHtml = original_html;
+
+            const $row = $('<span class="miatsuco-message-media-expanded-image-row"></span>');
+            $row.append($expanded, $collapse_button);
+
+            $wrapper.replaceWith($row);
+        },
+    );
+
+    $("#main_div, #compose .preview_content").on(
+        "click",
+        ".miatsuco-message-media-recollapse-button",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $button = $(e.currentTarget);
+            const original_html = $button[0]?.dataset.collapsedImageHtml;
+            if (original_html === undefined) {
+                blueslip.warn("Recollapse button is missing its original markup.");
+                return;
+            }
+
+            const collapsed_html = postprocess_content(original_html, {
+                force_hide_upload_thumbnails: true,
+            });
+            const $collapsed = $($.parseHTML(collapsed_html));
+            $button.closest(".miatsuco-message-media-expanded-image-row").replaceWith($collapsed);
+        },
+    );
 
     $("#lightbox_overlay .download").on("click", function () {
         this.blur();

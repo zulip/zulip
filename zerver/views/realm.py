@@ -814,6 +814,7 @@ def update_realm_user_settings_defaults(
     ]
     | None = None,
     web_navigate_to_sent_message: Json[bool] | None = None,
+    miatsuco_web_show_upload_thumbnails: Json[bool] | None = None,
     web_stream_unreads_count_display_policy: Json[
         Annotated[
             int,

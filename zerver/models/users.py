@@ -98,6 +98,20 @@ class UserBaseSettings(models.Model):
     # UI setting to control how animated images are played.
     web_animate_image_previews = models.TextField(default="on_hover")
 
+    # UI setting to control whether image and video thumbnails
+    # (for uploaded files, external links, and website previews
+    # alike) are displayed inline, or shown as a plain link with
+    # a click-to-load affordance, to save bandwidth. This is purely
+    # a client-side display preference: unlike the realm-level
+    # inline_upload_preview setting (which only covers uploaded
+    # files, and which affects what the server renders, since
+    # Message.rendered_content is shared by every viewer of a
+    # message), this setting is resolved entirely in the browser
+    # and has a broader scope. Uploaded-file previews specifically
+    # have no effect if the organization has disabled them via
+    # inline_upload_preview.
+    miatsuco_web_show_upload_thumbnails = models.BooleanField(default=True, db_default=True)
+
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
     # default behavior, automatic, enables this behavior once a user
@@ -390,6 +404,7 @@ class UserBaseSettings(models.Model):
         web_line_height_percent=int,
         web_mark_read_on_scroll_policy=int,
         web_navigate_to_sent_message=bool,
+        miatsuco_web_show_upload_thumbnails=bool,
         web_stream_unreads_count_display_policy=int,
         web_suggest_update_timezone=bool,
     )

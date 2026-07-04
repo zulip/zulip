@@ -684,6 +684,9 @@ export const preferences_settings_labels = {
     web_inbox_show_channel_folders: $t({
         defaultMessage: "Group channels by folder in the inbox",
     }),
+    miatsuco_web_show_upload_thumbnails: $t({
+        defaultMessage: "Show image, video, and website preview thumbnails",
+    }),
     web_left_sidebar_show_channel_folders: $t({
         defaultMessage: "Group channels by folder in the left sidebar",
     }),

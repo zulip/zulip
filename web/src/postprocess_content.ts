@@ -7,7 +7,61 @@ import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
 
-export function postprocess_content(html: string): string {
+function build_collapsed_media_wrapper(
+    link_text: string,
+    href: string,
+    original_html: string,
+): HTMLSpanElement {
+    assert(inertDocument !== undefined);
+
+    const collapsed_link = inertDocument.createElement("a");
+    collapsed_link.setAttribute("href", href);
+    collapsed_link.setAttribute("target", "_blank");
+    collapsed_link.setAttribute("rel", "noopener noreferrer");
+    collapsed_link.classList.add("miatsuco-message-media-collapsed-image-link");
+    collapsed_link.textContent = link_text;
+
+    const expand_button = inertDocument.createElement("a");
+    expand_button.setAttribute("role", "button");
+    expand_button.setAttribute("tabindex", "0");
+    expand_button.classList.add(
+        "miatsuco-message-media-expand-button",
+        "icon-button",
+        "icon-button-square",
+        "icon-button-neutral",
+    );
+    expand_button.setAttribute("aria-label", $t({defaultMessage: "Show preview"}));
+    const expand_icon = inertDocument.createElement("i");
+    expand_icon.classList.add("zulip-icon", "zulip-icon-expand");
+    expand_icon.setAttribute("aria-hidden", "true");
+    expand_button.append(expand_icon);
+
+    // Deliberately not tagged .message-media-inline-image: that
+    // class is what several other click handlers key off of to
+    // assume an <img> is present, which isn't true here. The
+    // stashed original markup lives on the wrapper, not on either
+    // clickable child, so either one can trigger expansion via the
+    // same lookup in lightbox.ts.
+    const media_wrapper = inertDocument.createElement("span");
+    media_wrapper.classList.add("miatsuco-message-media-collapsed-image");
+    media_wrapper.dataset.collapsedImageHtml = original_html;
+    media_wrapper.append(collapsed_link, expand_button);
+    return media_wrapper;
+}
+
+export function postprocess_content(
+    html: string,
+    options: {
+        force_show_upload_thumbnails?: boolean;
+        force_hide_upload_thumbnails?: boolean;
+    } = {},
+): string {
+    const show_upload_thumbnails =
+        options.force_hide_upload_thumbnails === true
+            ? false
+            : user_settings.miatsuco_web_show_upload_thumbnails ||
+              options.force_show_upload_thumbnails === true;
+
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
@@ -34,6 +88,29 @@ export function postprocess_content(html: string): string {
     // We want to do this processing up front, so that embeds benefit
     // from other processing below for links and images
     for (const message_embed of template.content.querySelectorAll(".message_embed")) {
+        if (!show_upload_thumbnails) {
+            // Collapse website previews the same way as uploaded-file
+            // previews: never fetch a preview image, and show a
+            // compact click-to-expand link instead.
+            const title_link = message_embed.querySelector<HTMLAnchorElement>(
+                ".message_embed_title a",
+            );
+            const image_link = message_embed.querySelector<HTMLAnchorElement>(
+                ".message_embed_image",
+            );
+            const href = title_link?.getAttribute("href") ?? image_link?.getAttribute("href");
+            if (href) {
+                const link_text = title_link?.textContent;
+                const media_wrapper = build_collapsed_media_wrapper(
+                    link_text && link_text.length > 0 ? link_text : href,
+                    href,
+                    message_embed.outerHTML,
+                );
+                message_embed.parentNode?.replaceChild(media_wrapper, message_embed);
+                continue;
+            }
+        }
+
         const message_embed_title_link = message_embed.querySelector(".message_embed_title a");
         // Add a class to the anchor tag on embed-title links for easier
         // reference from CSS
@@ -120,6 +197,30 @@ export function postprocess_content(html: string): string {
         assert(typeof original_src === "string");
         const alt = inline_img_elt.getAttribute("alt");
 
+        if (!show_upload_thumbnails) {
+            // Bandwidth- and space-saving personal preference: never
+            // insert an <img> with a fetchable src into the DOM for
+            // uploaded files. Show a compact click-to-expand link
+            // instead, and stash the original, unprocessed markup so
+            // a click handler can build the real preview on demand
+            // by re-running this same function.
+            const filename_from_url = (() => {
+                try {
+                    return decodeURIComponent(original_src.slice(original_src.lastIndexOf("/") + 1));
+                } catch {
+                    return original_src.slice(original_src.lastIndexOf("/") + 1);
+                }
+            })();
+            const link_text = alt && alt.length > 0 ? alt : filename_from_url;
+            const media_wrapper = build_collapsed_media_wrapper(
+                link_text,
+                original_src,
+                inline_img_elt.outerHTML,
+            );
+            inline_img_elt.parentNode?.replaceChild(media_wrapper, inline_img_elt);
+            continue;
+        }
+
         const media_wrapper = inertDocument.createElement("span");
         media_wrapper.classList.add("message-media-inline-image");
 
@@ -183,6 +284,36 @@ export function postprocess_content(html: string): string {
         const message_media_link = message_media_wrapper.querySelector("a");
         const message_media_image = message_media_wrapper.querySelector("img");
         const message_media_video = message_media_wrapper.querySelector("video");
+
+        if (
+            !show_upload_thumbnails &&
+            (message_media_image ?? message_media_video) &&
+            message_media_link
+        ) {
+            // Collapse linked image/video previews the same way as
+            // uploaded-file previews: never fetch a preview image or
+            // video, and show a compact click-to-expand link
+            // instead. Any wrapper reaching this point while the
+            // setting is off is guaranteed to be a link preview, not
+            // an uploaded file, since those are already intercepted
+            // and collapsed above.
+            const href = message_media_link.getAttribute("href");
+            if (href) {
+                const link_text =
+                    message_media_link.getAttribute("title") ??
+                    message_media_link.getAttribute("aria-label");
+                const media_wrapper = build_collapsed_media_wrapper(
+                    link_text && link_text.length > 0 ? link_text : href,
+                    href,
+                    message_media_wrapper.outerHTML,
+                );
+                message_media_wrapper.parentNode?.replaceChild(
+                    media_wrapper,
+                    message_media_wrapper,
+                );
+                continue;
+            }
+        }
 
         // We want a class to refer to media links
         message_media_link?.classList.add("media-anchor-element");
