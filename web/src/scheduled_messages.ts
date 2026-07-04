@@ -35,7 +35,7 @@ let selected_send_later_timestamp: number | undefined;
 export let show_minimum_scheduled_message_delay_minutes_note = false;
 
 export function get_all_scheduled_messages(): ScheduledMessage[] {
-    return [...scheduled_messages_by_id.values()];
+    return scheduled_messages_by_id.values().toArray();
 }
 
 function compute_send_times(now = new Date()): Record<TimeKey, number> {

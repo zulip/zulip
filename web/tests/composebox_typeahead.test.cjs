@@ -377,7 +377,7 @@ for (const [key, val] of emojis_by_name) {
 
 const emoji_codes = {
     name_to_codepoint,
-    names: [...emojis_by_name.keys()],
+    names: emojis_by_name.keys().toArray(),
     emoji_catalog: {},
     emoticon_conversions: {},
     codepoint_to_name,

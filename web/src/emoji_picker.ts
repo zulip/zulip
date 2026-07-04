@@ -298,9 +298,10 @@ export function rebuild_catalog(): void {
     const catalog = new Map([
         [
             "Custom",
-            [...realm_emojis.keys()].map(
-                (realm_emoji_name) => emoji.emojis_by_name.get(realm_emoji_name)!,
-            ),
+            realm_emojis
+                .keys()
+                .map((realm_emoji_name) => emoji.emojis_by_name.get(realm_emoji_name)!)
+                .toArray(),
         ],
     ]);
 

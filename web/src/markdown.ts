@@ -693,7 +693,7 @@ export function parse({
     flags: string[];
 } {
     function get_linkifier_regexes(): RE2JS[] {
-        return [...helper_config.get_linkifier_map().keys()];
+        return helper_config.get_linkifier_map().keys().toArray();
     }
 
     function disable_markdown_regex(rules: Record<string, RegExpOrStub>, name: string): void {

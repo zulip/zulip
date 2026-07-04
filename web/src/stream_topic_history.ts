@@ -226,7 +226,7 @@ export class PerStreamHistory {
         // of topics the client knows about.
         //
         // This data source is this module's own data structures.
-        const my_recents = [...this.topics.values()];
+        const my_recents = this.topics.values().toArray();
         // This data source is older topics that we know exist because
         // we have unread messages in the topic, even if we don't have
         // any messages from the topic in our local cache.
@@ -256,10 +256,13 @@ export class PerStreamHistory {
     get_max_message_id(): number {
         // TODO: We probably want to migrate towards this function
         // ignoring locally echoed messages, and thus returning an integer.
-        const unacked_message_ids_in_stream = [
-            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id).values(),
-        ];
-        const max_message_id = Math.max(...unacked_message_ids_in_stream, this.max_message_id);
+        const unacked_message_ids_in_stream = echo_state.get_waiting_for_ack_local_ids_by_topic(
+            this.stream_id,
+        );
+        const max_message_id = Math.max(
+            ...unacked_message_ids_in_stream.values(),
+            this.max_message_id,
+        );
         return max_message_id;
     }
 }

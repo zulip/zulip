@@ -24,7 +24,7 @@ export function process_loaded_messages(messages: Message[]): void {
 }
 
 export function get_direct_message_groups(): string[] {
-    let direct_message_groups = [...direct_message_group_timestamps.keys()];
+    let direct_message_groups = direct_message_group_timestamps.keys().toArray();
     direct_message_groups = _.sortBy(direct_message_groups, (direct_message_group) =>
         direct_message_group_timestamps.get(direct_message_group),
     );

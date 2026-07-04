@@ -162,7 +162,7 @@ function build_page(): void {
     pygments_typeahead = new Typeahead(bootstrap_typeahead_input, {
         source(query: string): string[] {
             language_labels = realm_playground.get_pygments_typeahead_list_for_settings(query);
-            return [...language_labels.keys()];
+            return language_labels.keys().toArray();
         },
         helpOnEmptyStrings: () => true,
         item_html(_query: string): (item: string) => string {

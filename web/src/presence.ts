@@ -80,7 +80,7 @@ export function get_status(user_id: number): PresenceStatus["status"] {
 }
 
 export function get_user_ids(): number[] {
-    return [...presence_info.keys()];
+    return presence_info.keys().toArray();
 }
 
 export function get_active_or_idle_user_ids(): number[] {

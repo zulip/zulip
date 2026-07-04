@@ -267,7 +267,7 @@ export class TaskData {
     get_widget_data(): {
         all_tasks: Task[];
     } {
-        const all_tasks = [...this.task_map.values()];
+        const all_tasks = this.task_map.values().toArray();
 
         const widget_data = {
             all_tasks,
