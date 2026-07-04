@@ -193,6 +193,47 @@ Rules:
   the client to maintain its own version-to-feature mapping, which is
   exactly the coupling this mechanism exists to avoid.
 
+## Releases
+
+`MIATSUCO_VERSION` (in `zerver/lib/miatsuco.py`) is this fork's own release
+number, independent of `ZULIP_VERSION`. A release is a known-good snapshot:
+a tag where `main` was at a specific upstream base plus a specific set of
+features, CI was green, and the result actually ran on the server. Because
+it is advertised to clients as `miatsuco_version`, only tag a release for a
+state that has actually been deployed and verified, not merely merged.
+
+Cut a release when a meaningful change has landed on the server and been
+confirmed working, not on every merge to `main`. Bundling several features
+into one release is fine and usually better than a release per feature.
+Doc-only changes, tooling tweaks, and the small commits between deployments
+do not need a version bump.
+
+The number is `MAJOR.MINOR.PATCH`, with fork-specific meanings:
+
+- **Major**: a stable-substrate milestone or a break to something promised
+  as public API (removing or renaming a `MIATSUCO_CAPABILITIES` flag). The
+  rebase onto the upstream 13.0 stable tag, which moves the fork off its
+  volatile bridge base, is the planned 1.0.0.
+- **Minor**: a new fork feature shipped and deployed, or a new capability
+  flag added. This is the common bump.
+- **Patch**: bug fixes to existing fork features, with no new feature and no
+  new capability.
+
+Between releases, `main` carries a `-dev` suffix (e.g., `0.2-dev`) so the
+running version always shows whether it is a tagged release or somewhere
+after one. Right after cutting a release, bump `main` to the next `-dev`.
+
+The current plan: the features on the bridge base ship as `0.1`, further
+features increment the minor (`0.2`, and so on), and the 13.0 rebase is
+`1.0.0`.
+
+The version is for humans (what is running, what to roll back to) and is
+deliberately not load-bearing for feature detection. Clients detect
+features through `MIATSUCO_CAPABILITIES`, not by comparing
+`miatsuco_version` (see Signaling Fork Features above), so the release
+cadence can follow whatever is meaningful to maintainers without risk of
+breaking a client.
+
 ## Pull Requests
 
 In addition to Zulip's own [review guide](review-process.md):
