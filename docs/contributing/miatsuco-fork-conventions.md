@@ -105,12 +105,25 @@ files, rather than being added into a file that upstream maintains. For example:
 - **Contributor-facing docs**: This page and anything like it goes in
   `docs/contributing/`, alongside (not merged into) Zulip's own pages, and
   gets linked from `docs/contributing/index.md`'s toctree.
-- **Tests**: `zerver/tests/test_miatsuco.py` holds all fork-specific tests,
-  in one file rather than split per feature. If a test needs a helper
-  method that already exists on an upstream test class, duplicate the
-  (small, stable) helper rather than sub-classing the upstream class.
-  Sub-classing would silently inherit and re-run all of _its_ test methods
-  too under your new class, which is easy to miss in code review.
+- **Tests**: each fork feature gets its own test module named for the
+  feature, `zerver/tests/test_miatsuco_<feature>.py` (e.g.,
+  `test_miatsuco_upload_preview.py`, `test_miatsuco_ogg_audio.py`). Do
+  _not_ put multiple features' tests in a single shared file: because each
+  feature is developed on its own branch and PR'd independently, two
+  features appending to one shared test file would conflict every time
+  their branches are combined. One file per feature means each branch's
+  tests apply cleanly and independently, in any order.
+  Shared test helpers live in `zerver/lib/test_miatsuco.py` (the
+  `MiatsucoMarkdownTestMixin` class), following upstream's own convention
+  of keeping reusable test base classes in `zerver/lib/` rather than in
+  the test modules (the backend test runner only discovers modules under
+  `zerver/tests/`, so a helper module in `zerver/lib/` is never mistaken
+  for a test module). Each feature's test module imports that mixin. If
+  you need a helper that already exists on an upstream test class, add it
+  to the shared mixin (or duplicate the small, stable helper) rather than
+  sub-classing the upstream class directly -- sub-classing would silently
+  inherit and re-run all of _its_ test methods under your new class, which
+  is easy to miss in code review.
 
 This isn't a hard rule with no exceptions. A bug fix that changes existing
 upstream function behavior inherently requires editing the file that
