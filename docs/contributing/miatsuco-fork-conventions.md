@@ -169,6 +169,17 @@ Both are advertised alongside upstream's own version fields, in the
 `POST /register` and `GET /server_settings` responses, as `miatsuco_version`
 and `miatsuco_capabilities`.
 
+A capability flag only does something once a client reads
+`miatsuco_capabilities` to gate its own behavior. The server itself does not
+change behavior based on the list, it only advertises it. This fork does not
+yet ship a client that consumes capabilities (upstream's mobile client has no
+knowledge of fork features, and a fork-specific client is not currently
+planned), so `MIATSUCO_CAPABILITIES` is intentionally empty for now, and
+features ship without a flag. The rules below apply once a consuming client
+exists: at that point, each fork feature a client needs to detect should
+register a flag, added retroactively for existing features and in the
+feature's own commit for new ones.
+
 Rules:
 
 - Add a capability flag in the **same commit** that makes the corresponding
