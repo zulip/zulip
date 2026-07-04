@@ -530,7 +530,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # fully created on servers that do not have a configured ToS.
     TOS_VERSION_BEFORE_FIRST_LOGIN = "-1"
     tos_version = models.CharField(null=True, max_length=10)
-    api_key = models.CharField(max_length=API_KEY_LENGTH, default=generate_api_key, unique=True)
 
     # A UUID generated on user creation. Introduced primarily to
     # provide a unique key for a user for the mobile push
