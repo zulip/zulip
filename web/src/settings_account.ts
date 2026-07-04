@@ -32,6 +32,7 @@ import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
@@ -309,9 +310,10 @@ export function update_privacy_settings_box(property: PrivacySettingName): void 
 }
 
 export function render_user_timezone_dropdown_widget(): void {
-    const timezone_items = timezones.timezones.map((tz: {name: string; utc_offset: string}) => ({
-        name: `${tz.name} (${tz.utc_offset})`,
-        unique_id: tz.name,
+    const now = new Date();
+    const timezone_items = timezones.timezones.map((tz) => ({
+        name: `${tz} (${timerender.get_utc_offset_string(tz, now)})`,
+        unique_id: tz,
     }));
 
     const opts: dropdown_widget.DropdownWidgetOptions = {

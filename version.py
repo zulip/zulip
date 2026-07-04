@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 506
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (383, 0)  # bumped 2026-07-03 to upgrade Python requirements
+PROVISION_VERSION = (384, 0)  # bumped 2026-07-04 to update build_timezone_values
