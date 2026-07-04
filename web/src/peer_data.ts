@@ -225,7 +225,7 @@ export async function is_subscriber_subset(
         return null;
     }
 
-    return [...sub1_set.keys()].every((key) => {
+    return sub1_set.keys().every((key) => {
         // If the user is in the linked stream, the check passes.
         if (sub2_set.has(key)) {
             return true;

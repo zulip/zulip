@@ -748,7 +748,7 @@ export function update_user_full_name(user_id: number): void {
     // vote text may contain display names.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         for (const message of msg_list.all_messages()) {
-            if ([...message.clean_reactions.values()].some((r) => r.user_ids.includes(user_id))) {
+            if (message.clean_reactions.values().some((r) => r.user_ids.includes(user_id))) {
                 update_vote_text_on_message(message);
             }
         }
