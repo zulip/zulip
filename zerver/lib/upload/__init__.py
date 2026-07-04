@@ -150,16 +150,8 @@ def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
 
     # It appears Django's UploadedFile.content_type defaults to an empty string,
     # even though the value is documented as `str | None`. So we check for both.
-    # We also treat the generic application/octet-stream the same way: browsers
-    # commonly send this as a catch-all when their OS has no specific MIME type
-    # registered for the file's extension (this is a different mechanism than,
-    # and not always consistent with, how the browser's File API reports
-    # file.type client-side), even for files, like .ogg, that we otherwise know
-    # how to preview. Falling through to guess_type() here can only improve
-    # specificity: if it also can't determine a type, we still land on
-    # application/octet-stream at the end, just as before.
     content_type = user_file.content_type
-    if content_type is None or content_type in ("", "application/octet-stream"):
+    if content_type is None or content_type == "":
         guessed_type = guess_type(uploaded_file_name)[0]
         if guessed_type is not None:
             content_type = guessed_type

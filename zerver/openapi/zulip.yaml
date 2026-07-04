@@ -15409,6 +15409,12 @@ paths:
                     **Changes**: New in Zulip 10.0 (feature level 329).
                   type: boolean
                   example: true
+                miatsuco_web_show_upload_thumbnails:
+                  type: boolean
+                  description: |
+                    Whether the web app shows inline thumbnail previews of uploaded
+                    images and videos, external links, and website previews. Specific to
+                    the MiAtSu.Co fork.
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -15958,6 +15964,8 @@ paths:
               receives_typing_notifications:
                 contentType: application/json
               web_suggest_update_timezone:
+                contentType: application/json
+              miatsuco_web_show_upload_thumbnails:
                 contentType: application/json
               fluid_layout_width:
                 contentType: application/json
@@ -19600,6 +19608,12 @@ paths:
                               time zone configured on their device.
 
                               **Changes**: New in Zulip 10.0 (feature level 329).
+                          miatsuco_web_show_upload_thumbnails:
+                            type: boolean
+                            description: |
+                              Whether the web app shows inline thumbnail previews of uploaded
+                              images and videos, external links, and website previews. Specific to
+                              the MiAtSu.Co fork.
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -22017,6 +22031,12 @@ paths:
                               time zone configured on their device.
 
                               **Changes**: New in Zulip 10.0 (feature level 329).
+                          miatsuco_web_show_upload_thumbnails:
+                            type: boolean
+                            description: |
+                              Whether the web app shows inline thumbnail previews of uploaded
+                              images and videos, external links, and website previews. Specific to
+                              the MiAtSu.Co fork.
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -23328,6 +23348,12 @@ paths:
 
                     **Changes**: New in Zulip 10.0 (feature level 329).
                   example: true
+                miatsuco_web_show_upload_thumbnails:
+                  type: boolean
+                  description: |
+                    Whether the web app shows inline thumbnail previews of uploaded
+                    images and videos, external links, and website previews. Specific to
+                    the MiAtSu.Co fork.
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -23970,6 +23996,8 @@ paths:
               receives_typing_notifications:
                 contentType: application/json
               web_suggest_update_timezone:
+                contentType: application/json
+              miatsuco_web_show_upload_thumbnails:
                 contentType: application/json
               fluid_layout_width:
                 contentType: application/json
