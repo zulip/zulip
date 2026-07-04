@@ -50,6 +50,7 @@ from zerver.lib.message import (
     get_starred_message_ids,
     remove_message_id_from_unread_mgs,
 )
+from zerver.lib.miatsuco import MIATSUCO_CAPABILITIES, MIATSUCO_VERSION
 from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm, read_stop_words
 from zerver.lib.narrow_predicate import check_narrow_for_events
@@ -212,6 +213,9 @@ def fetch_initial_state_data(
     state["zulip_version"] = ZULIP_VERSION
     state["zulip_feature_level"] = API_FEATURE_LEVEL
     state["zulip_merge_base"] = ZULIP_MERGE_BASE
+    # Miatsuco fork version and capability flags; see zerver/lib/miatsuco.py.
+    state["miatsuco_version"] = MIATSUCO_VERSION
+    state["miatsuco_capabilities"] = list(MIATSUCO_CAPABILITIES)
 
     if user_profile is not None:
         settings_user = user_profile

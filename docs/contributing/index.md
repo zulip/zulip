@@ -6,6 +6,7 @@ maxdepth: 3
 ---
 
 contributing
+miatsuco-fork-conventions
 ../code-of-conduct
 how-we-communicate
 asking-great-questions
