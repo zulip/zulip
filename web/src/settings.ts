@@ -2,7 +2,6 @@ import {parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import timezones from "../generated/timezones.json";
 import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
@@ -109,7 +108,6 @@ export function build_page(): void {
             user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
-        timezones: timezones.timezones,
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
