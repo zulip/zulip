@@ -8,13 +8,13 @@ for how this fork is organized and why.
 
 **Contributing to this fork?** Read
 [`docs/contributing/miatsuco-fork-conventions.md`](https://github.com/BearlyBelievable/Miatsu.co/blob/main/docs/contributing/miatsuco-fork-conventions.md)
-first. It covers the handful of things specific to this fork — naming
+first. It covers the handful of things specific to this fork (naming
 conventions, migration conventions, how we signal fork-specific features to
-our companion mobile client, and how we structure PRs — layered on top of
+our companion mobile client, and how we structure PRs), layered on top of
 upstream Zulip's own contributing documentation.
 
-**For everything else** — setting up a development environment, code
-style, commit discipline, the review process, and so on — follow [upstream
+**For everything else** (setting up a development environment, code
+style, commit discipline, the review process, and so on), follow [upstream
 Zulip's contributing
 guide](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
 as-is. This fork doesn't duplicate or maintain a parallel copy of that
@@ -23,7 +23,7 @@ different here, and defers to upstream for the rest.
 
 The badges, CI status, and community links in upstream Zulip's own README
 (below, and at [github.com/zulip/zulip](https://github.com/zulip/zulip))
-reflect upstream's project, not this fork specifically — this fork doesn't
+reflect upstream's project, not this fork specifically, so this fork doesn't
 maintain separate infrastructure for those. The two badges kept below
 describe code-style tooling this fork continues to use, so they stay
 accurate regardless of who maintains the fork.
@@ -61,16 +61,16 @@ Come find us on the [development community chat](https://zulip.com/development-c
   contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
   for everything general. Upstream has invested in making Zulip's code highly
   readable, thoughtfully tested, and easy to modify, with an extraordinary
-  185K words of documentation for contributors — we rely on that documentation
+  185K words of documentation for contributors, and we rely on that documentation
   rather than duplicating it.
 
 - **Contributing non-code**. [Report an
   issue](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip into your language, or [give us
-  feedback](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html)
-  — upstream, since these apply to Zulip generally rather than to anything
-  fork-specific.
+  feedback](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html).
+  These go to upstream, since they apply to Zulip generally rather than to
+  anything fork-specific.
 
 - **Checking Zulip out**. The best way to see Zulip in action is to [drop
   by](https://chat.zulip.org/?show_try_zulip_modal) the Zulip development

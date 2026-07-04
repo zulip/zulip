@@ -21,6 +21,24 @@ migration number, same CSS class, etc. as upstream, then a rebase that should
 have been mechanical will turn into a debugging session. Everything below
 exists to try and make that kind of collision impossible.
 
+## Contributing a feature
+
+The short version of the workflow:
+
+1. Get the latest `main` and branch off it: `git fetch origin && git checkout
+main && git checkout -b my-feature`.
+2. Build the feature on that branch, following the naming, migration, and
+   upstream-file conventions below. Keep it to one feature per branch so it
+   can be reviewed and rebased on its own.
+3. Add tests for it, in a feature-named module (see Passing CI), and run the
+   backend and frontend suites plus `./tools/lint -m` locally.
+4. Push the branch and open a PR against `main`. CI must be green; see the
+   Pull Requests and Passing CI sections for what reviewers look for.
+
+That's it. The sections below explain the conventions those steps refer to;
+read them before your first contribution, but you won't need to re-read them
+every time.
+
 ## Naming Schemes
 
 We prefix every identifier that this fork introduces with `miatsuco`. Examples:
