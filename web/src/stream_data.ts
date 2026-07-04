@@ -360,23 +360,28 @@ export function get_default_stream_options(): {
     unique_id: number;
     stream: StreamSubscription;
 }[] {
-    let subs = [...stream_info.values()];
-    subs = subs.filter(
-        (sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only && !sub.is_archived,
-    );
-    return subs.map((sub) => ({
-        name: sub.name,
-        unique_id: sub.stream_id,
-        stream: sub,
-    }));
+    return stream_info
+        .values()
+        .filter(
+            (sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only && !sub.is_archived,
+        )
+        .map((sub) => ({
+            name: sub.name,
+            unique_id: sub.stream_id,
+            stream: sub,
+        }))
+        .toArray();
 }
 
 export function get_unsorted_subs(): StreamSubscription[] {
-    return [...stream_info.values()];
+    return stream_info.values().toArray();
 }
 
 export function get_unsorted_subs_with_content_access(): StreamSubscription[] {
-    return [...stream_info.values()].filter((sub) => has_content_access(sub));
+    return stream_info
+        .values()
+        .filter((sub) => has_content_access(sub))
+        .toArray();
 }
 
 export function num_subscribed_subs(): number {
@@ -400,7 +405,10 @@ export function subscribed_stream_ids(): number[] {
 }
 
 export function get_archived_subs(): StreamSubscription[] {
-    return [...stream_info.values()].filter((sub) => sub.is_archived);
+    return stream_info
+        .values()
+        .filter((sub) => sub.is_archived)
+        .toArray();
 }
 
 export function realm_has_web_public_streams(): boolean {
@@ -1222,7 +1230,7 @@ export function get_streams_for_admin(): StreamSubscription[] {
         return util.strcmp(a.name, b.name);
     }
 
-    const subs = [...stream_info.values()];
+    const subs = stream_info.values().toArray();
 
     subs.sort(by_name);
 

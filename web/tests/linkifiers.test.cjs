@@ -11,7 +11,7 @@ const linkifiers = zrequire("linkifiers");
 linkifiers.initialize([]);
 
 function get_linkifier_regexes() {
-    return [...linkifiers.get_linkifier_map().keys()];
+    return linkifiers.get_linkifier_map().keys().toArray();
 }
 
 run_test("compile_linkifier", () => {

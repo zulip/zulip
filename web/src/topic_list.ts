@@ -498,7 +498,7 @@ export function active_stream_id(): number | undefined {
         return zoomed_in_widget?.my_stream_id;
     }
 
-    const stream_ids = [...active_widgets.keys()];
+    const stream_ids = active_widgets.keys().toArray();
 
     if (stream_ids.length !== 1) {
         return undefined;
@@ -512,7 +512,7 @@ export function get_stream_li(): JQuery | undefined {
         return zoomed_in_widget?.get_stream_li();
     }
 
-    const widgets = [...active_widgets.values()];
+    const widgets = active_widgets.values().toArray();
 
     if (widgets.length !== 1 || widgets[0] === undefined) {
         return undefined;

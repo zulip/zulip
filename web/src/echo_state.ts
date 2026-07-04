@@ -37,9 +37,10 @@ export function _patch_waiting_for_ack(data: Map<string, LocalMessage>): void {
 export function get_waiting_for_ack_local_ids_by_topic(channel_id: number): Map<string, number> {
     const max_message_id_by_topic = new Map<string, number>();
 
-    const channel_messages_waiting_for_ack = [...waiting_for_ack.values()].filter(
-        (message) => message.type === "stream" && message.stream_id === channel_id,
-    );
+    const channel_messages_waiting_for_ack = waiting_for_ack
+        .values()
+        .filter((message) => message.type === "stream" && message.stream_id === channel_id)
+        .toArray();
 
     for (const message of channel_messages_waiting_for_ack) {
         assert(message.type === "stream");

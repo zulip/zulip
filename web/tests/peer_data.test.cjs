@@ -324,7 +324,7 @@ test("maybe_fetch_stream_subscribers", async () => {
     blueslip.reset();
     assert.deepEqual(subscribers_before_fetch_completes, [7, 9]);
     const subscribers_after_fetch = await pending_promise;
-    assert.deepEqual([...subscribers_after_fetch.keys()], [1, 2, 4, 7, 9]);
+    assert.deepEqual(subscribers_after_fetch.keys().toArray(), [1, 2, 4, 7, 9]);
 
     peer_data.clear_for_testing();
     assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2, false), true);
@@ -414,7 +414,7 @@ test("maybe_fetch_stream_subscribers", async () => {
     blueslip.expect("error", "Failure fetching channel subscribers");
     const subscribers = await peer_data.fetch_stream_subscribers_with_retry(india.stream_id);
     assert.equal(num_attempts, 2);
-    assert.deepEqual([...subscribers.keys()], [1, 2, 3, 4]);
+    assert.deepEqual(subscribers.keys().toArray(), [1, 2, 3, 4]);
     blueslip.reset();
 
     peer_data.clear_for_testing();

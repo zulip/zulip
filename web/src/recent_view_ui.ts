@@ -1669,7 +1669,7 @@ function dropdown_filter_click_handler(
 }
 
 function get_list_data_for_widget(): ConversationData[] {
-    return [...recent_view_data.get_conversations().values()];
+    return recent_view_data.get_conversations().values().toArray();
 }
 
 function set_time_column_width_css_variable(): void {

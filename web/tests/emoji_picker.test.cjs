@@ -16,7 +16,10 @@ const emoji_frequency_data = mock_esm("../src/emoji_frequency_data", {
         set: (emoji, emoji_usage) => map.set(emoji, emoji_usage),
     },
     preferred_emoji_list() {
-        const emojis = [...map.values()].toSorted((a, b) => b.score - a.score);
+        const emojis = map
+            .values()
+            .toArray()
+            .toSorted((a, b) => b.score - a.score);
         const count = emojis.length;
         const emojis_per_row = 6;
         return emojis.slice(0, count - (count % emojis_per_row));

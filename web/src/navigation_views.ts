@@ -216,10 +216,9 @@ export function get_all_navigation_views(): NavigationView[] {
         name: view.name,
     }));
     const built_in_fragments = new Set(built_in_views.map((view) => view.fragment));
-    const custom_views = [...navigation_views_dict.values()].filter(
-        (view) => !built_in_fragments.has(view.fragment),
-    );
-
+    const custom_views = navigation_views_dict
+        .values()
+        .filter((view) => !built_in_fragments.has(view.fragment));
     return [...built_in_views, ...custom_views];
 }
 

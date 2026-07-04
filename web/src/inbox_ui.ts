@@ -521,7 +521,7 @@ function format_dm(
 }
 
 function insert_dms(keys_to_insert: string[]): void {
-    const sorted_keys = [...dms_dict.keys()];
+    const sorted_keys = dms_dict.keys().toArray();
     // If we need to insert at the top, we do it separately to avoid edge case in loop below.
     if (sorted_keys[0] !== undefined && keys_to_insert.includes(sorted_keys[0])) {
         $("#inbox-direct-messages-container").prepend(
@@ -736,7 +736,7 @@ function insert_stream(stream_key: string): void {
     const rendered_stream = render_inbox_stream_container({
         stream_key,
         stream_row,
-        topic_rows: [...stream_topics_data.values()],
+        topic_rows: stream_topics_data.values().toArray(),
     });
     const $channel_folder_header = $(`#${get_channel_folder_header_id(channel_folder_id)}`);
     if (stream_index === 0) {
@@ -750,7 +750,7 @@ function insert_stream(stream_key: string): void {
 function insert_topics(keys: string[], stream_key: string): void {
     const stream_topics_data = topics_dict.get(stream_key);
     assert(stream_topics_data !== undefined);
-    const sorted_keys = [...stream_topics_data.keys()];
+    const sorted_keys = stream_topics_data.keys().toArray();
     // If we need to insert at the top, we do it separately to avoid edge case in loop below.
     if (sorted_keys[0] !== undefined && keys.includes(sorted_keys[0])) {
         const $stream = get_stream_container(stream_key);
@@ -827,7 +827,7 @@ function get_sorted_stream_keys(channel_folder_id?: number): string[] {
         return util.strcmp(stream_name_a, stream_name_b);
     }
 
-    return [...topics_dict.keys()].toSorted(compare_function);
+    return topics_dict.keys().toArray().toSorted(compare_function);
 }
 
 function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> {
@@ -852,7 +852,7 @@ function get_folder_stream_rows(folder_id: number): FolderStreamRowsContext[] {
         stream_rows.push({
             stream_key,
             stream_row,
-            topic_rows: [...stream_topics_data.values()],
+            topic_rows: stream_topics_data.values().toArray(),
         });
     }
 
@@ -866,7 +866,7 @@ function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
 }
 
 function sort_channel_folders(): void {
-    const sorted_channel_folders = [...channel_folders_dict.values()];
+    const sorted_channel_folders = channel_folders_dict.values().toArray();
     sorted_channel_folders.sort((a, b) => {
         // Sort OTHER_CHANNELS_FOLDER_ID last, then by order with PINNED_CHANNEL_FOLDER_ID first.
         if (a.id === OTHER_CHANNELS_FOLDER_ID) {
@@ -1299,10 +1299,13 @@ export function complete_rerender(coming_from_other_views = false): void {
         } else {
             channel_view_topic_widget = undefined;
             const {has_visible_unreads, ...additional_context} = reset_data();
-            const folders_with_stream_rows = [...channel_folders_dict.values()].map((folder) => ({
-                ...folder,
-                stream_rows: get_folder_stream_rows(folder.id),
-            }));
+            const folders_with_stream_rows = channel_folders_dict
+                .values()
+                .map((folder) => ({
+                    ...folder,
+                    stream_rows: get_folder_stream_rows(folder.id),
+                }))
+                .toArray();
             $("#inbox-pane").html(
                 render_inbox_view({
                     normal_view: true,
@@ -1488,9 +1491,10 @@ function should_show_all_folders_collapsed_note(): boolean {
     // Defined just for code reading clarity.
     const has_visible_but_collapsed_dm_folder = has_visible_dm_folder;
 
-    const visible_folders = [...channel_folders_dict.values()].filter(
-        (folder) => folder.is_header_visible,
-    );
+    const visible_folders = channel_folders_dict
+        .values()
+        .filter((folder) => folder.is_header_visible)
+        .toArray();
     if (visible_folders.length === 0) {
         // Nothing at all is visible; unless there is a visible but collapsed
         // DM folder, we show the empty inbox message.
@@ -1500,12 +1504,14 @@ function should_show_all_folders_collapsed_note(): boolean {
     // At least one uncollapsed row is visible in some folder.
     const has_expanded_content = visible_folders.some((folder) => {
         if (!collapsed_containers.has(folder.header_id)) {
-            const folder_streams = [...streams_dict.values()].filter(
-                (stream) => stream.folder_id === folder.id && !stream.is_hidden,
-            );
-            return folder_streams.some(
-                (stream) => !collapsed_containers.has(STREAM_HEADER_PREFIX + stream.stream_id),
-            );
+            return streams_dict
+                .values()
+                .some(
+                    (stream) =>
+                        stream.folder_id === folder.id &&
+                        !stream.is_hidden &&
+                        !collapsed_containers.has(STREAM_HEADER_PREFIX + stream.stream_id),
+                );
         }
         return false;
     });
