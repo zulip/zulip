@@ -793,6 +793,42 @@
         width: 0;
     }
 
+    /* MiAtSu.Co fork: inline videos are real players (controls added in
+       miatsuco_inline_video.ts), so suppress the click-to-open play-button
+       overlay and the zoom cursor that imply a lightbox affordance. The
+       native player draws its own controls. */
+    .message_inline_video.miatsuco-inline-video-playable {
+        /* The embed is now a real player with its own controls, so drop
+           the play-button overlay and the zoom cursor that implied a
+           click-to-open-lightbox affordance, along with the thumbnail
+           chrome (background, transparent border, and hover color change)
+           the preview wrapper carries for that affordance. postprocess
+           renames the wrapper to .message-media-preview-video on this same
+           element, so its background and border are cleared here too. */
+        cursor: default;
+        border: none;
+        background: none;
+
+        &::after {
+            content: none;
+        }
+
+        &:hover {
+            background: none;
+        }
+
+        /* Give the player enough width for the browser's native controls to
+           show the volume slider (browsers collapse it to a mute toggle on
+           narrow players). Portrait videos are letterboxed by object-fit to
+           reach this width. We scale the floor with the organization's media
+           preview size setting rather than hardcoding it, so it tracks
+           --media-preview-max-height (the same basis the landscape width
+           uses) instead of overriding the admin's choice. */
+        & .media-video-element {
+            min-width: calc(var(--media-preview-max-height) * 1.5);
+        }
+    }
+
     .message_inline_video.video-format-unsupported {
         display: none;
     }

@@ -8,6 +8,7 @@ import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
+import * as miatsuco_inline_video from "./miatsuco_inline_video.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
@@ -745,6 +746,13 @@ export function initialize(): void {
             });
             const $expanded = $($.parseHTML(expanded_html));
 
+            // This expanded markup is inserted directly, bypassing
+            // rendered_markdown.update_elements, so apply the fork's inline
+            // video enhancement here too. Otherwise an expanded video would
+            // revert to the original poster-plus-lightbox behavior instead
+            // of playing in place like a normally-rendered one.
+            miatsuco_inline_video.enhance_inline_videos($expanded);
+
             // Let the user undo this and re-collapse the preview
             // back to a link, regardless of whatever the personal
             // preference is currently set to; clicking this button
@@ -771,6 +779,17 @@ export function initialize(): void {
             $row.append($expanded, $collapse_button);
 
             $wrapper.replaceWith($row);
+
+            // This expanded markup bypasses rendered_markdown.update_elements,
+            // which is where Safari gets its manual video load(). Without
+            // this, an expanded video's thumbnail does not load on Safari.
+            // The element must already be in the DOM (done just above by
+            // replaceWith), so this runs last.
+            if (util.is_client_safari()) {
+                for (const video of $row.find<HTMLMediaElement>(".message_inline_video video")) {
+                    video.load();
+                }
+            }
         },
     );
 
