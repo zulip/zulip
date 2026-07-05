@@ -246,6 +246,18 @@ class zulip::app_frontend_base {
   $uwsgi_listen_backlog_limit = zulipconf('application_server', 'uwsgi_listen_backlog_limit', 128)
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
   $somaxconn = 2 * Integer($uwsgi_listen_backlog_limit)
+  # zulip::apache_sso needs Apache, running as the web server user, to
+  # be able to proxy authenticated requests to the uwsgi socket.
+  if 'zulip::apache_sso' in zulipconf('machine', 'puppet_classes', '') {
+    $uwsgi_socket_mode = '660'
+    $uwsgi_socket_group = $facts['os']['family'] ? {
+      'Debian' => 'www-data',
+      'RedHat' => 'apache',
+    }
+  } else {
+    $uwsgi_socket_mode = '600'
+    $uwsgi_socket_group = 'zulip'
+  }
   file { '/etc/zulip/uwsgi.ini':
     ensure  => file,
     require => Package[supervisor],

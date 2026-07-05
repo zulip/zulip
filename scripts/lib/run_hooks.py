@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --only-group=prod --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import os
 import subprocess
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
@@ -13,6 +12,8 @@ from scripts.lib.zulip_tools import (
     parse_version_from,
     su_to_zulip,
 )
+from version import ZULIP_MERGE_BASE as NEW_ZULIP_MERGE_BASE
+from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 
 assert_running_as_root()
 
@@ -22,9 +23,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("kind", choices=["pre-deploy", "post-deploy"], help="")
 parser.add_argument("--from-git", action="store_true", help="Upgrading from git")
 args = parser.parse_args()
-
-from version import ZULIP_MERGE_BASE as NEW_ZULIP_MERGE_BASE
-from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 
 deploy_path = get_deploy_root()
 

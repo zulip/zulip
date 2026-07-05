@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --only-group=install --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import contextlib
 import hashlib
@@ -8,12 +8,6 @@ import platform
 import subprocess
 import sys
 from typing import NoReturn
-
-os.environ["PYTHONUNBUFFERED"] = "y"
-
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-sys.path.append(ZULIP_PATH)
 
 from scripts.lib.node_cache import setup_node_modules
 from scripts.lib.setup_venv import get_venv_dependencies
@@ -27,6 +21,9 @@ from scripts.lib.zulip_tools import (
     run_as_root,
 )
 
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
 CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ
@@ -300,12 +297,6 @@ def install_yum_deps(deps_to_install: list[str]) -> None:
                 print("Unrecognized output. `subscription-manager` might not be available")
 
     run_as_root(["yum", "install", "-y", *yum_extra_flags, *deps_to_install])
-    if "rhel" in os_families():
-        # This is how a pip3 is installed to /usr/bin in CentOS/RHEL
-        # for python35 and later.
-        run_as_root(["python36", "-m", "ensurepip"])
-        # `python36` is not aliased to `python3` by default
-        run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
     postgresql_dir = f"pgsql-{POSTGRESQL_VERSION}"
     for cmd in ["pg_config", "pg_isready", "psql"]:
         # Our tooling expects these PostgreSQL scripts to be at
@@ -436,9 +427,8 @@ def main(options: argparse.Namespace) -> NoReturn:
     run_as_root([*proxy_env, "tools/setup/install-tusd"], sudo_args=["--preserve-env=PATH"])
 
     # Install Python environment
-    run_as_root([*proxy_env, "scripts/lib/install-uv"], sudo_args=["--preserve-env=PATH"])
     run(
-        [*proxy_env, "uv", "sync", "--frozen", "--no-managed-python"],
+        [*proxy_env, "uv", "sync", "--frozen", "--managed-python"],
         env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},
     )
     # Clean old symlinks used before uv migration

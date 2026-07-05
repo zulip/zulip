@@ -42,8 +42,6 @@ RUN apt-get update \
     memcached \
     moreutils \
     puppet \
-    python3-dev \
-    python3-pip \
 # We do not pre-install rabbitmq-server, as doing so fixes the
 # nodename to be the current hostname, which varies.  Letting Zulip
 # install rabbitmq allows it to fix the nodename to 'localhost'.

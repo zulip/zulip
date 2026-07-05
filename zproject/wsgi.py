@@ -14,23 +14,16 @@ framework.
 
 """
 
+import contextlib
 import os
 import sys
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(BASE_DIR)
-from scripts.lib.setup_path import setup_path
-
-setup_path()
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
-
-import contextlib
 from collections.abc import Callable
 from typing import Any
 
 import orjson
 from django.core.wsgi import get_wsgi_application
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
 
 try:
     # This application object is used by any WSGI server configured to use this

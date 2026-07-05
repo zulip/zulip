@@ -20,8 +20,6 @@ class zulip::profile::base {
     'Debian': {
       $base_packages = [
         # Basics
-        'python3',
-        'python3-yaml',
         'puppet',
         'git',
         'curl',
@@ -43,8 +41,6 @@ class zulip::profile::base {
     }
     'RedHat': {
       $base_packages = [
-        'python3',
-        'python3-pyyaml',
         'puppet',
         'git',
         'curl',

@@ -1,20 +1,71 @@
 class zulip::process_fts_updates {
   include zulip::supervisor
-  case $facts['os']['family'] {
-    'Debian': {
-      $fts_updates_packages = [
-        # Needed to run process_fts_updates
-        'python3-psycopg2', # TODO: use a virtualenv instead
-      ]
-      zulip::safepackage { $fts_updates_packages: ensure => installed }
+
+  # process_fts_updates runs in the Python environment at
+  # /srv/zulip-database-env (see its shebang).  On frontend machines,
+  # that is the environment of the current Zulip deployment; on a
+  # PostgreSQL-only machine, no Zulip deployment exists, so we build a
+  # minimal environment containing just psycopg2.  This class is
+  # included after zulip::app_frontend_base in every supported
+  # configuration that has both, so `defined` is reliable here.
+  if defined(Class['zulip::app_frontend_base']) {
+    file { '/srv/zulip-database-env':
+      ensure => link,
+      target => '/home/zulip/deployments/current',
+      before => File["${zulip::common::supervisor_conf_dir}/zulip_db.conf"],
     }
-    'RedHat': {
-      exec {'pip_process_fts_updates':
-        command => 'python3 -m pip install psycopg2',
+  } else {
+    case $facts['os']['family'] {
+      'Debian': {
+        # Needed to build psycopg2
+        $psycopg2_build_packages = ['build-essential', 'libpq-dev']
+      }
+      'RedHat': {
+        # zulip::postgresql_common installs postgresql-devel, which
+        # provides the pg_config needed to build psycopg2.
+        $psycopg2_build_packages = ['gcc']
+      }
+      default: {
+        fail('osfamily not supported')
       }
     }
-    default: {
-      fail('osfamily not supported')
+    zulip::safepackage { $psycopg2_build_packages: ensure => installed }
+
+    file { '/srv/zulip-database-env':
+      ensure  => directory,
+      owner   => 'zulip',
+      group   => 'zulip',
+      require => User['zulip'],
+    }
+    ['.python-version', 'pyproject.toml', 'uv.lock'].each |String $project_file| {
+      file { "/srv/zulip-database-env/${project_file}":
+        ensure => file,
+        owner  => 'zulip',
+        group  => 'zulip',
+        mode   => '0644',
+        source => "${facts['zulip_scripts_path']}/../${project_file}",
+      }
+    }
+    exec { 'process_fts_updates_venv':
+      command     => 'uv sync --frozen --managed-python --only-group=database',
+      unless      => 'uv sync --frozen --managed-python --only-group=database --check',
+      cwd         => '/srv/zulip-database-env',
+      user        => 'zulip',
+      # Install the managed Python interpreter inside the environment,
+      # rather than under the zulip user's home directory, which may
+      # not be readable by the nagios user.
+      environment => [
+        'HOME=/home/zulip',
+        'UV_PYTHON_INSTALL_DIR=/srv/zulip-database-env/python',
+      ],
+      timeout     => 600,
+      require     => [
+        Package[$psycopg2_build_packages],
+        File['/srv/zulip-database-env/.python-version'],
+        File['/srv/zulip-database-env/pyproject.toml'],
+        File['/srv/zulip-database-env/uv.lock'],
+      ],
+      before      => File["${zulip::common::supervisor_conf_dir}/zulip_db.conf"],
     }
   }
 
@@ -28,7 +79,7 @@ class zulip::process_fts_updates {
 
   file { "${zulip::common::supervisor_conf_dir}/zulip_db.conf":
     ensure  => file,
-    require => [Package[supervisor], Package['python3-psycopg2']],
+    require => Package[supervisor],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
