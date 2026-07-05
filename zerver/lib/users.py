@@ -836,9 +836,9 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 
 
 def bulk_get_subscribers_of_target_user_subscriptions(
-    target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
+    target_users: list[UserProfile],
 ) -> dict[int, set[int]]:
-    # For a single target_user, use
+    # For a single target user, use
     # get_subscribers_of_target_user_subscriptions
     # as it's more efficient.
     target_user_ids = [user.id for user in target_users]
@@ -849,53 +849,43 @@ def bulk_get_subscribers_of_target_user_subscriptions(
             recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
         )
         .order_by("user_profile_id")
-        .values("user_profile_id", "recipient_id")
+        .values_list("user_profile_id", "recipient_id")
     )
 
     target_users_subbed_recipient_ids = set()
     target_user_subscriptions_dict: dict[int, set[int]] = defaultdict(set)
 
+    # Group by user_profile_id.
     for user_profile_id, sub_rows in itertools.groupby(
-        target_user_subscriptions, itemgetter("user_profile_id")
+        target_user_subscriptions,
+        itemgetter(0),
     ):
-        recipient_ids = {row["recipient_id"] for row in sub_rows}
+        recipient_ids = {row[1] for row in sub_rows}
         target_user_subscriptions_dict[user_profile_id] = recipient_ids
         target_users_subbed_recipient_ids |= recipient_ids
 
-    subs_in_target_user_subscriptions_query = Subscription.objects.filter(
-        recipient_id__in=list(target_users_subbed_recipient_ids),
-        active=True,
-    )
-
-    # TODO: Remove include_deactivated_users_for_dm_groups
-    # parameter as it's not used by callers anymore.
-    if include_deactivated_users_for_dm_groups:  # nocoverage
-        subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
-            Q(recipient__type=Recipient.STREAM, is_user_active=True)
-            | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
-        )
-    else:
-        subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
-            recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+    subs_in_target_user_subscriptions = (
+        Subscription.objects.filter(
+            recipient_id__in=list(target_users_subbed_recipient_ids),
+            active=True,
             is_user_active=True,
         )
+        .order_by("recipient_id")
+        .values_list("user_profile_id", "recipient_id")
+    )
 
-    subs_in_target_user_subscriptions = subs_in_target_user_subscriptions_query.order_by(
-        "recipient_id"
-    ).values("user_profile_id", "recipient_id")
-
+    # Group by recipient_id.
     subscribers_dict_by_recipient_ids: dict[int, set[int]] = defaultdict(set)
     for recipient_id, sub_rows in itertools.groupby(
-        subs_in_target_user_subscriptions, itemgetter("recipient_id")
+        subs_in_target_user_subscriptions, itemgetter(1)
     ):
-        user_ids = {row["user_profile_id"] for row in sub_rows}
+        user_ids = {row[0] for row in sub_rows}
         subscribers_dict_by_recipient_ids[recipient_id] = user_ids
 
     users_subbed_to_target_user_subscriptions_dict: dict[int, set[int]] = defaultdict(set)
-    for user_id in target_user_ids:
-        target_user_subbed_recipients = target_user_subscriptions_dict[user_id]
+    for target_user_id, target_user_subbed_recipients in target_user_subscriptions_dict.items():
         for recipient_id in target_user_subbed_recipients:
-            users_subbed_to_target_user_subscriptions_dict[user_id] |= (
+            users_subbed_to_target_user_subscriptions_dict[target_user_id] |= (
                 subscribers_dict_by_recipient_ids[recipient_id]
             )
 
