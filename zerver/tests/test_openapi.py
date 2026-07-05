@@ -234,7 +234,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/icon",
         "/realm/logo",
         "/realm/deactivate",
-        "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
         #### The following are fake endpoints that live in our zulip.yaml
