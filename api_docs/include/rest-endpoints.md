@@ -152,6 +152,7 @@
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
+* [Check subdomain availability](/api/check-subdomain-availability)
 * [Get allowed domains](/api/get-realm-domains)
 * [Add an allowed domain](/api/add-realm-domain)
 * [Update an allowed domain](/api/patch-realm-domain)
