@@ -13091,11 +13091,21 @@ paths:
               properties:
                 subscriptions:
                   description: |
-                    A list of dictionaries containing the key `name` and value
-                    specifying the name of the channel to subscribe. If the channel does not
-                    exist a new channel is created. The description of the channel created can
-                    be specified by setting the dictionary key `description` with an
-                    appropriate value.
+                    A list of dictionaries containing information about the
+                    channels that users will be subscribed to.
+
+                    For each channel, there must be a key `name` and value
+                    specifying the name of the channel. If a channel with that
+                    name does not exist, then a new channel is created.
+
+                    When creating a new channel, its description can be
+                    specified by setting the dictionary key `description` with
+                    an appropriate value.
+
+                    Optionally, a display color for the channel, which will be
+                    set for the users who are being newly subscribed to the
+                    channel, can be specified by setting the dictionary key
+                    `color` with an appropriate value.
                   type: array
                   items:
                     type: object
@@ -13109,6 +13119,23 @@ paths:
                           Clients should use the `max_stream_name_length` returned by the
                           [`POST /register`](/api/register-queue) endpoint to determine
                           the maximum channel name length.
+                      color:
+                        type: string
+                        description: |
+                          The hex value of the user's display color for the channel.
+                          The server will return an error if the value is not a valid
+                          hex color code.
+
+                          This color is only applied to subscriptions that are newly
+                          created by this request. Users who are already subscribed to
+                          the channel, or who were subscribed to it in the past, keep
+                          their existing display color. If this key is omitted, the
+                          server assigns each new subscriber a display color that they
+                          are not already using for another channel.
+
+                          Clients should pass this key when they are already displaying
+                          a color for the channel, so that the color the user sees does
+                          not change when they subscribe.
                       description:
                         type: string
                         description: |
@@ -13127,6 +13154,8 @@ paths:
                         value: {"name": "Verona"}
                       with-description:
                         value: {"name": "Verona", "description": "Italian city"}
+                      with-color:
+                        value: {"name": "Verona", "color": "#e79ab5"}
                   example: [{"name": "Verona", "description": "Italian city"}]
                 principals:
                   $ref: "#/components/schemas/Principals"
