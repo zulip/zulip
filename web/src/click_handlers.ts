@@ -250,10 +250,11 @@ export function initialize(): void {
     // is, instead of the browser's context menu.
     function initialize_right_click_message_actions_menu(): void {
         // The right-click in progress: the message whose actions menu it
-        // should open, and whether it's a Mac Control-click. This is
-        // decided on mousedown, before the browser changes the selection
-        // for its own menu.
-        let right_click: {message_id: number; is_control_click: boolean} | undefined;
+        // should open, whether it's a Mac Control-click, and the
+        // selection for the menu to quote. This is decided on mousedown,
+        // before the browser changes the selection for its own menu.
+        let right_click:
+            {message_id: number; is_control_click: boolean; selection_ranges: Range[]} | undefined;
         // Whether to swallow the click event that Safari sends after a
         // Control-click whose menu we replaced with ours, so that it
         // doesn't act like a click on the message.
@@ -311,12 +312,28 @@ export function initialize(): void {
             }
 
             const message_id = rows.get_message_id(this);
-            if (compose_reply.get_highlighted_message_ids() !== undefined) {
-                // With message text selected, the browser's menu, which
-                // can copy or search for it, is more useful. Keep the
-                // selection, which some browsers clear on right-click.
+            const selection = window.getSelection();
+            assert(selection !== null);
+            const selected_message_ids = compose_reply.get_highlighted_message_ids(selection);
+            let selection_ranges: Range[] = [];
+            if (selected_message_ids !== undefined) {
+                // Keep the selection, which some browsers clear on
+                // right-click.
                 e.preventDefault();
-                return;
+                if (
+                    !selected_message_ids.includes(message_id) ||
+                    compose_reply.is_point_on_selected_text(selection, this, e.clientX, e.clientY)
+                ) {
+                    // On the selected text, or on another message, the
+                    // browser's menu, which can copy or search for the
+                    // selected text, is more useful.
+                    return;
+                }
+                // Elsewhere in a selected message, our menu offers to
+                // quote the selection.
+                selection_ranges = Array.from({length: selection.rangeCount}, (_, i) =>
+                    selection.getRangeAt(i).cloneRange(),
+                );
             }
 
             const message = message_store.get(message_id);
@@ -324,7 +341,7 @@ export function initialize(): void {
                 message !== undefined &&
                 message_actions_popover.can_open_message_actions_menu(message)
             ) {
-                right_click = {message_id, is_control_click};
+                right_click = {message_id, is_control_click, selection_ranges};
             }
         });
 
@@ -337,12 +354,18 @@ export function initialize(): void {
                 return;
             }
 
-            ignore_next_click = right_click.is_control_click;
+            const {is_control_click, selection_ranges} = right_click;
             right_click = undefined;
+            ignore_next_click = is_control_click;
             e.preventDefault();
             // Safari selects the word under the mouse before firing
-            // contextmenu, which would make the menu offer to quote it.
-            window.getSelection()?.removeAllRanges();
+            // contextmenu; put back the selection the menu should quote.
+            const selection = window.getSelection();
+            assert(selection !== null);
+            selection.removeAllRanges();
+            for (const range of selection_ranges) {
+                selection.addRange(range);
+            }
             assert(message_lists.current !== undefined);
             message_lists.current.select_id(message_id);
             message_actions_popover.open_message_actions_menu_at_mouse_position(
