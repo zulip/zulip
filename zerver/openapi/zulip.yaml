@@ -13151,11 +13151,12 @@ paths:
               properties:
                 subscriptions:
                   description: |
-                    A list of dictionaries containing the key `name` and value
-                    specifying the name of the channel to subscribe. If the channel does not
-                    exist a new channel is created. The description of the channel created can
-                    be specified by setting the dictionary key `description` with an
-                    appropriate value.
+                    A list of dictionaries containing information about the
+                    channels that users will be subscribed to.
+
+                    For each channel, there must be a key `name` and value
+                    specifying the name of the channel. If a channel with that
+                    name does not exist, then a new channel is created.
                   type: array
                   items:
                     type: object
@@ -13180,6 +13181,26 @@ paths:
                           Clients should use the `max_stream_description_length` returned
                           by the [`POST /register`](/api/register-queue) endpoint to
                           determine the maximum channel description length.
+                      color:
+                        type: string
+                        description: |
+                          The hex value of the user's display color for the channel.
+                          The server will return an error if the value is not a valid
+                          hex color code.
+
+                          This color is only applied to subscriptions that are newly
+                          created by this request. Users who are already subscribed to
+                          the channel, or who were subscribed to it in the past, keep
+                          their existing display color. If this key is omitted, the
+                          server assigns each new subscriber a display color, preferring
+                          one that they are not already using for another channel.
+
+                          Some clients compute a placeholder color for each of the
+                          self-user's never-subscribed channels, client-side, so that
+                          they don't all show up in a list with the same gray color. If
+                          a client does this, it should pass the placeholder color here
+                          so that the channel's color doesn't change when the self-user
+                          subscribes.
                     required:
                       - name
                     example:
@@ -13187,6 +13208,8 @@ paths:
                         value: {"name": "Verona"}
                       with-description:
                         value: {"name": "Verona", "description": "Italian city"}
+                      with-color:
+                        value: {"name": "Verona", "color": "#e79ab5"}
                   example: [{"name": "Verona", "description": "Italian city"}]
                 principals:
                   $ref: "#/components/schemas/Principals"
