@@ -7,9 +7,10 @@ const {run_test} = require("./lib/test.cjs");
 
 const stream_data = zrequire("stream_data");
 const message_store = zrequire("message_store");
-const message_fetch_raw_content = zrequire("message_fetch_raw_content");
 const message_fetch = mock_esm("../src/message_fetch");
+const narrow_state = mock_esm("../src/narrow_state");
 const channel = mock_esm("../src/channel");
+const message_fetch_raw_content = zrequire("message_fetch_raw_content");
 
 function add_messages_to_message_store(messages) {
     message_store.clear_for_testing();
@@ -18,10 +19,11 @@ function add_messages_to_message_store(messages) {
     }
 }
 
-// We only rely on message_fetch for type validation.
+// We only rely on message_fetch for type validation and narrow encoding.
 message_fetch.message_ids_response_schema = {
     parse: (data) => data,
 };
+message_fetch.get_narrow_for_message_fetch = () => "";
 
 const denmark = {
     subscribed: true,
@@ -37,27 +39,8 @@ const social = {
     stream_id: 2,
 };
 
-const private_shared = {
-    subscribed: true,
-    invite_only: true,
-    history_public_to_subscribers: true,
-    color: "green",
-    name: "private-shared",
-    stream_id: 3,
-};
-
 stream_data.add_sub_for_tests(denmark);
 stream_data.add_sub_for_tests(social);
-stream_data.add_sub_for_tests(private_shared);
-
-function reset_raw_content(message_ids) {
-    for (const message_id of message_ids) {
-        const message = message_store.get(message_id);
-        if (message) {
-            delete message.raw_content;
-        }
-    }
-}
 
 run_test("get_raw_content_for_messages", ({override}) => {
     const msg_1 = {
@@ -65,7 +48,6 @@ run_test("get_raw_content_for_messages", ({override}) => {
         raw_content: "Already hydrated content",
         type: "stream",
         stream_id: denmark.stream_id,
-        content: "<p>HTML content</p>",
     };
     const msg_2 = {
         id: 2,
@@ -97,11 +79,19 @@ run_test("get_raw_content_for_messages", ({override}) => {
     assert.ok(success_called, "Should call on_success immediately if all messages are hydrated");
     assert.equal(error_called, false);
 
-    // Case: Fetching missing raw_content successfully
+    // Case: Fetching missing raw_content successfully, with the current
+    // narrow passed so include_history can cover historical messages.
     let channel_get_args;
     success_called = false;
     error_called = false;
 
+    const fake_filter = {};
+    const encoded_narrow = JSON.stringify([{operator: "channel", operand: social.stream_id}]);
+    override(narrow_state, "filter", () => fake_filter);
+    override(message_fetch, "get_narrow_for_message_fetch", (filter) => {
+        assert.equal(filter, fake_filter);
+        return encoded_narrow;
+    });
     override(channel, "get", (args) => {
         channel_get_args = args;
         args.success({
@@ -125,134 +115,63 @@ run_test("get_raw_content_for_messages", ({override}) => {
         JSON.stringify([2]),
         "Should only request hydration for messages missing raw_content",
     );
+    assert.equal(channel_get_args.data.narrow, encoded_narrow);
     // It is safe to update raw_content for messages from channels
     // the user is subscribed to.
     assert.equal(msg_2.raw_content, "Fetched markdown content");
     assert.ok(success_called, "Should call on_success after successfully hydrating");
     assert.deepEqual(success_call_args, [msg_1.raw_content, msg_2.raw_content]);
 
-    // Case: Batch endpoint omits a message from an unsubscribed
-    // public channel. The channels:public retry should pick it up.
+    // Case: Encoded narrow is empty — omit the narrow parameter.
     success_called = false;
-    error_called = false;
-
-    let channel_get_call_count = 0;
+    delete msg_2.raw_content;
+    override(narrow_state, "filter", () => fake_filter);
+    override(message_fetch, "get_narrow_for_message_fetch", () => "");
     override(channel, "get", (args) => {
-        channel_get_call_count += 1;
-        if (channel_get_call_count === 1) {
-            // First batch (no narrow) returns msg_2 but not msg_3.
-            assert.equal(args.data.narrow, undefined);
-            args.success({
-                messages: [
-                    {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content"},
-                ],
-            });
-        } else {
-            // Second batch with channels:public returns msg_3.
-            assert.deepEqual(JSON.parse(args.data.narrow), [
-                {operator: "channels", operand: "public"},
-            ]);
-            assert.equal(args.data.message_ids, JSON.stringify([3]));
-            args.success({
-                messages: [
-                    {id: 3, content_type: "text/x-markdown", content: "Unsubscribed content"},
-                ],
-            });
-        }
+        channel_get_args = args;
+        args.success({
+            messages: [
+                {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content"},
+            ],
+        });
     });
 
     message_fetch_raw_content.get_raw_content_for_messages({
-        message_ids: [1, 2, 3],
+        message_ids: [1, 2],
         on_success(args) {
             success_called = true;
             success_call_args = args;
         },
-        /* istanbul ignore next */
-        on_error() {
-            error_called = true;
-        },
     });
 
+    assert.equal(channel_get_args.data.narrow, undefined);
     assert.ok(success_called);
-    assert.equal(error_called, false);
-    assert.equal(channel_get_call_count, 2, "First batch + channels:public retry");
-    assert.deepEqual(success_call_args, [
-        "Already hydrated content",
-        "Fetched markdown content",
-        "Unsubscribed content",
-    ]);
-    // raw_content is not cached for messages from unsubscribed channels.
-    assert.equal(msg_3.raw_content, undefined);
 
-    // Case: Both batch calls miss a message (e.g. pre-subscription
-    // message in a private channel with shared history). The
-    // single-message endpoint should be used as a final fallback.
-    const msg_4 = {
-        id: 4,
-        content: "<p>Private shared history</p>",
-        type: "stream",
-        stream_id: private_shared.stream_id,
-    };
-
-    reset_raw_content([1, 2, 3, 4]);
-    add_messages_to_message_store([msg_1, msg_2, msg_3, msg_4]);
+    // Case: No current filter (e.g. recent conversations) — no narrow param.
     success_called = false;
-    error_called = false;
-    channel_get_call_count = 0;
-
+    delete msg_2.raw_content;
+    override(narrow_state, "filter", () => undefined);
     override(channel, "get", (args) => {
-        channel_get_call_count += 1;
-        if (args.url === "/json/messages" && args.data.narrow === undefined) {
-            // First batch returns msg_1, msg_2 only.
-            args.success({
-                messages: [
-                    {id: 1, content_type: "text/x-markdown", content: "Fetched markdown content 1"},
-                    {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content 2"},
-                ],
-            });
-        } else if (args.url === "/json/messages") {
-            // channels:public retry returns msg_3 but not msg_4
-            // (private channel).
-            args.success({
-                messages: [
-                    {id: 3, content_type: "text/x-markdown", content: "Unsubscribed content"},
-                ],
-            });
-        } else {
-            // Individual fallback for msg_4.
-            assert.equal(args.url, "/json/messages/4");
-            args.success({
-                message: {
-                    content_type: "text/x-markdown",
-                    content: "Private shared history content",
-                },
-            });
-        }
+        channel_get_args = args;
+        args.success({
+            messages: [
+                {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content"},
+            ],
+        });
     });
 
     message_fetch_raw_content.get_raw_content_for_messages({
-        message_ids: [1, 2, 3, 4],
+        message_ids: [1, 2],
         on_success(args) {
             success_called = true;
             success_call_args = args;
         },
-        /* istanbul ignore next */
-        on_error() {
-            error_called = true;
-        },
     });
 
+    assert.equal(channel_get_args.data.narrow, undefined);
     assert.ok(success_called);
-    assert.equal(error_called, false);
-    assert.equal(channel_get_call_count, 3, "Two batch calls + one individual fallback");
-    assert.deepEqual(success_call_args, [
-        "Fetched markdown content 1",
-        "Fetched markdown content 2",
-        "Unsubscribed content",
-        "Private shared history content",
-    ]);
 
-    // Case: Network error during hydration (first batch call fails).
+    // Case: Network error during hydration
     success_called = false;
     error_called = false;
 
@@ -273,38 +192,42 @@ run_test("get_raw_content_for_messages", ({override}) => {
 
     assert.equal(success_called, false);
     assert.ok(error_called, "Should call on_error if the network request fails");
+});
 
-    // Case: Individual fallback call fails.
-    success_called = false;
-    error_called = false;
+// Separate test so we exercise the module-level default
+// get_narrow_for_message_fetch (returns "") without a prior override
+// of that function in the same test.
+run_test("get_raw_content_for_messages module default narrow helper", ({override}) => {
+    const msg_1 = {
+        id: 1,
+        content: "<p>HTML content</p>",
+        type: "stream",
+        stream_id: denmark.stream_id,
+    };
+    add_messages_to_message_store([msg_1]);
 
-    channel_get_call_count = 0;
+    let channel_get_args;
+    const fake_filter = {};
+    override(narrow_state, "filter", () => fake_filter);
     override(channel, "get", (args) => {
-        channel_get_call_count += 1;
-        if (args.url === "/json/messages") {
-            // Both batch calls return nothing.
-            args.success({messages: []});
-        } else {
-            args.error();
-        }
+        channel_get_args = args;
+        args.success({
+            messages: [
+                {id: 1, content_type: "text/x-markdown", content: "Fetched markdown content"},
+            ],
+        });
     });
 
-    reset_raw_content([2]);
-    add_messages_to_message_store([msg_1, msg_2, msg_3]);
-
+    let success_called = false;
     message_fetch_raw_content.get_raw_content_for_messages({
-        message_ids: [1, 2, 3],
-        /* istanbul ignore next */
+        message_ids: [1],
         on_success() {
             success_called = true;
         },
-        on_error() {
-            error_called = true;
-        },
     });
 
-    assert.equal(success_called, false);
-    assert.ok(error_called, "Should call on_error if a fallback request fails");
+    assert.ok(success_called);
+    assert.equal(channel_get_args.data.narrow, undefined);
 });
 
 run_test("get_raw_content_for_single_message", ({override}) => {
