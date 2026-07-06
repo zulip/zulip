@@ -1271,7 +1271,7 @@ h4.stream_setting_subsection_title {
                 &:not(:empty) {
                     position: absolute;
                     width: 100% !important;
-                    height: calc(100% - 105px) !important;
+                    height: 100% !important;
                     display: flex !important;
                     justify-content: center;
                     align-items: center;
