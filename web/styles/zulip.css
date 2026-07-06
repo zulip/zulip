@@ -2397,7 +2397,8 @@ body:not(.spectator-view) {
         }
     }
 
-    &.folder_id-dropdown-list-container {
+    &.folder_id-dropdown-list-container,
+    &.new_channel_folder_id-dropdown-list-container {
         width: calc(var(--modal-input-width) * 0.75);
 
         /* Alignment adjustments on the channel-folder selector. */
