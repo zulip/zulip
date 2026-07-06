@@ -13092,9 +13092,11 @@ paths:
                 subscriptions:
                   description: |
                     A list of dictionaries containing the key `name` and value
-                    specifying the name of the channel to subscribe. If the channel does not
-                    exist a new channel is created. The description of the channel created can
-                    be specified by setting the dictionary key `description` with an
+                    specifying the name of the channel to subscribe, optionally
+                    including the per-user `color` for that channel. If the
+                    channel does not exist a new channel is created. The
+                    description of the channel created can be specified by
+                    setting the dictionary key `description` with an
                     appropriate value.
                   type: array
                   items:
@@ -13109,6 +13111,12 @@ paths:
                           Clients should use the `max_stream_name_length` returned by the
                           [`POST /register`](/api/register-queue) endpoint to determine
                           the maximum channel name length.
+                      color:
+                        type: string
+                        description: |
+                          The user's personal color to assign to the channel, as a
+                          hex color code (e.g., `#e79ab5`). If not provided, a color
+                          is automatically assigned.
                       description:
                         type: string
                         description: |
@@ -13127,6 +13135,8 @@ paths:
                         value: {"name": "Verona"}
                       with-description:
                         value: {"name": "Verona", "description": "Italian city"}
+                      with-color:
+                        value: {"name": "Verona", "color": "#e79ab5"}
                   example: [{"name": "Verona", "description": "Italian city"}]
                 principals:
                   $ref: "#/components/schemas/Principals"
