@@ -47,6 +47,52 @@ import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
+type RightClickSelectionContext = {
+    use_browser_context_menu: boolean;
+    quote?: compose_reply.SelectionQuote;
+};
+
+let right_click_selection_context: RightClickSelectionContext | undefined;
+
+// Determine when right-click (x, y) lands on the selected text, so a right-click on
+// selected text keeps the browser's menu while one on nearby blank space still
+// opens ours. We test the text-node rects, not Range.getClientRects(), which
+// spans the blank block area around a fully selected paragraph or code block.
+function selection_contains_text_at_point(selection: Selection, x: number, y: number): boolean {
+    for (let i = 0; i < selection.rangeCount; i += 1) {
+        // Firefox splits a multi-message selection into several ranges.
+        const range = selection.getRangeAt(i);
+        const root = range.commonAncestorContainer;
+        const text_nodes: Node[] = [];
+        if (root.nodeType === Node.TEXT_NODE) {
+            text_nodes.push(root);
+        } else {
+            // Walks every text node under the common ancestor, not just the
+            // selected ones, but this runs once per right-click, so it's not
+            // worth scoping out the extra nodes in a multi-message selection.
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+            for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+                text_nodes.push(node);
+            }
+        }
+        for (const node of text_nodes) {
+            if (!range.intersectsNode(node)) {
+                continue;
+            }
+            const text_range = compose_reply.get_range_intersection_with_element(range, node);
+            for (const rect of text_range.getClientRects()) {
+                if (rect.width === 0 || rect.height === 0) {
+                    continue;
+                }
+                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 export function initialize(): void {
     // MESSAGE CLICKING
 
@@ -248,13 +294,61 @@ export function initialize(): void {
     // Right-click opens the message actions popover at the cursor instead of the
     // browser's context menu.
     if (!util.is_mobile()) {
+        $("#main_div").on("mousedown", ".messagebox", (e) => {
+            // A keyboard-invoked context menu (Menu key / Shift+F10) fires no
+            // mousedown, so leaving the context unset here lets its contextmenu
+            // fall through to the browser's native menu.
+            right_click_selection_context = undefined;
+            if (e.button !== 2) {
+                return;
+            }
+
+            // Capture the selection now, while it's still intact — the browser
+            // would otherwise mutate it before the contextmenu event fires.
+            const selection = window.getSelection();
+            if (selection?.type !== "Range" || selection.toString() === "") {
+                // A right-click with no text selected still opens our popover,
+                // just without a quote.
+                right_click_selection_context = {use_browser_context_menu: false};
+                return;
+            }
+
+            // A right-click outside the selection would otherwise collapse it;
+            // preventing the mousedown default keeps the highlight visible (and
+            // available to quote) without suppressing the contextmenu event.
+            e.preventDefault();
+
+            const use_browser_context_menu = selection_contains_text_at_point(
+                selection,
+                e.clientX,
+                e.clientY,
+            );
+            const quote = use_browser_context_menu
+                ? undefined
+                : compose_reply.get_quote_from_single_message_selection(selection);
+            right_click_selection_context = {
+                use_browser_context_menu,
+                ...(quote !== undefined && {quote}),
+            };
+        });
+
+        $(document).on("contextmenu", () => {
+            right_click_selection_context = undefined;
+        });
+
         $("#main_div").on("contextmenu", ".messagebox", function (e) {
             assert(e.target instanceof Element);
             const $target = $(e.target);
+            const selection_context = right_click_selection_context;
+            right_click_selection_context = undefined;
 
-            if (document.getSelection()?.type === "Range") {
-                // The browser's context menu is more useful for selected
-                // text (copy, translate, search).
+            if (selection_context === undefined || selection_context.use_browser_context_menu) {
+                // Leave the browser's native context menu (copy, translate,
+                // search) in place when it's more useful or the only option:
+                // a keyboard-invoked context menu (Menu key / Shift+F10) fires
+                // no right-click mousedown, so there's no cursor to anchor our
+                // popover to; and a right-click landing on selected text is
+                // better served by the browser's own menu.
                 return;
             }
 
@@ -284,10 +378,16 @@ export function initialize(): void {
             assert(message_lists.current !== undefined);
             message_lists.current.select_id(id);
 
+            const quote_content =
+                selection_context.quote?.message_id === id
+                    ? selection_context.quote.content
+                    : undefined;
+
             message_actions_popover.open_message_actions_popover_at_position(
                 $row,
                 e.clientX,
                 e.clientY,
+                quote_content,
             );
         });
     }

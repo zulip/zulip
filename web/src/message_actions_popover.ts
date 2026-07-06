@@ -29,6 +29,8 @@ let message_actions_popover_keyboard_toggle = false;
 
 let message_actions_popover_props: Partial<tippy.Props> | undefined;
 
+let quote_content_for_next_open: string | undefined;
+
 function get_action_menu_menu_items(): JQuery {
     return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
 }
@@ -40,10 +42,17 @@ function focus_first_action_popover_item(): void {
     popover_menus.focus_first_popover_item($items);
 }
 
-export function open_message_actions_popover_at_position($row: JQuery, x: number, y: number): void {
+export function open_message_actions_popover_at_position(
+    $row: JQuery,
+    x: number,
+    y: number,
+    quote_content?: string,
+): void {
     if (popovers.any_active()) {
         popovers.hide_all();
     }
+
+    quote_content_for_next_open = quote_content;
 
     assert(message_actions_popover_props !== undefined);
     const button = the($row.find(".message-actions-menu-button"));
@@ -117,19 +126,16 @@ export function initialize({
         onMount(instance) {
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
-            let quote_content: string | undefined;
-            const highlighted_message_ids = compose_reply.get_highlighted_message_ids();
-            if (
-                highlighted_message_ids &&
-                highlighted_message_ids?.length === 1 &&
-                highlighted_message_ids[0] === message_id
-            ) {
-                // If the user has selected text within this message, quote only that.
-                // We track the selection right now, before the popover option for Quote
-                // and reply is clicked, since by then the selection is lost, due to the
-                // change in focus.
-                quote_content = compose_reply.get_message_selection();
-            }
+            // If the user has selected text within this message, quote only that.
+            // We track the selection right now, before the popover option for Quote
+            // and reply is clicked, since by then the selection is lost, due to the
+            // change in focus. The right-click path may pass the same content captured
+            // before the browser had a chance to drop the selection.
+            const selection_quote = compose_reply.get_quote_from_single_message_selection();
+            const quote_content =
+                quote_content_for_next_open ??
+                (selection_quote?.message_id === message_id ? selection_quote.content : undefined);
+            quote_content_for_next_open = undefined;
             if (message_actions_popover_keyboard_toggle) {
                 focus_first_action_popover_item();
                 message_actions_popover_keyboard_toggle = false;
@@ -272,6 +278,7 @@ export function initialize({
             instance.destroy();
             popover_menus.popover_instances.message_actions = null;
             message_actions_popover_keyboard_toggle = false;
+            quote_content_for_next_open = undefined;
         },
     };
     popover_menus.register_popover_menu(
