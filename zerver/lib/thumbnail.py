@@ -313,8 +313,7 @@ def missing_thumbnails(
         seen_thumbnails.add(StoredThumbnailFormat(**existing_thumbnail))
 
     potential_output_formats = list(THUMBNAIL_OUTPUT_FORMATS)
-    assert image_attachment.content_type
-    if bare_content_type(image_attachment.content_type) not in INLINE_MIME_TYPES:
+    if needs_transcoded_format(image_attachment):
         if image_attachment.original_width_px >= image_attachment.original_height_px:
             additional_format = ThumbnailFormat(
                 TRANSCODED_IMAGE_FORMAT.extension,
