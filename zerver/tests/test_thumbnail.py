@@ -735,8 +735,33 @@ class TestStoreThumbnail(ZulipTestCase):
             )
             image_attachment.content_type = "image/png"
             self.assertEqual(get_transcoded_format(image_attachment), None)
+            # A null or empty content-type is judged inline.
             image_attachment.content_type = None
             self.assertEqual(get_transcoded_format(image_attachment), None)
+            image_attachment.content_type = ""
+            self.assertEqual(get_transcoded_format(image_attachment), None)
+
+    def test_missing_thumbnails_missing_content_type(self) -> None:
+        # A null or empty content-type (some old uploads) must not
+        # crash; it is judged inline, like get_transcoded_format.
+        image_attachment = ImageAttachment(
+            path_id="example",
+            original_width_px=150,
+            original_height_px=100,
+            frames=1,
+            thumbnail_metadata=[],
+            content_type="image/tiff",
+        )
+        still_webp = ThumbnailFormat("webp", 100, 75, animated=False, opts="Q=90")
+        transcoded = ThumbnailFormat("webp", 4032, 3024, animated=False)
+        with self.thumbnail_formats(still_webp):
+            # A known non-inline type gets the extra transcoded format.
+            self.assertEqual(missing_thumbnails(image_attachment), [still_webp, transcoded])
+
+            # A missing content-type does not, and does not crash.
+            for missing_content_type in (None, ""):
+                image_attachment.content_type = missing_content_type
+                self.assertEqual(missing_thumbnails(image_attachment), [still_webp])
 
     def test_maybe_thumbnail_from_stream(self) -> None:
         # If we put the file in place directly (e.g. simulating a
