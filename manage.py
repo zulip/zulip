@@ -70,7 +70,7 @@ class FilteredManagementUtility(ManagementUtility):
     that calls our get_filtered_commands(), rather than the default
     get_commands() function.
 
-    All other change are just code style differences to pass the Zulip linter.
+    All other changes are just code style differences to pass the Zulip linter.
     """
 
     @override
