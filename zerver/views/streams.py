@@ -564,30 +564,6 @@ class AddSubscriptionData(BaseModel):
         return self
 
 
-@typed_endpoint
-def update_subscriptions_backend(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    *,
-    add: Json[list[AddSubscriptionData]] | None = None,
-    delete: Json[list[str]] | None = None,
-) -> HttpResponse:
-    if delete is None:
-        delete = []
-    if add is None:
-        add = []
-    if not add and not delete:
-        raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
-
-    thunks = [
-        lambda: add_subscriptions_backend(request, user_profile, streams_raw=add),
-        lambda: remove_subscriptions_backend(request, user_profile, streams_raw=delete),
-    ]
-    data = compose_views(thunks)
-
-    return json_success(request, data)
-
-
 def compose_views(thunks: list[Callable[[], HttpResponse]]) -> dict[str, Any]:
     """
     This takes a series of thunks and calls them in sequence, and it

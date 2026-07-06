@@ -1031,9 +1031,6 @@ class APIDocsSidebarTest(ZulipTestCase):
         exempted_docs = {
             # (No /api/v1/ or /json prefix).
             "get-file-temporary-url",
-            # This one is not used by any clients and is likely to get
-            # deprecated.
-            "update-subscriptions",
             # This is rendered on the "Outgoing webhooks" page and hence is not
             # linked in the sidebar.
             "zulip-outgoing-webhooks",
