@@ -227,6 +227,20 @@ export function rewire_get_highlighted_message_ids(
     get_highlighted_message_ids = value;
 }
 
+export type SelectionQuote = {message_id: number; content: string};
+
+export function get_quote_from_single_message_selection(
+    selection = window.getSelection(),
+): SelectionQuote | undefined {
+    const highlighted_message_ids = get_highlighted_message_ids(selection);
+    if (highlighted_message_ids?.length !== 1) {
+        return undefined;
+    }
+    const message_id = highlighted_message_ids[0];
+    assert(message_id !== undefined);
+    return {message_id, content: get_message_selection(selection)};
+}
+
 function get_quote_target_for_single_message(opts: {
     message_id?: number;
     quote_content?: string | undefined;
@@ -807,7 +821,7 @@ function extract_range_html(range: Range, preserve_ancestors = false): string {
     return temp_div.innerHTML;
 }
 
-function get_range_intersection_with_element(range: Range, element: Node): Range {
+export function get_range_intersection_with_element(range: Range, element: Node): Range {
     // Returns a new range that is a subset of range and is inside element.
     const intersection = document.createRange();
     intersection.selectNodeContents(element);
