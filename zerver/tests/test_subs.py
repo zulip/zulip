@@ -3614,6 +3614,53 @@ class SubscriptionRestApiTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid channel ID")
 
+    def test_add_with_valid_color(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        result = self.subscribe_via_post(user, [{"name": "my_test_stream_2", "color": "#afafaf"}])
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(
+            user_profile=user,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=get_stream("my_test_stream_2", user.realm).id,
+        )
+        self.assertEqual(sub.color, "#afafaf")
+
+    def test_delete_empty_stream_list(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        request = {
+            "subscriptions": orjson.dumps([]).decode(),
+        }
+        result = self.api_delete(user, "/api/v1/users/me/subscriptions", request)
+        json = self.assert_json_success(result)
+        self.assertEqual(json["removed"], [])
+        self.assertEqual(json["not_removed"], [])
+
+    def test_delete_stream_name_too_long(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        long_stream_name = "a" * 61
+        request = {
+            "subscriptions": orjson.dumps([long_stream_name]).decode(),
+        }
+        result = self.api_delete(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_error(result, "Channel name too long (limit: 60 characters).")
+
+    def test_delete_stream_name_contains_null(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream_name = "abc\000"
+        request = {
+            "subscriptions": orjson.dumps([stream_name]).decode(),
+        }
+        result = self.api_delete(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
+
     def test_bad_add_parameters(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
