@@ -886,18 +886,14 @@ test("test_update_unread_count", () => {
     rt.update_topic_unread_count(messages[9]);
 });
 
-test("rerender leaves behind rows the filters now hide", ({override}) => {
-    // When a conversation becomes hidden without its own rerender -- here, a
-    // muted topic under the default "unmuted topics" filter -- a rerender
-    // triggered by a different topic calls filter_and_sort(), which drops the
-    // hidden conversation from the widget's filtered list but leaves its row
-    // in the DOM. The DOM then keeps more rows than the filtered list,
-    // meta.offset drifts below the rendered-row count, and a subsequent
-    // render() from scrolling or focus handling re-appends rows that are
-    // already on screen, showing duplicates.
-    //
-    // This test pins the current buggy behavior: the stale row is not
-    // removed. The next commit fixes it and updates this test.
+test("rerender removes rows the filters now hide", ({override}) => {
+    // Regression test for duplicate rows in Recent Conversations. When a
+    // conversation becomes hidden without its own rerender -- here, a muted
+    // topic under the default "unmuted topics" filter -- a later rerender
+    // triggered by a different topic must still remove its stale DOM row.
+    // Otherwise the DOM keeps more rows than the filtered list, meta.offset
+    // drifts below the rendered-row count, and a subsequent render() from
+    // scrolling or focus handling re-appends rows that are already on screen.
     recent_view_util.set_visible(true);
     rt.clear_for_tests();
     rt.set_filters_for_tests();
@@ -914,25 +910,18 @@ test("rerender leaves behind rows the filters now hide", ({override}) => {
 
     // The muted conversation's row is still in the DOM even though a
     // different, visible topic is what triggered this rerender.
-    override(ListWidget, "get_rendered_list", () => [muted_conversation, visible_conversation], {
-        unused: false,
-    });
+    override(ListWidget, "get_rendered_list", () => [muted_conversation, visible_conversation]);
     override(ListWidget, "get_current_list", () => [visible_conversation]);
     override(ListWidget, "render_item", noop);
     const removed_row_selectors = [];
-    override(
-        ListWidget,
-        "remove_rendered_row",
-        ($row) => {
-            removed_row_selectors.push($row.selector);
-        },
-        {unused: false},
-    );
+    override(ListWidget, "remove_rendered_row", ($row) => {
+        removed_row_selectors.push($row.selector);
+    });
 
     rt.inplace_rerender(visible_key);
 
-    // The now-hidden muted conversation's row is left in the DOM.
-    assert.deepEqual(removed_row_selectors, []);
+    // Only the now-hidden muted conversation's row should be removed.
+    assert.deepEqual(removed_row_selectors, [`#${CSS.escape(`recent_conversation:${muted_key}`)}`]);
 });
 
 test("basic assertions", ({mock_template, override_rewire}) => {
