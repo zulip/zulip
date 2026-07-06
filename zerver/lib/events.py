@@ -1044,7 +1044,15 @@ def apply_event(
                     if user_dict["id"] != user_profile.id
                 )
 
-                conversations[userset] = event["message"]["id"]
+                existing_conversation = conversations.get(userset)
+                conversations[userset] = {
+                    "max_message_id": event["message"]["id"],
+                    "pinned": (
+                        existing_conversation["pinned"]
+                        if existing_conversation is not None
+                        else False
+                    ),
+                }
             return
 
         # Below, we handle maintaining first_message_id.
@@ -2011,6 +2019,12 @@ def apply_event(
         else:
             fields = ["stream_id", "topic_name", "visibility_policy", "last_updated"]
             state["user_topics"].append({x: event[x] for x in fields})
+    elif event["type"] == "direct_message_conversation":
+        if "raw_recent_private_conversations" in state:
+            conversations = state["raw_recent_private_conversations"]
+            userset = frozenset(event["user_ids"])
+            if userset in conversations:
+                conversations[userset]["pinned"] = event["pinned"]
     elif event["type"] == "channel_folder":
         if event["op"] == "add":
             state["channel_folders"].append(event["channel_folder"])
@@ -2314,7 +2328,11 @@ def post_process_state(
         # Reformat recent_private_conversations to be a list of dictionaries, rather than a dict.
         ret["recent_private_conversations"] = sorted(
             (
-                {"user_ids": sorted(user_id_set), "max_message_id": value}
+                {
+                    "user_ids": sorted(user_id_set),
+                    "max_message_id": value["max_message_id"],
+                    "pinned": value["pinned"],
+                }
                 for (user_id_set, value) in ret["raw_recent_private_conversations"].items()
             ),
             key=lambda x: -x["max_message_id"],

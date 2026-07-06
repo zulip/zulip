@@ -245,6 +245,12 @@ exports.fixtures = {
         topic: "topic1",
     },
 
+    direct_message_conversation: {
+        type: "direct_message_conversation",
+        user_ids: [5],
+        pinned: true,
+    },
+
     has_webex_token: {
         type: "has_webex_token",
         value: true,
