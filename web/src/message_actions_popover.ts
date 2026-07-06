@@ -82,10 +82,23 @@ function focus_first_action_popover_item(): void {
     popover_menus.focus_first_popover_item($items);
 }
 
-export function open_message_actions_popover_at_position($row: JQuery, x: number, y: number): void {
+export function open_message_actions_popover_at_position(
+    $row: JQuery,
+    x: number,
+    y: number,
+    quote_menu_selection?: compose_reply.QuoteMenuSelection,
+): void {
     if (popovers.any_active()) {
         popovers.hide_all();
     }
+
+    // The right-click that opens this menu destroys the selection before we
+    // get here, so its handler reads it on mousedown and hands it to us in the
+    // same slot the ⋮ button's mousedown fills.
+    quote_menu_selection_at_button_mousedown =
+        quote_menu_selection === undefined
+            ? undefined
+            : {message_id: rows.id($row), quote_menu_selection};
 
     assert(message_actions_popover_props !== undefined);
     const button = the($row.find(".message-actions-menu-button"));
