@@ -769,11 +769,14 @@ def check_can_access_user(
         recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values_list("recipient_id", flat=True)
 
+    # A user retains access to a deactivated user they
+    # share a direct message group with.
     return Subscription.objects.filter(
+        Q(recipient__type=Recipient.STREAM, is_user_active=True)
+        | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP),
         recipient_id__in=subscribed_recipient_ids,
         user_profile=target_user,
         active=True,
-        is_user_active=True,
     ).exists()
 
 
@@ -790,11 +793,14 @@ def get_inaccessible_users_queryset(
         recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values("recipient_id")
 
+    # Deactivated users remain accessible through a shared
+    # direct message group.
     common_subscriptions = Subscription.objects.filter(
+        Q(recipient__type=Recipient.STREAM, is_user_active=True)
+        | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP),
         recipient_id__in=acting_user_recipient_ids,
         user_profile_id=OuterRef("pk"),
         active=True,
-        is_user_active=True,
     )
     # All users can access all the bots, so we exclude them.
     target_human_users = UserProfile.objects.filter(id__in=target_user_ids, is_bot=False)
