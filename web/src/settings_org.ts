@@ -25,7 +25,6 @@ import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import * as pygments_data from "./pygments_data.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
@@ -1435,7 +1434,7 @@ export let init_dropdown_widgets = (): void => {
 
     set_up_dropdown_widget(
         "realm_default_code_block_language",
-        combined_code_language_options,
+        settings_components.combined_code_language_options,
         "language",
     );
     set_up_dropdown_widget(
@@ -1445,28 +1444,6 @@ export let init_dropdown_widgets = (): void => {
     );
 
     set_up_dropdown_widget_for_realm_group_settings();
-};
-
-export const combined_code_language_options = (): dropdown_widget.Option[] => {
-    // Default language options from pygments_data
-    const default_options = Object.keys(pygments_data.langs).map((x) => ({
-        name: x,
-        unique_id: x,
-    }));
-
-    // Custom playground language options from realm_playgrounds.
-    const playground_options = (realm.realm_playgrounds ?? []).map((playground) => ({
-        name: playground.pygments_language,
-        unique_id: playground.pygments_language,
-    }));
-
-    const disabled_option = {
-        is_setting_disabled: true,
-        unique_id: "",
-        name: $t({defaultMessage: "No language set"}),
-    };
-
-    return [disabled_option, ...playground_options, ...default_options];
 };
 
 export function rewire_init_dropdown_widgets(value: typeof init_dropdown_widgets): void {

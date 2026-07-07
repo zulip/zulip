@@ -20,6 +20,7 @@ import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t, get_language_list_columns} from "./i18n.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as pygments_data from "./pygments_data.ts";
 import {
     realm_default_settings_schema,
     realm_user_settings_defaults,
@@ -2098,6 +2099,28 @@ export const language_options = (): Option[] => {
         name: language.name_with_percent,
         unique_id: language.code,
     }));
+};
+
+export const combined_code_language_options = (): Option[] => {
+    // Default language options from pygments_data
+    const default_options = Object.keys(pygments_data.langs).map((x) => ({
+        name: x,
+        unique_id: x,
+    }));
+
+    // Custom playground language options from realm_playgrounds.
+    const playground_options = (realm.realm_playgrounds ?? []).map((playground) => ({
+        name: playground.pygments_language,
+        unique_id: playground.pygments_language,
+    }));
+
+    const disabled_option = {
+        is_setting_disabled: true,
+        unique_id: "",
+        name: $t({defaultMessage: "No language set"}),
+    };
+
+    return [disabled_option, ...playground_options, ...default_options];
 };
 
 export function resize_textareas_in_section($section: JQuery): void {
