@@ -312,14 +312,16 @@ test("videos", ({override}) => {
             realm_available_video_chat_providers.big_blue_button.id,
         );
 
-        override(compose_closed_ui, "get_recipient_label", () => ({label_text: "a"}));
+        override(compose_closed_ui, "get_recipient_label_for_call", () => ({
+            label_text: "#coffee > chats",
+        }));
 
         let success_callback;
         const xhr_object = {abort() {}};
         let url;
         channel.get = (options) => {
             assert.equal(options.url, "/json/calls/bigbluebutton/create");
-            assert.equal(options.data.meeting_name, "a meeting");
+            assert.equal(options.data.meeting_name, "#coffee > chats meeting");
             success_callback = options.success;
             url =
                 "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&moderator=%22AAAAAAAAAA%22&lock_settings_disable_cam=" +
@@ -360,7 +362,7 @@ test("videos", ({override}) => {
         const $textarea = $.create("bbb-empty-label-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
-        override(compose_closed_ui, "get_recipient_label", () => ({label_text: ""}));
+        override(compose_closed_ui, "get_recipient_label_for_call", () => undefined);
 
         let checked = false;
         channel.get = (options) => {
@@ -452,7 +454,10 @@ test("videos", ({override}) => {
             realm_available_video_chat_providers.nextcloud_talk.id,
         );
 
-        override(compose_closed_ui, "get_recipient_label", () => ({label_text: "general"}));
+        override(compose_closed_ui, "get_recipient_label_for_call", () => ({
+            label_text: "#general > lunch",
+        }));
+
         let success_callback;
         function call_success_callback() {
             assert.ok(success_callback !== undefined);
@@ -466,7 +471,7 @@ test("videos", ({override}) => {
         const xhr_object = {abort() {}};
         channel.post = (options) => {
             assert.equal(options.url, "/json/calls/nextcloud_talk/create");
-            assert.equal(options.data.room_name, "general conversation");
+            assert.equal(options.data.room_name, "#general > lunch conversation");
             success_callback = options.success;
             return xhr_object;
         };
@@ -486,7 +491,7 @@ test("videos", ({override}) => {
         const $textarea = $.create("nextcloud-empty-label-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
-        override(compose_closed_ui, "get_recipient_label", () => ({label_text: ""}));
+        override(compose_closed_ui, "get_recipient_label_for_call", () => undefined);
 
         let checked = false;
         channel.post = (options) => {

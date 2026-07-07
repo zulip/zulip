@@ -5,7 +5,7 @@ import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
 import {compose_call_session_manager} from "./compose_call_session.ts";
-import {get_recipient_label} from "./compose_closed_ui.ts";
+import {get_recipient_label_for_call} from "./compose_closed_ui.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as rows from "./rows.ts";
@@ -150,7 +150,7 @@ export function generate_and_insert_audio_or_video_call_link(
         switch (realm.realm_video_chat_provider) {
             case available_providers.big_blue_button?.id: {
                 const meeting_name =
-                    `${get_recipient_label()?.label_text ?? ""} meeting`.trimStart();
+                    `${get_recipient_label_for_call(edit_message_id)?.label_text ?? ""} meeting`.trimStart();
                 const request = {
                     meeting_name,
                     voice_only: is_audio_call,
@@ -210,7 +210,7 @@ export function generate_and_insert_audio_or_video_call_link(
             }
             case available_providers.nextcloud_talk?.id: {
                 const room_name =
-                    `${get_recipient_label()?.label_text ?? ""} conversation`.trimStart();
+                    `${get_recipient_label_for_call(edit_message_id)?.label_text ?? ""} conversation`.trimStart();
                 const request = {room_name};
 
                 const handle_success = (response: unknown): void => {
