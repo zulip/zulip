@@ -701,7 +701,13 @@ function edit_message($row: JQuery, raw_content: string): void {
             the($message_edit_content),
             store_resized_height(message.id),
         );
-        composebox_typeahead.initialize_compose_typeahead($message_edit_content);
+        composebox_typeahead.initialize_compose_typeahead($message_edit_content, () =>
+            settings_components.get_default_code_block_language(
+                message.type === "stream"
+                    ? stream_data.get_sub_by_id(message.stream_id)
+                    : undefined,
+            ),
+        );
         compose_ui.handle_keyup(null, $message_edit_content);
         $message_edit_content.on("keydown", (event) => {
             compose_ui.handle_keydown(event, $message_edit_content);

@@ -513,9 +513,12 @@ function retain_unique_language_aliases(matches: string[]): string[] {
     return unique_aliases;
 }
 
-export function sort_languages(matches: LanguageSuggestion[], query: string): LanguageSuggestion[] {
+export function sort_languages(
+    matches: LanguageSuggestion[],
+    query: string,
+    default_language: string,
+): LanguageSuggestion[] {
     const languages = matches.map((object) => object.language);
-    const default_language = realm.realm_default_code_block_language;
     const results = typeahead.triage(query, languages, (x) => x, compare_language);
     let language_results;
     if (default_language && results.matches.includes(default_language)) {
