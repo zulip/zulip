@@ -3,11 +3,12 @@ from dataclasses import asdict
 from email.headerregistry import Address
 from typing import Annotated, Literal, cast
 
+from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import Json, StringConstraints
 
 from zerver.actions.message_send import (
     check_send_message,
@@ -256,7 +257,7 @@ def render_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    content: str,
+    content: Annotated[str, StringConstraints(max_length=settings.MAX_MESSAGE_LENGTH)],
 ) -> HttpResponse:
     message = Message()
     message.sender = user_profile
