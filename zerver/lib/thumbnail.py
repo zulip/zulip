@@ -295,9 +295,13 @@ def resize_emoji(
 
 
 def needs_transcoded_format(image_attachment: ImageAttachment) -> bool:
-    return not (
-        image_attachment.content_type is None
-        or bare_content_type(image_attachment.content_type) in INLINE_MIME_TYPES
+    # Images whose content-type browsers can't render inline need a
+    # transcoded, web-safe copy.  Some old uploads have a missing
+    # content-type -- null, or empty from a blank ?mimetype= -- which
+    # is falsy here and so judged inline, since we can't tell otherwise.
+    return bool(
+        image_attachment.content_type
+        and bare_content_type(image_attachment.content_type) not in INLINE_MIME_TYPES
     )
 
 
