@@ -301,8 +301,10 @@ export function confirm_delete_all_drafts(): void {
     confirm_dialog.launch({
         modal_title_html: $t_html({defaultMessage: "Delete all drafts"}),
         modal_content_html: render_confirm_delete_all_drafts(),
+        modal_submit_button_text: $t({defaultMessage: "Delete"}),
         is_compact: true,
         on_click: delete_all_drafts,
+        dangerous_action: true,
     });
 }
 
