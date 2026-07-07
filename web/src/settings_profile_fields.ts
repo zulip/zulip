@@ -186,8 +186,10 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
     confirm_dialog.launch({
         modal_title_html: $t_html({defaultMessage: "Delete custom profile field?"}),
         modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Delete"}),
         is_compact: true,
         on_click: request_delete,
+        dangerous_action: true,
     });
 }
 
@@ -477,7 +479,9 @@ function show_modal_for_deleting_options(
             {N: deleted_options_count},
         ),
         modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Delete"}),
         on_click: update_profile_field,
+        dangerous_action: true,
     });
 }
 
