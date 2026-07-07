@@ -294,6 +294,13 @@ def resize_emoji(
         return (animated.write_to_buffer(write_file_ext), first_still)
 
 
+def needs_transcoded_format(image_attachment: ImageAttachment) -> bool:
+    return not (
+        image_attachment.content_type is None
+        or bare_content_type(image_attachment.content_type) in INLINE_MIME_TYPES
+    )
+
+
 def missing_thumbnails(
     image_attachment: ImageAttachment,
 ) -> list[ThumbnailFormat]:
@@ -524,10 +531,7 @@ def get_transcoded_format(
     # not in INLINE_MIME_TYPES get an extra large-resolution thumbnail
     # added to their list of formats, this is thus either None or a
     # high-resolution thumbnail.
-    if (
-        image_attachment.content_type is None
-        or bare_content_type(image_attachment.content_type) in INLINE_MIME_TYPES
-    ):
+    if not needs_transcoded_format(image_attachment):
         return None
 
     thumbs_by_size = sorted(
