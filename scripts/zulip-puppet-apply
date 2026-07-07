@@ -80,7 +80,8 @@ def noop_would_change(puppet_cmd: list[str]) -> bool:
 
         # Reopen the file since Puppet rewrote it with a new inode
         with open(lastrun_file.name) as lastrun:
-            lastrun_data = yaml.safe_load(lastrun)
+            # yaml.safe_load() may return None for empty files.
+            lastrun_data = yaml.safe_load(lastrun) or {}
             resources = lastrun_data.get("resources", {})
             if resources.get("failed", 0) != 0:
                 sys.exit(2)
