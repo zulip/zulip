@@ -357,6 +357,42 @@ function generate_sender_mention(sent_message: Message): string {
     return `@_**${sent_message.sender_full_name}|${sent_message.sender_id}**`;
 }
 
+// When quoting a message that contains `@**Old Name|ID**` or `@_**Old Name|ID**`
+// syntax, the name part may be outdated (if the user changed their display name).
+// The backend Markdown parser enforces that the name must exactly match the current
+// full_name for the given ID, so stale names cause the mention to render as broken
+// raw text. This function rewrites any such mentions in the raw markdown to use
+// the current full name for the given ID, so they parse correctly when sent.
+//
+// See: https://github.com/zulip/zulip/issues/26281
+export function update_mentions_in_quote(content: string): string {
+    // Matches both `@**name|id**` and `@_**name|id**` forms.
+    // The name group is optional to also handle `@**|id**` (ID-only) forms,
+    // which are already valid and do not need updating.
+    return content.replaceAll(
+        /@(?<silent>_)?\*\*(?<name>[^*|]+)?\|(?<user_id>\d+)\*\*/g,
+        (match, silent, name, user_id_str) => {
+            if (name === undefined) {
+                // `@**|id**` or `@_**|id**` form — already valid, leave as-is.
+                return match;
+            }
+            const user_id = Number.parseInt(String(user_id_str), 10);
+            const person = people.maybe_get_user_by_id(user_id, true);
+            if (person === undefined) {
+                // Unknown user — leave as-is.
+                return match;
+            }
+            if (person.full_name === name) {
+                // Name is current — no change needed.
+                return match;
+            }
+            // Update the name to the current full_name.
+            const silent_prefix = silent === "_" ? "_" : "";
+            return `@${silent_prefix}**${person.full_name}|${user_id_str}**`;
+        },
+    );
+}
+
 function generate_sender_only_quote_context(message: Message): string {
     const sender_mention = generate_sender_mention(message);
     // Final message looks like:
@@ -501,8 +537,9 @@ function generate_replace_content(info: ReplaceContentOpts): string {
             break;
     }
 
-    const fence = fenced_code.get_unused_fence(raw_markdown);
-    content += `${fence}quote\n${raw_markdown}\n${fence}`;
+    const updated_markdown = update_mentions_in_quote(raw_markdown);
+    const fence = fenced_code.get_unused_fence(updated_markdown);
+    content += `${fence}quote\n${updated_markdown}\n${fence}`;
     return content;
 }
 

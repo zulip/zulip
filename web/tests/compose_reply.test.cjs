@@ -7,6 +7,7 @@ const {run_test} = require("./lib/test.cjs");
 
 const compose_reply = zrequire("compose_reply");
 const message_store = zrequire("message_store");
+const people = zrequire("people");
 const message_fetch_raw_content = mock_esm("../src/message_fetch_raw_content");
 const compose_paste = mock_esm("../src/compose_paste");
 const message_lists = mock_esm("../src/message_lists");
@@ -388,5 +389,63 @@ run_test("build_and_process_quote_assets_for_messages", ({override}) => {
         result_assets[1],
         {message: msg_unhydrated, quote_content: "converted_by_turndown: <p>unhydrated</p>"},
         "Fallback to using paste_handler_converter",
+    );
+});
+
+run_test("update_mentions_in_quote", () => {
+    // Set up a user with the current full name "New Name" and ID 42.
+    const user = {
+        user_id: 42,
+        full_name: "New Name",
+        email: "newname@example.com",
+    };
+    people.add_active_user(user);
+
+    // Case 1: Name is already current — no change expected.
+    assert.equal(
+        compose_reply.update_mentions_in_quote("Hello @**New Name|42**!"),
+        "Hello @**New Name|42**!",
+    );
+
+    // Case 2: Stale name (user changed name) — should be updated to the current name.
+    assert.equal(
+        compose_reply.update_mentions_in_quote("Hello @**Old Name|42**!"),
+        "Hello @**New Name|42**!",
+    );
+
+    // Case 3: Silent mention (@_**...**) with stale name — should also be updated.
+    assert.equal(
+        compose_reply.update_mentions_in_quote("@_**Old Name|42** said something."),
+        "@_**New Name|42** said something.",
+    );
+
+    // Case 4: Silent mention (@_**...**) with current name — no change.
+    assert.equal(
+        compose_reply.update_mentions_in_quote("@_**New Name|42** said something."),
+        "@_**New Name|42** said something.",
+    );
+
+    // Case 5: ID-only form (@**|id**) — no name to update, leave as-is.
+    assert.equal(
+        compose_reply.update_mentions_in_quote("Mention @**|42** via ID only."),
+        "Mention @**|42** via ID only.",
+    );
+
+    // Case 6: Silent ID-only form (@_**|id**) — leave as-is.
+    assert.equal(
+        compose_reply.update_mentions_in_quote("Mention @_**|42** via ID only."),
+        "Mention @_**|42** via ID only.",
+    );
+
+    // Case 7: Unknown user ID — leave as-is.
+    assert.equal(
+        compose_reply.update_mentions_in_quote("Unknown @**Ghost User|9999**."),
+        "Unknown @**Ghost User|9999**.",
+    );
+
+    // Case 8: Multiple mentions in one string — all stale names updated.
+    assert.equal(
+        compose_reply.update_mentions_in_quote("@_**Old Name|42** said: @**Old Name|42** replied."),
+        "@_**New Name|42** said: @**New Name|42** replied.",
     );
 });
