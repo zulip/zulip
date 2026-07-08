@@ -49,13 +49,7 @@ class RecentDirectMessages {
     latest_message_id_by_user_id = new Map<number, number>();
 
     insert(user_ids: number[], message_id: number): void {
-        if (user_ids.length === 0) {
-            // The server sends [] for direct messages to oneself.
-            user_ids = [people.my_current_user_id()];
-        }
-        user_ids.sort((a, b) => a - b);
-
-        const user_ids_string = user_ids.join(",");
+        const user_ids_string = people.pm_lookup_key_from_user_ids(user_ids);
         let conversation = this.recent_message_ids.get(user_ids_string);
 
         if (conversation === undefined) {
