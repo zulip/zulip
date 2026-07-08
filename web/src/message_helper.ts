@@ -232,7 +232,7 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
 
         const message = processed_message.message;
 
-        pm_conversations.process_message(message);
+        pm_conversations.process_message(message, processed_message.type === "server_message");
         recent_senders.process_private_message({
             to_user_ids,
             sender_id: message.sender_id,
