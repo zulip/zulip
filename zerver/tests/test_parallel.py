@@ -181,6 +181,18 @@ def db_query(output_dir: str, barrier: Barrier, item: int) -> None:  # nocoverag
         barrier.wait(60)
 
 
+def set_file_logger(output_dir: str) -> None:  # nocoverage
+    # In each worker process, we set up the logger to write to a
+    # (pid).error file.  This must be a module-level function, since
+    # worker initializers are pickled into the workers.
+    logging.basicConfig(
+        filename=f"{output_dir}/{os.getpid()}.error",
+        level=logging.INFO,
+        filemode="w",
+        force=True,
+    )
+
+
 class RunParallelTest(ZulipTestCase):
     def skip_in_parallel_harness(self) -> None:
         if current_process().daemon:
@@ -250,17 +262,6 @@ class RunParallelTest(ZulipTestCase):
         self.skip_in_parallel_harness()
         output_dir = tempfile.mkdtemp()
         report_lines = []
-
-        def set_file_logger(output_dir: str) -> None:
-            # In each worker process, we set up the logger to write to
-            # a (pid).error file.
-            logging.basicConfig(
-                filename=f"{output_dir}/{os.getpid()}.error",
-                level=logging.INFO,
-                filemode="w",
-                force=True,
-            )
-
         try:
             barrier = Manager().Barrier(2)
             run_parallel(
