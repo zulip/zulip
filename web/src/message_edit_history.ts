@@ -279,46 +279,46 @@ export function fetch_and_render_message_history(message: Message): void {
 
             const content_edit_history: EditHistoryEntry[] = [];
             let prev_stream_item: EditHistoryEntry | null = null;
-            for (const [index, msg] of data.message_history.entries()) {
+            for (const [index, server_entry] of data.message_history.entries()) {
                 // Format times and dates nicely for display
-                const time = new Date(msg.timestamp * 1000);
+                const time = new Date(server_entry.timestamp * 1000);
                 const edited_at_time = timerender.get_full_datetime(time, "time");
 
-                if (!msg.user_id) {
+                if (!server_entry.user_id) {
                     continue;
                 }
 
-                const person = people.get_user_by_id_assert_valid(msg.user_id);
+                const person = people.get_user_by_id_assert_valid(server_entry.user_id);
                 const full_name = person.full_name;
 
                 let entry_data: Partial<EditHistoryEntry>;
                 if (index === 0) {
-                    entry_data = build_initial_entry(msg, full_name, move_history_only);
-                } else if (msg.prev_topic !== undefined && msg.prev_content) {
-                    entry_data = build_topic_and_content_edit_entry(msg, full_name);
-                } else if (msg.prev_topic !== undefined && msg.prev_stream) {
-                    entry_data = build_topic_and_stream_move_entry(msg, full_name);
+                    entry_data = build_initial_entry(server_entry, full_name, move_history_only);
+                } else if (server_entry.prev_topic !== undefined && server_entry.prev_content) {
+                    entry_data = build_topic_and_content_edit_entry(server_entry, full_name);
+                } else if (server_entry.prev_topic !== undefined && server_entry.prev_stream) {
+                    entry_data = build_topic_and_stream_move_entry(server_entry, full_name);
                     if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
+                        prev_stream_item.new_stream = get_display_stream_name(server_entry.prev_stream);
                     }
-                } else if (msg.prev_topic !== undefined) {
-                    entry_data = build_topic_move_entry(msg, full_name);
-                } else if (msg.prev_stream) {
-                    entry_data = build_stream_move_entry(msg, full_name);
+                } else if (server_entry.prev_topic !== undefined) {
+                    entry_data = build_topic_move_entry(server_entry, full_name);
+                } else if (server_entry.prev_stream) {
+                    entry_data = build_stream_move_entry(server_entry, full_name);
                     if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
+                        prev_stream_item.new_stream = get_display_stream_name(server_entry.prev_stream);
                     }
                 } else {
-                    entry_data = build_content_edit_entry(msg, full_name);
+                    entry_data = build_content_edit_entry(server_entry, full_name);
                 }
                 const item = make_edit_history_entry(
-                    msg,
+                    server_entry,
                     edited_at_time,
                     message.is_stream,
                     entry_data,
                 );
 
-                if (msg.prev_stream) {
+                if (server_entry.prev_stream) {
                     prev_stream_item = item;
                 }
 
