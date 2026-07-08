@@ -193,6 +193,23 @@ def set_file_logger(output_dir: str) -> None:  # nocoverage
     )
 
 
+def get_backend_pid() -> int:  # nocoverage
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_backend_pid()")
+        row = cursor.fetchone()
+        assert row is not None
+        return row[0]
+
+
+def write_backend_pid(output_dir: str, barrier: Barrier, item: int) -> None:  # nocoverage
+    output_file = f"{output_dir}/{os.getpid()}.output"
+    first_time = not os.path.exists(output_file)
+    with open(output_file, "a") as fh:
+        fh.write(f"{get_backend_pid()}\n")
+    if first_time:
+        barrier.wait(60)
+
+
 class RunParallelTest(ZulipTestCase):
     def skip_in_parallel_harness(self) -> None:
         if current_process().daemon:
@@ -290,6 +307,36 @@ class RunParallelTest(ZulipTestCase):
                 with open(error_path) as error_file:
                     error_lines.extend(error_file.readlines())
             self.assertEqual(error_lines[0], "ERROR:root:Error processing item: 103\n")
+        finally:
+            shutil.rmtree(output_dir)
+
+    def test_parallel_queue_connection_isolation(self) -> None:  # nocoverage
+        self.skip_in_parallel_harness()
+        output_dir = tempfile.mkdtemp()
+        try:
+            barrier = Manager().Barrier(2)
+            with run_parallel_queue(
+                partial(write_backend_pid, output_dir, barrier),
+                processes=2,
+            ) as submit:
+                # Perform a database query inside the block, before
+                # any workers have been forked; the workers must not
+                # end up sharing the connection this opens.
+                parent_backend_pid = get_backend_pid()
+                for item in range(100, 104):
+                    submit(item)
+
+            output_files = glob.glob(f"{output_dir}/*.output")
+            self.assert_length(output_files, 2)
+            worker_backend_pids: set[int] = set()
+            for output_path in output_files:
+                with open(output_path) as output_file:
+                    worker_backend_pids.update(int(line) for line in output_file)
+            self.assert_length(worker_backend_pids, 2)
+            self.assertNotIn(parent_backend_pid, worker_backend_pids)
+
+            # And this process's connection is still usable.
+            self.assertTrue(connection.is_usable())
         finally:
             shutil.rmtree(output_dir)
 
