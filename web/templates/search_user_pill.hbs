@@ -12,7 +12,7 @@
             {{/if}}
             <span class="pill-label">
                 <span class="pill-value">{{ this.full_name }}</span>
-                {{~#if this.should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
+                {{~#if this.should_add_guest_user_indicator}}<i class="pill-guest-indicator">&nbsp;({{t 'guest'}})</i>{{~/if~}}
                 {{~#if this.status_emoji_info~}}
                     {{~> status_emoji this.status_emoji_info~}}
                 {{~/if~}}

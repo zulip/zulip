@@ -104,6 +104,14 @@
             line-height: 1.5;
         }
 
+        .pill-guest-indicator {
+            flex: 0 10000 auto;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: clip;
+        }
+
         .pill-close-button,
         .pill-expand-button {
             font-size: 0.7142em; /* 10px at 14px em */

@@ -31,7 +31,7 @@
                 {{/if}}
             {{/if}}
         </span>
-        {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
+        {{~#if should_add_guest_user_indicator}}<i class="pill-guest-indicator">&nbsp;({{t 'guest'}})</i>{{~/if~}}
         {{~#if has_status~}}
             {{~> status_emoji status_emoji_info~}}
         {{~/if~}}
