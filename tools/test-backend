@@ -18,8 +18,6 @@ if TYPE_CHECKING:
     # We can only import this when type checking.
     from zerver.lib.test_runner import Runner
 
-multiprocessing.set_start_method("fork")
-
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -554,4 +552,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # We use the "fork" method, rather than Python 3.14's default of
+    # "forkserver", for the pools that run the test shards.  This is
+    # done only when run as a script, since multiprocessing workers
+    # re-import their parent's __main__ module -- including the
+    # forkserver-based workers that zerver.tests.test_parallel makes
+    # this process the parent of.
+    multiprocessing.set_start_method("fork")
     main()
