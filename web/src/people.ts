@@ -661,8 +661,22 @@ export function slug_to_user_ids(slug: string): number[] | undefined {
         const user_ids_string = m[1]!;
         return exclude_me_from_user_ids(split_to_ints(user_ids_string));
     }
-    /* istanbul ignore next */
     return undefined;
+}
+
+export function email_slug_to_user_ids(slug: string): number[] | undefined {
+    // Support legacy direct message and sender narrow links whose
+    // slug is one or more comma-separated email addresses rather than
+    // the user IDs used in current slugs, so that old links keep
+    // working after the switch to user-ID-based slugs. Returns
+    // undefined if any email doesn't resolve to a known user.
+    const user_ids = util.try_parse_as_truthy(
+        slug.split(",").map((email) => get_by_email(email.trim())?.user_id),
+    );
+    if (user_ids === undefined) {
+        return undefined;
+    }
+    return exclude_me_from_user_ids(user_ids);
 }
 
 export function exclude_me_from_user_ids(user_ids: number[]): number[] {

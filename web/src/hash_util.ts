@@ -62,6 +62,17 @@ export function encode_stream_id(stream_id: number): string {
     return internal_url.encode_slug(stream_id, slug);
 }
 
+function decode_user_ids_from_slug(operand: string): number[] | undefined {
+    // The slug for user-based operators (dm, dm-including, sender,
+    // mentions) is normally a user-ID prefix. We also decode legacy
+    // links whose slug is one or more email addresses instead; those
+    // must be URI-decoded first, since emails are escaped in the hash.
+    return (
+        people.slug_to_user_ids(operand) ??
+        people.email_slug_to_user_ids(internal_url.decodeHashComponent(operand))
+    );
+}
+
 export function decode_operand(
     operator: NarrowCanonicalOperator,
     operand: string,
@@ -76,14 +87,14 @@ export function decode_operand(
     }
 
     if (operator === "dm-including" || operator === "dm") {
-        const user_ids = people.slug_to_user_ids(operand);
+        const user_ids = decode_user_ids_from_slug(operand);
         if (user_ids) {
             return user_ids;
         }
     }
 
     if (operator === "sender" || operator === "mentions") {
-        const user_ids = people.slug_to_user_ids(operand);
+        const user_ids = decode_user_ids_from_slug(operand);
         if (user_ids?.length !== 1) {
             // User mistyped the URL since we don't support
             // group operand for `sender` or `mentions` narrow.
