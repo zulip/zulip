@@ -1,5 +1,5 @@
 {{~!-- --~}}
-<span class="mention-content-wrapper">{{ mention_text }}</span>
+<span class="mention-content-wrapper">{{~#if at_sign~}}<i class="zulip-icon zulip-icon-at-sign mention-at-sign" aria-hidden="true"></i><span class="mention-at-sign-character">{{at_sign}}</span>{{~/if~}}{{ mention_text }}</span>
 {{~!-- --~}}
 {{#if is_bot}}<i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>{{/if}}
 {{~!-- --~}}
