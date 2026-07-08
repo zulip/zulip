@@ -401,6 +401,20 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             return;
         }
 
+        if (base === "user") {
+            const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
+            if (people.is_known_user_id(user_id)) {
+                const tab_segment = hash_parser.get_current_nth_hash_section(2) ?? "profile";
+                const tab_key = tab_segment;
+                if (user_profile.get_user_id_if_user_profile_modal_open() === user_id) {
+                    user_profile.update_user_profile_tab(tab_key);
+                } else {
+                    user_profile.show_user_profile(user_id, tab_key);
+                }
+            }
+            return;
+        }
+
         // TODO: handle other cases like internal settings
         //       changes.
         return;
@@ -546,10 +560,16 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         if (!people.is_known_user_id(user_id)) {
             user_profile.show_user_profile_access_error_modal();
         } else {
-            user_profile.show_user_profile(user_id);
+            const tab_segment = hash_parser.get_current_nth_hash_section(2) ?? "profile";
+            const tab_key = tab_segment;
+            if (user_profile.get_user_id_if_user_profile_modal_open() === user_id) {
+                user_profile.update_user_profile_tab(tab_key);
+            } else {
+                user_profile.show_user_profile(user_id, tab_key);
+            }
         }
-        return;
     }
+    return;
 }
 
 function hashchanged(
@@ -582,6 +602,13 @@ function hashchanged(
 
     if (hash_parser.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
+        // If navigating between user profile tabs while modal is open,
+        // just switch the tab without closing and reopening the modal.
+        if (hash_parser.get_hash_category(current_hash) === "user") {
+            do_hashchange_overlay(old_hash);
+            browser_history.state.changing_hash = false;
+            return undefined;
+        }
         modals.close_active_if_any();
         do_hashchange_overlay(old_hash);
         browser_history.state.changing_hash = false;

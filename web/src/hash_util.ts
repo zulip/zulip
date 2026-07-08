@@ -586,3 +586,7 @@ export function get_link_hash(link: string): string {
         return "";
     }
 }
+
+export function user_profile_url(user_id: number, tab_key = "profile"): string {
+    return `#user/${user_id}/${tab_key}`;
+}
