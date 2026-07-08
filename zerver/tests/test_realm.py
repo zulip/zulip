@@ -3326,9 +3326,21 @@ class RealmAPITest(ZulipTestCase):
             "workplace_users_group": orjson.dumps({"new": members_group.id}).decode(),
         }
 
+        # Organizations where support staff have manually set plan_type to
+        # PLAN_TYPE_STANDARD can enable discounted billing for non-workplace
+        # users.
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.workplace_users_group_id, members_group.id)
+
+        params = {
+            "workplace_users_group": orjson.dumps({"new": moderators_group.id}).decode(),
+        }
+
         # Organizations with a fixed-price plan cannot enable discounted
         # billing for non-workplace users.
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_id")
         plan = CustomerPlan.objects.create(
             customer=customer,
@@ -3372,7 +3384,7 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm", params)
         self.assert_json_success(result)
         realm.refresh_from_db()
-        self.assertEqual(realm.workplace_users_group_id, members_group.id)
+        self.assertEqual(realm.workplace_users_group_id, moderators_group.id)
 
     def test_changing_can_manage_all_groups(self) -> None:
         realm = get_realm("zulip")
