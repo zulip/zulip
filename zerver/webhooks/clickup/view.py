@@ -11,6 +11,7 @@ from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time, timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_service_api_data
@@ -19,7 +20,7 @@ from zerver.models import UserProfile
 logger = logging.getLogger(__name__)
 
 CLICKUP_WEB_BASE_URL = "https://app.clickup.com"
-TASK_TEMPLATE = "{author_name} {action} [{name}]({url})."
+TASK_TEMPLATE = "{author_name} {action} [{name}]({url}){extension}"
 COMMON_MESSAGE_TEMPLATE = "[{name}]({url}) was {action}."
 DASHBOARD_URLS: dict[str, str] = {
     "task": CLICKUP_WEB_BASE_URL + "/t/{team_id}/{entity_id}",
@@ -49,6 +50,102 @@ def get_clickup_api_data(id: str, entity: str, token: str) -> dict[str, Any] | N
         return None
 
 
+def get_date_and_time(timestamp: str) -> str:
+    return datetime_to_global_time(timestamp_to_datetime(int(timestamp) / 1000))
+
+
+def duration_pretty(duration: int) -> str:
+    if duration < 60:
+        return f"{duration} {'sec' if duration == 1 else 'secs'}"
+    total_minutes = (duration + 30) // 60
+    hours, minutes = divmod(total_minutes, 60)
+    hour_word = "hr" if hours == 1 else "hrs"
+    minute_word = "min" if minutes == 1 else "mins"
+    if hours > 0 and minutes > 0:
+        return f"{hours} {hour_word} {minutes} {minute_word}"
+    if hours > 0:
+        return f"{hours} {hour_word}"
+    return f"{minutes} {minute_word}"
+
+
+def get_task_update_message(payload: WildValue) -> tuple[str, str]:
+    # A due date change includes more than 1 history_item.
+    history_item = next(
+        (
+            item
+            for item in payload["history_items"]
+            if item["field"].tame(check_string) == "due_date"
+        ),
+        payload["history_items"][0],
+    )
+    field = history_item["field"].tame(check_string)
+    if not (after := history_item["after"]) and field in (
+        "priority",
+        "due_date",
+        "start_date",
+        "time_estimate",
+    ):
+        return (f"cleared the {field.replace('_', ' ')} of", ".")
+
+    match field:
+        case "status" | "priority":
+            value = after[field].tame(check_string)
+            return (f"updated the {field} of", f" to {value}.")
+        case "due_date" | "start_date":
+            return (
+                f"updated the {field.replace('_', ' ')} of",
+                f" to {get_date_and_time(after.tame(check_string))}.",
+            )
+        case "time_estimate":
+            estimate = history_item["data"]["time_estimate_string"].tame(check_string).strip()
+            return ("updated the time estimate of", f" to {estimate}.")
+        case "time_spent":
+            total_time_ms = int(history_item["data"]["total_time"].tame(check_string))
+            return (f"tracked {duration_pretty(total_time_ms // 1000)} on", ".")
+        case "assignee_add":
+            assignee = after["username"].tame(check_string)
+            return ("assigned", f" to {assignee}.")
+        case "assignee_rem":
+            unassignee = history_item["before"]["username"].tame(check_string)
+            return (f"unassigned {unassignee} from", ".")
+        case "custom_field":
+            custom_field = history_item["custom_field"]
+            name = custom_field["name"].tame(check_string)
+            if not after:
+                return (f"cleared the {name} of", ".")
+            value = after.tame(check_string)
+            if custom_field["type"].tame(check_string) == "date":
+                value = get_date_and_time(value)
+            return (f"updated the {name} of", f" to {value}.")
+        case "attachments":
+            attachment = history_item["attachments"][0]
+            title = attachment["title"].tame(check_string)
+            url = attachment["url"].tame(check_string)
+            return (f"added [{title}]({url}) to", ".")
+        case "checklist_items_added":
+            checklist = history_item["checklist"]["name"].tame(check_string)
+            item = history_item["checklist_items"][0]["name"].tame(check_string)
+            return (f"added {item} to the {checklist} checklist on", ".")
+        case "checklist_item_resolved":
+            item = history_item["checklist_item"]["name"].tame(check_string)
+            checklist = history_item["checklist"]["name"].tame(check_string)
+            return (f"checked off {item} in the {checklist} checklist on", ".")
+        case "comment":
+            action = (
+                "replied to a comment on" if history_item.get("parent_comment") else "commented on"
+            )
+
+            if not (text := history_item["comment"]["text_content"].tame(check_string).strip()):
+                return (action, ".")
+            return (action, f":\n``` quote\n{text}\n```")
+        case "section_moved":
+            source = history_item["before"]["name"].tame(check_string)
+            destination = history_item["after"]["name"].tame(check_string)
+            return ("moved", f" from {source} to {destination}.")
+        case _:
+            return ("updated", ".")
+
+
 def get_task_message(action: str, payload: WildValue, token: str) -> tuple[str, str]:
     task_id = payload["task_id"].tame(check_string)
     if action == "deleted":
@@ -58,11 +155,17 @@ def get_task_message(action: str, payload: WildValue, token: str) -> tuple[str, 
     task_name = task_data["name"] if task_data else "Task"
     topic_name = f"Task: {task_name if task_data else task_id}"
     team_id = payload["team_id"].tame(check_string)
+
+    extension = "."
+    if action == "updated":
+        action, extension = get_task_update_message(payload)
+
     body = TASK_TEMPLATE.format(
         name=task_name,
         author_name=payload["history_items"][0]["user"]["username"].tame(check_string),
         url=DASHBOARD_URLS["task"].format(team_id=team_id, entity_id=task_id),
         action=action,
+        extension=extension,
     )
 
     return (topic_name, body)
