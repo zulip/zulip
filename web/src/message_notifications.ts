@@ -1,9 +1,11 @@
 import $ from "jquery";
 
 import * as alert_words from "./alert_words.ts";
+import * as audible_notifications from "./audible_notifications.ts";
 import * as blueslip from "./blueslip.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import type {ElectronBridgeNotification} from "./desktop_notifications.ts";
+import {electron_bridge} from "./electron_bridge.ts";
 import {$t} from "./i18n.ts";
 import * as message_parser from "./message_parser.ts";
 import type {Message} from "./message_store.ts";
@@ -450,7 +452,20 @@ export function received_messages(messages: (Message | TestNotificationMessage)[
             });
         }
         if (should_send_audible_notification(message)) {
-            void ui_util.play_audio(util.the($("#user-notification-sound-audio")));
+            // On the desktop app, hand the sound to the shell so it can
+            // honor Do Not Disturb / silent mode without muting other page
+            // media. Older desktop apps without this method fall back to
+            // in-page playback.
+            if (electron_bridge?.play_notification_sound !== undefined) {
+                electron_bridge.play_notification_sound(
+                    audible_notifications.notification_sound_path(
+                        user_settings.notification_sound,
+                        "ogg",
+                    ),
+                );
+            } else {
+                void ui_util.play_audio(util.the($("#user-notification-sound-audio")));
+            }
         }
     }
 }

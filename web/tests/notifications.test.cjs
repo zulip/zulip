@@ -9,7 +9,7 @@ const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
-mock_esm("../src/electron_bridge");
+const electron_bridge = mock_esm("../src/electron_bridge");
 mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
 
 const user_topics = zrequire("user_topics");
@@ -560,4 +560,50 @@ test("basic_notifications", () => {
     assert.equal(n.has("test:Notification Bot"), true);
     assert.equal(n.size, 1);
     desktop_notifications.close_notification(test_notification_message);
+});
+
+// A direct message that is notifiable and audible, but with desktop
+// notifications disabled so that received_messages exercises only the
+// audible-notification path.
+const audible_direct_message = {
+    id: 4000,
+    type: "private",
+    sent_by_me: false,
+    notification_sent: false,
+    unread: true,
+};
+
+test("audible notification delegates to desktop bridge", ({override}) => {
+    override(user_settings, "enable_desktop_notifications", false);
+
+    let played_sound_path;
+    override(electron_bridge, "electron_bridge", {
+        play_notification_sound(sound_path) {
+            played_sound_path = sound_path;
+        },
+    });
+
+    message_notifications.received_messages([{...audible_direct_message}]);
+    assert.equal(played_sound_path, "/static/audio/notification_sounds/ding.ogg");
+});
+
+test("audible notification falls back to in-page playback", ({override}) => {
+    override(user_settings, "enable_desktop_notifications", false);
+    // A desktop app that predates play_notification_sound.
+    override(electron_bridge, "electron_bridge", {});
+
+    let played_element_id;
+    $.create("#user-notification-sound-audio", {
+        elements: [
+            {
+                id: "user-notification-sound-audio",
+                play() {
+                    played_element_id = this.id;
+                },
+            },
+        ],
+    });
+
+    message_notifications.received_messages([{...audible_direct_message}]);
+    assert.equal(played_element_id, "user-notification-sound-audio");
 });
