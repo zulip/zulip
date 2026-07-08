@@ -13,9 +13,10 @@ from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 
-from nodl.extensions.models import SyncStatus
+from nodl.extensions.models import NodlRealmExtension, SyncStatus
 from nodl.sync.user_sync import UserSyncRequest, UserSyncResult, UserSyncService
-from zerver.models import UserProfile
+from zerver.actions.create_realm import do_create_realm
+from zerver.models import Realm, UserProfile
 
 
 class TestUserSyncService(TestCase):
@@ -86,6 +87,79 @@ class TestUserSyncService(TestCase):
 
         self.assertFalse(result.success)
         self.assertIn("Max retry attempts", result.error or "")
+
+
+class TestGetRealmForWorkspace(TestCase):
+    """Realm resolution accepts the full nodl workspace UUID (via NodlRealmExtension)
+    and the legacy truncated string_id (via fallback).
+
+    Regression guard for the internal ``users/sync`` contract mismatch: the
+    endpoint documents ``workspace_id`` as the full nodl UUID, but realms are
+    created with ``string_id = nodl_workspace_id[:20].lower()``. A full-UUID
+    lookup by ``string_id`` alone raised "Realm not found".
+    """
+
+    def _make_realm(self, ws_uuid: uuid.UUID) -> Realm:
+        # string_id mirrors production truncation (workspace_sync._create_realm).
+        realm = do_create_realm(
+            string_id=str(ws_uuid)[:20].lower(),
+            name="Test Berawa",
+            description="",
+            org_type=Realm.ORG_TYPES["business"]["id"],
+            create_zulip_discussion_channel=False,
+        )
+        NodlRealmExtension.objects.create(
+            zulip_realm=realm,
+            nodl_workspace_id=ws_uuid,
+            sync_status=SyncStatus.SYNCED,
+        )
+        return realm
+
+    def test_resolves_full_uuid_via_extension(self) -> None:
+        """Full nodl UUID (documented contract) resolves via NodlRealmExtension."""
+        ws_uuid = uuid.uuid4()
+        realm = self._make_realm(ws_uuid)
+
+        resolved = UserSyncService()._get_realm_for_workspace(str(ws_uuid))
+
+        self.assertEqual(resolved, realm)
+
+    def test_resolves_legacy_string_id_via_fallback(self) -> None:
+        """Truncated string_id (what internal callers send today) still resolves."""
+        ws_uuid = uuid.uuid4()
+        realm = self._make_realm(ws_uuid)
+
+        resolved = UserSyncService()._get_realm_for_workspace(realm.string_id)
+
+        self.assertEqual(resolved, realm)
+
+    def test_unmapped_workspace_returns_none(self) -> None:
+        """Unknown workspace id (no realm, no extension) returns None."""
+        resolved = UserSyncService()._get_realm_for_workspace(str(uuid.uuid4()))
+
+        self.assertIsNone(resolved)
+
+    def test_sync_user_with_full_uuid_succeeds(self) -> None:
+        """End-to-end sync_user with the full workspace UUID succeeds.
+
+        Previously raised "Realm not found for workspace <uuid>".
+        """
+        ws_uuid = uuid.uuid4()
+        self._make_realm(ws_uuid)
+
+        request = UserSyncRequest(
+            supabase_user_id=str(uuid.uuid4()),
+            email=f"reviewer-{uuid.uuid4().hex[:8]}@example.com",
+            full_name="YC Reviewer",
+            avatar_url=None,
+            workspace_id=str(ws_uuid),  # FULL UUID, not the truncated string_id
+            role="editor",
+        )
+
+        result = UserSyncService().sync_user(request)
+
+        self.assertTrue(result.success, result.error)
+        self.assertIsNotNone(result.zulip_user_id)
 
 
 class TestUserSyncRequest(TestCase):

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from django.db import transaction
 from django.utils import timezone
 
-from nodl.extensions.models import NodlUserExtension, SyncStatus
+from nodl.extensions.models import NodlRealmExtension, NodlUserExtension, SyncStatus
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import do_change_user_role
@@ -272,16 +272,40 @@ class UserSyncService:
         return user
 
     def _get_realm_for_workspace(self, workspace_id: str) -> Realm | None:
-        """Get the Zulip realm for a nodl workspace.
+        """Resolve the Zulip realm for a nodl workspace.
 
-        Uses the workspace_id as the realm's string_id (subdomain).
+        Accepts either the full nodl workspace UUID (authoritative mapping via
+        NodlRealmExtension) or a realm string_id/subdomain (legacy fallback).
+
+        The full UUID is the documented contract for the internal user-sync
+        endpoint; the string_id form is what internal callers currently send
+        after truncating (chat_sync.sync_user_to_chat / workspace_sync
+        member sync pass ``realm.string_id``).
 
         Args:
-            workspace_id: nodl workspace UUID.
+            workspace_id: nodl workspace UUID or realm string_id.
 
         Returns:
-            Realm if found, None otherwise.
+            Realm if a mapping exists, None otherwise.
         """
+        # Authoritative: full nodl workspace UUID -> realm (mirrors
+        # task_streams._get_realm). Non-UUID input (e.g. a truncated
+        # string_id) falls through to the string_id lookup below.
+        try:
+            workspace_uuid = uuid.UUID(workspace_id)
+        except (ValueError, AttributeError, TypeError):
+            workspace_uuid = None
+        if workspace_uuid is not None:
+            extension = (
+                NodlRealmExtension.objects.select_related("zulip_realm")
+                .filter(nodl_workspace_id=workspace_uuid)
+                .first()
+            )
+            if extension and extension.zulip_realm:
+                return extension.zulip_realm
+
+        # Fallback: exact realm subdomain/string_id (the truncated 20-char id
+        # that internal callers send today). No truncation is attempted here.
         try:
             return Realm.objects.get(string_id=workspace_id)
         except Realm.DoesNotExist:
