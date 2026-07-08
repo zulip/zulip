@@ -87,6 +87,7 @@ message_lists.non_rendered_data = () => [];
 const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
 const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
 const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -658,4 +659,54 @@ run_test("resend error on a message removed from the store doesn't crash", ({ove
     // The detached message was left untouched, since there was no stored entry
     // to mark as failed.
     assert.equal(message.failed_request, false);
+});
+
+run_test("reify_message_id counts a sent direct message", ({override}) => {
+    // A sent DM is counted only once acked (on reification), mirroring how
+    // stream messages are added to stream_topic_history there.
+    const local_id_float = 104.01;
+
+    const iago = {user_id: 123, full_name: "Iago", email: "iago@zulip.com"};
+    const cordelia = {user_id: 21, full_name: "Cordelia", email: "cordelia@zulip.com"};
+    override(current_user, "user_id", iago.user_id);
+    const people_params = {
+        realm_users: [iago, cordelia],
+        realm_non_active_users: [],
+        cross_realm_bots: [],
+    };
+    const user_group_params = {
+        realm_user_groups: [
+            make_user_group({is_system_group: true, members: [iago.user_id, cordelia.user_id]}),
+        ],
+    };
+    people.init();
+    people.initialize(current_user.user_id, people_params, user_group_params);
+
+    override(markdown, "render", noop);
+    override(markdown, "get_topic_links", () => []);
+    override(message_store, "reify_message_id", noop);
+    override(compose_notifications, "reify_message_id", noop);
+
+    const message_request = {
+        private_message_recipient: cordelia.email,
+        to_user_ids: cordelia.user_id.toString(),
+        type: "private",
+        sender_email: iago.email,
+        sender_full_name: iago.full_name,
+        sender_id: iago.user_id,
+    };
+    echo.insert_local_message(message_request, local_id_float, (message_data) => {
+        const messages = message_data.raw_messages;
+        messages.map((message) => echo.track_local_message(message));
+        return messages;
+    });
+
+    const increment_stub = make_stub();
+    override(pm_conversations.recent, "increment_local_message_count", increment_stub.f);
+
+    echo.reify_message_id(local_id_float.toString(), 120);
+
+    assert.equal(increment_stub.num_calls, 1);
+    const {user_ids} = increment_stub.get_args("user_ids");
+    assert.deepEqual(user_ids, [cordelia.user_id]);
 });

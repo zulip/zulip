@@ -1,3 +1,6 @@
+import assert from "minimalistic-assert";
+
+import * as echo_state from "./echo_state.ts";
 import {FoldDict} from "./fold_dict.ts";
 import type {Message} from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
@@ -7,9 +10,22 @@ import type {StateData} from "./state_data.ts";
 type PMConversation = {
     user_ids_string: string;
     max_message_id: number;
+    // A lower bound on the messages remaining in this conversation: the
+    // ones we know about locally (we may not have loaded older history).
+    // So a positive count proves the conversation is non-empty, while zero
+    // only means it may be empty, in which case we confirm with the server.
+    // Mirrors the `count` field stream_topic_history keeps per topic.
+    local_message_count: number;
 };
 
 const partners = new Set<number>();
+
+// pm_conversations_util.update_dm_last_message_id, set indirectly to
+// avoid a circular dependency.
+let update_dm_last_message_id: (user_ids_string: string) => void;
+export function set_update_dm_last_message_id(f: (user_ids_string: string) => void): void {
+    update_dm_last_message_id = f;
+}
 
 export let set_partner = (user_id: number): void => {
     partners.add(user_id);
@@ -35,6 +51,19 @@ function filter_muted_pms(conversation: PMConversation): boolean {
     return true;
 }
 
+function conversation_has_unacked_message(user_ids_string: string): boolean {
+    // A locally echoed message that hasn't been acked yet (including a
+    // failed send the user can still retry) is visible in the conversation,
+    // so it should keep the conversation in the sidebar.
+    return echo_state.get_waiting_for_ack_private_messages().some((message) => {
+        const user_ids = people.pm_with_user_ids(message);
+        return (
+            user_ids !== undefined &&
+            people.pm_lookup_key_from_user_ids(user_ids) === user_ids_string
+        );
+    });
+}
+
 class RecentDirectMessages {
     // This data structure keeps track of the sets of users you've had
     // recent conversations with, sorted by time (implemented via
@@ -57,6 +86,7 @@ class RecentDirectMessages {
             conversation = {
                 user_ids_string,
                 max_message_id: message_id,
+                local_message_count: 0,
             };
             this.recent_message_ids.set(user_ids_string, conversation);
 
@@ -88,6 +118,51 @@ class RecentDirectMessages {
         }
 
         this.recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
+    }
+
+    increment_local_message_count(user_ids: number[]): void {
+        // Every message is inserted before it is counted (see process_message
+        // and echo.reify_message_id), so the conversation always exists here.
+        const conversation = this.recent_message_ids.get(
+            people.pm_lookup_key_from_user_ids(user_ids),
+        );
+        assert(conversation !== undefined);
+        conversation.local_message_count += 1;
+    }
+
+    remove(user_ids_string: string): void {
+        this.recent_message_ids.delete(user_ids_string);
+        this.recent_private_messages = this.recent_private_messages.filter(
+            (conversation) => conversation.user_ids_string !== user_ids_string,
+        );
+    }
+
+    maybe_remove(user_ids: number[], num_messages: number): void {
+        // If we still have locally-known messages left, the conversation is
+        // definitely not empty and we just decrement.  Otherwise it may be
+        // empty: optimistically remove it and ask the server to confirm,
+        // re-adding it if messages actually remain (which also covers a new
+        // message arriving mid-check).  Mirrors stream_topic_history.maybe_remove.
+        const user_ids_string = people.pm_lookup_key_from_user_ids(user_ids);
+        const conversation = this.recent_message_ids.get(user_ids_string);
+        if (conversation === undefined) {
+            return;
+        }
+
+        if (conversation.local_message_count <= num_messages) {
+            if (conversation_has_unacked_message(user_ids_string)) {
+                // We know of no delivered messages, but an un-acked local
+                // echo keeps the conversation non-empty, so leave it in the
+                // sidebar.  Mirrors how stream_topic_history surfaces
+                // locally-echoed topics.
+                conversation.local_message_count = 0;
+                return;
+            }
+            this.remove(user_ids_string);
+            update_dm_last_message_id(user_ids_string);
+        } else {
+            conversation.local_message_count -= num_messages;
+        }
     }
 
     get(): PMConversation[] {
@@ -127,7 +202,7 @@ export function get_latest_direct_message_id_with_user(user_id: number): number 
     return recent.latest_message_id_by_user_id.get(user_id);
 }
 
-export function process_message(message: Message): void {
+export function process_message(message: Message, is_delivered_message: boolean): void {
     const user_ids = people.pm_with_user_ids(message);
     if (!user_ids) {
         return;
@@ -138,6 +213,12 @@ export function process_message(message: Message): void {
     }
 
     recent.insert(user_ids, message.id);
+
+    // Locally echoed messages are skipped here; a sent message is counted
+    // on ack instead (echo.reify_message_id), to avoid counting it twice.
+    if (is_delivered_message) {
+        recent.increment_local_message_count(user_ids);
+    }
 }
 
 export function clear_for_testing(): void {
