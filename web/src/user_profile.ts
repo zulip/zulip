@@ -680,7 +680,7 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
     add_user_to_next_group();
 }
 
-export function show_user_profile(user_id: number, default_tab_key = "profile-tab"): void {
+export function show_user_profile(user_id: number, default_tab_key = "profile"): void {
     const user = people.get_by_user_id(user_id);
     // Reset these widgets so that they are created again for the opened modal.
     user_streams_list_widget = undefined;
@@ -744,9 +744,9 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
 
     let default_tab = 0;
 
-    if (default_tab_key === "user-profile-streams-tab") {
+    if (default_tab_key === "channels") {
         default_tab = 1;
-    } else if (default_tab_key === "manage-profile-tab") {
+    } else if (default_tab_key === "manage") {
         default_tab = 3;
     }
 
@@ -755,35 +755,35 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         selected: default_tab,
         child_wants_focus: true,
         values: [
-            {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
-            {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
-            {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
+            {label: $t({defaultMessage: "Profile"}), key: "profile"},
+            {label: $t({defaultMessage: "Channels"}), key: "channels"},
+            {label: $t({defaultMessage: "User groups"}), key: "groups"},
         ],
         callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
-            $(`#${CSS.escape(key)}`).show();
+            $(`#user-profile-modal [data-tab-key='${CSS.escape(key)}']`).show();
             $("#user-profile-modal").removeClass("prevent-user-modal-content-scrolling");
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
                 "manage-profile-tab-active",
             );
             switch (key) {
-                case "profile-tab":
+                case "profile":
                     if (!has_initialized_user_type_fields) {
                         initialize_user_type_fields(user);
                         has_initialized_user_type_fields = true;
                     }
                     break;
-                case "user-profile-groups-tab": {
+                case "groups": {
                     render_or_update_user_groups_tab(user);
                     $("#user-profile-modal").addClass("prevent-user-modal-content-scrolling");
                     break;
                 }
-                case "user-profile-streams-tab": {
+                case "channels": {
                     void render_or_update_user_streams_tab(user);
                     $("#user-profile-modal").addClass("prevent-user-modal-content-scrolling");
                     break;
                 }
-                case "manage-profile-tab":
+                case "manage":
                     render_manage_profile_content(user);
                     break;
             }
@@ -802,7 +802,7 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
               : $t({defaultMessage: "Manage user"});
         const manage_profile_tab = {
             label: manage_profile_label,
-            key: "manage-profile-tab",
+            key: "manage",
         };
         opts.values.push(manage_profile_tab);
     }
@@ -1655,7 +1655,7 @@ export function initialize(): void {
         "click",
         "#user-profile-name-heading .user-profile-update-user-tab-button",
         (e) => {
-            show_manage_user_tab("manage-profile-tab");
+            show_manage_user_tab("manage");
             e.stopPropagation();
             e.preventDefault();
         },

@@ -706,7 +706,7 @@ export function handle_edit_form($tbody: JQuery): void {
             return;
         }
 
-        user_profile.show_user_profile(user_id, "manage-profile-tab");
+        user_profile.show_user_profile(user_id, "manage");
     });
 }
 
