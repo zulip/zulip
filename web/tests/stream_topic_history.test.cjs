@@ -451,19 +451,16 @@ test("ask_server_for_latest_topic_data", () => {
     });
     const stream_id = 1080;
 
-    let success_callback;
-    let get_message_request_triggered = false;
-    channel.get = (opts) => {
-        get_message_request_triggered = true;
-        assert.equal(opts.url, "/json/messages");
-        assert.deepEqual(opts.data, {
-            anchor: "newest",
-            narrow: '[{"operator":"channel","operand":1080},{"operator":"topic","operand":"Topic1"}]',
-            num_after: 0,
-            num_before: 1,
-            allow_empty_topic_name: true,
-        });
-        success_callback = opts.success;
+    let report_last_message_id;
+    let last_message_request_triggered = false;
+    message_util.get_last_message_id_in_narrow = (narrow, on_success, extra_request_data) => {
+        last_message_request_triggered = true;
+        assert.deepEqual(narrow, [
+            {operator: "channel", operand: 1080},
+            {operator: "topic", operand: "Topic1"},
+        ]);
+        assert.deepEqual(extra_request_data, {allow_empty_topic_name: true});
+        report_last_message_id = on_success;
     };
 
     stream_topic_history.add_message({
@@ -477,36 +474,24 @@ test("ask_server_for_latest_topic_data", () => {
     assert.deepEqual(history, ["topic1"]);
     assert.deepEqual(max_message_id, 101);
 
-    // Remove all cached messages from the topic. This sends a request to the server
-    // to check for the latest message id in the topic.
+    // Remove all cached messages from the topic. This asks the server for the
+    // latest message id in the topic.
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "Topic1",
         num_messages: 1,
         max_removed_msg_id: 104,
     });
-    assert.equal(get_message_request_triggered, true);
-    get_message_request_triggered = false;
+    assert.equal(last_message_request_triggered, true);
 
     // Until we process the response from the server,
     // the topic is not available.
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, []);
 
-    // Simulate the server responses.
-    // Topic is empty.
-    success_callback({
-        messages: [],
-    });
-    history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, []);
-
-    // Topic has a different max_message_id.
-    success_callback({
-        messages: [{id: 102}],
-    });
-
-    // The topic is now available.
+    // The server reports a remaining message, so the topic becomes available
+    // again with that message's id.
+    report_last_message_id(102);
     history = stream_topic_history.get_recent_topic_names(stream_id);
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(history, ["Topic1"]);
