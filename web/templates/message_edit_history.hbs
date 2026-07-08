@@ -27,27 +27,47 @@
             <div class="message_row{{#unless is_stream}} private-message{{/unless}}" role="listitem">
                 <div class="messagebox">
                     <div class="messagebox-content">
+                        {{! Renders a "#channel > topic" link for a ChannelTopicLink; used for both sides of a move. }}
+                        {{#*inline "channel-topic-link"~}}
+                            <a class="white-space-preserve-wrap" href="{{url}}">
+                                {{~!-- squash whitespace --~}}
+                                {{#if stream_sub~}}
+                                {{~> decorated_channel_name stream=stream_sub inline_with_text=true show_colored_icon=false~}}
+                                {{~else~}}
+                                #{{stream_name}}
+                                {{~/if}} &gt; <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</span>
+                                {{~!-- squash whitespace --~}}
+                            </a>
+                        {{~/inline}}
                         {{#if initial_entry_for_move_history}}
                         <div class="message_content message_edit_history_content">
-                            <p>{{t "Channel" }}: <span class="highlight_text_inserted">{{ new_stream }}</span></p>
-                            <p>{{t "Topic" }}:
-                                <span class="highlight_text_inserted {{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{ new_topic_display_name }}</span>
-                            </p>
+                            {{#tr}}
+                                Posted to <z-link></z-link>.
+                                {{#*inline "z-link"~}}{{~> channel-topic-link new_location~}}{{~/inline}}
+                            {{/tr}}
                         </div>
                         {{else}}
-                        {{#if stream_changed}}
+                        {{#if (eq topic_resolved_or_unresolved "resolved")}}
                         <div class="message_content message_edit_history_content">
-                            <p>{{t "Channel" }}: <span class="highlight_text_inserted">{{ new_stream }}</span>
-                                <span class="highlight_text_deleted">{{ prev_stream }}</span>
-                            </p>
+                            {{#tr}}
+                                <z-link></z-link> was marked as resolved.
+                                {{#*inline "z-link"~}}{{~> channel-topic-link new_location~}}{{~/inline}}
+                            {{/tr}}
                         </div>
-                        {{/if}}
-                        {{#if topic_edited}}
+                        {{else if (eq topic_resolved_or_unresolved "unresolved")}}
                         <div class="message_content message_edit_history_content">
-                            <p>{{t "Topic" }}:
-                                <span class="highlight_text_inserted {{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{ new_topic_display_name }}</span>
-                                <span class="highlight_text_deleted {{#if is_empty_string_prev_topic}}empty-topic-display{{/if}}">{{ prev_topic_display_name }}</span>
-                            </p>
+                            {{#tr}}
+                                <z-link></z-link> was marked as unresolved.
+                                {{#*inline "z-link"~}}{{~> channel-topic-link new_location~}}{{~/inline}}
+                            {{/tr}}
+                        </div>
+                        {{else if new_location}}
+                        <div class="message_content message_edit_history_content">
+                            {{#tr}}
+                                Moved from <prev-link></prev-link> to <new-link></new-link>.
+                                {{#*inline "prev-link"~}}{{~> channel-topic-link prev_location~}}{{~/inline}}
+                                {{#*inline "new-link"~}}{{~> channel-topic-link new_location~}}{{~/inline}}
+                            {{/tr}}
                         </div>
                         {{/if}}
                         {{#if body_to_render}}
@@ -62,4 +82,3 @@
         </div>
     </div>
 {{/each}}
-
