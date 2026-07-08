@@ -1,7 +1,7 @@
 import json
 from collections.abc import Callable
 from functools import wraps
-from typing import Concatenate
+from typing import Any, Concatenate
 
 import orjson
 import requests
@@ -10,7 +10,7 @@ from typing_extensions import ParamSpec
 
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.webhooks.clickup.view import IGNORED_EVENTS, get_clickup_api_data
+from zerver.webhooks.clickup.view import IGNORED_EVENTS, duration_pretty, get_clickup_api_data
 
 ParamT = ParamSpec("ParamT")
 
@@ -92,11 +92,312 @@ class ClickUpHookTests(WebhookTestCase):
         )
 
     @mock_clickup_api_calls
-    def test_task_updated(self) -> None:
+    def test_task_status_updated(self) -> None:
         self.check_webhook(
             "task_updated",
             expected_topic_name=f"Task: {TASK_NAME}",
-            expected_message=f"{AUTHOR} updated [{TASK_NAME}]({TASK_URL}).",
+            expected_message=f"{AUTHOR} updated the status of [{TASK_NAME}]({TASK_URL}) to complete.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_priority_updated(self) -> None:
+        self.check_task_update(
+            [{"field": "priority", "after": {"priority": "urgent"}}],
+            f"{AUTHOR} updated the priority of [{TASK_NAME}]({TASK_URL}) to urgent.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_priority_cleared(self) -> None:
+        self.check_task_update(
+            [{"field": "priority", "after": None}],
+            f"{AUTHOR} cleared the priority of [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_due_date_updated(self) -> None:
+        self.check_task_update(
+            [
+                {"field": "duration", "after": ", , , , , 23040 minutes"},
+                {"field": "due_date", "after": "1782167400000"},
+            ],
+            f"{AUTHOR} updated the due date of [{TASK_NAME}]({TASK_URL})"
+            " to <time:2026-06-22T22:30:00+00:00>.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_due_date_cleared(self) -> None:
+        self.check_task_update(
+            [
+                {"field": "duration", "after": ", , , , , 23040 minutes"},
+                {"field": "due_date", "after": None},
+            ],
+            f"{AUTHOR} cleared the due date of [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_start_date_updated(self) -> None:
+        self.check_task_update(
+            [{"field": "start_date", "after": "1784068200000"}],
+            f"{AUTHOR} updated the start date of [{TASK_NAME}]({TASK_URL})"
+            " to <time:2026-07-14T22:30:00+00:00>.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_start_date_cleared(self) -> None:
+        self.check_task_update(
+            [{"field": "start_date", "after": None}],
+            f"{AUTHOR} cleared the start date of [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_time_estimate_updated(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "time_estimate",
+                    "after": "3600000",
+                    "data": {"time_estimate_string": " 1 hours"},
+                }
+            ],
+            f"{AUTHOR} updated the time estimate of [{TASK_NAME}]({TASK_URL}) to 1 hours.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_time_estimate_cleared(self) -> None:
+        self.check_task_update(
+            [{"field": "time_estimate", "after": None}],
+            f"{AUTHOR} cleared the time estimate of [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_time_tracked(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "time_spent",
+                    "data": {"total_time": "900000"},
+                    "after": {"id": "4218213762738104432", "time": "900000"},
+                }
+            ],
+            f"{AUTHOR} tracked 15 mins on [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_assignee_added(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "assignee_add",
+                    "after": {"username": AUTHOR},
+                }
+            ],
+            f"{AUTHOR} assigned [{TASK_NAME}]({TASK_URL}) to {AUTHOR}.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_assignee_removed(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "assignee_rem",
+                    "before": {"username": AUTHOR},
+                    "after": None,
+                }
+            ],
+            f"{AUTHOR} unassigned {AUTHOR} from [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_comment_posted(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "comment",
+                    "after": "90160077692010",
+                    "comment": {"text_content": "what task?\n"},
+                }
+            ],
+            f"{AUTHOR} commented on [{TASK_NAME}]({TASK_URL}):\n``` quote\nwhat task?\n```",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_comment_reply_posted(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "comment",
+                    "after": "90160199733534",
+                    "comment": {"text_content": "Ohh okay\n"},
+                    "parent_comment": {"text_content": "what a task?\n"},
+                }
+            ],
+            f"{AUTHOR} replied to a comment on [{TASK_NAME}]({TASK_URL}):\n``` quote\nOhh okay\n```",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_comment_posted_without_text(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "comment",
+                    "after": "90160077692010",
+                    "comment": {"text_content": ""},
+                }
+            ],
+            f"{AUTHOR} commented on [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_custom_field_updated(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "custom_field",
+                    "after": "good",
+                    "custom_field": {"name": "new field", "type": "short_text"},
+                }
+            ],
+            f"{AUTHOR} updated the new field of [{TASK_NAME}]({TASK_URL}) to good.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_custom_field_date_updated(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "custom_field",
+                    "after": "1782167400000",
+                    "custom_field": {"name": "Deadline", "type": "date"},
+                }
+            ],
+            f"{AUTHOR} updated the Deadline of [{TASK_NAME}]({TASK_URL})"
+            " to <time:2026-06-22T22:30:00+00:00>.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_custom_field_cleared(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "custom_field",
+                    "after": None,
+                    "custom_field": {"name": "description", "type": "short_text"},
+                }
+            ],
+            f"{AUTHOR} cleared the description of [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_attachment_added(self) -> None:
+        attachment_url = (
+            "https://t90161438581.p.clickup-attachments.com"
+            "/t90161438581/36f6c212-fd29-4315-8836-50eb63ba8fdb/Sathwik_Shetty_Cover_Letter.pdf"
+        )
+        self.check_task_update(
+            [
+                {
+                    "field": "attachments",
+                    "after": "36f6c212-fd29-4315-8836-50eb63ba8fdb.pdf",
+                    "attachments": [{"title": "Sathwik_Shetty.pdf", "url": attachment_url}],
+                }
+            ],
+            f"{AUTHOR} added [Sathwik_Shetty.pdf]({attachment_url}) to [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_checklist_item_added(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "checklist_items_added",
+                    "after": "e9ecc97c-a040-457c-aa7e-635f317e5b5e",
+                    "checklist": {"name": "To be done"},
+                    "checklist_items": [{"name": "new"}],
+                }
+            ],
+            f"{AUTHOR} added new to the To be done checklist on [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_checklist_item_resolved(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "checklist_item_resolved",
+                    "before": "false",
+                    "after": "true",
+                    "checklist": {"name": "To be done"},
+                    "checklist_item": {"name": "new1"},
+                }
+            ],
+            f"{AUTHOR} checked off new1 in the To be done checklist on [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_moved(self) -> None:
+        self.check_task_update(
+            [
+                {
+                    "field": "section_moved",
+                    "before": {
+                        "id": "901615428490",
+                        "name": "Backlog",
+                        "project": {"name": "Zulip"},
+                        "category": {"name": "hidden", "hidden": True},
+                    },
+                    "after": {
+                        "id": "901615563789",
+                        "name": "Sprint 1",
+                        "project": {"name": "Team Space"},
+                        "category": {"name": "Zulip Test", "hidden": False},
+                    },
+                }
+            ],
+            f"{AUTHOR} moved [{TASK_NAME}]({TASK_URL}) from Backlog to Sprint 1.",
+        )
+
+    @mock_clickup_api_calls
+    def test_task_generic_update(self) -> None:
+        self.check_task_update(
+            [{"field": "tag", "after": [{"name": "bug"}]}],
+            f"{AUTHOR} updated [{TASK_NAME}]({TASK_URL}).",
+        )
+
+    def test_duration_pretty(self) -> None:
+        test_cases = [
+            (0, "0 secs"),
+            (1, "1 sec"),
+            (45, "45 secs"),
+            (59, "59 secs"),
+            (60, "1 min"),
+            (3599, "1 hr"),
+            (3600, "1 hr"),
+            (3645, "1 hr 1 min"),
+            (3661, "1 hr 1 min"),
+            (7200, "2 hrs"),
+            (7320, "2 hrs 2 mins"),
+        ]
+
+        for duration, expected_output in test_cases:
+            with self.subTest(duration=duration):
+                self.assertEqual(duration_pretty(duration), expected_output)
+
+    def check_task_update(self, history_items: list[dict[str, Any]], expected_message: str) -> None:
+        payload = orjson.loads(self.webhook_fixture_data("clickup", "task_updated"))
+        user = {"username": AUTHOR}
+        payload["history_items"] = [{"user": user, **item} for item in history_items]
+        self.subscribe(self.test_user, self.channel_name)
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            orjson.dumps(payload).decode(),
+            content_type="application/json",
+        )
+        self.assert_channel_message(
+            message=msg,
+            channel_name=self.channel_name,
+            topic_name=f"Task: {TASK_NAME}",
+            content=expected_message,
         )
 
     def test_task_deleted(self) -> None:
