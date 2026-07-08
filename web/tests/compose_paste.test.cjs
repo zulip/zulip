@@ -663,3 +663,15 @@ run_test("paste_handler_converter", () => {
         );
     }
 });
+
+run_test("normalize_tabs_to_spaces", () => {
+    // testcase1
+    let input = "\t* Level 1\n\t\t* Level 2\n\t\t\t1. Numbered Level 3";
+    let expected = "  * Level 1\n    * Level 2\n      1. Numbered Level 3";
+    assert.equal(compose_paste.normalize_tabs_to_spaces(input), expected);
+
+    // testcase2
+    input = "\tconst x = 1;\n\t\tif (x === 1) {\n\t\t\treturn true;\n\t\t}";
+    expected = "\tconst x = 1;\n\t\tif (x === 1) {\n\t\t\treturn true;\n\t\t}";
+    assert.equal(compose_paste.normalize_tabs_to_spaces(input), expected);
+});
