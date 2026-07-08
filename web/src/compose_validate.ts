@@ -1188,7 +1188,7 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
     disabled_send_tooltip_message_html = "";
     // Clear previous banners from the previous compose state; the
     // validation checks below will re-add any that are still relevant.
-    compose_banner.clear_errors();
+    compose_banner.clear_validation_errors();
     // Reset compose textarea state; validate_private_message may
     // disable it if the recipient is invalid.
     set_compose_textarea_disabled(false);
