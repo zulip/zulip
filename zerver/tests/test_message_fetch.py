@@ -6159,23 +6159,21 @@ class MessageVisibilityTest(ZulipTestCase):
 class PersonalMessagesTest(ZulipTestCase):
     def test_pm_message_url(self) -> None:
         realm = get_realm("zulip")
-        message = dict(
-            type="personal",
-            id=555,
-            display_recipient=[
-                dict(id=77),
-                dict(id=80),
-            ],
-        )
+        display_recipient: list[UserDisplayRecipient] = [
+            dict(id=77, email="a@example.com", full_name="A", is_mirror_dummy=False),
+            dict(id=80, email="b@example.com", full_name="B", is_mirror_dummy=False),
+        ]
         url = message_link_url(
             realm=realm,
-            message=message,
+            message_id=555,
+            display_recipient=display_recipient,
         )
         self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80/near/555")
 
         url = message_link_url(
             realm=realm,
-            message=message,
+            message_id=555,
+            display_recipient=display_recipient,
             conversation_link=True,
         )
         self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80/with/555")

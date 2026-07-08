@@ -8,7 +8,6 @@ from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_user_mentions_for_display, truncate_content
-from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import (
     TOPIC_LINK_SYNTAX_FOR_DISPLAY,
     escape_invalid_stream_topic_characters,
@@ -48,7 +47,6 @@ def get_reminder_formatted_content(
 
     format_recipient_type_key: ReminderRecipientType
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
-    conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
 
     if message.is_channel_message:
         # We don't need to check access here since we already have the message
@@ -57,14 +55,19 @@ def get_reminder_formatted_content(
             id=message.recipient.type_id,
             realm=current_user.realm,
         )
+        conversation_url = message_link_url(
+            current_user.realm,
+            message.id,
+            stream.name,
+            stream.id,
+            message.topic_name(),
+        )
         url = stream_message_url(
             realm=None,
-            message={
-                "id": message.id,
-                "stream_id": stream.id,
-                "display_recipient": stream.name,
-                "topic": message.topic_name(),
-            },
+            message_id=message.id,
+            stream_id=stream.id,
+            stream_name=stream.name,
+            topic_name=message.topic_name(),
             conversation_link=True,
             include_base_url=False,
         )
@@ -89,6 +92,8 @@ def get_reminder_formatted_content(
             topic_pretty_link=f"[{topic_pretty_link}]({url})",
         )
     else:
+        display_recipient = get_display_recipient(message.recipient)
+        conversation_url = message_link_url(current_user.realm, message.id, display_recipient)
         if note:
             content = _(
                 "You requested a reminder for the following direct message. Note:\n > {note}"
@@ -98,9 +103,7 @@ def get_reminder_formatted_content(
         else:
             content = _("You requested a reminder for the following direct message.")
         recipients: list[UserProfile | UserDisplayRecipient] = [
-            user
-            for user in get_display_recipient(message.recipient)
-            if user["id"] != message.sender.id
+            user for user in display_recipient if user["id"] != message.sender.id
         ]
 
         if not recipients:
