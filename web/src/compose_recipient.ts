@@ -203,6 +203,9 @@ export function update_on_recipient_change(): void {
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
+    // The validation run below only clears the error banners it owns,
+    // so clear stale upload error banners explicitly here.
+    compose_banner.clear_upload_errors();
     compose_validate.validate_and_update_send_button_status();
 
     // Clear the topic moved banner when the recipient
