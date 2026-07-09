@@ -118,6 +118,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "attachment":
+            realm.realm_upload_quota_used_bytes = event.upload_space_used;
             attachments_ui.update_attachments(event);
             break;
 
