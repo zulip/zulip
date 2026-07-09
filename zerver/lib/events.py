@@ -276,6 +276,12 @@ def fetch_initial_state_data(
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
 
+    if want("attachment") and user_profile is not None:
+        # The upload-quota-usage warning is only shown to organization
+        # members, so we don't compute it for spectators; that also avoids
+        # the couple of extra queries on every web-public page load.
+        state["realm_upload_quota_used_bytes"] = realm.currently_used_upload_space_bytes()
+
     if want("custom_profile_fields"):
         if user_profile is None:
             # Spectators can't access full user profiles or
@@ -1828,9 +1834,11 @@ def apply_event(
         # Typing message edit notification events are transient and thus ignored
         pass
     elif event["type"] == "attachment":
-        # Attachment events are just for updating the "uploads" UI;
-        # they are not sent directly.
-        pass
+        # Attachment events are primarily for updating the "uploads" UI;
+        # they are not sent directly, but we track the realm's upload
+        # quota usage from them.
+        if "realm_upload_quota_used_bytes" in state:
+            state["realm_upload_quota_used_bytes"] = event["upload_space_used"]
     elif event["type"] == "update_message_flags":
         # We don't return messages in `/register`, so most flags we
         # can ignore, but we do need to update the unread_msgs data if
