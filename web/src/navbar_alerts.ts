@@ -577,6 +577,7 @@ export function initialize(): void {
         function (this: HTMLElement): void {
             void (async () => {
                 const $banner = $(this).closest(".banner");
+                desktop_notifications.suppress_next_focus_close();
                 const permission =
                     await desktop_notifications.request_desktop_notifications_permission();
                 if (permission === "granted" || permission === "denied") {
