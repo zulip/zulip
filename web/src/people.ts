@@ -664,18 +664,16 @@ export function slug_to_user_ids(slug: string): number[] | undefined {
     return undefined;
 }
 
-export function email_slug_to_user_ids(slug: string): number[] | undefined {
+export function email_slug_to_user_ids(slug: string): number[] {
     // Support legacy direct message and sender narrow links whose
     // slug is one or more comma-separated email addresses rather than
     // the user IDs used in current slugs, so that old links keep
-    // working after the switch to user-ID-based slugs. Returns
-    // undefined if any email doesn't resolve to a known user.
-    const user_ids = util.try_parse_as_truthy(
-        slug.split(",").map((email) => get_by_email(email.trim())?.user_id),
-    );
-    if (user_ids === undefined) {
-        return undefined;
-    }
+    // working after the switch to user-ID-based slugs. An email that
+    // doesn't resolve to a known user becomes -1, the same sentinel
+    // used for unknown sender/mentions operands, so the header and
+    // narrow banner can flag the unknown user rather than rejecting
+    // the whole link.
+    const user_ids = slug.split(",").map((email) => get_by_email(email.trim())?.user_id ?? -1);
     return exclude_me_from_user_ids(user_ids);
 }
 

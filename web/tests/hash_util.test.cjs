@@ -235,11 +235,19 @@ run_test("parse_narrow_legacy_email_slugs", () => {
         {negated: false, operator: "sender", operand: hamlet.user_id},
     ]);
 
-    // An unknown email in a sender slug degrades to the -1 sentinel
-    // rather than throwing.
+    // An unknown email degrades to the -1 sentinel rather than
+    // throwing, so the header and narrow banner can flag the unknown
+    // user. In a group slug, the recipients that do resolve are kept.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "sender", "nobody.40example.2Ecom"]), [
         {negated: false, operator: "sender", operand: -1},
     ]);
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "dm", "nobody.40example.2Ecom"]), [
+        {negated: false, operator: "dm", operand: [-1]},
+    ]);
+    assert.deepEqual(
+        hash_util.decode_operand("dm", "hamlet.40example.2Ecom,nobody.40example.2Ecom"),
+        [hamlet.user_id, -1],
+    );
 });
 
 run_test("test_channels_settings_edit_url", () => {

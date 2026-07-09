@@ -991,9 +991,13 @@ run_test("multi_user_methods", () => {
         people.email_slug_to_user_ids("emp401@example.com,EMP402@example.com"),
         [401, 402],
     );
-    // An unknown email makes the whole slug unresolvable.
-    assert.equal(people.email_slug_to_user_ids("nobody@example.com"), undefined);
-    assert.equal(people.email_slug_to_user_ids("emp401@example.com,nobody@example.com"), undefined);
+    // An unknown email resolves to the -1 sentinel; other recipients
+    // in the slug still resolve normally.
+    assert.deepEqual(people.email_slug_to_user_ids("nobody@example.com"), [-1]);
+    assert.deepEqual(
+        people.email_slug_to_user_ids("emp401@example.com,nobody@example.com"),
+        [401, -1],
+    );
 });
 
 run_test("user_ids_to_full_names_string", () => {
