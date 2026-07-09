@@ -21388,6 +21388,20 @@ paths:
 
                           New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
+                      realm_upload_quota_used_bytes:
+                        type: integer
+                        description: |
+                          Present if `attachment` is present in `fetch_event_types`,
+                          except for unauthenticated [spectator](/help/public-access-option)
+                          clients, which never receive this field.
+
+                          The total number of bytes currently used for uploaded files
+                          in this organization.
+
+                          Clients can use this in combination with `realm_upload_quota_mib`
+                          to display upload quota usage to users.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-592330).
                       realm_org_type:
                         type: integer
                         description: |

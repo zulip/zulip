@@ -122,6 +122,7 @@ exports.make_realm = (opts = {}) => {
         realm_signup_announcements_stream_id: 0,
         realm_topics_policy: "allow_empty_topic",
         realm_upload_quota_mib: null,
+        realm_upload_quota_used_bytes: 0,
         realm_url: "",
         realm_video_chat_provider: 0,
         realm_waiting_period_threshold: 0,

@@ -18,7 +18,7 @@ from zerver.actions.presence import do_update_user_presence
 from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.lib.event_schema import check_web_reload_client_event
-from zerver.lib.events import fetch_initial_state_data, post_process_state
+from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
@@ -737,6 +737,54 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
+    def test_realm_upload_quota_used_bytes_not_present_for_spectators(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Authenticated users who request the "attachment" fetch type get
+        # the realm's current upload usage.
+        result = fetch_initial_state_data(hamlet, realm=realm, event_types=["attachment"])
+        self.assertEqual(
+            result["realm_upload_quota_used_bytes"],
+            realm.currently_used_upload_space_bytes(),
+        )
+
+        # Spectators never receive it, even when requesting the same type;
+        # the warning banner is for organization members only.
+        result = fetch_initial_state_data(
+            None, realm=realm, event_types=["attachment"], spectator_requested_language="en"
+        )
+        self.assertNotIn("realm_upload_quota_used_bytes", result)
+
+    def test_apply_event_attachment_without_upload_quota_in_state(self) -> None:
+        # A client whose fetched state omits realm_upload_quota_used_bytes
+        # (e.g. a spectator, or a client that did not request the
+        # "attachment" fetch type but does receive attachment events) must
+        # not crash when such an event is applied while reconciling state
+        # during registration.
+        hamlet = self.example_user("hamlet")
+        state: dict[str, Any] = {}
+        apply_events(
+            hamlet,
+            state=state,
+            events=[
+                {
+                    "type": "attachment",
+                    "op": "add",
+                    "attachment": {},
+                    "upload_space_used": 1234,
+                }
+            ],
+            fetch_event_types=None,
+            client_gravatar=False,
+            slim_presence=False,
+            include_subscribers=True,
+            linkifier_url_template=True,
+            user_list_incomplete=False,
+            include_deactivated_groups=False,
+        )
+        self.assertNotIn("realm_upload_quota_used_bytes", state)
+
     def test_delivery_email_presence_for_non_admins(self) -> None:
         user_profile = self.example_user("aaron")
         hamlet = self.example_user("hamlet")
@@ -1275,13 +1323,14 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(48),
+            self.assert_database_query_count(50),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
 
         expected_counts = dict(
             alert_words=1,
+            attachment=2,
             channel_folders=1,
             custom_profile_fields=1,
             default_streams=1,
