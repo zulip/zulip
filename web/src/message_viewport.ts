@@ -23,6 +23,11 @@ export function register_resize_handler(handler: () => void): void {
 }
 
 let in_stoppable_autoscroll = false;
+// Tracks the intended final scrollTop of a system-initiated animated scroll.
+// Set when an animation starts, cleared when it finishes or is stopped.
+// Used by rerender_preserving_scrolltop() to restore the correct position
+// even if a background re-render fires mid-animation (issue #28768).
+let autoscroll_target_scrolltop: number | null = null;
 
 const cached_width = new util.CachedValue({compute_value: () => $scroll_container.width() ?? 0});
 const cached_height = new util.CachedValue({compute_value: () => $scroll_container.height() ?? 0});
@@ -413,7 +418,22 @@ export function scrollTop(target_scrollTop?: number): JQuery | number {
 export function stop_auto_scrolling(): void {
     if (in_stoppable_autoscroll) {
         $scroll_container.stop();
+        autoscroll_target_scrolltop = null;
     }
+}
+
+// Stops any in-progress system-initiated animated scroll and returns the
+// scroll position that the animation was heading towards. If no animation
+// is in progress, returns the current scrollTop unchanged.
+// Used by rerender_preserving_scrolltop() to correctly restore scroll
+// position after a background re-render fires mid-animation (issue #28768).
+export function stop_and_get_intended_scrolltop(): number {
+    if (in_stoppable_autoscroll && autoscroll_target_scrolltop !== null) {
+        const intended = autoscroll_target_scrolltop;
+        stop_auto_scrolling();
+        return intended;
+    }
+    return scrollTop();
 }
 
 export function system_initiated_animate_scroll(
@@ -422,13 +442,19 @@ export function system_initiated_animate_scroll(
 ): void {
     message_scroll_state.set_update_selection_on_next_scroll(update_selection_on_scroll);
     const viewport_offset = scrollTop();
+    autoscroll_target_scrolltop = viewport_offset + scroll_amount;
     in_stoppable_autoscroll = true;
-    $scroll_container.animate({
-        scrollTop: viewport_offset + scroll_amount,
-        always() {
-            in_stoppable_autoscroll = false;
+    $scroll_container.animate(
+        {
+            scrollTop: autoscroll_target_scrolltop,
         },
-    });
+        {
+            always() {
+                in_stoppable_autoscroll = false;
+                autoscroll_target_scrolltop = null;
+            },
+        },
+    );
 }
 
 export function user_initiated_animate_scroll(scroll_amount: number): void {

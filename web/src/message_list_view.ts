@@ -1546,12 +1546,30 @@ export class MessageListView {
 
     rerender_preserving_scrolltop(discard_rendering_state = false): void {
         // old_offset is the number of pixels between the top of the
-        // viewable window and the selected message
+        // viewable window and the selected message.
         let old_offset;
         const $selected_row = this.selected_row();
         const selected_in_view = $selected_row.length > 0;
         if (selected_in_view) {
-            old_offset = $selected_row.get_offset_to_window().top;
+            // Stop any in-progress system-initiated animated scroll and
+            // get its intended final scrollTop. If no animation is running,
+            // this just returns the current scrollTop.
+            //
+            // This fixes a race condition (issue #28768) where a background
+            // re-render triggered by narrow.activate receiving new messages
+            // fires mid-animation (e.g. the compose-box open scroll). Without
+            // this, rerender_with_target_scrolltop() would restore us to the
+            // mid-animation scroll position, which looks like the top of the
+            // feed. By using the intended final position, we restore the
+            // correct scroll position after the re-render.
+            const intended_scrolltop = message_viewport.stop_and_get_intended_scrolltop();
+            const current_scrolltop = message_viewport.scrollTop();
+            // The offset of the selected row from the viewport top reflects
+            // the current (potentially mid-animation) scrollTop. Adjust it
+            // to account for how much further the animation would have
+            // scrolled, so that after re-rendering we land at the right spot.
+            const scrolltop_delta = intended_scrolltop - current_scrolltop;
+            old_offset = $selected_row.get_offset_to_window().top - scrolltop_delta;
         }
         if (discard_rendering_state) {
             // If we know that the existing render is invalid way
