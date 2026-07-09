@@ -278,6 +278,11 @@ export let upload_files = (
     if (files.length === 0) {
         return;
     }
+
+    // A new upload attempt supersedes any error banner (e.g. "file too
+    // large") left over from a previous attempt, so we clear those here.
+    config.banner_container().find(".upload_banner.error").remove();
+
     if (realm.max_file_upload_size_mib === 0) {
         show_error_message(
             config,
