@@ -113,6 +113,16 @@ SSL/TLS termination.
 Set to the port number if you [prefer to listen on a port other than
 443](deployment.md#using-an-alternate-port).
 
+#### `server_name`
+
+Sets the [`server_name`][nginx_server_name] directive in Zulip's
+nginx configuration. Use this if you're running other software
+alongside Zulip on the same server and need nginx to route requests
+using a specific hostname, rather than Zulip's default of matching
+all hostnames.
+
+[nginx_server_name]: https://nginx.org/en/docs/http/server_names.html
+
 #### `nginx_worker_processes`
 
 Adjusts the [`worker_processes`][nginx_worker_processes] setting in
