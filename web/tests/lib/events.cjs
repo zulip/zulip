@@ -566,6 +566,15 @@ exports.fixtures = {
         },
     },
 
+    realm__update_dict__upload_quota_used_bytes: {
+        type: "realm",
+        op: "update_dict",
+        property: "default",
+        data: {
+            upload_quota_used_bytes: 1234,
+        },
+    },
+
     realm_bot__add: {
         type: "realm_bot",
         op: "add",

@@ -51,7 +51,7 @@ from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, Message, OnboardingStep, Realm, RealmDomain, UserProfile
 from zerver.models.realms import get_realm
-from zerver.models.users import get_system_bot, get_user_by_delivery_email
+from zerver.models.users import active_user_ids, get_system_bot, get_user_by_delivery_email
 from zerver.upload_handler import TEMPORARY_FILE_MAX_EXTENSION_LENGTH, truncate_filename_extension
 
 
@@ -2388,10 +2388,34 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         data = b"zulip!"
-        upload_message_attachment(
-            "dummy.txt", "text/plain", data, email_gateway_bot, target_realm=self.realm
-        )
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            upload_message_attachment(
+                "dummy.txt", "text/plain", data, email_gateway_bot, target_realm=self.realm
+            )
         self.assert_length(data, self.realm.currently_used_upload_space_bytes())
+
+        self.assertEqual(events[1]["event"]["data"], dict(upload_quota_used_bytes=len(data)))
+        self.assertEqual(events[1]["users"], active_user_ids(self.realm.id))
+
+    def test_upload_quota_used_bytes_event_sent_to_all_users(self) -> None:
+        data = b"zulip!"
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            upload_message_attachment("dummy.txt", "text/plain", data, self.user_profile)
+
+        self.assertEqual(events[0]["event"]["type"], "attachment")
+        self.assertEqual(events[0]["users"], [self.user_profile.id])
+
+        self.assertEqual(
+            events[1]["event"],
+            dict(
+                type="realm",
+                op="update_dict",
+                property="default",
+                data=dict(upload_quota_used_bytes=len(data)),
+            ),
+        )
+        self.assertIn(self.example_user("othello").id, events[1]["users"])
+        self.assertEqual(events[1]["users"], active_user_ids(self.realm.id))
 
 
 class DecompressionBombTests(ZulipTestCase):

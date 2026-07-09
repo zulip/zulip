@@ -653,6 +653,10 @@ class PlanTypeData(BaseEventModel):
     max_file_upload_size_mib: int
 
 
+class UploadQuotaUsedData(BaseEventModel):
+    upload_quota_used_bytes: int
+
+
 class RealmUpdateDictEvent(BaseEvent):
     type: Literal["realm"] = "realm"
     op: Literal["update_dict"] = "update_dict"
@@ -668,6 +672,7 @@ class RealmUpdateDictEvent(BaseEvent):
         | PlanTypeData
         | RealmTopicsPolicyData
         | RealmDescriptionData
+        | UploadQuotaUsedData
     )
 
 
