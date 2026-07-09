@@ -16,6 +16,7 @@ from zerver.models import (
     Stream,
     UserProfile,
 )
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -28,13 +29,30 @@ class AttachmentChangeResult:
 def notify_attachment_update(
     user_profile: UserProfile, op: str, attachment_dict: dict[str, Any]
 ) -> None:
+    realm = user_profile.realm
+    upload_space_used = realm.currently_used_upload_space_bytes()
     event = {
         "type": "attachment",
         "op": op,
         "attachment": attachment_dict,
-        "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
+        "upload_space_used": upload_space_used,
     }
-    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+    send_event_on_commit(realm, event, [user_profile.id])
+
+    if op == "update":
+        return
+
+    # The event above describes one user's file, so it goes only to that
+    # user. The organization's total usage isn't private to them though,
+    # and clients use it to warn as the organization approaches its upload
+    # quota, so it needs to reach everyone.
+    realm_event = dict(
+        type="realm",
+        op="update_dict",
+        property="default",
+        data=dict(upload_quota_used_bytes=upload_space_used),
+    )
+    send_event_on_commit(realm, realm_event, active_user_ids(realm.id))
 
 
 def do_claim_attachments(

@@ -499,6 +499,12 @@ def fetch_initial_state_data(
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
         upload_quota_bytes = realm.upload_quota_bytes()
         state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
+        if user_profile is not None:
+            # The upload-quota-usage warning is only shown to organization
+            # members, so we don't compute this for spectators; that also
+            # avoids the couple of extra queries it costs on every
+            # web-public page load.
+            state["realm_upload_quota_used_bytes"] = realm.currently_used_upload_space_bytes()
 
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
@@ -1553,6 +1559,15 @@ def apply_event(
                     # the state data returned by fetch_initial_state_data,
                     # and is added separately to the page_params data
                     # returned to clients in build_page_params_for_home_load.
+                    continue
+
+                if key == "upload_quota_used_bytes":
+                    # A client can subscribe to "realm" events while
+                    # passing a fetch_event_types that omits "realm", so
+                    # this field is not necessarily part of its state; we
+                    # must not add it for clients that didn't fetch it.
+                    if "realm_upload_quota_used_bytes" in state:
+                        state["realm_upload_quota_used_bytes"] = value
                     continue
 
                 state["realm_" + key] = value

@@ -4252,11 +4252,13 @@ class NormalActionsTest(BaseAction):
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
 
-        with self.verify_action(num_events=1, state_change_expected=False) as events:
+        with self.verify_action(num_events=2, state_change_expected=True) as events:
             do_upload()
 
         check_attachment_add("events[0]", events[0])
         self.assertEqual(events[0]["upload_space_used"], 6)
+        check_realm_update_dict("events[1]", events[1])
+        self.assertEqual(events[1]["data"]["upload_quota_used_bytes"], 6)
 
         # Verify that the DB has the attachment marked as unclaimed
         entry = Attachment.objects.get(file_name="zulip.txt")
@@ -4266,6 +4268,8 @@ class NormalActionsTest(BaseAction):
         self.subscribe(hamlet, "Denmark")
         assert url is not None
         body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + url + ")"
+        # Claiming the attachment doesn't change the organization's total
+        # usage, so no realm event is sent for it.
         with self.verify_action(num_events=2) as events:
             self.send_stream_message(
                 self.example_user("hamlet"),
@@ -4279,11 +4283,13 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["upload_space_used"], 6)
 
         # Now remove the attachment
-        with self.verify_action(num_events=1, state_change_expected=False) as events:
+        with self.verify_action(num_events=2, state_change_expected=True) as events:
             self.client_delete(f"/json/attachments/{entry.id}")
 
         check_attachment_remove("events[0]", events[0])
         self.assertEqual(events[0]["upload_space_used"], 0)
+        check_realm_update_dict("events[1]", events[1])
+        self.assertEqual(events[1]["data"]["upload_quota_used_bytes"], 0)
 
     def test_notify_realm_export(self) -> None:
         self.set_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
