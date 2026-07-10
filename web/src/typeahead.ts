@@ -205,10 +205,7 @@ export function query_matches_string_in_any_order(
     return true;
 }
 
-function clean_query(query: string, should_remove_diacritics: boolean): string {
-    if (should_remove_diacritics) {
-        query = remove_diacritics(query);
-    }
+function clean_query(query: string): string {
     // When `abc ` with a space at the end is typed in
     // a content-editable widget such as the composebox
     // direct message section, the space at the end was
@@ -219,9 +216,9 @@ function clean_query(query: string, should_remove_diacritics: boolean): string {
     return query;
 }
 
-export function clean_query_lowercase(query: string, remove_diacritics = true): string {
+export function clean_query_lowercase(query: string): string {
     query = query.toLowerCase();
-    query = clean_query(query, remove_diacritics);
+    query = clean_query(query);
     return query;
 }
 
@@ -234,7 +231,7 @@ export const parse_unicode_emoji_code = (code: string): string =>
 export function get_emoji_matcher(query: string): (emoji: EmojiSuggestion) => boolean {
     // replace spaces with underscores for emoji matching
     query = query.replaceAll(" ", "_");
-    query = clean_query_lowercase(query, false);
+    query = clean_query_lowercase(query);
     const should_remove_diacritics = !contains_diacritics(query);
 
     return function (emoji) {

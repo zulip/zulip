@@ -74,6 +74,8 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
 
     // Adds a typeahead that allows selecting a custom language, by adding a
     // "Custom language" label in the first position of the typeahead list.
+    // Selecting this option registers the query as typed, diacritics
+    // included; the matcher strips diacritics on both sides instead.
     const clean_query = typeahead.clean_query_lowercase(query);
     if (clean_query !== "") {
         language_labels.set(
