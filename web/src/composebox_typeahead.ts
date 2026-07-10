@@ -207,15 +207,17 @@ export function topics_seen_for(stream_id?: number): string[] {
 }
 
 export function get_language_matcher(query: string): (language: string) => boolean {
-    query = query.toLowerCase();
+    // Filtering is diacritics-agnostic: strip diacritics from both the query
+    // and the language name so ASCII and diacritic spellings match each other.
+    query = typeahead.remove_diacritics(query.toLowerCase());
     return function (language: string): boolean {
-        return language.includes(query);
+        return typeahead.remove_diacritics(language.toLowerCase()).includes(query);
     };
 }
 
 export function get_stream_matcher(query: string): (stream: StreamPillData) => boolean {
     // Case-insensitive.
-    query = typeahead.clean_query_lowercase(query, false);
+    query = typeahead.clean_query_lowercase(query);
     const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (stream: StreamPillData) {
@@ -224,7 +226,7 @@ export function get_stream_matcher(query: string): (stream: StreamPillData) => b
 }
 
 export function get_slash_matcher(query: string): (item: SlashCommand) => boolean {
-    query = typeahead.clean_query_lowercase(query, false);
+    query = typeahead.clean_query_lowercase(query);
     const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (item: SlashCommand) {
@@ -246,7 +248,7 @@ export function get_slash_matcher(query: string): (item: SlashCommand) => boolea
 }
 
 function get_topic_matcher(query: string): (topic: string) => boolean {
-    query = typeahead.clean_query_lowercase(query, false);
+    query = typeahead.clean_query_lowercase(query);
     const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (topic: string): boolean {
@@ -712,7 +714,7 @@ function filter_persons<T>(
 }
 
 export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
-    query = typeahead.clean_query_lowercase(query, false);
+    query = typeahead.clean_query_lowercase(query);
 
     const filterer = (person_items: UserPillData[]): UserPillData[] =>
         person_items.filter((item) =>
@@ -783,7 +785,7 @@ export function get_person_suggestions(
     opts: PersonSuggestionOpts,
     exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
-    query = typeahead.clean_query_lowercase(query, false);
+    query = typeahead.clean_query_lowercase(query);
 
     let groups: UserGroup[];
     if (opts.filter_groups_for_mention) {
