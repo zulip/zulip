@@ -212,6 +212,9 @@ test("excludes_muted_topics", () => {
 
     filter = set_filter([["is", "starred"]]);
     assert.ok(!filter.excludes_muted_topics());
+
+    filter = set_filter([["is", "alerted"]]);
+    assert.ok(!filter.excludes_muted_topics());
 });
 
 test("set_compose_defaults", () => {
