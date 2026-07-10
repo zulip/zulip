@@ -1806,6 +1806,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.equal(matcher("python"), true);
                 assert.equal(matcher("javascript"), false);
 
+                // Language matching is diacritics-agnostic: a diacritic query
+                // matches an ASCII language name and vice versa.
+                matcher = ct.get_language_matcher("café");
+                assert.equal(matcher("cafe"), true);
+                matcher = ct.get_language_matcher("cafe");
+                assert.equal(matcher("café"), true);
+
                 // options.sorter()
                 actual_value = typeahead.sort_emojis(
                     [make_emoji(emoji_stadium), make_emoji(emoji_tada)],

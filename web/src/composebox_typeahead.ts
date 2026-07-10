@@ -207,9 +207,11 @@ export function topics_seen_for(stream_id?: number): string[] {
 }
 
 export function get_language_matcher(query: string): (language: string) => boolean {
-    query = query.toLowerCase();
+    // Filtering is diacritics-agnostic: strip diacritics from both the query
+    // and the language name so ASCII and diacritic spellings match each other.
+    query = typeahead.remove_diacritics(query.toLowerCase());
     return function (language: string): boolean {
-        return language.includes(query);
+        return typeahead.remove_diacritics(language.toLowerCase()).includes(query);
     };
 }
 
