@@ -13,6 +13,9 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+- Added an "Alert words" view to the left sidebar, showing unread
+  messages that contain one of your configured alert words.
+
 ### Upgrade notes for 13.0
 
 - Migrations that add or remove database indexes no longer use
