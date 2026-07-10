@@ -681,6 +681,28 @@
                 color: var(--color-message-star-action);
             }
         }
+        /* Reset default button styles for message-controls-icon
+           buttons (used by failed message controls). The press-scale
+           animation targets the child icon since the button's ::before
+           is empty. */
+        & button.message-controls-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            font: inherit;
+            color: inherit;
+
+            & .zulip-icon::before {
+                display: block;
+            }
+
+            &:active .zulip-icon::before {
+                transform: scale(0.92);
+                transform-origin: center;
+            }
+        }
     }
 
     /* Tooltips should not follow the width restrictions of their parent element. */
