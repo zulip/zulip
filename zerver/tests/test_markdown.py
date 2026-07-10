@@ -781,22 +781,26 @@ class MarkdownLinkTest(ZulipTestCase):
             name: str
             mention_syntax: str
             expected_html_class: str
+            expected_link_html: str
 
         mention_fixtures = [
             MentionFixture(
                 name="channel_mention",
                 mention_syntax="#**Denmark**",
                 expected_html_class="stream",
+                expected_link_html="#<strong>Denmark</strong>",
             ),
             MentionFixture(
                 name="channel_topic_mention",
                 mention_syntax="#**Denmark>topic**",
                 expected_html_class="stream-topic",
+                expected_link_html="#<strong>Denmark&gt;topic</strong>",
             ),
             MentionFixture(
                 name="channel_topic_message_mention",
                 mention_syntax="#**Denmark>topic>@123**",
                 expected_html_class="message-link",
+                expected_link_html="#<strong>Denmark&gt;topic&gt;@123</strong>",
             ),
         ]
 
@@ -811,7 +815,7 @@ class MarkdownLinkTest(ZulipTestCase):
                 mention_with_link = f"[{fixture.mention_syntax}]({link})"
                 self.assertEqual(
                     render_message_markdown(msg, mention_with_link).rendered_content,
-                    f'<p><a href="{link}">{escape(fixture.mention_syntax)}</a></p>',
+                    f'<p><a href="{link}">{fixture.expected_link_html}</a></p>',
                 )
 
 
@@ -3395,6 +3399,31 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             render_message_markdown(msg, content).rendered_content,
             f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/.231234/with/{first_message_id}">#{denmark.name} &gt; #1234</a></p>',
         )
+
+    def test_stream_links_inside_markdown_links_do_not_nest(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+
+        for content, expected_text in [
+            ("[see #**Denmark**](https://example.com)", "see #<strong>Denmark</strong>"),
+            (
+                "[see #**Denmark>some topic**](https://example.com)",
+                "see #<strong>Denmark&gt;some topic</strong>",
+            ),
+            (
+                "[see #**Denmark>some topic@123**](https://example.com)",
+                "see #<strong>Denmark&gt;some topic@123</strong>",
+            ),
+        ]:
+            with self.subTest(content=content):
+                self.assertEqual(
+                    render_message_markdown(msg, content).rendered_content,
+                    f'<p><a href="https://example.com">{expected_text}</a></p>',
+                )
 
     def test_topic_multiple(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
