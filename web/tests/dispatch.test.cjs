@@ -94,6 +94,7 @@ const settings_realm_user_settings_defaults = mock_esm(
 const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
+const ui_util = mock_esm("../src/ui_util");
 const stream_data = mock_esm("../src/stream_data");
 const stream_list = mock_esm("../src/stream_list", {
     update_collapsed_state_on_show_channel_folders_change: noop,
@@ -221,12 +222,16 @@ run_test("alert_words", ({override}) => {
     assert.ok(!alert_words.has_alert_word("lunch"));
 
     override(alert_words_ui, "rerender_alert_words_ui", noop);
+    const stub = make_stub();
+    override(sidebar_ui, "update_expanded_views_for_search", stub.f);
+    override(ui_util, "get_left_sidebar_search_term", () => "");
     const event = event_fixtures.alert_words;
     dispatch(event);
 
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+    assert.equal(stub.num_calls, 1);
 });
 
 run_test("navigation_views", ({override}) => {

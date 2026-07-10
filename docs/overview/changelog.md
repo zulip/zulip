@@ -9,6 +9,9 @@ the [Zulip release lifecycle](../overview/release-lifecycle.md).
 
 _Unreleased_
 
+- Added an "Alert words" view to the left sidebar, showing unread
+  messages that contain one of your configured alert words.
+
 ### Upgrade notes for 14.0
 
 - None yet.
