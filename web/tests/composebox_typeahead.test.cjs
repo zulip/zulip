@@ -1602,7 +1602,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.deepEqual(actual_value, expected_value);
 
                 function matcher(query, person) {
-                    query = typeahead.clean_query_lowercase(query, false);
+                    query = typeahead.clean_query_lowercase(query);
                     return typeahead_helper.query_matches_person(query, person);
                 }
 
@@ -1803,6 +1803,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 matcher = ct.get_language_matcher("py");
                 assert.equal(matcher("python"), true);
                 assert.equal(matcher("javascript"), false);
+
+                // Language matching is diacritics-agnostic: a diacritic query
+                // matches an ASCII language name and vice versa.
+                matcher = ct.get_language_matcher("café");
+                assert.equal(matcher("cafe"), true);
+                matcher = ct.get_language_matcher("cafe");
+                assert.equal(matcher("café"), true);
 
                 // options.sorter()
                 actual_value = typeahead.sort_emojis(

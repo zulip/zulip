@@ -51,7 +51,7 @@ export function set_up_user(
             return (item: UserPillData) => typeahead_helper.render_person(item);
         },
         matcher(query: string): (item: UserPillData) => boolean {
-            query = typeahead.clean_query_lowercase(query, false);
+            query = typeahead.clean_query_lowercase(query);
             return (item: UserPillData) => person_matcher(query, item);
         },
         sorter(matches: UserPillData[], query: string): UserPillData[] {
@@ -146,7 +146,7 @@ export function set_up_user_group(
             return (item: UserGroupPillData) => typeahead_helper.render_user_group(item);
         },
         matcher(query: string): (item: UserGroupPillData) => boolean {
-            query = typeahead.clean_query_lowercase(query, false);
+            query = typeahead.clean_query_lowercase(query);
             return (item: UserGroupPillData) => group_matcher(query, item);
         },
         sorter(matches: UserGroupPillData[], query: string): UserGroupPillData[] {
@@ -194,7 +194,7 @@ export function set_up_group_setting_typeahead(
             };
         },
         matcher(query: string): (item: GroupSettingTypeaheadItem) => boolean {
-            query = typeahead.clean_query_lowercase(query, false);
+            query = typeahead.clean_query_lowercase(query);
 
             return (item: GroupSettingTypeaheadItem): boolean => {
                 let matches = false;
@@ -338,7 +338,7 @@ export function set_up_combined(
             };
         },
         matcher(query: string): (item: TypeaheadItem) => boolean {
-            query = typeahead.clean_query_lowercase(query, false);
+            query = typeahead.clean_query_lowercase(query);
 
             return (item: TypeaheadItem): boolean => {
                 if (include_streams(query) && item.type === "stream") {
