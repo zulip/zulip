@@ -48,6 +48,22 @@ const MENTIONS_VIEW_EMPTY_BANNER = {
     ),
 };
 
+const ALERT_WORDS_VIEW_EMPTY_BANNER = {
+    title: $t({defaultMessage: "You have no messages with alert words."}),
+    html: $t_html(
+        {
+            defaultMessage:
+                "Alert words and phrases notify you when they appear in a message. For example, you can set up an alert for the name of a product you're responsible for. <z-link>Learn more</z-link>",
+        },
+        {
+            "z-link": (content_html) =>
+                `<a target="_blank" rel="noopener noreferrer" href="/help/dm-mention-alert-notifications#alert-words">${content_html.join(
+                    "",
+                )}</a>`,
+        },
+    ),
+};
+
 const STARRED_MESSAGES_VIEW_EMPTY_BANNER = {
     title: $t({defaultMessage: "You have no starred messages."}),
     html: $t_html(
@@ -337,6 +353,8 @@ export function pick_empty_narrow_banner(
                     return STARRED_MESSAGES_VIEW_EMPTY_BANNER;
                 case "mentioned":
                     return MENTIONS_VIEW_EMPTY_BANNER;
+                case "alerted":
+                    return ALERT_WORDS_VIEW_EMPTY_BANNER;
                 case "dm":
                     // You have no direct messages.
                     return {
@@ -386,11 +404,6 @@ export function pick_empty_narrow_banner(
                         title: $t({
                             defaultMessage: "You have no messages in muted topics and channels.",
                         }),
-                    };
-                case "alerted":
-                    return {
-                        title_html: NO_SEARCH_RESULTS_TITLE_HTML,
-                        show_action: show_search_shared_history,
                     };
             }
             // fallthrough to default case if no match is found
