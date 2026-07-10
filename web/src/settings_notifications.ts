@@ -408,7 +408,7 @@ export function set_up(settings_panel: SettingsPanel): void {
             if (permission === "granted") {
                 update_desktop_notification_banner();
                 message_notifications.send_test_notification(
-                    $t({defaultMessage: "Thanks for enabling Zulip notifications!"}),
+                    $t({defaultMessage: "Zulip  desktop notifications enabled"}),
                 );
             } else if (permission === "denied") {
                 window.open(

@@ -585,7 +585,7 @@ export function initialize(): void {
                 }
                 if (permission === "granted") {
                     message_notifications.send_test_notification(
-                        $t({defaultMessage: "Thanks for enabling Zulip notifications!"}),
+                        $t({defaultMessage: "Zulip  desktop notifications enabled"}),
                     );
                 }
             })();
