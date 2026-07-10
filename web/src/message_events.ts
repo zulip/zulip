@@ -521,6 +521,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 );
                 recent_view_ui.inplace_rerender(topic_key);
             }
+
+            // Alert words have no recent-view indicator like mentions do,
+            // so there's no rerender to trigger when their status changes.
+            unread.update_message_for_alert_word(anchor_message);
         }
 
         // new_topic will be undefined if the topic is unchanged.
