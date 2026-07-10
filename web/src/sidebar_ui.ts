@@ -6,6 +6,7 @@ import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
+import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
@@ -342,6 +343,7 @@ export function update_expanded_views_for_search(search_term: string): void {
         );
         left_sidebar_navigation_area.update_scheduled_messages_row();
         left_sidebar_navigation_area.update_reminders_row();
+        left_sidebar_navigation_area.update_alert_words_row();
         return;
     }
 
@@ -366,6 +368,10 @@ export function update_expanded_views_for_search(search_term: string): void {
 
         if (show_view && $view.hasClass("top_left_reminders")) {
             show_view = message_reminder.get_count() !== 0;
+        }
+
+        if (show_view && $view.hasClass("top_left_alert_words")) {
+            show_view = alert_words.has_alert_words_configured();
         }
         $view.toggleClass("hidden-by-filters", !show_view);
         any_view_visible ||= show_view;
