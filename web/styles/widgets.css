@@ -301,9 +301,14 @@ input {
 
 .poll-edit-question,
 .todo-edit-task-list-title {
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: inherit;
     position: relative;
     top: 1px;
     color: var(--color-message-action-visible);
+    cursor: pointer;
 
     &:hover,
     &:focus-visible {
