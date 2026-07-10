@@ -1,0 +1,27 @@
+{
+    "id": "uev_00000000000000000000000001",
+    "type": "deployment.created",
+    "createdAt": 1740000000000,
+    "region": "sfo1",
+    "payload": {
+        "team": {"id": "team_00000000000000000000000000"},
+        "user": {"id": "user_0000000000000000000000"},
+        "project": {"id": "prj_00000000000000000000000000"},
+        "target": null,
+        "plan": "pro",
+        "regions": ["sfo1"],
+        "deployment": {
+            "id": "dpl_00000000000000000000000001",
+            "name": "my-app",
+            "url": "my-app-git-feature-acme.vercel.app",
+            "meta": {
+                "githubCommitRef": "feature",
+                "githubCommitMessage": "Add search bar to the header"
+            }
+        },
+        "links": {
+            "deployment": "https://vercel.com/acme/my-app/dpl_00000000000000000000000001",
+            "project": "https://vercel.com/acme/my-app"
+        }
+    }
+}

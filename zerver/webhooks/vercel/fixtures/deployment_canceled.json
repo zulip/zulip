@@ -1,0 +1,35 @@
+{
+    "id": "uev_00000000000000000000000004",
+    "type": "deployment.canceled",
+    "createdAt": 1740000004000,
+    "region": "sfo1",
+    "payload": {
+        "team": {
+            "id": "team_00000000000000000000000000"
+        },
+        "user": {
+            "id": "user_0000000000000000000000"
+        },
+        "project": {
+            "id": "prj_00000000000000000000000000"
+        },
+        "target": "production",
+        "plan": "pro",
+        "regions": [
+            "sfo1"
+        ],
+        "deployment": {
+            "id": "dpl_00000000000000000000000004",
+            "name": "my-app",
+            "url": "my-app-000004.vercel.app",
+            "meta": {
+                "githubCommitRef": "main",
+                "githubCommitMessage": "Bump dependencies"
+            }
+        },
+        "links": {
+            "deployment": "https://vercel.com/acme/my-app/dpl_00000000000000000000000004",
+            "project": "https://vercel.com/acme/my-app"
+        }
+    }
+}

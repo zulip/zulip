@@ -951,6 +951,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("uptimerobot_monitor_up.json")],
         display_name="UptimeRobot",
     ),
+    IncomingWebhookIntegration("vercel", ["deployment", "continuous-integration"]),
     IncomingWebhookIntegration(
         "wekan",
         ["productivity", "project-management"],
@@ -1162,7 +1163,7 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # so the screenshot config is commented out.
     {"beeminder"}
     # Disabled integrations that are in the process of being added or rewritten.
-    | {"intercom", "notion"}
+    | {"intercom", "notion", "vercel"}
     # Integrations that call external API endpoints.
     | {"slack"}
     | hubot_integration_names
