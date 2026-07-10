@@ -97,7 +97,7 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         unread_count_type: "normal-count",
         supports_masked_unread: false,
         hidden_for_spectators: true,
-        menu_icon_class: "",
+        menu_icon_class: "alert-words-sidebar-menu-icon",
         menu_aria_label: $t({defaultMessage: "Alert words options"}),
         home_view_code: "",
         prioritize_in_condensed_view: false,
