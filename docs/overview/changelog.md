@@ -9,6 +9,9 @@ the [Zulip release lifecycle](../overview/release-lifecycle.md).
 
 _Unreleased_
 
+- Added an "Alert words" view to the left sidebar, showing unread
+  messages that contain one of your configured alert words.
+
 ### Zulip Server 13.0-rc1
 
 _Released 2026-10-30_
