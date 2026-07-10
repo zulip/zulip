@@ -2704,6 +2704,7 @@ test("navbar_helpers", ({override}) => {
     const is_dm = [{operator: "is", operand: "dm"}];
     const not_is_dm = [{operator: "is", operand: "dm", negated: true}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
+    const is_alerted = [{operator: "is", operand: "alerted"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const is_followed = [{operator: "is", operand: "followed"}];
     const channels_public = [{operator: "channels", operand: "public"}];
@@ -2764,7 +2765,6 @@ test("navbar_helpers", ({override}) => {
         {operator: "dm", operand: [filter_util.UNKNOWN_USER_ID, joe.user_id]},
     ];
     // not common narrows, but used for browser title updates
-    const is_alerted = [{operator: "is", operand: "alerted"}];
     const is_unread = [{operator: "is", operand: "unread"}];
     const channel_topic_near = [
         {operator: "channel", operand: foo_stream_id.toString()},
@@ -2848,6 +2848,15 @@ test("navbar_helpers", ({override}) => {
             redirect_url_with_search: "/#narrow/is/mentioned",
             description: "translated: Messages where you are mentioned.",
             link: "/help/view-your-mentions",
+        },
+        {
+            terms: is_alerted,
+            is_common_narrow: true,
+            zulip_icon: "exclamation-circle",
+            title: "translated: Alert words",
+            redirect_url_with_search: "/#narrow/is/alerted",
+            description: "translated: Messages containing one of your alert words.",
+            link: "/help/dm-mention-alert-notifications#alert-words",
         },
         {
             terms: is_resolved,
@@ -3043,13 +3052,6 @@ test("navbar_helpers", ({override}) => {
             redirect_url_with_search: "/#narrow/has/reaction/sender/me",
             description: "translated: Emoji reactions to your messages.",
             link: "/help/emoji-reactions",
-        },
-        {
-            terms: is_alerted,
-            is_common_narrow: false,
-            icon: undefined,
-            title: "translated: Alerted messages",
-            redirect_url_with_search: "#",
         },
         {
             terms: is_unread,
