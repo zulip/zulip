@@ -92,7 +92,7 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         // Placeholder icon until a dedicated one is designed; see #28778.
         icon: "zulip-icon-exclamation-circle",
         css_class_suffix: "alert_words",
-        tooltip_template_id: "",
+        tooltip_template_id: "alert-words-tooltip-template",
         has_unread_count: true,
         unread_count_type: "normal-count",
         supports_masked_unread: false,
