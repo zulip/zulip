@@ -76,3 +76,10 @@
         width: 15px;
     }
 }
+
+#draft-overlay-tab-switcher {
+    display: flex;
+    justify-content: flex-start;
+    /* Aligns the first tab with .drafts-header-note text (margin-left: 25px - 3px tab padding). */
+    margin: 8px 0 4px 22px;
+}

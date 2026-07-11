@@ -209,6 +209,7 @@ export const draft_model = (function () {
         if (update_count) {
             set_count(Object.keys(drafts).length);
             update_compose_draft_count();
+            draft_update_listener?.();
         }
     }
 
@@ -262,6 +263,19 @@ export const draft_model = (function () {
         deleteDrafts,
     };
 })();
+
+// Single-slot listener; calling set_draft_update_listener overwrites it.
+let draft_update_listener: (() => void) | undefined;
+
+export function set_draft_update_listener(callback: (() => void) | undefined): void {
+    draft_update_listener = callback;
+}
+
+export function notify_draft_update(): void {
+    // Fire the draft-update listener without a draft-model write, so the overlay
+    // can live-update when a tracked echo changes state (e.g. fails).
+    draft_update_listener?.();
+}
 
 export let update_compose_draft_count = (): void => {
     const $count_container = $(".compose-drafts-count-container");
@@ -760,7 +774,7 @@ export function initialize(): void {
 
     // Show exact time when draft was saved in UTC format.
     tippy.delegate("body", {
-        target: ".drafts-list .recipient_row_date",
+        target: "#draft_overlay .recipient_row_date",
         appendTo: () => document.body,
         delay: [750, 20], // LONG_HOVER_DELAY
         onShow(instance) {

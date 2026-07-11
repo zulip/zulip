@@ -177,6 +177,7 @@ export type Message = (
     failed_request?: boolean;
     show_slow_send_spinner?: boolean;
     resend?: boolean;
+    resend_in_progress?: boolean;
     local_id?: string;
 
     // The original markup for the message, which we'll have if we
