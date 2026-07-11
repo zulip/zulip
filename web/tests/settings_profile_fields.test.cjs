@@ -14,12 +14,14 @@ const DROPDOWN_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
 const PARAGRAPH_ID = 2;
 const USER_FIELD_ID = 6;
+const PRONOUNS_ID = 8;
 
 const SHORT_TEXT_NAME = "Short text";
 const DROPDOWN_NAME = "Dropdown";
 const EXTERNAL_ACCOUNT_NAME = "External account";
 const PARAGRAPH_NAME = "Paragraph";
 const USER_FIELD_NAME = "Person";
+const PRONOUNS_NAME = "Pronouns";
 
 const custom_profile_field_types = {
     SHORT_TEXT: {
@@ -41,6 +43,10 @@ const custom_profile_field_types = {
     USER: {
         id: USER_FIELD_ID,
         name: USER_FIELD_NAME,
+    },
+    PRONOUNS: {
+        id: PRONOUNS_ID,
+        name: PRONOUNS_NAME,
     },
 };
 
@@ -84,7 +90,7 @@ function test_populate(opts, template_data) {
 run_test("populate_profile_fields", ({mock_template, override}) => {
     make_list_widget_only_render_items(override);
 
-    override(realm, "custom_profile_fields", {});
+    override(realm, "custom_profile_fields", []);
     override(realm, "realm_default_external_accounts", JSON.stringify({}));
 
     const template_data = [];

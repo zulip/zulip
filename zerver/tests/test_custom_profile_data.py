@@ -713,9 +713,49 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
                 "display_in_profile_summary": "true",
             },
         )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertEqual(field.display_in_profile_summary, True)
+
+        field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "display_in_profile_summary": "true",
+            },
+        )
         self.assert_json_error(
             result, "Only 2 custom profile fields can be displayed in the profile summary."
         )
+
+    def test_first_pronoun_field_must_be_displayed(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        pronoun_field = CustomProfileField.objects.get(name="Pronouns", realm=realm)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{pronoun_field.id}",
+            info={
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_success(result)
+        pronoun_field.refresh_from_db()
+        self.assertEqual(pronoun_field.display_in_profile_summary, True)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{pronoun_field.id}",
+            info={
+                "display_in_profile_summary": "false",
+            },
+        )
+        self.assert_json_error(
+            result, "The first pronouns field must be displayed in the profile summary."
+        )
+
+        pronoun_field.refresh_from_db()
+        self.assertEqual(pronoun_field.display_in_profile_summary, True)
 
     def test_update_use_for_user_matching(self) -> None:
         self.login("iago")

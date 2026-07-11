@@ -165,10 +165,36 @@ def update_only_display_in_profile_summary(
     return True
 
 
+def get_first_pronoun_field(realm: Realm) -> CustomProfileField | None:
+    return (
+        CustomProfileField.objects.filter(
+            realm=realm,
+            field_type=CustomProfileField.PRONOUNS,
+        )
+        .order_by("order")
+        .first()
+    )
+
+
+def is_first_pronoun_field(realm: Realm, field_id: int | None, field_type: int) -> bool:
+    if field_type != CustomProfileField.PRONOUNS:
+        return False
+
+    first_pronoun_field = get_first_pronoun_field(realm)
+
+    return first_pronoun_field is None or (
+        field_id is not None and first_pronoun_field.id == field_id
+    )
+
+
 def display_in_profile_summary_limit_reached(
     realm: Realm, profile_field_id: int | None = None
 ) -> bool:
+    first_pronoun_field = get_first_pronoun_field(realm)
+
     query = CustomProfileField.objects.filter(realm=realm, display_in_profile_summary=True)
+    if first_pronoun_field is not None:
+        query = query.exclude(id=first_pronoun_field.id)
     if profile_field_id is not None:
         query = query.exclude(id=profile_field_id)
     return query.count() >= CustomProfileField.MAX_DISPLAY_IN_PROFILE_SUMMARY_FIELDS
@@ -191,7 +217,11 @@ def create_realm_custom_profile_field(
 ) -> HttpResponse:
     if field_data is None:
         field_data = {}
-    if display_in_profile_summary and display_in_profile_summary_limit_reached(user_profile.realm):
+    if (
+        display_in_profile_summary
+        and not is_first_pronoun_field(user_profile.realm, None, field_type)
+        and display_in_profile_summary_limit_reached(user_profile.realm)
+    ):
         raise JsonableError(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
         )
@@ -263,8 +293,17 @@ def update_realm_custom_profile_field(
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
-    if display_in_profile_summary and display_in_profile_summary_limit_reached(
-        user_profile.realm, field.id
+    if (
+        display_in_profile_summary is not None
+        and not display_in_profile_summary
+        and is_first_pronoun_field(user_profile.realm, field.id, field.field_type)
+    ):
+        raise JsonableError(_("The first pronouns field must be displayed in the profile summary."))
+
+    if (
+        display_in_profile_summary
+        and not is_first_pronoun_field(user_profile.realm, field.id, field.field_type)
+        and display_in_profile_summary_limit_reached(user_profile.realm, field.id)
     ):
         raise JsonableError(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
