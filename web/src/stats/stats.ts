@@ -202,17 +202,18 @@ function update_last_full_update(end_times: number[]): void {
 
     last_full_update = Math.min(last_full_update, end_times.at(-1)!);
     const update_time = new Date(last_full_update * 1000);
-    const locale_date = update_time.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
-    const locale_time = update_time.toLocaleTimeString(undefined, {
-        hour: "numeric",
-        minute: "numeric",
-    });
+    const locale_date = format_date(update_time, false);
+    const time_options: Intl.DateTimeFormatOptions = page_params.twenty_four_hour_time
+        ? {hourCycle: "h23", hour: "2-digit", minute: "2-digit"}
+        : {hourCycle: "h12", hour: "numeric", minute: "2-digit"};
 
-    $("#id_last_full_update").text(locale_time + " on " + locale_date);
+    const locale_time = new Intl.DateTimeFormat(page_params.request_language, time_options).format(
+        update_time,
+    );
+
+    $("#id_last_full_update").text(
+        $t({defaultMessage: "{time} on {date}"}, {time: locale_time, date: locale_date}),
+    );
     $("#id_last_full_update").closest(".last-update").show();
 }
 
