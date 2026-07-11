@@ -179,31 +179,20 @@ function floor_to_local_week(date: Date): Date {
 }
 
 function format_date(date: Date, include_hour: boolean): string {
-    const months = [
-        $t({defaultMessage: "January"}),
-        $t({defaultMessage: "February"}),
-        $t({defaultMessage: "March"}),
-        $t({defaultMessage: "April"}),
-        $t({defaultMessage: "May"}),
-        $t({defaultMessage: "June"}),
-        $t({defaultMessage: "July"}),
-        $t({defaultMessage: "August"}),
-        $t({defaultMessage: "September"}),
-        $t({defaultMessage: "October"}),
-        $t({defaultMessage: "November"}),
-        $t({defaultMessage: "December"}),
-    ];
-    const month_str = months[date.getMonth()];
-    const year = date.getFullYear();
-    const day = date.getDate();
+    const date_options: Intl.DateTimeFormatOptions = {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    };
     if (include_hour) {
-        const hour = date.getHours();
-
-        const str = hour >= 12 ? "PM" : "AM";
-
-        return `${month_str} ${day}, ${hour % 12}:00${str}`;
+        return new Intl.DateTimeFormat(page_params.request_language, {
+            ...date_options,
+            hour: "numeric",
+            minute: "2-digit",
+            hourCycle: page_params.twenty_four_hour_time ? "h23" : "h12",
+        }).format(date);
     }
-    return `${month_str} ${day}, ${year}`;
+    return new Intl.DateTimeFormat(page_params.request_language, date_options).format(date);
 }
 
 function update_last_full_update(end_times: number[]): void {
