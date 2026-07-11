@@ -225,6 +225,11 @@ export class Typeahead<ItemType extends string | object> {
     $container: JQuery;
     $menu: JQuery;
     $footer: JQuery;
+    scroll_fade_observer: IntersectionObserver | undefined;
+    scroll_fade_frame: number | undefined;
+    // Resolved once, so the scroll handler, the observer and the fade all
+    // read the same element.
+    scroll_fade_element: HTMLElement | undefined;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     dropup: boolean;
     automated: () => boolean;
@@ -466,6 +471,10 @@ export class Typeahead<ItemType extends string | object> {
                         // This detects any overflows by default and adjusts
                         // the placement of typeahead.
                         void instance.popperInstance?.update();
+                        // The typeahead is on screen and sized now, so we can
+                        // tell whether it scrolls. It is just opening, so the
+                        // fade should not animate in.
+                        this.update_scroll_fade(false);
                     });
 
                     // While the above requestAnimationFrame call works well in
@@ -514,6 +523,9 @@ export class Typeahead<ItemType extends string | object> {
             // Call this after $container is in DOM which is true here since
             // that happens in the constructor for non-tippy typeaheads.
             this.$container.show();
+            // The container is visible now, so we can tell whether it
+            // scrolls. It is just opening, so the fade should not animate in.
+            this.update_scroll_fade(false);
         }
 
         return this;
@@ -524,6 +536,7 @@ export class Typeahead<ItemType extends string | object> {
             return this;
         }
         this.shown = false;
+        this.teardown_scroll_fade();
         if (this.non_tippy_parent_element) {
             this.$container.hide();
         } else {
@@ -631,7 +644,100 @@ export class Typeahead<ItemType extends string | object> {
         // before we render it.
         scroll_util.get_scroll_element(this.$menu);
         scroll_util.get_content_element(this.$menu).empty().append($items);
+        this.update_scroll_fade();
         return this;
+    }
+
+    // Resolves the scroll element, doing the one-time setup on the first call.
+    setup_scroll_fade(): HTMLElement | undefined {
+        if (this.scroll_fade_element !== undefined) {
+            return this.scroll_fade_element;
+        }
+        const scroll_element = scroll_util.get_scroll_element(this.$menu)[0];
+        // The Node tests have no real DOM, and the fade is only visual.
+        if (typeof HTMLElement === "undefined" || !(scroll_element instanceof HTMLElement)) {
+            return undefined;
+        }
+        this.scroll_fade_element = scroll_element;
+        $(scroll_element).on("scroll.typeahead_scroll_fade", () => {
+            this.schedule_scroll_fade();
+        });
+        if (typeof IntersectionObserver !== "undefined") {
+            // Catches a scroll position set a frame after opening, with no
+            // scroll event: for example, reopening the search typeahead that
+            // was left scrolled to the bottom.
+            this.scroll_fade_observer = new IntersectionObserver(
+                () => {
+                    this.schedule_scroll_fade();
+                },
+                {root: scroll_element},
+            );
+        }
+        return scroll_element;
+    }
+
+    update_scroll_fade(animate = true): void {
+        if (this.setup_scroll_fade() === undefined) {
+            return;
+        }
+        // We just re-rendered, so point the observer at the new last result.
+        this.scroll_fade_observer?.disconnect();
+        const last_item = this.$menu.find("li").last()[0];
+        if (last_item !== undefined) {
+            this.scroll_fade_observer?.observe(last_item);
+        }
+        this.refresh_scroll_fade(animate);
+    }
+
+    schedule_scroll_fade(): void {
+        // Batch updates into one animation frame, so a scroll doesn't measure
+        // the layout on every event.
+        if (this.scroll_fade_frame !== undefined) {
+            return;
+        }
+        this.scroll_fade_frame = requestAnimationFrame(() => {
+            this.scroll_fade_frame = undefined;
+            this.refresh_scroll_fade();
+        });
+    }
+
+    refresh_scroll_fade(animate = true): void {
+        const scroll_element = this.scroll_fade_element;
+        if (scroll_element === undefined) {
+            return;
+        }
+        // Show the fade only when there are more results below the visible
+        // area. The 1px allowance covers rounding from SimpleBar.
+        const has_more_below =
+            scroll_element.scrollHeight - scroll_element.scrollTop - scroll_element.clientHeight >
+            1;
+        if (animate) {
+            this.$menu.toggleClass("has-scroll-fade", has_more_below);
+            return;
+        }
+        // The typeahead is opening, so the fade should already be there rather
+        // than fading in. Reading the layout forces the browser to apply the
+        // change while the transition is off, so only later changes animate.
+        this.$menu.addClass("no-scroll-fade-transition");
+        this.$menu.toggleClass("has-scroll-fade", has_more_below);
+        the(this.$menu).getBoundingClientRect();
+        this.$menu.removeClass("no-scroll-fade-transition");
+    }
+
+    teardown_scroll_fade(): void {
+        this.scroll_fade_observer?.disconnect();
+        if (this.scroll_fade_frame !== undefined) {
+            cancelAnimationFrame(this.scroll_fade_frame);
+            this.scroll_fade_frame = undefined;
+        }
+        if (this.scroll_fade_element !== undefined) {
+            $(this.scroll_fade_element).off("scroll.typeahead_scroll_fade");
+        }
+        this.$menu.removeClass("has-scroll-fade");
+        // The observer is rooted at the scroll element, so we clear both and
+        // set them up again the next time the typeahead is shown.
+        this.scroll_fade_element = undefined;
+        this.scroll_fade_observer = undefined;
     }
 
     next(): void {
