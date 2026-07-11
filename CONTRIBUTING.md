@@ -17,6 +17,8 @@ project](https://zulip.com/help/support-zulip-project).
 **Reading and following our written guidelines** to the very best of your ability is
 the only way to become a successful Zulip contributor.
 
+> **Pro Tip:** Start with `git commit --allow-empty` to test your PR workflow before making actual code changes.
+
 :::
 
 Zulip has a documentation-based approach to onboarding new contributors. As you
