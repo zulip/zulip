@@ -29,6 +29,7 @@ from zerver.tornado.event_queue import (
     add_client_gc_hook,
     allocate_client_descriptor,
     clients,
+    do_gc_event_queues,
     gc_event_queues,
     mark_clients_offline,
     maybe_enqueue_notifications,
@@ -1595,13 +1596,14 @@ class OfflineEventQueueTest(ZulipTestCase):
         self,
         user: UserProfile,
         queue_timeout: int | str | None,
+        event_types: list[str] | None = None,
     ) -> ClientDescriptor:
         queue_data: dict[str, Any] = dict(
             all_public_streams=False,
             apply_markdown=True,
             client_gravatar=True,
             client_type_name="ZulipFlutter",
-            event_types=["message"],
+            event_types=["message"] if event_types is None else event_types,
             last_connection_time=time.time(),
             queue_timeout=queue_timeout,
             realm_id=user.realm.id,
@@ -1739,6 +1741,105 @@ class OfflineEventQueueTest(ZulipTestCase):
             # For the expired queue, the long-lived queue is still active so
             # last_client_for_user is False and it short-circuits.
             mock_enqueue.assert_called_once()
+
+    @time_machine.travel(NOW, tick=False)
+    def test_gc_message_queue_before_non_message_queue(self) -> None:
+        hamlet = self.example_user("hamlet")
+        add_client_gc_hook(missedmessage_hook)
+
+        message_client = self.allocate_queue(
+            hamlet,
+            queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+            event_types=["message"],
+        )
+        non_message_client = self.allocate_queue(
+            hamlet,
+            queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+            event_types=["presence"],
+        )
+
+        iago = self.example_user("iago")
+        self.send_personal_message(iago, hamlet)
+
+        # First, expire only the queue containing the message event. The
+        # presence-only queue should not prevent this from being treated as
+        # the user's last message-receiving client.
+        message_client.last_connection_time = time.time() - DEFAULT_EVENT_QUEUE_TIMEOUT_SECS - 1
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            gc_event_queues(port=9993)
+
+            self.assertNotIn(message_client.event_queue.id, clients)
+            self.assertIn(non_message_client.event_queue.id, clients)
+
+            # Later, garbage collecting the presence-only queue cannot send
+            # the missed-message notification, since it has no message event.
+            non_message_client.last_connection_time = (
+                time.time() - DEFAULT_EVENT_QUEUE_TIMEOUT_SECS - 1
+            )
+            gc_event_queues(port=9993)
+
+            mock_enqueue.assert_called_once()
+
+    @time_machine.travel(NOW, tick=False)
+    def test_gc_multiple_message_queues_in_same_sweep(self) -> None:
+        hamlet = self.example_user("hamlet")
+        add_client_gc_hook(missedmessage_hook)
+
+        message_clients = [
+            self.allocate_queue(
+                hamlet,
+                queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+                event_types=["message"],
+            )
+            for _ in range(2)
+        ]
+
+        iago = self.example_user("iago")
+        self.send_personal_message(iago, hamlet)
+
+        # Both queues contain the same message event and expire in the same
+        # sweep. Only one queue should be treated as the user's last
+        # message-receiving client, to avoid duplicate notifications.
+        for client in message_clients:
+            client.last_connection_time = time.time() - DEFAULT_EVENT_QUEUE_TIMEOUT_SECS - 1
+
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            gc_event_queues(port=9993)
+
+            for client in message_clients:
+                self.assertNotIn(client.event_queue.id, clients)
+            mock_enqueue.assert_called_once()
+
+    def test_gc_message_and_non_message_queues_in_same_sweep(self) -> None:
+        hamlet = self.example_user("hamlet")
+        message_client = self.allocate_queue(
+            hamlet,
+            queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+            event_types=["message"],
+        )
+        non_message_client = self.allocate_queue(
+            hamlet,
+            queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+            event_types=["presence"],
+        )
+
+        gc_hook = mock.Mock()
+        add_client_gc_hook(gc_hook)
+
+        # A dict keys view is an ordered AbstractSet, making the non-message
+        # queue the last queue considered for notification responsibility.
+        to_remove = dict.fromkeys(
+            [message_client.event_queue.id, non_message_client.event_queue.id]
+        ).keys()
+        do_gc_event_queues(to_remove, {hamlet.id}, {hamlet.realm_id})
+
+        self.assertEqual(
+            gc_hook.call_args_list,
+            [
+                mock.call(hamlet.id, message_client, True),
+                mock.call(hamlet.id, non_message_client, False),
+            ],
+        )
 
     def test_idle_queue_timeout_resolution(self) -> None:
         hamlet = self.example_user("hamlet")

@@ -563,6 +563,17 @@ def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> Clie
     return client
 
 
+def user_has_active_message_queue(user_id: int, to_remove: AbstractSet[str]) -> bool:
+    for client in get_client_descriptors_for_user(user_id):
+        if (
+            client.accepts_messages()
+            and not client.offline
+            and client.event_queue.id not in to_remove
+        ):
+            return True
+    return False
+
+
 def do_gc_event_queues(
     to_remove: AbstractSet[str], affected_users: AbstractSet[int], affected_realms: AbstractSet[int]
 ) -> None:
@@ -584,21 +595,31 @@ def do_gc_event_queues(
     for realm_id in affected_realms:
         filter_client_dict(realm_clients_all_streams, realm_id)
 
-    # TODO: If a user has multiple queues and all of them are being
-    # removed in the same sweep, `last_client_for_user` will be
-    # True for all of them, causing `missedmessage_hook` to enqueue
-    # duplicate notifications. Push notifications are deduplicated
-    # by the `active_mobile_push_notification` flag on UserMessage,
-    # but email notifications are not — duplicate
-    # ScheduledMessageNotificationEmail rows will be created.
-    # The same issue exists in mark_clients_offline below.
+    # pick an arbitrary message queue when user has multiple message queues to clean up
+    # this prevents duplicate notifications
+    notification_queue_by_user: dict[int, str] = {}
+    for queue_id in to_remove:
+        user_id = clients[queue_id].user_profile_id
+
+        if not clients[queue_id].accepts_messages():
+            continue
+
+        if user_has_active_message_queue(user_id, to_remove):
+            continue
+
+        notification_queue_by_user[user_id] = queue_id
+
     for id in to_remove:
         web_reload_clients.pop(id, None)
+
+        client = clients[id]
+
+        # Note: the only hook ever added is `missedmessage_hook`
         for cb in gc_hooks:
             cb(
-                clients[id].user_profile_id,
-                clients[id],
-                clients[id].user_profile_id not in user_clients,
+                client.user_profile_id,
+                client,
+                notification_queue_by_user.get(client.user_profile_id) == id,
             )
         del clients[id]
 
@@ -616,10 +637,8 @@ def mark_clients_offline(
     # do_gc_event_queues for last_client_for_user.
     users_with_active_queues: set[int] = set()
     for user_id in affected_users:
-        for c in get_client_descriptors_for_user(user_id):
-            if c.accepts_messages() and not c.offline and c.event_queue.id not in to_mark_offline:
-                users_with_active_queues.add(user_id)
-                break
+        if user_has_active_message_queue(user_id, to_mark_offline):
+            users_with_active_queues.add(user_id)
 
     for id in to_mark_offline:
         client = clients[id]
