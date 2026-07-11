@@ -678,6 +678,7 @@ test("format_drafts", ({override, mock_template}) => {
     $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".outbox-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
 
@@ -710,6 +711,7 @@ test("outbox resend uses echo pipeline", ({override, mock_template}) => {
     $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".outbox-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
     drafts_overlay_ui.launch();
 
     const $row = $.create("outbox row");
@@ -755,6 +757,7 @@ test("outbox cancel propagates to echo abort pipeline", ({override, mock_templat
     $.set_results(".drafts-list", []);
     $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
     $.set_results(".outbox-tab-pane .overlay-message-row", []);
     drafts_overlay_ui.launch();
 
@@ -806,6 +809,7 @@ test("ghost outbox draft treated as regular draft", ({override, mock_template}) 
     $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".outbox-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
 
@@ -842,6 +846,7 @@ test("in-flight draft hidden from both tabs", ({override, mock_template}) => {
     $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".outbox-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
 
@@ -884,11 +889,103 @@ test("outbox tab", ({override, mock_template}) => {
     $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".outbox-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
     drafts_overlay_ui.launch();
 
     // With no regular drafts and an outbox message, the overlay opens
     // on the outbox tab and focuses the outbox row.
     assert.equal(initial_focus_id, "outbox_id");
+});
+
+function set_up_two_selected_outbox_rows() {
+    const $row_a = $.create("row a");
+    $row_a.attr("data-draft-id", "outbox_a");
+    const $row_b = $.create("row b");
+    $row_b.attr("data-draft-id", "outbox_b");
+
+    // Each "checked" checkbox stub returns its own row from closest().
+    const $checkbox_a = $.create("checkbox a");
+    $checkbox_a.set_closest_results(".overlay-message-row", $row_a);
+    const $checkbox_b = $.create("checkbox b");
+    $checkbox_b.set_closest_results(".overlay-message-row", $row_b);
+
+    const $outbox_list = $(".outbox-list");
+    $outbox_list.set_find_results(".outbox-selection-checkbox.fa-check-square", [
+        $checkbox_a,
+        $checkbox_b,
+    ]);
+}
+
+function launch_outbox_with_two_drafts({override, mock_template}) {
+    const ls = localstorage();
+    ls.set("drafts", {
+        outbox_a: {
+            stream_id,
+            topic: "t",
+            type: "stream",
+            content: "A",
+            updatedAt: mock_current_timestamp,
+            is_sending_saving: true,
+            drafts_version: 1,
+        },
+        outbox_b: {
+            stream_id,
+            topic: "t",
+            type: "stream",
+            content: "B",
+            updatedAt: mock_current_timestamp,
+            is_sending_saving: true,
+            drafts_version: 1,
+        },
+    });
+    clock.setSystemTime(mock_current_timestamp);
+
+    override(user_pill, "get_user_ids", () => []);
+    compose_state.set_message_type("private");
+    override(messages_overlay_ui, "set_initial_element", noop);
+    override(settings_data, "using_dark_theme", () => false);
+    override(echo, "get_local_echo_status_for_draft", () => "failed");
+
+    mock_template("draft_table_body.hbs", false, () => "<draft table stub>");
+
+    $.set_results(".drafts-list", []);
+    $.set_results(".drafts-tab-pane .overlay-message-row", []);
+    $.set_results(".outbox-tab-pane .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
+
+    drafts_overlay_ui.launch();
+}
+
+test("outbox bulk cancel batches all selected ids", ({override, mock_template}) => {
+    launch_outbox_with_two_drafts({override, mock_template});
+    set_up_two_selected_outbox_rows();
+
+    let abort_called_with;
+    override(echo, "abort_messages_by_draft_ids", (draft_ids) => {
+        abort_called_with = draft_ids;
+    });
+
+    $(".cancel-selected-outbox-button").trigger("click");
+
+    assert.deepEqual(abort_called_with, ["outbox_a", "outbox_b"]);
+});
+
+test("outbox bulk resend collects all selected ids", ({override, mock_template}) => {
+    launch_outbox_with_two_drafts({override, mock_template});
+    set_up_two_selected_outbox_rows();
+
+    // The resend handler reads :disabled to debounce; default to enabled.
+    $(".resend-selected-outbox-button").set_matches(":disabled", false);
+
+    const resend_calls = [];
+    override(echo, "resend_message_by_draft_id", (id) => {
+        resend_calls.push(id);
+    });
+
+    $(".resend-selected-outbox-button").trigger("click");
+
+    assert.deepEqual(resend_calls, ["outbox_a", "outbox_b"]);
 });
 
 test("filter_drafts", ({override, mock_template}) => {
@@ -1042,6 +1139,7 @@ test("filter_drafts", ({override, mock_template}) => {
     $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".outbox-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
 
@@ -1098,6 +1196,7 @@ test("server_rendering_for_backend_only_syntax", ({override, mock_template}) => 
     $.set_results(".drafts-list", []);
     $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".outbox-tab-pane .overlay-message-row", []);
+    $.set_results(".outbox-selection-checkbox", []);
     $.set_results(".draft-selection-checkbox", []);
 
     override(channel, "post", (payload) => {

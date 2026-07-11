@@ -30,6 +30,20 @@
                             <i class="fa fa-square-o select-state-indicator" aria-hidden="true"></i>
                         </button>
                     </div>
+                    <div class="outbox-actions-group" style="display: none;">
+                        <div class="outbox-bulk-action-icons">
+                            <div class="resend-selected-outbox-button-container">
+                                {{> ./components/icon_button intent="neutral" custom_classes="resend-selected-outbox-button" icon="refresh-cw" aria-label=(t "Resend all selected messages") disabled=true }}
+                            </div>
+                            <div class="cancel-selected-outbox-button-container">
+                                {{> ./components/icon_button intent="danger" custom_classes="cancel-selected-outbox-button" icon="circle-x" aria-label=(t "Cancel all selected messages") disabled=true }}
+                            </div>
+                        </div>
+                        <button class="action-button action-button-subtle-neutral select-outbox-button" role="checkbox" aria-checked="false">
+                            <span>{{t "Select all messages" }}</span>
+                            <i class="fa fa-square-o select-state-indicator" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="drafts-tab-pane">

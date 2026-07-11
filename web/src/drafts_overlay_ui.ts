@@ -357,12 +357,14 @@ function update_tab_visibility(): void {
         $(".drafts-tab-pane").show();
         $(".outbox-tab-pane").hide();
         $(".delete-drafts-group").show();
+        $(".outbox-actions-group").hide();
         $(".drafts-instruction-note").show();
         $(".outbox-instruction-note").hide();
     } else {
         $(".drafts-tab-pane").hide();
         $(".outbox-tab-pane").show();
         $(".delete-drafts-group").hide();
+        $(".outbox-actions-group").show();
         $(".drafts-instruction-note").hide();
         $(".outbox-instruction-note").show();
     }
@@ -462,6 +464,7 @@ function render_widgets(
     }
     update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     update_bulk_delete_ui();
+    update_bulk_outbox_ui();
     // Re-runs on every render; cache hits avoid the network round trip.
     fetch_server_rendered_drafts([...narrow_drafts, ...other_drafts]);
 }
@@ -539,6 +542,12 @@ function setup_event_handlers(): void {
         const $row = $(this).closest(".overlay-message-row");
         cancel_outbox_messages($row);
     });
+
+    $("#drafts_table .outbox-selection-checkbox").on("click", (e) => {
+        const is_checked = is_checkbox_icon_checked($(e.target));
+        toggle_checkbox_icon_state($(e.target), !is_checked);
+        update_bulk_outbox_ui();
+    });
 }
 
 function setup_bulk_actions_handlers(): void {
@@ -560,6 +569,56 @@ function setup_bulk_actions_handlers(): void {
             .closest(".overlay-message-row");
         remove_drafts($selected_rows);
         update_bulk_delete_ui();
+    });
+
+    $(".select-outbox-button").on("click", (e) => {
+        e.preventDefault();
+        const $unchecked = $(".outbox-selection-checkbox").filter(function () {
+            return !is_checkbox_icon_checked($(this));
+        });
+        const check_all = $unchecked.length > 0;
+        $(".outbox-selection-checkbox").each(function () {
+            toggle_checkbox_icon_state($(this), check_all);
+        });
+        update_bulk_outbox_ui();
+    });
+
+    $(".resend-selected-outbox-button").on("click", function () {
+        if ($(this).is(":disabled")) {
+            return;
+        }
+        // Collect ids first so DOM removals don't affect iteration.
+        const draft_ids: string[] = [];
+        $(".outbox-list")
+            .find(".outbox-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row")
+            .each(function () {
+                draft_ids.push($(this).attr("data-draft-id")!);
+            });
+        // No debounce needed: resend_message ignores an echo whose resend is
+        // already in flight, and the button stays enabled so a failed batch
+        // is still retryable.
+        for (const draft_id of draft_ids) {
+            echo.resend_message_by_draft_id(draft_id);
+        }
+    });
+
+    $(".cancel-selected-outbox-button").on("click", () => {
+        const $selected_rows = $(".outbox-list")
+            .find(".outbox-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row");
+        cancel_outbox_messages($selected_rows);
+    });
+}
+
+export function update_bulk_outbox_ui(): void {
+    update_bulk_action_ui({
+        checkbox_selector: ".outbox-selection-checkbox",
+        select_button_selector: ".select-outbox-button",
+        action_button_selectors: [
+            ".resend-selected-outbox-button",
+            ".cancel-selected-outbox-button",
+        ],
     });
 }
 
@@ -620,6 +679,7 @@ function rerender_drafts(): void {
     // Re-run now that the checkboxes are restored (render_widgets ran these
     // against the empty pre-restore selection).
     update_bulk_delete_ui();
+    update_bulk_outbox_ui();
     for (const [selector, scroll_top] of scroll_tops) {
         const $list = $(selector);
         if ($list.length > 0 && scroll_top > 0) {

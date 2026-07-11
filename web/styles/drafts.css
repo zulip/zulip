@@ -25,12 +25,6 @@
             justify-content: flex-end;
             gap: 10px;
 
-            .delete-selected-drafts-button {
-                &:focus {
-                    background-color: hsl(0deg 0% 93%);
-                }
-            }
-
             .select-drafts-button {
                 display: flex;
                 align-items: center;
@@ -38,20 +32,22 @@
                 margin-right: 25px;
                 padding-left: 15px;
                 padding-right: 15px;
-
-                &:focus {
-                    background-color: hsl(0deg 0% 93%);
-                }
-            }
-
-            .select-state-indicator {
-                width: 15px;
             }
 
             @media (width < $lg_min) {
                 margin-top: 5px;
                 width: 100%;
             }
+        }
+
+        .select-state-indicator {
+            width: var(--base-font-size-px);
+        }
+
+        .delete-selected-drafts-button:focus,
+        .select-drafts-button:focus,
+        .select-outbox-button:focus {
+            background-color: hsl(0deg 0% 93%);
         }
 
         @media (width < $lg_min) {
@@ -68,7 +64,8 @@
         }
     }
 
-    .draft-selection-checkbox {
+    .draft-selection-checkbox,
+    .outbox-selection-checkbox {
         margin-top: 0.25em;
         /* Required to make sure that the checkbox icon stays inside
            the grid. Any value greater than 13px (original width of
@@ -82,4 +79,30 @@
     justify-content: flex-start;
     /* Aligns the first tab with .drafts-header-note text (margin-left: 25px - 3px tab padding). */
     margin: 8px 0 4px 22px;
+}
+
+.outbox-actions-group {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+
+    .outbox-bulk-action-icons {
+        display: flex;
+        align-items: center;
+    }
+
+    .select-outbox-button {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-right: 25px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    @media (width < $lg_min) {
+        margin-top: 5px;
+        width: 100%;
+    }
 }
