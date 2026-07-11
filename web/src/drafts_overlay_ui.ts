@@ -463,33 +463,45 @@ export function launch(): void {
     setup_bulk_actions_handlers();
 }
 
-export function update_bulk_delete_ui(): void {
-    const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
-        return !is_checkbox_icon_checked($(this));
-    });
-    const $checked_checkboxes = $(".draft-selection-checkbox").filter(function () {
+function update_bulk_action_ui({
+    checkbox_selector,
+    select_button_selector,
+    action_button_selectors,
+}: {
+    checkbox_selector: string;
+    select_button_selector: string;
+    action_button_selectors: string[];
+}): void {
+    const $checkboxes = $(checkbox_selector);
+    const $checked = $checkboxes.filter(function () {
         return is_checkbox_icon_checked($(this));
     });
-    const $select_drafts_button = $(".select-drafts-button");
-    const $select_state_indicator = $(".select-drafts-button .select-state-indicator");
-    const $delete_selected_drafts_button = $(".delete-selected-drafts-button");
+    const $unchecked = $checkboxes.filter(function () {
+        return !is_checkbox_icon_checked($(this));
+    });
+    const $select_button = $(select_button_selector);
+    const $select_indicator = $(`${select_button_selector} .select-state-indicator`);
+    const $action_buttons = $(action_button_selectors.join(","));
 
-    if ($checked_checkboxes.length > 0) {
-        $delete_selected_drafts_button.prop("disabled", false);
-        if ($unchecked_checkboxes.length === 0) {
-            toggle_checkbox_icon_state($select_state_indicator, true);
-        } else {
-            toggle_checkbox_icon_state($select_state_indicator, false);
-        }
+    if ($checked.length > 0) {
+        $action_buttons.prop("disabled", false);
+        toggle_checkbox_icon_state($select_indicator, $unchecked.length === 0);
+    } else if ($unchecked.length > 0) {
+        $select_button.show();
+        $action_buttons.show().prop("disabled", true);
+        toggle_checkbox_icon_state($select_indicator, false);
     } else {
-        if ($unchecked_checkboxes.length > 0) {
-            toggle_checkbox_icon_state($select_state_indicator, false);
-            $delete_selected_drafts_button.prop("disabled", true);
-        } else {
-            $select_drafts_button.hide();
-            $delete_selected_drafts_button.hide();
-        }
+        $select_button.hide();
+        $action_buttons.hide();
     }
+}
+
+export function update_bulk_delete_ui(): void {
+    update_bulk_action_ui({
+        checkbox_selector: ".draft-selection-checkbox",
+        select_button_selector: ".select-drafts-button",
+        action_button_selectors: [".delete-selected-drafts-button"],
+    });
 }
 
 export function open_overlay(): void {
