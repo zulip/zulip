@@ -36,6 +36,7 @@ from .configured_settings import (
     EMAIL_BACKEND,
     EMAIL_HOST,
     EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES,
+    ENABLE_ZULIP_OAUTH,
     ERROR_REPORTING,
     EXTERNAL_HOST,
     EXTERNAL_HOST_WITHOUT_PORT,
@@ -276,6 +277,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "confirmation",
+    # Experimental OAuth provider (django-oauth-toolkit). Only load when enabled
+    # so production installs with ENABLE_ZULIP_OAUTH=False do not register the
+    # app, its models, or its migrations.
+    *(["oauth2_provider"] if ENABLE_ZULIP_OAUTH else []),
     "zerver",
     "social_django",
     "django_scim",
@@ -728,6 +733,24 @@ TEMPLATES = [
     non_html_template_engine_settings,
     two_factor_template_engine_settings,
 ]
+
+if ENABLE_ZULIP_OAUTH:
+    # oauth2_provider uses the default Django template engine (not Jinja2), so we
+    # need to add config for it here.
+    oauth_templates_options = deepcopy(default_template_engine_settings["OPTIONS"])
+    del oauth_templates_options["environment"]
+    del oauth_templates_options["extensions"]
+    oauth_templates_options["loaders"] = ["zproject.template_loaders.OauthLoader"]
+
+    oauth_template_engine_settings = {
+        "NAME": "OAuth_Server",
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": False,
+        "OPTIONS": oauth_templates_options,
+    }
+    TEMPLATES.append(oauth_template_engine_settings)
+
 ########################################################################
 # LOGGING SETTINGS
 ########################################################################

@@ -3,7 +3,8 @@ set -e
 echo 'Testing whether migrations are consistent with models'
 
 # Check if any migration looks to have a meaningless 'auto' name,
-# other than the existing handful from 2016 and 2017.
+# other than the existing handful from 2016 and 2017, and the ones
+# introduced by oauth2_provider.
 new_auto_named_migrations=$(./manage.py showmigrations \
     | grep -E ' [0-9]{4}_auto_' \
     | grep -Eve ' [0-9]{4}_auto_201[67]' \
@@ -13,6 +14,10 @@ new_auto_named_migrations=$(./manage.py showmigrations \
         -e ' 0002_auto_20190420_0723' \
         -e ' 0009_auto_20191118_0520' \
         -e ' 0007_auto_20201201_1019' \
+        -e ' 0002_auto_20190406_1805' \
+        -e ' 0003_auto_20201211_1314' \
+        -e ' 0004_auto_20200902_2022' \
+        -e ' 0005_auto_20211222_2352' \
     | sed 's/\[[x ]\] /  /' \
     || true)
 if [ "$new_auto_named_migrations" != "" ]; then
