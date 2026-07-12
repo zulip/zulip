@@ -59,7 +59,7 @@ allow using single underscores within each segment.
 
 To get the HTTP header value from the fixture's filename in your `tests.py`,
 you can use the `default_fixture_to_headers` function in
-`zerver/webhooks/common.py`, like so:
+`zerver/lib/webhooks/common.py`, like so:
 
 ```python
 fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
