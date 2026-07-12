@@ -4,6 +4,7 @@ import re
 import uuid
 from collections import defaultdict
 from collections.abc import Callable
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 
@@ -12,6 +13,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
+from oauth2_provider.models import AccessToken, Application
 from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
@@ -29,6 +31,7 @@ from zerver.decorator import (
     public_json_view,
     return_success_on_head_request,
     validate_api_key,
+    validate_oauth_key,
     web_public_view,
     webhook_view,
     zulip_login_required,
@@ -41,6 +44,7 @@ from zerver.lib.exceptions import (
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
     JsonableError,
+    UnauthorizedError,
     UnsupportedWebhookEventTypeError,
 )
 from zerver.lib.initial_password import initial_password
@@ -465,7 +469,17 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         credentials = f"{user_profile.email}:{api_key}"
         api_auth = "Digest " + base64.b64encode(credentials.encode()).decode()
         result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
-        self.assert_json_error(result, "This endpoint requires HTTP basic authentication.")
+        self.assert_json_error(
+            result,
+            "This endpoint requires HTTP basic authentication or bearer token authentication.",
+        )
+
+        with self.settings(ENABLE_ZULIP_OAUTH=False):
+            result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
+            self.assert_json_error(
+                result,
+                "This endpoint requires HTTP basic authentication.",
+            )
 
         api_auth = "Basic " + base64.b64encode(b"foo").decode()
         result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
@@ -473,10 +487,145 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             result, "Invalid authorization header for basic auth", status_code=401
         )
 
-        result = self.client_post("/api/v1/external/zendesk", {})
+        # For coverage
+        result = self.client_post("/api/v1/remotes/push/register", {})
         self.assert_json_error(
             result, "Missing authorization header for basic auth", status_code=401
         )
+
+        result = self.client_post(
+            "/api/v1/remotes/push/register", {}, HTTP_AUTHORIZATION="bearer token"
+        )
+        self.assert_json_error(result, "This endpoint requires HTTP basic authentication.")
+
+        result = self.client_post("/api/v1/external/zendesk", {})
+        self.assert_json_error(result, "Missing authorization header", status_code=401)
+        self.assertEqual(
+            result["WWW-Authenticate"],
+            'Bearer realm="zulip", Basic realm="zulip"',
+        )
+
+        with self.settings(ENABLE_ZULIP_OAUTH=False):
+            result = self.client_post("/api/v1/external/zendesk", {})
+            self.assert_json_error(result, "Missing authorization header", status_code=401)
+            self.assertEqual(result["WWW-Authenticate"], 'Basic realm="zulip"')
+
+        result = self.client_post(
+            "/api/v1/external/zendesk",
+            {},
+            HTTP_AUTHORIZATION="Bearer invalid-token",
+        )
+        self.assert_json_error(result, "OAuth token verification failed", status_code=401)
+        self.assertEqual(result["WWW-Authenticate"], 'Bearer realm="zulip"')
+
+    def test_authenticated_rest_api_view_oauth_bearer_token(self) -> None:
+        @authenticated_rest_api_view()
+        def my_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+            return json_success(request)
+
+        user_profile = self.example_user("hamlet")
+        application = Application.objects.create(
+            name="test_app",
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        access_token = AccessToken.objects.create(
+            user=user_profile,
+            token="test-bearer-token",
+            application=application,
+            expires=timezone_now() + timedelta(days=1),
+        )
+
+        request = HostRequestMock(host="zulip.testserver")
+        request.method = "POST"
+        request.META["HTTP_AUTHORIZATION"] = f"Bearer {access_token.token}"
+
+        response = my_view(request)
+        self.assert_json_success(response)
+
+    def test_authenticated_rest_api_view_oauth_bearer_sets_is_webhook_view(
+        self,
+    ) -> None:
+        @authenticated_rest_api_view(webhook_client_name="GitHub")
+        def my_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+            return json_success(request)
+
+        user_profile = self.example_user("hamlet")
+        application = Application.objects.create(
+            name="test_app",
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        access_token = AccessToken.objects.create(
+            user=user_profile,
+            token="test-bearer-webhook-token",
+            application=application,
+            expires=timezone_now() + timedelta(days=1),
+        )
+
+        request = HostRequestMock(host="zulip.testserver")
+        request.method = "POST"
+        request.META["HTTP_AUTHORIZATION"] = f"Bearer {access_token.token}"
+
+        self.assertFalse(RequestNotes.get_notes(request).is_webhook_view)
+        response = my_view(request)
+        self.assert_json_success(response)
+        self.assertTrue(RequestNotes.get_notes(request).is_webhook_view)
+
+    def test_authenticated_rest_api_view_oauth_failure_unauthorized(self) -> None:
+        @authenticated_rest_api_view()
+        def my_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+            return json_success(request)  # nocoverage
+
+        request = HostRequestMock(host="zulip.testserver")
+        request.method = "POST"
+        request.META["HTTP_AUTHORIZATION"] = "Bearer invalid-token"
+
+        with self.assertRaisesRegex(JsonableError, "OAuth token verification failed"):
+            validate_oauth_key(request)
+
+        with self.assertRaises(UnauthorizedError) as m:
+            my_view(request)
+        self.assertEqual(m.exception.msg, "OAuth token verification failed")
+        self.assertEqual(m.exception.www_authenticate, 'Bearer realm="zulip"')
+
+    def test_authenticated_rest_api_view_oauth_failure_for_incoming_webhook_bot(self) -> None:
+        @authenticated_rest_api_view()
+        def my_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+            return json_success(request)  # nocoverage
+
+        user_profile = self.example_user("webhook_bot")
+
+        application = Application.objects.create(
+            name="test_app",
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+
+        access_token = AccessToken.objects.create(
+            user=user_profile,
+            token="test-bearer-token",
+            application=application,
+            expires=timezone_now() + timedelta(days=1),
+        )
+
+        request = HostRequestMock(host="zulip.testserver")
+        request.method = "POST"
+        request.META["HTTP_AUTHORIZATION"] = f"Bearer {access_token.token}"
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            "This authentication scheme is not available to incoming webhooks",
+        ):
+            validate_oauth_key(request)
+
+        with self.assertRaises(UnauthorizedError) as m:
+            my_view(request)
+        self.assertEqual(
+            m.exception.msg,
+            "This authentication scheme is not available to incoming webhooks",
+        )
+        self.assertEqual(m.exception.www_authenticate, 'Bearer realm="zulip"')
 
 
 class RateLimitTestCase(ZulipTestCase):
@@ -910,6 +1059,34 @@ class TestValidateApiKey(ZulipTestCase):
         zulip_realm = get_realm("zulip")
         self.webhook_bot = get_user("webhook-bot@zulip.com", zulip_realm)
         self.default_bot = get_user("default-bot@zulip.com", zulip_realm)
+
+    def test_validate_oauth_key_success(self) -> None:
+        user_profile = self.example_user("hamlet")
+        application = Application.objects.create(
+            name="test_app",
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        access_token = AccessToken.objects.create(
+            user=user_profile,
+            token="test-token",
+            application=application,
+            expires=timezone_now() + timedelta(days=1),
+        )
+
+        request = HostRequestMock(host="zulip.testserver")
+        request.method = "GET"
+        request.META["HTTP_AUTHORIZATION"] = f"Bearer {access_token.token}"
+
+        user_from_token = validate_oauth_key(request)
+        self.assertEqual(user_from_token.id, user_profile.id)
+        self.assertEqual(request.user.id, user_profile.id)
+
+    def test_validate_oauth_key_failure(self) -> None:
+        request = HostRequestMock(host="zulip.testserver")
+        request.method = "GET"
+        with self.assertRaises(JsonableError):
+            validate_oauth_key(request)
 
     def test_has_api_key_format(self) -> None:
         self.assertFalse(has_api_key_format("TooShort"))

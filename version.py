@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 506
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (384, 0)  # bumped 2026-07-04 to update build_timezone_values
+PROVISION_VERSION = (384, 1)  # bumped 2026-07-12 to add django-oauth-toolkit
