@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 509
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (389, 0)  # bumped 2026-08-19 to upgrade Python requirements
+PROVISION_VERSION = (389, 1)  # bumped 2026-08-25 to add django-oauth-toolkit
