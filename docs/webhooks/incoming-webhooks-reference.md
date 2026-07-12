@@ -57,8 +57,9 @@ allow using single underscores within each segment.
 
 ### Extracting event-type HTTP headers from fixtures
 
-To get the HTTP header value from the fixture's filename in your `tests.py`,
-you can use the `default_fixture_to_headers` function in
+To get the HTTP header value from the fixture's filename in your
+tests, you can define a `fixture_to_headers` function in your
+`view.py`, using the `default_fixture_to_headers` function in
 `zerver/lib/webhooks/common.py`, like so:
 
 ```python
@@ -70,9 +71,8 @@ fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
 The default implementation `default_fixture_to_headers` uses the first part
 of the fixture's filename as the header value, separated by a double
 underscore (`__`). If you need to use a different method for encoding the
-header value(s), you can directly pass your function with the custom parsing
-logic to the `fixture_to_headers` function defined in
-`zerver/tests/test_webhooks_common.py`, instead of using
+header value(s), you can define your own `fixture_to_headers` function with
+the custom parsing logic in your `view.py`, instead of using
 `default_fixture_to_headers`.
 
 ## Custom URL query parameters
