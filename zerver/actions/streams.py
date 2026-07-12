@@ -763,6 +763,12 @@ def send_private_channel_subscription_notification(
     if not stream.invite_only:
         return
 
+    # Skip notifications for deactivated streams — the notification bot
+    # cannot post to an archived invite-only channel, and there is no
+    # meaningful audience for join/leave events on a stream being torn down.
+    if stream.deactivated:
+        return
+
     sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
     acting_user_mention = silent_mention_syntax_for_user(acting_user)
 
@@ -1252,7 +1258,7 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             users_by_stream[stream.id].append(user)
         for stream in streams:
-            if stream.id in users_by_stream:
+            if stream.id in users_by_stream and not stream.deactivated:
                 send_private_channel_subscription_notification(
                     stream,
                     users_by_stream[stream.id],
