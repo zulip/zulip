@@ -173,9 +173,18 @@ export const message_content = get_or_set("textarea#compose-textarea", true);
 
 const untrimmed_message_content = get_or_set("textarea#compose-textarea", true, true);
 
+function cursor_at_start_of_content_in_compose(): boolean {
+    return $("textarea#compose-textarea").caret() === 0;
+}
+
 function cursor_at_start_of_whitespace_in_compose(): boolean {
     const cursor_position = $("textarea#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
+}
+
+function cursor_at_end_of_content_in_compose(): boolean {
+    const cursor_position = $("textarea#compose-textarea").caret();
+    return cursor_position === untrimmed_message_content().length;
 }
 
 export function focus_in_formatting_buttons(): boolean {
@@ -230,6 +239,27 @@ export function focus_in_empty_compose(
     }
 
     return false;
+}
+
+function focus_in_unedited_restored_draft(): boolean {
+    // A user pressing the Up Arrow at the start, or the Down Arrow at
+    // the end, of an unedited restored draft is most likely trying to
+    // navigate messages. The callers check the cursor position.
+    if (!composing()) {
+        return false;
+    }
+
+    // Only apply this check when focus is in the message textarea. The
+    // arrow keys have different semantics in other compose inputs.
+    return document.activeElement?.id === "compose-textarea" && is_content_unedited_restored_draft;
+}
+
+export function focus_at_start_of_unedited_restored_draft(): boolean {
+    return focus_in_unedited_restored_draft() && cursor_at_start_of_content_in_compose();
+}
+
+export function focus_at_end_of_unedited_restored_draft(): boolean {
+    return focus_in_unedited_restored_draft() && cursor_at_end_of_content_in_compose();
 }
 
 export function private_message_recipient_emails(): string {
