@@ -13989,6 +13989,8 @@ paths:
         It is not meant to be used by mobile clients directly.
 
         **Changes**: New in Zulip 11.0 (feature level 406).
+      security:
+        - remoteServerAuth: []
       requestBody:
         required: true
         content:
@@ -27328,6 +27330,18 @@ components:
         Basic authentication, with the user's email as the username, and the API
         key as the password. The API key can be fetched using the
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
+    remoteServerAuth:
+      type: http
+      scheme: basic
+      description: |
+        Basic authentication used by self-hosted Zulip servers to
+        communicate with the [Mobile Push Notification Service][mobile-push].
+        Unlike the user-facing API, the username is the server's
+        `zulip_org_id` (a UUID) and the password is its `zulip_org_key`,
+        both obtained when the server registers with the service using
+        `manage.py register_server`.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
 
   schemas:
     IgnoredParametersUnsupported:
