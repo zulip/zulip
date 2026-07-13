@@ -149,7 +149,8 @@ export function generate_and_insert_audio_or_video_call_link(
     } else {
         switch (realm.realm_video_chat_provider) {
             case available_providers.big_blue_button?.id: {
-                const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
+                const meeting_name =
+                    `${get_recipient_label()?.label_text ?? ""} meeting`.trimStart();
                 const request = {
                     meeting_name,
                     voice_only: is_audio_call,
@@ -208,7 +209,8 @@ export function generate_and_insert_audio_or_video_call_link(
                 break;
             }
             case available_providers.nextcloud_talk?.id: {
-                const room_name = `${get_recipient_label()?.label_text ?? ""} conversation`;
+                const room_name =
+                    `${get_recipient_label()?.label_text ?? ""} conversation`.trimStart();
                 const request = {room_name};
 
                 const handle_success = (response: unknown): void => {
