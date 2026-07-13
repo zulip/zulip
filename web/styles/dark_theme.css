@@ -156,12 +156,6 @@
         border-color: hsl(205deg 58% 69% / 40%);
     }
 
-    .alert.alert-error {
-        background-color: hsl(318deg 12% 21%);
-        color: inherit;
-        border: 1px solid hsl(0deg 75% 65%);
-    }
-
     .alert-box .alert,
     .alert.alert-error {
         background-color: hsl(318deg 12% 21%);
