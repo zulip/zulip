@@ -270,6 +270,7 @@ INSECURE_OPERATIONS = [
     "/fetch_api_key:post",
     "/jwt/fetch_api_key:post",
     "/dev_list_users:get",
+    "/remotes/server/register/transfer:post",
 ]
 
 
