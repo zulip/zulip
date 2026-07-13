@@ -252,7 +252,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/remotes/server/register/transfer",
         "/remotes/server/register/verify_challenge",
         "/remotes/server/analytics",
-        "/remotes/server/analytics/status",
         "/remotes/server/billing",
     }
 
