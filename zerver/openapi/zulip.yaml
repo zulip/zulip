@@ -14106,6 +14106,59 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /remotes/server/analytics/status:
+    get:
+      operationId: remote-server-check-analytics
+      summary: Check analytics upload status
+      tags: ["server_and_organizations"]
+      description: |
+        Fetch the IDs of the most recent analytics rows the [Mobile Push
+        Notification Service][mobile-push] has received from a self-hosted
+        Zulip server.
+
+        A self-hosted server uses this endpoint to determine which
+        analytics rows it still needs to upload via
+        `POST /remotes/server/analytics`. It is not meant to be used by
+        mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security:
+        - remoteServerAuth: []
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      last_realm_count_id:
+                        type: integer
+                        description: |
+                          The ID of the last `RealmCount` analytics row the
+                          service has received from this server.
+                      last_installation_count_id:
+                        type: integer
+                        description: |
+                          The ID of the last `InstallationCount` analytics row
+                          the service has received from this server.
+                      last_realmauditlog_id:
+                        type: integer
+                        description: |
+                          The ID of the last `RealmAuditLog` row the service has
+                          received from this server.
+                    example:
+                      {
+                        "last_installation_count_id": 0,
+                        "last_realm_count_id": 0,
+                        "last_realmauditlog_id": 0,
+                        "msg": "",
+                        "result": "success",
+                      }
   /register_client_device:
     post:
       operationId: register-client-device

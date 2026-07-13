@@ -161,6 +161,7 @@
 * [Get data export consent state](/api/get-realm-export-consents)
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
 * [Deactivate a registered server](/api/deactivate-remote-server)
+* [Check analytics upload status](/api/remote-server-check-analytics)
 
 ## Real-time events
 
