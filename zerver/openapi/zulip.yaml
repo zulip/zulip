@@ -14087,6 +14087,25 @@ paths:
                     description: |
                       An example JSON response for when no realm is registered for
                       the authenticated server on the bouncer for the given `realm_uuid`:
+  /remotes/server/deactivate:
+    post:
+      operationId: deactivate-remote-server
+      summary: Deactivate a registered server
+      tags: ["server_and_organizations"]
+      description: |
+        Deactivate a self-hosted Zulip server's registration with the
+        [Mobile Push Notification Service][mobile-push].
+
+        A self-hosted server uses this endpoint to deactivate its own
+        registration with the service. It is not meant to be used by
+        mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security:
+        - remoteServerAuth: []
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /register_client_device:
     post:
       operationId: register-client-device
