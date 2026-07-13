@@ -1077,7 +1077,10 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         }
 
         if (
-            ((event_name === "down_arrow" || event_name === "page_down" || event_name === "end") &&
+            (event_name === "down_arrow" &&
+                (compose_state.focus_in_empty_compose() ||
+                    compose_state.focus_at_end_of_unedited_restored_draft())) ||
+            ((event_name === "page_down" || event_name === "end") &&
                 compose_state.focus_in_empty_compose()) ||
             ((event_name === "up_arrow" || event_name === "page_up" || event_name === "home") &&
                 compose_state.focus_in_empty_compose(true))

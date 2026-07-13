@@ -995,6 +995,35 @@ test("focus_in_empty_compose", () => {
     assert.ok(!compose_state.focus_in_empty_compose());
 });
 
+test("focus_at_end_of_unedited_restored_draft", () => {
+    document.activeElement = {id: "compose-textarea"};
+    compose_state.set_message_type("stream");
+    compose_state.set_is_content_unedited_restored_draft(true);
+    const $textarea = $("textarea#compose-textarea");
+    $textarea.val("hello");
+    $textarea.caret(5);
+    assert.ok(compose_state.focus_at_end_of_unedited_restored_draft());
+
+    compose_state.set_message_type(undefined);
+    assert.ok(!compose_state.focus_at_end_of_unedited_restored_draft());
+
+    compose_state.set_message_type("stream");
+    compose_state.set_is_content_unedited_restored_draft(false);
+    assert.ok(!compose_state.focus_at_end_of_unedited_restored_draft());
+
+    compose_state.set_is_content_unedited_restored_draft(true);
+    document.activeElement = {id: "stream_message_recipient_topic"};
+    assert.ok(!compose_state.focus_at_end_of_unedited_restored_draft());
+
+    document.activeElement = {id: "compose-textarea"};
+    $textarea.caret(3);
+    assert.ok(!compose_state.focus_at_end_of_unedited_restored_draft());
+
+    document.activeElement = undefined;
+    compose_state.set_is_content_unedited_restored_draft(false);
+    compose_state.set_message_type(undefined);
+});
+
 test("on_narrow", ({override, override_rewire}) => {
     let narrowed_by_topic_reply;
     override(narrow_state, "narrowed_by_topic_reply", () => narrowed_by_topic_reply);
