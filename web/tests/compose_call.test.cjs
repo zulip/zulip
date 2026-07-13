@@ -356,6 +356,26 @@ test("videos", ({override}) => {
         assert.match(syntax_to_insert, audio_link_regex);
     })();
 
+    (function test_bbb_meeting_name_empty_label() {
+        const $textarea = $.create("bbb-empty-label-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        override(compose_closed_ui, "get_recipient_label", () => ({label_text: ""}));
+
+        let checked = false;
+        channel.get = (options) => {
+            assert.equal(options.data.meeting_name, "meeting");
+            checked = true;
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+        $("body")
+            .get_on_handler("click", ".video_link")
+            .call($textarea, {preventDefault() {}, stopPropagation() {}});
+        assert.ok(checked);
+    })();
+
     (function test_constructor_groups_video_link_compose_clicked() {
         let syntax_to_insert;
         let called = false;
@@ -460,6 +480,26 @@ test("videos", ({override}) => {
             /\[translated: Join video call\.]\(https:\/\/nextcloud\.example\.com\/index\.php\/call\/abc123token\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_nextcloud_talk_room_name_empty_label() {
+        const $textarea = $.create("nextcloud-empty-label-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        override(compose_closed_ui, "get_recipient_label", () => ({label_text: ""}));
+
+        let checked = false;
+        channel.post = (options) => {
+            assert.equal(options.data.room_name, "conversation");
+            checked = true;
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+        $("body")
+            .get_on_handler("click", ".video_link")
+            .call($textarea, {preventDefault() {}, stopPropagation() {}});
+        assert.ok(checked);
     })();
 });
 
