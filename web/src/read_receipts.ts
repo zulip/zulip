@@ -144,6 +144,7 @@ export function open_read_receipt_popover(
     message_id: number,
     target: tippy.ReferenceElement,
 ): void {
+    let return_to_message_actions_menu = false;
     popover_menus.toggle_popover_menu(target, {
         theme: "popover-menu",
         placement: "bottom",
@@ -166,7 +167,7 @@ export function open_read_receipt_popover(
             const $row = $(instance.reference).closest(".message_row");
             $row.addClass("has_actions_popover");
         },
-        onMount() {
+        onMount(instance) {
             // Start fetching only once the popover is mounted in the DOM.
             // fetch_read_receipts shows a loading indicator by querying for
             // the popover's elements, which don't exist yet in onShow.
@@ -175,6 +176,14 @@ export function open_read_receipt_popover(
             interval_id = window.setInterval(() => {
                 fetch_read_receipts(message_id);
             }, read_receipts_polling_interval_ms);
+
+            // The header doubles as a back button. We reopen the message
+            // actions menu in onHidden, once this popover has fully closed, so
+            // that the two don't fight over the row's has_actions_popover class.
+            $(instance.popper).on("click", ".read-receipts-header", () => {
+                return_to_message_actions_menu = true;
+                instance.hide();
+            });
         },
         onHidden(instance) {
             const $row = $(instance.reference).closest(".message_row");
@@ -185,6 +194,14 @@ export function open_read_receipt_popover(
             if (interval_id !== null) {
                 clearInterval(interval_id);
                 interval_id = null;
+            }
+
+            if (return_to_message_actions_menu) {
+                return_to_message_actions_menu = false;
+                // Look the button up again: the reference we opened from is
+                // detached if the row was rerendered while we were open, and
+                // clicking a detached element goes nowhere.
+                get_message_actions_menu_button(message_id).trigger("click");
             }
         },
     });

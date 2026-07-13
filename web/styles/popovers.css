@@ -1183,6 +1183,41 @@ ul.popover-group-menu-member-list {
         min-height: min-content;
     }
 
+    .read-receipts-header {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+        padding: 8px var(--user-group-popover-horizontal-padding);
+        border: none;
+        border-bottom: 1px solid var(--color-border-popover-menu-separator);
+        background: none;
+        color: var(--color-text-popover-menu);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
+
+        &:hover {
+            background: var(--color-background-hover-popover-menu);
+        }
+
+        .zulip-icon {
+            /* The icon-font glyph sits slightly high in its em box, so
+               nudge it down to optically center it with the bold title. */
+            position: relative;
+            top: 0.0367em; /* 0.55px at 15px/1em */
+        }
+
+        .popover-header-name {
+            margin-top: 0;
+        }
+    }
+
     .loading_indicator:not(:empty) {
         /* The spinner is absolutely positioned and has no intrinsic
            height, so reserve space and center it to keep it visible
