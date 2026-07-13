@@ -165,6 +165,7 @@
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
 * [Deactivate an organization](/api/deactivate-realm)
 * [Deactivate a registered server](/api/deactivate-remote-server)
+* [Check analytics upload status](/api/remote-server-check-analytics)
 
 ## Real-time events
 
