@@ -170,6 +170,22 @@ export const update_elements = ($content: JQuery): void => {
         $content.addClass("rtl");
     }
 
+    // The check above picks a single direction for the whole message,
+    // based on the first strong-directional character found anywhere in
+    // it. That's a reasonable default for the message as a whole, but a
+    // message can contain multiple paragraphs with different natural
+    // directions (for example, an English sentence followed by a reply
+    // quoting Arabic text). Correct each paragraph-level block
+    // individually so mixed-direction messages render correctly
+    // paragraph by paragraph, instead of every paragraph following
+    // whichever direction happened to appear first in the message.
+    $content.find("p, li, blockquote, h1, h2, h3, h4, h5, h6").each((_index, element) => {
+        const $element = $(element);
+        const direction = rtl.get_direction($element.text());
+        $element.toggleClass("rtl", direction === "rtl");
+        $element.toggleClass("ltr", direction === "ltr");
+    });
+
     if (util.is_client_safari()) {
         // Without this video thumbnail doesn't load on Safari.
         $content.find<HTMLMediaElement>(".message_inline_video video").each(function () {

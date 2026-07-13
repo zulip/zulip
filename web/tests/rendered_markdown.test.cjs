@@ -140,6 +140,7 @@ const get_content_element = () => {
     $content.set_find_results("div.codehilite", []);
     $content.set_find_results(".message_inline_video video", []);
     $content.set_find_results("audio", []);
+    $content.set_find_results("p, li, blockquote, h1, h2, h3, h4, h5, h6", []);
 
     set_message_for_message_content($content, undefined);
 
@@ -1148,4 +1149,71 @@ run_test("rtl", () => {
     assert.ok(!$content.hasClass("rtl"));
     rm.update_elements($content);
     assert.ok($content.hasClass("rtl"));
+});
+
+run_test("rtl mixed-direction paragraphs", () => {
+    // A message with an English paragraph followed by an Arabic one
+    // (#39511): each paragraph must get its own direction instead of
+    // the whole message following whichever direction came first.
+    const $content = get_content_element();
+    $content.text("Hello مرحبا");
+
+    const $english_paragraph = $.create("p(english)");
+    $english_paragraph.text("Hello");
+    const $arabic_paragraph = $.create("p(arabic)");
+    $arabic_paragraph.text("مرحبا");
+    $content.set_find_results("p, li, blockquote, h1, h2, h3, h4, h5, h6", [
+        $english_paragraph[0],
+        $arabic_paragraph[0],
+    ]);
+
+    rm.update_elements($content);
+
+    // The message as a whole follows the first strong character (English).
+    assert.ok(!$content.hasClass("rtl"));
+    // But each paragraph is corrected individually.
+    assert.ok($english_paragraph.hasClass("ltr"));
+    assert.ok(!$english_paragraph.hasClass("rtl"));
+    assert.ok($arabic_paragraph.hasClass("rtl"));
+    assert.ok(!$arabic_paragraph.hasClass("ltr"));
+});
+
+run_test("rtl mixed-direction paragraphs, rtl message overall", () => {
+    // Same bug, opposite overall direction: an Arabic paragraph followed
+    // by an English one.
+    const $content = get_content_element();
+    $content.text("مرحبا Hello");
+
+    const $arabic_paragraph = $.create("p(arabic)");
+    $arabic_paragraph.text("مرحبا");
+    const $english_paragraph = $.create("p(english)");
+    $english_paragraph.text("Hello");
+    $content.set_find_results("p, li, blockquote, h1, h2, h3, h4, h5, h6", [
+        $arabic_paragraph[0],
+        $english_paragraph[0],
+    ]);
+
+    rm.update_elements($content);
+
+    assert.ok($content.hasClass("rtl"));
+    assert.ok($arabic_paragraph.hasClass("rtl"));
+    assert.ok($english_paragraph.hasClass("ltr"));
+});
+
+run_test("rtl single paragraph matches message direction", () => {
+    // A plain single-paragraph message still gets the same class on
+    // both the container and its one paragraph, no regressions for the
+    // common case.
+    const $content = get_content_element();
+    $content.text("مرحبا بالعالم");
+
+    const $paragraph = $.create("p(only)");
+    $paragraph.text("مرحبا بالعالم");
+    $content.set_find_results("p, li, blockquote, h1, h2, h3, h4, h5, h6", [$paragraph[0]]);
+
+    rm.update_elements($content);
+
+    assert.ok($content.hasClass("rtl"));
+    assert.ok($paragraph.hasClass("rtl"));
+    assert.ok(!$paragraph.hasClass("ltr"));
 });
