@@ -439,6 +439,7 @@ function get_post_edit_topic(
 
 export function update_messages(events: UpdateMessageEvent[]): void {
     const messages_to_rerender: Message[] = [];
+    const content_edited_message_ids = new Set<number>();
     let changed_narrow = false;
     let refreshed_current_narrow = false;
     let changed_compose = false;
@@ -504,6 +505,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     ];
                 }
                 any_message_content_edited = true;
+                content_edited_message_ids.add(event.message_id);
 
                 // Update raw_content, so that editing a few times in a row is fast.
                 message_store.maybe_update_raw_content(anchor_message.id, event.content);
@@ -981,15 +983,8 @@ export function update_messages(events: UpdateMessageEvent[]): void {
     }
 
     if (messages_to_rerender.length > 0) {
-        // If the content of the message was edited, we do a special animation.
-        //
-        // BUG: This triggers the "message edited" animation for every
-        // message that was edited if any one of them had its content
-        // edited. We should replace any_message_content_edited with
-        // passing two sets to rerender_messages; the set of all that
-        // are changed, and the set with content changes.
         for (const list of message_lists.all_rendered_message_lists()) {
-            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
+            list.view.rerender_messages(messages_to_rerender, content_edited_message_ids);
         }
     }
 
