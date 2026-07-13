@@ -7,7 +7,8 @@ from typing import Any, Literal, TypedDict
 
 from django.conf import settings
 from django.db import connection
-from django.db.models import Exists, F, Max, OuterRef, QuerySet, Subquery, Sum
+from django.db.models import Exists, F, Max, Min, OuterRef, QuerySet, Subquery, Sum
+from django.db.models.functions import Upper
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import CTE, with_cte
@@ -37,6 +38,8 @@ from zerver.lib.topic import (
     MESSAGE__TOPIC,
     RESOLVED_TOPIC_PREFIX,
     TOPIC_NAME,
+    check_access_based_on_can_access_stream_topics_group,
+    get_topic_creator_user_id,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
@@ -59,6 +62,7 @@ from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.messages import get_usermessage_by_message_id
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.recipients import DirectMessageGroup
+from zerver.models.streams import get_stream_by_id_in_realm
 
 
 class MessageDetailsDict(TypedDict, total=False):
@@ -185,6 +189,7 @@ class SendMessageRequest:
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
     reminder_target_message_id: int | None = None
     reminder_note: str | None = None
+    is_support_stream: bool | None = None
 
 
 @dataclass
@@ -326,6 +331,19 @@ def messages_for_ids(
 
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
+        if user_profile and msg_dict["recipient_type"] == Recipient.STREAM:
+            stream_id = msg_dict["recipient_type_id"]
+            stream = get_stream_by_id_in_realm(stream_id, realm)
+            if (
+                stream.is_support_stream()
+                and not check_access_based_on_can_access_stream_topics_group(user_profile, stream)
+            ):
+                topic_creator_user_id = get_topic_creator_user_id(
+                    msg_dict["sender_realm_id"], msg_dict["recipient_id"], msg_dict["subject"]
+                )
+                if topic_creator_user_id and user_profile.id != topic_creator_user_id:
+                    continue
+
         flags = user_message_flags[message_id]
         # TODO/compatibility: The `wildcard_mentioned` flag was deprecated in favor of
         # the `stream_wildcard_mentioned` and `topic_wildcard_mentioned` flags.  The
@@ -603,6 +621,15 @@ def has_message_access(
         # You can't access messages in deactivated streams
         return False
 
+    if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+        user_profile, stream
+    ):
+        topic_creator_user_id = get_topic_creator_user_id(
+            message.get_realm().id, message.recipient_id, message.topic_name()
+        )
+        if topic_creator_user_id and user_profile.id != topic_creator_user_id:
+            return False
+
     if stream.is_public() and user_profile.can_access_public_streams():
         return True
 
@@ -777,6 +804,31 @@ def bulk_access_stream_messages_query(
 
     assert stream.recipient_id is not None
     messages = messages.filter(realm_id=user_profile.realm_id, recipient_id=stream.recipient_id)
+
+    if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+        user_profile, stream
+    ):
+        topic_keys = set(
+            messages.annotate(topic_key=Upper("subject"))
+            .values_list("topic_key", flat=True)
+            .distinct()
+        )
+        first_ids = (
+            Message.objects.filter(realm_id=user_profile.realm_id, recipient_id=stream.recipient_id)
+            .annotate(topic_key=Upper("subject"))
+            .filter(topic_key__in=topic_keys)
+            .values("topic_key")
+            .annotate(first_id=Min("id"))
+            .values_list("first_id", flat=True)
+        )
+        accessible_topic_keys = set(
+            Message.objects.filter(id__in=list(first_ids), sender_id=user_profile.id)
+            .annotate(topic_key=Upper("subject"))
+            .values_list("topic_key", flat=True)
+        )
+        messages = messages.annotate(topic_key=Upper("subject")).filter(
+            topic_key__in=accessible_topic_keys
+        )
 
     if stream.is_public() and user_profile.can_access_public_streams():
         return messages

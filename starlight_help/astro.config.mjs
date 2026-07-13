@@ -594,6 +594,7 @@ export default defineConfig({
                             label: "Configure who can unsubscribe anyone",
                             link: "/configure-who-can-unsubscribe-others",
                         },
+                        "configure-who-can-access-all-topics",
                         "subscribe-users-to-a-channel",
                         "unsubscribe-users-from-a-channel",
                         "set-default-channels-for-new-users",

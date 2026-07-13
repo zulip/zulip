@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {server_supported_permission_settings} = require("./lib/example_settings.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
@@ -87,12 +88,15 @@ message_lists.non_rendered_data = () => [];
 const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
 const people = zrequire("people");
-const {set_current_user} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
+const user_groups = zrequire("user_groups");
 
 const current_user = {};
 set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 const general_sub = make_stream({
     stream_id: 101,
@@ -349,6 +353,49 @@ run_test("insert_local_message streams", ({override}) => {
     assert.ok(render_called);
     assert.ok(get_topic_links_called);
     assert.ok(insert_message_called);
+});
+
+run_test("try_deliver_locally suppresses echo in restricted support channel", ({override}) => {
+    // In a "support" channel, a user who is not in can_access_stream_topics_group
+    // must not locally echo their message: the server decides topic access, so
+    // echoing could surface a message the server will reject, or place it in a
+    // topic the user cannot actually see. See issue #19434.
+    override(markdown, "contains_backend_only_syntax", () => false);
+    override(realm, "server_supported_permission_settings", server_supported_permission_settings);
+    override(current_user, "user_id", 123);
+    override(current_user, "is_admin", false);
+
+    // A support group that the current user is not a member of, so the
+    // user can neither see all topics nor locally echo into the channel.
+    user_groups.init();
+    const support_group = make_user_group({
+        name: "support_team",
+        members: [],
+    });
+    user_groups.add(support_group);
+
+    const support_sub = make_stream({
+        stream_id: 102,
+        name: "support",
+        subscribed: true,
+        can_access_stream_topics_group: support_group.id,
+    });
+    stream_data.add_sub_for_tests(support_sub);
+
+    assert.ok(stream_data.is_support_stream(support_sub));
+    assert.ok(!stream_data.can_access_topics_in_stream(support_sub));
+
+    const insert_stub = make_stub();
+
+    const message_request = {
+        type: "stream",
+        stream_id: support_sub.stream_id,
+        topic: "support request",
+        content: "please help",
+    };
+
+    assert.equal(echo.try_deliver_locally(message_request, insert_stub.f), undefined);
+    assert.equal(insert_stub.num_calls, 0);
 });
 
 run_test("insert_local_message direct message", ({override}) => {

@@ -3193,7 +3193,7 @@ class StreamAdminTest(ZulipTestCase):
         ]
         result = self.attempt_unsubscribe_of_principal(
             query_count=22,
-            cache_count=13,
+            cache_count=9,
             target_users=target_users,
             is_realm_admin=True,
             is_subbed=True,
@@ -4790,7 +4790,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         with (
             self.assert_database_query_count(20),
-            self.assert_memcached_count(11),
+            self.assert_memcached_count(4),
             mock.patch("zerver.views.streams.send_user_subscribed_and_new_channel_notifications"),
         ):
             self.subscribe_via_post(

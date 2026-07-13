@@ -487,6 +487,7 @@ def send_subscription_add_events(
                 stream_post_policy=stream_dict["stream_post_policy"],
                 subscriber_count=stream_dict["subscriber_count"],
                 topics_policy=stream_dict["topics_policy"],
+                can_access_stream_topics_group=stream_dict["can_access_stream_topics_group"],
                 # Computed fields not present in Stream.API_FIELDS
                 is_announcement_only=stream_dict["is_announcement_only"],
             )
