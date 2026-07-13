@@ -33,6 +33,7 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "test-notify",
     "register-remote-push-device",
     "deactivate-remote-server",
+    "remote-server-check-analytics",
     # Having a message for a specific user available to test this endpoint
     # is tricky for testing.
     "delete-reminder",
