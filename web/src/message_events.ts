@@ -439,10 +439,10 @@ function get_post_edit_topic(
 
 export function update_messages(events: UpdateMessageEvent[]): void {
     const messages_to_rerender: Message[] = [];
+    const content_edited_message_ids = new Set<number>();
     let changed_narrow = false;
     let refreshed_current_narrow = false;
     let changed_compose = false;
-    let any_message_content_edited = false;
     let local_cache_missing_messages = false;
 
     // Clear message list data cache since the local data for the
@@ -503,7 +503,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         ...(anchor_message.edit_history ?? []),
                     ];
                 }
-                any_message_content_edited = true;
+                content_edited_message_ids.add(event.message_id);
 
                 // Update raw_content, so that editing a few times in a row is fast.
                 message_store.maybe_update_raw_content(anchor_message.id, event.content);
@@ -513,7 +513,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 lightbox.invalidate_asset_map_of_message(event.message_id);
             }
 
-            if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
+            if (unread.update_message_for_mention(anchor_message, content_edited_message_ids.has(anchor_message.id))) {
                 assert(anchor_message.type === "stream");
                 const topic_key = recent_view_util.get_topic_key(
                     anchor_message.stream_id,
@@ -896,7 +896,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             // flag is used to indicated update_message events that are
             // triggered by server latency optimizations, not user
             // interactions; these should not generate edit history updates.
-            if (!event.rendering_only && any_message_content_edited) {
+            if (!event.rendering_only && content_edited_message_ids.has(event.message_id)) {
                 anchor_message.last_edit_timestamp = event.edit_timestamp;
             }
 
@@ -981,15 +981,8 @@ export function update_messages(events: UpdateMessageEvent[]): void {
     }
 
     if (messages_to_rerender.length > 0) {
-        // If the content of the message was edited, we do a special animation.
-        //
-        // BUG: This triggers the "message edited" animation for every
-        // message that was edited if any one of them had its content
-        // edited. We should replace any_message_content_edited with
-        // passing two sets to rerender_messages; the set of all that
-        // are changed, and the set with content changes.
         for (const list of message_lists.all_rendered_message_lists()) {
-            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
+            list.view.rerender_messages(messages_to_rerender, content_edited_message_ids);
         }
     }
 
