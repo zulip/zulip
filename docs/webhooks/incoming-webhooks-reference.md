@@ -193,11 +193,16 @@ For example, here is the definition of a webhook function that gets both
 `stream` and `topic` from the query parameters:
 
 ```python
+@webhook_view("Querytest")
 @typed_endpoint
-def api_querytest_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Annotated[str, ApiParamConfig(argument_type_is_body=True)],
-                          stream: str = "test",
-                          topic: str= "Default Alert":
+def api_querytest_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    payload: Annotated[str, ApiParamConfig(argument_type_is_body=True)],
+    stream: str = "test",
+    topic: str = "Default Alert",
+) -> HttpResponse:
 ```
 
 In actual use, you might configure the third-party service to call your
