@@ -24,16 +24,16 @@ payload(s) from the service. Examining this data allows you to:
 
 - Determine how you will structure your webhook integration code,
   including what event types your integration should support and how.
-- Create fixtures. A test fixture is a small file containing test data,
-  generally one for each event type. Fixtures enable the testing of
+- Create fixtures. A test fixture is a small file containing test data
+  for one kind of event or scenario. Fixtures enable the testing of
   webhook integration code without the need to actually contact the
   service being integrated.
 
 You'll want to write a test for each distinct event type your incoming
-webhook integration supports, and you'll need a corresponding fixture
-for each of these tests. Depending on the type of data the third-party
-service sends, your fixtures may contain JSON, URL encoded text, or
-some other kind of data. [Step 5: Create automated tests](#step-5-create-automated-tests)
+webhook integration supports, and you'll need fixtures for these
+tests. Depending on the type of data the third-party service sends,
+your fixtures may contain JSON, URL encoded text, or some other kind
+of data. [Step 5: Create automated tests](#step-5-create-automated-tests)
 and [our testing documentation](../testing/testing.md) have further
 details about writing tests and using test fixtures.
 
@@ -56,6 +56,11 @@ documentation, never hand-written, invented, or AI-generated. A
 fabricated payload does not accurately reflect what the service
 really sends, so an integration developed against one may not work
 with real events.
+
+Collect only the fixtures your integration's tests need. If you want
+to test how the integration handles different values of a URL query
+parameter, prefer writing tests that reuse one fixture, instead of
+capturing several fixtures that are almost identical.
 
 When setting up the integration, make sure not to use any personal
 details that you would not want to be part of the fixtures. Use
@@ -370,9 +375,8 @@ class HelloWorldHookTests(WebhookTestCase):
         )
 ```
 
-When writing tests, you'll want to include one test function (and a
-corresponding test fixture) for each distinct event type and condition
-that the integration supports.
+When writing tests, you'll want to include one test function for each
+distinct event type and condition that the integration supports.
 
 If, for example, we added support for sending a goodbye message to the
 Hello World webhook, then we would add another test function to
