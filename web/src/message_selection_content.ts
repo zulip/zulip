@@ -83,7 +83,7 @@ export function get_html_for_bookend_message_content(
     // inside the first/last paragraph (rather than as a sibling of it) keeps
     // turndown from rendering it on its own line, separated from the text by
     // a blank line.
-    const $ellipsis_span = $("<span>").text("...");
+    const $ellipsis_span = $("<span>").text("[...]");
     const $content_children = $(selected_message_content_element).children();
     if (type === "start") {
         const $first_child = $content_children.first();
