@@ -55,6 +55,12 @@
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good."
     },
     {
+      "name": "indented_codeblock",
+      "input": "\tprint(hello_world)",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>print(hello_world)\n</code></pre></div>",
+      "text_content": "print(hello_world)\n"
+    },
+    {
       "name": "inline_code_spaces",
       "input": "` outer ` ```    space    ```",
       "expected_output": "<p><code> outer </code> <code>    space    </code></p>",
