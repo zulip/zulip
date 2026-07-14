@@ -98,26 +98,31 @@ THUMBNAIL_OUTPUT_FORMATS = (
 TRANSCODED_IMAGE_FORMAT = ThumbnailFormat("webp", 4032, 3024, animated=False)
 
 
+# THUMBNAIL_IMAGE_LOADER_MAP is a mapping between supported image
+# content-types and their corresponding pyvips loader.
+#
+# THUMBNAIL_IMAGE_LOADER_MAP.keys() defines THUMBNAIL_ACCEPT_IMAGE_TYPES.
+# THUMBNAIL_IMAGE_LOADER_MAP.values() is used below for security
+# enforcement.
+#
+# The keys should be kept synced with the client-side list in
+# web/src/upload.ts.
+THUMBNAIL_IMAGE_LOADER_MAP = {
+    "image/avif": ("VipsForeignLoadHeif", "heif"),
+    "image/gif": ("VipsForeignLoadNsgif", "gif"),
+    "image/heic": ("VipsForeignLoadHeif", "heif"),
+    "image/jpeg": ("VipsForeignLoadJpeg", "jpeg"),
+    "image/png": ("VipsForeignLoadPng", "png"),
+    "image/tiff": ("VipsForeignLoadTiff", "tiff"),
+    "image/webp": ("VipsForeignLoadWebp", "webp"),
+}
+
 # These are the image content-types which the server supports parsing
-# and thumbnailing; these do not need to supported on all browsers,
+# and thumbnailing; these do not need to be supported on all browsers,
 # since we will the serving thumbnailed versions of them.  Note that
 # this does not provide any *security*, since the content-type is
 # provided by the browser, and may not match the bytes they uploaded.
-#
-# This should be kept synced with the client-side list in
-# web/src/upload.ts.  Any additions below must be accompanied by
-# changes to the pyvips block below as well.
-THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
-    [
-        "image/avif",
-        "image/gif",
-        "image/heic",
-        "image/jpeg",
-        "image/png",
-        "image/tiff",
-        "image/webp",
-    ]
-)
+THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(THUMBNAIL_IMAGE_LOADER_MAP.keys())
 
 # This is what enforces security limitations on which formats are
 # parsed; we disable all loaders, then re-enable the ones we support
@@ -128,12 +133,8 @@ THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
 # Note that only libvips >= 8.13 (Ubuntu 24.04 or later, Debian 12 or
 # later) supports this!  These are no-ops on earlier versions of libvips.
 pyvips.operation_block_set("VipsForeignLoad", True)
-pyvips.operation_block_set("VipsForeignLoadHeif", False)  # image/avif, image/heic
-pyvips.operation_block_set("VipsForeignLoadNsgif", False)  # image/gif
-pyvips.operation_block_set("VipsForeignLoadJpeg", False)  # image/jpeg
-pyvips.operation_block_set("VipsForeignLoadPng", False)  # image/png
-pyvips.operation_block_set("VipsForeignLoadTiff", False)  # image/tiff
-pyvips.operation_block_set("VipsForeignLoadWebp", False)  # image/webp
+for loader_tuple_value in set(THUMBNAIL_IMAGE_LOADER_MAP.values()):
+    pyvips.operation_block_set(loader_tuple_value[0], False)
 pyvips.block_untrusted_set(True)
 
 # Disable the operations cache; our only use here is thumbnail_buffer,
