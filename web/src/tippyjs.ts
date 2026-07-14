@@ -13,9 +13,10 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
-import {realm} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
@@ -330,6 +331,30 @@ export function initialize(): void {
             ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
+    });
+
+    // The channel/group card description is clamped to two lines; when it
+    // overflows, point users to settings for the full text.
+    tippy.delegate("body", {
+        target: ".popover-card-description",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const description = instance.reference;
+            // Spectators see no settings link in either card, and guests
+            // see none in the group card. Don't point them to settings
+            // they cannot open.
+            const in_group_card = description.closest(".user-group-info-popover") !== null;
+            if (page_params.is_spectator || (in_group_card && current_user.is_guest)) {
+                return false;
+            }
+            // Only offer the tooltip when the description is truncated.
+            const line_height = Number.parseFloat(getComputedStyle(description).lineHeight);
+            const tolerance = Number.isNaN(line_height) ? 2 : line_height / 2;
+            if (description.scrollHeight <= description.clientHeight + tolerance) {
+                return false;
+            }
+            return undefined;
+        },
     });
 
     tippy.delegate("body", {

@@ -6,7 +6,12 @@
         </li>
         {{#if group_description}}
             <li role="none" class="popover-card-description-item text-item popover-menu-list-item">
-                <div class="popover-card-description">{{group_description}}</div>
+                {{#if is_guest}}
+                    {{! Guests get no settings link or tooltip, so show it in full. }}
+                    <div class="popover-card-description popover-card-description-full">{{group_description}}</div>
+                {{else}}
+                    <div class="popover-card-description" data-tippy-content="{{t 'Open settings to see the full description.'}}">{{group_description}}</div>
+                {{/if}}
             </li>
         {{/if}}
         {{#if deactivated}}
