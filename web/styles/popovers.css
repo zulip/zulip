@@ -366,6 +366,14 @@
     /* 16px at 15px/1em */
     line-height: 1.0667em;
     color: var(--color-text-popover-menu);
+    /* Clamp the description to two lines, with a native ellipsis. The
+       tooltip set in tippyjs.ts points to settings for the full text. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .popover-group-menu-members-summary {
