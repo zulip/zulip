@@ -246,17 +246,11 @@ export function get_slash_matcher(query: string): (item: SlashCommand) => boolea
 }
 
 function get_topic_matcher(query: string): (topic: string) => boolean {
-    query = typeahead.clean_query_lowercase(query, false);
-    const should_remove_diacritics = !typeahead.contains_diacritics(query);
+    query = typeahead.remove_diacritics(typeahead.clean_query_lowercase(query, false));
 
     return function (topic: string): boolean {
         const topic_display_name = util.get_final_topic_display_name(topic);
-        return typeahead.query_matches_string_in_order(
-            query,
-            topic_display_name,
-            " ",
-            should_remove_diacritics,
-        );
+        return typeahead.query_matches_string_in_order(query, topic_display_name, " ", true);
     };
 }
 
