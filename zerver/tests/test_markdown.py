@@ -3896,7 +3896,78 @@ class MarkdownErrorTests(ZulipTestCase):
 
 
 class TestHtmlToMarkdown(ZulipTestCase):
-    def test_unicode(self) -> None:
+    def test_real_html(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<p>Hello <b>world</b></p>"), "Hello **world**")
+
+    def test_html_entity_decoding(self) -> None:
         self.assertEqual(
             convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
+        )
+
+    def test_unordered_lists(self) -> None:
+        html = "<ul><li>foo</li><li>bar</li></ul>"
+        self.assertEqual(convert_html_to_markdown(html), "* foo\n  * bar")
+
+    def test_atx_style_headings(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<h1>Title</h1>"), "# Title")
+        self.assertEqual(convert_html_to_markdown("<h2>Sub</h2>"), "## Sub")
+
+    def test_external_img_with_alt(self) -> None:
+        html = '<img src="http://example.com/img.png" alt="photo">'
+        self.assertEqual(convert_html_to_markdown(html), "![photo](http://example.com/img.png)")
+
+    def test_external_img_with_query_string(self) -> None:
+        html = '<img src="http://foo.com/image.png?12345">'
+        self.assertEqual(convert_html_to_markdown(html), "[image.png](http://foo.com/image.png)")
+
+    def test_external_img_without_alt_or_filename(self) -> None:
+        html = '<img src="https://example.com/?token=abc">'
+        self.assertEqual(convert_html_to_markdown(html), "[](https://example.com/)")
+
+    def test_external_img_alt_with_brackets(self) -> None:
+        html = '<img src="http://x.com/a.png" alt="see [details]">'
+        self.assertEqual(
+            convert_html_to_markdown(html), "![see \\[details\\]](http://x.com/a.png)"
+        )
+
+    def test_data_uri_img(self) -> None:
+        data_uri = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+        self.assertEqual(
+            convert_html_to_markdown(f'<img src="{data_uri}" alt="logo">'), f"![logo]({data_uri})"
+        )
+        self.assertEqual(convert_html_to_markdown(f'<img src="{data_uri}">'), f"![]({data_uri})")
+
+    def test_linked_external_img(self) -> None:
+        html = '<a href="https://example.com"><img src="https://foo.com/a.png" alt="logo"></a>'
+        self.assertEqual(
+            convert_html_to_markdown(html), "[![logo](https://foo.com/a.png)](https://example.com)"
+        )
+
+    def test_anchor_tag(self) -> None:
+        html = '<a href="http://example.com">click here</a>'
+        self.assertEqual(convert_html_to_markdown(html), "[click here](http://example.com)")
+
+    def test_bold_and_italic(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<strong>bold</strong>"), "**bold**")
+        self.assertEqual(convert_html_to_markdown("<em>italic</em>"), "_italic_")
+
+    def test_special_characters_are_not_escaped(self) -> None:
+        html = "<p>snake_case_var and 2*3 stars</p>"
+        self.assertEqual(convert_html_to_markdown(html), "snake_case_var and 2*3 stars")
+
+    def test_bare_url_content(self) -> None:
+        # Message content (e.g. from the email mirror) is often a bare URL.
+        url = "https://www.youtube.com/watch?v=MRmGDhlMhNA"
+        self.assertEqual(convert_html_to_markdown(url), url)
+
+    def test_paragraph_wrapping(self) -> None:
+        sentence = (
+            "The quick brown fox jumps over the lazy dog"
+            " again and again until the sentence is long. "
+        )
+        self.assertEqual(
+            convert_html_to_markdown("<p>" + sentence * 2 + "</p>"),
+            "The quick brown fox jumps over the lazy dog again and again until the sentence\n"
+            "is long. The quick brown fox jumps over the lazy dog again and again until the\n"
+            "sentence is long.",
         )
