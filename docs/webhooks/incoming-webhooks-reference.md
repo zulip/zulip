@@ -224,7 +224,6 @@ attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 class QuerytestHookTests(WebhookTestCase):
 
     TOPIC = "Default topic"
-    FIXTURE_DIR_NAME = 'querytest'
 
     def test_querytest_test_one(self) -> None:
         # construct the URL used for this test
