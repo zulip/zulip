@@ -123,9 +123,6 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     if (message_lists.current === undefined) {
         return;
     }
-    let $first_message_element;
-    let $last_message_element;
-    const copy_rows = rows.visible_range(start_id, end_id);
     const range_count = window.getSelection()?.rangeCount;
     if (range_count && range_count > 1) {
         // Expand selection to select content from all the messages
@@ -137,57 +134,34 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         // the selection into multiple ranges for non-selectable elements.
         // We should get rid of this when that becomes the baseline.
         // Details: https://github.com/zulip/zulip/pull/35100#issuecomment-4683858639
-        maybe_expand_selection_for_first_and_last_messages(copy_rows, range_count);
-    } else {
-        // Instead of copying the entire content of the first and last message,
-        // we only use the content that is part of the selection.
-        // This is only done on Chrome for now, because of the behavior of having
-        // a single range for a multi-message selection.
-        const selected_message_content_elements =
-            message_selection_content.get_selected_message_content_elements();
-        assert(selected_message_content_elements !== undefined);
-        // Case where the last message doesn't have any highlighted `.message_content`.
-        // Here, end_id is set to id of the message whose username at the top
-        // was highlighted, but has no highlighted `.message_content`.
-        // (See analyze_selection for details.)
-        // So the actually useful/contentful last message of this selection is
-        // at copy_rows[copy_rows.length - 2]
-        if (selected_message_content_elements.length === copy_rows.length - 1) {
-            copy_rows.splice(-1, 1);
-            if (copy_rows.length === 0) {
-                // In case this just involved selecting the username of a message.
-                return;
-            }
-        }
-        assert(copy_rows[0] && copy_rows.at(-1));
-        const first_selected_message_content_element = the(copy_rows[0]).querySelector(
-            ".message_content",
-        );
-        const last_selected_message_content_element = the(copy_rows.at(-1)!).querySelector(
-            ".message_content",
-        );
-        assert(first_selected_message_content_element && last_selected_message_content_element);
-        $first_message_element = $(
-            message_selection_content.get_html_for_bookend_message_content(
-                "start",
-                first_selected_message_content_element,
-                selected_message_content_elements[0],
-            ),
-        );
+        const expand_rows = rows.visible_range(start_id, end_id);
+        maybe_expand_selection_for_first_and_last_messages(expand_rows, range_count);
+    }
 
-        // We don't want to append the same content as the first message in the selection
-        // if we are trying to get the `.message_content` HTML for the last
-        // message when there is only one `.message_content` in the selected range.
-        if (selected_message_content_elements.length > 1) {
-            const len = selected_message_content_elements.length;
-            $last_message_element = $(
-                message_selection_content.get_html_for_bookend_message_content(
-                    "end",
-                    last_selected_message_content_element,
-                    selected_message_content_elements[len - 1],
-                ),
-            );
-        }
+    const selected_contentful_message_ids =
+        message_selection_content.get_selected_contentful_message_ids(start_id, end_id);
+    if (selected_contentful_message_ids === undefined) {
+        // In case this just involved selecting the username of a message.
+        return;
+    }
+
+    const bookends = message_selection_content.get_multi_message_bookend_contents(
+        selected_contentful_message_ids,
+    );
+
+    const copy_rows = selected_contentful_message_ids.map((id) => {
+        const $row = message_lists.current!.get_row(id);
+        assert($row.length > 0);
+        return $row;
+    });
+
+    let $first_message_element;
+    let $last_message_element;
+    if (bookends.first !== undefined) {
+        $first_message_element = $(bookends.first.html);
+    }
+    if (bookends.last !== undefined) {
+        $last_message_element = $(bookends.last.html);
     }
 
     const $start_row = copy_rows[0];
