@@ -4,8 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class WekanHookTests(WebhookTestCase):
-    FIXTURE_DIR_NAME = "wekan"
-
     def test_add_attachment_message(self) -> None:
         expected_message = 'JohnFish added attachment "hGfm5ksud8k" to card "Markdown and emoji\'s" at list "Design" at swimlane "Default" at board "Bucket List".\n\n[See in Wekan](http://127.0.0.1/b/Jinj4Xj7qnHLRmrTY/bucket-list/pMtu7kPZvMuhhC4hL)'
         self.check_webhook(
