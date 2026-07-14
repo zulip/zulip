@@ -174,6 +174,7 @@ EXEMPT_FILES = make_set(
         "web/src/message_report.ts",
         "web/src/message_scroll.ts",
         "web/src/message_scroll_state.ts",
+        "web/src/message_selection_content.ts",
         "web/src/message_summary.ts",
         "web/src/message_util.ts",
         "web/src/message_view.ts",
