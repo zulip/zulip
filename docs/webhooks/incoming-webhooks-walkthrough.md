@@ -44,7 +44,7 @@ it requires only one fixture,
 ```json
 {
   "featured_title":"Marilyn Monroe",
-  "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe",
+  "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe"
 }
 ```
 
@@ -360,7 +360,7 @@ As well as a new fixture `goodbye.json` in
 ```json
 {
   "featured_title":"Goodbye",
-  "featured_url":"https://en.wikipedia.org/wiki/Goodbye",
+  "featured_url":"https://en.wikipedia.org/wiki/Goodbye"
 }
 ```
 
