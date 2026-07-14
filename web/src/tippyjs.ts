@@ -327,7 +327,6 @@ export function initialize(): void {
             ".spectator_narrow_login_button",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
-            ".popover-group-menu-member-list .popover-group-menu-user-presence",
             ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
