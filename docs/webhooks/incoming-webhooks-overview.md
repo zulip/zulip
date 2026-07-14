@@ -74,7 +74,8 @@ examples below are for an incoming webhook named `MyWebHook`.
   necessary helper functions.
 - `zerver/webhooks/mywebhook/fixtures/message_type.json`: A sample
   of payload data, from the third-party service, used by tests. Add
-  one fixture file per event type supported by your integration.
+  fixtures covering the event types and conditions your integration
+  supports.
 - `zerver/webhooks/mywebhook/tests.py`: Tests for your webhook.
 - `zerver/webhooks/mywebhook/doc.md`: End-user documentation explaining
   how to set up the integration.
