@@ -1153,8 +1153,8 @@ run_test("rtl", () => {
 
 run_test("rtl mixed-direction paragraphs", () => {
     // A message with an English paragraph followed by an Arabic one
-    // (#39511): each paragraph must get its own direction instead of
-    // the whole message following whichever direction came first.
+    // (#39511): the paragraph that differs from the message's overall
+    // direction must be corrected individually.
     const $content = get_content_element();
     $content.text("Hello مرحبا");
 
@@ -1171,9 +1171,11 @@ run_test("rtl mixed-direction paragraphs", () => {
 
     // The message as a whole follows the first strong character (English).
     assert.ok(!$content.hasClass("rtl"));
-    // But each paragraph is corrected individually.
-    assert.ok($english_paragraph.hasClass("ltr"));
+    // The English paragraph already matches that, so it gets no redundant
+    // explicit class, it just inherits ltr normally like it always did.
+    assert.ok(!$english_paragraph.hasClass("ltr"));
     assert.ok(!$english_paragraph.hasClass("rtl"));
+    // The Arabic paragraph differs, so it gets corrected explicitly.
     assert.ok($arabic_paragraph.hasClass("rtl"));
     assert.ok(!$arabic_paragraph.hasClass("ltr"));
 });
@@ -1196,14 +1198,23 @@ run_test("rtl mixed-direction paragraphs, rtl message overall", () => {
     rm.update_elements($content);
 
     assert.ok($content.hasClass("rtl"));
-    assert.ok($arabic_paragraph.hasClass("rtl"));
+    // Matches the message's overall rtl direction, no redundant class.
+    assert.ok(!$arabic_paragraph.hasClass("rtl"));
+    assert.ok(!$arabic_paragraph.hasClass("ltr"));
+    // Differs, gets corrected.
     assert.ok($english_paragraph.hasClass("ltr"));
+    assert.ok(!$english_paragraph.hasClass("rtl"));
 });
 
-run_test("rtl single paragraph matches message direction", () => {
-    // A plain single-paragraph message still gets the same class on
-    // both the container and its one paragraph, no regressions for the
-    // common case.
+run_test("rtl paragraph matching the message direction gets no redundant class", () => {
+    // Regression test for a real CI failure caught on the actual PR: an
+    // earlier version of this fix added an explicit class to every
+    // paragraph unconditionally, including ones that already matched the
+    // message's own direction, which changed the rendered HTML of every
+    // plain single-direction message (an existing e2e test asserted the
+    // exact HTML of a plain-English preview, with no class attribute at
+    // all). A paragraph whose own direction matches what it already
+    // inherits must be left alone.
     const $content = get_content_element();
     $content.text("مرحبا بالعالم");
 
@@ -1214,6 +1225,68 @@ run_test("rtl single paragraph matches message direction", () => {
     rm.update_elements($content);
 
     assert.ok($content.hasClass("rtl"));
-    assert.ok($paragraph.hasClass("rtl"));
+    assert.ok(!$paragraph.hasClass("rtl"));
     assert.ok(!$paragraph.hasClass("ltr"));
+});
+
+run_test("rtl class is removed when a reused node's content changes to ltr", () => {
+    // Several callers (for example the compose preview) reuse the same
+    // DOM node and just replace its HTML. A node left over from a
+    // previous rtl render must not stay rtl once its content is ltr.
+    const $content = get_content_element();
+    $content.addClass("rtl");
+    $content.text("Hello world");
+
+    rm.update_elements($content);
+
+    assert.ok(!$content.hasClass("rtl"));
+});
+
+run_test("rtl a paragraph's stale class is removed once it matches the message direction", () => {
+    // Same reused-node concern as above, at the paragraph level: a
+    // paragraph explicitly marked rtl by a previous render must lose
+    // that class once its (possibly new) content matches the message's
+    // own direction.
+    const $content = get_content_element();
+    $content.text("Hello world");
+
+    const $paragraph = $.create("p(stale)");
+    $paragraph.text("Hello world");
+    $paragraph.addClass("rtl");
+    $content.set_find_results("p, li, blockquote, h1, h2, h3, h4, h5, h6", [$paragraph[0]]);
+
+    rm.update_elements($content);
+
+    assert.ok(!$paragraph.hasClass("rtl"));
+    assert.ok(!$paragraph.hasClass("ltr"));
+});
+
+run_test("rtl neutral paragraphs are left to inherit direction, not forced ltr", () => {
+    // get_direction() falls back to "ltr" for a string with no strong
+    // direction character at all (digits, punctuation, emoji only).
+    // Forcing that fallback onto a paragraph would override an rtl
+    // ancestor's direction for a block that has no direction opinion
+    // of its own.
+    const $content = get_content_element();
+    $content.text("Hello 123 مرحبا");
+
+    const $english_paragraph = $.create("p(english)");
+    $english_paragraph.text("Hello");
+    const $neutral_paragraph = $.create("p(neutral)");
+    $neutral_paragraph.text("123");
+    $neutral_paragraph.addClass("ltr"); // stale, from a previous render
+    const $arabic_paragraph = $.create("p(arabic)");
+    $arabic_paragraph.text("مرحبا");
+    $content.set_find_results("p, li, blockquote, h1, h2, h3, h4, h5, h6", [
+        $english_paragraph[0],
+        $neutral_paragraph[0],
+        $arabic_paragraph[0],
+    ]);
+
+    rm.update_elements($content);
+
+    assert.ok(!$english_paragraph.hasClass("ltr"));
+    assert.ok(!$neutral_paragraph.hasClass("ltr"));
+    assert.ok(!$neutral_paragraph.hasClass("rtl"));
+    assert.ok($arabic_paragraph.hasClass("rtl"));
 });

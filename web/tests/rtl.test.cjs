@@ -128,6 +128,30 @@ run_test("get_direction", () => {
     );
 });
 
+run_test("has_strong_direction", () => {
+    // These characters are strong R or AL:    ا ب پ ج ض و د ؛
+    // These characters are not strong:        ۱ ۲ ۳ ۴ ۵ ۶ ۷ ۸ ۹ ۰
+
+    assert.equal(rtl.has_strong_direction("abcابپ"), true);
+    assert.equal(rtl.has_strong_direction("ابپabc"), true);
+    assert.equal(rtl.has_strong_direction("123abc"), true);
+    assert.equal(rtl.has_strong_direction("123؛بپ"), true);
+
+    // No strong character anywhere: digits, punctuation, emoji, empty.
+    assert.equal(rtl.has_strong_direction("۱۲۳"), false);
+    assert.equal(rtl.has_strong_direction("1234"), false);
+    assert.equal(rtl.has_strong_direction("123"), false);
+    assert.equal(rtl.has_strong_direction("!?., "), false);
+    assert.equal(rtl.has_strong_direction(""), false);
+
+    // Isolates should not leak a strong character through to the caller,
+    // matching get_direction's own isolation handling.
+    const i_chars = "⁦⁧⁨";
+    const pdi = "⁩";
+    assert.equal(rtl.has_strong_direction("12" + i_chars.charAt(0) + "جج" + pdi + "34"), false);
+    assert.equal(rtl.has_strong_direction("12" + i_chars.charAt(0) + "جج" + pdi + "ff"), true);
+});
+
 run_test("set_rtl_class_for_textarea rtl", () => {
     const $textarea = $.create("some-textarea");
     assert.ok(!$textarea.hasClass("rtl"));

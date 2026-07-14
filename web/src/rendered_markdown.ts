@@ -165,23 +165,34 @@ export function set_name_in_mention_element(
 
 export const update_elements = ($content: JQuery): void => {
     let message: Message | undefined;
-    // Set the rtl class if the text has an rtl direction
-    if (rtl.get_direction($content.text()) === "rtl") {
-        $content.addClass("rtl");
-    }
+    // Set the rtl class if the text has an rtl direction, and remove it
+    // otherwise: several callers reuse the same DOM node and just replace
+    // its HTML (for example the compose preview), so a node that was
+    // previously rtl needs to lose the class if its new content is not.
+    const message_direction = rtl.get_direction($content.text());
+    $content.toggleClass("rtl", message_direction === "rtl");
 
     // The check above picks a single direction for the whole message,
     // based on the first strong-directional character found anywhere in
     // it. That's a reasonable default for the message as a whole, but a
     // message can contain multiple paragraphs with different natural
     // directions (for example, an English sentence followed by a reply
-    // quoting Arabic text). Correct each paragraph-level block
-    // individually so mixed-direction messages render correctly
-    // paragraph by paragraph, instead of every paragraph following
-    // whichever direction happened to appear first in the message.
+    // quoting Arabic text). Correct each paragraph-level block whose own
+    // direction differs from the message's overall direction, so mixed
+    // direction messages render correctly paragraph by paragraph, instead
+    // of every paragraph following whichever direction happened to come
+    // first in the message. A block whose direction matches (or has no
+    // strong-direction character at all: only digits, punctuation, or
+    // emoji) is left alone rather than getting a redundant explicit
+    // class, so it keeps inheriting direction normally.
     $content.find("p, li, blockquote, h1, h2, h3, h4, h5, h6").each((_index, element) => {
         const $element = $(element);
-        const direction = rtl.get_direction($element.text());
+        const text = $element.text();
+        if (!rtl.has_strong_direction(text) || rtl.get_direction(text) === message_direction) {
+            $element.removeClass("rtl ltr");
+            return;
+        }
+        const direction = rtl.get_direction(text);
         $element.toggleClass("rtl", direction === "rtl");
         $element.toggleClass("ltr", direction === "ltr");
     });

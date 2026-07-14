@@ -139,6 +139,42 @@ export function get_direction(str: string): "ltr" | "rtl" {
     return "ltr";
 }
 
+/**
+ * Whether {@link str} contains a character that determines a direction
+ * (P2/P3), as opposed to only neutral characters (digits, punctuation,
+ * emoji). get_direction() falls back to "ltr" for a string with no such
+ * character, which is indistinguishable from a genuinely LTR string by
+ * return value alone; callers that need to tell the two apart (for
+ * example, to decide whether to force a direction at all, versus leaving
+ * a neutral block to inherit its direction from an ancestor) should check
+ * this first.
+ * @param {string} str The string to check.
+ * @returns {boolean}
+ */
+export function has_strong_direction(str: string): boolean {
+    let isolations = 0;
+    for (const ch of str) {
+        const bidi_class = get_bidi_class(ch.codePointAt(0)!);
+        switch (bidi_class) {
+            case "I":
+                isolations += 1;
+                break;
+            case "PDI":
+                if (isolations > 0) {
+                    isolations -= 1;
+                }
+                break;
+            case "R":
+            case "L":
+                if (isolations === 0) {
+                    return true;
+                }
+                break;
+        }
+    }
+    return false;
+}
+
 export function set_rtl_class_for_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     let text = $textarea.val()!;
