@@ -248,7 +248,7 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
         // w/o partial selection: "copy paste test B",
-        "...paste test B",
+        "[...]paste test B",
         "Verona > copy-paste-topic #2 | Today",
         "Desdemona:",
         "copy paste test C",
@@ -259,7 +259,7 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
         "Verona > copy-paste-topic #3 | Today",
         "Desdemona:",
         // w/o partial selection: "copy paste test F",
-        "copy paste...",
+        "copy paste[...]",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
@@ -313,7 +313,7 @@ async function test_copying_selection_with_no_message_content(page: Page): Promi
 
 async function test_partial_me_bookend_copy_includes_ellipsis(page: Page): Promise<void> {
     // A partial `/me` bookend should copy the selected status text with
-    // the same `...` marker as a normal bookend.
+    // the same `[...]` marker as a normal bookend.
     const actual_first = await copy_messages(
         page,
         "waves at the camera for status bookend",
@@ -328,9 +328,9 @@ async function test_partial_me_bookend_copy_includes_ellipsis(page: Page): Promi
     );
     assert.deepStrictEqual(actual_first, [
         "Desdemona:",
-        "...camera for status bookend",
+        "[...]camera for status bookend",
         "Desdemona:",
-        "BBB after first status message brav...",
+        "BBB after first status message brav[...]",
     ]);
 
     const actual_last = await copy_messages(
@@ -347,9 +347,9 @@ async function test_partial_me_bookend_copy_includes_ellipsis(page: Page): Promi
     );
     assert.deepStrictEqual(actual_last, [
         "Desdemona:",
-        "...start normal message alpha",
+        "[...]start normal message alpha",
         "Desdemona:",
-        "waves at the camera for status...",
+        "waves at the camera for status[...]",
     ]);
 }
 

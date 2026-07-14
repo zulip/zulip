@@ -58,7 +58,7 @@ function get_html_for_bookend_message_content(
     const is_partial =
         selected_message_content_element.innerHTML.trim() !==
         original_message_content_element.innerHTML.trim();
-    const $ellipsis_span = $("<span>").text("...");
+    const $ellipsis_span = $("<span>").text("[...]");
 
     // Special case for /me messages.
     // We wrap the /me message content in a `div` to ensure newlines are
