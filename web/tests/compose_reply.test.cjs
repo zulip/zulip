@@ -389,4 +389,106 @@ run_test("build_and_process_quote_assets_for_messages", ({override}) => {
         {message: msg_unhydrated, quote_content: "converted_by_turndown: <p>unhydrated</p>"},
         "Fallback to using paste_handler_converter",
     );
+
+    // Case: partial bookend content via known_quote_content_by_id.
+    let fetched_ids;
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_messages",
+        ({message_ids, on_success}) => {
+            fetched_ids = message_ids;
+            on_success(message_ids.map((id) => `fetched_${id}`));
+        },
+    );
+
+    const known_quote_content_by_id = new Map([[msg_hydrated.id, "...partial bookend A"]]);
+    compose_reply.build_and_process_quote_assets_for_messages(
+        [msg_hydrated.id, msg_unhydrated.id],
+        (assets) => {
+            result_assets = assets;
+        },
+        known_quote_content_by_id,
+    );
+
+    assert.deepEqual(fetched_ids, [msg_unhydrated.id]);
+    assert.deepEqual(
+        known_quote_content_by_id,
+        new Map([[msg_hydrated.id, "...partial bookend A"]]),
+    );
+    assert.deepEqual(result_assets[0], {
+        message: msg_hydrated,
+        quote_content: "...partial bookend A",
+    });
+    assert.deepEqual(result_assets[1], {
+        message: msg_unhydrated,
+        quote_content: `fetched_${msg_unhydrated.id}`,
+    });
+
+    // Case: every message already has known content; no fetch required.
+    fetched_ids = undefined;
+    const fully_known = new Map([
+        [msg_hydrated.id, "partial_1"],
+        [msg_unhydrated.id, "partial_2"],
+    ]);
+    compose_reply.build_and_process_quote_assets_for_messages(
+        [msg_hydrated.id, msg_unhydrated.id],
+        (assets) => {
+            result_assets = assets;
+        },
+        fully_known,
+    );
+
+    assert.equal(fetched_ids, undefined);
+    assert.deepEqual(result_assets[0], {message: msg_hydrated, quote_content: "partial_1"});
+    assert.deepEqual(result_assets[1], {message: msg_unhydrated, quote_content: "partial_2"});
+});
+
+run_test("partial_bookend_markdown", ({override}) => {
+    override(compose_paste, "paste_handler_converter", (html) => `md:${html}`);
+
+    assert.deepEqual(
+        compose_reply.partial_bookend_markdown({
+            message_ids: [10, 20],
+            first_bookend: {html: "<p>start</p>", is_partial: true},
+            last_bookend: {html: "<p>end</p>", is_partial: true},
+        }),
+        {first: "md:<p>start</p>", last: "md:<p>end</p>"},
+    );
+
+    assert.deepEqual(
+        compose_reply.partial_bookend_markdown({
+            message_ids: [10, 20],
+            first_bookend: {html: "<p>start</p>", is_partial: true},
+            last_bookend: {html: "<p>full</p>", is_partial: false},
+        }),
+        {first: "md:<p>start</p>", last: undefined},
+    );
+
+    assert.deepEqual(
+        compose_reply.partial_bookend_markdown({
+            message_ids: [10, 20],
+            first_bookend: {html: "<p>full</p>", is_partial: false},
+            last_bookend: {html: "<p>end</p>", is_partial: true},
+        }),
+        {first: undefined, last: "md:<p>end</p>"},
+    );
+
+    assert.deepEqual(
+        compose_reply.partial_bookend_markdown({
+            message_ids: [10, 20],
+            first_bookend: {html: "<p>full</p>", is_partial: false},
+            last_bookend: undefined,
+        }),
+        {first: undefined, last: undefined},
+    );
+
+    // Producer omits last when there is only one contentful id.
+    assert.deepEqual(
+        compose_reply.partial_bookend_markdown({
+            message_ids: [10],
+            first_bookend: {html: "<p>only</p>", is_partial: true},
+            last_bookend: undefined,
+        }),
+        {first: "md:<p>only</p>", last: undefined},
+    );
 });

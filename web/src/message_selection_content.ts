@@ -18,6 +18,7 @@ export type RangeContainer = "start" | "end";
 
 type BookendContentHtml = {
     html: string;
+    is_partial: boolean;
 };
 
 export type MultiMessageSelectionContent = {
@@ -41,6 +42,8 @@ function get_selected_message_content_elements(): NodeListOf<HTMLElement> | unde
 // The caller is expected to only pass the first or last message
 // from a selection range, as the intermediate selected messages
 // anyways contain the entire `.message_content` HTML.
+//
+// Also reports whether the selection is partial (`is_partial`).
 // Mutates `selected_message_content_element` when inserting ellipsis text.
 function get_html_for_bookend_message_content(
     type: RangeContainer,
@@ -59,6 +62,8 @@ function get_html_for_bookend_message_content(
     if (selected_message_content_element.classList.contains("status-message")) {
         return {
             html: `<div>` + selected_message_content_element.outerHTML + `</div>`,
+            // Status messages are treated as whole units for selection.
+            is_partial: false,
         };
     }
 
@@ -70,6 +75,7 @@ function get_html_for_bookend_message_content(
     ) {
         return {
             html: selected_message_content_element.innerHTML,
+            is_partial: false,
         };
     }
 
@@ -97,6 +103,7 @@ function get_html_for_bookend_message_content(
     }
     return {
         html: selected_message_content_element.innerHTML,
+        is_partial: true,
     };
 }
 
