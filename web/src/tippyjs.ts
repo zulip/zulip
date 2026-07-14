@@ -382,6 +382,23 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
+    // The channel/group card description is clamped to two lines; when it
+    // overflows, point users to settings for the full text.
+    tippy.delegate("body", {
+        target: ".popover-card-description",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const description = instance.reference;
+            // The template only adds this tooltip for viewers who can open
+            // settings, so we just check that the text is actually truncated.
+            const line_height = Number.parseFloat(getComputedStyle(description).lineHeight);
+            if (description.scrollHeight <= description.clientHeight + line_height / 2) {
+                return false;
+            }
+            return undefined;
+        },
+    });
+
     tippy.delegate("body", {
         target: [
             "#scroll-to-bottom-button-clickable-area",

@@ -10,7 +10,8 @@
             <span class="popover-card-name">{{stream.name}}</span>
         </li>
         <li role="none" class="popover-card-description-item text-item popover-menu-list-item">
-            <div class="popover-card-description">{{> ../stream_settings/stream_description
+            {{! Clamp only when there's a settings link to see the full text. }}
+            <div class="popover-card-description {{#if can_open_settings}}line-clamp{{/if}}" {{#if can_open_settings}}data-tippy-content="{{t 'Open settings to see the full description.'}}"{{/if}}>{{> ../stream_settings/stream_description
                   rendered_description=stream.rendered_description
                   use_view_only_styling=false}}
             </div>

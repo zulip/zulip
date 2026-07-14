@@ -367,6 +367,8 @@
     /* 16px at 15px/1em */
     line-height: 1.0667em;
     color: var(--color-text-popover-menu);
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .popover-group-menu-members-summary {
