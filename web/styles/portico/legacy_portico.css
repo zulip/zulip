@@ -1370,6 +1370,11 @@ html:has(.portico-page.error) {
         hsl(240deg 30% 13%)
     );
     --error-page-fg: light-dark(hsl(240deg 8% 5%), hsl(240deg 6% 90%));
+    /* The art's gradient tops out at 70% opacity, so the light value has to be
+       darker than it looks: at 70% over the light band it lands around a mid
+       grey. The dark value is the foreground tone, which at 70% over the dark
+       band reproduces the illustration's original hsl(240deg 6% 68%). */
+    --error-page-art: light-dark(hsl(240deg 8% 30%), hsl(240deg 6% 90%));
 
     /* The marketing footer keeps its own background in both themes. In dark
        that is already the same tone as --error-page-bg, so the footer reads as
@@ -1429,10 +1434,18 @@ body:has(.portico-page.error) .header span {
     padding: 80px 20px;
 }
 
-/* Per-page illustration: each error template supplies its own art. */
-.portico-page.error .error_page img {
+/* Per-page illustration. The SVG art is inlined (rather than referenced with
+   `img src`) so that `currentColor` resolves against the page, letting one
+   asset serve both themes. The hourglass is a PNG whose line art already
+   reads on either surface, so it stays an `img`. */
+.portico-page.error .error_page img,
+.portico-page.error .error_page svg {
     width: auto;
     height: 120px;
+}
+
+.portico-page.error .error_page svg {
+    color: var(--error-page-art);
 }
 
 /* No card — text sits directly on the surface, centered. */
