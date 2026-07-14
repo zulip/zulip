@@ -48,11 +48,49 @@ it requires only one fixture,
 }
 ```
 
-For integrations that send the event type or other important information as
-part of the HTTP header, you will need to record the header value for each
-fixture. Refer to
+### Fixture guidelines
+
+Fixtures for a real third-party service must always be actual
+captured payloads, or payloads from the service's official API
+documentation, never hand-written, invented, or AI-generated. A
+fabricated payload does not accurately reflect what the service
+really sends, so an integration developed against one may not work
+with real events.
+
+When setting up the integration, make sure not to use any personal
+details that you would not want to be part of the fixtures. Use
+fixtures exactly as you captured them; do not edit their contents. An
+edited fixture no longer records what the service really sends, and
+subtle mistakes are easy to introduce without noticing. If you need a
+variation, capture a new fixture instead.
+
+If you absolutely must remove personal details from a captured
+payload, commit the captured fixture locally first, then replace the
+personal details with equally realistic strings and amend the commit.
+This makes the scrub a reviewable diff, and the original data never
+reaches the public history.
+
+Fixture data appears in the messages and topics that your integration
+produces, and in the auto-generated example screenshots in the
+integration's documentation, so when setting up the third-party
+service, use realistic names for projects, tasks, and other entities.
+
+Fixture files are named descriptively, in snake_case, after the event
+(and variant) they capture. The Hello World integration's fixture is
+`hello.json`; for a richer service, a fixture might be named
+something like `issue_created_with_assignee.json`.
+
+For integrations that send the event type or other important
+information as part of the HTTP header, the value of the header is
+encoded in the first part of the fixture's filename, separated from
+the rest by a double underscore. Refer to
 [the section on custom HTTP headers](incoming-webhooks-reference.md#custom-http-headers)
 in the reference guide for more details.
+
+Once captured, fixtures rarely need to be updated: as long as the
+fields your integration reads are still what the service sends, there
+is no need to update fixtures just because the service has added new
+fields over the years.
 
 ## Step 1: Initialize the python package
 
