@@ -60,14 +60,31 @@ const settings_data = mock_esm("../src/settings_data");
 mock_esm("../src/spectators", {
     login_to_access() {},
 });
+mock_esm("../src/emoji", {
+    get_emoji_details_by_name(name) {
+        return {
+            emoji_name: name,
+            emoji_code: "1f419",
+            reaction_type: "unicode_emoji",
+        };
+    },
+});
 
-function empty_narrow_html(title, title_html, notice_html, search_data, show_action) {
+function empty_narrow_html(
+    title,
+    title_html,
+    notice_html,
+    search_data,
+    show_action,
+    reaction_emoji,
+) {
     const opts = {
         title,
         title_html,
         notice_html,
         search_data,
         show_action,
+        reaction_emoji,
     };
     return require("../templates/empty_feed_notice.hbs")(opts);
 }
@@ -807,6 +824,19 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
             empty_narrow_html("translated: There are no messages here."),
         );
     }
+
+    current_filter = set_filter([["reaction", "octopus"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("", undefined, undefined, undefined, undefined, {
+            emoji_name: "octopus",
+            emoji_code: "1f419",
+            reaction_type: "unicode_emoji",
+            emoji_alt_code: false,
+            is_realm_emoji: false,
+        }),
+    );
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
