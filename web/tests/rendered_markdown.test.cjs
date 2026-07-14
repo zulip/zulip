@@ -1180,6 +1180,45 @@ run_test("rtl mixed-direction paragraphs", () => {
     assert.ok(!$arabic_paragraph.hasClass("ltr"));
 });
 
+run_test("rtl quoted reply, the exact real-world case from the issue", () => {
+    // The most important real-world case from #39511 itself: an English
+    // reply quoting an Arabic message. The quoted text is wrapped in a
+    // <blockquote> containing its own nested <p>, both of which need
+    // walking and correcting, not just top-level paragraphs.
+    const $content = get_content_element();
+    $content.text("I agree with this: مرحبا بالعالم, كيف حالك؟ Let's discuss tomorrow.");
+
+    const $intro_paragraph = $.create("p(intro)");
+    $intro_paragraph.text("I agree with this:");
+    const $blockquote = $.create("blockquote(quoted)");
+    $blockquote.text("مرحبا بالعالم, كيف حالك؟");
+    const $quoted_paragraph = $.create("p(quoted)");
+    $quoted_paragraph.text("مرحبا بالعالم, كيف حالك؟");
+    const $outro_paragraph = $.create("p(outro)");
+    $outro_paragraph.text("Let's discuss tomorrow.");
+    $content.set_find_results("p, li, blockquote, h1, h2, h3, h4, h5, h6", [
+        $intro_paragraph[0],
+        $blockquote[0],
+        $quoted_paragraph[0],
+        $outro_paragraph[0],
+    ]);
+
+    rm.update_elements($content);
+
+    // Message follows the first strong character (English "I agree...").
+    assert.ok(!$content.hasClass("rtl"));
+    // Both the blockquote itself and its nested paragraph differ from the
+    // message's ltr direction, so both get corrected to rtl.
+    assert.ok($blockquote.hasClass("rtl"));
+    assert.ok($quoted_paragraph.hasClass("rtl"));
+    // The English paragraphs around it match the message direction, so
+    // they are left alone.
+    assert.ok(!$intro_paragraph.hasClass("rtl"));
+    assert.ok(!$intro_paragraph.hasClass("ltr"));
+    assert.ok(!$outro_paragraph.hasClass("rtl"));
+    assert.ok(!$outro_paragraph.hasClass("ltr"));
+});
+
 run_test("rtl mixed-direction paragraphs, rtl message overall", () => {
     // Same bug, opposite overall direction: an Arabic paragraph followed
     // by an English one.
