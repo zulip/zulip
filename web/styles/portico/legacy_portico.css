@@ -1375,6 +1375,7 @@ html:has(.portico-page.error) {
        grey. The dark value is the foreground tone, which at 70% over the dark
        band reproduces the illustration's original hsl(240deg 6% 68%). */
     --error-page-art: light-dark(hsl(240deg 8% 30%), hsl(240deg 6% 90%));
+    --error-page-badge-bg: light-dark(hsl(240deg 41% 88%), hsl(239deg 27% 31%));
 
     /* The marketing footer keeps its own background in both themes. In dark
        that is already the same tone as --error-page-bg, so the footer reads as
@@ -1469,7 +1470,7 @@ body:has(.portico-page.error) .header span {
     text-align: center;
 }
 
-/* Heading row. */
+/* Heading row — on the 404 this is the "404" badge + "Page not found". */
 .portico-page.error .error_page .lead {
     display: flex;
     flex-wrap: wrap;
@@ -1481,6 +1482,15 @@ body:has(.portico-page.error) .header span {
     font-size: 32px;
     font-weight: 400;
     line-height: normal;
+}
+
+.portico-page.error .error_page .error-code-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 12px;
+    border-radius: 6px;
+    background-color: var(--error-page-badge-bg);
+    font-weight: 600;
 }
 
 .portico-page.error .error_page p {
