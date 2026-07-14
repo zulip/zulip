@@ -1064,6 +1064,13 @@ def mattermost_data_file_to_dict(
                 )
                 mattermost_data["user"].append(bot_data)
             elif data_type == "user" and combine_into_one_realm:
+                if not row[data_type]["teams"]:
+                    # "teams" is null for users who are not a member of any
+                    # team. Keep it as is, so that such users are treated
+                    # just like in the non-combined code path: they only get
+                    # a mirror dummy account, backfilled from their posts.
+                    mattermost_data[data_type].append(row[data_type])
+                    continue
                 all_user_channels: list[dict[str, Any]] = []
                 all_user_team_roles: set[str] = set()
                 # Admin users in individual teams will have administrator role
