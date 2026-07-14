@@ -285,7 +285,7 @@ development environment.
 1. Click **Send**. The webhook notification message will be sent to the
    default Zulip organization in your development environment.
 
-By having Zulip open in one browsre tab and this tool in another, you can
+By having Zulip open in one browser tab and this tool in another, you can
 quickly tweak your webhook code and send sample messages for different
 test fixtures.
 
