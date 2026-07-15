@@ -178,6 +178,22 @@ class GitlabHookTests(WebhookTestCase):
             "issue_hook__issue_opened_with_null_description", expected_topic_name, expected_message
         )
 
+    def test_create_work_item_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / epic #8 Plan next release"
+        expected_message = "Tomasz Kolek created [epic #8](https://gitlab.com/tomaszkolek0/my-awesome-project/-/work_items/8):\n\n``` quote\nCoordinate the next release.\n```"
+
+        self.check_webhook(
+            "issue_hook__work_item_epic_opened", expected_topic_name, expected_message
+        )
+
+    def test_close_work_item_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / task #9 Update docs"
+        expected_message = "Tomasz Kolek closed [task #9](https://gitlab.com/tomaszkolek0/my-awesome-project/-/work_items/9)."
+
+        self.check_webhook(
+            "issue_hook__work_item_task_closed", expected_topic_name, expected_message
+        )
+
     def test_update_issue_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / issue #1 Issue title_new"
         expected_message = "Tomasz Kolek updated [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."

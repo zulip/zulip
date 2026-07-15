@@ -107,24 +107,25 @@ def get_tag_push_event_body(payload: WildValue, include_title: bool, realm: Real
     )
 
 
-def get_issue_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+def get_object_description(payload: WildValue) -> str | None:
     description = payload["object_attributes"].get("description")
-    # Filter out multiline hidden comments
     if description:
         stringified_description = description.tame(check_string)
         stringified_description = re.sub(
             r"<!--.*?-->", "", stringified_description, count=0, flags=re.DOTALL
         )
-        stringified_description = stringified_description.rstrip()
-    else:
-        stringified_description = None
+        return stringified_description.rstrip()
 
+    return None
+
+
+def get_issue_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     return get_issue_event_message(
         user_name=get_user_name(payload, realm),
         action="created",
         url=get_object_url(payload),
         number=payload["object_attributes"]["iid"].tame(check_int),
-        message=stringified_description,
+        message=get_object_description(payload),
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
@@ -136,6 +137,36 @@ def get_issue_event_body(action: str, payload: WildValue, include_title: bool, r
         action=action,
         url=get_object_url(payload),
         number=payload["object_attributes"]["iid"].tame(check_int),
+        title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_work_item_type(payload: WildValue) -> str:
+    return payload["object_attributes"]["type"].tame(check_string).lower()
+
+
+def get_work_item_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+    return get_pull_request_event_message(
+        user_name=get_user_name(payload, realm),
+        action="created",
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
+        message=get_object_description(payload),
+        assignees=replace_assignees_username_with_name(get_assignees(payload)),
+        type=get_work_item_type(payload),
+        title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_work_item_event_body(
+    action: str, payload: WildValue, include_title: bool, realm: Realm
+) -> str:
+    return get_pull_request_event_message(
+        user_name=get_user_name(payload, realm),
+        action=action,
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
+        type=get_work_item_type(payload),
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
 
@@ -687,6 +718,10 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Confidential Issue Hook close": partial(get_issue_event_body, "closed"),
     "Confidential Issue Hook reopen": partial(get_issue_event_body, "reopened"),
     "Confidential Issue Hook update": partial(get_issue_event_body, "updated"),
+    "Work Item Hook open": get_work_item_created_event_body,
+    "Work Item Hook close": partial(get_work_item_event_body, "closed"),
+    "Work Item Hook reopen": partial(get_work_item_event_body, "reopened"),
+    "Work Item Hook update": partial(get_work_item_event_body, "updated"),
     "Note Hook Commit": get_commented_commit_event_body,
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
@@ -790,10 +825,10 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
                 else ""
             ),
         )
-    elif event.startswith(("Issue Hook", "Confidential Issue Hook")):
+    elif event.startswith(("Issue Hook", "Confidential Issue Hook", "Work Item Hook")):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
-            type="issue",
+            type=get_work_item_type(payload) if event.startswith("Work Item Hook") else "issue",
             id=payload["object_attributes"]["iid"].tame(check_int),
             title=payload["object_attributes"]["title"].tame(check_string),
         )
@@ -874,7 +909,15 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
             event_name = payload["object_kind"].tame(check_string)
         event = event_name.split("__")[0].replace("_", " ").title()
         event = f"{event} Hook"
-    if event in ["Confidential Issue Hook", "Issue Hook", "Merge Request Hook", "Wiki Page Hook"]:
+    if event in [
+        "Confidential Issue Hook",
+        "Issue Hook",
+        "Merge Request Hook",
+        "Wiki Page Hook",
+        "Work Item Hook",
+    ]:
+        if event == "Issue Hook" and payload["object_kind"].tame(check_string) == "work_item":
+            event = "Work Item Hook"
         action = payload["object_attributes"].get("action", "open").tame(check_string)
         event = f"{event} {action}"
     elif event in ["Confidential Note Hook", "Note Hook"]:

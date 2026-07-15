@@ -1,0 +1,20 @@
+{
+    "object_kind": "work_item",
+    "user": {
+        "name": "Tomasz Kolek",
+        "username": "tomaszkolek0"
+    },
+    "project": {
+        "name": "my-awesome-project",
+        "web_url": "https://gitlab.com/tomaszkolek0/my-awesome-project",
+        "visibility_level": 20
+    },
+    "object_attributes": {
+        "iid": 8,
+        "title": "Plan next release",
+        "description": "Coordinate the next release.",
+        "url": "https://gitlab.com/tomaszkolek0/my-awesome-project/-/work_items/8",
+        "type": "Epic",
+        "action": "open"
+    }
+}
