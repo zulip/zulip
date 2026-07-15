@@ -5375,6 +5375,31 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
             ],
         )
 
+    def test_social_auth_state_data_expired_in_redis(self) -> None:
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+
+        # Simulate the state data having expired from redis, like when
+        # a user takes longer than REDIS_EXPIRATION_SECONDS to return
+        # from the IdP.
+        with (
+            mock.patch.object(
+                GenericOpenIdConnectBackend, "get_data_from_redis", return_value=None
+            ),
+            self.assertLogs(self.logger_string, level="INFO") as m,
+        ):
+            result = self.social_auth_test(account_data_dict, subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual("/login/", result["Location"])
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    "State data expired in redis: authentication took too long to complete.",
+                    "info",
+                )
+            ],
+        )
+
     @override
     def test_social_auth_complete(self) -> None:
         def mock_process_error(backend: BaseOAuth2, data: Mapping[str, object]) -> None:
