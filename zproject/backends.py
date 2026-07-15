@@ -4291,7 +4291,15 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         assert state
 
         relayed_params = self.get_data_from_redis(state)
-        assert relayed_params is not None
+        if relayed_params is None:
+            # The relayed_params live in redis with a TTL of
+            # REDIS_EXPIRATION_SECONDS, so this means the user took
+            # too long to complete the authentication attempt.
+            self.logger.info(
+                "State data expired in redis: authentication took too long to complete."
+            )
+            return None
+
         for param in self.standard_relay_params:
             relayed_value = relayed_params.get(param)
             session_value = self.strategy.session_get(param)
