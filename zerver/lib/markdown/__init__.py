@@ -7,15 +7,13 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from email.message import EmailMessage
 from functools import lru_cache
 from re import Match, Pattern
-from typing import Any, Generic, Optional, TypeAlias, TypedDict, TypeVar, cast
+from typing import Generic, Literal, Optional, TypeAlias, TypedDict, TypeVar, cast
 from urllib.parse import parse_qs, parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
-import lxml.etree
 import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
@@ -25,14 +23,12 @@ import markdown.treeprocessors
 import markdown.util
 import re2
 import regex
-import requests
 import uri_template
-import urllib3.exceptions
 from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
-from typing_extensions import NotRequired, Self, override
+from typing_extensions import Self, override
 
 from zerver.lib import mention
 from zerver.lib.camo import get_camo_url
@@ -50,7 +46,6 @@ from zerver.lib.mention import (
     get_user_group_mention_display_name,
 )
 from zerver.lib.mime_types import AUDIO_INLINE_MIME_TYPES, guess_type
-from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.per_request_cache import cache_for_current_request
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -470,56 +465,6 @@ def has_blockquote_ancestor(element_pair: ElementPair | None) -> bool:
         return has_blockquote_ancestor(element_pair.parent)
 
 
-class OpenGraphSession(OutgoingSession):
-    def __init__(self) -> None:
-        super().__init__(role="markdown", timeout=1)
-
-
-def fetch_open_graph_image(url: str) -> dict[str, Any] | None:
-    og: dict[str, str | None] = {"image": None, "title": None, "desc": None}
-
-    try:
-        with OpenGraphSession().get(
-            url, headers={"Accept": "text/html,application/xhtml+xml"}, stream=True
-        ) as res:
-            if res.status_code != requests.codes.ok:
-                return None
-
-            m = EmailMessage()
-            m["Content-Type"] = res.headers.get("Content-Type")
-            mimetype = m.get_content_type()
-            if mimetype not in ("text/html", "application/xhtml+xml"):
-                return None
-            html = mimetype == "text/html"
-
-            res.raw.decode_content = True
-            for event, element in lxml.etree.iterparse(
-                res.raw, events=("start",), no_network=True, remove_comments=True, html=html
-            ):
-                parent = element.getparent()
-                if parent is not None:
-                    # Reduce memory usage.
-                    parent.text = None
-                    parent.remove(element)
-
-                if element.tag in ("body", "{http://www.w3.org/1999/xhtml}body"):
-                    break
-                elif element.tag in ("meta", "{http://www.w3.org/1999/xhtml}meta"):
-                    if element.get("property") == "og:image":
-                        content = element.get("content")
-                        if content is not None:
-                            og["image"] = urljoin(res.url, content)
-                    elif element.get("property") == "og:title":
-                        og["title"] = element.get("content")
-                    elif element.get("property") == "og:description":
-                        og["desc"] = element.get("content")
-
-    except (requests.RequestException, urllib3.exceptions.HTTPError):
-        return None
-
-    return None if og["image"] is None else og
-
-
 class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
     """
     Rewrite inline img tags to serve external content via Camo.
@@ -607,12 +552,20 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
 IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]
 
 
-class DropboxMediaInfo(TypedDict):
-    is_image: bool
-    is_video: bool
+@dataclass
+class DropboxInlineMediaInfo:
+    # An file that we inline directly, using the link rewritten to point
+    # at the raw file.
+    type: Literal["image", "video"]
     media_url: str
-    title: NotRequired[str]
-    desc: NotRequired[str]
+
+
+@dataclass
+class DropboxDeferredPreviewInfo:
+    # We preview these via their OpenGraph image. That image is fetched
+    # asynchronously by the embed_links worker rather than during
+    # rendering, so no media_url is available here.
+    type: Literal["folder", "file"]
 
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
@@ -795,7 +748,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return "https://linx.li/s" + parsed_url.path
         return None
 
-    def dropbox_media(self, url: str) -> DropboxMediaInfo | None:
+    def dropbox_media(self, url: str) -> DropboxInlineMediaInfo | DropboxDeferredPreviewInfo | None:
         if not self.zmd.image_preview_enabled:
             return None
         parsed_url = urlsplit(url)
@@ -817,29 +770,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # in the url before passing it to `is_video`.
             is_video = self.is_video(urlsplit(url).path)
 
-            # If it is from an album or not an actual image file,
-            # just use open graph image.
+            # Albums, and files that aren't an image or video, are
+            # previewed via their OpenGraph image, which the caller
+            # fetches asynchronously through the embed_links worker
+            # rather than blocking rendering on a network request.
             if is_album or not (is_image or is_video):
-                open_graph_image_info = fetch_open_graph_image(url)
-                # Failed to follow link to find an image preview so
-                # use placeholder image and guess filename
-                if open_graph_image_info is None:
-                    return None
-
-                if is_album:
-                    title = "Dropbox folder"
-                    desc = "Click to open folder."
-                else:
-                    title = "Dropbox file"
-                    desc = "Click to open file."
-
-                return DropboxMediaInfo(
-                    title=title,
-                    desc=desc,
-                    is_image=is_image,
-                    is_video=is_video,
-                    media_url=open_graph_image_info["image"],
-                )
+                return DropboxDeferredPreviewInfo(type="folder" if is_album else "file")
 
             # Adding raw=1 as query param will give us the URL of the
             # actual image instead of the dropbox image preview page.
@@ -847,9 +783,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             query_params["raw"] = "1"
             query = urlencode(query_params)
 
-            return DropboxMediaInfo(
-                is_image=is_image,
-                is_video=is_video,
+            return DropboxInlineMediaInfo(
+                type="image" if is_image else "video",
                 media_url=parsed_url._replace(query=query).geturl(),
             )
         return None
@@ -1124,32 +1059,49 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
 
             dropbox_media = self.dropbox_media(url)
-            if dropbox_media is not None:
-                is_image = dropbox_media["is_image"]
-                if is_image:
-                    found_url = ResultWithFamily(
-                        family=found_url.family,
-                        result=(dropbox_media["media_url"], dropbox_media["media_url"]),
-                    )
-                    self.handle_image_inlining(root, found_url)
+            if isinstance(dropbox_media, DropboxDeferredPreviewInfo):
+                # Media previewed via its OpenGraph image. Register the URL
+                # until the embed_links worker supplies that image, then build
+                # the embed from it.
+                if self.zmd.url_embed_data is None or url not in self.zmd.url_embed_data:
+                    self.zmd.zulip_rendering_result.links_for_preview.add(url)
                     continue
 
-                is_video = dropbox_media["is_video"]
-                if is_video:
-                    found_url = ResultWithFamily(
-                        family=found_url.family,
-                        result=(dropbox_media["media_url"], dropbox_media["media_url"]),
-                    )
-                    self.handle_video_inlining(root, found_url)
+                # If there is data, but it's None, we did process the URL,
+                # but it was not valid to preview. If no image was found,
+                # `add_embed` below will skip building the embed.
+                extracted_data = self.zmd.url_embed_data[url]
+                if extracted_data is None:
                     continue
 
-                dropbox_embed_data = UrlEmbedData(
-                    type="image",
-                    title=dropbox_media["title"],
-                    description=dropbox_media["desc"],
-                    image=dropbox_media["media_url"],
+                if dropbox_media.type == "folder":
+                    embed_title = "Dropbox folder"
+                    embed_description = "Click to open folder."
+                else:
+                    embed_title = "Dropbox file"
+                    embed_description = "Click to open file."
+
+                self.add_embed(
+                    root,
+                    url,
+                    UrlEmbedData(
+                        type="image",
+                        title=embed_title,
+                        description=embed_description,
+                        image=extracted_data.image,
+                    ),
                 )
-                self.add_embed(root, url, dropbox_embed_data)
+                continue
+
+            if isinstance(dropbox_media, DropboxInlineMediaInfo):
+                found_url = ResultWithFamily(
+                    family=found_url.family,
+                    result=(dropbox_media.media_url, dropbox_media.media_url),
+                )
+                if dropbox_media.type == "image":
+                    self.handle_image_inlining(root, found_url)
+                else:
+                    self.handle_video_inlining(root, found_url)
                 continue
 
             # This needs to run after all the dropbox code has been run.
