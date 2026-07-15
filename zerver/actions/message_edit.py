@@ -935,12 +935,13 @@ def do_update_message(
     realm = user_profile.realm
     attachment_reference_change = AttachmentChangeResult(False, [])
 
-    ums = UserMessage.objects.filter(message=target_message.id)
+    ums_queryset = UserMessage.objects.filter(message=target_message.id)
 
-    def user_info(um: UserMessage) -> dict[str, Any]:
+    def user_info(um_row: tuple[int, int]) -> dict[str, Any]:
+        # um_row: (user_profile_id, flags) UserMessage row.
         return {
-            "id": um.user_profile_id,
-            "flags": um.flags_list(),
+            "id": um_row[0],
+            "flags": UserMessage.flags_list_for_flags(um_row[1]),
         }
 
     if message_edit_request.is_content_edited:
@@ -985,7 +986,9 @@ def do_update_message(
             save_message_for_edit_use_case(message=target_message)
 
             event["message_ids"] = sorted(update_message_cache([target_message]))
-            users_to_be_notified = list(map(user_info, ums))
+            users_to_be_notified = list(
+                map(user_info, ums_queryset.values_list("user_profile_id", "flags"))
+            )
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
             changed_messages_count = 1
@@ -1052,7 +1055,9 @@ def do_update_message(
             # If it's moving to a private stream, all non-subscribed users are losing access
             users_losing_access = users_losing_usermessages
 
-        unmodified_user_messages = ums.exclude(user_profile__in=users_losing_usermessages)
+        unmodified_user_messages = ums_queryset.exclude(
+            user_profile__in=users_losing_usermessages
+        ).values_list("user_profile_id", "flags")
 
         if not new_stream.is_history_public_to_subscribers():
             # We need to guarantee that every currently-subscribed
@@ -1072,8 +1077,8 @@ def do_update_message(
             )
     else:
         # If we're not moving the topic to another stream, we don't
-        # modify the original set of UserMessage objects queried.
-        unmodified_user_messages = ums
+        # modify the original set of UserMessage rows queried.
+        unmodified_user_messages = ums_queryset.values_list("user_profile_id", "flags")
 
     if message_edit_request.is_topic_edited:
         topic_name = message_edit_request.target_topic_name
@@ -1221,9 +1226,7 @@ def do_update_message(
             # in users_to_be_notified list.  This is the case where a
             # user both has a UserMessage row and is a current
             # Subscriber
-            subs = subs.exclude(
-                user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
-            )
+            subs = subs.exclude(user_profile_id__in=[um[0] for um in unmodified_user_messages])
 
             if message_edit_request.is_stream_edited:
                 subs = subs.exclude(user_profile__in=users_losing_access)
