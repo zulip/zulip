@@ -1,5 +1,7 @@
 import _ from "lodash";
 
+import * as util from "./util.ts";
+
 /*
     We hand selected the following emojis a few years
     ago to be given extra precedence in our typeahead
@@ -222,12 +224,6 @@ export function clean_query_lowercase(query: string): string {
     return query;
 }
 
-export const parse_unicode_emoji_code = (code: string): string =>
-    code
-        .split("-")
-        .map((hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
-        .join("");
-
 export function get_emoji_matcher(query: string): (emoji: EmojiSuggestion) => boolean {
     // replace spaces with underscores for emoji matching
     query = query.replaceAll(" ", "_");
@@ -237,7 +233,7 @@ export function get_emoji_matcher(query: string): (emoji: EmojiSuggestion) => bo
     return function (emoji) {
         const matches_emoji_literal =
             emoji.reaction_type === "unicode_emoji" &&
-            parse_unicode_emoji_code(emoji.emoji_code) === query;
+            util.convert_emoji_code_to_unicode(emoji.emoji_code) === query;
         return (
             matches_emoji_literal ||
             query_matches_string_in_order(query, emoji.emoji_name, "_", should_remove_diacritics)
