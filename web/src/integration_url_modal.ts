@@ -104,6 +104,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
         const clipboard = new ClipboardJS("#generate-integration-url-modal .dialog_submit_button", {
             text() {
+                // Commit any in-flight branch pill edit so the copied URL
+                // reflects it (committing re-runs update_url via onPillCreate).
+                branch_pill_widget?.finalize_pending_edit();
                 return $integration_url.text();
             },
         });

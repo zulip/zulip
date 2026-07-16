@@ -552,6 +552,20 @@ export function show_new_stream_modal(): void {
 
 let group_setting_widgets: Record<string, GroupSettingPillContainer | undefined> = {};
 
+// Creating the channel must not act on a pill's pre-edit value.
+async function finalize_pending_pill_edits(): Promise<boolean> {
+    if (!(await stream_create_subscribers.finalize_pending_edit())) {
+        return false;
+    }
+    for (const pill_widget of Object.values(group_setting_widgets)) {
+        assert(pill_widget !== undefined);
+        if (!pill_widget.finalize_pending_edit()) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function set_up_group_setting_widgets(): void {
     for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
         group_setting_widgets[setting_name] =
@@ -608,6 +622,15 @@ export function set_up_handlers(): void {
             return;
         }
 
+        void (async () => {
+            if (!(await finalize_pending_pill_edits())) {
+                return;
+            }
+            maybe_create_stream(stream_name);
+        })();
+    });
+
+    function maybe_create_stream(stream_name: string): void {
         const principals = stream_create_subscribers.get_principals();
         if (principals.length === 0) {
             stream_subscription_error.report_no_subs_to_stream();
@@ -643,7 +666,7 @@ export function set_up_handlers(): void {
         } else {
             create_stream();
         }
-    });
+    }
 
     function handle_channel_name_length_limit(): void {
         const $channel_input = $<HTMLInputElement>("input#create_stream_name");

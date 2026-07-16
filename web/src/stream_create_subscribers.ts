@@ -21,6 +21,19 @@ export function get_principals(): number[] {
     return stream_create_subscribers_data.get_principals();
 }
 
+export async function finalize_pending_edit(): Promise<boolean> {
+    if (!pill_widget.has_pending_edit()) {
+        return true;
+    }
+    if (!pill_widget.finalize_pending_edit()) {
+        return false;
+    }
+    // The pill hooks that sync our subscriber list run asynchronously, so a
+    // just-committed edit has not reached it before the caller reads it.
+    sync_user_ids(await add_subscribers_pill.get_pill_user_ids(pill_widget));
+    return true;
+}
+
 function redraw_subscriber_list(): void {
     all_users_list_widget.replace_list_data(stream_create_subscribers_data.sorted_user_ids());
 }

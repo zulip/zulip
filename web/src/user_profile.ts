@@ -1350,6 +1350,12 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     // calls when the "Manage user" tab is opened multiple times.
     $("#user-profile-modal").off("click", ".dialog_submit_button");
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
+        for (const field_pills of fields_user_pills.values()) {
+            if (!field_pills.finalize_pending_edit()) {
+                return;
+            }
+        }
+
         const role = Number.parseInt(
             $<HTMLSelectOneElement>("select:not([multiple])#user-role-select").val()!.trim(),
             10,
@@ -1651,6 +1657,10 @@ export function initialize(): void {
             ) {
                 $("#user-group-to-add .pill-container").addClass("invalid");
             }
+            return;
+        }
+
+        if (!user_group_pill_widget.finalize_pending_edit()) {
             return;
         }
 
