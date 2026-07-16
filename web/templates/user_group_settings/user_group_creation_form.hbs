@@ -25,7 +25,7 @@
                     <section id="user-group-permission-container">
                         <div class="group-permissions settings-subsection-parent" id="new_group_permission_settings">
                             <div class="subsection-header">
-                                <h3 class="user_group_setting_subsection_title">{{t "Group permissions" }}
+                                <h3 class="settings-subsection-title">{{t "Group permissions" }}
                                 </h3>
                             </div>
 
@@ -35,9 +35,11 @@
                 </div>
                 <div class="user_group_members_container user_group_creation">
                     <section id="choose_member_section">
-                        <h4 class="user_group_setting_subsection_title">
-                            <label for="people_to_add_in_group">{{t "Choose members" }}</label>
-                        </h4>
+                        <div class="subsection-header">
+                            <h3 class="settings-subsection-title">
+                                <label for="people_to_add_in_group">{{t "Choose members" }}</label>
+                            </h3>
+                        </div>
                         <div id="user_group_membership_error" class="user_group_creation_error"></div>
                         <div class="controls" id="people_to_add_in_group"></div>
                     </section>
