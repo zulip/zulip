@@ -4816,11 +4816,15 @@ class GetOldMessagesTest(ZulipTestCase):
         capture.assert_called_once()
         sql = get_django_sql(capture.call_args.args[0])
         self.assertNotIn(f"message_id = {LARGER_THAN_MAX_MESSAGE_ID}", sql)
-        self.assertIn("ORDER BY 1 ASC", sql)
+        # Pagination must be ordered/bounded on zerver_usermessage.message_id,
+        # not zerver_message.id, to avoid a full-history scan; see fetch_messages.
+        self.assertIn('ORDER BY "zerver_usermessage"."message_id" ASC', sql)
 
         self.assertIn(f' WHERE ("zerver_usermessage"."user_profile_id" = {user_profile.id} ', sql)
-        self.assertIn(f' AND "zerver_message"."id" >= {first_unread_message_id})', sql)
-        self.assertIn(f' AND "zerver_message"."id" <= {first_unread_message_id - 1})', sql)
+        self.assertIn(f' AND "zerver_usermessage"."message_id" >= {first_unread_message_id})', sql)
+        self.assertIn(
+            f' AND "zerver_usermessage"."message_id" <= {first_unread_message_id - 1})', sql
+        )
         self.assertIn("UNION", sql)
 
     def test_visible_messages_use_first_unread_anchor_with_some_unread_messages(self) -> None:
@@ -4865,10 +4869,12 @@ class GetOldMessagesTest(ZulipTestCase):
         capture.assert_called_once()
         sql = get_django_sql(capture.call_args.args[0])
         self.assertNotIn(f"message_id = {LARGER_THAN_MAX_MESSAGE_ID}", sql)
-        self.assertIn("ORDER BY 1 ASC", sql)
+        self.assertIn('ORDER BY "zerver_usermessage"."message_id" ASC', sql)
         self.assertIn(f' WHERE ("zerver_usermessage"."user_profile_id" = {user_profile.id} ', sql)
-        self.assertIn(f' AND "zerver_message"."id" <= {first_unread_message_id - 1})', sql)
-        self.assertIn(f' AND "zerver_message"."id" >= {first_visible_message_id})', sql)
+        self.assertIn(
+            f' AND "zerver_usermessage"."message_id" <= {first_unread_message_id - 1})', sql
+        )
+        self.assertIn(f' AND "zerver_usermessage"."message_id" >= {first_visible_message_id})', sql)
 
     def test_use_first_unread_anchor_with_no_unread_messages(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -5189,7 +5195,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."id" = 0)\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_usermessage"."message_id" = 0)\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 0, "num_after": 0}, sql)
@@ -5201,7 +5207,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."id" = 0)\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_usermessage"."message_id" = 0)\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 1, "num_after": 0}, sql)
@@ -5213,7 +5219,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1))) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1))) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 2\
 """
         sql = sql_template.format(**query_ids)
@@ -5226,7 +5232,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1))) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1))) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 11\
 """
         sql = sql_template.format(**query_ids)
@@ -5239,7 +5245,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."id" <= 100) ORDER BY 1 DESC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_usermessage"."message_id" <= 100) ORDER BY "zerver_usermessage"."message_id" DESC\
  LIMIT 11\
 """
         sql = sql_template.format(**query_ids)
@@ -5252,14 +5258,14 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."id" <= 99) ORDER BY 1 DESC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_usermessage"."message_id" <= 99) ORDER BY "zerver_usermessage"."message_id" DESC\
  LIMIT 10) UNION ALL (SELECT "zerver_message"."id" AS "id", "zerver_usermessage"."flags" AS "user_flags" \
 FROM "zerver_message" LEFT OUTER JOIN "zerver_usermessage" ON ("zerver_message"."id" = "zerver_usermessage"."message_id") INNER JOIN "zerver_recipient" ON ("zerver_message"."recipient_id" = "zerver_recipient"."id") \
 WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_recipient"."type" = 2) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."id" >= 100) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_usermessage"."message_id" >= 100) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 11)\
 """
         sql = sql_template.format(**query_ids)
@@ -5280,7 +5286,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {hamlet_and_othello_recipient} AND "zerver_message"."id" = 0)\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {hamlet_and_othello_recipient} AND "zerver_usermessage"."message_id" = 0)\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
@@ -5300,7 +5306,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {hamlet_and_othello_recipient} AND "zerver_message"."id" = 0)\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {hamlet_and_othello_recipient} AND "zerver_usermessage"."message_id" = 0)\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
@@ -5320,7 +5326,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {hamlet_and_othello_recipient}) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {hamlet_and_othello_recipient}) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)
@@ -5341,7 +5347,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_usermessage"."flags" & 2 != 0) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_usermessage"."flags" & 2 != 0) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)
@@ -5356,7 +5362,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."sender_id" = {othello_id}) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."sender_id" = {othello_id}) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)
@@ -5401,7 +5407,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND NOT ("zerver_message"."recipient_id" IN ({public_channels_recipients}))) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND NOT ("zerver_message"."recipient_id" IN ({public_channels_recipients}))) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)
@@ -5422,7 +5428,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER('blah')) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER('blah')) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)
@@ -5455,7 +5461,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {hamlet_recipient}) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {hamlet_recipient}) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)
@@ -5476,7 +5482,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {scotland_recipient} AND "zerver_usermessage"."flags" & 2 != 0) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND "zerver_message"."recipient_id" = {scotland_recipient} AND "zerver_usermessage"."flags" & 2 != 0) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)
@@ -5505,7 +5511,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND ("zerver_message"."search_tsvector" @@ plainto_tsquery('zulip.english_us_search', 'jumping')) = true) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND ("zerver_message"."search_tsvector" @@ plainto_tsquery('zulip.english_us_search', 'jumping')) = true) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)
@@ -5545,7 +5551,7 @@ WHERE ("zerver_usermessage"."user_profile_id" = {hamlet_id} AND (NOT ("zerver_re
 FROM "zerver_stream" U0 \
 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND (NOT U0."invite_only" OR U0."can_subscribe_group_id" IN {hamlet_groups} OR U0."can_add_subscribers_group_id" IN {hamlet_groups})) LIMIT 1) OR EXISTS(SELECT 1 AS "a" \
 FROM "zerver_subscription" U0 \
-WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND (UPPER("zerver_message"."content"::text) LIKE UPPER('%jumping%') OR ("zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) LIKE UPPER('%jumping%'))) AND ("zerver_message"."search_tsvector" @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) = true) ORDER BY 1 ASC\
+WHERE (U0."active" AND U0."recipient_id" = ("zerver_message"."recipient_id") AND U0."user_profile_id" = {hamlet_id}) LIMIT 1)) AND (UPPER("zerver_message"."content"::text) LIKE UPPER('%jumping%') OR ("zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) LIKE UPPER('%jumping%'))) AND ("zerver_message"."search_tsvector" @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) = true) ORDER BY "zerver_usermessage"."message_id" ASC\
  LIMIT 10\
 """
         sql = sql_template.format(**query_ids)

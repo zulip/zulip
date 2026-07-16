@@ -1229,10 +1229,14 @@ def limit_query_to_range(
     anchored_to_left: bool,
     anchored_to_right: bool,
     first_visible_message_id: int,
+    id_field: str,
 ) -> QuerySet[Message]:
     """
     This code is actually generic enough that we could move it to a
     library, but our only caller for now is message search.
+
+    id_field is the message-id column to order and bound the range by;
+    see fetch_messages for why the table it comes from matters.
     """
     need_before_query = (not anchored_to_left) and (num_before > 0)
     need_after_query = (not anchored_to_right) and (num_after > 0)
@@ -1272,17 +1276,17 @@ def limit_query_to_range(
         before_query = query
 
         if not anchored_to_right:
-            before_query = before_query.filter(id__lte=before_anchor)
+            before_query = before_query.filter(**{f"{id_field}__lte": before_anchor})
 
-        before_query = before_query.order_by("-id")[:before_limit]
+        before_query = before_query.order_by(f"-{id_field}")[:before_limit]
 
     if need_after_query:
         after_query = query
 
         if not anchored_to_left:
-            after_query = after_query.filter(id__gte=after_anchor)
+            after_query = after_query.filter(**{f"{id_field}__gte": after_anchor})
 
-        after_query = after_query.order_by("id")[:after_limit]
+        after_query = after_query.order_by(id_field)[:after_limit]
 
     if before_query is not None and after_query is not None:
         return before_query.union(after_query, all=True)
@@ -1299,7 +1303,7 @@ def limit_query_to_range(
         # for something like `message_id = 42` is exactly what we want.  In other
         # cases, which could possibly be buggy API clients, at least we will
         # return at most one row here.
-        return query.filter(id=anchor)
+        return query.filter(**{id_field: anchor})
 
 
 MessageRowT = TypeVar("MessageRowT", bound=Sequence[Any])
@@ -1512,6 +1516,17 @@ def fetch_messages(
         if anchored_to_right:
             num_after = 0
 
+        if need_user_message:
+            # Order/bound pagination on the driving zerver_usermessage
+            # (user_profile_id, message_id) index. PostgreSQL won't push a
+            # zerver_message.id bound across the outer join, so using it would
+            # scan the user's whole history to reach an old anchor. The alias
+            # reuses the existing join rather than adding a second one.
+            query = query.alias(_range_message_id=F("usermessage__message_id"))
+            id_field = "_range_message_id"
+        else:
+            id_field = "id"
+
         query = limit_query_to_range(
             query=query,
             num_before=num_before,
@@ -1521,6 +1536,7 @@ def fetch_messages(
             anchored_to_left=anchored_to_left,
             anchored_to_right=anchored_to_right,
             first_visible_message_id=first_visible_message_id,
+            id_field=id_field,
         )
 
     values_query = query.values_list(
