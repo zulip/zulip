@@ -6,7 +6,14 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
-set_global("document", {});
+set_global("document", {
+    // Reports the caret as being at the end of a pill's edit box.
+    createRange: () => ({
+        selectNodeContents: noop,
+        setStart: noop,
+        toString: () => "",
+    }),
+});
 class ClipboardEvent {}
 set_global("ClipboardEvent", ClipboardEvent);
 
@@ -16,7 +23,26 @@ mock_esm("../src/ui_util", {
 
 set_global("getSelection", () => ({
     anchorOffset: 0,
+    rangeCount: 1,
+    getRangeAt: () => ({endContainer: {}, endOffset: 0}),
+    toString() {
+        return "";
+    },
 }));
+
+// The blur-commit of a pill edit is deferred, so tests run it explicitly.
+let deferred_callbacks = [];
+set_global("setTimeout", (f) => {
+    deferred_callbacks.push(f);
+});
+
+function run_deferred_callbacks() {
+    const callbacks = deferred_callbacks;
+    deferred_callbacks = [];
+    for (const callback of callbacks) {
+        callback();
+    }
+}
 
 const input_pill = zrequire("input_pill");
 
@@ -579,7 +605,7 @@ run_test("misc things", () => {
     input_pill.create(info.config);
 
     // animation
-    const animation_end_handler = $container.get_on_handler("animationend", ".input");
+    const animation_end_handler = $container.get_on_handler("animationend", ".input, .pill");
 
     let shake_class_removed = false;
 
@@ -802,4 +828,440 @@ run_test("updatePill", ({mock_template}) => {
     // Blue pill data should remain unchanged
     assert.equal(blue_pill.item.color_name, "DARK BLUE");
     assert.equal(blue_pill.item.description, "color of the deep ocean");
+});
+
+function set_up_for_editing(mock_template, config_overrides = {}) {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        $(html)[0] = `<pill-stub ${data.display_value}>`;
+        $(html).length = 1;
+        return html;
+    });
+
+    // The deferred blur-commit waits while the typeahead menu is hovered.
+    $.set_results(".typeahead:hover", []);
+
+    const {config, $container, $pill_input, items} = set_up();
+    Object.assign(config, config_overrides);
+
+    const widget = input_pill.create(config);
+    widget.appendValue("blue,red");
+
+    const pills = widget._get_pills_for_testing();
+    for (const [i, pill] of pills.entries()) {
+        pill.$element.remove = noop;
+        pill.$element.replaceWith = noop;
+        // Pre-render the edit span (normally rendered in input_pill.hbs).
+        const $edit = $.create(`pill-edit-input-${i}`);
+        pill.$element.find = (sel) => (sel === ".pill-edit-input" ? $edit : {length: 0});
+    }
+
+    return {widget, pills, $container, $pill_input, items};
+}
+
+function start_editing_pill_via_dblclick($container, pill) {
+    // The edit span is already inside the pill (pre-rendered in the template).
+    const $edit = pill.$element.find(".pill-edit-input");
+
+    const dblclick_handler = $container.get_on_handler("dblclick", ".pill");
+    dblclick_handler.call(pill.$element[0], {
+        target: {
+            to_$: () => ({
+                closest(_sel) {
+                    return {length: 0};
+                },
+            }),
+        },
+        preventDefault: noop,
+    });
+
+    return $edit;
+}
+
+function start_editing_blue_pill(mock_template, config_overrides) {
+    const info = set_up_for_editing(mock_template, config_overrides);
+    const blue_pill = info.pills[0];
+    const $edit = start_editing_pill_via_dblclick(info.$container, blue_pill);
+    return {...info, blue_pill, $edit};
+}
+
+function press_key($edit, key) {
+    $edit.get_on_handler("keydown")({key, preventDefault: noop, stopPropagation: noop});
+}
+
+function press_pill_key($container, key) {
+    $container.get_on_handler(
+        "keydown",
+        ".pill",
+    )({
+        key,
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+}
+
+function assert_pill_colors(widget, colors) {
+    assert.deepEqual(
+        widget.items().map((item) => item.color_name),
+        colors,
+    );
+}
+
+run_test("dblclick or Enter on a focused pill starts editing", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+    const [blue_pill, red_pill] = pills;
+    widget.setSetupTypeahead(() => ({shown: false, unlisten: noop}));
+
+    const $blue_edit = start_editing_pill_via_dblclick($container, blue_pill);
+    assert.ok(blue_pill.$element.hasClass("editing"));
+    assert.equal($blue_edit.text(), "BLUE");
+
+    // find(".pill:focus") is how the keydown handler locates the focused pill.
+    $container.set_find_results(".pill:focus", red_pill.$element);
+    press_pill_key($container, "Enter");
+    const $red_edit = red_pill.$element.find(".pill-edit-input");
+    assert.ok(red_pill.$element.hasClass("editing"));
+    assert.equal($red_edit.text(), "RED");
+
+    // The Enter that started the edit must not also commit it.
+    for (const event_type of ["keypress", "keyup"]) {
+        let stopped = false;
+        $red_edit.get_on_handler(event_type).call($red_edit, {
+            key: "Enter",
+            preventDefault: noop,
+            stopImmediatePropagation() {
+                stopped = true;
+            },
+        });
+        assert.ok(stopped);
+    }
+});
+
+function test_replacing_blue_with_yellow(mock_template, replace) {
+    const {widget, blue_pill, $edit, $container, items} = start_editing_blue_pill(mock_template);
+    const events = [];
+    widget.onPillRemove(() => {
+        events.push("remove");
+    });
+    widget.onPillCreate(() => {
+        events.push("create");
+    });
+    blue_pill.$element.replaceWith = () => {
+        events.push("replace");
+    };
+
+    replace({widget, $edit, $container, items});
+
+    assert.deepEqual(events, ["replace", "remove", "create"]);
+    // YELLOW replaces BLUE at index 0; store.pills must stay in DOM order.
+    assert.deepEqual(widget.items(), [items.yellow, items.red]);
+}
+
+run_test("Enter commits in-place edit", ({mock_template}) => {
+    test_replacing_blue_with_yellow(mock_template, ({$edit, $container}) => {
+        $edit.text("yellow");
+        press_key($edit, "Enter");
+
+        // Otherwise this Enter's keyup would submit the surrounding form.
+        let stopped = false;
+        $container.get_on_handler("keyup").call($container, {
+            key: "Enter",
+            stopPropagation() {
+                stopped = true;
+            },
+        });
+        assert.ok(stopped);
+    });
+});
+
+run_test("typeahead selection updates pill in place", ({mock_template}) => {
+    test_replacing_blue_with_yellow(mock_template, ({widget, items}) => {
+        // The typeahead's updater calls updatePillAfterEdit directly.
+        widget.updatePillAfterEdit(items.yellow);
+    });
+});
+
+run_test("empty edit deletes the pill", ({mock_template}) => {
+    const {widget, $edit} = start_editing_blue_pill(mock_template);
+    let pill_removed = false;
+    widget.onPillRemove(() => {
+        pill_removed = true;
+    });
+
+    $edit.text("");
+    press_key($edit, "Enter");
+
+    assert_pill_colors(widget, ["RED"]);
+    assert.ok(pill_removed);
+});
+
+run_test("Escape cancels in-place edit", ({mock_template}) => {
+    const {widget, blue_pill, $edit} = start_editing_blue_pill(mock_template);
+
+    $edit.text("yellow");
+    press_key($edit, "Escape");
+
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+});
+
+run_test("edit box seeds and compares against the display value", ({mock_template}) => {
+    // Role-based system groups display a friendly name ("Administrators")
+    // that differs from their internal text ("role:administrators"). The edit
+    // box must show the display value, and committing it unchanged must cancel
+    // rather than validate the display string as new input.
+    const display_names = {BLUE: "Blue", RED: "Red"};
+    const {widget, blue_pill, $edit, $pill_input} = start_editing_blue_pill(mock_template, {
+        get_display_value_from_item: (item) => display_names[item.color_name] ?? item.color_name,
+    });
+
+    assert.equal($edit.text(), "Blue");
+
+    press_key($edit, "Enter");
+
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+    assert.ok(!$pill_input.hasClass("input-validation-shake"));
+    assert.ok(!blue_pill.$element.hasClass("input-validation-shake"));
+});
+
+run_test("invalid edit shakes but keeps the typed text", ({mock_template}) => {
+    const {widget, blue_pill, $edit, $pill_input} = start_editing_blue_pill(mock_template);
+
+    $edit.text("invalid_color_name");
+    press_key($edit, "Enter");
+
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+    // The pill shakes, not the main input.
+    assert.ok(!$pill_input.hasClass("input-validation-shake"));
+    assert.ok(blue_pill.$element.hasClass("input-validation-shake"));
+    // The edit stays open with the text, so it can be fixed, not retyped.
+    assert.ok(blue_pill.$element.hasClass("editing"));
+    assert.equal($edit.text(), "invalid_color_name");
+});
+
+run_test("invalid edit reverts once focus leaves the pill", ({mock_template}) => {
+    const {widget, blue_pill, $edit} = start_editing_blue_pill(mock_template);
+    $edit.text("invalid_color_name");
+
+    // A pill that isn't being edited has to show a valid value, so this reverts.
+    $edit.get_on_handler("blur")();
+    run_deferred_callbacks();
+
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+    assert.ok(blue_pill.$element.hasClass("input-validation-shake"));
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+});
+
+run_test("blur ends an unchanged edit without taking focus", ({mock_template}) => {
+    const {blue_pill, $edit} = start_editing_blue_pill(mock_template);
+
+    // Pulling focus back would interrupt typing wherever the user went.
+    /* istanbul ignore next */
+    blue_pill.$element.trigger = () => {
+        throw new Error("ending an edit on blur must not take focus");
+    };
+
+    $edit.get_on_handler("blur")();
+    run_deferred_callbacks();
+
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+});
+
+run_test("deferred blur-commit bails once the edit box has focus again", ({mock_template}) => {
+    const {widget, blue_pill, $edit} = start_editing_blue_pill(mock_template);
+    $edit.text("yellow");
+
+    // Clicking the typeahead menu blurs the edit box and then gives focus
+    // back, so the edit has to survive.
+    $edit.get_on_handler("blur")();
+    $edit.trigger("focus");
+    run_deferred_callbacks();
+
+    assert.ok(blue_pill.$element.hasClass("editing"));
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+});
+
+run_test("deferred blur-commit waits while the typeahead menu is hovered", ({mock_template}) => {
+    const {widget, $edit} = start_editing_blue_pill(mock_template);
+    $edit.text("yellow");
+
+    const hovered_menus = [$.create("typeahead-menu")[0]];
+    $.reset_selector(".typeahead:hover");
+    $.set_results(".typeahead:hover", hovered_menus);
+    $edit.get_on_handler("blur")();
+    run_deferred_callbacks();
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+
+    hovered_menus.pop();
+    run_deferred_callbacks();
+    assert_pill_colors(widget, ["YELLOW", "RED"]);
+});
+
+run_test("editing another pill resolves the in-flight edit", ({mock_template}) => {
+    const {widget, blue_pill, $edit, $container, pills} = start_editing_blue_pill(mock_template);
+    const red_pill = pills[1];
+    $edit.text("yellow");
+
+    // The blur-commit from that click is deferred, so it has to be resolved
+    // here or the click is swallowed.
+    $edit.get_on_handler("blur")();
+    start_editing_pill_via_dblclick($container, red_pill);
+
+    assert_pill_colors(widget, ["YELLOW", "RED"]);
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+    assert.ok(red_pill.$element.hasClass("editing"));
+});
+
+run_test("items() includes the pill being edited as its pre-edit value", ({mock_template}) => {
+    const {widget} = start_editing_blue_pill(mock_template);
+
+    // items() still reports the edited pill (as its pre-edit value) so a
+    // submit read can't silently drop it; submit paths finalize first.
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+
+    // getPillByPredicate, used by live-update handlers that call updatePill,
+    // still skips the edited pill so a live update can't clobber the edit.
+    assert.equal(
+        widget.getPillByPredicate((item) => item.color_name === "BLUE"),
+        undefined,
+    );
+    assert.ok(widget.getPillByPredicate((item) => item.color_name === "RED"));
+});
+
+run_test("finalize_pending_edit commits a valid in-flight edit", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+
+    assert.ok(widget.finalize_pending_edit());
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+
+    const $edit = start_editing_pill_via_dblclick($container, pills[0]);
+    $edit.text("yellow");
+
+    // A submit path calling this must see the committed value (YELLOW), not
+    // the pill's pre-edit value (BLUE).
+    assert.ok(widget.finalize_pending_edit());
+    assert_pill_colors(widget, ["YELLOW", "RED"]);
+});
+
+run_test("finalize_pending_edit blocks an unresolved invalid edit", ({mock_template}) => {
+    const {widget, blue_pill, $edit} = start_editing_blue_pill(mock_template);
+    $edit.text("invalid_color_name");
+
+    // The submit must be blocked rather than fall back to the pill's
+    // stale, pre-edit value, and the text stays for the user to fix.
+    assert.ok(!widget.finalize_pending_edit());
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+    assert.ok(blue_pill.$element.hasClass("input-validation-shake"));
+    assert.ok(blue_pill.$element.hasClass("editing"));
+    assert.equal($edit.text(), "invalid_color_name");
+});
+
+run_test("ArrowRight at end of edit moves to next pill", ({mock_template}) => {
+    const {widget, blue_pill, $edit} = start_editing_blue_pill(mock_template);
+
+    let next_pill_focused = false;
+    const $next_pill = $.create("next-pill");
+    $next_pill.trigger = () => {
+        next_pill_focused = true;
+    };
+    blue_pill.$element.next = () => $next_pill;
+
+    press_key($edit, "ArrowRight");
+
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+    assert.ok(next_pill_focused);
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+});
+
+run_test("ArrowLeft at start of edit cancels and restores pill", ({mock_template}) => {
+    const {widget, blue_pill, $edit} = start_editing_blue_pill(mock_template);
+
+    let prev_pill_focused = false;
+    const $prev_pill = $.create("prev-pill");
+    $prev_pill.trigger = () => {
+        prev_pill_focused = true;
+    };
+    blue_pill.$element.prev = (sel) => (sel === ".pill" ? $prev_pill : {length: 0});
+
+    press_key($edit, "ArrowLeft");
+
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+    assert.ok(prev_pill_focused);
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+});
+
+run_test("Enter leaves an open typeahead to handle itself", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+    const blue_pill = pills[0];
+
+    // We ask this edit's own typeahead whether its menu is open, since the
+    // search typeahead leaves a highlighted row in the DOM even when hidden.
+    const typeahead_stub = {
+        shown: true,
+        unlisten: noop,
+    };
+    widget.setSetupTypeahead(() => typeahead_stub);
+
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+    $edit.text("yellow");
+    press_key($edit, "Enter");
+
+    // The typeahead's keyup handler applies the suggestion, so the edit is
+    // still in flight.
+    assert.ok(blue_pill.$element.hasClass("editing"));
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+
+    typeahead_stub.shown = false;
+    press_key($edit, "Enter");
+    assert_pill_colors(widget, ["YELLOW", "RED"]);
+});
+
+run_test("disable_pill_editing keeps pills read-only", ({mock_template}) => {
+    const {widget, blue_pill, $container} = start_editing_blue_pill(mock_template, {
+        disable_pill_editing: true,
+    });
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+
+    // Enter on a focused pill must not start an edit either.
+    $container.set_find_results(".pill:focus", blue_pill.$element);
+    press_pill_key($container, "Enter");
+    assert.ok(!blue_pill.$element.hasClass("editing"));
+    assert_pill_colors(widget, ["BLUE", "RED"]);
+});
+
+run_test("editing a pill again tears down the previous edit", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+    const blue_pill = pills[0];
+
+    // Every edit sets up its own typeahead, so every edit has to tear it down.
+    let typeaheads_set_up = 0;
+    let typeaheads_torn_down = 0;
+    widget.setSetupTypeahead(() => {
+        typeaheads_set_up += 1;
+        return {
+            shown: false,
+            unlisten() {
+                typeaheads_torn_down += 1;
+            },
+        };
+    });
+
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+    assert.equal(typeaheads_set_up, 1);
+    assert.equal(typeaheads_torn_down, 0);
+
+    press_key($edit, "Escape");
+    assert.equal(typeaheads_torn_down, 1);
+
+    // Editing it again reuses the same element, so nothing from the previous
+    // edit may still be attached: zjquery throws on a duplicate handler.
+    assert.equal(start_editing_pill_via_dblclick($container, blue_pill), $edit);
+    assert.equal(typeaheads_set_up, 2);
+    assert.equal(typeaheads_torn_down, 1);
+
+    // Committing replaces the pill element, but the typeahead is still ours.
+    $edit.text("yellow");
+    press_key($edit, "Enter");
+    assert_pill_colors(widget, ["YELLOW", "RED"]);
+    assert.equal(typeaheads_torn_down, 2);
 });
