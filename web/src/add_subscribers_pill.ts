@@ -289,6 +289,10 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
+        // Resolve any in-flight pill edit before reading the subscriber set.
+        if (!pill_widget.finalize_pending_edit()) {
+            return;
+        }
         void (async () => {
             loading.make_indicator($(".add-subscriber-loading-spinner"), {
                 height: 28, // 2em at 14px / 1em
