@@ -75,6 +75,9 @@ class StreamDict(TypedDict, total=False):
         - we use it to create a stream
         - we use it to specify a stream
 
+    For stream lookup, either 'name' or 'stream_id' can be provided.
+    When 'stream_id' is present, it takes precedence for looking up
+    existing streams. Stream creation always requires 'name'.
 
     It's possible we want a smaller type to use
     for removing streams, but it would complicate
@@ -85,6 +88,7 @@ class StreamDict(TypedDict, total=False):
     """
 
     name: str
+    stream_id: int
     description: str
     invite_only: bool
     is_web_public: bool
@@ -1633,43 +1637,87 @@ def list_to_streams(
 ) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
-    For each stream name, we validate it to ensure it meets our
-    requirements for a proper stream name using check_stream_name.
+    For each stream entry, we accept either a stream name or stream ID.
+    When 'stream_id' is present, it is used for lookup (resilient to stream
+    renames). When only 'name' is present, we use name-based lookup and
+    optionally create the stream if autocreate is True.
 
     This function in autocreate mode should be atomic: either an exception will be raised
     during a precheck, or all the streams specified will have been created if applicable.
 
     @param streams_raw The list of stream dictionaries to process;
       names should already be stripped of whitespace by the caller.
+      Each dict should contain either 'name' (str) or 'stream_id' (int).
     @param user_profile The user for whom we are retrieving the streams
     @param autocreate Whether we should create streams if they don't already exist
     """
-    # Validate all streams, getting extant ones, then get-or-creating the rest.
+    # Separate streams into ID-based and name-based lookups.
+    # When stream_id is present, it takes precedence for lookup.
+    id_based_dicts: list[StreamDict] = []
+    name_based_dicts: list[StreamDict] = []
 
-    stream_set = {stream_dict["name"] for stream_dict in streams_raw}
+    for stream_dict in streams_raw:
+        if "stream_id" in stream_dict:
+            id_based_dicts.append(stream_dict)
+        else:
+            name_based_dicts.append(stream_dict)
 
-    for stream_name in stream_set:
+    existing_streams: list[Stream] = []
+    missing_stream_dicts: list[StreamDict] = []
+
+    # --- Process name-based lookups (existing behavior) ---
+    stream_name_set = {stream_dict["name"] for stream_dict in name_based_dicts}
+
+    for stream_name in stream_name_set:
         # Stream names should already have been stripped by the
         # caller, but it makes sense to verify anyway.
         assert stream_name == stream_name.strip()
         check_stream_name(stream_name)
 
-    existing_streams: list[Stream] = []
-    missing_stream_dicts: list[StreamDict] = []
-    existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
+    existing_stream_map = bulk_get_streams(user_profile.realm, stream_name_set)
 
-    if unsubscribing_others and not bulk_can_remove_subscribers_from_streams(
-        list(existing_stream_map.values()), user_profile
-    ):
-        raise JsonableError(_("Insufficient permission"))
-
-    for stream_dict in streams_raw:
+    for stream_dict in name_based_dicts:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
             missing_stream_dicts.append(stream_dict)
         else:
             existing_streams.append(stream)
+
+    # --- Process ID-based lookups ---
+    if id_based_dicts:
+        stream_id_set = {stream_dict["stream_id"] for stream_dict in id_based_dicts}
+        # Use select_related consistent with bulk_get_streams for the
+        # fields needed by downstream callers.
+        streams_by_id = Stream.objects.filter(
+            id__in=stream_id_set, realm=user_profile.realm
+        ).select_related("can_send_message_group", "can_send_message_group__named_user_group")
+        id_stream_map = {stream.id: stream for stream in streams_by_id}
+
+        missing_ids: list[int] = []
+        for stream_dict in id_based_dicts:
+            stream_id = stream_dict["stream_id"]
+            stream = id_stream_map.get(stream_id)
+            if stream is None:
+                missing_ids.append(stream_id)
+            else:
+                existing_streams.append(stream)
+
+        # Streams looked up by ID cannot be autocreated — always error.
+        if missing_ids:
+            raise JsonableError(
+                _("Invalid channel ID: {channel_id}").format(
+                    channel_id=missing_ids[0],
+                )
+            )
+
+    # Check permissions for unsubscribing on behalf of other users.
+    # This runs after lookups so we check permissions on all
+    # resolved streams (both ID-based and name-based).
+    if unsubscribing_others and not bulk_can_remove_subscribers_from_streams(
+        existing_streams, user_profile
+    ):
+        raise JsonableError(_("Insufficient permission"))
 
     if len(missing_stream_dicts) == 0:
         # This is the happy path for callers who expected all of these
