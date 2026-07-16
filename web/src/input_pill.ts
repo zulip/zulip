@@ -95,6 +95,11 @@ export type InputPillContainer<ItemType> = {
 
 export type RemovePillTrigger = "close" | "backspace" | "clear";
 
+function is_cursor_at_start(): boolean {
+    const selection = window.getSelection();
+    return selection !== null && selection.anchorOffset === 0 && !selection.toString();
+}
+
 export function create<ItemType extends {type: string}>(
     opts: InputPillCreateOptions<ItemType>,
 ): InputPillContainer<ItemType> {
@@ -390,11 +395,7 @@ export function create<ItemType extends {type: string}>(
             // If no text is selected, and the cursor is just to the
             // right of the last pill (with or without text in the
             // input), then backspace highlights or deletes the last pill.
-            if (
-                e.key === "Backspace" &&
-                (funcs.value(this).length === 0 ||
-                    (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
-            ) {
+            if (e.key === "Backspace" && (funcs.value(this).length === 0 || is_cursor_at_start())) {
                 e.preventDefault();
                 const pill = store.pills.at(-1);
                 // We focus the pill first first, as a signal that the pill
