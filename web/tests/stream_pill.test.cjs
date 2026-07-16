@@ -154,6 +154,7 @@ run_test("generate_pill_html", () => {
             '    <div class="exit">\n' +
             '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n' +
             "    </div>\n" +
+            '    <span class="pill-edit-input" contenteditable="true" spellcheck="false"></span>\n' +
             "</div>\n",
     );
 });

@@ -220,12 +220,41 @@
         flex: 1 1 auto;
 
         outline: none;
+    }
 
-        &.shake {
-            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            perspective: 1000px;
+    .pill.shake,
+    .input.shake {
+        animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+
+    .pill-edit-input {
+        display: none;
+    }
+
+    .pill.editing {
+        /* Match .pill:focus */
+        box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
+        cursor: text;
+
+        .pill-image,
+        .pill-image-border,
+        .pill-label,
+        .expand,
+        .exit {
+            display: none;
+        }
+
+        .pill-edit-input {
+            display: inline-block;
+            min-width: 2em;
+            padding: 0 var(--input-pill-side-padding);
+            overflow-wrap: normal;
+            white-space: nowrap;
+            line-height: var(--height-input-pill);
+            outline: none;
         }
     }
 

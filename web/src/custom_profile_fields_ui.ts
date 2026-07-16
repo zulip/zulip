@@ -156,7 +156,12 @@ export function initialize_custom_user_type_fields(
             const pill_config = {
                 exclude_inaccessible_users: is_target_element_editable,
             };
-            const pills = user_pill.create_pills($pill_container, pill_config);
+            // We check and disable fields that this user doesn't have permission to edit.
+            const is_disabled = $pill_container.hasClass("disabled");
+            const is_editable = is_target_element_editable && !is_disabled;
+            const pills = user_pill.create_pills($pill_container, pill_config, {
+                disable_pill_editing: !is_editable,
+            });
 
             if (field_value_raw !== undefined) {
                 const field_value = user_value_schema.parse(JSON.parse(field_value_raw));
@@ -166,10 +171,7 @@ export function initialize_custom_user_type_fields(
                 }
             }
 
-            // We check and disable fields that this user doesn't have permission to edit.
-            const is_disabled = $pill_container.hasClass("disabled");
-
-            if (is_target_element_editable && !is_disabled) {
+            if (is_editable) {
                 const $input = $pill_container.children(".input");
                 pill_typeahead.set_up_user($input, pills, {exclude_bots: true});
                 if (pill_update_handler) {
