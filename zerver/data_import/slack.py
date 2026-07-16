@@ -1269,7 +1269,6 @@ def channel_message_to_zerver_message(
             do_download_and_export_upload_file=do_download_and_export_upload_file,
         )
 
-        content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
         has_link = has_link or file_info["has_link"]
 
         has_attachment = file_info["has_attachment"]
@@ -1285,6 +1284,8 @@ def channel_message_to_zerver_message(
             thread_counter=thread_counter,
             thread_map=thread_map,
         )
+
+        content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
 
         content += get_thread_reply_notification(
             convert_slack_threads, message, thread_map, thread_reply_counts
