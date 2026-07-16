@@ -1047,6 +1047,19 @@
     }
 }
 
+/* Show the focus outline on banner close buttons only for
+   keyboard navigation, not for mouse clicks.
+   TODO: These banners still use the legacy .main-view-banner
+   markup. We should migrate the compose and edit-form banners
+   to the modern banner and button components, which handle
+   keyboard vs. mouse focus correctly; this rule is an interim fix. */
+#compose_banners,
+.edit_form_banners {
+    .main-view-banner-close-button:focus:not(:focus-visible) {
+        outline: 0;
+    }
+}
+
 .upload_banner {
     overflow: hidden;
 
