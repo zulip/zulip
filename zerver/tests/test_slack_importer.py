@@ -1765,7 +1765,8 @@ message body text
         # Test mention syntax in thread topic name.
         expected_thread_topic_name = "2015-07-17 @**Jon** please reply to this message"
         thread_1_topic_link_syntax = get_stream_topic_link_syntax(
-            slack_recipient_name_to_zulip_recipient_id["random"],
+            # "random"'s Zulip channel id, per the helper's default added_channels.
+            1,
             "random",
             expected_thread_topic_name,
         )
@@ -1816,7 +1817,8 @@ message body text
             "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
         )
         thread_1_topic_link_syntax = get_stream_topic_link_syntax(
-            slack_recipient_name_to_zulip_recipient_id["random"],
+            # "random"'s Zulip channel id, per the helper's default added_channels.
+            1,
             "random",
             expected_thread_1_topic_name,
         )

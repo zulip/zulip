@@ -1123,12 +1123,12 @@ def get_thread_reply_notification(
 
 
 def create_topic_name_for_message(
+    added_channels: AddedChannelsT,
     channel_name: str | None,
     content: str,
     convert_slack_threads: bool,
     is_direct_message_type: bool,
     message: ZerverFieldsT,
-    recipient_id: int,
     thread_counter: dict[str, int],
     thread_map: dict[str, ThreadMetadata],
 ) -> str:
@@ -1154,9 +1154,11 @@ def create_topic_name_for_message(
         # get_thread_reply_notification.
         thread_topic_name = get_zulip_thread_topic_name(content, thread_date, thread_counter)
 
+        # get_stream_topic_link_syntax needs the Zulip channel id.
+        channel_id = added_channels[channel_name][1]
         thread_map[thread_key] = ThreadMetadata(
             topic_link_syntax=get_stream_topic_link_syntax(
-                recipient_id,
+                channel_id,
                 channel_name,
                 thread_topic_name,
             ),
@@ -1279,12 +1281,12 @@ def channel_message_to_zerver_message(
         has_image = file_info["has_image"]
 
         topic_name = create_topic_name_for_message(
+            added_channels=added_channels,
             channel_name=channel_name,
             content=content,
             convert_slack_threads=convert_slack_threads,
             is_direct_message_type=is_direct_message_type,
             message=message,
-            recipient_id=recipient_id,
             thread_counter=thread_counter,
             thread_map=thread_map,
         )
