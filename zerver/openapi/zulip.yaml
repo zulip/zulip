@@ -27990,7 +27990,7 @@ components:
             Field types 3 (Dropdown) and 7 (External account) support storing
             additional configuration for the field type in the `field_data` attribute.
 
-            For field type 3 (Dropdown), this attribute is a JSON dictionary
+            For field type 3 (Dropdown), this attribute is a JSON object
             defining the choices and the order they will be displayed in the
             dropdown UI for individual users to select an option.
 
@@ -28061,7 +28061,7 @@ components:
         Field types 3 (Dropdown) and 7 (External account) support storing
         additional configuration for the field type in the `field_data` attribute.
 
-        For field type 3 (Dropdown), this attribute is a JSON dictionary
+        For field type 3 (Dropdown), this attribute is a JSON object
         defining the choices and the order they will be displayed in the
         dropdown UI for individual users to select an option.
 

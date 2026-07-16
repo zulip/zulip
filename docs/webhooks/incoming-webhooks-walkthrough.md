@@ -266,7 +266,7 @@ example:
 
     --custom-headers='{"X-Custom-Header": "value"}'
 
-The format is a JSON dictionary, so make sure that the header names do
+The format is a JSON object, so make sure that the header names do
 not contain any spaces in them and that you use the precise quoting
 approach shown above.
 
@@ -289,7 +289,7 @@ By having Zulip open in one browsre tab and this tool in another, you can
 quickly tweak your webhook code and send sample messages for different
 test fixtures.
 
-Custom HTTP headers must be entered as a JSON dictionary, if you want to
+Custom HTTP headers must be entered as a JSON object, if you want to
 use any. Feel free to use 4-spaces as tabs for indentation if you'd like.
 
 ## Step 5: Create automated tests
