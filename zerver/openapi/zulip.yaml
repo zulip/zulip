@@ -15212,12 +15212,6 @@ paths:
                     fields and in the UI displaying a user's profile.
                   type: string
                   example: "Favorite programming language"
-                hint:
-                  description: |
-                    The help text to be displayed for the custom profile field in user-facing
-                    settings UI for configuring custom profile fields.
-                  type: string
-                  example: "Your favorite programming language."
                 field_type:
                   description: |
                     The field type can be any of the supported custom profile field types. See the
@@ -15236,74 +15230,18 @@ paths:
                     **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
                   type: integer
                   example: 3
+                hint:
+                  $ref: "#/components/schemas/CustomProfileFieldHintSchema"
                 field_data:
-                  description: |
-                    Field types 3 (Dropdown) and 7 (External account) support storing
-                    additional configuration for the field type in the `field_data` attribute.
-
-                    For field type 3 (Dropdown), this attribute is a JSON dictionary
-                    defining the choices and the order they will be displayed in the
-                    dropdown UI for individual users to select an option.
-
-                    The interface for field type 7 is not yet stabilized.
-                  type: object
-                  example:
-                    {
-                      "python": {"text": "Python", "order": "1"},
-                      "java": {"text": "Java", "order": "2"},
-                    }
+                  $ref: "#/components/schemas/CustomProfileFieldDataSchema"
                 display_in_profile_summary:
-                  description: |
-                    Whether clients should display this profile field in the summary section of a
-                    user's profile (or in a more easily accessible "small profile").
-
-                    At most 2 profile fields may have this property be true in a given
-                    organization.
-
-                    The "Users" profile field is not supported, but that is likely to
-                    be temporary.
-
-                    [profile-field-types]: /help/custom-profile-fields#profile-field-types
-
-                    **Changes**: Before Zulip 12.0 (feature level 476), the
-                    "Paragraph" field type was not supported.
-
-                    New in Zulip 6.0 (feature level 146).
-                  type: boolean
-                  example: true
+                  $ref: "#/components/schemas/CustomProfileFieldDisplayInProfileSummarySchema"
                 required:
-                  description: |
-                    Whether an organization administrator has configured this profile field as
-                    required.
-
-                    Because the required property is mutable, clients cannot assume that a required
-                    custom profile field has a value. The Zulip web application displays a prominent
-                    banner to any user who has not set a value for a required field.
-
-                    **Changes**: New in Zulip 9.0 (feature level 244).
-                  type: boolean
-                  example: true
+                  $ref: "#/components/schemas/CustomProfileFieldRequiredSchema"
                 editable_by_user:
-                  description: |
-                    Whether regular users can edit this profile field on their own account.
-
-                    Note that organization administrators can edit custom profile fields for any user
-                    regardless of this setting.
-
-                    **Changes**: New in Zulip 10.0 (feature level 296).
-                  type: boolean
-                  example: true
+                  $ref: "#/components/schemas/CustomProfileFieldEditableByUserSchema"
                 use_for_user_matching:
-                  description: |
-                    Whether this custom profile field should be used to match users in typeahead
-                    suggestions. Only allowed for Short Text and External Account
-                    [profile field types](/help/custom-profile-fields#profile-field-types).
-
-                    This field is only included when its value is `true`.
-
-                    **Changes**: New in Zulip 12.0 (feature level 455).
-                  type: boolean
-                  example: false
+                  $ref: "#/components/schemas/CustomProfileFieldUseForUserMatchingSchema"
               required:
                 - field_type
             encoding:
@@ -27956,6 +27894,78 @@ components:
         - hint
         - required
         - editable_by_user
+    CustomProfileFieldHintSchema:
+      description: |
+        The help text to be displayed for the custom profile field in user-facing
+        settings UI for configuring custom profile fields.
+      type: string
+      example: "Your favorite programming language."
+    CustomProfileFieldDataSchema:
+      description: |
+        Field types 3 (Dropdown) and 7 (External account) support storing
+        additional configuration for the field type in the `field_data` attribute.
+
+        For field type 3 (Dropdown), this attribute is a JSON dictionary
+        defining the choices and the order they will be displayed in the
+        dropdown UI for individual users to select an option.
+
+        The interface for field type 7 is not yet stabilized.
+      type: object
+      example:
+        {
+          "python": {"text": "Python", "order": "1"},
+          "java": {"text": "Java", "order": "2"},
+        }
+    CustomProfileFieldDisplayInProfileSummarySchema:
+      description: |
+        Whether clients should display this profile field in the summary section of a
+        user's profile (or in a more easily accessible "small profile").
+
+        At most 2 profile fields may have this property be true in a given
+        organization.
+
+        The "Users" profile field is not supported, but that is likely to
+        be temporary.
+
+        **Changes**: Before Zulip 12.0 (feature level 476), the
+        "Paragraph" field type was not supported.
+
+        New in Zulip 6.0 (feature level 146).
+      type: boolean
+      example: true
+    CustomProfileFieldRequiredSchema:
+      description: |
+        Whether an organization administrator has configured this profile field as
+        required.
+
+        Because the required property is mutable, clients cannot assume that a required
+        custom profile field has a value. The Zulip web application displays a prominent
+        banner to any user who has not set a value for a required field.
+
+        **Changes**: New in Zulip 9.0 (feature level 244).
+      type: boolean
+      example: true
+    CustomProfileFieldEditableByUserSchema:
+      description: |
+        Whether regular users can edit this profile field on their own account.
+
+        Note that organization administrators can edit custom profile fields for any user
+        regardless of this setting.
+
+        **Changes**: New in Zulip 10.0 (feature level 296).
+      type: boolean
+      example: true
+    CustomProfileFieldUseForUserMatchingSchema:
+      description: |
+        Whether this custom profile field should be used to match users in typeahead
+        suggestions. Only allowed for Short Text and External Account
+        [profile field types](/help/custom-profile-fields#profile-field-types).
+
+        This field is only included when its value is `true`.
+
+        **Changes**: New in Zulip 12.0 (feature level 455).
+      type: boolean
+      example: false
     OnboardingStep:
       type: object
       additionalProperties: false
