@@ -3,6 +3,7 @@ import re
 import shutil
 import tempfile
 import zipfile
+from collections import defaultdict
 from collections.abc import Iterator
 from io import BytesIO
 from types import SimpleNamespace
@@ -48,10 +49,12 @@ from zerver.data_import.slack import (
     SlackBotEmail,
     SlackBotNotFoundError,
     SlackTokenValidationError,
+    ThreadMetadata,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
     check_slack_token_access,
     convert_slack_workspace_messages,
+    count_thread_replies,
     do_convert_zipfile,
     fetch_shared_channel_users,
     get_admin,
@@ -195,7 +198,7 @@ def slack_import_integrity_error(constraint_name: str) -> IntegrityError:
 
 class SlackImporter(ZulipTestCase):
     def run_channel_message_to_zerver_message_with_fixtures(
-        self, fixture_names: list[str], **kwargs: dict[str, Any]
+        self, fixture_names: list[str], **kwargs: Any
     ) -> MessageConversionResult:
         """
         This is a wrapper for `channel_message_to_zerver_message`, it
@@ -224,13 +227,17 @@ class SlackImporter(ZulipTestCase):
             },
         )
 
-        all_messages = []
-        for filename in fixture_names:
-            all_messages.extend(
-                orjson.loads(
-                    self.fixture_data(f"{filename}.json", type=slack_message_fixture_directory)
+        # Tests that split a thread across chunks pass all_messages directly so
+        # they can control which messages land in each channel_message_to_zerver_message call.
+        all_messages = kwargs.get("all_messages")
+        if all_messages is None:
+            all_messages = []
+            for filename in fixture_names:
+                all_messages.extend(
+                    orjson.loads(
+                        self.fixture_data(f"{filename}.json", type=slack_message_fixture_directory)
+                    )
                 )
-            )
 
         added_channels: dict[str, tuple[str, int]] = kwargs.get(
             "added_channels", {"random": ("c5", 1), "general": ("c6", 2)}
@@ -238,6 +245,14 @@ class SlackImporter(ZulipTestCase):
 
         convert_slack_threads = kwargs.get("convert_slack_threads", True)
         assert isinstance(convert_slack_threads, bool)
+
+        thread_counter: dict[str, int] = kwargs.get("thread_counter", defaultdict(int))
+        thread_map: dict[str, ThreadMetadata] = kwargs.get("thread_map", {})
+        # Callers exercising cross-chunk threads pass the counts computed over the
+        # whole conversation; otherwise derive them from this call's messages.
+        thread_reply_counts: dict[str, int] = kwargs.get(
+            "thread_reply_counts", count_thread_replies(iter(all_messages), convert_slack_threads)
+        )
 
         with mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4)):
             return channel_message_to_zerver_message(
@@ -253,6 +268,9 @@ class SlackImporter(ZulipTestCase):
                 long_term_idle=set(),
                 convert_slack_threads=convert_slack_threads,
                 do_download_and_export_upload_file=lambda request: None,
+                thread_counter=thread_counter,
+                thread_map=thread_map,
+                thread_reply_counts=thread_reply_counts,
             )
 
     @responses.activate
@@ -1375,6 +1393,9 @@ class SlackImporter(ZulipTestCase):
             set(),
             convert_slack_threads=False,
             do_download_and_export_upload_file=lambda request: None,
+            thread_counter=defaultdict(int),
+            thread_map={},
+            thread_reply_counts=count_thread_replies(iter(all_messages), False),
         )
 
         zerver_message = conversion_result.zerver_message
@@ -1534,6 +1555,105 @@ class SlackImporter(ZulipTestCase):
         expected_thread_2_message_2_content = "random"
         self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_2_content)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+
+    def test_thread_cross_link_across_chunk_boundary(self) -> None:
+        # A thread's parent message and its replies are not necessarily
+        # converted in the same chunk (see convert_slack_workspace_messages).
+        # The parent must still be cross-linked with the correct reply count,
+        # which is why count_thread_replies pre-scans the whole conversation.
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1}
+        thread_messages = orjson.loads(
+            self.fixture_data(
+                "normal_thread.json", type="slack_fixtures/exported_messages_fixtures"
+            )
+        )
+        parent_message, reply_message = thread_messages[0], thread_messages[1]
+
+        # thread_counter, thread_map, and the reply counts persist across the
+        # per-chunk calls, exactly as in convert_slack_workspace_messages.
+        thread_counter: dict[str, int] = defaultdict(int)
+        thread_map: dict[str, ThreadMetadata] = {}
+        thread_reply_counts = count_thread_replies(
+            iter([parent_message, reply_message]), convert_slack_threads=True
+        )
+
+        # First chunk holds only the parent; the reply arrives in the second.
+        first_chunk = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=[parent_message],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+            thread_counter=thread_counter,
+            thread_map=thread_map,
+            thread_reply_counts=thread_reply_counts,
+        )
+        second_chunk = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=[reply_message],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+            thread_counter=thread_counter,
+            thread_map=thread_map,
+            thread_reply_counts=thread_reply_counts,
+        )
+
+        expected_thread_topic_name = "2015-06-12 message body text"
+        thread_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_topic_name,
+        )
+        expected_parent_content = f"""
+message body text
+
+*1 reply in {thread_topic_link_syntax}*
+""".strip()
+
+        # The parent, converted in the first chunk, is cross-linked with the
+        # reply that is only converted in the second chunk.
+        self.assert_length(first_chunk.zerver_message, 1)
+        self.assertEqual(first_chunk.zerver_message[0]["content"], expected_parent_content)
+        self.assertEqual(first_chunk.zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+
+        # The reply, converted in the second chunk, is routed to the thread topic.
+        self.assert_length(second_chunk.zerver_message, 1)
+        self.assertEqual(second_chunk.zerver_message[0]["content"], "random")
+        self.assertEqual(
+            second_chunk.zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name
+        )
+
+    def test_thread_cross_link_skipped_for_direct_messages(self) -> None:
+        # Direct-message threads aren't split into per-thread topics, so a
+        # DM thread's parent must not get a cross-linking notice (and looking
+        # one up must not raise, since no thread topic is recorded for it).
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1, "dm": 3}
+        dm_thread = [
+            {
+                "text": "dm thread parent",
+                "user": "U061A5N1G",
+                "ts": "1434139102.000002",
+                "thread_ts": "1434139102.000002",
+                "pm_name": "dm",
+            },
+            {
+                "text": "dm thread reply",
+                "user": "U061A5N1G",
+                "ts": "1439868294.000007",
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139102.000002",
+                "pm_name": "dm",
+            },
+        ]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=dm_thread,
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        self.assert_length(conversion_result.zerver_message, 2)
+        # The content is unannotated and both messages use the DM topic.
+        self.assertEqual(conversion_result.zerver_message[0]["content"], "dm thread parent")
+        self.assertEqual(conversion_result.zerver_message[0][EXPORT_TOPIC_NAME], Message.DM_TOPIC)
+        self.assertEqual(conversion_result.zerver_message[1]["content"], "dm thread reply")
+        self.assertEqual(conversion_result.zerver_message[1][EXPORT_TOPIC_NAME], Message.DM_TOPIC)
 
     def test_convert_thread_topic_name_cut_off(self) -> None:
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1980,6 +2100,9 @@ class SlackImporter(ZulipTestCase):
             set(),
             convert_slack_threads=True,
             do_download_and_export_upload_file=lambda request: None,
+            thread_counter=defaultdict(int),
+            thread_map={},
+            thread_reply_counts=count_thread_replies(iter(all_messages), True),
         )
 
         zerver_message = conversion_result.zerver_message

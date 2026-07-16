@@ -808,12 +808,23 @@ def convert_slack_workspace_messages(
         zerver_userprofile,
     )
 
+    # Pre-scan the message stream to count each thread's replies up front, so
+    # a thread's parent message can be cross-linked to its topic even when the
+    # parent and its replies fall in different chunks; see count_thread_replies.
+    # get_messages_iterator returns a single-use generator, so the pre-scan and
+    # the conversion loop below each need their own.
+    thread_reply_counts = count_thread_replies(
+        get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms),
+        convert_slack_threads,
+    )
     all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms)
     logging.info("######### IMPORTING MESSAGES STARTED #########\n")
 
     total_reactions: list[ZerverFieldsT] = []
     total_attachments: list[AttachmentRecordData] = []
     total_uploads: list[UploadRecordData] = []
+    thread_counter: dict[str, int] = defaultdict(int)
+    thread_map: dict[str, ThreadMetadata] = {}
 
     dump_file_id = 1
 
@@ -835,6 +846,9 @@ def convert_slack_workspace_messages(
             long_term_idle,
             convert_slack_threads,
             do_download_and_export_upload_file,
+            thread_counter,
+            thread_map,
+            thread_reply_counts,
         )
 
         message_json = dict(
@@ -1005,8 +1019,6 @@ class MessageConversionResult:
 
 @dataclass
 class ThreadMetadata:
-    first_thread_message_index: int
-    thread_length: int
     topic_link_syntax: str
     topic_name: str
 
@@ -1036,6 +1048,83 @@ def is_slack_thread_message(convert_slack_threads: bool, message: ZerverFieldsT)
     return convert_slack_threads and "thread_ts" in message
 
 
+def is_message_skipped_during_conversion(message: ZerverFieldsT) -> bool:
+    """Mirrors the early-`continue` filters in channel_message_to_zerver_message
+    that drop a message before it becomes a Zulip message."""
+    if not get_message_sending_user(message):
+        # Slack sometimes emits messages with no sending user.
+        return True
+    return message.get("subtype", False) in SKIPPED_SLACK_MESSAGE_SUBTYPES
+
+
+def count_thread_replies(
+    all_messages: Iterator[ZerverFieldsT], convert_slack_threads: bool
+) -> dict[str, int]:
+    """Pre-scan the whole message stream to count, per thread, how many
+    replies will be imported.
+
+    Threads are cross-linked by appending an "N replies in #**channel>topic**"
+    notice to the thread's parent message. Because messages are converted and
+    written to disk in chunks (see convert_slack_workspace_messages), a thread's
+    parent and its replies can land in different chunks, so the final reply
+    count isn't known when the parent message is written."""
+    thread_reply_counts: dict[str, int] = defaultdict(int)
+    if not convert_slack_threads:
+        return thread_reply_counts
+
+    for message in all_messages:
+        if not is_slack_thread_message(convert_slack_threads, message):
+            continue
+        if is_message_skipped_during_conversion(message):
+            continue
+
+        thread_ts = message["thread_ts"]
+        message_ts = message["ts"]
+        # Compute the key on every thread message so the thread parent's
+        # user id is cached in thread_parent_map before its replies (which
+        # may omit parent_user_id) look it up; see get_thread_key.
+        thread_key = get_thread_key(message)
+        if thread_ts != message_ts:
+            thread_reply_counts[thread_key] += 1
+
+    return thread_reply_counts
+
+
+def get_thread_reply_notification(
+    convert_slack_threads: bool,
+    message: ZerverFieldsT,
+    thread_map: dict[str, ThreadMetadata],
+    thread_reply_counts: dict[str, int],
+) -> str:
+    """The cross-linking notice appended to a thread's parent message, or ""
+    for any other message. Replies are routed to the thread topic elsewhere."""
+    if not is_slack_thread_message(convert_slack_threads, message):
+        return ""
+
+    thread_ts = message["thread_ts"]
+    message_ts = message["ts"]
+    if thread_ts != message_ts:
+        # Only the parent message carries the cross-linking notice.
+        return ""
+
+    thread_key = get_thread_key(message)
+    if thread_key not in thread_map:
+        # No parent ThreadMetadata was recorded: e.g. a direct-message
+        # thread, which isn't split into per-thread topics, or a thread
+        # whose parent message wasn't imported.
+        return ""
+
+    number_of_replies = thread_reply_counts.get(thread_key, 0)
+    if number_of_replies < 1:
+        # This could happen if only part of the Slack workspace history was
+        # exported, or if the thread's replies were deleted.
+        return ""
+
+    reply_string = "replies" if number_of_replies > 1 else "reply"
+    # e.g "\n\n*3 replies in #**channel>2023-05-23 foobar***"
+    return f"\n\n*{number_of_replies} {reply_string} in {thread_map[thread_key].topic_link_syntax}*"
+
+
 def create_topic_name_for_message(
     channel_name: str | None,
     content: str,
@@ -1045,7 +1134,6 @@ def create_topic_name_for_message(
     recipient_id: int,
     thread_counter: dict[str, int],
     thread_map: dict[str, ThreadMetadata],
-    zerver_message_length: int,
 ) -> str:
     if is_direct_message_type:
         return ""
@@ -1064,15 +1152,12 @@ def create_topic_name_for_message(
 
     if thread_ts == message_ts:
         # The first thread message has a `thread_ts` that matches its
-        # `message_ts`. Send this message to the main import topic
-        # and add a cross-linking notification message to the thread
-        # topic.
+        # `message_ts`. Send this message to the main import topic; the
+        # cross-linking notice to the thread topic is appended by
+        # get_thread_reply_notification.
         thread_topic_name = get_zulip_thread_topic_name(content, thread_ts, thread_counter)
 
         thread_map[thread_key] = ThreadMetadata(
-            first_thread_message_index=zerver_message_length,
-            # Count this message as the first thread message.
-            thread_length=1,
             topic_link_syntax=get_stream_topic_link_syntax(
                 recipient_id,
                 channel_name,
@@ -1085,7 +1170,6 @@ def create_topic_name_for_message(
         # For thread replies, send them to the thread topic.
         # TODO: Make the first reply in the thread quote the thread message
         # in the main topic.
-        thread_map[thread_key].thread_length += 1
         return thread_map[thread_key].topic_name
     else:
         # This can occur when the original thread message isn't imported,
@@ -1106,6 +1190,9 @@ def channel_message_to_zerver_message(
     long_term_idle: set[int],
     convert_slack_threads: bool,
     do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
+    thread_counter: dict[str, int],
+    thread_map: dict[str, ThreadMetadata],
+    thread_reply_counts: dict[str, int],
 ) -> MessageConversionResult:
     zerver_message: list[ZerverFieldsT] = []
     zerver_usermessage: list[ZerverFieldsT] = []
@@ -1115,8 +1202,6 @@ def channel_message_to_zerver_message(
 
     total_user_messages = 0
     total_skipped_user_messages = 0
-    thread_counter: dict[str, int] = defaultdict(int)
-    thread_map: dict[str, ThreadMetadata] = {}
     for message in all_messages:
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
@@ -1206,7 +1291,14 @@ def channel_message_to_zerver_message(
             recipient_id=recipient_id,
             thread_counter=thread_counter,
             thread_map=thread_map,
-            zerver_message_length=len(zerver_message),
+        )
+
+        # Cross-link a thread's parent message to its branched-off thread
+        # topic. This must follow create_topic_name_for_message, which
+        # records the thread's topic link syntax in thread_map, and the
+        # topic name above, which is derived from the un-annotated content.
+        content += get_thread_reply_notification(
+            convert_slack_threads, message, thread_map, thread_reply_counts
         )
 
         zulip_message = build_message(
@@ -1237,24 +1329,6 @@ def channel_message_to_zerver_message(
         )
         total_user_messages += num_created
         total_skipped_user_messages += num_skipped
-
-    # Link the original thread message to its branched off thread topic
-    for thread_metadata in thread_map.values():
-        index: int = thread_metadata.first_thread_message_index
-        # Subtract the first thread message to get the number of thread replies.
-        number_of_replies: int = thread_metadata.thread_length - 1
-
-        if number_of_replies < 1:
-            continue
-
-        thread_topic_link_syntax = thread_metadata.topic_link_syntax
-        reply_string = "replies" if number_of_replies > 1 else "reply"
-        complete_notification_message = (
-            f"\n\n*{number_of_replies} {reply_string} in {thread_topic_link_syntax}*"
-        )
-        # e.g "3 replies in #**channel>2023-05-23 foobar**"
-
-        zerver_message[index]["content"] += complete_notification_message
 
     logging.debug(
         "Created %s UserMessages; deferred %s due to long-term idle",
