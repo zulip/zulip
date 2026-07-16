@@ -1046,11 +1046,9 @@ def is_thread_parent_message(message: ZerverFieldsT) -> bool:
 
 
 def get_thread_key(message: ZerverFieldsT) -> str:
-    thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
-    thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
     subtype = message.get("subtype", False)
     parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
-    return f"{thread_ts_str}-{parent_user_id}"
+    return f"{message['thread_ts']}-{parent_user_id}"
 
 
 def is_slack_thread_message(convert_slack_threads: bool, message: ZerverFieldsT) -> bool:
@@ -1144,15 +1142,16 @@ def create_topic_name_for_message(
     if not is_slack_thread_message(convert_slack_threads, message):
         return MAIN_SLACK_IMPORT_TOPIC
 
-    thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
-    thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
+    thread_ts = message["thread_ts"]
+    thread_ts_datetime = datetime.fromtimestamp(float(thread_ts), tz=timezone.utc)
+    thread_ts_str = thread_ts_datetime.strftime(r"%Y/%m/%d %H:%M:%S")
     thread_key = get_thread_key(message)
 
     if is_thread_parent_message(message):
         # Send the thread parent message to the main import topic; the
         # cross-linking notice to the thread topic is appended by
         # get_thread_reply_notification.
-        thread_topic_name = get_zulip_thread_topic_name(content, thread_ts, thread_counter)
+        thread_topic_name = get_zulip_thread_topic_name(content, thread_ts_datetime, thread_counter)
 
         thread_map[thread_key] = ThreadMetadata(
             topic_link_syntax=get_stream_topic_link_syntax(
