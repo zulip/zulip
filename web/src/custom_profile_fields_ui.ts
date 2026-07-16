@@ -174,6 +174,9 @@ export function initialize_custom_user_type_fields(
             if (is_editable) {
                 const $input = $pill_container.children(".input");
                 pill_typeahead.set_up_user($input, pills, {exclude_bots: true});
+                pills.setSetupTypeahead(($edit) =>
+                    pill_typeahead.set_up_user($edit, pills, {exclude_bots: true}),
+                );
                 if (pill_update_handler) {
                     pills.onPillCreate(() => {
                         pill_update_handler(field, pills);
