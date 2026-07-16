@@ -1789,12 +1789,14 @@ message body text
         self.assert_length(zerver_message, 2)
         self.assert_length(conversion_result.uploads_list, 1)
         self.assert_length(conversion_result.zerver_attachment, 1)
-        # Test file link in thread topic name.
+        # The thread topic name is generated from the message's original
+        # content, before the file's Markdown link is appended, so the topic
+        # stays clean instead of embedding the upload URL.
         expected_thread_message_1_content = "Look!\n[Apple](/user_uploads/"
-        expected_thread_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
         self.assertTrue(zerver_message[0]["content"].startswith(expected_thread_message_1_content))
         self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
-        self.assertTrue(zerver_message[1][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2018-09-16 Look!")
+        self.assertNotIn("/user_uploads/", zerver_message[1][EXPORT_TOPIC_NAME])
 
     def test_convert_thread_topic_name_with_text_formattings(self) -> None:
         slack_recipient_name_to_zulip_recipient_id = {
