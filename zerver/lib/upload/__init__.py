@@ -141,6 +141,10 @@ def create_attachment(
         file_size = file_data.size
         file_vips_data = file_data.vips_source
 
+    image_row = maybe_thumbnail(file_vips_data, content_type, path_id, realm.id)
+    if image_row is not None and image_row.content_type is not None:
+        # thumbnail-checking code may have corrected the content type
+        content_type = image_row.content_type
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
@@ -150,9 +154,7 @@ def create_attachment(
         content_type=content_type,
     )
     maybe_thumbnail(file_vips_data, content_type, path_id, realm.id)
-    from zerver.lib.event_types import Attachment as AttachmentData
-    from zerver.lib.event_types import AttachmentAddEvent
-    from zerver.tornado.django_api import send_event_on_commit
+    from zerver.actions.uploads import notify_attachment_update
 
     event = AttachmentAddEvent(
         attachment=AttachmentData(**attachment.to_dict()),
