@@ -15207,9 +15207,9 @@ paths:
               properties:
                 name:
                   description: |
-                    The name of the custom profile field, which will appear both in
-                    user-facing settings UI for configuring custom profile fields and
-                    in UI displaying a user's profile.
+                    The name of the custom profile field, which appears both in
+                    the user-facing settings UI for configuring the custom profile
+                    fields and in the UI displaying a user's profile.
                   type: string
                   example: "Favorite programming language"
                 hint:
@@ -15254,7 +15254,7 @@ paths:
                     }
                 display_in_profile_summary:
                   description: |
-                    Whether clients should display this profile field in a summary section of a
+                    Whether clients should display this profile field in the summary section of a
                     user's profile (or in a more easily accessible "small profile").
 
                     At most 2 profile fields may have this property be true in a given
