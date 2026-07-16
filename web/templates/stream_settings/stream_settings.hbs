@@ -53,6 +53,13 @@
                   channel_folder_widget_name="folder_id"
                   }}
 
+                {{> ../dropdown_widget_with_label
+                  widget_name="default_code_block_language"
+                  label=(t 'Default language for code blocks' )
+                  value_type="string"
+                  custom_classes="default-code-block-language-widget"
+                  }}
+
                 <div class="input-group stream-email-box">
                     <label for="copy_stream_email_button" class="settings-field-label">
                         {{t "Email address" }}

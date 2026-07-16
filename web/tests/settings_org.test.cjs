@@ -736,7 +736,7 @@ test("test combined_code_language_options", ({override}) => {
         ...default_options,
     ];
 
-    const options_without_realm_playgrounds = settings_org.combined_code_language_options();
+    const options_without_realm_playgrounds = settings_components.combined_code_language_options();
     assert.deepEqual(options_without_realm_playgrounds, expected_options_without_realm_playgrounds);
 
     override(realm, "realm_playgrounds", [
@@ -755,7 +755,7 @@ test("test combined_code_language_options", ({override}) => {
         ...default_options,
     ];
 
-    const options_with_realm_playgrounds = settings_org.combined_code_language_options();
+    const options_with_realm_playgrounds = settings_components.combined_code_language_options();
     assert.deepEqual(options_with_realm_playgrounds, expected_options_with_realm_playgrounds);
 });
 

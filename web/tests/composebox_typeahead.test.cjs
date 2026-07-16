@@ -2287,7 +2287,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
         override_rewire(ct, "split_at_cursor", () => [input, rest]);
-        const values = ct.get_candidates(input, input_element);
+        const values = ct.get_candidates(input, input_element, "");
         return values;
     }
 
@@ -2831,7 +2831,7 @@ test("content_item_html", ({override_rewire}) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
     });
-    ct.content_item_html("")(emoji);
+    ct.content_item_html("", "")(emoji);
 
     ct.get_or_set_completing_for_tests("mention");
     let th_render_person_called = false;
@@ -2840,14 +2840,14 @@ test("content_item_html", ({override_rewire}) => {
         assert.ok(opts === undefined || typeof opts === "object");
         th_render_person_called = true;
     });
-    ct.content_item_html("")(othello_item);
+    ct.content_item_html("", "")(othello_item);
 
     let th_render_user_group_called = false;
     override_rewire(typeahead_helper, "render_user_group", (user_group) => {
         assert.deepEqual(user_group, backend);
         th_render_user_group_called = true;
     });
-    ct.content_item_html("")(backend);
+    ct.content_item_html("", "")(backend);
 
     // We don't have any fancy rendering for slash commands yet.
     ct.get_or_set_completing_for_tests("slash");
@@ -2864,7 +2864,7 @@ test("content_item_html", ({override_rewire}) => {
         });
         th_render_slash_command_called = true;
     });
-    ct.content_item_html("")(me_slash);
+    ct.content_item_html("", "")(me_slash);
 
     ct.get_or_set_completing_for_tests("stream");
     let th_render_stream_called = false;
@@ -2872,7 +2872,7 @@ test("content_item_html", ({override_rewire}) => {
         assert.deepEqual(stream, denmark_stream);
         th_render_stream_called = true;
     });
-    ct.content_item_html("")(denmark_stream);
+    ct.content_item_html("", "")(denmark_stream);
 
     ct.get_or_set_completing_for_tests("syntax");
     th_render_typeahead_item_called = false;
@@ -2883,7 +2883,17 @@ test("content_item_html", ({override_rewire}) => {
         });
         th_render_typeahead_item_called = true;
     });
-    ct.content_item_html("")({type: "syntax", language: "py"});
+    ct.content_item_html("", "")({type: "syntax", language: "py"});
+
+    // The language matching the passed default is marked as the default,
+    // even though it differs from the realm-level default.
+    override_rewire(typeahead_helper, "render_typeahead_item", (item) => {
+        assert.deepEqual(item, {
+            is_default_language: true,
+            primary: "py",
+        });
+    });
+    ct.content_item_html("", "py")({type: "syntax", language: "py"});
 
     // Verify that all stub functions have been called.
     assert.ok(th_render_typeahead_item_called);

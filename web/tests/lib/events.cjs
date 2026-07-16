@@ -67,6 +67,7 @@ exports.test_streams = {
         can_remove_subscribers_group: 2,
         is_recently_active: true,
         subscriber_count: 10,
+        default_code_block_language: "text",
     },
     test: {
         is_archived: false,
@@ -94,6 +95,7 @@ exports.test_streams = {
         can_remove_subscribers_group: 2,
         is_recently_active: true,
         subscriber_count: 2,
+        default_code_block_language: "text",
     },
 };
 
