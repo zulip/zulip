@@ -1036,11 +1036,9 @@ SKIPPED_SLACK_MESSAGE_SUBTYPES = [
 
 
 def get_thread_key(message: ZerverFieldsT) -> str:
-    thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
-    thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
     subtype = message.get("subtype", False)
     parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
-    return f"{thread_ts_str}-{parent_user_id}"
+    return f"{message['thread_ts']}-{parent_user_id}"
 
 
 def is_slack_thread_message(convert_slack_threads: bool, message: ZerverFieldsT) -> bool:
@@ -1144,9 +1142,9 @@ def create_topic_name_for_message(
     if not is_slack_thread_message(convert_slack_threads, message):
         return MAIN_SLACK_IMPORT_TOPIC
 
-    thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
-    message_ts = datetime.fromtimestamp(float(message["ts"]), tz=timezone.utc)
-    thread_date = thread_ts.date().isoformat()
+    thread_ts = message["thread_ts"]
+    message_ts = message["ts"]
+    thread_date = datetime.fromtimestamp(float(thread_ts), tz=timezone.utc).date().isoformat()
     thread_key = get_thread_key(message)
 
     if thread_ts == message_ts:
