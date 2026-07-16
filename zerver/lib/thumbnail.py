@@ -105,6 +105,9 @@ TRANSCODED_IMAGE_FORMAT = ThumbnailFormat("webp", 4032, 3024, animated=False)
 # THUMBNAIL_IMAGE_LOADER_MAP.values() is used below for security
 # enforcement.
 #
+# THUMBNAIL_IMAGE_LOADER_MAP is also used to guess at content-types
+# based on the loader, in maybe_correct_content_type.
+#
 # The keys should be kept synced with the client-side list in
 # web/src/upload.ts.
 THUMBNAIL_IMAGE_LOADER_MAP = {
@@ -353,6 +356,34 @@ def missing_thumbnails(
     return needed_thumbnails
 
 
+# Sometimes, the image has the wrong content-type, so try to fix it.
+def maybe_correct_content_type(image: pyvips.Image, content_type: str) -> str:
+    expected_loader_tuple = THUMBNAIL_IMAGE_LOADER_MAP.get(bare_content_type(content_type))
+    expected_loader_string = expected_loader_tuple[1] if expected_loader_tuple is not None else None
+    # The end of this string will vary by type of image source, so we'll just care about the
+    # beginning.
+    loader_string = image.get("vips-loader")
+
+    if expected_loader_tuple is None or not loader_string.startswith(expected_loader_string):
+        if loader_string.startswith("heif"):
+            # This is a guess! The heif loader is used for both avif and heic images, but as it
+            # happens, we mostly only care about getting the right content-type for correctly
+            # identifying heic images, so the lightbox can show the transcoded version on
+            # non-safari browsers.
+            #
+            # If we eventually need to correct mistyped avif files, we'll need to somehow use
+            # vips to distinguish avif from heic. Currently, this will further mislabel an avif
+            # (with an incorrect content-type) to "image/heic".
+            return "image/heic"
+
+        # We do a reverse map lookup to get the correct content-type.
+        for content_type_key, loader_tuple_value in THUMBNAIL_IMAGE_LOADER_MAP.items():
+            if loader_string.startswith(loader_tuple_value[1]):
+                return content_type_key
+
+    return content_type
+
+
 def maybe_thumbnail(
     content: bytes | pyvips.Source,
     content_type: str | None,
@@ -378,6 +409,8 @@ def maybe_thumbnail(
                 (width, height) = (image.height, image.width)
             else:
                 (width, height) = (image.width, image.height)
+
+            content_type = maybe_correct_content_type(image, content_type)
 
             image_row = ImageAttachment.objects.create(
                 realm_id=realm_id,

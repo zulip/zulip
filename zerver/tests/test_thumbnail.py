@@ -23,6 +23,7 @@ from zerver.lib.thumbnail import (
     ThumbnailFormat,
     get_image_thumbnail_path,
     get_transcoded_format,
+    maybe_correct_content_type,
     missing_thumbnails,
     resize_emoji,
     split_thumbnail_path,
@@ -304,6 +305,34 @@ class ThumbnailClassesTest(ZulipTestCase):
         self.assertEqual(round_trip.animated, True)
 
         self.assertIsNone(BaseThumbnailFormat.from_string("bad.webp"))
+
+
+class TestContentTypeCorrection(ZulipTestCase):
+    def test_maybe_correct_content_type(self) -> None:
+        test_jpg = pyvips.Image.new_from_file("zerver/tests/images/img.jpg")
+        test_content_type = maybe_correct_content_type(test_jpg, "image/jpeg")
+        self.assertEqual(test_content_type, "image/jpeg")
+
+        test_jpg = pyvips.Image.new_from_file("zerver/tests/images/img.jpg")
+        test_content_type = maybe_correct_content_type(test_jpg, "image/jpeg; charset=binary")
+        self.assertEqual(test_content_type, "image/jpeg; charset=binary")
+
+        test_jpg = pyvips.Image.new_from_file("zerver/tests/images/img.jpg")
+        test_content_type = maybe_correct_content_type(test_jpg, "image/gif")
+        self.assertEqual(test_content_type, "image/jpeg")
+
+        test_jpg = pyvips.Image.new_from_file("zerver/tests/images/img.jpg")
+        test_content_type = maybe_correct_content_type(test_jpg, "image/gif; charset=binary")
+        self.assertEqual(test_content_type, "image/jpeg")
+
+        test_heic = pyvips.Image.new_from_file("zerver/tests/images/test.heic")
+        test_content_type = maybe_correct_content_type(test_heic, "image/gif")
+        self.assertEqual(test_content_type, "image/heic")
+
+        test_avif = pyvips.Image.new_from_file("zerver/tests/images/test.avif")
+        test_content_type = maybe_correct_content_type(test_avif, "image/gif")
+        # This is an intentional test of known misbehavior.
+        self.assertEqual(test_content_type, "image/heic")
 
 
 class TestStoreThumbnail(ZulipTestCase):
@@ -775,6 +804,41 @@ class TestStoreThumbnail(ZulipTestCase):
         source = attachment_source(path_id)
         create_attachment("img.png", path_id, "image/png", source, hamlet, hamlet.realm)
         self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
+
+    def test_content_type_correction(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # using the stream method to get real image bytes
+        def content_type_helper(
+            file_name: str, starting_content_type: str, expected_content_type: str
+        ) -> None:
+            path_id = generate_message_upload_path(str(hamlet.realm.id), file_name)
+            store_message_attachment(
+                path_id,
+                file_name,
+                starting_content_type,
+                read_test_image_file(file_name),
+                hamlet,
+                hamlet.realm,
+            )
+            source = attachment_source(path_id)
+            create_attachment(
+                file_name, path_id, starting_content_type, source, hamlet, hamlet.realm
+            )
+            image_attachment = ImageAttachment.objects.get(path_id=path_id)
+            actual_content_type = image_attachment.content_type
+            self.assertEqual(actual_content_type, expected_content_type)
+            attachment = Attachment.objects.get(path_id=path_id)
+            attachment_content_type = attachment.content_type
+            self.assertEqual(attachment_content_type, expected_content_type)
+
+        content_type_helper("img.png", "image/png", "image/png")
+        content_type_helper("img.png", "image/png; charset=binary", "image/png; charset=binary")
+        content_type_helper("img.png", "image/jpeg", "image/png")
+        content_type_helper("img.png", "image/jpeg; charset=binary", "image/png")
+        content_type_helper("test.heic", "image/jpeg", "image/heic")
+        # known/expected misbehavior
+        content_type_helper("test.avif", "image/jpeg", "image/heic")
 
 
 class TestThumbnailRetrieval(ZulipTestCase):
