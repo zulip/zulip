@@ -59,6 +59,16 @@ run_test("matches starting at non-first word, too", () => {
 
 run_test("matches literal unicode emoji", () => {
     assert_emoji_matches("🐼", ["panda_face"]);
+
+    // An emoji whose code is not a valid codepoint doesn't match the
+    // query literally, but can still match by name.
+    const invalid_emoji = {
+        emoji_name: "invalid_emoji",
+        emoji_code: "110000",
+        reaction_type: "unicode_emoji",
+    };
+    assert.equal(typeahead.get_emoji_matcher("🐼")(invalid_emoji), false);
+    assert.equal(typeahead.get_emoji_matcher("invalid")(invalid_emoji), true);
 });
 
 run_test("get_emoji_matcher: spaces equivalent to underscores", () => {

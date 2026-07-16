@@ -644,3 +644,22 @@ export let max_text_content_width = (candidates: string[], css_class?: string): 
 export function rewire_max_text_content_width(value: typeof max_text_content_width): void {
     max_text_content_width = value;
 }
+
+export function convert_emoji_code_to_unicode(emoji_code: string): string | undefined {
+    // Convert a "-"-separated string of hex Unicode codepoints (e.g.
+    // "1f468-200d-1f373") into the emoji it represents, or undefined if
+    // any codepoint is invalid.
+    const emoji_unicode_parts: string[] = [];
+    for (const part of emoji_code.split("-")) {
+        const emoji_code_int = Number.parseInt(part, 16);
+        // Validate the parameter passed to String.fromCodePoint() (here, emoji_code_int).
+        // "An integer between 0 and 0x10FFFF (inclusive) representing a Unicode code point."
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint
+        // for details.
+        if (Number.isNaN(emoji_code_int) || !(emoji_code_int >= 0 && emoji_code_int <= 0x10ffff)) {
+            return undefined;
+        }
+        emoji_unicode_parts.push(String.fromCodePoint(emoji_code_int));
+    }
+    return emoji_unicode_parts.join("");
+}

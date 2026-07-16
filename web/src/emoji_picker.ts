@@ -419,9 +419,9 @@ export function is_emoji_present_in_text(text: string, emoji_dict: EmojiDict): b
     const emoji_info = emoji.get_emoji_details_by_name(emoji_dict.name);
     if (emoji_info.reaction_type === "unicode_emoji") {
         // convert emoji_dict to an actual emoji character
-        const parsed_emoji_code = typeahead.parse_unicode_emoji_code(emoji_info.emoji_code);
+        const parsed_emoji_code = util.convert_emoji_code_to_unicode(emoji_info.emoji_code);
 
-        return text.includes(parsed_emoji_code);
+        return parsed_emoji_code !== undefined && text.includes(parsed_emoji_code);
     }
 
     return false;
