@@ -128,11 +128,7 @@ class StreamWatchersTest(ZulipTestCase):
         # This next line of code should silently succeed and basically do
         # nothing under the covers.  This test is here to prevent a bug
         # from re-appearing.
-        missedmessage_hook(
-            user_profile_id=hamlet.id,
-            client=client,
-            last_client_for_user=True,
-        )
+        missedmessage_hook(hamlet.id, client.event_queue.contents(include_internal_data=True))
 
 
 class MissedMessageHookTest(ZulipTestCase):
@@ -222,15 +218,11 @@ class MissedMessageHookTest(ZulipTestCase):
             # To test the missed_message hook, we first need to send a message
             msg_id = self.send_stream_message(self.iago, "Denmark")
 
-            # Verify that nothing happens if you call it as not the
-            # "last client descriptor", in which case the function
-            # short-circuits, since the `missedmessage_hook` handler
-            # for garbage-collection is only for the user's last queue.
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, False)
-            mock_enqueue.assert_not_called()
-
-            # Now verify that we called the appropriate enqueue function
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            # Verify that the hook calls the appropriate enqueue function.
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -245,7 +237,10 @@ class MissedMessageHookTest(ZulipTestCase):
         # By default, email and push notifications should be sent for direct messages
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -266,7 +261,10 @@ class MissedMessageHookTest(ZulipTestCase):
         )
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -285,7 +283,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.example_user("iago"), "Denmark", content="@**King Hamlet** what's up?"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -305,7 +306,10 @@ class MissedMessageHookTest(ZulipTestCase):
         )
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -327,7 +331,10 @@ class MissedMessageHookTest(ZulipTestCase):
         Device.objects.filter(push_token_id__isnull=False).delete()
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -345,7 +352,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.send_stream_message(self.user_profile, "Denmark")
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**topic** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called()
             args_dict = mock_enqueue.call_args_list[1][1]
 
@@ -364,7 +374,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.send_stream_message(self.user_profile, "Denmark")
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**topic** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called()
             args_dict = mock_enqueue.call_args_list[1][1]
 
@@ -390,7 +403,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", topic_name="mutingtest", content="@**topic** what's up?"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called()
             args_dict = mock_enqueue.call_args_list[1][1]
 
@@ -407,7 +423,10 @@ class MissedMessageHookTest(ZulipTestCase):
         # By default, stream wildcard mentions should send notifications, just like regular mentions
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -425,7 +444,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.change_subscription_properties({"is_muted": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -444,7 +466,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.change_subscription_properties({"is_muted": True, "wildcard_mentions_notify": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -469,7 +494,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", topic_name="mutingtest", content="@**all** what's up?"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -496,7 +524,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", topic_name="mutingtest", content="@**all** what's up?"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -516,7 +547,10 @@ class MissedMessageHookTest(ZulipTestCase):
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -540,7 +574,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.change_subscription_properties({"wildcard_mentions_notify": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -564,7 +601,10 @@ class MissedMessageHookTest(ZulipTestCase):
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -589,7 +629,10 @@ class MissedMessageHookTest(ZulipTestCase):
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -613,7 +656,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", content="@*hamlet_and_cordelia* what's up?"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -633,7 +679,10 @@ class MissedMessageHookTest(ZulipTestCase):
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -652,7 +701,10 @@ class MissedMessageHookTest(ZulipTestCase):
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -673,7 +725,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.change_subscription_properties({"is_muted": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -699,7 +754,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", topic_name="mutingtest", content="what's up everyone?"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -714,7 +772,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.change_subscription_properties({"push_notifications": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -731,7 +792,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.change_subscription_properties({"email_notifications": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -760,7 +824,10 @@ class MissedMessageHookTest(ZulipTestCase):
             topic_name="mutingtest",
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -776,7 +843,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.change_subscription_properties({"email_notifications": True, "is_muted": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -805,7 +875,10 @@ class MissedMessageHookTest(ZulipTestCase):
             topic_name="unmutingtest",
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -840,7 +913,10 @@ class MissedMessageHookTest(ZulipTestCase):
             topic_name="unmutingtest",
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -873,7 +949,10 @@ class MissedMessageHookTest(ZulipTestCase):
             topic_name="unmutingtest",
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -903,7 +982,10 @@ class MissedMessageHookTest(ZulipTestCase):
             topic_name="unmutingtest",
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -932,7 +1014,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -959,7 +1044,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -986,7 +1074,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -1022,7 +1113,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", content="@**topic** what's up?", topic_name="followed_topic_test"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called()
             args_dict = mock_enqueue.call_args_list[1][1]
 
@@ -1057,7 +1151,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", content="@**all** what's up?", topic_name="followed_topic_test"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -1093,7 +1190,10 @@ class MissedMessageHookTest(ZulipTestCase):
 
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**topic** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called()
             args_dict = mock_enqueue.call_args_list[1][1]
 
@@ -1129,7 +1229,10 @@ class MissedMessageHookTest(ZulipTestCase):
 
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called()
             args_dict = mock_enqueue.call_args_list[1][1]
 
@@ -1170,7 +1273,10 @@ class MissedMessageHookTest(ZulipTestCase):
             self.iago, "Denmark", content="@**all** what's up?", topic_name="followed_topic_test"
         )
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -1185,7 +1291,10 @@ class MissedMessageHookTest(ZulipTestCase):
         do_mute_user(self.user_profile, self.iago)
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -1219,7 +1328,10 @@ class MissedMessageHookTest(ZulipTestCase):
         self.client_descriptor = self.allocate_event_queue(hambot)
         msg_id = self.send_personal_message(self.iago, hambot)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(hambot.id, self.client_descriptor, True)
+            missedmessage_hook(
+                hambot.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -1242,7 +1354,10 @@ class MissedMessageHookTest(ZulipTestCase):
             )
         assert msg_id is not None
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            missedmessage_hook(
+                self.user_profile.id,
+                self.client_descriptor.event_queue.contents(include_internal_data=True),
+            )
             mock_enqueue.assert_called_once()
             args_dict = mock_enqueue.call_args_list[0][1]
 
@@ -1649,7 +1764,7 @@ class OfflineEventQueueTest(ZulipTestCase):
 
         self.assertTrue(client.offline)
 
-    def test_missedmessage_hook_skips_offline_queue(self) -> None:
+    def test_mark_clients_offline_skips_offline_queue(self) -> None:
         hamlet = self.example_user("hamlet")
         client = self.allocate_queue(hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS)
         client.offline = True
@@ -1658,7 +1773,7 @@ class OfflineEventQueueTest(ZulipTestCase):
         self.send_personal_message(iago, hamlet)
 
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(hamlet.id, client, True)
+            mark_clients_offline({client.event_queue.id}, {hamlet.id})
             mock_enqueue.assert_not_called()
 
     def test_last_client_for_user_with_multiple_queues(self) -> None:
@@ -1743,103 +1858,130 @@ class OfflineEventQueueTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
 
     @time_machine.travel(NOW, tick=False)
-    def test_gc_message_queue_before_non_message_queue(self) -> None:
+    def test_gc_multiple_queue_configurations(self) -> None:
         hamlet = self.example_user("hamlet")
-        add_client_gc_hook(missedmessage_hook)
-
-        message_client = self.allocate_queue(
-            hamlet,
-            queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
-            event_types=["message"],
-        )
-        non_message_client = self.allocate_queue(
-            hamlet,
-            queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
-            event_types=["presence"],
-        )
-
         iago = self.example_user("iago")
-        self.send_personal_message(iago, hamlet)
+        gc_hook = mock.Mock(wraps=missedmessage_hook)
+        add_client_gc_hook(gc_hook)
 
-        # First, expire only the queue containing the message event. The
-        # presence-only queue should not prevent this from being treated as
-        # the user's last message-receiving client.
-        message_client.last_connection_time = time.time() - DEFAULT_EVENT_QUEUE_TIMEOUT_SECS - 1
-        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            gc_event_queues(port=9993)
-
-            self.assertNotIn(message_client.event_queue.id, clients)
-            self.assertIn(non_message_client.event_queue.id, clients)
-
-            # Later, garbage collecting the presence-only queue cannot send
-            # the missed-message notification, since it has no message event.
-            non_message_client.last_connection_time = (
-                time.time() - DEFAULT_EVENT_QUEUE_TIMEOUT_SECS - 1
-            )
-            gc_event_queues(port=9993)
-
-            mock_enqueue.assert_called_once()
-
-    @time_machine.travel(NOW, tick=False)
-    def test_gc_multiple_message_queues_in_same_sweep(self) -> None:
-        hamlet = self.example_user("hamlet")
-        add_client_gc_hook(missedmessage_hook)
-
-        message_clients = [
-            self.allocate_queue(
-                hamlet,
-                queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
-                event_types=["message"],
-            )
-            for _ in range(2)
+        configurations = [
+            (
+                "message queue expires before non-message queue",
+                [["message"], ["presence"]],
+                [[0], [1]],
+            ),
+            (
+                "multiple message queues expire in the same sweep",
+                [["message"], ["message"]],
+                [[0, 1]],
+            ),
+            (
+                "message and non-message queues expire in the same sweep",
+                [["message"], ["presence"]],
+                [[0, 1]],
+            ),
         ]
 
-        iago = self.example_user("iago")
-        self.send_personal_message(iago, hamlet)
+        for name, event_types_by_queue, expiration_batches in configurations:
+            gc_hook.reset_mock()
+            with self.subTest(name):
+                queue_clients = [
+                    self.allocate_queue(
+                        hamlet,
+                        queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+                        event_types=event_types,
+                    )
+                    for event_types in event_types_by_queue
+                ]
+                message_id = self.send_personal_message(iago, hamlet)
 
-        # Both queues contain the same message event and expire in the same
-        # sweep. Only one queue should be treated as the user's last
-        # message-receiving client, to avoid duplicate notifications.
-        for client in message_clients:
-            client.last_connection_time = time.time() - DEFAULT_EVENT_QUEUE_TIMEOUT_SECS - 1
+                with mock.patch(
+                    "zerver.tornado.event_queue.maybe_enqueue_notifications"
+                ) as mock_enqueue:
+                    for expiration_batch in expiration_batches:
+                        for client_index in expiration_batch:
+                            queue_clients[client_index].last_connection_time = (
+                                time.time() - DEFAULT_EVENT_QUEUE_TIMEOUT_SECS - 1
+                            )
+                        gc_event_queues(port=9993)
 
-        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            gc_event_queues(port=9993)
+                for client in queue_clients:
+                    self.assertNotIn(client.event_queue.id, clients)
+                gc_hook.assert_called_once()
+                user_id, messages = gc_hook.call_args.args
+                self.assertEqual(user_id, hamlet.id)
+                self.assertEqual([event["message"]["id"] for event in messages], [message_id])
+                mock_enqueue.assert_called_once()
 
-            for client in message_clients:
-                self.assertNotIn(client.event_queue.id, clients)
-            mock_enqueue.assert_called_once()
-
-    def test_gc_message_and_non_message_queues_in_same_sweep(self) -> None:
+    def test_aggregates_messages_from_multiple_queues(self) -> None:
         hamlet = self.example_user("hamlet")
-        message_client = self.allocate_queue(
-            hamlet,
-            queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
-            event_types=["message"],
-        )
-        non_message_client = self.allocate_queue(
-            hamlet,
-            queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
-            event_types=["presence"],
-        )
-
         gc_hook = mock.Mock()
         add_client_gc_hook(gc_hook)
 
-        # A dict keys view is an ordered AbstractSet, making the non-message
-        # queue the last queue considered for notification responsibility.
-        to_remove = dict.fromkeys(
-            [message_client.event_queue.id, non_message_client.event_queue.id]
-        ).keys()
-        do_gc_event_queues(to_remove, {hamlet.id}, {hamlet.realm_id})
+        message_configurations = [
+            ("only one queue has messages", [[1], []], [1]),
+            ("queues have unique messages", [[1], [2]], [1, 2]),
+            ("queues have overlapping messages", [[1, 2], [2, 3]], [1, 2, 3]),
+        ]
 
-        self.assertEqual(
-            gc_hook.call_args_list,
-            [
-                mock.call(hamlet.id, message_client, True),
-                mock.call(hamlet.id, non_message_client, False),
-            ],
-        )
+        with mock.patch("zerver.tornado.event_queue.missedmessage_hook") as missedmessage_hook:
+            operations: list[tuple[str, Callable[[set[str]], None], mock.Mock, bool]] = [
+                (
+                    "garbage collection",
+                    lambda queue_ids: do_gc_event_queues(queue_ids, {hamlet.id}, {hamlet.realm.id}),
+                    gc_hook,
+                    False,
+                ),
+                (
+                    "mark offline",
+                    lambda queue_ids: mark_clients_offline(queue_ids, {hamlet.id}),
+                    missedmessage_hook,
+                    True,
+                ),
+            ]
+
+            for operation_name, operation, hook, queues_remain in operations:
+                for (
+                    configuration_name,
+                    message_ids_by_queue,
+                    expected_message_ids,
+                ) in message_configurations:
+                    gc_hook.reset_mock()
+                    missedmessage_hook.reset_mock()
+                    with self.subTest(operation=operation_name, configuration=configuration_name):
+                        message_clients = [
+                            self.allocate_queue(
+                                hamlet,
+                                queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+                                event_types=["message"],
+                            )
+                            for _ in message_ids_by_queue
+                        ]
+                        for client, message_ids in zip(
+                            message_clients, message_ids_by_queue, strict=True
+                        ):
+                            for message_id in message_ids:
+                                client.event_queue.push(
+                                    {"type": "message", "message": {"id": message_id}}
+                                )
+
+                        queue_ids = {client.event_queue.id for client in message_clients}
+                        operation(queue_ids)
+
+                        hook.assert_called_once()
+                        user_id, messages = hook.call_args.args
+                        self.assertEqual(user_id, hamlet.id)
+                        self.assertCountEqual(
+                            [event["message"]["id"] for event in messages],
+                            expected_message_ids,
+                        )
+
+                        for client in message_clients:
+                            self.assertEqual(client.event_queue.id in clients, queues_remain)
+                        if queues_remain:
+                            for client in message_clients:
+                                self.assertTrue(client.offline)
+                            do_gc_event_queues(queue_ids, {hamlet.id}, {hamlet.realm.id})
 
     def test_idle_queue_timeout_resolution(self) -> None:
         hamlet = self.example_user("hamlet")

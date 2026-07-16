@@ -7,7 +7,7 @@ import random
 import time
 import traceback
 import uuid
-from collections import deque
+from collections import defaultdict, deque
 from collections.abc import Callable, Collection, Iterable, Mapping, MutableMapping, Sequence
 from collections.abc import Set as AbstractSet
 from contextlib import suppress
@@ -504,12 +504,9 @@ user_clients: dict[int, list[ClientDescriptor]] = {}
 # maps realm id to list of client descriptors with all_public_streams=True
 realm_clients_all_streams: dict[int, list[ClientDescriptor]] = {}
 
-# list of registered gc hooks.
-# each one will be called with a user profile id, queue, and bool
-# last_client_for_user that is true if this is the last queue pertaining
-# to this user_profile_id
-# that is about to be deleted
-gc_hooks: list[Callable[[int, ClientDescriptor, bool], None]] = []
+# Each registered GC hook is called once per user with the unique message
+# events from that user's queues that are being garbage-collected together.
+gc_hooks: list[Callable[[int, list[dict[str, Any]]], None]] = []
 
 
 def clear_client_event_queues_for_testing() -> None:
@@ -521,7 +518,7 @@ def clear_client_event_queues_for_testing() -> None:
     gc_hooks.clear()
 
 
-def add_client_gc_hook(hook: Callable[[int, ClientDescriptor, bool], None]) -> None:
+def add_client_gc_hook(hook: Callable[[int, list[dict[str, Any]]], None]) -> None:
     gc_hooks.append(hook)
 
 
@@ -563,15 +560,51 @@ def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> Clie
     return client
 
 
-def user_has_active_message_queue(user_id: int, to_remove: AbstractSet[str]) -> bool:
+def user_client_map(client_ids: AbstractSet[str]) -> dict[int, set[str]]:
+    users_with_active_queues: set[int] = set()
+    for cid in client_ids:
+        uid = clients[cid].user_profile_id
+        if user_has_active_message_queue(uid, client_ids):
+            users_with_active_queues.add(uid)
+
+    user_clients: defaultdict[int, set[str]] = defaultdict(set)
+    for cid in client_ids:
+        client = clients[cid]
+        uid = client.user_profile_id
+        if uid in users_with_active_queues or not is_active_message_queue(client):
+            continue
+
+        user_clients[uid].add(cid)
+    return user_clients
+
+
+def user_has_active_message_queue(user_id: int, excluded_queue_ids: AbstractSet[str]) -> bool:
     for client in get_client_descriptors_for_user(user_id):
-        if (
-            client.accepts_messages()
-            and not client.offline
-            and client.event_queue.id not in to_remove
-        ):
+        if is_active_message_queue(client) and client.event_queue.id not in excluded_queue_ids:
             return True
     return False
+
+
+def is_active_message_queue(client: ClientDescriptor) -> bool:
+    return client.accepts_messages() and not client.offline
+
+
+# build a set of message events given a list of client ids
+def unique_message_events(client_ids: AbstractSet[str]) -> list[Any]:
+    msgs: dict[str, Any] = {}
+
+    # messages are unhashable so we use a dict
+    for cid in client_ids:
+        client = clients[cid]
+        for event in client.event_queue.contents(include_internal_data=True):
+            if event["type"] != "message":
+                continue
+            id = event.get("message", {}).get("id")
+            if id is None:
+                logging.warning("message in message queue is None")
+                continue
+            msgs[id] = event
+    return sorted(msgs.values(), key=lambda x: x["message"]["id"])
 
 
 def do_gc_event_queues(
@@ -595,33 +628,17 @@ def do_gc_event_queues(
     for realm_id in affected_realms:
         filter_client_dict(realm_clients_all_streams, realm_id)
 
-    # pick an arbitrary message queue when user has multiple message queues to clean up
-    # this prevents duplicate notifications
-    notification_queue_by_user: dict[int, str] = {}
-    for queue_id in to_remove:
-        user_id = clients[queue_id].user_profile_id
+    for uid, client_ids in user_client_map(to_remove).items():
+        messages = unique_message_events(client_ids)
+        # TODO: call missedmessage_hook directly, gc_hooks are only used for that
+        # so the indirection is unnecessary
+        for hook in gc_hooks:
+            hook(uid, messages)
 
-        if not clients[queue_id].accepts_messages():
-            continue
-
-        if user_has_active_message_queue(user_id, to_remove):
-            continue
-
-        notification_queue_by_user[user_id] = queue_id
-
-    for id in to_remove:
-        web_reload_clients.pop(id, None)
-
-        client = clients[id]
-
-        # Note: the only hook ever added is `missedmessage_hook`
-        for cb in gc_hooks:
-            cb(
-                client.user_profile_id,
-                client,
-                notification_queue_by_user.get(client.user_profile_id) == id,
-            )
-        del clients[id]
+    # GC all clients in to_remove
+    for cid in to_remove:
+        web_reload_clients.pop(cid, None)
+        del clients[cid]
 
 
 def mark_clients_offline(
@@ -632,22 +649,12 @@ def mark_clients_offline(
     EVENT_QUEUE_OFFLINE_TIMEOUT_SECS rather than waiting for the
     full queue_timeout.
     """
-    # Pre-compute which users still have active queues after
-    # offline marking, following the same pattern as
-    # do_gc_event_queues for last_client_for_user.
-    users_with_active_queues: set[int] = set()
-    for user_id in affected_users:
-        if user_has_active_message_queue(user_id, to_mark_offline):
-            users_with_active_queues.add(user_id)
+    for uid, client_ids in user_client_map(to_mark_offline).items():
+        messages = unique_message_events(client_ids)
+        missedmessage_hook(uid, messages)
 
-    for id in to_mark_offline:
-        client = clients[id]
-        missedmessage_hook(
-            client.user_profile_id,
-            client,
-            client.user_profile_id not in users_with_active_queues,
-        )
-        client.offline = True
+    for cid in to_mark_offline:
+        clients[cid].offline = True
 
 
 def gc_event_queues(port: int) -> None:
@@ -900,9 +907,7 @@ def build_offline_notification(user_profile_id: int, message_id: int) -> dict[st
     }
 
 
-def missedmessage_hook(
-    user_profile_id: int, client: ClientDescriptor, last_client_for_user: bool
-) -> None:
+def missedmessage_hook(user_profile_id: int, messages: list[Any]) -> None:
     """The receiver_is_off_zulip logic used to determine whether a user
     has no active client suffers from a somewhat fundamental race
     condition. If the client is no longer on the Internet,
@@ -924,16 +929,7 @@ def missedmessage_hook(
     When the queue later expires and is garbage-collected, we skip
     this hook since notifications were already handled.
     """
-    if not last_client_for_user:
-        return
-
-    # For long-lived queues, notifications are sent when the queue
-    # is first marked offline. When the queue later expires, we
-    # skip it here to avoid duplicate notifications.
-    if client.offline:
-        return
-
-    for event in client.event_queue.contents(include_internal_data=True):
+    for event in messages:
         if event["type"] != "message":
             continue
         internal_data = event.get("internal_data", {})
