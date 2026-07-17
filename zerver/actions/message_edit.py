@@ -86,7 +86,7 @@ from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamM
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.user_message import bulk_insert_all_ums
-from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
+from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy_on_move
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -693,22 +693,30 @@ def update_user_topic_visibility_policies_on_move(
     target_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
     user_ids_losing_access = {user.id for user in users_losing_access}
 
-    for user_topic in get_users_with_user_topic_visibility_policy(
-        stream_being_edited.id, orig_topic_name
+    for user_topic in get_users_with_user_topic_visibility_policy_on_move(
+        stream_being_edited, target_stream, orig_topic_name, target_topic_name
     ):
-        if is_stream_edited and user_topic.user_profile_id in user_ids_losing_access:
-            stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
-        else:
-            orig_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
+        # For a topic-only move, both topics share a stream,
+        # so we match on topic as well as stream to route each
+        # to the correct bucket.
+        if (
+            user_topic.stream_id == stream_being_edited.id
+            and user_topic.topic_name.upper() == orig_topic_name.upper()
+        ):
+            if is_stream_edited and user_topic.user_profile_id in user_ids_losing_access:
+                stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
+            else:
+                orig_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
+                    user_topic.visibility_policy
+                )
+
+        if (
+            user_topic.stream_id == target_stream.id
+            and user_topic.topic_name.upper() == target_topic_name.upper()
+        ):
+            target_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
                 user_topic.visibility_policy
             )
-
-    for user_topic in get_users_with_user_topic_visibility_policy(
-        target_stream.id, target_topic_name
-    ):
-        target_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
-            user_topic.visibility_policy
-        )
 
     # User profiles having any of the visibility policies set for either the original or target topic.
     user_profiles_having_visibility_policy: set[UserProfile] = set(

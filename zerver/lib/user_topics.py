@@ -12,7 +12,7 @@ from psycopg2.sql import SQL, Literal
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_q
 from zerver.lib.types import UserTopicDict
-from zerver.models import Recipient, Subscription, UserProfile, UserTopic
+from zerver.models import Recipient, Stream, Subscription, UserProfile, UserTopic
 from zerver.models.streams import get_stream
 
 
@@ -349,4 +349,16 @@ def get_users_with_user_topic_visibility_policy(
 ) -> QuerySet[UserTopic]:
     return UserTopic.objects.filter(
         stream_id=stream_id, topic_name__iexact=topic_name
+    ).select_related("user_profile", "user_profile__realm")
+
+
+def get_users_with_user_topic_visibility_policy_on_move(
+    stream_being_edited: Stream, target_stream: Stream, orig_topic_name: str, target_topic_name: str
+) -> QuerySet[UserTopic]:
+    # Parallel to get_users_with_user_topic_visibility_policy
+    # but returns rows for both the original and target
+    # (stream, topic) pairs at once.
+    return UserTopic.objects.filter(
+        Q(stream_id=stream_being_edited.id, topic_name__iexact=orig_topic_name)
+        | Q(stream_id=target_stream.id, topic_name__iexact=target_topic_name),
     ).select_related("user_profile", "user_profile__realm")
