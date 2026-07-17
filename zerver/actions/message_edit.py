@@ -1243,12 +1243,10 @@ def do_update_message(
             old_stream_subscriptions = exclude_duplicates_from_subscription(
                 old_stream_subscriptions
             )
-            old_stream_subscriber_ids = set(
-                old_stream_subscriptions.values_list("user_profile_id", flat=True)
-            )
-            new_stream_subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-            old_stream_subs_not_in_new_stream = old_stream_subscriber_ids.difference(
-                new_stream_subscriber_ids
+            old_stream_subs_not_in_new_stream = set(
+                old_stream_subscriptions.exclude(
+                    user_profile_id__in=subscriptions.values("user_profile_id")
+                ).values_list("user_profile_id", flat=True)
             )
 
         subscriptions = exclude_duplicates_from_subscription(subscriptions)
