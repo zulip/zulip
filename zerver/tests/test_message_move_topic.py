@@ -488,7 +488,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # state + 1/user with a UserTopic row for the events data)
         # beyond what is typical were there not UserTopic records to
         # update. Ideally, we'd eliminate the per-user component.
-        with self.assert_database_query_count(24):
+        with self.assert_database_query_count(23):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -585,7 +585,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(24):
+        with self.assert_database_query_count(23):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -615,7 +615,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         ]
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(28):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -648,7 +648,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(27):
+        with self.assert_database_query_count(26):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -671,7 +671,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(20):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -750,7 +750,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(28):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
