@@ -1,5 +1,6 @@
 from typing import Any
 
+import orjson
 from django.db import connection, migrations, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
@@ -50,7 +51,7 @@ def recreate_missing_realmemoji(apps: StateApps, schema_editor: BaseDatabaseSche
                     WHERE zerver_realmauditlog.realm_id = %s
                     AND zerver_realmauditlog.event_type = %s
                 )
-                SELECT * FROM distinct_emoji
+                SELECT distinct_emoji.e FROM distinct_emoji
                 LEFT JOIN zerver_realmemoji
                     ON zerver_realmemoji.id = (e->>'id')::integer
                     OR (zerver_realmemoji.name = e->>'name'
@@ -59,7 +60,8 @@ def recreate_missing_realmemoji(apps: StateApps, schema_editor: BaseDatabaseSche
             """
             with connection.cursor() as cursor:
                 cursor.execute(sql, [realm.id, REALM_EMOJI_ADDED, realm.id])
-                for (orphaned_emoji,) in cursor.fetchall():
+                for (raw_emoji,) in cursor.fetchall():
+                    orphaned_emoji = orjson.loads(raw_emoji)
                     print(
                         f"Creating missing emoji {orphaned_emoji['id']} = {realm.string_id} / {orphaned_emoji['name']}"
                     )
