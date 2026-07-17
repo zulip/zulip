@@ -15,7 +15,6 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
-import * as message_notifications from "./message_notifications.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -579,14 +578,24 @@ export function initialize(): void {
             void (async () => {
                 const $banner = $(this).closest(".banner");
                 desktop_notifications.suppress_next_focus_close();
-                const permission = await desktop_notifications.request_desktop_notifications_permission();
+                const permission =
+                    await desktop_notifications.request_desktop_notifications_permission();
                 if (permission === "granted" || permission === "denied") {
                     close_navbar_banner_and_resize($banner);
                 }
-                if (permission === "granted") {
-                    message_notifications.send_test_notification(
-                        $t({defaultMessage: "Zulip  desktop notifications enabled"}),
+                if (
+                    permission === "granted" &&
+                    desktop_notifications.NotificationAPI !== undefined
+                ) {
+                    new desktop_notifications.NotificationAPI(
+                        $t({defaultMessage: "Notification Bot"}),
+                        {
+                            icon: people.gravatar_url_for_email("notification-bot@zulip.com"),
+                            body: $t({defaultMessage: "Zulip desktop notifications are enabled"}),
+                            tag: Math.random().toString(),
+                        },
                     );
+                    void ui_util.play_audio(util.the($("#user-notification-sound-audio")));
                 }
             })();
         },
