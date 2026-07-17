@@ -4,13 +4,11 @@ from datetime import datetime
 
 import hashlib
 import hmac
-from django.conf import settings
-from django.utils.encoding import force_bytes
 from pathlib import Path
 
-from zerver.lib.webhooks.common import validate_webhook_signature
-
 from django.http import HttpRequest, HttpResponse
+from django.conf import settings
+from django.utils.encoding import force_bytes
 from pydantic import Json
 from typing_extensions import override
 
@@ -46,6 +44,7 @@ from zerver.lib.webhooks.git import (
     get_short_sha,
     is_branch_name_notifiable,
 )
+from zerver.lib.webhooks.common import validate_webhook_signature
 from zerver.models import UserProfile
 
 # fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
@@ -1264,18 +1263,6 @@ def api_github_webhook(
     directly to the X-GitHub-Event header's event, but we sometimes
     refine it based on the payload.
     """
-    header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
-
-    signature_header = request.headers.get("X-Hub-Signature-256", "")
-    signature = signature_header.split("sha256=", 1)[-1] if "sha256=" in signature_header else ""
-    raw_payload = request.body.decode("utf-8")
-    validate_webhook_signature(
-        request=request,
-        payload=raw_payload,
-        signature=signature,
-        algorithm="sha256",
-    )
-
     # Ignore events from private repositories if the URL option is set
     if (
         "repository" in payload
