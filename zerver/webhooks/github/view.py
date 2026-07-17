@@ -1263,6 +1263,8 @@ def api_github_webhook(
     directly to the X-GitHub-Event header's event, but we sometimes
     refine it based on the payload.
     """
+    header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
+    
     # Ignore events from private repositories if the URL option is set
     if (
         "repository" in payload
