@@ -30833,7 +30833,7 @@ components:
 
         Only organization administrators can set or modify this value.
 
-        **Changes**: New in Zulip 13.0 (feature level ZF-a71492).
+        **Changes**: New in Zulip 13.0 (feature level 507).
       example: true
     TopicsPolicy:
       type: string
