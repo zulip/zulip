@@ -28,6 +28,7 @@ from zerver.lib.webhooks.common import (
     get_event_header,
     get_setup_webhook_message,
     guess_zulip_user_from_external_account,
+    validate_webhook_signature
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
@@ -44,7 +45,6 @@ from zerver.lib.webhooks.git import (
     get_short_sha,
     is_branch_name_notifiable,
 )
-from zerver.lib.webhooks.common import validate_webhook_signature
 from zerver.models import UserProfile
 
 # fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
