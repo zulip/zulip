@@ -1,5 +1,7 @@
 import asyncio
 import base64
+import hashlib
+import hmac
 import os
 import re
 import shutil
@@ -37,6 +39,7 @@ from django.urls import resolve
 from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
+from django.utils.encoding import force_bytes
 from fakeldap import MockLDAP
 from firebase_admin import exceptions as firebase_exceptions
 from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIResponse
@@ -2544,6 +2547,8 @@ class WebhookTestCase(ZulipTestCase):
     DEFAULT_URL_TEMPLATE: str = (
         "/api/v1/external/{webhook_dir_name}?stream={stream}&api_key={api_key}"
     )
+    WEBHOOK_SIGNATURE_HEADER: str | None = None
+    WEBHOOK_TEST_SECRET: str | None = None
 
     def get_webhook_dir_name(self) -> str:
         module_parts = self.__module__.split(".")
@@ -2649,10 +2654,37 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         When no message is expected to be sent, set `expect_noop` to True.
         """
         self.subscribe(self.test_user, self.channel_name)
-
+        if getattr(self, "url", None) is None:
+            if getattr(self, "WEBHOOK_TEST_SECRET", None) is not None:
+                self.url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
+            else:
+                self.url = self.build_webhook_url()
+        else:
+            # If the test already initialized a custom self.url, then append the secret 
+            # to the query string instead of overwriting the entire URL.
+            if getattr(self, "WEBHOOK_TEST_SECRET", None) is not None and "webhook_secret=" not in self.url:
+                separator = "&" if "?" in self.url else "?"
+                self.url = f"{self.url}{separator}webhook_secret={quote(self.WEBHOOK_TEST_SECRET)}"
+        
         payload = self.get_payload(fixture_name)
+        raw_payload = self.get_body(fixture_name)
         if content_type is not None:
             extra["content_type"] = content_type
+
+        if (
+            getattr(self, "WEBHOOK_SIGNATURE_HEADER", None) is not None 
+            and getattr(self, "WEBHOOK_TEST_SECRET", None) is not None
+        ):
+            django_header = "HTTP_" + self.WEBHOOK_SIGNATURE_HEADER.upper().replace("-", "_")
+            
+            computed_hash = "sha256=" + hmac.new(
+                force_bytes(self.WEBHOOK_TEST_SECRET),
+                force_bytes(raw_payload),
+                hashlib.sha256
+            ).hexdigest()
+            
+            extra[django_header] = computed_hash
+
         headers = call_fixture_to_headers(self.webhook_dir_name, fixture_name)
         headers = standardize_headers(headers)
         extra.update(headers)
