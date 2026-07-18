@@ -2,7 +2,13 @@ import re
 from collections.abc import Callable
 from datetime import datetime
 
+import hashlib
+import hmac
+from pathlib import Path
+
 from django.http import HttpRequest, HttpResponse
+from django.conf import settings
+from django.utils.encoding import force_bytes
 from pydantic import Json
 from typing_extensions import override
 
@@ -22,6 +28,7 @@ from zerver.lib.webhooks.common import (
     get_event_header,
     get_setup_webhook_message,
     guess_zulip_user_from_external_account,
+    validate_webhook_signature,
     validate_webhook_delivery,
 )
 from zerver.lib.webhooks.git import (
@@ -41,7 +48,48 @@ from zerver.lib.webhooks.git import (
 )
 from zerver.models import UserProfile
 
-fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
+# fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
+
+# def github_fixture_to_headers(filename: str) -> dict[str, str]:
+#     # 1. Parse the event type from the filename (e.g., 'check_run__in_progress' -> 'check_run')
+#     if "__" in filename:
+#         event_type = filename.split("__", 1)[0]
+#     else:
+#         event_type = filename
+
+#     # 2. Return BOTH headers in the format Django/Zulip expect
+#     return {
+#         "HTTP_X_GITHUB_EVENT": event_type,
+#         "HTTP_X_HUB_SIGNATURE_256": "4983413948",
+#     }
+
+# 
+
+def github_fixture_to_headers(filename: str) -> dict[str, str]:
+    if "__" in filename:
+        event_type = filename.split("__", 1)[0]
+    else:
+        event_type = filename
+    fixture_path = Path(__file__).parent / "fixtures" / f"{filename}.json"
+    try:
+        payload_bytes = fixture_path.read_bytes()
+    except FileNotFoundError:
+        payload_bytes = b""
+    webhook_secret = "abcdefgh"
+    webhook_secret_bytes = force_bytes(webhook_secret)
+    payload_bytes = force_bytes(payload_bytes)
+    signed_payload = hmac.new(
+        webhook_secret_bytes,
+        payload_bytes,
+        "sha256",
+    ).hexdigest()
+    return {
+        "HTTP_X_GITHUB_EVENT": event_type,
+        "HTTP_X_HUB_SIGNATURE_256": f"sha256={signed_payload}",
+    }
+
+# Register our custom parsing function for the developer panel
+fixture_to_headers = github_fixture_to_headers
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
@@ -1219,7 +1267,7 @@ def api_github_webhook(
     validate_webhook_delivery(request, "X_HUB_Signature_256", "sha256")
 
     header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
-
+    
     # Ignore events from private repositories if the URL option is set
     if (
         "repository" in payload
