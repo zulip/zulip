@@ -1429,6 +1429,13 @@ def sanitize_url(url: str) -> str | None:
     # on the safe side, we allow a fixed set of schemes.
     if scheme not in allowed_schemes:
         return None
+    
+    # The "file" scheme is only allowed when ENABLE_FILE_LINKS is set;
+    # otherwise, explicit Markdown links like [text](file:///etc/passwd)
+    # would bypass the restriction that already applies to bare
+    # file:// URLs via the autolinker (see file_links above).
+    if scheme == "file" and not settings.ENABLE_FILE_LINKS:
+        return None
 
     # Upstream code scans path, parameters, and query for colon characters
     # because
