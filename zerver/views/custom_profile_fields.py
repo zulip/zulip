@@ -217,6 +217,10 @@ def create_realm_custom_profile_field(
 ) -> HttpResponse:
     if field_data is None:
         field_data = {}
+
+    if is_first_pronoun_field(user_profile.realm, None, field_type):
+        display_in_profile_summary = True
+
     if (
         display_in_profile_summary
         and not is_first_pronoun_field(user_profile.realm, None, field_type)

@@ -311,9 +311,13 @@ function update_form_for_field_type_selection(): void {
     // Not showing "display on user card" option for long text/user profile field.
     if (is_valid_to_display_in_summary(profile_field_type)) {
         $("#profile_field_display_in_profile_summary").closest(".input-group").show();
-        const check_display_in_profile_summary_by_default =
+        const is_first_pronoun_field =
             profile_field_type === field_types.PRONOUNS.id &&
-            !display_in_profile_summary_fields_limit_reached;
+            get_first_pronoun_field() === undefined;
+        const check_display_in_profile_summary_by_default =
+            is_first_pronoun_field ||
+            (profile_field_type === field_types.PRONOUNS.id &&
+                !display_in_profile_summary_fields_limit_reached);
         $("#profile_field_display_in_profile_summary").prop(
             "checked",
             check_display_in_profile_summary_by_default,
