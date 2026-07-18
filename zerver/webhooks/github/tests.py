@@ -7,6 +7,12 @@ from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.models import CustomProfileField
 from zerver.models.realms import get_realm
+from zerver.lib.webhooks.common import (
+    standardize_headers,
+    call_fixture_to_headers
+)
+
+from django.test import override_settings
 
 TOPIC_REPO = "public-repo"
 TOPIC_ISSUE = "public-repo / issue #2 Spelling error in the README file"
@@ -22,7 +28,7 @@ TOPIC_SPONSORS = "sponsors"
 
 
 class GitHubWebhookTest(WebhookTestCase):
-    WEBHOOK_SIGNATURE_HEADER = "X-Hub-Signature-256"
+    WEBHOOK_SIGNATURE_HEADER = "X_HUB_Signature_256"
     WEBHOOK_TEST_SECRET = "testingthis"
     
     def test_ping_event(self) -> None:
@@ -855,6 +861,27 @@ A temporary team so that I can get some webhook fixtures!
         )
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n``` quote\nYou are totally right! I'll get this fixed right away.\n```"
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+    def test_github_webhook_bad_signature(self) -> None:
+        if getattr(self, "WEBHOOK_SIGNATURE_HEADER", None) is None:
+            return
+
+        with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            self.url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
+            
+            headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
+            extra_headers = standardize_headers(headers)
+            
+            extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=completely_invalid_hash_value"
+            
+            result = self.client_post(
+                self.url,
+                self.get_payload("ping"),
+                content_type="application/json",
+                **extra_headers
+            )
+
+            self.assert_json_error(result, "Webhook signature verification failed.")
 
 
 class GitHubSponsorsHookTests(WebhookTestCase):

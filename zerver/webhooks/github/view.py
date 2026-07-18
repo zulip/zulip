@@ -28,7 +28,6 @@ from zerver.lib.webhooks.common import (
     get_event_header,
     get_setup_webhook_message,
     guess_zulip_user_from_external_account,
-    validate_webhook_signature,
     validate_webhook_delivery,
 )
 from zerver.lib.webhooks.git import (

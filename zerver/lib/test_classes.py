@@ -2670,20 +2670,13 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         raw_payload = self.get_body(fixture_name)
         if content_type is not None:
             extra["content_type"] = content_type
-
-        if (
-            getattr(self, "WEBHOOK_SIGNATURE_HEADER", None) is not None 
-            and getattr(self, "WEBHOOK_TEST_SECRET", None) is not None
-        ):
-            django_header = "HTTP_" + self.WEBHOOK_SIGNATURE_HEADER.upper().replace("-", "_")
             
-            computed_hash = "sha256=" + hmac.new(
-                force_bytes(self.WEBHOOK_TEST_SECRET),
-                force_bytes(raw_payload),
-                hashlib.sha256
-            ).hexdigest()
-            
-            extra[django_header] = computed_hash
+        signature_header_name = getattr(self, "WEBHOOK_SIGNATURE_HEADER", None)
+        if signature_header_name is not None:
+            signature_value = self.get_webhook_signature(force_bytes(raw_payload))
+            if signature_value is not None:
+                django_header = "HTTP_" + signature_header_name.upper().replace("-", "_")
+                extra[django_header] = signature_value
 
         headers = call_fixture_to_headers(self.webhook_dir_name, fixture_name)
         headers = standardize_headers(headers)
@@ -2730,6 +2723,22 @@ one or more new messages.
         self.assert_message_stream_name(message, channel_name)
         self.assertEqual(message.topic_name(), topic_name)
         self.assertEqual(message.content, content)
+
+    def get_webhook_signature(self, raw_payload: bytes) -> str | None:
+        """
+        Generate the signature header value for a given payload.
+        Override this method in child classes if the integration uses different signature format.
+        """
+        secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
+        if secret is None:
+            return None
+
+        # Default implementation matches the current GitHub standard format
+        return "sha256=" + hmac.new(
+            force_bytes(secret),
+            raw_payload,
+            hashlib.sha256
+        ).hexdigest()
 
     def send_and_test_private_message(
         self,
