@@ -156,8 +156,18 @@ def handle_upload_pre_finish_hook(
         content_type = guess_type(filename)[0]
         if content_type is None:
             content_type = "application/octet-stream"
-    file_data = attachment_source(path_id)
-    content_type = maybe_add_charset(content_type, file_data)
+
+    # maybe_add_charset only inspects the file contents for
+    # text/plain, the one text type we serve inline; for anything
+    # else, opening the object is pointless.  We close this source
+    # immediately after, rather than holding it open through the
+    # self-copy below, because with the S3 backend a read held open
+    # on an object blocks a concurrent copy of that same object until
+    # the reader is torn down.
+    if bare_content_type(content_type) == "text/plain":
+        file_data = attachment_source(path_id)
+        content_type = maybe_add_charset(content_type, file_data)
+        file_data.reader().close()
 
     if settings.LOCAL_UPLOADS_DIR is None:
         # We "copy" the file to itself to update the Content-Type,
@@ -199,6 +209,10 @@ def handle_upload_pre_finish_hook(
                 MetadataDirective="COPY",
                 StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
             )
+
+    # Open a fresh source for create_attachment/maybe_thumbnail to
+    # read from, now that the self-copy above (if any) has finished.
+    file_data = attachment_source(path_id)
 
     with transaction.atomic(durable=True):
         create_attachment(
