@@ -225,6 +225,14 @@ const linus = make_user({
     full_name: "Linus Torvalds",
 });
 
+// A user whose full name starts with digits, used to verify that
+// id matching is exact and does not collide with digit-leading names.
+const digit_named = make_user({
+    email: "digit-named@example.com",
+    user_id: 9001,
+    full_name: "304 Robot",
+});
+
 const emp401 = make_user({
     email: "emp401@example.com",
     user_id: 401,
@@ -871,6 +879,7 @@ run_test("dm_matches_search_string", () => {
     people.add_active_user(linus);
     people.add_active_user(noah);
     people.add_active_user(plain_noah);
+    people.add_active_user(digit_named);
 
     let result = people.dm_matches_search_string([ashton], "a");
     assert.ok(result);
@@ -893,6 +902,13 @@ run_test("dm_matches_search_string", () => {
 
     // Match with user id.
     result = people.dm_matches_search_string([linus], "304");
+    assert.ok(result);
+    result = people.dm_matches_search_string([linus], "30");
+    assert.ok(!result);
+
+    // A full name starting with digits is still matched by name, and
+    // is not affected by the (unrelated) id of any other user.
+    result = people.dm_matches_search_string([digit_named], "304");
     assert.ok(result);
 
     // Test filtering of names with diacritics. This should match

@@ -889,13 +889,21 @@ input.settings_text_input {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
 
+    /* min-height: 0 lets the tab pane shrink inside the 1fr grid row
+       (grid items default to min-height: auto). */
+    .drafts-tab-pane {
+        min-height: 0;
+    }
+
     .overlay-messages-list {
         /* We unset the `overflow` value so SimpleBar
            can manage scrolling. */
         overflow: unset;
-        /* We don't need to set a height value; the
-           1fr grid row will occupy the available height. */
-        height: auto;
+        /* border-box + height: 100% makes the list fill (not overflow) the
+           tab pane, which the 1fr grid row bounds, so SimpleBar has a
+           definite height to scroll within. */
+        box-sizing: border-box;
+        height: 100%;
         /* And therefore we don't need to worry about padding,
            so that the scrollbar appears to reach all the way
            to the bottom of the content. */

@@ -137,7 +137,16 @@ function hide_compose_spinner(): void {
 }
 
 export function clear_errors(): void {
-    $(`#compose_banners .${CSS.escape(ERROR)}`).remove();
+    clear_validation_errors();
+    clear_upload_errors();
+}
+
+export function clear_validation_errors(): void {
+    $(`#compose_banners .${CSS.escape(ERROR)}:not(.upload_banner)`).remove();
+}
+
+export function clear_upload_errors(): void {
+    $(`#compose_banners .upload_banner.${CSS.escape(ERROR)}`).remove();
 }
 
 export function clear_warnings(): void {

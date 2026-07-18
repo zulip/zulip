@@ -294,6 +294,17 @@ def resize_emoji(
         return (animated.write_to_buffer(write_file_ext), first_still)
 
 
+def needs_transcoded_format(image_attachment: ImageAttachment) -> bool:
+    # Images whose content-type browsers can't render inline need a
+    # transcoded, web-safe copy.  Some old uploads have a missing
+    # content-type -- null, or empty from a blank ?mimetype= -- which
+    # is falsy here and so judged inline, since we can't tell otherwise.
+    return bool(
+        image_attachment.content_type
+        and bare_content_type(image_attachment.content_type) not in INLINE_MIME_TYPES
+    )
+
+
 def missing_thumbnails(
     image_attachment: ImageAttachment,
 ) -> list[ThumbnailFormat]:
@@ -302,8 +313,7 @@ def missing_thumbnails(
         seen_thumbnails.add(StoredThumbnailFormat(**existing_thumbnail))
 
     potential_output_formats = list(THUMBNAIL_OUTPUT_FORMATS)
-    assert image_attachment.content_type
-    if bare_content_type(image_attachment.content_type) not in INLINE_MIME_TYPES:
+    if needs_transcoded_format(image_attachment):
         if image_attachment.original_width_px >= image_attachment.original_height_px:
             additional_format = ThumbnailFormat(
                 TRANSCODED_IMAGE_FORMAT.extension,
@@ -524,10 +534,7 @@ def get_transcoded_format(
     # not in INLINE_MIME_TYPES get an extra large-resolution thumbnail
     # added to their list of formats, this is thus either None or a
     # high-resolution thumbnail.
-    if (
-        image_attachment.content_type is None
-        or bare_content_type(image_attachment.content_type) in INLINE_MIME_TYPES
-    ):
+    if not needs_transcoded_format(image_attachment):
         return None
 
     thumbs_by_size = sorted(

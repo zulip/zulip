@@ -7,6 +7,7 @@ const {make_stream} = require("./lib/example_stream.cjs");
 const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
@@ -494,4 +495,167 @@ run_test("test reify_message_id", ({override}) => {
     const history = stream_topic_history.find_or_create(general_sub.stream_id);
     assert.equal(history.max_message_id, 110);
     assert.equal(history.topics.get("test").message_id, 110);
+});
+
+function make_spinner_row() {
+    // A stand-in for the failed-message $row. The retry-spinner show/hide
+    // helpers look up ".refresh-failed-message" under it and toggle its
+    // "rotating" class.
+    const $row = $.create("failed-message-row-stub");
+    $row.set_find_results(".refresh-failed-message", $.create("refresh-failed-message-stub"));
+    return $row;
+}
+
+run_test("resend success clears the failed flag", ({override}) => {
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+
+    const local_id = "300.01";
+    const server_id = 310;
+    const message = {
+        id: Number.parseFloat(local_id),
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "retry me",
+        content: "<p>retry me</p>",
+        locally_echoed: true,
+        failed_request: true,
+    };
+    // The original send truly failed, so the message is still keyed under its
+    // local id, waiting to be retried.
+    stored_messages.set(message.id, message);
+
+    const on_send_message_success = (msg, data) => {
+        // Mirror the store re-keying that compose.send_message_success ->
+        // echo.reify_message_id performs once the server acks the resend.
+        stored_messages.delete(msg.id);
+        msg.id = data.id;
+        msg.locally_echoed = false;
+        stored_messages.set(data.id, msg);
+    };
+    const send_message = (_msg, on_success) => {
+        on_success({id: server_id});
+    };
+
+    echo.resend_message(message, make_spinner_row(), {on_send_message_success, send_message});
+
+    assert.equal(message.failed_request, false);
+    assert.equal(stored_messages.get(server_id), message);
+});
+
+run_test("resend error re-marks a present message as failed", ({override}) => {
+    // When the resend POST fails while the message is still in the store, the
+    // error handler surfaces the failure by setting failed_request back to true.
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+
+    const message = {
+        id: 280,
+        local_id: "280.01",
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "retry me",
+        content: "<p>retry me</p>",
+        locally_echoed: true,
+        failed_request: false,
+    };
+    stored_messages.set(message.id, message);
+
+    const send_message = (_msg, _on_success, on_error) => {
+        on_error("error response", "");
+    };
+
+    echo.resend_message(message, make_spinner_row(), {on_send_message_success: noop, send_message});
+
+    assert.equal(message.failed_request, true);
+});
+
+run_test("resend doesn't crash when the message was already reconciled", ({override}) => {
+    // The original send appeared to fail on the client but had actually
+    // reached the server. The user resent it; then the original's get-events
+    // delivery arrived and reconciled the local echo to the real server id,
+    // consuming the local id. By the time the resend's response arrives,
+    // reify_message_id early-returns (the local id is gone), so the resent
+    // message is never stored under the id the response reports, and
+    // failed_message_success must tolerate that missing entry.
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+
+    const local_id = "250.01";
+    const reconciled_id = 260; // server id the message was reconciled to
+    // The resend reached the server too and, absent server-side
+    // deduplication, created a second message whose id its response reports.
+    const resend_response_id = 261;
+
+    // The message has already been reconciled: keyed under its real server id,
+    // no longer locally echoed, and no longer failed.
+    const message = {
+        id: reconciled_id,
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "hello world",
+        content: "<p>hello world</p>",
+        locally_echoed: false,
+        failed_request: false,
+    };
+    stored_messages.set(reconciled_id, message);
+
+    const on_send_message_success = (msg, data) => {
+        // compose.send_message_success calls echo.reify_message_id, which
+        // early-returns here because the local id was already consumed.
+        echo.reify_message_id(msg.local_id, data.id);
+    };
+    const send_message = (_msg, on_success) => {
+        on_success({id: resend_response_id});
+    };
+
+    echo.resend_message(message, make_spinner_row(), {on_send_message_success, send_message});
+
+    // The resend's success path only reconciles the message it resent; it does
+    // not store a message under the response's id. (A second message created
+    // on the server would instead arrive via its own get-events delivery.) So
+    // the store has no entry there, and the reconciled message stays un-failed.
+    assert.equal(stored_messages.get(resend_response_id), undefined);
+    assert.equal(message.failed_request, false);
+});
+
+run_test("resend error on a message removed from the store doesn't crash", ({override}) => {
+    // If the resend POST fails after the message was removed from the store
+    // (e.g. it was deleted while the resend was in flight), message_send_error
+    // must tolerate the missing entry rather than dereference undefined.
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+
+    const message = {
+        id: 270,
+        local_id: "270.01",
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "gone",
+        content: "<p>gone</p>",
+        locally_echoed: true,
+        failed_request: false,
+    };
+    // The message is no longer in the store (stored_messages is empty).
+
+    const send_message = (_msg, _on_success, on_error) => {
+        on_error("error response", "");
+    };
+
+    // If message_send_error threw on the missing store entry, resend_message
+    // would propagate it and fail this test.
+    echo.resend_message(message, make_spinner_row(), {
+        on_send_message_success: noop,
+        send_message,
+    });
+
+    // The detached message was left untouched, since there was no stored entry
+    // to mark as failed.
+    assert.equal(message.failed_request, false);
 });

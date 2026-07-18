@@ -15,7 +15,11 @@ from zerver.data_import.slack_message_conversion import (
     replace_links,
 )
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
+from zerver.lib.exceptions import (
+    AnomalousWebhookPayloadError,
+    JsonableError,
+    UnsupportedWebhookEventTypeError,
+)
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
@@ -124,10 +128,6 @@ def get_message_body(text: str, sender: str, files: SlackFileListT) -> str:
     return body
 
 
-def is_challenge_handshake(payload: WildValue) -> bool:
-    return payload.get("type").tame(check_string) == "url_verification"
-
-
 def handle_slack_webhook_message(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -219,8 +219,12 @@ def api_slack_webhook(
         raise JsonableError(_("Malformed payload"))
     payload = to_wild_value("payload", val)
 
+    # The Slack Events API documents three outer event types:
+    # "url_verification", "app_rate_limited" and "event_callback".
+    payload_type = payload.get("type").tame(check_string)
+
     # Handle initial URL verification handshake for Slack Events API.
-    if is_challenge_handshake(payload):
+    if payload_type == "url_verification":
         challenge = payload.get("challenge").tame(check_string)
         try:
             if slack_app_token == "":
@@ -257,9 +261,20 @@ def api_slack_webhook(
     if is_zulip_slack_bridge_bot_message(payload):
         return json_success(request)
 
-    event_dict = payload.get("event", {})
-    event_type = event_dict.get("type").tame(check_string)
+    # Dispatched when a user's Slack app is rate limited:
+    # https://docs.slack.dev/reference/events/app_rate_limited.
+    # TODO: We could potentially handle this event by letting the bot owner
+    # know that their Slack app has been rate limited on Slack's end.
+    if payload_type == "app_rate_limited":
+        raise UnsupportedWebhookEventTypeError("app_rate_limited")
 
+    # Slack Event API payloads with an outer event type of "event_callback"
+    # should have an inner event object.
+    event_dict = payload.get("event", {})
+    if not event_dict:
+        raise AnomalousWebhookPayloadError
+
+    event_type = event_dict.get("type").tame(check_string)
     if event_type != "message":
         raise UnsupportedWebhookEventTypeError(event_type)
 

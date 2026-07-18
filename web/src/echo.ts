@@ -147,11 +147,18 @@ function show_failed_message_success(message_id: number): void {
 }
 
 function failed_message_success(message_id: number): void {
-    message_store.get(message_id)!.failed_request = false;
+    const message = message_store.get(message_id);
+    if (message === undefined) {
+        // A get-events delivery may already have reconciled the message to its
+        // real id, in which case the resend's reify_message_id early-returned
+        // and this (duplicate) id was never stored -- nothing to un-fail.
+        return;
+    }
+    message.failed_request = false;
     show_failed_message_success(message_id);
 }
 
-function resend_message(
+export function resend_message(
     message: LocalMessage,
     $row: JQuery,
     {
@@ -623,7 +630,12 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 
 export let message_send_error = (message_id: number, error_response: string): void => {
     // Error sending message, show inline
-    const message = message_store.get(message_id)!;
+    const message = message_store.get(message_id);
+    if (message === undefined) {
+        // The message is no longer in the store -- e.g. it was removed while a
+        // (re)send was in flight -- so there is no failed send to surface.
+        return;
+    }
     message.failed_request = true;
     message.show_slow_send_spinner = false;
 

@@ -22,6 +22,9 @@ TOPIC_SPONSORS = "sponsors"
 
 
 class GitHubWebhookTest(WebhookTestCase):
+    WEBHOOK_SIGNATURE_HEADER = "X-Hub-Signature-256"
+    WEBHOOK_TEST_SECRET = "testingthis"
+    
     def test_ping_event(self) -> None:
         expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
         self.check_webhook("ping", TOPIC_REPO, expected_message)
