@@ -22,6 +22,7 @@ from zerver.lib.webhooks.common import (
     get_event_header,
     get_setup_webhook_message,
     guess_zulip_user_from_external_account,
+    validate_webhook_delivery,
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
@@ -1215,6 +1216,8 @@ def api_github_webhook(
     directly to the X-GitHub-Event header's event, but we sometimes
     refine it based on the payload.
     """
+    validate_webhook_delivery(request, "X_HUB_Signature_256", "sha256")
+
     header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
 
     # Ignore events from private repositories if the URL option is set
