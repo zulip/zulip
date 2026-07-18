@@ -200,13 +200,45 @@ def try_update_realm_custom_profile_field(
 @transaction.atomic(durable=True)
 def try_reorder_realm_custom_profile_fields(realm: Realm, order: Iterable[int]) -> None:
     order_mapping = {_[1]: _[0] for _ in enumerate(order)}
-    custom_profile_fields = CustomProfileField.objects.filter(realm=realm)
+    custom_profile_fields = list(CustomProfileField.objects.filter(realm=realm))
+
     for custom_profile_field in custom_profile_fields:
         if custom_profile_field.id not in order_mapping:
             raise JsonableError(_("Invalid order mapping."))
+
+    pronoun_fields = [
+        f for f in custom_profile_fields if f.field_type == CustomProfileField.PRONOUNS
+    ]
+    old_first_pronoun_field = min(pronoun_fields, key=lambda f: f.order) if pronoun_fields else None
+
+    new_first_pronoun_field = None
+    min_pronoun_order = float("inf")
+
     for custom_profile_field in custom_profile_fields:
         custom_profile_field.order = order_mapping[custom_profile_field.id]
+
+        if (
+            custom_profile_field.field_type == CustomProfileField.PRONOUNS
+            and custom_profile_field.order < min_pronoun_order
+        ):
+            min_pronoun_order = custom_profile_field.order
+            new_first_pronoun_field = custom_profile_field
+
         custom_profile_field.save(update_fields=["order"])
+
+    if (
+        old_first_pronoun_field is not None
+        and new_first_pronoun_field is not None
+        and old_first_pronoun_field.id != new_first_pronoun_field.id
+    ):
+        if not new_first_pronoun_field.display_in_profile_summary:
+            new_first_pronoun_field.display_in_profile_summary = True
+            new_first_pronoun_field.save(update_fields=["display_in_profile_summary"])
+
+        if old_first_pronoun_field.display_in_profile_summary:
+            old_first_pronoun_field.display_in_profile_summary = False
+            old_first_pronoun_field.save(update_fields=["display_in_profile_summary"])
+
     notify_realm_custom_profile_fields(realm)
 
 

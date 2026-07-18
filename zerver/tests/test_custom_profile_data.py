@@ -757,6 +757,78 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         pronoun_field.refresh_from_db()
         self.assertEqual(pronoun_field.display_in_profile_summary, True)
 
+    def test_first_pronoun_field_auto_display(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        existing_pronoun = CustomProfileField.objects.get(name="Pronouns", realm=realm)
+        do_remove_realm_custom_profile_field(realm, existing_pronoun)
+
+        data = {
+            "name": "My Pronouns",
+            "hint": "What pronouns should people use?",
+            "field_type": CustomProfileField.PRONOUNS,
+            "display_in_profile_summary": "false",  # Explicitly try to set it to false
+        }
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        new_pronoun_field = CustomProfileField.objects.get(name="My Pronouns", realm=realm)
+        self.assertEqual(new_pronoun_field.display_in_profile_summary, True)
+
+    def test_delete_first_pronoun_field_promotes_next(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        first_pronoun = CustomProfileField.objects.get(name="Pronouns", realm=realm)
+        self.assertEqual(first_pronoun.display_in_profile_summary, True)
+
+        second_pronoun = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Secondary Pronouns",
+            field_type=CustomProfileField.PRONOUNS,
+            hint="Alternative pronouns",
+            display_in_profile_summary=False,
+        )
+        self.assertEqual(second_pronoun.display_in_profile_summary, False)
+
+        do_remove_realm_custom_profile_field(realm, first_pronoun)
+
+        second_pronoun.refresh_from_db()
+        self.assertEqual(second_pronoun.display_in_profile_summary, True)
+
+    def test_reorder_pronoun_fields_updates_display_flag(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        first_pronoun = CustomProfileField.objects.get(name="Pronouns", realm=realm)
+        self.assertEqual(first_pronoun.display_in_profile_summary, True)
+
+        second_pronoun = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Secondary Pronouns",
+            field_type=CustomProfileField.PRONOUNS,
+            hint="Alternative pronouns",
+            display_in_profile_summary=False,
+        )
+        self.assertEqual(second_pronoun.display_in_profile_summary, False)
+
+        all_fields = list(
+            CustomProfileField.objects.filter(realm=realm)
+            .order_by("order")
+            .values_list("id", flat=True)
+        )
+
+        new_order = [second_pronoun.id] + [fid for fid in all_fields if fid != second_pronoun.id]
+
+        try_reorder_realm_custom_profile_fields(realm, new_order)
+
+        second_pronoun.refresh_from_db()
+        self.assertEqual(second_pronoun.display_in_profile_summary, True)
+
+        first_pronoun.refresh_from_db()
+        self.assertEqual(first_pronoun.display_in_profile_summary, False)
+
     def test_update_use_for_user_matching(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
