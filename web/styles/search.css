@@ -271,6 +271,11 @@
             gap: 0;
             /* Override padding. */
             padding: 0;
+
+            /* Restore top/bottom outer spacing when pills wrap in focused state. */
+            &.focused {
+                padding: var(--outer-spacing-input-pill-container) 0;
+            }
         }
 
         .pill {
