@@ -25,6 +25,7 @@ type HTMLSelectOneElement = HTMLSelectElement & {type: "select-one"};
 type ClearHandlers = {
     stream_name: string;
     topic_name: string;
+    webhook_secret: string;
     URL: string;
     results_notice: string;
     bot_name: () => void;
@@ -56,6 +57,7 @@ const url_base = "/api/v1/external/";
 const clear_handlers: ClearHandlers = {
     stream_name: "#stream_name",
     topic_name: "#topic_name",
+    webhook_secret: "#webhook_secret",
     URL: "#URL",
     results_notice: "#results_notice",
     bot_name() {
@@ -210,8 +212,8 @@ function load_fixture_options(integration_name: string): void {
 
 function update_url(): void {
     /* Construct the URL that the webhook should be targeting, using
-    the bot's API key and the integration name.  The stream and topic
-    are both optional, and for the sake of completeness, it should be
+    the bot's API key, the integration name, and webhook secret.  The stream, topic, 
+    and webhook secret are all optional, and for the sake of completeness, it should be
     noted that the topic is irrelevant without specifying the
     stream. */
     const url_field = $<HTMLInputElement>("input#URL")[0];
@@ -231,6 +233,11 @@ function update_url(): void {
                 params.set("topic", topic_name);
             }
         }
+        const webhook_secret = $<HTMLInputElement>("input#webhook_secret").val()!;
+        if (webhook_secret !== "") {
+            params.set("webhook_secret", webhook_secret);
+        }
+        params.set("stream", stream_name);
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
     }
@@ -440,4 +447,6 @@ $(() => {
     $("#stream_name").on("change", update_url);
 
     $("#topic_name").on("change", update_url);
+
+    $("#webhook_secret").on("change", update_url);
 });
