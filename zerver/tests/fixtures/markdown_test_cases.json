@@ -55,6 +55,12 @@
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good."
     },
     {
+      "name": "codeblock_tabs_preserved",
+      "input": "```\nreal\t0m0.322s\nuser\t0m0.344s\nsys\t0m0.036s\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>real\t0m0.322s\nuser\t0m0.344s\nsys\t0m0.036s\n</code></pre></div>",
+      "text_content": "real\t0m0.322s\nuser\t0m0.344s\nsys\t0m0.036s\n"
+    },
+    {
       "name": "inline_code_spaces",
       "input": "` outer ` ```    space    ```",
       "expected_output": "<p><code> outer </code> <code>    space    </code></p>",
