@@ -92,7 +92,32 @@ def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField
     Deleting a field will also delete the user profile data
     associated with it in CustomProfileFieldValue model.
     """
+    was_first_pronoun_field = (
+        field.field_type == CustomProfileField.PRONOUNS
+        and CustomProfileField.objects.filter(
+            realm=realm,
+            field_type=CustomProfileField.PRONOUNS,
+        )
+        .order_by("order")
+        .first()
+        == field
+    )
+
     field.delete()
+
+    if was_first_pronoun_field:
+        new_first_pronoun_field = (
+            CustomProfileField.objects.filter(
+                realm=realm,
+                field_type=CustomProfileField.PRONOUNS,
+            )
+            .order_by("order")
+            .first()
+        )
+        if new_first_pronoun_field and not new_first_pronoun_field.display_in_profile_summary:
+            new_first_pronoun_field.display_in_profile_summary = True
+            new_first_pronoun_field.save(update_fields=["display_in_profile_summary"])
+
     notify_realm_custom_profile_fields(realm)
 
 
