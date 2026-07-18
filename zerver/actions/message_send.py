@@ -887,11 +887,12 @@ def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
         return []
 
     recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
-    rows = UserPresence.objects.filter(
-        user_profile_id__in=user_ids,
-        last_active_time__gte=recent,
-    ).values("user_profile_id")
-    active_user_ids = {row["user_profile_id"] for row in rows}
+    active_user_ids = set(
+        UserPresence.objects.filter(
+            user_profile_id__in=user_ids,
+            last_active_time__gte=recent,
+        ).values_list("user_profile_id", flat=True),
+    )
     idle_user_ids = user_ids - active_user_ids
     return sorted(idle_user_ids)
 
