@@ -26,6 +26,7 @@ type ClearHandlers = {
     stream_name: string;
     topic_name: string;
     webhook_secret: string;
+    webhook_secret: string;
     URL: string;
     results_notice: string;
     bot_name: () => void;
@@ -216,7 +217,7 @@ function load_fixture_options(integration_name: string): void {
 
 function update_url(): void {
     /* Construct the URL that the webhook should be targeting, using
-    the bot's API key, the integration name, and webhook secret.  The stream, topic,
+    the bot's API key, the integration name, and webhook secret.  The stream, topic, 
     and webhook secret are all optional, and for the sake of completeness, it should be
     noted that the topic is irrelevant without specifying the
     stream. */
@@ -241,6 +242,7 @@ function update_url(): void {
         if (webhook_secret !== "") {
             params.set("webhook_secret", webhook_secret);
         }
+        params.set("stream", stream_name);
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
 
@@ -525,6 +527,4 @@ $(() => {
     $("#topic_name").on("change", update_url);
 
     $("#webhook_secret").on("change", update_url);
-
-    $("#fixture_body").on("change", update_url);
 });
