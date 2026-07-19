@@ -83,7 +83,10 @@ export function append_compose_banner_to_banner_list(
     $banner: JQuery,
     $list_container: JQuery,
 ): boolean {
-    if ($banner.hasClass("warning") && has_error()) {
+    // Suppress a warning only when its own container already shows an
+    // error; an error elsewhere (e.g. the compose box) must not hide a
+    // warning targeting a different container.
+    if ($banner.hasClass("warning") && $list_container.find(`.${CSS.escape(ERROR)}`).length > 0) {
         return false;
     }
     scroll_util.get_content_element($list_container).append($banner);
@@ -300,10 +303,6 @@ export function show_unknown_zoom_user_error(email: string): void {
         classname: CLASSNAMES.unknown_zoom_user,
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
-}
-
-export function has_error(): boolean {
-    return $("#compose_banners .error").length > 0;
 }
 
 export function show_convert_pasted_text_to_file_banner({
