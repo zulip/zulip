@@ -3,6 +3,8 @@ import hmac
 from unittest.mock import MagicMock, patch
 
 import orjson
+import hmac
+import hashlib
 from django.core.exceptions import ValidationError
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -358,10 +360,10 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         }
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-
+        
         expected_response = {
             "supported": False,
-            "msg": "No signature rules configured for this platform.",
+            "msg": "No signature rules configured for this platform."
         }
         self.assertEqual(orjson.loads(response.content), expected_response)
 
@@ -374,22 +376,25 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         }
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-
-        expected_response = {"supported": True, "clear_signature": True}
+        
+        expected_response = {
+            "supported": True,
+            "clear_signature": True
+        }
         self.assertEqual(orjson.loads(response.content), expected_response)
 
     def test_recalculate_signature_success_with_json_payload(self) -> None:
         target_url = "/devtools/integrations/recalculate_signature"
         secret = "github_webhook_secret"
-
+        
         payload = '{\n  "zen": "Non-blocking is better than blocking."\n}'
-
+        
         data = {
             "secret": secret,
             "payload": payload,
             "integration_name": "github  ",  # Tests trimming behavior
         }
-
+        
         # Manually compute the expected HMAC hash of minified JSON
         minified_payload_bytes = orjson.dumps(orjson.loads(payload))
         expected_hash = hmac.new(
@@ -398,12 +403,12 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-
+        
         expected_response = {
             "supported": True,
             "clear_signature": False,
             "header_key": "X_HUB_SIGNATURE_256",
-            "signature": f"sha256={expected_hash}",
+            "signature": f"sha256={expected_hash}"
         }
         self.assertEqual(orjson.loads(response.content), expected_response)
 
@@ -411,40 +416,44 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         target_url = "/devtools/integrations/recalculate_signature"
         secret = "github_webhook_secret"
         payload = "plain-text-payload-string"
-
+        
         data = {
             "secret": secret,
             "payload": payload,
-            "integration_name": "GITHUB",
+            "integration_name": "GITHUB", 
         }
-
+        
         # Falls back to plain text bytes computation upon JSON extraction failure
-        expected_hash = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        expected_hash = hmac.new(
+            secret.encode(), payload.encode(), hashlib.sha256
+        ).hexdigest()
 
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-
+        
         expected_response = {
             "supported": True,
             "clear_signature": False,
             "header_key": "X_HUB_SIGNATURE_256",
-            "signature": f"sha256={expected_hash}",
+            "signature": f"sha256={expected_hash}"
         }
         self.assertEqual(orjson.loads(response.content), expected_response)
 
     def test_recalculate_signature_exception_handling(self) -> None:
         target_url = "/devtools/integrations/recalculate_signature"
-
+        
         # Sending a malformed request context (e.g. string payload instead of valid json object)
         # to force the parsing logic down the general exception handling path.
         response = self.client_post(
-            target_url, "invalid_json_body", content_type="application/json"
+            target_url, 
+            "invalid_json_body", 
+            content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
-
+        
         response_data = orjson.loads(response.content)
         self.assertIn("error", response_data)
-
+        
     def test_sync_signature_headers_endpoint_success(self) -> None:
         """Tests the backend counterpart of sync_signature_headers for a valid integration."""
         target_url = "/devtools/integrations/recalculate_signature"
@@ -453,10 +462,10 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "payload": '{"event": "ping"}',
             "integration_name": "github",
         }
-
+        
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-
+        
         response_data = orjson.loads(response.content)
         self.assertTrue(response_data["supported"])
         self.assertFalse(response_data["clear_signature"])
@@ -471,10 +480,10 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "payload": '{"event": "ping"}',
             "integration_name": "github",
         }
-
+        
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-
+        
         response_data = orjson.loads(response.content)
         self.assertTrue(response_data["supported"])
         self.assertTrue(response_data["clear_signature"])
@@ -487,9 +496,9 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "payload": "{}",
             "integration_name": "some_random_platform",
         }
-
+        
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-
+        
         response_data = orjson.loads(response.content)
         self.assertFalse(response_data["supported"])
