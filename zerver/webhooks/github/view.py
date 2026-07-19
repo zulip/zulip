@@ -6,9 +6,12 @@ import hashlib
 import hmac
 from pathlib import Path
 
-from django.http import HttpRequest, HttpResponse
+import orjson
+
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils.encoding import force_bytes
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 from typing_extensions import override
 
@@ -47,48 +50,58 @@ from zerver.lib.webhooks.git import (
 )
 from zerver.models import UserProfile
 
-# fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
-
-# def github_fixture_to_headers(filename: str) -> dict[str, str]:
-#     # 1. Parse the event type from the filename (e.g., 'check_run__in_progress' -> 'check_run')
-#     if "__" in filename:
-#         event_type = filename.split("__", 1)[0]
-#     else:
-#         event_type = filename
-
-#     # 2. Return BOTH headers in the format Django/Zulip expect
-#     return {
-#         "HTTP_X_GITHUB_EVENT": event_type,
-#         "HTTP_X_HUB_SIGNATURE_256": "4983413948",
-#     }
-
-# 
+fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
 
 def github_fixture_to_headers(filename: str) -> dict[str, str]:
     if "__" in filename:
         event_type = filename.split("__", 1)[0]
     else:
         event_type = filename
-    fixture_path = Path(__file__).parent / "fixtures" / f"{filename}.json"
-    try:
-        payload_bytes = fixture_path.read_bytes()
-    except FileNotFoundError:
-        payload_bytes = b""
-    webhook_secret = "abcdefgh"
-    webhook_secret_bytes = force_bytes(webhook_secret)
-    payload_bytes = force_bytes(payload_bytes)
-    signed_payload = hmac.new(
-        webhook_secret_bytes,
-        payload_bytes,
-        "sha256",
-    ).hexdigest()
+    # Only return the event type, we don't have a secret yet, so no need to display it
     return {
         "HTTP_X_GITHUB_EVENT": event_type,
-        "HTTP_X_HUB_SIGNATURE_256": f"sha256={signed_payload}",
     }
 
 # Register our custom parsing function for the developer panel
 fixture_to_headers = github_fixture_to_headers
+
+@csrf_exempt
+def recalculate_github_signature(request: HttpRequest) -> JsonResponse:
+    """
+    Helper endpoint invoked by the frontend UI to recalculate 
+    signatures dynamically when a user alters the secret input field.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+        
+    try:
+        # Load parameters sent from the UI panel
+        data = orjson.loads(request.body)
+        secret = data.get("secret", "")
+        payload_string = data.get("payload", "")
+        if isinstance(payload_string, str):
+            payload_bytes = force_bytes(payload_string.strip())
+        else:
+            payload_bytes = orjson.dumps(payload_string)
+        # Format and minify payload
+        try:
+            payload_bytes = orjson.dumps(orjson.loads(payload_string))
+        except Exception:
+            payload_bytes = force_bytes(payload_string)
+            
+        # Re-calculate the hash using the secret
+        webhook_secret_bytes = force_bytes(secret)
+        signed_payload = hmac.new(
+            webhook_secret_bytes,
+            payload_bytes,
+            "sha256",
+        ).hexdigest()
+        
+        # Return the newly generated hash
+        return JsonResponse({"signature": f"sha256={signed_payload}"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
