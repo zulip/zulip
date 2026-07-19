@@ -4,9 +4,12 @@ from datetime import datetime
 
 from pathlib import Path
 
-from django.http import HttpRequest, HttpResponse
+import orjson
+
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.conf import settings
 from django.utils.encoding import force_bytes
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 from typing_extensions import override
 
