@@ -883,6 +883,54 @@ A temporary team so that I can get some webhook fixtures!
 
             self.assert_json_error(result, "Webhook signature verification failed.")
 
+    def test_github_webhook_signature_disabled_skips_validation(self) -> None:
+        """Verifies that when VERIFY_WEBHOOK_SIGNATURES is explicitly disabled,
+        requests pass through even if the signature value is completely bogus.
+        """
+        with override_settings(VERIFY_WEBHOOK_SIGNATURES=False):
+            # Pass a valid secret parameter but explicitly append a broken signature header
+            self.url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
+            headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
+            extra_headers = standardize_headers(headers)
+            extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=invalid_hash"
+
+            # This should bypass validate_webhook_signature directly and respond with standard success
+            expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
+            self.check_webhook("ping", TOPIC_REPO, expected_message, **extra_headers)
+    
+    def test_github_webhook_valid_signature_success(self) -> None:
+        """Verifies that a mathematically correct HMAC signature passes 
+        cleanly when verification enforcement is active."""
+        expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
+        
+        with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            self.check_webhook("ping", TOPIC_REPO, expected_message)
+
+    def test_github_webhook_missing_secret(self) -> None:
+        """Verifies that the backend drops the request if the webhook url 
+        is invoked without providing the required webhook_secret parameter."""
+        if getattr(self, "WEBHOOK_SIGNATURE_HEADER", None) is None:
+            return
+
+        with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            self.url = self.build_webhook_url()
+            
+            headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
+            extra_headers = standardize_headers(headers)
+            extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=somehash"
+            
+            result = self.client_post(
+                self.url,
+                self.get_payload("ping"),
+                content_type="application/json",
+                **extra_headers
+            )
+
+            self.assert_json_error(
+                result, 
+                "The webhook secret is missing. Please set the webhook_secret while generating the URL."
+            )
+
 
 class GitHubSponsorsHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/githubsponsors?stream={stream}&api_key={api_key}"
