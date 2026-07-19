@@ -17,6 +17,7 @@ from tornado.iostream import StreamClosedError
 from tornado.wsgi import WSGIContainer
 from typing_extensions import override
 
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import AsynchronousResponse, json_response
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
@@ -45,7 +46,9 @@ def handler_stats_string() -> str:
     return f"{len(handlers)} handlers, latest ID {current_handler_id}"
 
 
-def finish_handler(handler_id: int, event_queue_id: str, contents: list[dict[str, Any]]) -> None:
+def finish_handler(
+    handler_id: int, event_queue_id: str, contents: list[dict[str, Any]] | JsonableError
+) -> None:
     try:
         # We do the import during runtime to avoid cyclic dependency
         # with zerver.lib.request
@@ -67,14 +70,30 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: list[dict[str
         async_request_timer_restart(request)
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
-        if len(contents) != 1:
-            log_data["extra"] = f"[{event_queue_id}/1]"
+
+        if isinstance(contents, JsonableError):
+            log_data["extra"] = f"[{event_queue_id}/error]"
+            handler.set_status(contents.http_status_code)
+            result_dict = dict(
+                result="error",
+                msg=contents.msg,
+                **contents.data,
+            )
         else:
-            log_data["extra"] = "[{}/1/{}]".format(event_queue_id, contents[0]["type"])
+            if len(contents) != 1:
+                log_data["extra"] = f"[{event_queue_id}/1]"
+            else:
+                log_data["extra"] = "[{}/1/{}]".format(event_queue_id, contents[0]["type"])
+            result_dict = dict(
+                result="success",
+                msg="",
+                events=contents,
+                queue_id=event_queue_id,
+            )
 
         tornado.ioloop.IOLoop.current().add_callback(
             handler.zulip_finish,
-            dict(result="success", msg="", events=contents, queue_id=event_queue_id),
+            result_dict,
             request,
         )
     except Exception as e:
