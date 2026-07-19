@@ -245,83 +245,93 @@ function update_url(): void {
         params.set("stream", stream_name);
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
+        // Calls the helper function in view.py to recalculate the hash dynamically using the secret via a POST request
+        const raw_payload = $<HTMLTextAreaElement>("textarea#fixture_body").val() || "";
+        let cleaned_payload = raw_payload;
 
-        sync_signature_headers(integration_name, webhook_secret);
-    }
-
-    return;
-}
-
-function sync_signature_headers(integration_name: string, webhook_secret: string): void {
-    const $custom_headers_field = $<HTMLTextAreaElement>("textarea#custom_http_headers");
-    const current_headers_raw = $custom_headers_field.val()?.toString().trim() ?? "";
-
-    let headers_object: Record<string, string> = {};
-    if (current_headers_raw !== "") {
         try {
-            headers_object = z
-                .record(z.string(), z.string())
-                .parse(JSON.parse(current_headers_raw));
+            cleaned_payload = JSON.stringify(JSON.parse(raw_payload));
         } catch {
-            headers_object = {};
+            cleaned_payload = raw_payload.trim();
         }
-    }
 
-    if (last_computed_header_key && last_computed_header_key in headers_object) {
-        Reflect.deleteProperty(headers_object, last_computed_header_key);
-    }
-
-    if (webhook_secret.trim() === "") {
-        last_computed_header_key = null;
-        if (Object.keys(headers_object).length === 0) {
-            $custom_headers_field.val("{}");
-        } else {
-            $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
-        }
-        return;
-    }
-
-    const raw_payload = $<HTMLTextAreaElement>("textarea#fixture_body").val() ?? "";
-    let cleaned_payload = raw_payload;
-
-    try {
-        cleaned_payload = JSON.stringify(JSON.parse(raw_payload));
-    } catch {
-        cleaned_payload = raw_payload.trim();
-    }
-
-    channel.post({
-        url: "/devtools/integrations/recalculate_signature",
-        data: JSON.stringify({
-            secret: webhook_secret,
-            payload: cleaned_payload,
-            integration_name,
-        }),
-        success(raw_data: unknown) {
-            const data = z
-                .object({
-                    supported: z.optional(z.boolean()),
-                    clear_signature: z.optional(z.boolean()),
-                    header_key: z.string(),
-                    signature: z.string(),
-                })
-                .parse(raw_data);
-
-            if (!data.supported || data.clear_signature) {
-                last_computed_header_key = null;
-                if (Object.keys(headers_object).length === 0) {
-                    $custom_headers_field.val("{}");
-                } else {
-                    $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+        if (webhook_secret !== "") {
+            channel.post({
+                url: "/json/developer_panel/recalculate_signature",
+                data: JSON.stringify({ secret: webhook_secret, payload: cleaned_payload }),
+                success(data: any) {
+                    console.log("Received signature from backend:", data.signature);
+                    const custom_headers_field = $<HTMLTextAreaElement>("textarea#custom_http_headers");
+                    const current_headers_raw = custom_headers_field.val()?.toString().trim() || "";
+                    // Parsing the JSON headers to update the UI
+                    let headers_object: Record<string, string> = {};
+                    
+                    if (current_headers_raw !== "") {
+                        headers_object = JSON.parse(current_headers_raw)
+                    }
+                    // Clear old keys to prevent duplicates across formatting variants
+                    delete headers_object["X-Hub-Signature-256"];
+                    delete headers_object["X_HUB_SIGNATURE_256"];
+                    delete headers_object["x-hub-signature-256"];
+                    delete headers_object["HTTP_X_HUB_SIGNATURE_256"];
+                    delete headers_object["http_x_hub_signature_256"];
+                    
+                    headers_object["X_HUB_SIGNATURE_256"] = data.signature;
+                    // Format back as a JSON string
+                    const updated_json_string = JSON.stringify(headers_object, null, 4);
+                    custom_headers_field.val(updated_json_string); // No .trigger("change") here to prevent recursive loop
                 }
-            } else {
-                headers_object[data.header_key] = data.signature;
-                last_computed_header_key = data.header_key;
-                $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+            });
+        }
+        else {
+            const custom_headers_field = $<HTMLTextAreaElement>("textarea#custom_http_headers");
+            const current_headers_raw = custom_headers_field.val()?.toString().trim() || "";
+            if (current_headers_raw !== "") {
+                try {
+                    let headers_object = JSON.parse(current_headers_raw);
+                    
+                    delete headers_object["X-Hub-Signature-256"];
+                    delete headers_object["X_HUB_SIGNATURE_256"];
+                    delete headers_object["x-hub-signature-256"];
+                    delete headers_object["HTTP_X_HUB_SIGNATURE_256"];
+                    delete headers_object["http_x_hub_signature_256"];
+                    
+                    if (Object.keys(headers_object).length === 0) {
+                        custom_headers_field.val("{}").trigger("change");
+                    } else {
+                        custom_headers_field.val(JSON.stringify(headers_object, null, 4)).trigger("change");
+                    }
+                } catch (e) {
+                    const lines = current_headers_raw.split("\n").filter(line => line.trim() !== "");
+                    const updated_lines = lines.filter(line => {
+                        const lowerLine = line.toLowerCase().trim();
+                        return (
+                            !lowerLine.startsWith("x-hub-signature-256") && 
+                            !lowerLine.startsWith("x_hub_signature_256") &&
+                            !lowerLine.startsWith("http_x_hub_signature_256") &&
+                            !lowerLine.startsWith("sha256=")
+                        );
+                    });
+                    custom_headers_field.val(updated_lines.join("\n")).trigger("change");
+                }
             }
-        },
-    });
+        }
+    }
 }
+
+// Bind directly to inputs, and add a small micro-timeout for programmatic dropdown loads
+$(document).on("input change keyup", "input#webhook_secret, textarea#fixture_body", () => {
+    update_url();
+});
+
+$(document).on("change", "select#fixture_name", () => {
+    setTimeout(() => {
+        update_url();
+    }, 50);
+});
+
+// Run immediately on initial load to synchronize state cleanly
+update_url();
 
 // API callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response: JQuery.jqXHR): void {
