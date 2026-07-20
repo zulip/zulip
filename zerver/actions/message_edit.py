@@ -8,7 +8,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q, QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -63,6 +63,7 @@ from zerver.lib.streams import (
     check_stream_access_based_on_can_send_message_group,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
+    user_has_content_access,
 )
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
@@ -83,7 +84,10 @@ from zerver.lib.topic import (
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import stream_message_url
-from zerver.lib.user_groups import UserGroupMembershipDetails
+from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
+    get_user_id_annotated_recursive_membership_groups_for_users,
+)
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
@@ -629,21 +633,56 @@ def update_user_topic_visibility_policies_on_move(
     target_stream: Stream,
     target_topic_name: str,
     target_topic_has_messages: bool,
-    users_losing_access: Iterable[UserProfile],
 ) -> dict[UserProfile, int]:
     stream_inaccessible_to_user_profiles: list[UserProfile] = []
     orig_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
     target_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
-    user_ids_losing_access = {user.id for user in users_losing_access}
 
-    for user_topic in get_users_with_user_topic_visibility_policy(
-        stream_being_edited.id, orig_topic_name
-    ):
-        if is_stream_edited and user_topic.user_profile_id in user_ids_losing_access:
-            stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
+    # We annotate whether each user is subscribed to the target
+    # channel, so user_has_content_access below needs no extra
+    # per-user or subscriber query.
+    assert target_stream.recipient_id is not None
+    orig_topic_user_topics = list(
+        get_users_with_user_topic_visibility_policy(
+            stream_being_edited.id, orig_topic_name
+        ).annotate(
+            is_target_stream_subscriber=Exists(
+                Subscription.objects.filter(
+                    recipient_id=target_stream.recipient_id,
+                    user_profile_id=OuterRef("user_profile_id"),
+                    active=True,
+                )
+            )
+        )
+    )
+
+    recursive_group_ids_by_user: dict[int, set[int]] = {}
+    if is_stream_edited and not target_stream.is_public():
+        # Do not compute group memberships for public streams as it
+        # is required only to check content access to private streams.
+        for group in get_user_id_annotated_recursive_membership_groups_for_users(
+            [user_topic.user_profile_id for user_topic in orig_topic_user_topics]
+        ):
+            recursive_group_ids_by_user.setdefault(group.user_id, set()).add(group.id)  # type: ignore[attr-defined]  # user_id is an annotated field.
+
+    for orig_user_topic in orig_topic_user_topics:
+        user_profile = orig_user_topic.user_profile
+        if is_stream_edited and not user_has_content_access(
+            user_profile,
+            target_stream,
+            UserGroupMembershipDetails(
+                user_recursive_group_ids=recursive_group_ids_by_user.get(user_profile.id, set())
+            ),
+            is_subscribed=orig_user_topic.is_target_stream_subscriber,
+        ):
+            # A topic visibility policy is migrated to the target channel
+            # only for users who have content access to it. Users without
+            # content access have their policy removed instead, so we never
+            # leave a UserTopic row referencing a channel they cannot access.
+            stream_inaccessible_to_user_profiles.append(user_profile)
         else:
-            orig_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
-                user_topic.visibility_policy
+            orig_topic_user_profile_to_visibility_policy[user_profile] = (
+                orig_user_topic.visibility_policy
             )
 
     for user_topic in get_users_with_user_topic_visibility_policy(
@@ -1280,7 +1319,6 @@ def do_update_message(
                 target_stream=target_stream,
                 target_topic_name=target_topic_name,
                 target_topic_has_messages=target_topic_has_messages,
-                users_losing_access=users_losing_access,
             )
         )
 
