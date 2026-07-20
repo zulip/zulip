@@ -48,7 +48,7 @@ const integrations_api_response_schema = z.object({
     result: z.string(),
 });
 
-let last_computed_header_key: string | null = null; //Tracks the current signature header for auto-clearing when switching integrations
+let last_computed_header_key: string | null = null; // Tracks the current signature header for auto-clearing when switching integrations
 
 type ServerResponse = z.infer<typeof integrations_api_response_schema>;
 
@@ -185,7 +185,7 @@ function load_fixture_body(fixture_name: string): void {
         4,
     );
     const webhook_secret = $<HTMLInputElement>("input#webhook_secret").val()!;
-    void sync_signature_headers(integration_name, webhook_secret);
+    sync_signature_headers(integration_name, webhook_secret);
 
     return;
 }
@@ -216,7 +216,7 @@ function load_fixture_options(integration_name: string): void {
 
 function update_url(): void {
     /* Construct the URL that the webhook should be targeting, using
-    the bot's API key, the integration name, and webhook secret.  The stream, topic, 
+    the bot's API key, the integration name, and webhook secret.  The stream, topic,
     and webhook secret are all optional, and for the sake of completeness, it should be
     noted that the topic is irrelevant without specifying the
     stream. */
@@ -245,42 +245,42 @@ function update_url(): void {
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
 
-        void sync_signature_headers(integration_name, webhook_secret);
+        sync_signature_headers(integration_name, webhook_secret);
     }
 
     return;
 }
 
-async function sync_signature_headers(integration_name: string, webhook_secret: string): Promise<void> {
-    const custom_headers_field = $<HTMLTextAreaElement>("textarea#custom_http_headers");
-    const current_headers_raw = custom_headers_field.val()?.toString().trim() || "";
-    
+function sync_signature_headers(integration_name: string, webhook_secret: string): void {
+    const $custom_headers_field = $<HTMLTextAreaElement>("textarea#custom_http_headers");
+    const current_headers_raw = $custom_headers_field.val()?.toString().trim() ?? "";
+
     let headers_object: Record<string, string> = {};
     if (current_headers_raw !== "") {
         try {
-            headers_object = JSON.parse(current_headers_raw);
+            headers_object = z
+                .record(z.string(), z.string())
+                .parse(JSON.parse(current_headers_raw));
         } catch {
             headers_object = {};
         }
     }
 
-    // AUTO-CLEAR: Always strip out the exact key we assigned last time if tracked
     if (last_computed_header_key && last_computed_header_key in headers_object) {
-        delete headers_object[last_computed_header_key];
+        Reflect.deleteProperty(headers_object, last_computed_header_key);
     }
 
-    // CRITICAL: If the secret field is empty, do not ping the backend. Clear row instantly.
     if (webhook_secret.trim() === "") {
         last_computed_header_key = null;
         if (Object.keys(headers_object).length === 0) {
-            custom_headers_field.val("{}");
+            $custom_headers_field.val("{}");
         } else {
-            custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+            $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
         }
         return;
     }
 
-    const raw_payload = $<HTMLTextAreaElement>("textarea#fixture_body").val() || "";
+    const raw_payload = $<HTMLTextAreaElement>("textarea#fixture_body").val() ?? "";
     let cleaned_payload = raw_payload;
 
     try {
@@ -291,25 +291,34 @@ async function sync_signature_headers(integration_name: string, webhook_secret: 
 
     channel.post({
         url: "/devtools/integrations/recalculate_signature",
-        data: JSON.stringify({ 
-            secret: webhook_secret, 
+        data: JSON.stringify({
+            secret: webhook_secret,
             payload: cleaned_payload,
-            integration_name: integration_name 
+            integration_name,
         }),
-        success(data: any) {
+        success(raw_data: unknown) {
+            const data = z
+                .object({
+                    supported: z.optional(z.boolean()),
+                    clear_signature: z.optional(z.boolean()),
+                    header_key: z.string(),
+                    signature: z.string(),
+                })
+                .parse(raw_data);
+
             if (!data.supported || data.clear_signature) {
                 last_computed_header_key = null;
                 if (Object.keys(headers_object).length === 0) {
-                    custom_headers_field.val("{}");
+                    $custom_headers_field.val("{}");
                 } else {
-                    custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+                    $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
                 }
             } else {
                 headers_object[data.header_key] = data.signature;
                 last_computed_header_key = data.header_key;
-                custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+                $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
             }
-        }
+        },
     });
 }
 

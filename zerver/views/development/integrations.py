@@ -162,14 +162,17 @@ def send_all_webhook_fixture_messages(
         )
     return json_success(request, data={"responses": responses})
 
+
 def format_github_signature(secret_bytes: bytes, payload_bytes: bytes) -> tuple[str, str]:
     """Formats signature header following X-Hub-Signature-256 standard."""
     signed_payload = hmac.new(secret_bytes, payload_bytes, hashlib.sha256).hexdigest()
     return "X_HUB_SIGNATURE_256", f"sha256={signed_payload}"
 
+
 SIGNATURE_REGISTRY: dict[str, Callable[[bytes, bytes], tuple[str, str]]] = {
     "github": format_github_signature
 }
+
 
 @csrf_exempt
 def recalculate_signature(request: HttpRequest) -> JsonResponse:
@@ -188,7 +191,9 @@ def recalculate_signature(request: HttpRequest) -> JsonResponse:
 
         # Check if the integration has signature management registered
         if integration_name not in SIGNATURE_REGISTRY:
-            return JsonResponse({"supported": False, "msg": "No signature rules configured for this platform."})
+            return JsonResponse(
+                {"supported": False, "msg": "No signature rules configured for this platform."}
+            )
 
         if not secret:
             return JsonResponse({"supported": True, "clear_signature": True})
@@ -205,12 +210,14 @@ def recalculate_signature(request: HttpRequest) -> JsonResponse:
         formatter = SIGNATURE_REGISTRY[integration_name]
         header_key, header_value = formatter(webhook_secret_bytes, payload_bytes)
 
-        return JsonResponse({
-            "supported": True,
-            "clear_signature": False,
-            "header_key": header_key,
-            "signature": header_value
-        })
+        return JsonResponse(
+            {
+                "supported": True,
+                "clear_signature": False,
+                "header_key": header_key,
+                "signature": header_value,
+            }
+        )
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)

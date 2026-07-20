@@ -319,7 +319,10 @@ def parse_multipart_string(body: str) -> dict[str, str]:
 
     return data
 
-def validate_webhook_delivery(request: HttpRequest, signature_header_name: str, algorithm: str = "sha256") -> None:
+
+def validate_webhook_delivery(
+    request: HttpRequest, signature_header_name: str, algorithm: str = "sha256"
+) -> None:
     signature_header = request.headers.get(signature_header_name, "")
     signature = signature_header.split("=")[-1] if "=" in signature_header else signature_header
 
@@ -327,10 +330,7 @@ def validate_webhook_delivery(request: HttpRequest, signature_header_name: str, 
 
     try:
         validate_webhook_signature(
-            request=request,
-            payload=payload,
-            signature=signature,
-            algorithm=algorithm
+            request=request, payload=payload, signature=signature, algorithm=algorithm
         )
     except JsonableError:
         raise

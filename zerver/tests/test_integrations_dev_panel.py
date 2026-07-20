@@ -361,7 +361,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
         expected_response = {
             "supported": False,
-            "msg": "No signature rules configured for this platform."
+            "msg": "No signature rules configured for this platform.",
         }
         self.assertEqual(orjson.loads(response.content), expected_response)
 
@@ -375,10 +375,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
-        expected_response = {
-            "supported": True,
-            "clear_signature": True
-        }
+        expected_response = {"supported": True, "clear_signature": True}
         self.assertEqual(orjson.loads(response.content), expected_response)
 
     def test_recalculate_signature_success_with_json_payload(self) -> None:
@@ -406,7 +403,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "supported": True,
             "clear_signature": False,
             "header_key": "X_HUB_SIGNATURE_256",
-            "signature": f"sha256={expected_hash}"
+            "signature": f"sha256={expected_hash}",
         }
         self.assertEqual(orjson.loads(response.content), expected_response)
 
@@ -422,9 +419,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         }
 
         # Falls back to plain text bytes computation upon JSON extraction failure
-        expected_hash = hmac.new(
-            secret.encode(), payload.encode(), hashlib.sha256
-        ).hexdigest()
+        expected_hash = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
         response = self.client_post(target_url, data, content_type="application/json")
         self.assertEqual(response.status_code, 200)
@@ -433,7 +428,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "supported": True,
             "clear_signature": False,
             "header_key": "X_HUB_SIGNATURE_256",
-            "signature": f"sha256={expected_hash}"
+            "signature": f"sha256={expected_hash}",
         }
         self.assertEqual(orjson.loads(response.content), expected_response)
 
@@ -443,9 +438,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         # Sending a malformed request context (e.g. string payload instead of valid json object)
         # to force the parsing logic down the general exception handling path.
         response = self.client_post(
-            target_url,
-            "invalid_json_body",
-            content_type="application/json"
+            target_url, "invalid_json_body", content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
 
