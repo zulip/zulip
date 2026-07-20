@@ -980,14 +980,13 @@ def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtyp
 
 
 def get_zulip_thread_topic_name(
-    message_content: str, thread_ts: datetime, thread_counter: dict[str, int]
+    message_content: str, thread_date: str, thread_counter: dict[str, int]
 ) -> str:
     """
     The topic name format is date + message snippet + counter.
 
     e.g "2024-05-22 Hello this is a long message that will be c… (1)"
     """
-    thread_date = thread_ts.date().isoformat()
 
     # Truncate
     truncated_zulip_topic_name = truncate_content(
@@ -1147,7 +1146,7 @@ def create_topic_name_for_message(
 
     thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
     message_ts = datetime.fromtimestamp(float(message["ts"]), tz=timezone.utc)
-    thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
+    thread_date = thread_ts.date().isoformat()
     thread_key = get_thread_key(message)
 
     if thread_ts == message_ts:
@@ -1155,7 +1154,7 @@ def create_topic_name_for_message(
         # `message_ts`. Send this message to the main import topic; the
         # cross-linking notice to the thread topic is appended by
         # get_thread_reply_notification.
-        thread_topic_name = get_zulip_thread_topic_name(content, thread_ts, thread_counter)
+        thread_topic_name = get_zulip_thread_topic_name(content, thread_date, thread_counter)
 
         thread_map[thread_key] = ThreadMetadata(
             topic_link_syntax=get_stream_topic_link_syntax(
@@ -1174,7 +1173,7 @@ def create_topic_name_for_message(
     else:
         # This can occur when the original thread message isn't imported,
         # such as when only a slice of the chat history is imported.
-        return f"{thread_ts_str} No channel message"
+        return f"{thread_date} No channel message"
 
 
 def channel_message_to_zerver_message(
