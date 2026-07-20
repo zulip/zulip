@@ -889,6 +889,31 @@ def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserG
     return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
 
+def get_user_id_annotated_recursive_membership_groups_for_users(
+    user_ids: list[int],
+) -> QuerySet[UserGroup]:
+    if len(user_ids) == 0:
+        return UserGroup.objects.none()
+
+    # Same as get_recursive_membership_groups but for many users at once:
+    # annotates each group a user belongs to (directly or transitively)
+    # with that user_id, so one recursive query serves all users.
+    cte = CTE.recursive(
+        lambda cte: (
+            UserGroupMembership.objects.filter(user_profile_id__in=user_ids)
+            .values(group_id=F("user_group_id"), user_id=F("user_profile_id"))
+            .union(
+                cte.join(GroupGroupMembership, subgroup_id=cte.col.group_id).values(
+                    group_id=F("supergroup_id"), user_id=cte.col.user_id
+                )
+            )
+        )
+    )
+    return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id)).annotate(
+        user_id=cte.col.user_id
+    )
+
+
 def user_has_permission_for_group_setting(
     user_group_id: int,
     user: UserProfile,
