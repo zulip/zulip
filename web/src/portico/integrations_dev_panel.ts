@@ -310,11 +310,6 @@ async function sync_signature_headers(integration_name: string, webhook_secret: 
     });
 }
 
-// Bind directly to inputs, and add a small micro-timeout for programmatic dropdown loads
-$(document).on("input change keyup", "input#webhook_secret, textarea#fixture_body", () => {
-    update_url();
-});
-
 $(document).on("change", "select#fixture_name", () => {
     setTimeout(() => {
         update_url();
@@ -528,4 +523,6 @@ $(() => {
     $("#topic_name").on("change", update_url);
 
     $("#webhook_secret").on("change", update_url);
+
+    $("#fixture_body").on("change", update_url);
 });
