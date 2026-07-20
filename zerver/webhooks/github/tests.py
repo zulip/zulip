@@ -866,7 +866,7 @@ A temporary team so that I can get some webhook fixtures!
             self.url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
 
             headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
-            extra_headers = standardize_headers(headers)
+            extra_headers: dict[str, str] = standardize_headers(headers)
 
             extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=completely_invalid_hash_value"
 
@@ -874,7 +874,7 @@ A temporary team so that I can get some webhook fixtures!
                 self.url,
                 self.get_payload("ping"),
                 content_type="application/json",
-                **extra_headers
+                HTTP_X_HUB_SIGNATURE_256=extra_headers["HTTP_X_HUB_SIGNATURE_256"],
             )
 
             self.assert_json_error(result, "Webhook signature verification failed.")
@@ -887,12 +887,17 @@ A temporary team so that I can get some webhook fixtures!
             # Pass a valid secret parameter but explicitly append a broken signature header
             self.url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
             headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
-            extra_headers = standardize_headers(headers)
+            extra_headers: dict[str, str] = standardize_headers(headers)
             extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=invalid_hash"
 
             # This should bypass validate_webhook_signature directly and respond with standard success
             expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
-            self.check_webhook("ping", TOPIC_REPO, expected_message, **extra_headers)
+            self.check_webhook(
+                "ping",
+                TOPIC_REPO,
+                expected_message,
+                HTTP_X_HUB_SIGNATURE_256=extra_headers["HTTP_X_HUB_SIGNATURE_256"],
+            )
 
     def test_github_webhook_valid_signature_success(self) -> None:
         """Verifies that a mathematically correct HMAC signature passes
@@ -912,19 +917,19 @@ A temporary team so that I can get some webhook fixtures!
             self.url = self.build_webhook_url()
 
             headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
-            extra_headers = standardize_headers(headers)
+            extra_headers: dict[str, str] = standardize_headers(headers)
             extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=somehash"
 
             result = self.client_post(
                 self.url,
                 self.get_payload("ping"),
                 content_type="application/json",
-                **extra_headers
+                HTTP_X_HUB_SIGNATURE_256=extra_headers["HTTP_X_HUB_SIGNATURE_256"],
             )
 
             self.assert_json_error(
                 result,
-                "The webhook secret is missing. Please set the webhook_secret while generating the URL."
+                "The webhook secret is missing. Please set the webhook_secret while generating the URL.",
             )
 
 

@@ -674,10 +674,10 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 input_type="checkbox_enabled",
             ),
             WebhookUrlOption(
-            name="webhook_secret",
-            label="GitHub Webhook Secret (Optional)",
-            input_type="text",
-        ),
+                name="webhook_secret",
+                label="GitHub Webhook Secret (Optional)",
+                input_type="text",
+            ),
         ],
     ),
     IncomingWebhookIntegration(

@@ -43,6 +43,7 @@ from zerver.models import UserProfile
 
 fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
 
+
 def github_fixture_to_headers(filename: str) -> dict[str, str]:
     """
     This function is used to generate the header in the Integrations
@@ -55,6 +56,7 @@ def github_fixture_to_headers(filename: str) -> dict[str, str]:
     return {
         "HTTP_X_GITHUB_EVENT": event_type,
     }
+
 
 fixture_to_headers = github_fixture_to_headers
 
