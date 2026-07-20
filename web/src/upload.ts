@@ -432,10 +432,12 @@ class InMemoryUrlStorage {
         return undefined;
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     async findAllUploads(): Promise<PreviousUpload[]> {
-        return await Promise.resolve(this.urlStorage.values().toArray());
+        return this.urlStorage.values().toArray();
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     async findUploadsByFingerprint(fingerprint: string): Promise<PreviousUpload[]> {
         const results = [];
 
@@ -446,7 +448,7 @@ class InMemoryUrlStorage {
             results.push(value);
         }
 
-        return await Promise.resolve(results);
+        return results;
     }
 
     async removeUpload(urlStorageKey: string): Promise<void> {
@@ -454,13 +456,14 @@ class InMemoryUrlStorage {
         await Promise.resolve();
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     async addUpload(fingerprint: string, upload: PreviousUpload): Promise<string> {
         const id = Math.round(Math.random() * 1e12);
         const key = `${fingerprint}::${id}`;
 
         upload.urlStorageKey = key;
         this.urlStorage.set(key, upload);
-        return await Promise.resolve(key);
+        return key;
     }
 }
 
