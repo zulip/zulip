@@ -241,7 +241,6 @@ function update_url(): void {
         if (webhook_secret !== "") {
             params.set("webhook_secret", webhook_secret);
         }
-        params.set("stream", stream_name);
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
 
