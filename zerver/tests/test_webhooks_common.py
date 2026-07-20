@@ -183,7 +183,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
             validate_webhook_signature(request, payload, signature)
 
     @override_settings(VERIFY_WEBHOOK_SIGNATURES=True)
-    def test_validate_webhook_delivery(self) -> None:
+    def test_github_validate_webhook_delivery(self) -> None:
         webhook_secret = "test_secret"
         payload = '{"key": "value"}'
         signature = hmac.new(
