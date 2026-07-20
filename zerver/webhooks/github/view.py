@@ -2,16 +2,7 @@ import re
 from collections.abc import Callable
 from datetime import datetime
 
-import hashlib
-import hmac
-from pathlib import Path
-
-import orjson
-
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.conf import settings
-from django.utils.encoding import force_bytes
-from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpRequest, HttpResponse
 from pydantic import Json
 from typing_extensions import override
 
@@ -31,7 +22,6 @@ from zerver.lib.webhooks.common import (
     get_event_header,
     get_setup_webhook_message,
     guess_zulip_user_from_external_account,
-    validate_webhook_signature,
     validate_webhook_delivery,
 )
 from zerver.lib.webhooks.git import (
@@ -54,6 +44,10 @@ from zerver.models import UserProfile
 fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
 
 def github_fixture_to_headers(filename: str) -> dict[str, str]:
+    '''
+    This function is used to generate the header in the Integrations
+    developer panel on load.
+    '''
     if "__" in filename:
         event_type = filename.split("__", 1)[0]
     else:
@@ -63,46 +57,7 @@ def github_fixture_to_headers(filename: str) -> dict[str, str]:
         "HTTP_X_GITHUB_EVENT": event_type,
     }
 
-# Register our custom parsing function for the developer panel
 fixture_to_headers = github_fixture_to_headers
-
-@csrf_exempt
-def recalculate_github_signature(request: HttpRequest) -> JsonResponse:
-    """
-    Helper endpoint invoked by the frontend UI to recalculate 
-    signatures dynamically when a user alters the secret input field.
-    """
-    if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-        
-    try:
-        # Load parameters sent from the UI panel
-        data = orjson.loads(request.body)
-        secret = data.get("secret", "")
-        payload_string = data.get("payload", "")
-        if isinstance(payload_string, str):
-            payload_bytes = force_bytes(payload_string.strip())
-        else:
-            payload_bytes = orjson.dumps(payload_string)
-        # Format and minify payload
-        try:
-            payload_bytes = orjson.dumps(orjson.loads(payload_string))
-        except Exception:
-            payload_bytes = force_bytes(payload_string)
-            
-        # Re-calculate the hash using the secret
-        webhook_secret_bytes = force_bytes(secret)
-        signed_payload = hmac.new(
-            webhook_secret_bytes,
-            payload_bytes,
-            "sha256",
-        ).hexdigest()
-        
-        # Return the newly generated hash
-        return JsonResponse({"signature": f"sha256={signed_payload}"})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
-
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
