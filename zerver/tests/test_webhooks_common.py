@@ -29,6 +29,7 @@ from zerver.lib.webhooks.common import (
     get_service_api_data,
     guess_zulip_user_from_external_account,
     standardize_headers,
+    validate_webhook_delivery,
     validate_webhook_signature,
 )
 from zerver.models import Client, CustomProfileField, Message, UserProfile
@@ -180,6 +181,41 @@ class WebhooksCommonTestCase(ZulipTestCase):
             "The webhook secret is missing. Please set the webhook_secret while generating the URL.",
         ):
             validate_webhook_signature(request, payload, signature)
+
+    @override_settings(VERIFY_WEBHOOK_SIGNATURES=True)
+    def test_validate_webhook_delivery(self) -> None:
+        webhook_secret = "test_secret"
+        payload = '{"key": "value"}'
+        signature = hmac.new(
+            force_bytes(webhook_secret), force_bytes(payload), hashlib.sha256
+        ).hexdigest()
+
+        request = HostRequestMock(meta_data={"HTTP_X_HUB_SIGNATURE_256": f"sha256={signature}"})
+        request.GET = QueryDict("", mutable=True)
+        request.GET.update({"webhook_secret": webhook_secret})
+        request._body = force_bytes(payload)
+
+        # Valid signature
+        validate_webhook_delivery(request, "X_HUB_Signature_256")
+
+        # Invalid signature
+        request.META["HTTP_X_HUB_SIGNATURE_256"] = "sha256=invalid_signature"
+        del request.headers
+        with self.assertRaisesRegex(
+            JsonableError,
+            "Webhook signature verification failed.",
+        ):
+            validate_webhook_delivery(request, "X_HUB_Signature_256")
+
+        # No webhook_secret parameter
+        request.META["HTTP_X_HUB_SIGNATURE_256"] = f"sha256={signature}"
+        del request.headers
+        request.GET.clear()
+        with self.assertRaisesRegex(
+            JsonableError,
+            "The webhook secret is missing. Please set the webhook_secret while generating the URL.",
+        ):
+            validate_webhook_delivery(request, "X_HUB_Signature_256")
 
     def test_check_send_webhook_message_returns_id(self) -> None:
         webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
