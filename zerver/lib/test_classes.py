@@ -37,9 +37,9 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, ClientHandler, encod
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
+from django.utils.encoding import force_bytes
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
-from django.utils.encoding import force_bytes
 from fakeldap import MockLDAP
 from firebase_admin import exceptions as firebase_exceptions
 from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIResponse
@@ -2660,17 +2660,17 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
             else:
                 self.url = self.build_webhook_url()
         else:
-            # If the test already initialized a custom self.url, then append the secret 
+            # If the test already initialized a custom self.url, then append the secret
             # to the query string instead of overwriting the entire URL.
             if getattr(self, "WEBHOOK_TEST_SECRET", None) is not None and "webhook_secret=" not in self.url:
                 separator = "&" if "?" in self.url else "?"
                 self.url = f"{self.url}{separator}webhook_secret={quote(self.WEBHOOK_TEST_SECRET)}"
-        
+
         payload = self.get_payload(fixture_name)
         raw_payload = self.get_body(fixture_name)
         if content_type is not None:
             extra["content_type"] = content_type
-            
+
         signature_header_name = getattr(self, "WEBHOOK_SIGNATURE_HEADER", None)
         if signature_header_name is not None:
             signature_value = self.get_webhook_signature(force_bytes(raw_payload))

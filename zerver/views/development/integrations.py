@@ -1,4 +1,7 @@
+import hashlib
+import hmac
 import os
+from collections.abc import Callable
 from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
@@ -10,9 +13,6 @@ from django.test import Client
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
-import hmac
-import hashlib
-from collections.abc import Callable
 
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
@@ -179,7 +179,7 @@ def recalculate_signature(request: HttpRequest) -> JsonResponse:
     """
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-        
+
     try:
         data = orjson.loads(request.body)
         secret = data.get("secret", "")
@@ -198,19 +198,19 @@ def recalculate_signature(request: HttpRequest) -> JsonResponse:
             payload_bytes = orjson.dumps(orjson.loads(payload_string))
         except Exception:
             payload_bytes = force_bytes(payload_string)
-            
+
         webhook_secret_bytes = force_bytes(secret)
-        
+
         # Execute the registered structural format strategy
         formatter = SIGNATURE_REGISTRY[integration_name]
         header_key, header_value = formatter(webhook_secret_bytes, payload_bytes)
-        
+
         return JsonResponse({
             "supported": True,
             "clear_signature": False,
             "header_key": header_key,
             "signature": header_value
         })
-        
+
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)

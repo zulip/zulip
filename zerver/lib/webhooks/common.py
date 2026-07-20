@@ -319,12 +319,12 @@ def parse_multipart_string(body: str) -> dict[str, str]:
 
     return data
 
-def validate_webhook_delivery(request: HttpRequest, signature_header_name: str, algorithm: str = "sha256") -> None: 
+def validate_webhook_delivery(request: HttpRequest, signature_header_name: str, algorithm: str = "sha256") -> None:
     signature_header = request.headers.get(signature_header_name, "")
-    signature = signature_header.split('=')[-1] if "=" in signature_header else signature_header
+    signature = signature_header.split("=")[-1] if "=" in signature_header else signature_header
 
     payload = request.body.decode("utf-8")
-    
+
     try:
         validate_webhook_signature(
             request=request,
