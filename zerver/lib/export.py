@@ -2298,12 +2298,22 @@ def export_files_from_s3(
             s3_obj = bucket.Object(bkey.key)
 
             if "realm_id" not in s3_obj.metadata:
-                raise AssertionError(f"Missing realm_id in object metadata: {s3_obj.metadata}")
+                if bkey.key.endswith(".info"):
+                    continue
+                logging.warning(
+                    "Missing realm_id in object metadata, skipping: %s (%s)",
+                    bkey.key,
+                    s3_obj.metadata,
+                )
+                continue
 
             if "user_profile_id" not in s3_obj.metadata:
-                raise AssertionError(
-                    f"Missing user_profile_id in object metadata: {s3_obj.metadata}"
+                logging.warning(
+                    "Missing user_profile_id in object metadata, skipping: %s (%s)",
+                    bkey.key,
+                    s3_obj.metadata,
                 )
+                continue
 
             if int(s3_obj.metadata["user_profile_id"]) not in user_ids:
                 continue
