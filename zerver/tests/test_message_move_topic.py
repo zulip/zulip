@@ -706,7 +706,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         ]
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(32):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -780,6 +780,85 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert_is_topic_muted(desdemona, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(cordelia, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(aaron, new_public_stream.id, "final topic name", muted=False)
+
+    def test_move_topic_to_private_stream_migrates_policy_by_content_access(self) -> None:
+        # When a topic is moved to a channel, its visibility policies are
+        # migrated for exactly the users who have content access to the
+        # target channel.
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+
+        stream_name = "public source"
+        stream = self.make_stream(stream_name)
+        self.subscribe(hamlet, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="topic", content="Hello World"
+        )
+
+        # A private channel with protected history.
+        private_stream = self.make_stream(
+            "private target", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(desdemona, private_stream.name)
+        # Othello has content access to the target via subscription.
+        self.subscribe(othello, private_stream.name)
+        # Cordelia has content access via a content-access group,
+        # without being subscribed to the target.
+        content_access_group = check_add_user_group(
+            hamlet.realm, "target-content-access", [cordelia], acting_user=hamlet
+        )
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_add_subscribers_group",
+            content_access_group,
+            acting_user=desdemona,
+        )
+
+        # None of Othello, Cordelia, or Iago is subscribed to the source
+        # channel.
+        muted_topics = [[stream_name, "topic"]]
+        for user in [othello, cordelia, iago]:
+            set_topic_visibility_policy(user, muted_topics, UserTopic.VisibilityPolicy.MUTED)
+
+        check_update_message(
+            user_profile=desdemona,
+            message_id=message_id,
+            stream_id=private_stream.id,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        # Othello and Cordelia keep the UserTopic row, migrated to
+        # the private channel.
+        for user in [othello, cordelia]:
+            self.assertFalse(
+                UserTopic.objects.filter(
+                    user_profile=user, stream=stream.id, topic_name="topic"
+                ).exists()
+            )
+            self.assertTrue(
+                topic_has_visibility_policy(
+                    user, private_stream.id, "topic", UserTopic.VisibilityPolicy.MUTED
+                )
+            )
+
+        # Iago has no content access, so the UserTopic row is removed.
+        self.assertFalse(
+            UserTopic.objects.filter(
+                user_profile=iago, stream=stream.id, topic_name="topic"
+            ).exists()
+        )
+        self.assertFalse(
+            UserTopic.objects.filter(
+                user_profile=iago, stream=private_stream.id, topic_name="topic"
+            ).exists()
+        )
 
     @mock.patch("zerver.actions.user_topics.send_event_on_commit")
     def test_edit_unmuted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
