@@ -247,8 +247,6 @@ function update_url(): void {
 
         void sync_signature_headers(integration_name, webhook_secret);
     }
-
-    return;
 }
 
 async function sync_signature_headers(integration_name: string, webhook_secret: string): Promise<void> {
@@ -312,6 +310,20 @@ async function sync_signature_headers(integration_name: string, webhook_secret: 
         }
     });
 }
+
+// Bind directly to inputs, and add a small micro-timeout for programmatic dropdown loads
+$(document).on("input change keyup", "input#webhook_secret, textarea#fixture_body", () => {
+    update_url();
+});
+
+$(document).on("change", "select#fixture_name", () => {
+    setTimeout(() => {
+        update_url();
+    }, 50);
+});
+
+// Run immediately on initial load to synchronize state cleanly
+update_url();
 
 // API callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response: JQuery.jqXHR): void {
