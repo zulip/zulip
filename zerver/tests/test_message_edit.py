@@ -1666,6 +1666,43 @@ class EditMessageTest(ZulipTestCase):
             id_, "M", "You don't have permission to edit this message", "shiva"
         )
 
+    def test_content_edit_not_notified_without_message_access(self) -> None:
+        # Editing a message's content must not notify users who can no
+        # longer access it.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        stream_name = "protected history private"
+        self.make_stream(stream_name, invite_only=True, history_public_to_subscribers=False)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        message_id = self.send_stream_message(hamlet, stream_name, "Hello", topic_name="test")
+
+        # Cordelia received the message, then unsubscribes. So
+        # the UserMessage row remains, but can no longer access
+        # the message in a protected-history channel.
+        self.unsubscribe(cordelia, stream_name)
+        self.assertTrue(
+            UserMessage.objects.filter(user_profile=cordelia, message_id=message_id).exists()
+        )
+
+        self.login("hamlet")
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                f"/json/messages/{message_id}",
+                {"content": "Hello, edited"},
+            )
+        self.assert_json_success(result)
+
+        self.assertTrue(
+            UserMessage.objects.filter(user_profile=cordelia, message_id=message_id).exists()
+        )
+
+        self.assertEqual(events[0]["event"]["type"], "update_message")
+        notified_user_ids = {user["id"] for user in events[0]["users"]}
+        # Hamlet (still subscribed) is notified but Cordelia is not.
+        self.assertIn(hamlet.id, notified_user_ids)
+        self.assertNotIn(cordelia.id, notified_user_ids)
+
     @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_topic_wildcard_mention_in_followed_topic(
         self, mock_send_event: mock.MagicMock

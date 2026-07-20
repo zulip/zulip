@@ -1199,7 +1199,26 @@ def do_update_message(
     # in the organization (too expansive, and also not what we do for
     # newly sent messages anyway) and having magical live-updates
     # where possible.
-    users_to_be_notified = list(map(user_info, unmodified_user_messages))
+    #
+    # Only notify users who can currently access the (possibly moved)
+    # messages. A UserMessage row by itself does not grant access, so
+    # notifying every UserMessage-row holder would leak the edited
+    # content to users who have lost access.
+    #
+    # TODO: We can improve some unnecessary computation that is being
+    # done currently as event_recipient_ids_for_action_on_messages
+    # also computes UserMessage rows and the target stream subscribers.
+    message_access_user_ids = event_recipient_ids_for_action_on_messages(
+        changed_message_ids,
+        is_channel_message=True,
+        channel=message_edit_request.target_stream,
+        exclude_long_term_idle_users=False,
+    )
+    users_to_be_notified = [
+        user_info(um)
+        for um in unmodified_user_messages
+        if um.user_profile_id in message_access_user_ids
+    ]
     if stream_being_edited.is_history_public_to_subscribers():
         subscriptions = get_active_subscriptions_for_stream_id(
             message_edit_request.target_stream.id, include_deactivated_users=False
@@ -1211,13 +1230,10 @@ def do_update_message(
             # We exclude long-term idle users, since they by
             # definition have no active clients.
             subs = subs.exclude(user_profile__long_term_idle=True)
-            # Remove duplicates by excluding the id of users already
-            # in users_to_be_notified list.  This is the case where a
-            # user both has a UserMessage row and is a current
-            # Subscriber
-            subs = subs.exclude(
-                user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
-            )
+            # Remove duplicates by excluding users already in
+            # users_to_be_notified.  This is the case where a user both
+            # has a UserMessage row and is a current Subscriber.
+            subs = subs.exclude(user_profile_id__in=[user["id"] for user in users_to_be_notified])
 
             if message_edit_request.is_stream_edited:
                 subs = subs.exclude(user_profile__in=users_losing_access)
