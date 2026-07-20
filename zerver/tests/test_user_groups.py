@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Iterable
 from datetime import datetime, timedelta
 from unittest import mock
@@ -52,6 +53,7 @@ from zerver.lib.user_groups import (
     get_subgroup_ids,
     get_system_user_group_by_name,
     get_user_group_member_ids,
+    get_user_id_annotated_recursive_membership_groups_for_users,
     has_user_group_access_for_subgroup,
     is_any_user_in_group,
     is_user_in_group,
@@ -810,6 +812,37 @@ class UserGroupTestCase(ZulipTestCase):
 
         with self.assertRaises(JsonableError):
             user_group_ids_to_user_groups([hamletcharacters_group.id, admins_group.id], realm)
+
+    def test_user_id_annotated_recursive_membership_groups_for_users(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        self.assert_length(get_user_id_annotated_recursive_membership_groups_for_users([]), 0)
+
+        group_memberships = get_user_id_annotated_recursive_membership_groups_for_users(
+            [iago.id, hamlet.id, polonius.id]
+        )
+        membership_dict = defaultdict(list)
+        for membership in group_memberships:
+            membership_dict[membership.user_id].append(membership.id)  # type: ignore[attr-defined]  # user_id is an annotated field.
+
+        # We just want to ensure that get_user_id_annotated_recursive_membership_groups_for_users
+        # returns the user ID annotated queryset for all recursive membership groups for
+        # users and we keep the test simple by just comparing the values with
+        # get_recursive_membership_groups which is already tested well enough.
+        self.assertCountEqual(
+            membership_dict[iago.id],
+            list(get_recursive_membership_groups(iago).values_list("id", flat=True)),
+        )
+        self.assertCountEqual(
+            membership_dict[hamlet.id],
+            list(get_recursive_membership_groups(hamlet).values_list("id", flat=True)),
+        )
+        self.assertCountEqual(
+            membership_dict[polonius.id],
+            list(get_recursive_membership_groups(polonius).values_list("id", flat=True)),
+        )
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
