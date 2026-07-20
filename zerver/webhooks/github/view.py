@@ -2,7 +2,11 @@ import re
 from collections.abc import Callable
 from datetime import datetime
 
+from pathlib import Path
+
 from django.http import HttpRequest, HttpResponse
+from django.conf import settings
+from django.utils.encoding import force_bytes
 from pydantic import Json
 from typing_extensions import override
 
@@ -52,7 +56,6 @@ def github_fixture_to_headers(filename: str) -> dict[str, str]:
         event_type = filename.split("__", 1)[0]
     else:
         event_type = filename
-    # Only return the event type, we don't have a secret yet, so no need to display it
     return {
         "HTTP_X_GITHUB_EVENT": event_type,
     }

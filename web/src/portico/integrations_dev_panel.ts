@@ -241,11 +241,14 @@ function update_url(): void {
         if (webhook_secret !== "") {
             params.set("webhook_secret", webhook_secret);
         }
+        params.set("stream", stream_name);
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
 
         void sync_signature_headers(integration_name, webhook_secret);
     }
+
+    return;
 }
 
 async function sync_signature_headers(integration_name: string, webhook_secret: string): Promise<void> {
@@ -309,15 +312,6 @@ async function sync_signature_headers(integration_name: string, webhook_secret: 
         }
     });
 }
-
-$(document).on("change", "select#fixture_name", () => {
-    setTimeout(() => {
-        update_url();
-    }, 50);
-});
-
-// Run immediately on initial load to synchronize state cleanly
-update_url();
 
 // API callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response: JQuery.jqXHR): void {
@@ -523,6 +517,4 @@ $(() => {
     $("#topic_name").on("change", update_url);
 
     $("#webhook_secret").on("change", update_url);
-
-    $("#fixture_body").on("change", update_url);
 });
