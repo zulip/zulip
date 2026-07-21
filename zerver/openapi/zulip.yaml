@@ -22735,13 +22735,16 @@ paths:
                               Configuration for group level group permission settings.
                             additionalProperties:
                               $ref: "#/components/schemas/GroupPermissionSetting"
-                      max_bulk_new_subscription_messages:
+                      max_bulk_subscription_messages:
                         description: |
                           Maximum number of new subscribers for which the server will
                           respect the `send_new_subscription_messages` parameter when
                           [adding subscribers to a channel](/api/subscribe#parameter-send_new_subscription_messages).
 
-                          **Changes**: New in Zulip 11.0 (feature level 397).
+                          **Changes**: In Zulip 13.0 (feature level ZF-515bab), renamed from
+                          `max_bulk_new_subscription_messages`.
+
+                          New in Zulip 11.0 (feature level 397).
                         type: number
                         example: 100
                     example:
@@ -30843,7 +30846,7 @@ components:
 
         The server will never send direct messages when the total number of users
         who were subscribed to channels in this request was more than the value
-        of `max_bulk_new_subscription_messages`, which is available in the [`POST
+        of `max_bulk_subscription_messages`, which is available in the [`POST
         /register`](/api/register-queue) response.
 
         **Changes**: Before Zulip 11.0 (feature level 397), new subscribers

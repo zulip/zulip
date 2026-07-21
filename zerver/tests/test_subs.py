@@ -5462,7 +5462,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # be sent.
         now = timezone_now()
         test_channel = self.make_stream("test C")
-        with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
+        with self.settings(MAX_BULK_SUBSCRIPTION_MESSAGES=5):
             response = self.subscribe_via_post(
                 desdemona,
                 [test_channel.name],
@@ -5493,7 +5493,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # still expect an announcement message and new channel
         # message (and no DM notifications).
         now = timezone_now()
-        with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
+        with self.settings(MAX_BULK_SUBSCRIPTION_MESSAGES=5):
             response = self.subscribe_via_post(
                 desdemona,
                 ["test D"],

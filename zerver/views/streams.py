@@ -944,7 +944,7 @@ def add_subscriptions_backend(
 
     if send_new_subscription_messages:
         send_user_subscribed_direct_messages = (
-            len(result["subscribed"]) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
+            len(result["subscribed"]) <= settings.MAX_BULK_SUBSCRIPTION_MESSAGES
         )
         result["new_subscription_messages_sent"] = send_user_subscribed_direct_messages
     else:
