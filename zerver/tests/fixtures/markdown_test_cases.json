@@ -290,6 +290,12 @@
       "text_content": "Nested list\n\nI am outer list\nI am inner nested list first item\nI am inner nested list second item\n\n\n"
     },
     {
+        "name": "ulist_nested_ulist_tab_indent",
+        "input": "- outer\n\t- inner first\n\t- inner second\n\t\t- deep nested",
+        "expected_output": "<ul>\n<li>outer<ul>\n<li>inner first</li>\n<li>inner second<ul>\n<li>deep nested</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>",
+        "text_content": "\nouter\ninner first\ninner second\ndeep nested\n\n\n\n\n"
+    },
+    {
       "name": "ulist_list_two_space_indent",
       "input": "* I am outer list\n  I am something inside",
       "expected_output": "<ul>\n<li>I am outer list<br>\n  I am something inside</li>\n</ul>",
@@ -413,9 +419,10 @@
     },
     {
       "name": "numbered_list_double_digit",
-      "input": "List without a gap\n10. One\n11. Two",
-      "expected_output": "<p>List without a gap</p>\n<ol start=\"10\">\n<li>One</li>\n<li>Two</li>\n</ol>",
-      "text_content": "List without a gap\n10. One\n11. Two"
+      "input": "8. eight\n9. nine\n   - sub item\n10. ten",
+      "expected_output": "<ol start=\"8\">\n<li>eight</li>\n<li>\n<p>nine</p>\n<ul>\n<li>sub item</li>\n</ul>\n</li>\n<li>\n<p>ten</p>\n</li>\n</ol>",
+      "marked_expected_output": "<ol start=\"8\">\n<li>eight</li>\n<li>nine<ul>\n<li>sub item</li>\n</ul>\n</li>\n<li>ten</li>\n</ol>",
+      "text_content": "8. eight\n9. nine\n\nsub item\n10. ten"
     },
     {
       "name": "linkify_interference",
