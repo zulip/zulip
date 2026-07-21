@@ -7,6 +7,9 @@ from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
 
 def get_oembed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> UrlEmbedData | None:
+    # pyoembed makes its requests directly, not through OutgoingSession,
+    # but they still go through Smokescreen: requests lib honors the
+    # HTTP_proxy/HTTPS_proxy variables we set in every process's environment.
     try:
         data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
     except (PyOembedException, json.decoder.JSONDecodeError, requests.exceptions.ConnectionError):
