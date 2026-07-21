@@ -244,8 +244,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Zulip outgoing webhook payload
         "/zulip-outgoing-webhook",
         #### Bouncer endpoints
-        # Higher priority to document
-        "/remotes/push/e2ee/notify",
         # Lower priority to document
         "/remotes/server/register",
         "/remotes/server/register/transfer",
