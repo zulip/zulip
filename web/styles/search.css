@@ -222,7 +222,9 @@
     }
 
     #searchbox-input-container .user-pill-container,
-    .typeahead-menu .user-pill-container {
+    #searchbox-input-container .channel-pill-container,
+    .typeahead-menu .user-pill-container,
+    .typeahead-menu .channel-pill-container {
         border: 1px solid transparent;
 
         > .pill-label {
@@ -293,7 +295,8 @@
             }
         }
 
-        &.focused .user-pill-container {
+        &.focused .user-pill-container,
+        &.focused .channel-pill-container {
             flex-flow: row wrap;
         }
 
@@ -338,6 +341,42 @@
                     var(--length-input-pill-exit);
                 align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
+                line-height: 1.1;
+            }
+        }
+
+        .channel-pill-container {
+            gap: 2px 5px;
+            /* Don't enforce a height, as channel-pill containers can
+                contain multiple channel pills that wrap onto new lines. */
+            height: unset;
+
+            /* Not focus-visible, because we want to support mouse+backspace
+                to delete pills. */
+            &:focus {
+                /* Unlike a regular `.pill`, this multi-channel pill has a
+                    border, so we use border instead of box-shadow on focus. */
+                box-shadow: none;
+                border-color: var(--color-focus-outline-input-pill);
+            }
+
+            > .pill-label {
+                /* Don't inherit large line-height for channel pill labels. */
+                line-height: 1.1;
+            }
+
+            .pill {
+                border: none;
+                border-radius: 4px;
+                max-width: none;
+                /* Channel pills have no avatar, so the grid is just the
+                    channel name and the closing X. */
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) var(
+                        --length-input-pill-exit
+                    );
+                align-content: center;
+                /* Don't inherit large line-height for channel pills themselves. */
                 line-height: 1.1;
             }
         }

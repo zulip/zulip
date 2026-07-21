@@ -10,6 +10,7 @@ const $ = require("./lib/zjquery.cjs");
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 
+const {Filter} = zrequire("filter");
 const people = zrequire("people");
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
@@ -384,4 +385,48 @@ run_test("set_search_bar_contents with duplicate pills", () => {
         operand: "attachment",
         negated: false,
     });
+});
+
+run_test("multi-channel pill round-trips", () => {
+    const denmark = make_stream({
+        subscribed: true,
+        color: "red",
+        name: "Denmark",
+        stream_id: 2,
+    });
+    stream_data.add_sub_for_tests(denmark);
+
+    const channels_terms = [
+        {
+            negated: false,
+            operator: "channels",
+            operand: [verona.stream_id, denmark.stream_id],
+        },
+    ];
+    // set_search_bar_contents clears existing pills first, which removes
+    // their (mocked) DOM elements.
+    for (const pill of search.search_pill_widget._get_pills_for_testing()) {
+        pill.$element[0].remove = noop;
+    }
+    search_pill.set_search_bar_contents(
+        channels_terms.map((term) => Filter.convert_term_to_suggestion(term)),
+        search.search_pill_widget,
+        false,
+        noop,
+    );
+
+    // The list operand becomes a single multi-channel pill holding one
+    // sub-pill per channel, mirroring how a group DM pill holds users.
+    const pills = search.search_pill_widget._get_pills_for_testing();
+    assert.equal(pills.length, 1);
+    assert.equal(pills[0].item.type, "search_channel");
+    assert.deepEqual(
+        pills[0].item.channels.map((channel) => channel.stream_id),
+        [verona.stream_id, denmark.stream_id],
+    );
+
+    // Reading the pills back out reproduces the list-operand term.
+    assert.deepEqual(search_pill.get_current_search_pill_terms(search.search_pill_widget), [
+        {operator: "channels", operand: [verona.stream_id, denmark.stream_id], negated: false},
+    ]);
 });

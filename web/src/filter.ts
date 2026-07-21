@@ -53,6 +53,11 @@ type Part =
           stream: StreamSubscription;
       }
     | {
+          type: "channels_list";
+          verb: string;
+          streams: StreamSubscription[];
+      }
+    | {
           type: "is_operator";
           verb: string;
           operand: string;
@@ -164,6 +169,10 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
         }
 
         case "channels":
+            if (Array.isArray(term.operand)) {
+                const target_ids = new Set(term.operand);
+                return (message) => message.type === "stream" && target_ids.has(message.stream_id);
+            }
             switch (term.operand) {
                 case "public":
                     return (message) => {
@@ -342,6 +351,13 @@ export class Filter {
                 break;
 
             case "channel":
+                break;
+            case "channels":
+                // A list-of-IDs operand is left as-is; only the string
+                // type filters ("public", etc.) are case-normalized.
+                if (typeof narrow_term.operand === "string") {
+                    narrow_term.operand = narrow_term.operand.toLowerCase();
+                }
                 break;
             case "topic":
                 break;
@@ -626,6 +642,20 @@ export class Filter {
                     potential_narrow_term = result;
                     break;
                 }
+                case "channels": {
+                    // A comma-separated list of channel IDs becomes an
+                    // array operand; string type filters ("public",
+                    // etc.) pass through unchanged.
+                    const operand = /^\d+(,\d+)*$/.test(suggestion.operand)
+                        ? suggestion.operand.split(",").map(Number)
+                        : suggestion.operand;
+                    potential_narrow_term = {
+                        operator: "channels",
+                        operand,
+                        negated: suggestion.negated,
+                    };
+                    break;
+                }
                 default:
                     potential_narrow_term = {
                         operator: canonical_operator,
@@ -676,6 +706,12 @@ export class Filter {
             case "channel":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
+                if (Array.isArray(term.operand)) {
+                    return (
+                        term.operand.length > 0 &&
+                        term.operand.every((id) => stream_data.get_sub_by_id(id) !== undefined)
+                    );
+                }
                 return channels_operands.has(term.operand);
             case "topic":
                 return true;
@@ -740,6 +776,12 @@ export class Filter {
 
         result += term.operator;
 
+        if (term.operator === "channels" && Array.isArray(term.operand)) {
+            // A list-of-IDs operand collapses to a single stable term
+            // type, rather than encoding the specific channel IDs.
+            return result + "-ids";
+        }
+
         // Using `||` instead of `array.includes` to help with type checking.
         if (
             term.operator === "is" ||
@@ -747,6 +789,9 @@ export class Filter {
             term.operator === "in" ||
             term.operator === "channels"
         ) {
+            // A list-of-IDs `channels` operand already returned above, so
+            // any operand reaching here is a string type filter.
+            assert(typeof term.operand === "string");
             result += "-" + term.operand;
         }
 
@@ -760,6 +805,8 @@ export class Filter {
             "channels-archived",
             "not-channels-archived",
             "channels-web-public",
+            "channels-ids",
+            "not-channels-ids",
             "channel",
             "topic",
             "dm",
@@ -938,7 +985,25 @@ export class Filter {
                     };
                 }
             }
-            if (term.operator === "channels" && channels_operands.has(term.operand)) {
+            if (term.operator === "channels" && /^\d+(,\d+)*$/.test(term.operand)) {
+                // A numeric ID list (the suggestion string form of a
+                // multi-channel `channels` operand) describes the
+                // messages in those specific channels.
+                const verb = term.negated ? "exclude " : "";
+                const streams = term.operand
+                    .split(",")
+                    .map((id) => stream_data.get_sub_by_id(Number(id)))
+                    .filter((sub) => sub !== undefined);
+                return {
+                    type: "channels_list",
+                    verb,
+                    streams,
+                };
+            }
+            if (
+                term.operator === "channels" &&
+                channels_operands.has(term.operand)
+            ) {
                 return {
                     type: "plain_text",
                     content: this.describe_channels_operator(term.negated ?? false, term.operand),
@@ -1404,6 +1469,9 @@ export class Filter {
         if (_.isEqual(term_types, ["channels-archived"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-ids"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
@@ -1564,6 +1632,7 @@ export class Filter {
                 zulip_icon = "user";
                 break;
             case "not-is-dm":
+            case "channels-ids":
                 zulip_icon = "hashtag";
                 break;
             case "is-starred":
@@ -1607,6 +1676,18 @@ export class Filter {
                 return $t({defaultMessage: "Unknown channel"});
             }
             return sub.name;
+        }
+        if (term_types.length === 1 && _.isEqual(term_types, ["channels-ids"])) {
+            const channel_ids = this.terms_with_operator("channels")[0]!.operand;
+            assert(Array.isArray(channel_ids));
+            const names = channel_ids.map((channel_id) => {
+                const sub = stream_data.get_sub_by_id(channel_id);
+                if (!sub) {
+                    return $t({defaultMessage: "Unknown channel ({channel_id})"}, {channel_id});
+                }
+                return sub.name;
+            });
+            return util.format_array_as_list(names, "long", "conjunction");
         }
         const ignore_missing = true;
         if (
