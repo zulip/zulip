@@ -14085,6 +14085,274 @@ paths:
                     description: |
                       An example JSON response for when no realm is registered for
                       the authenticated server on the bouncer for the given `realm_uuid`:
+  /remotes/push/e2ee/notify:
+    post:
+      operationId: remote-notify-bouncer
+      summary: Send E2EE push notifications to bouncer
+      tags: ["mobile"]
+      description: |
+        Forward end-to-end encrypted mobile push notifications to the
+        bouncer, which relays them to APNs (Apple) and FCM (Android).
+
+        Self-hosted servers use this endpoint to send already-encrypted
+        push notification payloads to the bouncer for their registered
+        push devices.
+
+        It is not meant to be used by mobile clients directly.
+
+        **Changes**: New in Zulip 11.0 (feature level 406).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: |
+                A JSON object with the realm and the list of push
+                notification requests to forward.
+              properties:
+                realm_uuid:
+                  type: string
+                  description: |
+                    The UUID of the realm whose push devices the
+                    notification requests target.
+                push_requests:
+                  type: array
+                  description: |
+                    The push notification requests to forward, one per
+                    target device. Each entry is either an APNs (Apple)
+                    or an FCM (Android) request, distinguished by whether
+                    it carries `http_headers` (APNs) or `fcm_priority`
+                    (FCM).
+                  items:
+                    oneOf:
+                      - type: object
+                        additionalProperties: false
+                        description: |
+                          An APNs (Apple) push notification request.
+                        properties:
+                          token_id:
+                            type: string
+                            description: |
+                              Identifier for the target push device's
+                              registration on the bouncer.
+                          http_headers:
+                            type: object
+                            additionalProperties: false
+                            description: |
+                              The APNs request headers.
+                            properties:
+                              apns_priority:
+                                type: integer
+                                enum: [10, 5, 1]
+                                description: |
+                                  The APNs delivery priority.
+                              apns_push_type:
+                                type: string
+                                enum:
+                                  - alert
+                                  - background
+                                  - voip
+                                  - complication
+                                  - fileprovider
+                                  - mdm
+                                  - liveactivity
+                                description: |
+                                  The APNs push type.
+                            required:
+                              - apns_priority
+                              - apns_push_type
+                          payload:
+                            type: object
+                            additionalProperties: false
+                            description: |
+                              The APNs payload for the notification.
+                            properties:
+                              push_key_id:
+                                type: integer
+                                description: |
+                                  Identifier for the push key used to
+                                  encrypt `encrypted_data`.
+                              encrypted_data:
+                                type: string
+                                description: |
+                                  The end-to-end encrypted notification
+                                  data.
+                              aps:
+                                type: object
+                                additionalProperties: true
+                                description: |
+                                  The unencrypted APNs `aps` dictionary.
+                            required:
+                              - push_key_id
+                              - encrypted_data
+                              - aps
+                        required:
+                          - token_id
+                          - http_headers
+                          - payload
+                      - type: object
+                        additionalProperties: false
+                        description: |
+                          An FCM (Android) push notification request.
+                        properties:
+                          token_id:
+                            type: string
+                            description: |
+                              Identifier for the target push device's
+                              registration on the bouncer.
+                          fcm_priority:
+                            type: string
+                            enum: [high, normal]
+                            description: |
+                              The FCM delivery priority.
+                          payload:
+                            type: object
+                            additionalProperties: false
+                            description: |
+                              The FCM payload for the notification.
+                            properties:
+                              push_key_id:
+                                type: integer
+                                description: |
+                                  Identifier for the push key used to
+                                  encrypt `encrypted_data`.
+                              encrypted_data:
+                                type: string
+                                description: |
+                                  The end-to-end encrypted notification
+                                  data.
+                            required:
+                              - push_key_id
+                              - encrypted_data
+                        required:
+                          - token_id
+                          - fcm_priority
+                          - payload
+              required:
+                - realm_uuid
+                - push_requests
+            example:
+              realm_uuid: "9aa61d0b-8ce5-488d-8e9e-fedc346e6836"
+              push_requests:
+                - token_id: "+wKIhyAx/Eg="
+                  http_headers:
+                    apns_priority: 10
+                    apns_push_type: "alert"
+                  payload:
+                    push_key_id: 42
+                    encrypted_data: "encrypted-apns-data"
+                    aps:
+                      mutable-content: 1
+                - token_id: "cD6Ejhr2/Fg="
+                  fcm_priority: "high"
+                  payload:
+                    push_key_id: 43
+                    encrypted_data: "encrypted-fcm-data"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    required:
+                      - apple_successfully_sent_count
+                      - android_successfully_sent_count
+                      - delete_token_ids
+                      - realm_push_status
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      apple_successfully_sent_count:
+                        type: integer
+                        description: |
+                          The number of Apple (APNs) devices to which a
+                          push notification was successfully sent.
+                      android_successfully_sent_count:
+                        type: integer
+                        description: |
+                          The number of Android (FCM) devices to which a
+                          push notification was successfully sent.
+                      delete_token_ids:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          The `token_id` values whose device registrations
+                          the bouncer no longer considers valid; the
+                          self-hosted server should delete these
+                          registrations.
+                      realm_push_status:
+                        type: object
+                        additionalProperties: false
+                        required:
+                          - can_push
+                          - expected_end_timestamp
+                        properties:
+                          can_push:
+                            type: boolean
+                            description: |
+                              Whether the realm is currently permitted to
+                              send mobile push notifications.
+                          expected_end_timestamp:
+                            type: integer
+                            nullable: true
+                            description: |
+                              UNIX timestamp (UTC) for when the current
+                              push notification service status is expected
+                              to end, or `null` if not applicable.
+                        description: |
+                          The realm's current push notification service
+                          status.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "apple_successfully_sent_count": 1,
+                        "android_successfully_sent_count": 1,
+                        "delete_token_ids": [],
+                        "realm_push_status":
+                          {"can_push": true, "expected_end_timestamp": null},
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "PUSH_NOTIFICATIONS_DISALLOWED",
+                        "msg": "Your plan doesn't allow sending push notifications. Reason provided by the server: Push notifications are not enabled for this realm.",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the realm's plan
+                      does not currently permit sending mobile push
+                      notifications:
+        "403":
+          description: |
+            Forbidden.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "MISSING_REMOTE_REALM",
+                        "msg": "Organization not registered",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when no realm is registered for
+                      the authenticated server on the bouncer for the given `realm_uuid`:
   /register_client_device:
     post:
       operationId: register-client-device

@@ -185,6 +185,7 @@
 * [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
 * [Register E2EE push device](/api/register-push-device)
 * [Register E2EE push device to bouncer](/api/register-remote-push-device)
+* [Send E2EE push notifications to bouncer](/api/remote-notify-bouncer)
 * [Mobile notifications](/api/mobile-notifications)
 * [Send a test notification to mobile device(s)](/api/test-notify)
 * [Add an APNs device token](/api/add-apns-token)
