@@ -26,7 +26,6 @@ from zerver.views.development.integrations import (
     get_fixtures,
     recalculate_signature,
     send_all_webhook_fixture_messages,
-    recalculate_signature,
 )
 from zerver.views.development.registration import (
     confirmation_key,

@@ -317,26 +317,6 @@ function update_url(): void {
     }
 }
 
-// Bind directly to inputs, and add a small micro-timeout for programmatic dropdown loads
-$(document).on("input change keyup", "input#webhook_secret, textarea#fixture_body", () => {
-    update_url();
-});
-
-$(document).on("change", "select#fixture_name", () => {
-    setTimeout(() => {
-        update_url();
-    }, 50);
-});
-
-// Run immediately on initial load to synchronize state cleanly
-update_url();
-
-        sync_signature_headers(integration_name, webhook_secret);
-    }
-
-    return;
-}
-
 function sync_signature_headers(integration_name: string, webhook_secret: string): void {
     const $custom_headers_field = $<HTMLTextAreaElement>("textarea#custom_http_headers");
     const current_headers_raw = $custom_headers_field.val()?.toString().trim() ?? "";
