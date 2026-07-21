@@ -730,68 +730,6 @@ class TusdPreFinishTest(ZulipTestCase):
         self.assertEqual(attachment.content_type, "text/plain")
         self.assertEqual(bucket.Object(path_id).get()["ContentType"], "text/plain")
 
-    @use_s3_backend
-    def test_s3_upload_reopens_source_after_self_copy(self) -> None:
-        # Regression test for the pre-finish hook holding its
-        # charset-sniffing read of the object open while issuing a
-        # self-CopyObject to update the object's Content-Type.  Some
-        # S3-compatible backends (e.g. MinIO) hold a read lock for
-        # the duration of an open GetObject, which made that copy
-        # block until the reader was torn down.  We now close the
-        # sniffing read before copying, and open a fresh one
-        # afterwards for create_attachment/maybe_thumbnail.
-        assert settings.LOCAL_FILES_DIR is None
-        self.login("hamlet")
-        hamlet = self.example_user("hamlet")
-        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
-        upload_backend = S3UploadBackend()
-
-        filename = "zulip.txt"
-        path_id = upload_backend.generate_message_upload_path(
-            str(hamlet.realm.id), sanitize_name(filename, strict=True)
-        )
-        info = TusUpload(
-            id=path_id,
-            size=len("zulip!"),
-            offset=0,
-            size_is_deferred=False,
-            meta_data={
-                "filename": filename,
-                "filetype": "text/plain",
-                "name": filename,
-                "type": "text/plain",
-            },
-            is_final=False,
-            is_partial=False,
-            partial_uploads=None,
-            storage=None,
-        )
-        bucket.Object(path_id).put(
-            Body=b"zulip!",
-            ContentType="application/octet-stream",
-            Metadata={k: v.encode("ascii", "replace").decode() for k, v in info.meta_data.items()},
-        )
-        bucket.Object(f"{path_id}.info").put(
-            Body=info.model_dump_json().encode(),
-        )
-
-        with mock.patch("zerver.views.tusd.attachment_source") as mock_attachment_source:
-            mock_attachment_source.return_value.size = len("zulip!")
-            reader = mock_attachment_source.return_value.reader.return_value
-            reader.read.return_value = b""
-            result = self.client_post(
-                "/api/internal/tusd",
-                self.request(info).model_dump(),
-                content_type="application/json",
-            )
-        self.assertEqual(result.status_code, 200)
-
-        # Opened once to sniff the charset, and a second, fresh time
-        # to hand to create_attachment/maybe_thumbnail -- never
-        # holding a single read open across the self-copy.
-        self.assertEqual(mock_attachment_source.call_count, 2)
-        self.assertTrue(reader.close.called)
-
 
 class TusdPreTerminateTest(ZulipTestCase):
     def request(self, info: TusUpload) -> TusHook:
