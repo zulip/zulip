@@ -1598,22 +1598,18 @@ class EventQueueTest(ZulipTestCase):
         # Push one more event to trigger overflow
         queue.push({"type": "overflow_trigger", "value": "overflow"})
         self.assertTrue(queue.overflowed)
-        self.assert_length(queue.queue, queue.MAX_QUEUE_SIZE)
+        # Queue should be cleared to release memory immediately
+        self.assert_length(queue.queue, 0)
 
-        # The oldest event (value: 0) should have been popped
-        self.assertEqual(queue.queue[0]["value"], 1)
-        self.assertEqual(queue.queue[-1]["value"], "overflow")
+        from zerver.lib.exceptions import ErrorCode
+        from zerver.tornado.exceptions import BadEventQueueIdError
 
-        from zerver.lib.exceptions import JsonableError
-
-        with self.assertRaises(JsonableError) as cm:
+        with self.assertRaises(BadEventQueueIdError) as cm:
             queue.contents(include_internal_data=False)
-        self.assertEqual(str(cm.exception), "Event queue overflowed. Client must reload state.")
+        self.assertEqual(cm.exception.code, ErrorCode.BAD_EVENT_QUEUE_ID)
 
         events = queue.contents(include_internal_data=True)
-        self.assert_length(events, queue.MAX_QUEUE_SIZE)
-        self.assertEqual(events[0]["value"], 1)
-        self.assertEqual(events[-1]["value"], "overflow")
+        self.assert_length(events, 0)
 
     def test_queue_overflow_serialization(self) -> None:
         client = self.get_client_descriptor()
@@ -1629,58 +1625,6 @@ class EventQueueTest(ZulipTestCase):
 
         # After overflow
         self.verify_to_dict_end_to_end(client)
-
-    def test_finish_handler_error_response(self) -> None:
-        from django.http import HttpRequest
-
-        from zerver.lib.exceptions import JsonableError
-        from zerver.tornado.handlers import finish_handler, handlers
-
-        class MockHandler:
-            def __init__(self) -> None:
-                self.handler_id = 9999
-                self.status_code: int | None = None
-                self._request = HttpRequest()
-                self.finished_dict: dict[str, Any] | None = None
-
-            def set_status(self, status: int) -> None:
-                self.status_code = status
-
-            def zulip_finish(self, result_dict: dict[str, Any], request: HttpRequest) -> None:
-                self.finished_dict = result_dict
-
-        mock_handler = MockHandler()
-        handlers[mock_handler.handler_id] = mock_handler  # type: ignore[assignment]
-
-        try:
-            # We also need RequestNotes on the mock request
-            from zerver.lib.request import RequestNotes
-
-            request_notes = RequestNotes()
-            request_notes.log_data = {}
-            RequestNotes.set_notes(mock_handler._request, request_notes)
-
-            # Call finish_handler with a JsonableError
-            error = JsonableError("Some error message")
-            with mock.patch("tornado.ioloop.IOLoop.current") as mock_current:
-                mock_loop = mock_current.return_value
-
-                def mock_add_callback(callback: Any, *args: Any, **kwargs: Any) -> None:
-                    callback(*args, **kwargs)
-
-                mock_loop.add_callback.side_effect = mock_add_callback
-
-                finish_handler(mock_handler.handler_id, "test_queue_id", error)
-
-            # Verify handler state
-            self.assertEqual(mock_handler.status_code, 400)
-            self.assertIsNotNone(mock_handler.finished_dict)
-            assert mock_handler.finished_dict is not None
-            self.assertEqual(mock_handler.finished_dict["result"], "error")
-            self.assertEqual(mock_handler.finished_dict["msg"], "Some error message")
-            self.assertEqual(mock_handler.finished_dict["code"], "BAD_REQUEST")
-        finally:
-            handlers.pop(mock_handler.handler_id, None)
 
 
 class OfflineEventQueueTest(ZulipTestCase):

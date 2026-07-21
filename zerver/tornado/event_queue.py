@@ -234,12 +234,6 @@ class ClientDescriptor:
                 self.event_queue.id,
                 self.event_queue.contents(),
             )
-        except JsonableError as e:
-            finish_handler(
-                self.current_handler_id,
-                self.event_queue.id,
-                e,
-            )
         except Exception:
             logging.exception(
                 "Got error finishing handler for queue %s", self.event_queue.id, stack_info=True
@@ -440,10 +434,12 @@ class EventQueue:
                 virtual_event["timestamp"] = event["timestamp"]
 
         else:
-            if len(self.queue) >= self.MAX_QUEUE_SIZE:
-                self.queue.popleft()
+            if self.overflowed or len(self.queue) >= self.MAX_QUEUE_SIZE:
                 self.overflowed = True
-            self.queue.append(event)
+                self.queue.clear()
+                self.virtual_events.clear()
+            else:
+                self.queue.append(event)
 
     # Note that pop ignores virtual events.  This is fine in our
     # current usage since virtual events should always be resolved to
@@ -462,7 +458,7 @@ class EventQueue:
 
     def contents(self, include_internal_data: bool = False) -> list[dict[str, Any]]:
         if self.overflowed and not include_internal_data:
-            raise JsonableError(_("Event queue overflowed. Client must reload state."))
+            raise BadEventQueueIdError(self.id)
 
         contents: list[dict[str, Any]] = []
         virtual_id_map: dict[str, dict[str, Any]] = {}
