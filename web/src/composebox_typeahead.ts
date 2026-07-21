@@ -17,6 +17,7 @@ import type {EmojiDict} from "./emoji.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as linkifiers from "./linkifiers.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
@@ -101,6 +102,14 @@ export type TopicSuggestion = {
     is_new_topic: boolean;
 };
 
+export type StreamTopicSuggestion = {
+    topic: string;
+    topic_display_name: string;
+    is_empty_string_topic: boolean;
+    type: "stream_topic";
+    stream_data: StreamPillData;
+};
+
 type TimeJumpSuggestion = {
     message: string;
     type: "time_jump";
@@ -119,6 +128,7 @@ export type TypeaheadSuggestion =
     | TimeJumpSuggestion
     | LanguageSuggestion
     | TopicSuggestion
+    | StreamTopicSuggestion
     | EmojiSuggestion
     | SlashCommandSuggestion;
 
@@ -258,6 +268,59 @@ function get_topic_matcher(query: string): (topic: string) => boolean {
             should_remove_diacritics,
         );
     };
+}
+
+function query_matches_linkifier_pattern(query: string): boolean {
+    for (const pattern of linkifiers.get_linkifier_map().keys()) {
+        if (pattern.test(query)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Finds topics matching `token` in every channel, so `#keyword` can
+// suggest topics without picking a channel first.  Only topic history
+// the client already has is used; fetching every channel on each
+// keystroke would be too slow.
+function get_stream_topic_matches(
+    token: string,
+    candidate_list: StreamPillData[],
+): StreamTopicSuggestion[] {
+    const topic_matcher = get_topic_matcher(token);
+    const topic_matches: StreamTopicSuggestion[] = [];
+    for (const sub of candidate_list) {
+        for (const topic of stream_topic_history.get_recent_topic_names(sub.stream_id)) {
+            if (!topic_matcher(topic)) {
+                continue;
+            }
+            topic_matches.push({
+                topic,
+                topic_display_name: util.get_final_topic_display_name(topic),
+                is_empty_string_topic: topic === "",
+                type: "stream_topic",
+                stream_data: sub,
+            });
+        }
+    }
+
+    // Topics in the channel we are composing to are the most likely
+    // match, so they sort first.
+    const current_stream_id = compose_state.stream_id();
+    const current_stream_topic_matches = topic_matches.filter(
+        (item) => item.stream_data.stream_id === current_stream_id,
+    );
+    const other_stream_topic_matches = topic_matches.filter(
+        (item) => item.stream_data.stream_id !== current_stream_id,
+    );
+    return [
+        ...typeahead_helper.sorter(
+            token,
+            current_stream_topic_matches,
+            (x) => x.topic_display_name,
+        ),
+        ...typeahead_helper.sorter(token, other_stream_topic_matches, (x) => x.topic_display_name),
+    ];
 }
 
 export function should_enter_send(e: JQuery.KeyDownEvent): boolean {
@@ -1240,7 +1303,8 @@ export function get_candidates(
         }
 
         current_token = current_token.slice(1);
-        if (current_token.startsWith("**")) {
+        const uses_channel_mention_syntax = current_token.startsWith("**");
+        if (uses_channel_mention_syntax) {
             current_token = current_token.slice(2);
         }
 
@@ -1259,7 +1323,24 @@ export function get_candidates(
             }));
         const matcher = get_stream_matcher(token);
         const matches = candidate_list.filter((item) => matcher(item));
-        return typeahead_helper.sort_streams(matches, token);
+        const sorted_stream_matches = typeahead_helper.sort_streams(matches, token);
+
+        // Typing an issue number is a common use of `#`, so we never
+        // open the typeahead only to show topics.  If a channel matches
+        // we show its topics too.  Linkifier patterns usually include
+        // the `#`, so we test what the user typed; `#**` clearly means
+        // a channel, so it is exempt.
+        if (
+            sorted_stream_matches.length === 0 &&
+            !uses_channel_mention_syntax &&
+            query_matches_linkifier_pattern("#" + token)
+        ) {
+            return [];
+        }
+
+        // Channels sort above topics, so this never gets in the way of
+        // a plain `#channel` mention.
+        return [...sorted_stream_matches, ...get_stream_topic_matches(token, candidate_list)];
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.timestamp) {
@@ -1314,6 +1395,8 @@ export function content_item_html(
                 }
                 return typeahead_helper.render_stream_topic(item);
             }
+            case "stream_topic":
+                return typeahead_helper.render_stream_and_topic(item);
             case "time_jump":
                 return typeahead_helper.render_typeahead_item({primary: item.message});
             default:
@@ -1509,6 +1592,20 @@ export function content_typeahead_selected(
                 );
             }
             beginning = beginning.slice(0, syntax_start_index) + replacement_text + " ";
+            break;
+        }
+        case "stream_topic": {
+            // Like the "stream" case: the token excludes the `#` and
+            // the `**`, so remove the `#*` left behind.
+            beginning = beginning.slice(0, -token.length - 1);
+            if (beginning.endsWith("#*")) {
+                beginning = beginning.slice(0, -2);
+            }
+
+            void compose_validate.warn_if_private_stream_is_linked(item.stream_data, $textbox);
+            beginning +=
+                topic_link_util.get_stream_topic_link_syntax(item.stream_data.name, item.topic) +
+                " ";
             break;
         }
         case "time_jump": {

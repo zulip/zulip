@@ -129,6 +129,7 @@ set_global("setTimeout", (f, time) => {
 set_global("document", "document-stub");
 
 const typeahead = zrequire("typeahead");
+const linkifiers = zrequire("linkifiers");
 const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
@@ -1173,6 +1174,30 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
     assert.equal(actual_value, expected_value);
 
+    // stream_topic
+    ct.get_or_set_completing_for_tests("stream_topic");
+    const sweden_ice_topic = {
+        topic: "more ice",
+        topic_display_name: "more ice",
+        is_empty_string_topic: false,
+        type: "stream_topic",
+        stream_data: sweden_stream,
+    };
+
+    query = "Hello #more ic";
+    ct.get_or_set_token_for_testing("more ic");
+    actual_value = ct.content_typeahead_selected(sweden_ice_topic, query, input_element);
+    expected_value = "Hello #**Sweden>more ice** ";
+    assert.equal(actual_value, expected_value);
+
+    // The token excludes the `**`, so selecting a topic must also
+    // clean up the leftover `#*`.
+    query = "Hello #**more ic";
+    ct.get_or_set_token_for_testing("more ic");
+    actual_value = ct.content_typeahead_selected(sweden_ice_topic, query, input_element);
+    expected_value = "Hello #**Sweden>more ice** ";
+    assert.equal(actual_value, expected_value);
+
     // topic_list
     ct.get_or_set_completing_for_tests("topic_list");
 
@@ -1759,7 +1784,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     return 7;
                 };
                 let actual_value = options.source("test #s", input_element);
-                assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
+                const stream_matches = actual_value.filter((item) => item.type === "stream");
+                assert.deepEqual(sorted_names_from(stream_matches), ["Sweden", "The Netherlands"]);
                 assert.ok(caret_called);
 
                 othello.delivery_email = "othello@zulip.com";
@@ -2833,6 +2859,19 @@ test("content_item_html", ({override_rewire}) => {
     });
     ct.content_item_html("")(emoji);
 
+    ct.get_or_set_completing_for_tests("stream_topic");
+    assert.ok(
+        ct
+            .content_item_html("")({
+                topic: "more ice",
+                topic_display_name: "more ice",
+                is_empty_string_topic: false,
+                type: "stream_topic",
+                stream_data: sweden_stream,
+            })
+            .includes("more ice"),
+    );
+
     ct.get_or_set_completing_for_tests("mention");
     let th_render_person_called = false;
     override_rewire(typeahead_helper, "render_person", (person, opts) => {
@@ -2892,6 +2931,36 @@ test("content_item_html", ({override_rewire}) => {
     assert.ok(th_render_stream_called);
     assert.ok(th_render_typeahead_item_called);
     assert.ok(th_render_slash_command_called);
+});
+
+test("render_stream_and_topic", () => {
+    // The topic renders next to the channel, styled like it, so that
+    // it reads as a `channel > topic` link.
+    const html = typeahead_helper.render_stream_and_topic({
+        topic: "more ice",
+        topic_display_name: "more ice",
+        is_empty_string_topic: false,
+        type: "stream_topic",
+        stream_data: sweden_stream,
+    });
+    assert.ok(html.includes("Sweden"));
+    assert.ok(html.includes('<strong class="typeahead-strong-section">more ice</strong>'));
+    assert.ok(!html.includes("empty-topic-display"));
+
+    // The empty topic gets its usual styling, and only on the topic,
+    // not on the channel name.
+    const empty_topic_html = typeahead_helper.render_stream_and_topic({
+        topic: "",
+        topic_display_name: get_final_topic_display_name(""),
+        is_empty_string_topic: true,
+        type: "stream_topic",
+        stream_data: sweden_stream,
+    });
+    assert.ok(
+        empty_topic_html.includes(
+            `<strong class="typeahead-strong-section empty-topic-display">${get_final_topic_display_name("")}</strong>`,
+        ),
+    );
 });
 
 function possibly_silent_list(list, is_silent) {
@@ -3367,4 +3436,100 @@ test("get_pm_people respects DM permissions", ({override}) => {
     // permission group should not appear.
     results = ct.get_pm_people("othello");
     assert.deepEqual(results, []);
+});
+
+test("stream_topic suggestions for '#'", ({override_rewire}) => {
+    // We compose to Denmark below, so seed it to check that its topics
+    // sort before other channels'.
+    for (const [message_id, topic_name] of [
+        [201, "ice hockey"],
+        [202, "design"],
+    ]) {
+        stream_topic_history.add_message({
+            stream_id: denmark_stream.stream_id,
+            message_id,
+            topic_name,
+        });
+    }
+
+    const input_element = {
+        $element: {},
+        type: "input",
+    };
+
+    function candidates_for(input) {
+        // Stub out split_at_cursor that uses $(':focus')
+        override_rewire(ct, "split_at_cursor", () => [input, ""]);
+        return ct.get_candidates(input, input_element);
+    }
+
+    function suggestions_for(input) {
+        return candidates_for(input).map((item) =>
+            item.type === "stream_topic"
+                ? `${item.stream_data.name} > ${item.topic_display_name}`
+                : item.name,
+        );
+    }
+
+    // A query that names no channel still suggests matching topics
+    // from every channel.
+    compose_state.set_stream_id(undefined);
+    assert.deepEqual(suggestions_for("#ice").toSorted(), [
+        "Denmark > ice hockey",
+        "Sweden > even more ice",
+        "Sweden > ice",
+        "Sweden > more ice",
+    ]);
+
+    // Topics in the channel being composed to sort first.
+    compose_state.set_stream_id(denmark_stream.stream_id);
+    assert.deepEqual(suggestions_for("#ice")[0], "Denmark > ice hockey");
+    compose_state.set_stream_id(sweden_stream.stream_id);
+    assert.deepEqual(suggestions_for("#ice")[0], "Sweden > ice");
+
+    // Channels come before topics, so topics never get in the way of a
+    // plain channel mention.  "stream" sorts before "stream_topic", so
+    // an already-sorted list of types proves the order.
+    const types = candidates_for("#de").map((item) => item.type);
+    assert.ok(types.includes("stream") && types.includes("stream_topic"));
+    assert.deepEqual(types.toSorted(), types);
+
+    // The empty topic matches by its display name, as it does elsewhere.
+    assert.deepEqual(suggestions_for("#general ch"), [
+        `Sweden > ${get_final_topic_display_name("")}`,
+    ]);
+
+    // Topics are offered for the explicit `#**` syntax too.
+    assert.deepEqual(suggestions_for("#**ice hock"), ["Denmark > ice hockey"]);
+
+    const issues_stream = stream_item(
+        make_stream({
+            name: "12 issues",
+            stream_id: 7,
+            subscribed: true,
+        }),
+    );
+    stream_data.add_sub_for_tests(issues_stream);
+    stream_topic_history.add_message({
+        stream_id: issues_stream.stream_id,
+        message_id: 203,
+        topic_name: "1234 bug",
+    });
+    linkifiers.update_linkifier_rules([
+        {
+            pattern: "#(?P<id>[0-9]{2,8})",
+            url_template: "https://trac.example.com/ticket/{id}",
+        },
+    ]);
+
+    // An issue number handled by a linkifier should not open the
+    // typeahead just to show topics...
+    assert.deepEqual(suggestions_for("#1234"), []);
+    // ...but the explicit channel-mention syntax is never suppressed...
+    assert.deepEqual(suggestions_for("#**1234"), ["12 issues > 1234 bug"]);
+    // ...and neither is a query naming a channel, since the typeahead
+    // would have opened for the channel anyway.
+    assert.deepEqual(suggestions_for("#12"), ["12 issues", "12 issues > 1234 bug"]);
+
+    linkifiers.update_linkifier_rules([]);
 });

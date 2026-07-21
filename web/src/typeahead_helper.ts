@@ -9,6 +9,7 @@ import * as compose_state from "./compose_state.ts";
 import type {
     LanguageSuggestion,
     SlashCommandSuggestion,
+    StreamTopicSuggestion,
     TopicSuggestion,
 } from "./composebox_typeahead.ts";
 import type {InputPillContainer} from "./input_pill.ts";
@@ -69,6 +70,8 @@ export let render_typeahead_item = (args: {
     stream?: StreamData;
     emoji_code?: string | undefined;
     topic_object?: TopicSuggestion;
+    topic?: string | undefined;
+    topic_is_empty_string?: boolean;
     is_stream_topic?: boolean;
     is_empty_string_topic?: boolean;
     is_default_language?: boolean;
@@ -226,6 +229,16 @@ export const render_stream_topic = (topic_object: TopicSuggestion): string =>
     render_typeahead_item({
         topic_object,
         is_stream_topic: true,
+    });
+
+// `render_stream_topic` shows a topic under an already-chosen channel.
+// This shows the channel and topic together, for topic suggestions
+// that can come from any channel.
+export const render_stream_and_topic = (item: StreamTopicSuggestion): string =>
+    render_typeahead_item({
+        stream: item.stream_data,
+        topic: item.topic_display_name,
+        topic_is_empty_string: item.is_empty_string_topic,
     });
 
 export function rewire_render_stream(value: typeof render_stream): void {
