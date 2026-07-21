@@ -69,7 +69,7 @@ from zerver.lib.subscription_info import (
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
-from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
+from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured, most_recent_message
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import UserGroupMembershipDetails, get_group_setting_value_for_api
 from zerver.models import (
@@ -3164,9 +3164,11 @@ class StreamAdminTest(ZulipTestCase):
         If you're a realm admin, you can remove people from public streams, even
         those you aren't on.
         """
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
-            target_users=[self.example_user("cordelia")],
+            query_count=40,
+            target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
             invite_only=False,
@@ -3175,6 +3177,14 @@ class StreamAdminTest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assert_length(json["removed"], 1)
         self.assert_length(json["not_removed"], 0)
+
+        msg = most_recent_message(cordelia)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(msg.sender_id, self.notification_bot(cordelia.realm).id)
+        self.assertEqual(
+            msg.content,
+            f"@_**Iago|{iago.id}** unsubscribed you from #**hümbüǵ**.",
+        )
 
     def test_realm_admin_remove_multiple_users_from_stream(self) -> None:
         """
@@ -3192,8 +3202,8 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=22,
-            cache_count=13,
+            query_count=75,
+            cache_count=32,
             target_users=target_users,
             is_realm_admin=True,
             is_subbed=True,
@@ -3209,9 +3219,11 @@ class StreamAdminTest(ZulipTestCase):
         If you're a realm admin, you can remove other people from private streams you
         are on.
         """
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
-            target_users=[self.example_user("cordelia")],
+            query_count=43,
+            target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
             invite_only=True,
@@ -3221,14 +3233,24 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(json["removed"], 1)
         self.assert_length(json["not_removed"], 0)
 
+        msg = most_recent_message(cordelia)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(msg.sender_id, self.notification_bot(cordelia.realm).id)
+        self.assertEqual(
+            msg.content,
+            f"@_**Iago|{iago.id}** unsubscribed you from #**hümbüǵ**.",
+        )
+
     def test_realm_admin_remove_others_from_unsubbed_private_stream(self) -> None:
         """
         If you're a realm admin, you can remove people from private
         streams you aren't on.
         """
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
-            target_users=[self.example_user("cordelia")],
+            query_count=44,
+            target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=False,
             invite_only=True,
@@ -3238,6 +3260,14 @@ class StreamAdminTest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assert_length(json["removed"], 1)
         self.assert_length(json["not_removed"], 0)
+
+        msg = most_recent_message(cordelia)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(msg.sender_id, self.notification_bot(cordelia.realm).id)
+        self.assertEqual(
+            msg.content,
+            f"@_**Iago|{iago.id}** unsubscribed you from #**hümbüǵ**.",
+        )
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
@@ -3252,9 +3282,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
-            target_users=[self.example_user("cordelia")],
+            query_count=40,
+            target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
             invite_only=False,
@@ -3265,9 +3297,17 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(json["removed"], 1)
         self.assert_length(json["not_removed"], 0)
 
+        msg = most_recent_message(cordelia)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(msg.sender_id, self.notification_bot(cordelia.realm).id)
+        self.assertEqual(
+            msg.content,
+            f"@_**Iago|{iago.id}** unsubscribed you from #**hümbüǵ**.",
+        )
+
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=56,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3419,6 +3459,346 @@ class StreamAdminTest(ZulipTestCase):
                 recipient__type_id=stream.id, recipient__type=Recipient.STREAM, active=True
             ).exists()
         )
+
+    def test_no_notification_on_self_unsubscribe(self) -> None:
+        """
+        When an admin unsubscribes themselves alongside other users in the
+        same call, the admin should not receive a notification DM for
+        their own unsubscription.
+        """
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        self.login_user(iago)
+        stream_name = "test_self_unsub_filter"
+        self.make_stream(stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(cordelia, stream_name)
+
+        notification_bot = self.notification_bot(iago.realm)
+        iago_dms_before = UserMessage.objects.filter(
+            user_profile=iago,
+            message__sender_id=notification_bot.id,
+        ).count()
+        cordelia_dms_before = UserMessage.objects.filter(
+            user_profile=cordelia,
+            message__sender_id=notification_bot.id,
+        ).count()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream_name]).decode(),
+                    "principals": orjson.dumps([iago.id, cordelia.id]).decode(),
+                },
+            )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 2)
+
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile=cordelia,
+                message__sender_id=notification_bot.id,
+            ).count(),
+            cordelia_dms_before + 1,
+        )
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile=iago,
+                message__sender_id=notification_bot.id,
+            ).count(),
+            iago_dms_before,
+        )
+
+    def test_no_notification_for_bot_unsubscription(self) -> None:
+        """
+        When an admin unsubscribes a bot alongside a regular user in the
+        same call, the bot should not receive a notification DM.
+        """
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        webhook_bot = self.example_user("webhook_bot")
+        do_change_bot_owner(webhook_bot, bot_owner=hamlet, acting_user=hamlet)
+        self.login_user(iago)
+        stream_name = "test_bot_unsub_filter"
+        self.make_stream(stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(webhook_bot, stream_name)
+
+        notification_bot = self.notification_bot(iago.realm)
+        bot_dms_before = UserMessage.objects.filter(
+            user_profile=webhook_bot,
+            message__sender_id=notification_bot.id,
+        ).count()
+        cordelia_dms_before = UserMessage.objects.filter(
+            user_profile=cordelia,
+            message__sender_id=notification_bot.id,
+        ).count()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream_name]).decode(),
+                    "principals": orjson.dumps([cordelia.id, webhook_bot.id]).decode(),
+                },
+            )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 2)
+
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile=cordelia,
+                message__sender_id=notification_bot.id,
+            ).count(),
+            cordelia_dms_before + 1,
+        )
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile=webhook_bot,
+                message__sender_id=notification_bot.id,
+            ).count(),
+            bot_dms_before,
+        )
+
+    def test_notification_multiple_channels_unsubscription(self) -> None:
+        """
+        When a user is unsubscribed from multiple channels at once, they
+        receive a single DM listing all channels as a bullet list.
+        """
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        stream_names = ["alpha_stream", "beta_stream"]
+        for stream_name in stream_names:
+            self.make_stream(stream_name)
+            self.subscribe(iago, stream_name)
+            self.subscribe(cordelia, stream_name)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps(stream_names).decode(),
+                    "principals": orjson.dumps([cordelia.id]).decode(),
+                },
+            )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 2)
+
+        msg = most_recent_message(cordelia)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(msg.sender_id, self.notification_bot(cordelia.realm).id)
+        self.assertEqual(
+            msg.content,
+            f"@_**Iago|{iago.id}** unsubscribed you from the following channels:\n\n"
+            "* #**alpha_stream**\n"
+            "* #**beta_stream**",
+        )
+
+    def test_no_notification_when_bulk_unsubscription_exceeds_limit(self) -> None:
+        """
+        When more than MAX_BULK_SUBSCRIPTION_MESSAGES users are
+        unsubscribed at once, no notification DMs should be sent.
+        """
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        stream_name = "test_bulk_unsub"
+        self.make_stream(stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(hamlet, stream_name)
+
+        notification_bot = self.notification_bot(iago.realm)
+        msg_count_before = UserMessage.objects.filter(
+            user_profile__in=[cordelia, hamlet],
+            message__sender_id=notification_bot.id,
+        ).count()
+
+        with (
+            self.settings(MAX_BULK_SUBSCRIPTION_MESSAGES=1),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream_name]).decode(),
+                    "principals": orjson.dumps([cordelia.id, hamlet.id]).decode(),
+                },
+            )
+
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 2)
+        self.assertFalse(json["messages_sent_to_removed_subscribers"])
+
+        msg_count_after = UserMessage.objects.filter(
+            user_profile__in=[cordelia, hamlet],
+            message__sender_id=notification_bot.id,
+        ).count()
+        self.assertEqual(msg_count_before, msg_count_after)
+
+    def test_no_notification_when_send_messages_disabled(self) -> None:
+        """
+        When `send_messages_to_removed_subscribers=False` is passed,
+        no notification DMs should be sent and the response should not
+        include a `messages_sent_to_removed_subscribers` field.
+        """
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        self.login_user(iago)
+        stream_name = "test_send_messages_false"
+        self.make_stream(stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(cordelia, stream_name)
+
+        notification_bot = self.notification_bot(iago.realm)
+        cordelia_dms_before = UserMessage.objects.filter(
+            user_profile=cordelia,
+            message__sender_id=notification_bot.id,
+        ).count()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream_name]).decode(),
+                    "principals": orjson.dumps([cordelia.id]).decode(),
+                    "send_messages_to_removed_subscribers": orjson.dumps(False).decode(),
+                },
+            )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+        self.assertNotIn("messages_sent_to_removed_subscribers", json)
+
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile=cordelia,
+                message__sender_id=notification_bot.id,
+            ).count(),
+            cordelia_dms_before,
+        )
+
+    def test_self_unsubscribe_reports_no_messages_sent(self) -> None:
+        """
+        A plain self-unsubscribe sends no DM, so the response reports
+        messages_sent_to_removed_subscribers as False rather than True.
+        """
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        stream_name = "test_self_unsub_field"
+        self.make_stream(stream_name)
+        self.subscribe(hamlet, stream_name)
+
+        notification_bot = self.notification_bot(hamlet.realm)
+        hamlet_dms_before = UserMessage.objects.filter(
+            user_profile=hamlet,
+            message__sender_id=notification_bot.id,
+        ).count()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {"subscriptions": orjson.dumps([stream_name]).decode()},
+            )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+        self.assertFalse(json["messages_sent_to_removed_subscribers"])
+
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile=hamlet,
+                message__sender_id=notification_bot.id,
+            ).count(),
+            hamlet_dms_before,
+        )
+
+    def test_notification_cap_counts_only_eligible_recipients(self) -> None:
+        """
+        The bulk cap applies to the users who will actually be notified, so
+        a self-unsubscribe and a bot removed in the same call do not count
+        against it and do not block an eligible user's notification.
+        """
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        webhook_bot = self.example_user("webhook_bot")
+        do_change_bot_owner(webhook_bot, bot_owner=iago, acting_user=iago)
+        self.login_user(iago)
+        stream_name = "test_cap_eligible"
+        self.make_stream(stream_name)
+        for user in [iago, cordelia, webhook_bot]:
+            self.subscribe(user, stream_name)
+
+        notification_bot = self.notification_bot(iago.realm)
+        cordelia_dms_before = UserMessage.objects.filter(
+            user_profile=cordelia,
+            message__sender_id=notification_bot.id,
+        ).count()
+
+        # Three users are removed, but only cordelia is an eligible
+        # recipient, so a cap of 1 must not block her notification.
+        with (
+            self.settings(MAX_BULK_SUBSCRIPTION_MESSAGES=1),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream_name]).decode(),
+                    "principals": orjson.dumps([iago.id, cordelia.id, webhook_bot.id]).decode(),
+                },
+            )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 3)
+        self.assertTrue(json["messages_sent_to_removed_subscribers"])
+
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile=cordelia,
+                message__sender_id=notification_bot.id,
+            ).count(),
+            cordelia_dms_before + 1,
+        )
+
+    def test_unsubscriptions_query_count(self) -> None:
+        """
+        Test database query count when unsubscribing users via
+        api/v1/users/me/subscriptions, including the DM notification.
+        """
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        self.login_user(iago)
+
+        public_stream = "public_unsub_qc"
+        self.make_stream(public_stream)
+        for user in [iago, cordelia, hamlet]:
+            self.subscribe(user, public_stream)
+        with self.assert_database_query_count(52):
+            self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([public_stream]).decode(),
+                    "principals": orjson.dumps([cordelia.id, hamlet.id]).decode(),
+                },
+            )
+
+        private_stream = "private_unsub_qc"
+        self.make_stream(private_stream, invite_only=True)
+        for user in [iago, cordelia, hamlet]:
+            self.subscribe(user, private_stream)
+        with self.assert_database_query_count(46):
+            self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([private_stream]).decode(),
+                    "principals": orjson.dumps([cordelia.id, hamlet.id]).decode(),
+                },
+            )
 
 
 class SubscriptionRestApiTest(ZulipTestCase):
