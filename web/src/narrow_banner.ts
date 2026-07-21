@@ -644,8 +644,12 @@ export function show_empty_narrow_message(current_filter: Filter, invalid_narrow
 
     // Removing messages from the current narrow can leave a stale
     // top-of-feed notice visible, so hide all of them before showing
-    // the empty-narrow banner.
+    // the empty-narrow banner. Hiding the notices restores the
+    // top-of-feed logo, so re-evaluate whether it should be visible;
+    // an empty narrow whose history is fully fetched should not
+    // suggest that more messages may load above.
     message_feed_top_notices.hide_top_of_narrow_notices();
+    message_feed_top_notices.update_top_of_feed_logo();
 
     if (current_filter.may_have_incomplete_message_history()) {
         $(".empty_feed_notice .empty-feed-notice-action").show();
