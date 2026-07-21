@@ -1535,10 +1535,10 @@ class Fence:
 
 LIST_ITEM_REGEX = re.compile(
     r"""
-    ^[ ]*        # Start with zero or more spaces
-    ([*+-]|\d\.) # A bullet marker (*, +, or -) or a digit followed by "."
-    [ ]+         # Followed by one or more spaces
-    (.*)         # The list content, which could be empty
+    ^[ ]*           # Start with zero or more spaces
+    ([*+-]|\d+\.)   # A bullet marker (*, +, or -) or one or more digits followed by "."
+    [ ]+            # Followed by one or more spaces
+    (.*)            # The list content, which could be empty
     """,
     re.VERBOSE,
 )
