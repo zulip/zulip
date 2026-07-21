@@ -43,23 +43,6 @@ from zerver.models import UserProfile
 
 fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
 
-
-def github_fixture_to_headers(filename: str) -> dict[str, str]:
-    """
-    This function is used to generate the header in the Integrations
-    developer panel on load.
-    """
-    if "__" in filename:
-        event_type = filename.split("__", 1)[0]
-    else:
-        event_type = filename
-    return {
-        "HTTP_X_GITHUB_EVENT": event_type,
-    }
-
-
-fixture_to_headers = github_fixture_to_headers
-
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n{body_fence} quote\n### {title}\n{body}\n{body_fence}",
