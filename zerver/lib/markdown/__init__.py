@@ -1818,6 +1818,17 @@ class StreamTopicMessageProcessor(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+    def is_in_link_url_placeholder(self, m: Match[str], data: str) -> bool:
+        # A prettified link like `#**stream**` is normally rendered
+        # as its own `<a>` element. But if it was pasted into the
+        # URL placeholder of Markdown hyperlink syntax, e.g.
+        # `[label](#**stream**)`, it needs to be resolved to a plain
+        # URL string instead, so that the outer `[label](...)` link
+        # (handled separately, at lower priority, by
+        # `LinkInlineProcessor`) renders correctly instead of being
+        # clobbered by a nested `<a>` element.
+        return data[m.start() - 2 : m.start()] == "]("
+
 
 class StreamPattern(StreamTopicMessageProcessor):
     @override
@@ -1829,16 +1840,21 @@ class StreamPattern(StreamTopicMessageProcessor):
         stream_id = self.find_stream_id(name)
         if stream_id is None:
             return None, None, None
-        el = Element("a")
-        el.set("class", "stream")
-        el.set("data-stream-id", str(stream_id))
         # TODO: We should quite possibly not be specifying the
         # href here and instead having the browser auto-add the
         # href when it processes a message with one of these, to
         # provide more clarity to API clients.
         # Also do the same for StreamTopicPattern.
         stream_url = encode_channel(stream_id, name)
-        el.set("href", f"/#narrow/channel/{stream_url}")
+        link = f"/#narrow/channel/{stream_url}"
+
+        if self.is_in_link_url_placeholder(m, data):
+            return link, m.start(), m.end()
+
+        el = Element("a")
+        el.set("class", "stream")
+        el.set("data-stream-id", str(stream_id))
+        el.set("href", link)
         text = f"#{name}"
         el.text = markdown.util.AtomicString(text)
         return el, m.start(), m.end()
@@ -1862,9 +1878,6 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         stream_id = self.find_stream_id(stream_name)
         if stream_id is None or topic_name is None:
             return None, None, None
-        el = Element("a")
-        el.set("class", "stream-topic")
-        el.set("data-stream-id", str(stream_id))
         stream_url = encode_channel(stream_id, stream_name)
         topic_url = encode_hash_component(topic_name)
         channel_topic_object = ChannelTopicInfo(stream_name, topic_name)
@@ -1874,6 +1887,12 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         else:
             link = f"/#narrow/channel/{stream_url}/topic/{topic_url}"
 
+        if self.is_in_link_url_placeholder(m, data):
+            return link, m.start(), m.end()
+
+        el = Element("a")
+        el.set("class", "stream-topic")
+        el.set("data-stream-id", str(stream_id))
         el.set("href", link)
 
         if topic_name == "":
@@ -1902,11 +1921,15 @@ class StreamTopicMessagePattern(StreamTopicMessageProcessor):
         stream_id = self.find_stream_id(stream_name)
         if stream_id is None or topic_name is None:
             return None, None, None
-        el = Element("a")
-        el.set("class", "message-link")
         stream_url = encode_channel(stream_id, stream_name)
         topic_url = encode_hash_component(topic_name)
         link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/near/{message_id}"
+
+        if self.is_in_link_url_placeholder(m, data):
+            return link, m.start(), m.end()
+
+        el = Element("a")
+        el.set("class", "message-link")
         el.set("href", link)
 
         if topic_name == "":

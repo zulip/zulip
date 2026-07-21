@@ -3652,6 +3652,72 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             f'<p><a class="message-link" href="/#narrow/channel/{denmark.id}-{denmark.name}/topic//near/123">#{denmark.name} &gt; <em>{Message.EMPTY_TOPIC_FALLBACK_NAME}</em> @ 💬</a></p>',
         )
 
+    def test_stream_in_url_placeholder(self) -> None:
+        # A prettified link like `#**stream**` that was pasted into
+        # the URL placeholder of Markdown hyperlink syntax should
+        # resolve to a plain, working link rather than clobbering
+        # the outer `[label](...)` syntax. See #31985.
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "[denmark stream](#**Denmark**)"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a href="/#narrow/channel/{denmark.id}-Denmark">denmark stream</a></p>',
+        )
+
+    def test_stream_topic_in_url_placeholder(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "[topic 1](#**Denmark>some topic**)"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic">topic 1</a></p>',
+        )
+
+    def test_stream_topic_message_in_url_placeholder(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "[this message](#**Denmark>danish@123**)"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a href="/#narrow/channel/{denmark.id}-Denmark/topic/danish/near/123">this message</a></p>',
+        )
+
+    def test_stream_link_outside_url_placeholder_unaffected(self) -> None:
+        # A prettified link that is *not* inside the URL placeholder
+        # of Markdown hyperlink syntax should keep rendering as its
+        # own dedicated `<a class="stream">` element, even when a
+        # Markdown link appears right before it.
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "[a link](https://example.com) #**Denmark**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            '<p><a href="https://example.com">a link</a> '
+            f'<a class="stream" data-stream-id="{denmark.id}" '
+            f'href="/#narrow/channel/{denmark.id}-Denmark">#{denmark.name}</a></p>',
+        )
+
     def test_possible_stream_names(self) -> None:
         content = """#**test here**
             This mentions #**Denmark** too.
