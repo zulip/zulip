@@ -489,6 +489,10 @@ class MarkdownListPreprocessorTest(ZulipTestCase):
         original, expected = self.split_message("List without a gap\n<>* One\n* Two")
         self.assertEqual(preprocessor.run(original), expected)
 
+    def test_basic_list_with_double_digit_numbers(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        original, expected = self.split_message("List without a gap\n<>10. One\n11. Two")
+        self.assertEqual(preprocessor.run(original), expected)
     def test_list_after_quotes(self) -> None:
         preprocessor = MarkdownListPreprocessor()
         original, expected = self.split_message(
