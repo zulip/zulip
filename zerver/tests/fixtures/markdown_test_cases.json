@@ -406,6 +406,12 @@
       "text_content": "1. A\n2. B\n  2. C\n3. D"
     },
     {
+      "name": "numbered_list_double_digit",
+      "input": "List without a gap\n10. One\n11. Two",
+      "expected_output": "<p>List without a gap</p>\n<ol start=\"10\">\n<li>One</li>\n<li>Two</li>\n</ol>",
+      "text_content": "List without a gap\n10. One\n11. Two"
+    },
+    {
       "name": "linkify_interference",
       "input": "link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%78xxxx/xx/):**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx",
       "expected_output": "<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%78xxxx/xx/\">xxxxx #xx</a>:<strong>xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>",
