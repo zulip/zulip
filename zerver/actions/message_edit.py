@@ -8,7 +8,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db import connection, transaction
-from django.db.models import Exists, OuterRef, Q, QuerySet
+from django.db.models import Exists, OuterRef, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -1081,11 +1081,76 @@ def do_update_message(
     if message_edit_request.is_message_moved:
         event["propagate_mode"] = message_edit_request.propagate_mode
 
-    users_losing_access = UserProfile.objects.none()
+    user_ids_losing_access: set[int] = set()
     user_ids_gaining_usermessages: list[int] = []
+
+    # The sets below describe the old and new streams' subscribers.
+    # Which of them are needed depends on the kind of move, so each
+    # branch fetches what its case consumes.
+    old_stream_all_user_ids: set[int] = set()
+    old_stream_current_user_ids: set[int] = set()
+    old_stream_active_user_ids: set[int] = set()
+
+    new_stream_current_user_ids: set[int] = set()
+    new_stream_active_user_ids: set[int] = set()
+
+    guest_user_ids: set[int] = set()
+
+    # In both conditions, we exclude long-term idle users from
+    # new_stream_active_user_ids and old_stream_active_user_ids,
+    # because they have no active clients, so they are never
+    # notified about the move.
     if message_edit_request.is_stream_edited:
         new_stream = message_edit_request.target_stream
+        # A move to another stream needs several overlapping subsets of
+        # both streams' subscribers; fetch their Subscriptions in
+        # a single query and derive every set from it in one pass.
+        subscriptions = Subscription.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id__in=[stream_being_edited.id, new_stream.id],
+        )
+        for (
+            user_id,
+            stream_id,
+            sub_active,
+            is_user_active,
+            user_long_term_idle,
+            user_role,
+        ) in subscriptions.values_list(
+            "user_profile_id",
+            "recipient__type_id",
+            "active",
+            "is_user_active",
+            "user_profile__long_term_idle",
+            "user_profile__role",
+        ):
+            if user_role == UserProfile.ROLE_GUEST:
+                guest_user_ids.add(user_id)
 
+            if stream_id == stream_being_edited.id:
+                old_stream_all_user_ids.add(user_id)
+                if sub_active:
+                    old_stream_current_user_ids.add(user_id)
+
+                if sub_active and is_user_active and not user_long_term_idle:
+                    old_stream_active_user_ids.add(user_id)
+
+            if stream_id == new_stream.id and sub_active:
+                new_stream_current_user_ids.add(user_id)
+                if is_user_active and not user_long_term_idle:
+                    new_stream_active_user_ids.add(user_id)
+
+    elif stream_being_edited.is_history_public_to_subscribers():
+        # A topic-only move only needs new_stream_active_user_ids.
+        new_stream_active_user_ids = set(
+            get_active_subscriptions_for_stream_id(
+                message_edit_request.target_stream.id, include_deactivated_users=False
+            )
+            .exclude(user_profile__long_term_idle=True)
+            .values_list("user_profile_id", flat=True)
+        )
+
+    if message_edit_request.is_stream_edited:
         edit_history_event["prev_stream"] = stream_being_edited.id
         edit_history_event["stream"] = new_stream.id
         event[ORIG_TOPIC] = orig_topic_name
@@ -1121,13 +1186,13 @@ def do_update_message(
 
         users_losing_usermessages = old_stream_all_users.difference(new_stream_current_users)
         if new_stream.is_public():
-            # Only guest users are losing access, if it's moving to a public stream
-            users_losing_access = old_stream_all_users.filter(
-                role=UserProfile.ROLE_GUEST
-            ).difference(new_stream_current_users)
+            # If it's moving to a public stream, only non-subscribed guest users are losing access.
+            user_ids_losing_access = (
+                old_stream_all_user_ids & guest_user_ids
+            ) - new_stream_current_user_ids
         else:
             # If it's moving to a private stream, all non-subscribed users are losing access
-            users_losing_access = users_losing_usermessages
+            user_ids_losing_access = old_stream_all_user_ids - new_stream_current_user_ids
 
         unmodified_user_messages = ums_queryset.exclude(
             user_profile__in=users_losing_usermessages
@@ -1146,9 +1211,7 @@ def do_update_message(
             # There may be current users of the new stream who already
             # have a usermessage row -- we handle this via `ON
             # CONFLICT DO NOTHING` during insert.
-            user_ids_gaining_usermessages = list(
-                new_stream_current_users.values_list("id", flat=True)
-            )
+            user_ids_gaining_usermessages = list(new_stream_current_user_ids)
     else:
         # If we're not moving the topic to another stream, we don't
         # modify the original set of UserMessage rows queried.
@@ -1245,9 +1308,7 @@ def do_update_message(
             "stream_id": stream_being_edited.id,
             "topic": orig_topic_name,
         }
-        send_event_on_commit(
-            user_profile.realm, delete_event, [user.id for user in users_losing_access]
-        )
+        send_event_on_commit(user_profile.realm, delete_event, user_ids_losing_access)
 
         reset_attachments_visibility_cache(
             changed_message_ids,
@@ -1303,45 +1364,8 @@ def do_update_message(
         user_info(um) for um in unmodified_user_messages if um[0] in message_access_user_ids
     ]
     if stream_being_edited.is_history_public_to_subscribers():
-        subscriptions = get_active_subscriptions_for_stream_id(
-            message_edit_request.target_stream.id, include_deactivated_users=False
-        )
+        subscriber_ids = new_stream_active_user_ids.copy()
 
-        def exclude_duplicates_from_subscription(
-            subs: QuerySet[Subscription],
-        ) -> QuerySet[Subscription]:
-            # We exclude long-term idle users, since they by
-            # definition have no active clients.
-            subs = subs.exclude(user_profile__long_term_idle=True)
-            # Remove duplicates by excluding users already in
-            # users_to_be_notified.  This is the case where a user both
-            # has a UserMessage row and is a current Subscriber.
-            subs = subs.exclude(user_profile_id__in=[user["id"] for user in users_to_be_notified])
-
-            if message_edit_request.is_stream_edited:
-                subs = subs.exclude(user_profile__in=users_losing_access)
-
-            return subs
-
-        old_stream_subs_not_in_new_stream = set()
-        if message_edit_request.is_stream_edited:
-            # We also need to include users who are not subscribed to new stream
-            # but are subscribed to the old stream.
-            old_stream_subscriptions = get_active_subscriptions_for_stream_id(
-                stream_being_edited.id, include_deactivated_users=False
-            )
-            old_stream_subscriptions = exclude_duplicates_from_subscription(
-                old_stream_subscriptions
-            )
-            old_stream_subscriber_ids = set(
-                old_stream_subscriptions.values_list("user_profile_id", flat=True)
-            )
-            new_stream_subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-            old_stream_subs_not_in_new_stream = old_stream_subscriber_ids.difference(
-                new_stream_subscriber_ids
-            )
-
-        subscriptions = exclude_duplicates_from_subscription(subscriptions)
         if message_edit_request.is_stream_edited:
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
@@ -1354,20 +1378,25 @@ def do_update_message(
             # Don't send this event to guest subs who are not
             # subscribers of the old stream but are subscribed to
             # the new stream; clients will be confused.
-            old_stream_current_users = UserProfile.objects.filter(
-                id__in=get_active_subscriptions_for_stream_id(
-                    stream_being_edited.id, include_deactivated_users=True
-                ).values_list("user_profile_id", flat=True)
-            ).only("id")
-            subscriptions = subscriptions.exclude(
-                user_profile__in=new_stream_current_users.filter(
-                    role=UserProfile.ROLE_GUEST
-                ).difference(old_stream_current_users)
-            )
+            new_stream_guest_users_not_in_old_stream = (
+                new_stream_current_user_ids & guest_user_ids
+            ) - old_stream_current_user_ids
+            subscriber_ids -= new_stream_guest_users_not_in_old_stream
 
-        subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-        notifiable_ids = subscriber_ids.union(old_stream_subs_not_in_new_stream)
-        users_to_be_notified += map(subscriber_info, sorted(notifiable_ids))
+            # Subscribers of the old stream are notified of the move too.
+            subscriber_ids |= old_stream_active_user_ids
+
+            # Exclude users who are losing access;
+            # instead they get a delete_message event.
+            subscriber_ids -= user_ids_losing_access
+
+        # Exclude the id of users already in users_to_be_notified list.
+        # This is the case where a user both has a UserMessage row
+        # and is a current Subscriber
+        unmodified_user_messages_user_ids = {um[0] for um in unmodified_user_messages}
+        subscriber_ids -= unmodified_user_messages_user_ids
+
+        users_to_be_notified += map(subscriber_info, sorted(subscriber_ids))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
@@ -1470,7 +1499,11 @@ def do_update_message(
         ):
             is_target_message_first = True
 
-        if not sender.is_bot and sender not in users_losing_access and is_target_message_first:
+        if (
+            not sender.is_bot
+            and sender.id not in user_ids_losing_access
+            and is_target_message_first
+        ):
             apply_automatic_unmute_follow_topics_policy(sender, target_stream, target_topic)
 
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
