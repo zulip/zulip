@@ -6,12 +6,12 @@
         <img class="integration-logo" src="{{ integration.logo_url }}"
           alt="{{ integration.display_name }} logo"/>
         {% if integration.secondary_line_text %}
-        <h3 class="integration-name with-secondary">{{ integration.display_name }}</h3>
+        <h3 class="integration-name with-secondary" translate="no">{{ integration.display_name }}</h3>
         <h4 class="integration-secondary-line-text">
             {{ integration.secondary_line_text }}
         </h4>
         {% else %}
-        <h3 class="integration-name">{{ integration.display_name }}</h3>
+        <h3 class="integration-name" translate="no">{{ integration.display_name }}</h3>
         {% endif %}
         <h4 class="integration-category">{{ integration.categories[0] }}</h4>
     </div>
