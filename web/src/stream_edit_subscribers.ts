@@ -119,7 +119,7 @@ function show_stream_subscription_request_success_result({
 function update_notification_choice_checkbox(added_user_count: number): void {
     const $send_notification_checkbox = $(".send_notification_to_new_subscribers");
     const $send_notification_container = $(".send_notification_to_new_subscribers_container");
-    if (added_user_count > realm.max_bulk_new_subscription_messages) {
+    if (added_user_count > realm.max_bulk_subscription_messages) {
         $send_notification_checkbox.prop("checked", false);
         $send_notification_checkbox.prop("disabled", true);
         $send_notification_container.addClass("control-label-disabled");
