@@ -5510,7 +5510,7 @@ class SubscriptionAPITest(ZulipTestCase):
         now = timezone_now()
         test_channel = self.make_stream("test C")
         with (
-            self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5),
+            self.settings(MAX_BULK_SUBSCRIPTION_MESSAGES=5),
             self.assert_database_query_count(19),
         ):
             response = self.subscribe_via_post(
@@ -5544,7 +5544,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # message (and no DM notifications).
         now = timezone_now()
         with (
-            self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5),
+            self.settings(MAX_BULK_SUBSCRIPTION_MESSAGES=5),
             self.assert_database_query_count(57),
         ):
             response = self.subscribe_via_post(
