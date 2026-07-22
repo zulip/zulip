@@ -105,7 +105,7 @@
 }
 
 #stream_name,
-#topic_name, 
+#topic_name,
 #webhook_secret {
     width: 206px;
 }
