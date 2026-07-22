@@ -37,6 +37,7 @@ import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_parser from "./message_parser.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
 import * as message_view from "./message_view.ts";
 import * as modals from "./modals.ts";
@@ -165,6 +166,7 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Shift+I": {name: "open_inbox", message_view_only: true},
     "Shift+J": {name: "vim_page_down", message_view_only: true},
     "Shift+K": {name: "vim_page_up", message_view_only: true},
+    "Shift+L": {name: "toggle_link_previews", message_view_only: true},
     "Shift+M": {name: "toggle_topic_visibility_policy", message_view_only: true},
     "Shift+N": {name: "narrow_to_next_unread_followed_topic", message_view_only: false},
     "Shift+P": {name: "narrow_private", message_view_only: true},
@@ -1482,6 +1484,17 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
             return true;
+        case "toggle_link_previews": {
+            // Unlike the message actions menu item, this hotkey fires
+            // regardless of the message's content, so we only act when
+            // there's actually a website preview to hide or show, and
+            // not on a collapsed message whose body is already hidden.
+            if (!msg.collapsed && message_parser.message_has_link_preview(msg.content)) {
+                message_actions_popover.toggle_hide_link_previews(msg);
+                return true;
+            }
+            return false;
+        }
         case "mark_unread":
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;

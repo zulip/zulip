@@ -14,6 +14,10 @@ const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 const message_lists = zrequire("message_lists");
 
+const message_parser = mock_esm("../src/message_parser", {
+    message_has_link_preview: () => false,
+});
+
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
@@ -218,6 +222,7 @@ test("my_message_all_actions", ({override}) => {
             stream_id: 1,
             unread: false,
             collapsed: false,
+            hide_link_previews: false,
             not_spectator: true,
             submessages: [],
             edit_history: [
@@ -240,11 +245,69 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.view_source_menu_item, undefined);
     assert.equal(response.should_display_collapse, true);
     assert.equal(response.should_display_uncollapse, false);
+    assert.equal(response.should_display_hide_link_previews, false);
+    assert.equal(response.should_display_show_link_previews, false);
     assert.equal(response.should_display_add_reaction_option, true);
     assert.equal(response.conversation_time_url, "conversation_and_time_url");
     assert.equal(response.should_display_delete_option, true);
     assert.equal(response.should_display_read_receipts_option, true);
     assert.equal(response.should_display_quote_message, true);
+});
+
+test("link_preview_actions_gated_on_collapsed_state", ({override}) => {
+    set_page_params_no_edit_restrictions({override});
+    override(realm, "realm_can_delete_any_message_group", everyone.id);
+    override(realm, "realm_can_delete_own_message_group", everyone.id);
+    override(realm, "realm_can_move_messages_between_topics_group", everyone.id);
+    override(current_user, "user_id", me.user_id);
+    override(message_parser, "message_has_link_preview", () => true);
+
+    const list = init_message_list();
+    message_lists.set_current(list);
+
+    function preview_message(id, {collapsed, hide_link_previews}) {
+        return {
+            id,
+            type: "stream",
+            sender_id: me.user_id,
+            is_hidden: false,
+            sent_by_me: true,
+            locally_echoed: false,
+            is_stream: true,
+            stream_id: 1,
+            unread: false,
+            collapsed,
+            hide_link_previews,
+            submessages: [],
+        };
+    }
+
+    // Exercise every combination of the collapsed and hide_link_previews
+    // flags on a message that has a website preview.
+    add_message_with_view(list, [
+        preview_message(1, {collapsed: false, hide_link_previews: false}),
+        preview_message(2, {collapsed: false, hide_link_previews: true}),
+        preview_message(3, {collapsed: true, hide_link_previews: false}),
+        preview_message(4, {collapsed: true, hide_link_previews: true}),
+    ]);
+
+    let response = popover_menus_data.get_actions_popover_content_context(1);
+    assert.equal(response.should_display_hide_link_previews, true);
+    assert.equal(response.should_display_show_link_previews, false);
+
+    response = popover_menus_data.get_actions_popover_content_context(2);
+    assert.equal(response.should_display_hide_link_previews, false);
+    assert.equal(response.should_display_show_link_previews, true);
+
+    // Collapsed message: neither toggle is offered, since the preview is
+    // already hidden along with the rest of the body.
+    response = popover_menus_data.get_actions_popover_content_context(3);
+    assert.equal(response.should_display_hide_link_previews, false);
+    assert.equal(response.should_display_show_link_previews, false);
+
+    response = popover_menus_data.get_actions_popover_content_context(4);
+    assert.equal(response.should_display_hide_link_previews, false);
+    assert.equal(response.should_display_show_link_previews, false);
 });
 
 test("not_my_message_view_actions", ({override}) => {

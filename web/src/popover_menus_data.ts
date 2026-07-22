@@ -10,6 +10,7 @@ import {$t} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_parser from "./message_parser.ts";
 import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
@@ -41,6 +42,8 @@ type ActionPopoverContext = {
     should_display_remind_me_option: boolean;
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
+    should_display_hide_link_previews: boolean;
+    should_display_show_link_previews: boolean;
     should_display_quote_message: boolean;
     conversation_time_url: string;
     should_display_delete_option: boolean;
@@ -204,6 +207,16 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     const should_display_uncollapse =
         !message.locally_echoed && !message.is_me_message && message.collapsed;
 
+    const has_link_preview = message_parser.message_has_link_preview(message.content);
+    // A collapsed message hides its whole body, including any preview,
+    // so there is nothing to toggle until it is expanded.
+    const can_toggle_link_previews =
+        !message.locally_echoed && not_spectator && has_link_preview && !message.collapsed;
+    const should_display_hide_link_previews =
+        can_toggle_link_previews && !message.hide_link_previews;
+    const should_display_show_link_previews =
+        can_toggle_link_previews && message.hide_link_previews;
+
     const should_display_quote_message = not_spectator;
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
@@ -250,6 +263,8 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         view_source_menu_item,
         should_display_collapse,
         should_display_uncollapse,
+        should_display_hide_link_previews,
+        should_display_show_link_previews,
         should_display_add_reaction_option,
         conversation_time_url,
         should_display_delete_option,
