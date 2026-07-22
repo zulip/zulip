@@ -126,6 +126,10 @@ class SendMessageRequest:
     rendering_result: MessageRenderingResult
     stream: Stream | None
     sender_muted_stream: bool | None
+    # Whether the sender may see the channel's name; controls whether the
+    # POST /messages response URL includes the channel name or only its
+    # ID. Always False for direct messages, where there is no channel.
+    sender_has_channel_metadata_access: bool
     local_id: str | None
     sender_queue_id: str | None
     realm: Realm
@@ -185,6 +189,9 @@ class SendMessageRequest:
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
     reminder_target_message_id: int | None = None
     reminder_note: str | None = None
+    # Computed during do_send_messages, for the POST /messages response.
+    message_url: str | None = None
+    message_link: str | None = None
 
 
 @dataclass
