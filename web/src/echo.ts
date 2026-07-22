@@ -652,7 +652,7 @@ export function rewire_message_send_error(value: typeof message_send_error): voi
     message_send_error = value;
 }
 
-function abort_message(message: Message): void {
+export function abort_message(message: LocalMessage): void {
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
@@ -661,6 +661,9 @@ function abort_message(message: Message): void {
     for (const msg_list_data of message_lists.non_rendered_data()) {
         msg_list_data.remove([message.id]);
     }
+
+    echo_state.remove_message_from_waiting_for_id(message.local_id);
+    echo_state.remove_message_from_waiting_for_ack(message.local_id);
 }
 
 export function display_slow_send_loading_spinner(message: Message): void {
