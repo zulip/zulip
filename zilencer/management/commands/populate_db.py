@@ -1001,6 +1001,11 @@ class Command(ZulipBaseCommand):
             do_set_realm_property(
                 zulip_realm, "send_channel_events_messages", True, acting_user=None
             )
+
+            # MCP access is disabled by default, but we want it enabled in the
+            # development environment for convenient manual testing of the MCP
+            # server endpoint.
+            do_set_realm_property(zulip_realm, "enable_mcp_access", True, acting_user=None)
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:

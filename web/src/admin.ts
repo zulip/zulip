@@ -53,6 +53,9 @@ const admin_settings_label = {
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
     }),
+    realm_enable_mcp_access: $t({
+        defaultMessage: "Allow AI agents to connect via MCP",
+    }),
     realm_enable_spectator_access: $t({
         defaultMessage: "Allow creating web-public channels (visible to anyone on the Internet)",
     }),
@@ -229,6 +232,7 @@ export function build_page(): void {
         realm_require_e2ee_push_notifications: realm.realm_require_e2ee_push_notifications,
         realm_message_content_allowed_in_email_notifications:
             realm.realm_message_content_allowed_in_email_notifications,
+        realm_enable_mcp_access: realm.realm_enable_mcp_access,
         realm_enable_spectator_access: realm.realm_enable_spectator_access,
         settings_send_digest_emails: realm.settings_send_digest_emails,
         realm_send_channel_events_messages: realm.realm_send_channel_events_messages,
