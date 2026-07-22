@@ -5,14 +5,18 @@ title: Image, video and website previews
 import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
+import MessageActionsMenu from "../include/_MessageActionsMenu.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 
 Zulip displays previews of images, videos, audio files and websites in your
 message feed. You can [configure](#configure-how-animated-images-are-played) how
-animated images are previewed.
+animated images are previewed, or [hide link
+previews](#hide-or-show-link-previews-on-a-message) on individual messages.
 
 Organization administrators can:
 
@@ -51,6 +55,29 @@ viewer](/help/view-images-and-videos).
     </FlattenedSteps>
   </TabItem>
 </Tabs>
+
+## Hide or show link previews on a message
+
+If a message shows a [website
+preview](#configure-whether-website-previews-are-shown) that you'd rather not
+see, you can hide it just for yourself, without changing how the message looks
+for anyone else.
+
+<FlattenedSteps>
+  <MessageActionsMenu />
+
+  1. Click **Hide link previews**.
+</FlattenedSteps>
+
+<ZulipTip>
+  To bring the previews back, follow the same steps and click **Show link
+  previews**.
+</ZulipTip>
+
+<KeyboardTip>
+  You can use <kbd>Shift</kbd> + <kbd>L</kbd> to hide or show link previews on
+  the selected message.
+</KeyboardTip>
 
 ## Configure image and video thumbnail size
 

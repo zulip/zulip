@@ -54,6 +54,7 @@ const message_actions_popover = mock_esm("../src/message_actions_popover");
 const message_edit = mock_esm("../src/message_edit");
 const message_edit_history = mock_esm("../src/message_edit_history");
 const message_lists = mock_esm("../src/message_lists");
+const message_parser = mock_esm("../src/message_parser");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const message_view = mock_esm("../src/message_view");
 const narrow_state = mock_esm("../src/narrow_state");
@@ -191,6 +192,7 @@ run_test("mappings", () => {
     assert.equal(map_down("Delete").name, "delete");
     assert.equal(map_down("Enter", true).name, "enter");
     assert.equal(map_down("H", true).name, "view_edit_history");
+    assert.equal(map_down("L", true).name, "toggle_link_previews");
     assert.equal(map_down("N", true).name, "narrow_to_next_unread_followed_topic");
     assert.deepEqual(
         map_down("V", true).map((item) => item.name),
@@ -403,7 +405,7 @@ run_test("unmapped keys return false easily", () => {
     // calling any functions outside of hotkey.ts.
     // (unless we are editing text)
     assert_unmapped("bfo");
-    assert_unmapped("BEFLOQTWXZ");
+    assert_unmapped("BEFOQTWXZ");
 });
 
 run_test("allow normal typing when editing text", ({override, override_rewire}) => {
@@ -567,6 +569,27 @@ test_while_not_editing_text("misc", ({override}) => {
         type: "stream",
     }));
     assert_unmapped("H");
+
+    override(message_lists.current, "selected_message", () => ({
+        id: 4,
+        type: "stream",
+        content: '<div class="message_embed"></div>',
+    }));
+    override(message_parser, "message_has_link_preview", () => true);
+    assert_mapping("L", message_actions_popover, "toggle_hide_link_previews", true);
+    override(message_parser, "message_has_link_preview", () => false);
+    assert_unmapped("L");
+
+    // A collapsed message hides its whole body, including any preview, so
+    // the shortcut short-circuits to a no-op before even checking for a
+    // preview.
+    override(message_lists.current, "selected_message", () => ({
+        id: 5,
+        type: "stream",
+        content: '<div class="message_embed"></div>',
+        collapsed: true,
+    }));
+    assert_unmapped("L");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
     assert_mapping("s", message_view, "narrow_by_recipient");

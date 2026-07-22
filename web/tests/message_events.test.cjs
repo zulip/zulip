@@ -19,6 +19,7 @@ mock_esm("../src/message_parser", {
     message_has_attachment: noop,
     message_has_image: noop,
     message_has_link: noop,
+    message_has_link_preview: noop,
 });
 message_lists.current = {};
 message_lists.all_rendered_message_lists = () => [message_lists.current];
@@ -155,6 +156,7 @@ run_test("update_messages", ({override, override_rewire}) => {
             collapsed: false,
             content: "<b>new content</b>",
             display_recipient: denmark.name,
+            hide_link_previews: false,
             historical: false,
             id: 111,
             is_stream: true,
