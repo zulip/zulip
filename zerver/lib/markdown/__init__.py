@@ -1574,6 +1574,19 @@ class Fence:
     is_code: bool
 
 
+
+# Matches a bullet or numbered list item: marker, whitespace, then content.
+LIST_ITEM_REGEX = re.compile(
+    r"""
+    ^[ ]*        # Start with zero or more spaces
+    ([*+-]|\d\.) # A bullet marker (*, +, or -) or a digit followed by "."
+    [ ]+         # Followed by one or more spaces
+    (.*)         # The list content, which could be empty
+    """,
+    re.MULTILINE | re.VERBOSE,
+)
+
+
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """Allows list blocks that come directly after another block
     to be rendered as a list.
@@ -1581,8 +1594,6 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     Detects paragraphs that have a matching list item that comes
     directly after a line of text, and inserts a newline between
     to satisfy Markdown"""
-
-    LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
 
     @override
     def run(self, lines: list[str]) -> list[str]:
@@ -1614,8 +1625,8 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
             # If we're not in a fenced block and we detect an upcoming list
             # hanging off any block (including a list of another type), add
             # a newline.
-            li1 = self.LI_RE.match(lines[i])
-            li2 = self.LI_RE.match(lines[i + 1])
+            li1 = LIST_ITEM_REGEX.match(lines[i])
+            li2 = LIST_ITEM_REGEX.match(lines[i + 1])
             if (
                 not in_code_fence
                 and lines[i]
