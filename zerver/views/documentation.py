@@ -11,6 +11,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.template import loader
 from django.template.response import TemplateResponse
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 from lxml import html
 from lxml.etree import Element, SubElement, XPath, _Element
@@ -409,11 +410,22 @@ def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -
     # round down to the nearest multiple of 10.
     integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
 
+    search_placeholder = _("Search integrations")
+    if category_slug != "all":
+        category_name = str(CATEGORIES[category_slug]).lower()
+        template = (
+            _("Search {category_name}")
+            if category_slug in META_CATEGORY or category_name.endswith("integration")
+            else _("Search {category_name} integrations")
+        )
+        search_placeholder = template.format(category_name=category_name)
+
     context = add_base_integrations_context(request)
     context.update(
         {
             "categories_dict": OrderedDict(sorted(CATEGORIES.items())),
             "integrations_count_display": integrations_count_display,
+            "search_placeholder": search_placeholder,
             "selected_category_slug": category_slug,
             "visible_integrations": get_visible_integrations_for_category(category_slug),
         }
