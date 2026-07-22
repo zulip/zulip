@@ -2656,18 +2656,18 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         self.subscribe(self.test_user, self.channel_name)
         if getattr(self, "url", None) is None:
             if getattr(self, "WEBHOOK_TEST_SECRET", None) is not None:
-                self.url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
+                webhook_secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
+                assert webhook_secret is not None
+                self.url = self.build_webhook_url(webhook_secret=webhook_secret)
             else:
                 self.url = self.build_webhook_url()
         else:
             # If the test already initialized a custom self.url, then append the secret
             # to the query string instead of overwriting the entire URL.
-            if (
-                getattr(self, "WEBHOOK_TEST_SECRET", None) is not None
-                and "webhook_secret=" not in self.url
-            ):
+            webhook_secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
+            if webhook_secret is not None and "webhook_secret=" not in self.url:
                 separator = "&" if "?" in self.url else "?"
-                self.url = f"{self.url}{separator}webhook_secret={quote(self.WEBHOOK_TEST_SECRET)}"
+                self.url = f"{self.url}{separator}webhook_secret={quote(webhook_secret)}"
 
         payload = self.get_payload(fixture_name)
         raw_payload = self.get_body(fixture_name)
