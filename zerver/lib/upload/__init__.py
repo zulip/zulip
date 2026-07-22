@@ -263,7 +263,8 @@ def upload_message_attachment(
     path_id = get_upload_backend().generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
-    content_type = maybe_add_charset(content_type, file_data)
+    if needs_charset_detection(content_type):
+        content_type = maybe_add_charset(content_type, file_data)
 
     # NULL bytes are the one thing we can't store in the original
     # filename column, due to PostgreSQL limitations
