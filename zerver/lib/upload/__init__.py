@@ -70,8 +70,11 @@ def needs_charset_detection(content_type: str) -> bool:
 
 
 def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithSize) -> str:
-    if not needs_charset_detection(content_type):
-        return content_type
+    # Callers must gate on needs_charset_detection(content_type) first,
+    # so that they can avoid opening file_data at all when it won't be
+    # inspected -- with the S3 backend, opening a source starts an open
+    # GetObject read immediately, rather than lazily on first read.
+    assert needs_charset_detection(content_type)
     fake_msg = EmailMessage()
     fake_msg["content-type"] = content_type
 
@@ -81,23 +84,25 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
     else:
         chunk_size = 4096
         reader = file_data.reader()
-        detector = chardet.UniversalDetector()
-        total_read = 0
-        while True:
-            data = reader.read(chunk_size)
-            detector.feed(data)
-            if detector.done or len(data) < chunk_size:
-                break
-            total_read += chunk_size
-            if total_read >= 32 * 1024:
-                # If there's no BOM and no high bytes, the detector
-                # never says "done" before EOF -- we bail out
-                # arbitrarily at 32k.
-                early_abort = True
-                break
-        detector.close()
-        reader.close()
-        detected = detector.result
+        try:
+            detector = chardet.UniversalDetector()
+            total_read = 0
+            while True:
+                data = reader.read(chunk_size)
+                detector.feed(data)
+                if detector.done or len(data) < chunk_size:
+                    break
+                total_read += chunk_size
+                if total_read >= 32 * 1024:
+                    # If there's no BOM and no high bytes, the detector
+                    # never says "done" before EOF -- we bail out
+                    # arbitrarily at 32k.
+                    early_abort = True
+                    break
+            detector.close()
+            detected = detector.result
+        finally:
+            reader.close()
     if early_abort and detected["confidence"] == 1.0 and detected["encoding"] == "ascii":
         # An early abort which didn't see high-byte characters is not
         # a confident "ASCII", as they may come later in the file; we
