@@ -1795,6 +1795,36 @@ class TestReplyExtraction(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual(message.content, convert_html_to_markdown(html))
 
+    def test_html_with_invalid_xml_characters(self) -> None:
+        # An HTML email containing control characters that are invalid in
+        # XML previously crashed talon's XML-based parser with a
+        # ValueError; verify such emails are now processed, with the
+        # offending characters stripped.
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+        # \x0b (vertical tab) is a C0 control character, and ￾ is a
+        # Unicode noncharacter; both are valid in the email's charset but
+        # are not valid XML characters. Valid characters, including
+        # non-ASCII ones like the emoji here, must be preserved.
+        html = "<html><body><p>Hello\x0b￾world \U0001f600</p></body></html>"
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(html, subtype="html")
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
+        incoming_valid_message["From"] = user_profile.delivery_email
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = user_profile.delivery_email
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, "Helloworld \U0001f600")
+
 
 class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
     def test_process_message_strips_subject(self) -> None:

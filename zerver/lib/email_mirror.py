@@ -32,7 +32,7 @@ from zerver.lib.message import normalize_body, truncate_content, truncate_topic
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import access_stream_for_send_message
-from zerver.lib.string_validation import is_character_printable
+from zerver.lib.string_validation import is_character_printable, strip_invalid_xml_characters
 from zerver.lib.upload import upload_message_attachment
 from zerver.models import (
     ChannelEmailAddress,
@@ -321,6 +321,10 @@ def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> st
 
     html_content = get_message_part_by_type(message, "text/html")
     if html_content is not None:
+        # Some emails contain control characters that are valid in the
+        # email's charset but not in XML; these crash the XML-based
+        # parser inside talon, so strip them before parsing.
+        html_content = strip_invalid_xml_characters(html_content)
         if include_quotes:
             return convert_html_to_markdown(html_content)
         else:

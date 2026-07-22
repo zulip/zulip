@@ -1,9 +1,17 @@
+import re
 import unicodedata
 
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import Stream
+
+# Characters that are valid in an XML 1.0 document, per
+# https://www.w3.org/TR/xml/#charsets:
+#   #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+# The inverse of this class matches characters (such as most C0 control
+# codes) that XML parsers like lxml reject with a ValueError.
+invalid_xml_chars = re.compile("[^\t\n\r\x20-\ud7ff\ue000-\ufffd\U00010000-\U0010ffff]")
 
 # There are 66 Unicode non-characters; see
 # https://www.unicode.org/faq/private_use.html#nonchar4
@@ -16,6 +24,10 @@ unicode_non_chars = {
     ]
     for x in r
 }
+
+
+def strip_invalid_xml_characters(text: str) -> str:
+    return invalid_xml_chars.sub("", text)
 
 
 def is_character_printable(char: str) -> bool:
