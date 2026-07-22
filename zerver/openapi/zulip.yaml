@@ -5575,6 +5575,14 @@ paths:
                                         guest users to prominently highlight their status.
 
                                         **Changes**: New in Zulip 8.0 (feature level 216).
+                                    enable_mcp_read_access:
+                                      type: boolean
+                                      description: |
+                                        Whether users may connect AI agents that read the
+                                        organization through the Zulip server's native
+                                        MCP endpoint.
+
+                                        **Changes**: New in Zulip 13.0 (feature level ZF-f5d3e9).
                                     enable_spectator_access:
                                       type: boolean
                                       description: |
@@ -21635,6 +21643,16 @@ paths:
                           guest users to prominently highlight their status.
 
                           **Changes**: New in Zulip 8.0 (feature level 216).
+                      realm_enable_mcp_read_access:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether users may connect AI agents that read the
+                          organization through the Zulip server's native
+                          MCP endpoint.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-f5d3e9).
                       realm_can_access_all_users_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"

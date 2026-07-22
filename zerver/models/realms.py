@@ -224,6 +224,10 @@ class Realm(models.Model):
     # setting also controls API access of web-public streams.
     enable_spectator_access = models.BooleanField(default=False)
 
+    # Whether users may connect AI agents that read this organization
+    # through the server's native MCP endpoint.
+    enable_mcp_read_access = models.BooleanField(default=False, db_default=False)
+
     # Whether organization has given permission to be advertised in the
     # Zulip communities directory.
     want_advertise_in_communities_directory = models.BooleanField(default=False, db_index=True)
@@ -765,6 +769,7 @@ class Realm(models.Model):
         emails_restricted_to_domains=bool,
         enable_guest_user_dm_warning=bool,
         enable_guest_user_indicator=bool,
+        enable_mcp_read_access=bool,
         enable_read_receipts=bool,
         enable_spectator_access=bool,
         gif_rating_policy=int,
