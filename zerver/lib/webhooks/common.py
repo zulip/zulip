@@ -319,6 +319,7 @@ def parse_multipart_string(body: str) -> dict[str, str]:
 
     return data
 
+
 def validate_webhook_delivery(
     request: HttpRequest, signature_header_name: str, algorithm: str = "sha256"
 ) -> None:
