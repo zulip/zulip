@@ -441,6 +441,10 @@ test("set_up", ({override, override_rewire}) => {
             id: 7,
             name: "Nextcloud Talk",
         },
+        webex: {
+            id: 8,
+            name: "Webex",
+        },
     });
     override(realm, "realm_message_retention_days", null);
 
