@@ -1689,12 +1689,13 @@ def process_user_group_creation_event(event: Mapping[str, Any], users: Iterable[
                 client.add_event(group_creation_event)
 
 
-def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+def process_user_group_update_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     user_group_event = dict(event)
     # 'deactivated' field is no longer needed and can be popped, as we now
-    # know whether the group that was renamed is deactivated or not and can
-    # avoid sending the event to client with 'include_deactivated_groups'
-    # client capability set to false.
+    # know whether the group that was updated is deactivated or not and can
+    # avoid sending the event to clients with 'include_deactivated_groups'
+    # client capability set to false. Applies to updates of any property,
+    # not just name.
     event_for_deactivated_group = user_group_event.pop("deactivated", False)
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1802,11 +1803,11 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_custom_profile_fields_event(event, cast(list[int], users))
     elif event["type"] == "realm_user" and event["op"] == "add":
         process_realm_user_add_event(event, cast(list[int], users))
-    elif event["type"] == "user_group" and event["op"] == "update" and "name" in event["data"]:
-        # Only name can be changed for deactivated groups, so we handle the
-        # event sent for updating name separately for clients with different
-        # capabilities.
-        process_user_group_name_update_event(event, cast(list[int], users))
+    elif event["type"] == "user_group" and event["op"] == "update" and "deactivated" in event:
+        # Any update to a deactivated group's properties (name, description,
+        # permissions, etc.) carries this tag, and must be filtered for
+        # clients whose 'include_deactivated_groups' capability is false.
+        process_user_group_update_event(event, cast(list[int], users))
     elif event["type"] == "user_group" and event["op"] == "add":
         process_user_group_creation_event(event, cast(list[int], users))
     elif event["type"] == "user_topic":

@@ -259,11 +259,12 @@ def do_send_user_group_update_event(
     user_group: NamedUserGroup, data: dict[str, str | int | UserGroupMembersDict]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
-    if "name" in data:
-        # This field will be popped eventually before sending the event
-        # to client, but is needed to make sure we do not send the
-        # name update event for deactivated groups to client with
-        # 'include_deactivated_groups' client capability set to false.
+    if "deactivated" not in data:
+        # This field is popped before sending the event to the client,
+        # but is needed to make sure we do not send update events for
+        # deactivated groups to clients with 'include_deactivated_groups'
+        # set to false. Applies to updates of any property (name,
+        # description, permission settings, etc.), not just name.
         event["deactivated"] = user_group.deactivated
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
