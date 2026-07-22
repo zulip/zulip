@@ -2669,12 +2669,16 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
                 url = f"{url}{separator}webhook_secret={quote(webhook_secret)}"
 
         payload = self.get_payload(fixture_name)
-        raw_payload = self.get_body(fixture_name)
         if content_type is not None:
             extra["content_type"] = content_type
 
         signature_header_name = getattr(self, "WEBHOOK_SIGNATURE_HEADER", None)
         if signature_header_name is not None:
+            try:
+                raw_payload = self.get_body(fixture_name)
+            except FileNotFoundError:
+                raw_payload = ""
+
             signature_value = self.get_webhook_signature(force_bytes(raw_payload))
             if signature_value is not None:
                 django_header = "HTTP_" + signature_header_name.upper().replace("-", "_")
