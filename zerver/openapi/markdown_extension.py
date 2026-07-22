@@ -246,6 +246,13 @@ cURL example."""
         # We currently don't have any non-JSON encoded arrays.
         assert parameter.json_encoded
         if curl_argument:
+            if parameter.kind == "body":
+                # A whole-body JSON payload is the entire request body, not a
+                # named field, so it's sent as-is rather than as a key=value.
+                # Pretty-print it, preserving the documented key order, since a
+                # dense single line is hard to read.
+                pretty_json = json.dumps(parameter.example, indent=4)
+                return "    --data-raw " + shlex.quote(pretty_json)
             return "    --data-urlencode " + shlex.quote(f"{parameter.name}={ordered_ex_val_str}")
         return ordered_ex_val_str  # nocoverage
     else:
@@ -349,6 +356,11 @@ def generate_curl_example(
 
         if exclude is not None and parameter.name in exclude:
             continue
+
+        if parameter.kind == "body":
+            # We set the header ourselves rather than use curl's --json,
+            # which requires curl 7.82+, newer than Ubuntu 22.04's curl.
+            lines.append("    -H " + shlex.quote("Content-Type: application/json"))
 
         example_value = get_openapi_param_example_value_as_string(
             endpoint, method, parameter, curl_argument=True
