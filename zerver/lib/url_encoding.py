@@ -165,6 +165,7 @@ def stream_message_url(
     *,
     conversation_link: bool = False,
     include_base_url: bool = True,
+    include_channel_name: bool = True,
 ) -> str:
     if include_base_url and realm is None:
         raise ValueError("realm is required when include_base_url=True")
@@ -177,7 +178,12 @@ def stream_message_url(
     stream_name = message["display_recipient"]
     topic_name = get_topic_from_message_info(message)
     encoded_topic_name = encode_hash_component(topic_name)
-    encoded_stream = encode_channel(stream_id, stream_name)
+    if include_channel_name:
+        encoded_stream = encode_channel(stream_id, stream_name)
+    else:
+        # Used when the URL must not reveal the channel name (e.g. for a
+        # write-only bot); Zulip still resolves the channel from the ID alone.
+        encoded_stream = str(stream_id)
 
     narrow_fragments = (
         f"#narrow/channel/{encoded_stream}/topic/{encoded_topic_name}/{with_or_near}/{message_id}"
