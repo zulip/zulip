@@ -42,7 +42,7 @@ from zerver.actions.user_settings import do_change_user_delivery_email, do_chang
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
-from zerver.lib import upload
+from zerver.lib import import_realm, upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
@@ -54,7 +54,12 @@ from zerver.lib.export import (
     do_export_user,
     get_consented_user_ids,
 )
-from zerver.lib.import_realm import do_import_realm, get_db_table, get_incoming_message_ids
+from zerver.lib.import_realm import (
+    do_import_realm,
+    get_db_table,
+    get_incoming_message_ids,
+    reset_import_state,
+)
 from zerver.lib.migration_status import STALE_MIGRATIONS, AppMigrations, MigrationStatusJson
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -2801,6 +2806,32 @@ class RealmImportExportTest(ExportFile):
                     realm=imported_realm, event_type=AuditLogEventType.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
+
+    def test_import_realm_clears_leftover_module_state(self) -> None:
+        self.addCleanup(reset_import_state)
+        # Plant stale mappings.
+        import_realm.ID_MAP["user_profile"][999_999_999] = 888_888_888
+        import_realm.id_map_to_list["huddle_to_user_list"][999_999_999] = [888_888_888]
+        import_realm.path_maps["old_attachment_path_to_new_path"]["stale/old/path"] = (
+            "stale/new/path"
+        )
+        import_realm.message_id_to_attachments["zerver_message"][999_999_999].append(
+            "stale/old/path"
+        )
+
+        original_realm = Realm.objects.get(string_id="zulip")
+        self.export_realm_and_create_auditlog(original_realm)
+        # reset_import_state doesn't crash import.
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        # Planted items are cleared by do_import_realm.
+        self.assertNotIn(999_999_999, import_realm.ID_MAP["user_profile"])
+        self.assertNotIn(999_999_999, import_realm.id_map_to_list["huddle_to_user_list"])
+        self.assertNotIn(
+            "stale/old/path", import_realm.path_maps["old_attachment_path_to_new_path"]
+        )
+        self.assertNotIn(999_999_999, import_realm.message_id_to_attachments["zerver_message"])
 
     def test_system_usergroup_audit_logs(self) -> None:
         realm = get_realm("zulip")

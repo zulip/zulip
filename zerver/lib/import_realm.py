@@ -242,6 +242,17 @@ message_id_to_attachments: dict[str, dict[int, list[str]]] = {
 }
 
 
+def reset_import_state() -> None:
+    for id_map in ID_MAP.values():
+        id_map.clear()
+    for id_list_map in id_map_to_list.values():
+        id_list_map.clear()
+    for path_map in path_maps.values():
+        path_map.clear()
+    for attachment_map in message_id_to_attachments.values():
+        attachment_map.clear()
+
+
 def map_messages_to_attachments(data: ImportedTableData) -> None:
     for attachment in data["zerver_attachment"]:
         for message_id in attachment["messages"]:
@@ -1461,6 +1472,11 @@ def do_import_realm(
     # The self-serve Slack import uses this to record which realm an import
     # owns, atomically with its creation, so a redelivered import can later
     # recognize and clean up its own half-imported realm.
+    #
+    # Start from a clean slate: the module-level id maps below persist across
+    # imports in a long-lived worker, so reset them before touching anything.
+    reset_import_state()
+
     logging.info("Importing realm dump %s", import_dir)
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
