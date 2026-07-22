@@ -334,7 +334,7 @@ def validate_webhook_delivery(
         )
     except JsonableError:
         raise
-    except Exception as err:
+    except Exception as err:  # nocoverage
         raise JsonableError(str(err))
 
 

@@ -5,7 +5,6 @@ from django.test import override_settings
 
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.lib.webhooks.common import call_fixture_to_headers, standardize_headers
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.models import CustomProfileField
 from zerver.models.realms import get_realm
@@ -859,24 +858,14 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
 
     def test_github_webhook_bad_signature(self) -> None:
-        if getattr(self, "WEBHOOK_SIGNATURE_HEADER", None) is None:
-            return
-
         with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
-            self.url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
-
-            headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
-            extra_headers: dict[str, str] = standardize_headers(headers)
-
-            extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=completely_invalid_hash_value"
-
+            url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
             result = self.client_post(
-                self.url,
+                url,
                 self.get_payload("ping"),
                 content_type="application/json",
-                HTTP_X_HUB_SIGNATURE_256=extra_headers["HTTP_X_HUB_SIGNATURE_256"],
+                HTTP_X_HUB_SIGNATURE_256="sha256=completely_invalid_hash_value",
             )
-
             self.assert_json_error(result, "Webhook signature verification failed.")
 
     def test_github_webhook_signature_disabled_skips_validation(self) -> None:
@@ -884,19 +873,12 @@ A temporary team so that I can get some webhook fixtures!
         requests pass through even if the signature value is completely bogus.
         """
         with override_settings(VERIFY_WEBHOOK_SIGNATURES=False):
-            # Pass a valid secret parameter but explicitly append a broken signature header
-            self.url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
-            headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
-            extra_headers: dict[str, str] = standardize_headers(headers)
-            extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=invalid_hash"
-
-            # This should bypass validate_webhook_signature directly and respond with standard success
             expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
             self.check_webhook(
                 "ping",
                 TOPIC_REPO,
                 expected_message,
-                HTTP_X_HUB_SIGNATURE_256=extra_headers["HTTP_X_HUB_SIGNATURE_256"],
+                HTTP_X_HUB_SIGNATURE_256="sha256=invalid_hash",
             )
 
     def test_github_webhook_valid_signature_success(self) -> None:
@@ -910,23 +892,14 @@ A temporary team so that I can get some webhook fixtures!
     def test_github_webhook_missing_secret(self) -> None:
         """Verifies that the backend drops the request if the webhook url
         is invoked without providing the required webhook_secret parameter."""
-        if getattr(self, "WEBHOOK_SIGNATURE_HEADER", None) is None:
-            return
-
         with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
-            self.url = self.build_webhook_url()
-
-            headers = call_fixture_to_headers(self.webhook_dir_name, "ping")
-            extra_headers: dict[str, str] = standardize_headers(headers)
-            extra_headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=somehash"
-
+            url = self.build_webhook_url()
             result = self.client_post(
-                self.url,
+                url,
                 self.get_payload("ping"),
                 content_type="application/json",
-                HTTP_X_HUB_SIGNATURE_256=extra_headers["HTTP_X_HUB_SIGNATURE_256"],
+                HTTP_X_HUB_SIGNATURE_256="sha256=somehash",
             )
-
             self.assert_json_error(
                 result,
                 "The webhook secret is missing. Please set the webhook_secret while generating the URL.",
