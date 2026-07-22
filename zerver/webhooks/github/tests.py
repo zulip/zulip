@@ -858,8 +858,6 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
 
     def test_github_webhook_bad_signature(self) -> None:
-        if getattr(self, "WEBHOOK_SIGNATURE_HEADER", None) is None:
-            return
         with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
             url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
             result = self.client_post(
@@ -894,8 +892,6 @@ A temporary team so that I can get some webhook fixtures!
     def test_github_webhook_missing_secret(self) -> None:
         """Verifies that the backend drops the request if the webhook url
         is invoked without providing the required webhook_secret parameter."""
-        if getattr(self, "WEBHOOK_SIGNATURE_HEADER", None) is None:
-            return
         with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
             url = self.build_webhook_url()
             result = self.client_post(

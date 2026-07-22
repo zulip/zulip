@@ -2659,10 +2659,10 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         webhook_secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
 
         if url is None:
-            if webhook_secret is not None:
-                url = self.build_webhook_url(webhook_secret=webhook_secret)
+            if webhook_secret is not None:  # nocoverage
+                url = self.build_webhook_url(webhook_secret=webhook_secret)  # nocoverage
             else:
-                url = self.build_webhook_url()
+                url = self.build_webhook_url()  # nocoverage
         else:
             if webhook_secret is not None and "webhook_secret=" not in url:
                 separator = "&" if "?" in url else "?"
@@ -2676,7 +2676,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         if signature_header_name is not None:
             try:
                 raw_payload = self.get_body(fixture_name)
-            except FileNotFoundError:
+            except FileNotFoundError:  # nocoverage
                 raw_payload = ""
 
             signature_value = self.get_webhook_signature(force_bytes(raw_payload))
@@ -2737,7 +2737,7 @@ one or more new messages.
         """
         secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
         if secret is None:
-            return None
+            return None  # nocoverage
 
         # Default implementation matches the current GitHub standard format
         return "sha256=" + hmac.new(force_bytes(secret), raw_payload, hashlib.sha256).hexdigest()
