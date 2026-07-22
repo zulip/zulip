@@ -186,10 +186,10 @@ class RawStreamDict(TypedDict):
     description: str
     first_message_id: int | None
     folder_id: int | None
-    is_recently_active: bool
     history_public_to_subscribers: bool
     id: int
     invite_only: bool
+    is_recently_active: bool
     is_web_public: bool
     message_retention_days: int | None
     name: str
@@ -244,16 +244,17 @@ class SubscriptionStreamDict(TypedDict):
     email_notifications: bool | None
     first_message_id: int | None
     folder_id: int | None
-    is_recently_active: bool
     history_public_to_subscribers: bool
     in_home_view: bool
     invite_only: bool
     is_announcement_only: bool
     is_archived: bool
     is_muted: bool
+    is_recently_active: bool
     is_web_public: bool
     message_retention_days: int | None
     name: str
+    partial_subscribers: NotRequired[list[int]]
     pin_to_top: bool
     push_notifications: bool | None
     rendered_description: str
@@ -262,13 +263,11 @@ class SubscriptionStreamDict(TypedDict):
     stream_weekly_traffic: int | None
     subscriber_count: int
     subscribers: NotRequired[list[int]]
-    partial_subscribers: NotRequired[list[int]]
     topics_policy: str
     wildcard_mentions_notify: bool | None
 
 
 class NeverSubscribedStreamDict(TypedDict):
-    is_archived: bool
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
     can_create_topic_group: int | UserGroupMembersDict
@@ -286,20 +285,21 @@ class NeverSubscribedStreamDict(TypedDict):
     description: str
     first_message_id: int | None
     folder_id: int | None
-    is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
     is_announcement_only: bool
+    is_archived: bool
+    is_recently_active: bool
     is_web_public: bool
     message_retention_days: int | None
     name: str
+    partial_subscribers: NotRequired[list[int]]
     rendered_description: str
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
     subscriber_count: int
     subscribers: NotRequired[list[int]]
-    partial_subscribers: NotRequired[list[int]]
     topics_policy: str
 
 
@@ -309,7 +309,6 @@ class DefaultStreamDict(TypedDict):
     with few exceptions and possible additional fields.
     """
 
-    is_archived: bool
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
     can_create_topic_group: int | UserGroupMembersDict
@@ -327,9 +326,10 @@ class DefaultStreamDict(TypedDict):
     description: str
     first_message_id: int | None
     folder_id: int | None
-    is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
+    is_archived: bool
+    is_recently_active: bool
     is_web_public: bool
     message_retention_days: int | None
     name: str

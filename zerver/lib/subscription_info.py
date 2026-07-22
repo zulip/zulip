@@ -64,7 +64,6 @@ def get_web_public_subs(
 
     for stream in streams:
         # Add Stream fields.
-        is_archived = stream.deactivated
         can_add_subscribers_group = get_group_setting_value_for_register_api(
             stream.can_add_subscribers_group_id, anonymous_group_membership
         )
@@ -100,15 +99,16 @@ def get_web_public_subs(
         )
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
+        default_push_notifications = stream.default_push_notifications
         description = stream.description
         first_message_id = stream.first_message_id
         folder_id = stream.folder_id
-        is_recently_active = stream.is_recently_active
         history_public_to_subscribers = stream.history_public_to_subscribers
         invite_only = stream.invite_only
+        is_archived = stream.deactivated
+        is_recently_active = stream.is_recently_active
         is_web_public = stream.is_web_public
         message_retention_days = stream.message_retention_days
-        default_push_notifications = stream.default_push_notifications
         name = stream.name
         rendered_description = stream.rendered_description
         stream_id = stream.id
@@ -116,6 +116,8 @@ def get_web_public_subs(
             stream.can_send_message_group
         )
         topics_policy = stream.topics_policy
+
+        # Computed Stream fields
         is_announcement_only = stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
 
         # Add versions of the Subscription fields based on a simulated
@@ -134,7 +136,6 @@ def get_web_public_subs(
         wildcard_mentions_notify = True
 
         sub = SubscriptionStreamDict(
-            is_archived=is_archived,
             audible_notifications=audible_notifications,
             can_add_subscribers_group=can_add_subscribers_group,
             can_administer_channel_group=can_administer_channel_group,
@@ -150,23 +151,24 @@ def get_web_public_subs(
             color=color,
             creator_id=creator_id,
             date_created=date_created,
+            default_push_notifications=default_push_notifications,
             description=description,
             desktop_notifications=desktop_notifications,
             email_notifications=email_notifications,
             first_message_id=first_message_id,
             folder_id=folder_id,
-            is_recently_active=is_recently_active,
             history_public_to_subscribers=history_public_to_subscribers,
             in_home_view=in_home_view,
             invite_only=invite_only,
             is_announcement_only=is_announcement_only,
+            is_archived=is_archived,
             is_muted=is_muted,
+            is_recently_active=is_recently_active,
             is_web_public=is_web_public,
             message_retention_days=message_retention_days,
             name=name,
             pin_to_top=pin_to_top,
             push_notifications=push_notifications,
-            default_push_notifications=default_push_notifications,
             rendered_description=rendered_description,
             stream_id=stream_id,
             stream_post_policy=stream_post_policy,
@@ -245,7 +247,6 @@ def build_stream_api_dict(
     )
 
     return APIStreamDict(
-        is_archived=raw_stream_dict["deactivated"],
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
         can_create_topic_group=can_create_topic_group,
@@ -259,23 +260,24 @@ def build_stream_api_dict(
         can_resolve_topics_group=can_resolve_topics_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
+        default_push_notifications=raw_stream_dict["default_push_notifications"],
         description=raw_stream_dict["description"],
         first_message_id=raw_stream_dict["first_message_id"],
         folder_id=raw_stream_dict["folder_id"],
         history_public_to_subscribers=raw_stream_dict["history_public_to_subscribers"],
         invite_only=raw_stream_dict["invite_only"],
+        is_announcement_only=is_announcement_only,
+        is_archived=raw_stream_dict["deactivated"],
+        is_recently_active=raw_stream_dict["is_recently_active"],
         is_web_public=raw_stream_dict["is_web_public"],
         message_retention_days=raw_stream_dict["message_retention_days"],
         name=raw_stream_dict["name"],
-        default_push_notifications=raw_stream_dict["default_push_notifications"],
         rendered_description=raw_stream_dict["rendered_description"],
         stream_id=raw_stream_dict["id"],
         stream_post_policy=raw_stream_dict["stream_post_policy"],
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=raw_stream_dict["subscriber_count"],
         topics_policy=raw_stream_dict["topics_policy"],
-        is_announcement_only=is_announcement_only,
-        is_recently_active=raw_stream_dict["is_recently_active"],
     )
 
 
@@ -285,7 +287,6 @@ def build_stream_dict_for_sub(
     stream_dict: APIStreamDict,
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
-    is_archived = stream_dict["is_archived"]
     can_add_subscribers_group = stream_dict["can_add_subscribers_group"]
     can_administer_channel_group = stream_dict["can_administer_channel_group"]
     can_create_topic_group = stream_dict["can_create_topic_group"]
@@ -299,14 +300,17 @@ def build_stream_dict_for_sub(
     can_subscribe_group = stream_dict["can_subscribe_group"]
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
+    default_push_notifications = stream_dict["default_push_notifications"]
     description = stream_dict["description"]
     first_message_id = stream_dict["first_message_id"]
     folder_id = stream_dict["folder_id"]
     history_public_to_subscribers = stream_dict["history_public_to_subscribers"]
     invite_only = stream_dict["invite_only"]
+    is_announcement_only = stream_dict["is_announcement_only"]
+    is_archived = stream_dict["is_archived"]
+    is_recently_active = stream_dict["is_recently_active"]
     is_web_public = stream_dict["is_web_public"]
     message_retention_days = stream_dict["message_retention_days"]
-    default_push_notifications = stream_dict["default_push_notifications"]
     name = stream_dict["name"]
     rendered_description = stream_dict["rendered_description"]
     stream_id = stream_dict["stream_id"]
@@ -314,8 +318,6 @@ def build_stream_dict_for_sub(
     stream_weekly_traffic = stream_dict["stream_weekly_traffic"]
     subscriber_count = stream_dict["subscriber_count"]
     topics_policy = stream_dict["topics_policy"]
-    is_announcement_only = stream_dict["is_announcement_only"]
-    is_recently_active = stream_dict["is_recently_active"]
 
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
@@ -333,7 +335,6 @@ def build_stream_dict_for_sub(
 
     # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
-        is_archived=is_archived,
         audible_notifications=audible_notifications,
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
@@ -349,6 +350,7 @@ def build_stream_dict_for_sub(
         color=color,
         creator_id=creator_id,
         date_created=date_created,
+        default_push_notifications=default_push_notifications,
         description=description,
         desktop_notifications=desktop_notifications,
         email_notifications=email_notifications,
@@ -359,13 +361,13 @@ def build_stream_dict_for_sub(
         in_home_view=in_home_view,
         invite_only=invite_only,
         is_announcement_only=is_announcement_only,
+        is_archived=is_archived,
         is_muted=is_muted,
         is_web_public=is_web_public,
         message_retention_days=message_retention_days,
         name=name,
         pin_to_top=pin_to_top,
         push_notifications=push_notifications,
-        default_push_notifications=default_push_notifications,
         rendered_description=rendered_description,
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
@@ -381,18 +383,18 @@ def build_stream_dict_for_never_sub(
     recent_traffic: dict[int, int] | None,
     anonymous_group_membership: dict[int, UserGroupMembersData],
 ) -> NeverSubscribedStreamDict:
-    is_archived = raw_stream_dict["deactivated"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
+    default_push_notifications = raw_stream_dict["default_push_notifications"]
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
     folder_id = raw_stream_dict["folder_id"]
-    is_recently_active = raw_stream_dict["is_recently_active"]
     history_public_to_subscribers = raw_stream_dict["history_public_to_subscribers"]
     invite_only = raw_stream_dict["invite_only"]
+    is_archived = raw_stream_dict["deactivated"]
+    is_recently_active = raw_stream_dict["is_recently_active"]
     is_web_public = raw_stream_dict["is_web_public"]
     message_retention_days = raw_stream_dict["message_retention_days"]
-    default_push_notifications = raw_stream_dict["default_push_notifications"]
     name = raw_stream_dict["name"]
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
@@ -446,7 +448,6 @@ def build_stream_dict_for_never_sub(
 
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
-        is_archived=is_archived,
         can_add_subscribers_group=can_add_subscribers_group_value,
         can_administer_channel_group=can_administer_channel_group_value,
         can_create_topic_group=can_create_topic_group,
@@ -460,16 +461,17 @@ def build_stream_dict_for_never_sub(
         can_subscribe_group=can_subscribe_group_value,
         creator_id=creator_id,
         date_created=date_created,
+        default_push_notifications=default_push_notifications,
         description=description,
         first_message_id=first_message_id,
         folder_id=folder_id,
-        is_recently_active=is_recently_active,
         history_public_to_subscribers=history_public_to_subscribers,
         invite_only=invite_only,
         is_announcement_only=is_announcement_only,
+        is_archived=is_archived,
+        is_recently_active=is_recently_active,
         is_web_public=is_web_public,
         message_retention_days=message_retention_days,
-        default_push_notifications=default_push_notifications,
         name=name,
         rendered_description=rendered_description,
         stream_id=stream_id,
