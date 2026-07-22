@@ -12,6 +12,7 @@ from zerver.lib.test_helpers import create_s3_buckets, find_key_by_email, use_s3
 from zerver.lib.upload import (
     create_attachment,
     generate_message_upload_path,
+    get_upload_backend,
     sanitize_name,
     store_message_attachment,
     upload_message_attachment,
@@ -729,6 +730,103 @@ class TusdPreFinishTest(ZulipTestCase):
         self.assertEqual(attachment.size, 40 * 1024)
         self.assertEqual(attachment.content_type, "text/plain")
         self.assertEqual(bucket.Object(path_id).get()["ContentType"], "text/plain")
+
+    @use_s3_backend
+    def test_s3_upload_no_read_open_during_self_copy(self) -> None:
+        # Regression test for the pre-finish hook holding a read of
+        # the object open while issuing the self-CopyObject which sets
+        # the object's Content-Type. S3 itself does not mind, but
+        # S3-compatible backends which lock per object (e.g. MinIO)
+        # hold a read lock for the duration of an open GetObject, so
+        # the copy blocked until the idle reader hit the backend's
+        # write deadline, tens of seconds later.
+        assert settings.LOCAL_FILES_DIR is None
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+        upload_backend = get_upload_backend()
+        assert isinstance(upload_backend, S3UploadBackend)
+        bucket = upload_backend.uploads_bucket
+
+        def upload_file(filename: str, filetype: str) -> list[str]:
+            path_id = upload_backend.generate_message_upload_path(
+                str(hamlet.realm.id), sanitize_name(filename, strict=True)
+            )
+            info = TusUpload(
+                id=path_id,
+                size=len("zulip!"),
+                offset=0,
+                size_is_deferred=False,
+                meta_data={
+                    "filename": filename,
+                    "filetype": filetype,
+                    "name": filename,
+                    "type": filetype,
+                },
+                is_final=False,
+                is_partial=False,
+                partial_uploads=None,
+                storage=None,
+            )
+            bucket.Object(path_id).put(
+                Body=b"zulip!",
+                ContentType="application/octet-stream",
+                Metadata={
+                    k: v.encode("ascii", "replace").decode() for k, v in info.meta_data.items()
+                },
+            )
+            bucket.Object(f"{path_id}.info").put(
+                Body=info.model_dump_json().encode(),
+            )
+
+            # Reads of the object and the self-copy of it go through
+            # unrelated objects, so we attach both to one parent mock
+            # to observe the order they happen in.
+            calls = mock.Mock()
+            client = bucket.meta.client
+            with (
+                mock.patch("zerver.views.tusd.attachment_source") as mock_attachment_source,
+                mock.patch.object(
+                    client, "copy_object", wraps=client.copy_object
+                ) as mock_copy_object,
+            ):
+                calls.attach_mock(mock_attachment_source, "attachment_source")
+                calls.attach_mock(mock_copy_object, "copy_object")
+                mock_attachment_source.return_value.size = len("zulip!")
+                mock_attachment_source.return_value.reader.return_value.read.return_value = b""
+                result = self.client_post(
+                    "/api/internal/tusd",
+                    self.request(info).model_dump(),
+                    content_type="application/json",
+                )
+            self.assertEqual(result.status_code, 200)
+            return [name for name, _args, _kwargs in calls.mock_calls]
+
+        # A bare text/plain needs sniffing, so the object is opened
+        # before the copy -- but that read is closed again before the
+        # copy is issued, and a fresh one opened for create_attachment
+        # and maybe_thumbnail afterwards.
+        self.assertEqual(
+            upload_file("zulip.txt", "text/plain"),
+            [
+                "attachment_source",
+                "attachment_source().reader",
+                "attachment_source().reader().read",
+                "attachment_source().reader().close",
+                "copy_object",
+                "attachment_source",
+            ],
+        )
+
+        # A Content-Type which already declares a charset needs no
+        # sniffing, so the object is not opened until after the copy.
+        # This is the case where nothing but the read being skipped
+        # keeps it from spanning the copy, since maybe_add_charset is
+        # not called at all.
+        self.assertEqual(
+            upload_file("utf8.txt", 'text/plain; charset="utf-8"'),
+            ["copy_object", "attachment_source"],
+        )
 
 
 class TusdPreTerminateTest(ZulipTestCase):

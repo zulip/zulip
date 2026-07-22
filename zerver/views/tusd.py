@@ -26,6 +26,7 @@ from zerver.lib.upload import (
     generate_message_upload_path,
     get_upload_backend,
     maybe_add_charset,
+    needs_charset_detection,
     sanitize_name,
 )
 from zerver.models import ArchivedAttachment, Attachment, PreregistrationRealm, Realm, UserProfile
@@ -156,8 +157,14 @@ def handle_upload_pre_finish_hook(
         content_type = guess_type(filename)[0]
         if content_type is None:
             content_type = "application/octet-stream"
-    file_data = attachment_source(path_id)
-    content_type = maybe_add_charset(content_type, file_data)
+
+    # Only open the object at all when charset detection actually
+    # needs to inspect its bytes; with the S3 backend, opening it
+    # unnecessarily would start a read that we'd then hold open
+    # through the self-copy below, which blocks a concurrent copy of
+    # that same object until the reader is torn down.
+    if needs_charset_detection(content_type):
+        content_type = maybe_add_charset(content_type, attachment_source(path_id))
 
     if settings.LOCAL_UPLOADS_DIR is None:
         # We "copy" the file to itself to update the Content-Type,
@@ -199,6 +206,10 @@ def handle_upload_pre_finish_hook(
                 MetadataDirective="COPY",
                 StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
             )
+
+    # Open a fresh source for create_attachment/maybe_thumbnail to
+    # read from, now that the self-copy above (if any) has finished.
+    file_data = attachment_source(path_id)
 
     with transaction.atomic(durable=True):
         create_attachment(
