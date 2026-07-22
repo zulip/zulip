@@ -57,17 +57,23 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 
-def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithSize) -> str:
+def needs_charset_detection(content_type: str) -> bool:
     # We only add a charset if it doesn't already have one, and is a
     # text type which we serve inline; currently, this is only text/plain.
     fake_msg = EmailMessage()
     fake_msg["content-type"] = content_type
-    if (
-        fake_msg.get_content_maintype() != "text"
-        or fake_msg.get_content_type() not in INLINE_MIME_TYPES
-        or fake_msg.get_content_charset() is not None
-    ):
+    return (
+        fake_msg.get_content_maintype() == "text"
+        and fake_msg.get_content_type() in INLINE_MIME_TYPES
+        and fake_msg.get_content_charset() is None
+    )
+
+
+def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithSize) -> str:
+    if not needs_charset_detection(content_type):
         return content_type
+    fake_msg = EmailMessage()
+    fake_msg["content-type"] = content_type
 
     early_abort = False
     if isinstance(file_data, bytes):
