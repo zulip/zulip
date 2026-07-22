@@ -1587,6 +1587,26 @@ LIST_ITEM_REGEX = re.compile(
 )
 
 
+def line_is_in_code_fence(line: str, open_fences: list[Fence]) -> bool:
+    """Update `open_fences` in place based on `line`, and return whether
+    we are currently inside a non-quote fenced code block. Shared by
+    preprocessors that need to skip fenced code while scanning lines."""
+    m = FENCE_RE.match(line)
+    if m:
+        fence_str = m.group("fence")
+        lang: str | None = m.group("lang")
+        is_code = lang not in ("quote", "quoted")
+        matches_last_fence = fence_str == open_fences[-1].fence_str if open_fences else False
+        closes_last_fence = not lang and matches_last_fence
+
+        if closes_last_fence:
+            open_fences.pop()
+        else:
+            open_fences.append(Fence(fence_str, is_code))
+
+    return any(fence.is_code for fence in open_fences)
+
+
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """Allows list blocks that come directly after another block
     to be rendered as a list.
@@ -1599,28 +1619,12 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     def run(self, lines: list[str]) -> list[str]:
         """Insert a newline between a paragraph and ulist if missing"""
         inserts = 0
-        in_code_fence: bool = False
         open_fences: list[Fence] = []
         copy = lines[:]
         for i in range(len(lines) - 1):
             # Ignore anything that is inside a fenced code block but not quoted.
             # We ignore all lines where some parent is a non-quote code block.
-            m = FENCE_RE.match(lines[i])
-            if m:
-                fence_str = m.group("fence")
-                lang: str | None = m.group("lang")
-                is_code = lang not in ("quote", "quoted")
-                matches_last_fence = (
-                    fence_str == open_fences[-1].fence_str if open_fences else False
-                )
-                closes_last_fence = not lang and matches_last_fence
-
-                if closes_last_fence:
-                    open_fences.pop()
-                else:
-                    open_fences.append(Fence(fence_str, is_code))
-
-                in_code_fence = any(fence.is_code for fence in open_fences)
+            in_code_fence = line_is_in_code_fence(lines[i], open_fences)
 
             # If we're not in a fenced block and we detect an upcoming list
             # hanging off any block (including a list of another type), add
