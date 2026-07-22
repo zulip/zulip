@@ -2,8 +2,6 @@ import asyncio
 import base64
 import hashlib
 import hmac
-import hashlib
-import hmac
 import os
 import re
 import shutil
