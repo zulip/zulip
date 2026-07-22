@@ -96,6 +96,28 @@ All types of API changes need to
 follow the principles in this document
 and be discussed in [#api design][].
 
+### MCP tools
+
+The tools exposed by the [native MCP server](../subsystems/mcp.md)
+are still **experimental**, and are deliberately not yet covered by
+the commitments above: we expect to learn from real agents what the
+tool set should be before freezing it. When the MCP server leaves
+that phase, the commitments we anticipate making are:
+
+- Tool names become stable. Users' permission configurations in MCP
+  clients -- tool auto-approvals and allow/deny lists -- are keyed by
+  tool name, so renaming or repurposing a tool silently changes what
+  a user has authorized.
+
+- What a tool and each of its parameters mean becomes stable. Agents,
+  saved prompts, and skills are written against the documented
+  behavior, and changing the meaning of an existing parameter
+  (e.g., reinterpreting a `limit`) breaks them in ways their authors
+  will struggle to debug.
+
+- Changing the tools needs a discussion in [#api design][], like any
+  other API change.
+
 [/api/register-queue]: https://zulip.com/api/register-queue
 [Zulip content HTML]: https://zulip.com/api/message-formatting
 [push notification payloads]: https://zulip.com/api/mobile-notifications
