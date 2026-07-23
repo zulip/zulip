@@ -71,7 +71,11 @@
     .search-input-and-pills {
         grid-area: search-pills;
         display: flex;
-        padding: 0;
+        /* Match the pills' single-line centering slack so wrapped rows
+           get the same breathing room without changing the single-line
+           box height. */
+        padding: calc((var(--search-box-height) - var(--height-input-pill)) / 2)
+            0;
         flex-wrap: wrap;
         gap: 0.3571em; /* 5px at 14px em, matches pill spacing in typeahead dropdown */
         align-self: center;
