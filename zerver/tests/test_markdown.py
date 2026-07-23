@@ -254,8 +254,8 @@ class APIReturnValuesTablePreprocessorTest(ZulipTestCase):
                     },
                     "example": first_example,
                     "x-examples": {
-                        "case_one": {"summary": "First case", "value": first_example},
-                        "case_two": {"summary": "Second case", "value": second_example},
+                        "case_one": {"label": "First case", "value": first_example},
+                        "case_two": {"label": "Second case", "value": second_example},
                     },
                 }
             ]

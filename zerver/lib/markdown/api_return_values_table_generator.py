@@ -316,7 +316,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 examples = [
                     ExampleData(
                         value=json.dumps(example["value"], indent=4, sort_keys=True),
-                        label=example.get("summary"),
+                        label=example.get("label"),
                     )
                     for example in event["x-examples"].values()
                 ]
