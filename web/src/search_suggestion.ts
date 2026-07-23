@@ -579,6 +579,64 @@ function get_date_suggestions(
     return date_util.get_matching_default_date_suggestions(last.operand);
 }
 
+function negated_channel_ids(terms: NarrowCanonicalTerm[]): Set<string> {
+    const channel_ids = new Set<string>();
+    for (const term of terms) {
+        if (term.negated && term.operator === "channel") {
+            channel_ids.add(term.operand);
+        }
+    }
+    return channel_ids;
+}
+
+// The scoped channel's topics and the other channels' are returned
+// separately so each gets its own match budget and the scoped
+// channel's topics can rank first.
+function gather_recent_topic_entries(
+    scoped_channel_id_string: string | undefined,
+    include_other_channels: boolean,
+    excluded_channel_ids: Set<string>,
+): {scoped_entries: ChannelTopicEntry[]; other_entries: ChannelTopicEntry[]} {
+    const scoped_entries: ChannelTopicEntry[] = [];
+    if (scoped_channel_id_string && !excluded_channel_ids.has(scoped_channel_id_string)) {
+        // We do this outside the stream_data.subscribed_stream_ids loop,
+        // since we could be viewing a channel we can't read.
+        const sub = stream_data.get_sub_by_id_string(scoped_channel_id_string);
+        if (sub && stream_data.can_access_topic_history(sub)) {
+            stream_topic_history_util.get_server_history(sub.stream_id, () => {
+                // Fetch topic history from the server, in case we will
+                // need it.  Note that we won't actually use the results
+                // from the server here for this particular keystroke from
+                // the user, because we want to show results immediately.
+            });
+
+            for (const topic of stream_topic_history.get_recent_topic_names(sub.stream_id)) {
+                scoped_entries.push({channel_id: scoped_channel_id_string, topic});
+            }
+        }
+    }
+
+    const other_entries: ChannelTopicEntry[] = [];
+    if (include_other_channels) {
+        for (const subscribed_channel_id of stream_data.subscribed_stream_ids()) {
+            const subscribed_id_string = subscribed_channel_id.toString();
+            if (
+                subscribed_id_string === scoped_channel_id_string ||
+                excluded_channel_ids.has(subscribed_id_string)
+            ) {
+                continue;
+            }
+            for (const topic of stream_topic_history.get_recent_topic_names(
+                subscribed_channel_id,
+            )) {
+                other_entries.push({channel_id: subscribed_id_string, topic});
+            }
+        }
+    }
+
+    return {scoped_entries, other_entries};
+}
+
 function get_topic_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
@@ -653,65 +711,34 @@ function get_topic_suggestions(
     }
 
     // We don't want to show topic suggestions from negated channels
-    const excluded_channel_ids = new Set(
-        terms
-            .filter((term) => term.negated && term.operator === "channel")
-            .map((term) => term.operand),
+    const excluded_channel_ids = negated_channel_ids(terms);
+
+    // A `channel:` last term whose operand isn't a valid channel id gets
+    // no topic suggestions at all, rather than falling through to every
+    // other channel's topics.
+    if (
+        last.operator === "channel" &&
+        channel_id_or_operand_str &&
+        !excluded_channel_ids.has(channel_id_or_operand_str) &&
+        stream_data.get_sub_by_id_string(channel_id_or_operand_str) === undefined
+    ) {
+        return [];
+    }
+
+    const {scoped_entries, other_entries} = gather_recent_topic_entries(
+        channel_id_or_operand_str,
+        show_topics_from_other_channels,
+        excluded_channel_ids,
     );
-
-    const current_channel_topic_entries: ChannelTopicEntry[] = [];
-    if (channel_id_or_operand_str && !excluded_channel_ids.has(channel_id_or_operand_str)) {
-        // We do this outside the stream_data.subscribed_stream_ids loop,
-        // since we could be viewing a channel we can't read.
-        const sub = stream_data.get_sub_by_id_string(channel_id_or_operand_str);
-        if (sub === undefined && last.operator === "channel") {
-            // Since the channel_id_or_operand_str is not a
-            // valid channel id we avoid sending any topic
-            // suggestions for a channel as the last term.
-            return [];
-        }
-        if (sub && stream_data.can_access_topic_history(sub)) {
-            const current_channel_id = sub.stream_id;
-            stream_topic_history_util.get_server_history(current_channel_id, () => {
-                // Fetch topic history from the server, in case we will
-                // need it.  Note that we won't actually use the results
-                // from the server here for this particular keystroke from
-                // the user, because we want to show results immediately.
-            });
-
-            for (const topic of stream_topic_history.get_recent_topic_names(current_channel_id)) {
-                current_channel_topic_entries.push({channel_id: channel_id_or_operand_str, topic});
-            }
-        }
-    }
-
-    const other_channel_topic_entries: ChannelTopicEntry[] = [];
-    for (const subscribed_channel_id of stream_data.subscribed_stream_ids()) {
-        if (
-            subscribed_channel_id.toString() === channel_id_or_operand_str ||
-            excluded_channel_ids.has(subscribed_channel_id.toString())
-        ) {
-            continue;
-        } else if (!show_topics_from_other_channels) {
-            continue;
-        }
-
-        for (const topic of stream_topic_history.get_recent_topic_names(subscribed_channel_id)) {
-            other_channel_topic_entries.push({
-                channel_id: subscribed_channel_id.toString(),
-                topic,
-            });
-        }
-    }
 
     assert(guess !== undefined);
 
     let current_channel_topic_suggestion_entries = get_topic_suggestions_from_candidates({
-        candidate_topic_entries: current_channel_topic_entries,
+        candidate_topic_entries: scoped_entries,
         guess,
     });
     let other_channel_topic_suggestion_entries = get_topic_suggestions_from_candidates({
-        candidate_topic_entries: other_channel_topic_entries,
+        candidate_topic_entries: other_entries,
         guess,
     });
 
