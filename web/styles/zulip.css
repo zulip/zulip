@@ -2188,7 +2188,7 @@ body:not(.spectator-view) {
         width: 100%;
         margin: 4px 4px 2px;
 
-        &:focus {
+        &.popover-filter-input:focus {
             background: var(--color-popover-filter-input-focus-bg);
             border: 1px solid var(--color-popover-filter-input-focus-border);
             box-shadow: 0 0 5px var(--color-popover-filter-input-focus-shadow);
