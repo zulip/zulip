@@ -47,13 +47,13 @@
                 <div class="messagebox-content">
                     <div class="message_top_line">
                         <div class="overlay_message_controls">
-                            <span class="copy-button copy-overlay-message tippy-zulip-delayed-tooltip trigger-click-on-enter" data-draft-id="{{draft_id}}" data-tippy-content="{{t 'Copy draft' }}" aria-label="{{t 'Copy draft' }}" role="button" tabindex="0">
+                            <button type="button" class="copy-button copy-button-square copy-overlay-message icon-button icon-button-square icon-button-neutral tippy-zulip-delayed-tooltip" data-draft-id="{{draft_id}}" data-tippy-content="{{t 'Copy draft' }}" aria-label="{{t 'Copy draft' }}" tabindex="0">
                                 <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
-                            </span>
-                            {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-draft-tooltip-template" aria-label=(t "Delete") }}
-                            <div class="draft-selection-tooltip trigger-click-on-enter" role="checkbox" aria-checked="false" aria-label="{{t 'Select draft' }}" tabindex="0">
-                                <i class="fa fa-square-o fa-lg draft-selection-checkbox" aria-hidden="true"></i>
-                            </div>
+                            </button>
+                            {{> ./components/icon_button intent="danger" squared=true custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-draft-tooltip-template" aria-label=(t "Delete") }}
+                            <button type="button" class="draft-selection-tooltip icon-button icon-button-square icon-button-neutral" role="checkbox" aria-checked="false" aria-label="{{t 'Select draft' }}" tabindex="0">
+                                <i class="fa fa-square-o draft-selection-checkbox" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="message_content rendered_markdown restore-overlay-message">{{rendered_markdown content}}</div>
