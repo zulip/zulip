@@ -167,6 +167,25 @@ export function initialize(): void {
         target: ".tippy-zulip-tooltip",
     });
 
+    tippy.delegate("body", {
+        target: "#message_view_header .navbar-dm-avatar-image, #message_view_header .navbar-dm-avatar-overflow",
+        appendTo: () => document.body,
+        placement: "bottom",
+        onShow(instance) {
+            const {reference} = instance;
+            const content =
+                reference instanceof HTMLElement ? reference.dataset["tippyContent"] : undefined;
+            if (content !== undefined && content !== "") {
+                instance.setContent(content);
+            } else {
+                instance.setContent(get_tooltip_content(reference));
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
     // variant of tippy-zulip-tooltip above having delay=LONG_HOVER_DELAY,
     // default placement="top" with fallback placement="bottom",
     // and appended to body

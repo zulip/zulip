@@ -133,6 +133,145 @@
             animation: contract-extended-description 100ms ease-in both !important;
         }
     }
+
+    /* Participant avatars shown in place of the DM icon for DM
+       conversation views. */
+    .navbar-dm-avatars {
+        display: flex;
+        align-self: center;
+        align-items: center;
+        /* Breathing room between avatars; we don't expect horizontal
+           space to be a problem in the navbar. */
+        gap: 5px;
+        /* Vertical padding gives the presence dot, which sits ~0.5px
+           outside the avatar box, room so overflow: hidden doesn't clip
+           it. Horizontal overflow is hidden so avatars that don't fit
+           are clipped (then collapsed to "+N" by relayout_dm_avatars)
+           rather than spilling toward the search box. */
+        padding: 2px 4px;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .navbar-dm-avatar {
+        /* Anchor the em context to 16px (as in the right sidebar) so
+           the avatar and presence dot render at the same sizes there. */
+        font-size: 1.1429em; /* 16px at 14px/1em */
+        position: relative;
+        display: inline-flex;
+        flex: none;
+        line-height: 1;
+
+        /* Avatars that don't fit are hidden by relayout_dm_avatars. The
+           compound selector is needed to win over `display: inline-flex`
+           above (the header's generic .hidden rule has equal
+           specificity but loses on source order). */
+        &.hidden {
+            display: none;
+        }
+
+        .navbar-dm-avatar-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 28px at 16px/1em */
+            width: 1.75em;
+            height: 1.75em;
+            /* 6px at 16px/1em */
+            border-radius: 0.375em;
+            overflow: hidden;
+
+            & img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+
+            /* Placeholder shown for muted participants in place of the
+               avatar, matching how recent conversations hides muted
+               senders' avatars. */
+            & .fa-user {
+                font-size: 1em;
+                color: var(--color-text-message-view-header);
+                opacity: 0.6;
+            }
+        }
+
+        .navbar-dm-avatar-image:has(.fa-user) {
+            background-color: hsl(0deg 0% 50% / 20%);
+        }
+
+        /* Availability dot, sized to match the right sidebar in avatar
+           mode (right_sidebar.css .user_sidebar_entry.with_avatar
+           .user-circle). line-height: 1 keeps the header's tall
+           line-height from stretching the circle into an oval. */
+        .user-circle {
+            position: absolute;
+            /* 10px at 16px/1em */
+            font-size: 0.625em;
+            line-height: 1;
+            bottom: -0.5px;
+            right: -0.5px;
+            background-color: var(--color-background-navbar);
+            border: 1.5px solid var(--color-background-navbar);
+            border-radius: 50%;
+
+            &.user-circle-offline {
+                display: none;
+            }
+        }
+
+        /* Round the avatar's bottom-right corner behind a visible
+           presence dot, avoiding stray pixels bleeding past it. Only
+           applies when a non-offline dot is actually shown (muted
+           participants have no dot at all). */
+        &:has(.user-circle:not(.user-circle-offline)) .navbar-dm-avatar-image {
+            border-bottom-right-radius: 0.3875em; /* 6.2px at 16px/1em */
+        }
+    }
+
+    .navbar-dm-avatar-overflow {
+        align-self: center;
+        line-height: 1;
+        /* 16px at 14px/1em */
+        font-size: 1.1429em;
+        font-weight: 600;
+        /* Plain "+N" with no background and reduced opacity, matching
+           the recent conversations participant overflow. */
+        opacity: 0.7;
+        cursor: default;
+        white-space: nowrap;
+
+        &.hidden {
+            display: none;
+        }
+    }
+}
+
+/* Rounded name chips listed in the DM navbar avatar overflow ("+N")
+   tooltip. These live inside a Tippy popover rendered outside
+   #message_view_header, so the rules are not scoped to the header. */
+.navbar-dm-avatar-overflow-name,
+.navbar-dm-avatar-overflow-more {
+    display: block;
+}
+
+.navbar-dm-avatar-overflow-name {
+    border-radius: 4px;
+    padding: 1px 6px;
+    background-color: hsl(0deg 0% 100% / 12%);
+    white-space: nowrap;
+}
+
+.navbar-dm-avatar-overflow-name + .navbar-dm-avatar-overflow-name,
+.navbar-dm-avatar-overflow-more {
+    margin-top: 3px;
+}
+
+.navbar-dm-avatar-overflow-more {
+    opacity: 0.85;
+    font-size: 0.9em;
 }
 
 /* Media Queries */
