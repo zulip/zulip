@@ -1,12 +1,17 @@
+import hashlib
+import hmac
 import os
+from collections.abc import Callable
 from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
 import orjson
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.http.response import HttpResponseBase
 from django.shortcuts import render
 from django.test import Client
+from django.utils.encoding import force_bytes
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
@@ -156,3 +161,63 @@ def send_all_webhook_fixture_messages(
             }
         )
     return json_success(request, data={"responses": responses})
+
+
+def format_github_signature(secret_bytes: bytes, payload_bytes: bytes) -> tuple[str, str]:
+    """Formats signature header following X-Hub-Signature-256 standard."""
+    signed_payload = hmac.new(secret_bytes, payload_bytes, hashlib.sha256).hexdigest()
+    return "X_HUB_SIGNATURE_256", f"sha256={signed_payload}"
+
+
+SIGNATURE_REGISTRY: dict[str, Callable[[bytes, bytes], tuple[str, str]]] = {
+    "github": format_github_signature
+}
+
+
+@csrf_exempt
+def recalculate_signature(request: HttpRequest) -> JsonResponse:
+    """
+    Unified endpoint invoked by the frontend UI dev panel to dynamically compute
+    and format signature header blocks based on the integration.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        data = orjson.loads(request.body)
+        secret = data.get("secret", "")
+        payload_string = data.get("payload", "")
+        integration_name = data.get("integration_name", "").lower().strip()
+
+        # Check if the integration has signature management registered
+        if integration_name not in SIGNATURE_REGISTRY:
+            return JsonResponse(
+                {"supported": False, "msg": "No signature rules configured for this platform."}
+            )
+
+        if not secret:
+            return JsonResponse({"supported": True, "clear_signature": True})
+
+        # Normalize and minify JSON formats for crypto verification stability
+        try:
+            payload_bytes = orjson.dumps(orjson.loads(payload_string))
+        except Exception:
+            payload_bytes = force_bytes(payload_string)
+
+        webhook_secret_bytes = force_bytes(secret)
+
+        # Execute the registered structural format strategy
+        formatter = SIGNATURE_REGISTRY[integration_name]
+        header_key, header_value = formatter(webhook_secret_bytes, payload_bytes)
+
+        return JsonResponse(
+            {
+                "supported": True,
+                "clear_signature": False,
+                "header_key": header_key,
+                "signature": header_value,
+            }
+        )
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
