@@ -8,8 +8,8 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-ENTITY_CREATED_MESSAGE = "{actor} triggered a {entity}."
-ENTITY_UPDATED_MESSAGE = "The {entity} triggered by {actor} **{status}**."
+ENTITY_CREATED_MESSAGE = "{status_emoji}{actor} triggered a {entity}."
+ENTITY_UPDATED_MESSAGE = "{status_emoji}The {entity} triggered by {actor} **{status}**."
 
 # The events here are ignored not because they are noisy.
 # But we do not have accurate fixtures for them.
@@ -27,6 +27,13 @@ IGNORED_ENTITIES = [
     "sni-endpoint",
 ]
 
+STATUS_MAP = {
+    "succeeded": ":check:",
+    "failed": ":warning:",
+    "pending": ":time_ticking:",
+    "expired": ":times_up:",
+}
+
 
 def get_body(payload: WildValue, entity: str) -> str:
     data = payload["data"]
@@ -42,9 +49,13 @@ def get_body(payload: WildValue, entity: str) -> str:
 
     action = payload["action"].tame(check_string)
     status = data["status"].tame(check_string)
+    status_emoji = STATUS_MAP.get(status, "")
+    status_emoji = f"{status_emoji} " if status_emoji else ""
 
     template = ENTITY_UPDATED_MESSAGE if action == "update" else ENTITY_CREATED_MESSAGE
-    body = template.format(entity=display_entity, actor=actor, status=status)
+    body = template.format(
+        entity=display_entity, actor=actor, status=status, status_emoji=status_emoji
+    )
 
     return body
 
