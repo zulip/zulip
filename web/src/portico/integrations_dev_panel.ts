@@ -25,6 +25,7 @@ type HTMLSelectOneElement = HTMLSelectElement & {type: "select-one"};
 type ClearHandlers = {
     stream_name: string;
     topic_name: string;
+    webhook_secret: string;
     URL: string;
     results_notice: string;
     bot_name: () => void;
@@ -47,6 +48,8 @@ const integrations_api_response_schema = z.object({
     result: z.string(),
 });
 
+let last_computed_header_key: string | null = null; // Tracks the current signature header for auto-clearing when switching integrations
+
 type ServerResponse = z.infer<typeof integrations_api_response_schema>;
 
 const loaded_fixtures = new Map<string, Fixtures>();
@@ -56,6 +59,7 @@ const url_base = "/api/v1/external/";
 const clear_handlers: ClearHandlers = {
     stream_name: "#stream_name",
     topic_name: "#topic_name",
+    webhook_secret: "#webhook_secret",
     URL: "#URL",
     results_notice: "#results_notice",
     bot_name() {
@@ -180,6 +184,8 @@ function load_fixture_body(fixture_name: string): void {
         null,
         4,
     );
+    const webhook_secret = $<HTMLInputElement>("input#webhook_secret").val()!;
+    sync_signature_headers(integration_name, webhook_secret);
 
     return;
 }
@@ -210,8 +216,8 @@ function load_fixture_options(integration_name: string): void {
 
 function update_url(): void {
     /* Construct the URL that the webhook should be targeting, using
-    the bot's API key and the integration name.  The stream and topic
-    are both optional, and for the sake of completeness, it should be
+    the bot's API key, the integration name, and webhook secret.  The stream, topic,
+    and webhook secret are all optional, and for the sake of completeness, it should be
     noted that the topic is irrelevant without specifying the
     stream. */
     const url_field = $<HTMLInputElement>("input#URL")[0];
@@ -231,11 +237,86 @@ function update_url(): void {
                 params.set("topic", topic_name);
             }
         }
+        const webhook_secret = $<HTMLInputElement>("input#webhook_secret").val()!;
+        if (webhook_secret !== "") {
+            params.set("webhook_secret", webhook_secret);
+        }
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
+
+        sync_signature_headers(integration_name, webhook_secret);
+    }
+}
+
+function sync_signature_headers(integration_name: string, webhook_secret: string): void {
+    const $custom_headers_field = $<HTMLTextAreaElement>("textarea#custom_http_headers");
+    const current_headers_raw = $custom_headers_field.val()?.toString().trim() ?? "";
+
+    let headers_object: Record<string, string> = {};
+    if (current_headers_raw !== "") {
+        try {
+            headers_object = z
+                .record(z.string(), z.string())
+                .parse(JSON.parse(current_headers_raw));
+        } catch {
+            headers_object = {};
+        }
     }
 
-    return;
+    if (last_computed_header_key && last_computed_header_key in headers_object) {
+        Reflect.deleteProperty(headers_object, last_computed_header_key);
+    }
+
+    if (webhook_secret.trim() === "") {
+        last_computed_header_key = null;
+        if (Object.keys(headers_object).length === 0) {
+            $custom_headers_field.val("{}");
+        } else {
+            $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+        }
+        return;
+    }
+
+    const raw_payload = $<HTMLTextAreaElement>("textarea#fixture_body").val() ?? "";
+    let cleaned_payload = raw_payload;
+
+    try {
+        cleaned_payload = JSON.stringify(JSON.parse(raw_payload));
+    } catch {
+        cleaned_payload = raw_payload.trim();
+    }
+
+    channel.post({
+        url: "/devtools/integrations/recalculate_signature",
+        data: JSON.stringify({
+            secret: webhook_secret,
+            payload: cleaned_payload,
+            integration_name,
+        }),
+        success(raw_data: unknown) {
+            const data = z
+                .object({
+                    supported: z.optional(z.boolean()),
+                    clear_signature: z.optional(z.boolean()),
+                    header_key: z.string(),
+                    signature: z.string(),
+                })
+                .parse(raw_data);
+
+            if (!data.supported || data.clear_signature) {
+                last_computed_header_key = null;
+                if (Object.keys(headers_object).length === 0) {
+                    $custom_headers_field.val("{}");
+                } else {
+                    $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+                }
+            } else {
+                headers_object[data.header_key] = data.signature;
+                last_computed_header_key = data.header_key;
+                $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+            }
+        },
+    });
 }
 
 // API callers: These methods handle communicating with the Python backend API.
@@ -440,4 +521,6 @@ $(() => {
     $("#stream_name").on("change", update_url);
 
     $("#topic_name").on("change", update_url);
+
+    $("#webhook_secret").on("change", update_url);
 });
