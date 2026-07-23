@@ -1,7 +1,7 @@
 {{#if is_dm_narrow}}
 <span class="navbar-dm-avatars">
     {{#each dm_users}}
-        <span class="navbar-dm-avatar" data-user-id="{{this.user_id}}" data-full-name="{{this.name}}">
+        <span class="navbar-dm-avatar" data-user-id="{{this.user_id}}" data-full-name="{{this.name}}" role="button" tabindex="0" aria-label="{{this.name}}">
             {{#if this.is_muted}}
             <span class="navbar-dm-avatar-image" data-tippy-content="{{this.name}}">
                 <i class="fa fa-user" aria-hidden="true"></i>
