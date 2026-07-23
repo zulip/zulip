@@ -52,7 +52,7 @@ class EventData:
     type: str
     description: str
     properties: dict[str, Any]
-    example: str
+    examples: list[tuple[str | None, str]]
     op_type: str | None = None
 
 
@@ -268,10 +268,14 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             )
         event_strings.append(f"\n{event_data.description}\n\n\n")
         event_strings += self.render_table(event_data.properties, 0)
-        event_strings.append("**Example**")
-        event_strings.append("\n```json\n")
-        event_strings.append(event_data.example)
-        event_strings.append("```\n\n")
+        for label, example in event_data.examples:
+            if label is None:
+                event_strings.append("**Example**")
+            else:
+                event_strings.append(f"**Example: {label}**")
+            event_strings.append("\n```json\n")
+            event_strings.append(example)
+            event_strings.append("```\n\n")
         event_strings.append("<hr>")
         return event_strings
 
@@ -301,11 +305,19 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             op_type: str | None = None
             if op is not None:
                 op_type = op["enum"][0]
+            examples: list[tuple[str | None, str]]
+            if "x-examples" in event:
+                examples = [
+                    (example.get("summary"), json.dumps(example["value"], indent=4, sort_keys=True))
+                    for example in event["x-examples"].values()
+                ]
+            else:
+                examples = [(None, json.dumps(event["example"], indent=4, sort_keys=True))]
             event_data = EventData(
                 type=event["properties"]["type"]["enum"][0],
                 description=event["description"],
                 properties=event["properties"],
-                example=json.dumps(event["example"], indent=4, sort_keys=True),
+                examples=examples,
                 op_type=op_type,
             )
             events += self.generate_event_strings(event_data)
