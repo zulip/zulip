@@ -3107,6 +3107,81 @@ paths:
                                   "rendering_only": false,
                                   "id": 0,
                                 }
+                              x-examples:
+                                topic_move:
+                                  summary: Message moved to a different topic
+                                  value:
+                                    {
+                                      "type": "update_message",
+                                      "id": 1,
+                                      "user_id": 10,
+                                      "edit_timestamp": 1594825400,
+                                      "message_id": 42,
+                                      "message_ids": [40, 41, 42],
+                                      "flags": [],
+                                      "rendering_only": false,
+                                      "stream_name": "Verona",
+                                      "stream_id": 5,
+                                      "propagate_mode": "change_all",
+                                      "orig_subject": "team sync",
+                                      "subject": "team sync notes",
+                                      "topic_links": [],
+                                    }
+                                channel_move_same_topic:
+                                  summary: Message moved to a different channel, topic name unchanged
+                                  value:
+                                    {
+                                      "type": "update_message",
+                                      "id": 2,
+                                      "user_id": 10,
+                                      "edit_timestamp": 1594825500,
+                                      "message_id": 101,
+                                      "message_ids": [99, 100, 101],
+                                      "flags": [],
+                                      "rendering_only": false,
+                                      "stream_name": "Verona",
+                                      "stream_id": 5,
+                                      "new_stream_id": 7,
+                                      "propagate_mode": "change_all",
+                                      "orig_subject": "team sync",
+                                    }
+                                content_edit:
+                                  summary: Message content edited
+                                  value:
+                                    {
+                                      "type": "update_message",
+                                      "id": 3,
+                                      "user_id": 10,
+                                      "edit_timestamp": 1594825600,
+                                      "message_id": 205,
+                                      "message_ids": [205],
+                                      "flags": [],
+                                      "rendering_only": false,
+                                      "stream_name": "Denmark",
+                                      "stream_id": 8,
+                                      "orig_content": "hi everyone",
+                                      "orig_rendered_content": "<p>hi everyone</p>",
+                                      "content": "hi there everyone",
+                                      "rendered_content": "<p>hi there everyone</p>",
+                                      "is_me_message": false,
+                                    }
+                                rendering_update:
+                                  summary: Rendering-only update, e.g. for an inline URL preview
+                                  value:
+                                    {
+                                      "type": "update_message",
+                                      "id": 4,
+                                      "user_id": null,
+                                      "edit_timestamp": 1594825700,
+                                      "message_id": 310,
+                                      "message_ids": [310],
+                                      "flags": [],
+                                      "rendering_only": true,
+                                      "stream_name": "Denmark",
+                                      "stream_id": 8,
+                                      "content": "Check out https://example.com/",
+                                      "rendered_content": '<p>Check out <a href="https://example.com/">https://example.com/</a></p>',
+                                    }
                             - type: object
                               additionalProperties: false
                               description: |

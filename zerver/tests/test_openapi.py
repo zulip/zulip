@@ -942,19 +942,25 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 for status_code, response in operation["responses"].items():
                     schema = response["content"]["application/json"]["schema"]
                     # Validate the documented examples for each event type
-                    # in api/get-events for the documented event schemas.
+                    # in api/get-events for the documented event schemas,
+                    # including any additional `x-examples` for that event.
                     if path == "/events" and method == "get" and status_code == "200":
                         for event_type in schema["properties"]["events"]["items"]["oneOf"]:
-                            event_array = [event_type["example"]]
-                            content = {
-                                "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
-                                "events": event_array,
-                                "msg": "",
-                                "result": "success",
-                            }
-                            assert validate_against_openapi_schema(
-                                content, path, method, status_code
-                            )
+                            example_values = [event_type["example"]]
+                            example_values += [
+                                example["value"]
+                                for example in event_type.get("x-examples", {}).values()
+                            ]
+                            for example_value in example_values:
+                                content = {
+                                    "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
+                                    "events": [example_value],
+                                    "msg": "",
+                                    "result": "success",
+                                }
+                                assert validate_against_openapi_schema(
+                                    content, path, method, status_code
+                                )
                     if "oneOf" in schema:
                         for subschema in schema["oneOf"]:
                             validate_schema(subschema)
