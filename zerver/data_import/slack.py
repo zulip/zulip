@@ -1014,6 +1014,21 @@ class ThreadMetadata:
 MAIN_SLACK_IMPORT_TOPIC = "imported from Slack"
 
 
+def is_message_skipped_during_conversion(message: ZerverFieldsT) -> bool:
+    if not get_message_sending_user(message):
+        # Slack sometimes emits messages with no sending user.
+        return True
+    return message.get("subtype") in [
+        # Zulip doesn't have a pinned_item concept.
+        "pinned_item",
+        "unpinned_item",
+        # Slack's channel join/leave notices are spammy.
+        "channel_join",
+        "channel_leave",
+        "channel_name",
+    ]
+
+
 def get_thread_key(message: ZerverFieldsT) -> str:
     thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
     thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
@@ -1108,23 +1123,12 @@ def channel_message_to_zerver_message(
     thread_counter: dict[str, int] = defaultdict(int)
     thread_map: dict[str, ThreadMetadata] = {}
     for message in all_messages:
-        slack_user_id = get_message_sending_user(message)
-        if not slack_user_id:
-            # Ignore messages without slack_user_id
-            # These are Sometimes produced by Slack
+        if is_message_skipped_during_conversion(message):
             continue
 
+        slack_user_id = get_message_sending_user(message)
+        assert slack_user_id
         subtype = message.get("subtype", False)
-        if subtype in [
-            # Zulip doesn't have a pinned_item concept
-            "pinned_item",
-            "unpinned_item",
-            # Slack's channel join/leave notices are spammy
-            "channel_join",
-            "channel_leave",
-            "channel_name",
-        ]:
-            continue
 
         raw_content = process_slack_block_and_attachment(
             (to_wild_value("message", json.dumps(message))),
