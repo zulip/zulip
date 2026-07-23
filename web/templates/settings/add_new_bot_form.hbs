@@ -28,6 +28,18 @@
               maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
             <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
         </div>
+        {{> ../dropdown_widget_with_label
+          widget_name="integration-name"
+          label=(t "Integration")}}
+
+        <div id="webhook_secret_inputbox" class="input-group">
+            <label for="create_webhook_secret" class="modal-field-label">
+                {{t "Webhook secret" }}
+                <span class="modal-field-optional">({{t "optional" }})</span>
+            </label>
+            <input type="text" name="webhook_secret" id="create_webhook_secret" class="modal_text_input" value="" />
+            <div><label for="create_webhook_secret" generated="true" class="text-error"></label></div>
+        </div>
         <div class="input-group">
             <label for="create_bot_short_name" class="modal-field-label">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
             <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part modal_text_input"
