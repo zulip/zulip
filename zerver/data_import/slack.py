@@ -1013,6 +1013,16 @@ class ThreadMetadata:
 
 MAIN_SLACK_IMPORT_TOPIC = "imported from Slack"
 
+SKIPPED_SLACK_MESSAGE_SUBTYPES = [
+    # Zulip doesn't have a pinned_item concept.
+    "pinned_item",
+    "unpinned_item",
+    # Slack's channel join/leave notices are spammy.
+    "channel_join",
+    "channel_leave",
+    "channel_name",
+]
+
 
 def get_thread_key(message: ZerverFieldsT) -> str:
     thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
@@ -1115,15 +1125,7 @@ def channel_message_to_zerver_message(
             continue
 
         subtype = message.get("subtype", False)
-        if subtype in [
-            # Zulip doesn't have a pinned_item concept
-            "pinned_item",
-            "unpinned_item",
-            # Slack's channel join/leave notices are spammy
-            "channel_join",
-            "channel_leave",
-            "channel_name",
-        ]:
+        if subtype in SKIPPED_SLACK_MESSAGE_SUBTYPES:
             continue
 
         raw_content = process_slack_block_and_attachment(
