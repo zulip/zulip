@@ -219,5 +219,5 @@ def recalculate_signature(request: HttpRequest) -> JsonResponse:
             }
         )
 
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+    except Exception:
+        return JsonResponse({"error": "Invalid request payload."}, status=400)
