@@ -891,6 +891,30 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
             expected_search_data,
         ),
     );
+
+    // Stop word exclusion is case insensitive.
+    const expected_search_data_capitalization_case = {
+        has_stop_word: true,
+        query_words: [
+            {query_word: "What", is_stop_word: true},
+            {query_word: "ABOUT", is_stop_word: true},
+            {query_word: "Grail", is_stop_word: false},
+        ],
+    };
+    current_filter = set_filter([
+        ["stream", streamA_id.toString()],
+        ["search", "What ABOUT Grail"],
+    ]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No search results.",
+            undefined,
+            undefined,
+            expected_search_data_capitalization_case,
+        ),
+    );
 });
 
 run_test("show_invalid_narrow_message", ({mock_template}) => {
