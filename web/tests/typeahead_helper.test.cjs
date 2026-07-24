@@ -1906,6 +1906,54 @@ test("render_person with matching custom profile field but email hidden", ({
     assert.ok(rendered);
 });
 
+test("query_matches_person_name strips diacritics from both query and name", () => {
+    // query_matches_person_name now always strips diacritics from both sides,
+    // so a diacritic query matches an ASCII name and an ASCII query matches a
+    // name with diacritics.
+    const adam_diacritic = make_user({
+        email: "adam_name_diacritic@zulip.com",
+        full_name: "Ądam",
+        user_id: 101,
+    });
+    const adam_ascii = make_user({
+        email: "adam_name_ascii@zulip.com",
+        full_name: "adam",
+        user_id: 102,
+    });
+
+    assert.equal(th.query_matches_person_name("ądam", user_item(adam_diacritic)), true);
+    assert.equal(th.query_matches_person_name("ądam", user_item(adam_ascii)), true);
+    assert.equal(th.query_matches_person_name("adam", user_item(adam_diacritic)), true);
+    assert.equal(th.query_matches_person_name("zoe", user_item(adam_ascii)), false);
+});
+
+test("query_matches_group_name strips diacritics from both query and name", () => {
+    // Like query_matches_person_name, group-name filtering is
+    // diacritics-agnostic: a diacritic query matches an ASCII group name
+    // and an ASCII query matches a group name with diacritics.
+    const diacritic_group = make_user_group({
+        id: 200,
+        name: "Ągents",
+        description: "",
+        members: new Set([b_user_2.user_id]),
+        is_system_group: false,
+    });
+    const ascii_group = make_user_group({
+        id: 201,
+        name: "agents",
+        description: "",
+        members: new Set([b_user_2.user_id]),
+        is_system_group: false,
+    });
+    user_groups.add(diacritic_group);
+    user_groups.add(ascii_group);
+
+    assert.equal(th.query_matches_group_name("ągents", user_group_item(diacritic_group)), true);
+    assert.equal(th.query_matches_group_name("ągents", user_group_item(ascii_group)), true);
+    assert.equal(th.query_matches_group_name("agents", user_group_item(diacritic_group)), true);
+    assert.equal(th.query_matches_group_name("zoe", user_group_item(ascii_group)), false);
+});
+
 test("query_matches_person matches custom profile fields when they are enabled for user matching ", ({
     override,
 }) => {
@@ -1941,4 +1989,112 @@ test("query_matches_person matches custom profile fields when they are enabled f
 
     assert.equal(th.query_matches_person("alpha", a_user_item, undefined, undefined, true), true);
     assert.equal(th.query_matches_person("beta", a_user_item, undefined, undefined, true), false);
+    assert.equal(th.query_matches_person("beta", a_user_item, true, undefined, true), false);
+});
+
+test("sort_recipients prioritizes exact diacritic matches", () => {
+    const aaron_item = {
+        type: "user",
+        user: {full_name: "aaron", email: "aaron@zulip.com", is_bot: false},
+    };
+
+    const aaron_diacritic_item = {
+        type: "user",
+        user: {full_name: "Ąaron", email: "aaron_diacritic@zulip.com", is_bot: false},
+    };
+
+    const users = [aaron_item, aaron_diacritic_item];
+
+    const result = th.sort_recipients({
+        users,
+        query: "ą",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [aaron_diacritic_item, aaron_item]);
+});
+
+test("sort_recipients: diacritic query allows diacritic-stripped ASCII fallback", () => {
+    const adam_item = {
+        type: "user",
+        user: {full_name: "adam", email: "adam@zulip.com", is_bot: false},
+    };
+    const zoe_item = {
+        type: "user",
+        user: {full_name: "zoe", email: "zoe@zulip.com", is_bot: false},
+    };
+
+    const result = th.sort_recipients({
+        users: [adam_item, zoe_item],
+        query: "ą",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [adam_item, zoe_item]);
+});
+
+test("sort_recipients: plain ASCII query ranks diacritic names below matches", () => {
+    const adam_item = {
+        type: "user",
+        user: {full_name: "adam", email: "adam@zulip.com", is_bot: false},
+    };
+    const adam_diacritic_item = {
+        type: "user",
+        user: {full_name: "Ądam", email: "adam_diacritic@zulip.com", is_bot: false},
+    };
+
+    const result = th.sort_recipients({
+        users: [adam_item, adam_diacritic_item],
+        query: "a",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [adam_item, adam_diacritic_item]);
+});
+
+test("sort_recipients: diacritic query matches via word boundary (diacritic-stripped)", () => {
+    const john_adam_item = {
+        type: "user",
+        user: {full_name: "John adam", email: "johnadam@zulip.com", is_bot: false},
+    };
+    const zoe_item = {
+        type: "user",
+        user: {full_name: "zoe", email: "zoe@zulip.com", is_bot: false},
+    };
+
+    const result = th.sort_recipients({
+        users: [john_adam_item, zoe_item],
+        query: "ą",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [john_adam_item, zoe_item]);
+});
+
+test("sort_recipients surfaces groups whose names match a diacritic query", () => {
+    // Regression test: a group whose display name begins with a
+    // diacritic query lands in the diacritic-prefix bucket, which
+    // sort_recipients must still surface rather than drop.
+    const diacritic_group = make_user_group({
+        id: 100,
+        name: "Ągents",
+        description: "",
+        members: new Set([b_user_2.user_id]),
+        is_system_group: false,
+    });
+    user_groups.add(diacritic_group);
+
+    const result = th.sort_recipients({
+        users: [],
+        query: "ą",
+        groups: [user_group_item(diacritic_group)],
+        max_num_items: 10,
+    });
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0].id, diacritic_group.id);
 });

@@ -207,9 +207,11 @@ export function topics_seen_for(stream_id?: number): string[] {
 }
 
 export function get_language_matcher(query: string): (language: string) => boolean {
-    query = query.toLowerCase();
+    // Filtering is diacritics-agnostic: strip diacritics from both the query
+    // and the language name so ASCII and diacritic spellings match each other.
+    query = typeahead.remove_diacritics(query.toLowerCase());
     return function (language: string): boolean {
-        return language.includes(query);
+        return typeahead.remove_diacritics(language.toLowerCase()).includes(query);
     };
 }
 
@@ -711,11 +713,10 @@ function filter_persons<T>(
 
 export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
     query = typeahead.clean_query_lowercase(query, false);
-    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     const filterer = (person_items: UserPillData[]): UserPillData[] =>
         person_items.filter((item) =>
-            typeahead_helper.query_matches_person_name(query, item, should_remove_diacritics, true),
+            typeahead_helper.query_matches_person_name(query, item, true),
         );
 
     const current_narrow_participant_ids = message_lists.current?.data.participants.visible();
@@ -823,7 +824,7 @@ export function get_person_suggestions(
     }));
 
     const filtered_groups = group_pill_data.filter((item) =>
-        typeahead_helper.query_matches_group_name(query, item, should_remove_diacritics),
+        typeahead_helper.query_matches_group_name(query, item),
     );
 
     const user = people.get_from_unique_full_name(query);
