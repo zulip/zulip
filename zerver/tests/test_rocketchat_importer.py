@@ -521,6 +521,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(zerver_realmemoji[0]["file_name"], "tick.png")
         self.assertEqual(zerver_realmemoji[0]["realm"], 3)
         self.assertEqual(zerver_realmemoji[0]["deactivated"], False)
+        self.assertIsInstance(zerver_realmemoji[0]["date_created"], datetime)
 
         self.assertEqual(zerver_realmemoji[1]["name"], "check")
         self.assertEqual(zerver_realmemoji[1]["file_name"], "tick.png")
