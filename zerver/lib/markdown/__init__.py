@@ -66,6 +66,15 @@ from zerver.models.realm_emoji import EmojiInfo, get_name_keyed_dict_for_active_
 ReturnT = TypeVar("ReturnT")
 
 
+class SemiAtomicString(str):
+    """
+    Acts as a normal string to allow markdown emphasis (bold/italic) to process,
+    but serves as a flag to tell Zulip's custom linkifiers to abort.
+    """
+
+    __slots__ = ()
+
+
 # Taken from
 # https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
 html_safelisted_schemes = (
@@ -1424,6 +1433,8 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
 
 
 class AutoLink(CompiledPattern):
+    is_link_pattern = True
+
     @override
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group("url")
@@ -1627,6 +1638,8 @@ def get_compiled_linkifier_regex(source_pattern: str) -> "re2._Regexp[str]":
 class LinkifierPattern(CompiledInlineProcessor):
     """Applied a given linkifier to the input"""
 
+    is_link_pattern = True
+
     def __init__(
         self,
         source_pattern: str,
@@ -1763,6 +1776,8 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
 
 
 class StreamTopicMessageProcessor(CompiledInlineProcessor):
+    is_link_pattern = True
+
     def find_stream_id(self, name: str) -> int | None:
         db_data: DbData | None = self.zmd.zulip_db_data
         if db_data is None:
@@ -1986,9 +2001,12 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         if not el.text or not el.text.strip():
             el.text = href
 
-        # Prevent linkifiers from running on the content of a Markdown link, breaking up the link.
-        # This is a monkey-patch, but it might be worth sending a version of this change upstream.
-        el.text = markdown.util.AtomicString(el.text)
+        # We wrap the text in SemiAtomicString to prevent other linkifiers
+        # from running on the content of a Markdown link (which would result
+        # in nested links), while still allowing standard formatting (bold/italic)
+        # to work.
+        if el.text is not None:
+            el.text = SemiAtomicString(el.text)
 
         return el
 
@@ -2173,6 +2191,21 @@ def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.
 DEFAULT_MARKDOWN_KEY = -1
 
 
+class ZulipInlineProcessor(markdown.treeprocessors.InlineProcessor):
+    def _InlineProcessor__applyPattern(
+        self,
+        pattern: markdown.inlinepatterns.Pattern,
+        data: str,
+        pattern_index: int,
+        start_index: int = 0,
+    ) -> tuple[str, bool, int]:
+        if isinstance(data, SemiAtomicString) and getattr(pattern, "is_link_pattern", False):
+            return data, False, 0
+        return markdown.treeprocessors.InlineProcessor._InlineProcessor__applyPattern(  # type: ignore[attr-defined] # name-mangled private method
+            self, pattern, data, pattern_index, start_index
+        )
+
+
 class ZulipMarkdown(markdown.Markdown):
     zulip_message: Message | None
     zulip_realm: Realm | None
@@ -2300,31 +2333,48 @@ class ZulipMarkdown(markdown.Markdown):
         # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
+        #
+        # IMPORTANT: All Zulip-specific link-generating patterns (stream links,
+        # mentions, autolinks, realm linkifiers) must have a priority LOWER than
+        # LinkInlineProcessor (60). This ensures that standard Markdown links
+        # `[text](url)` are always processed first. LinkInlineProcessor wraps the
+        # link's inner text in SemiAtomicString, which acts as a firewall: our
+        # ZulipInlineProcessor sees the SemiAtomicString and skips any pattern
+        # with is_link_pattern=True, preventing nested <a> tags from being
+        # generated inside a Markdown link.
+        #
+        # Non-link-generating patterns (backtick, bold/italic, Tex, Timestamp)
+        # are unaffected and retain their original priorities.
         reg = markdown.util.Registry[markdown.inlinepatterns.Pattern]()
         reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), "backtick", 105)
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
-        reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
         reg.register(Tex(TEX_RE, self), "tex", 90)
+        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
+        reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
+        # All link-generating Zulip patterns run AFTER LinkInlineProcessor (60),
+        # so the SemiAtomicString firewall in ZulipInlineProcessor can block them
+        # from creating nested links inside Markdown link text.
+        reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 59)
         reg.register(
             StreamTopicMessagePattern(get_compiled_stream_topic_message_link_regex(), self),
             "stream_topic_message",
-            89,
+            58,
         )
-        reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
-        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
-        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
-        reg.register(
-            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
-        )
-        reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
+        reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 57)
+        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 56)
         # We register higher priority on audio patterns, as the processing logic will pass things
         # onto image patterns in the absence of a supported audio type
-        reg.register(AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 58)
-        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "image", 57)
-        reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
-        # Reserve priority 45-54 for linkifiers
+        reg.register(AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 55)
+        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "image", 54)
+
+        reg.register(AutoLink(get_web_link_regex(), self), "autolink", 53)
+        reg.register(
+            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 52
+        )
+
+        # Reserve priority 45-51 for linkifiers
         reg = self.register_linkifiers(reg)
         reg.register(
             markdown.inlinepatterns.HtmlInlineProcessor(markdown.inlinepatterns.ENTITY_RE, self),
@@ -2363,7 +2413,7 @@ class ZulipMarkdown(markdown.Markdown):
         # Here we build all the processors from upstream, plus a few of our own.
         treeprocessors = markdown.util.Registry[markdown.treeprocessors.Treeprocessor]()
         # We get priority 30 from 'hilite' extension
-        treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
+        treeprocessors.register(ZulipInlineProcessor(self), "inline", 25)
         treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 20)
         treeprocessors.register(markdown.treeprocessors.UnescapeTreeprocessor(self), "unescape", 18)
         treeprocessors.register(
