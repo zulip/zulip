@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import orjson
+from django.test import override_settings
 
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import WebhookTestCase
@@ -22,6 +23,9 @@ TOPIC_SPONSORS = "sponsors"
 
 
 class GitHubWebhookTest(WebhookTestCase):
+    WEBHOOK_SIGNATURE_HEADER = "X_HUB_Signature_256"
+    WEBHOOK_TEST_SECRET = "testingthis"
+
     def test_ping_event(self) -> None:
         expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
         self.check_webhook("ping", TOPIC_REPO, expected_message)
@@ -852,6 +856,54 @@ A temporary team so that I can get some webhook fixtures!
         )
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n``` quote\nYou are totally right! I'll get this fixed right away.\n```"
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+    def test_github_webhook_bad_signature(self) -> None:
+        with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            url = self.build_webhook_url(webhook_secret=self.WEBHOOK_TEST_SECRET)
+            result = self.client_post(
+                url,
+                self.get_payload("ping"),
+                content_type="application/json",
+                HTTP_X_HUB_SIGNATURE_256="sha256=completely_invalid_hash_value",
+            )
+            self.assert_json_error(result, "Webhook signature verification failed.")
+
+    def test_github_webhook_signature_disabled_skips_validation(self) -> None:
+        """Verifies that when VERIFY_WEBHOOK_SIGNATURES is explicitly disabled,
+        requests pass through even if the signature value is completely bogus.
+        """
+        with override_settings(VERIFY_WEBHOOK_SIGNATURES=False):
+            expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
+            self.check_webhook(
+                "ping",
+                TOPIC_REPO,
+                expected_message,
+                HTTP_X_HUB_SIGNATURE_256="sha256=invalid_hash",
+            )
+
+    def test_github_webhook_valid_signature_success(self) -> None:
+        """Verifies that a mathematically correct HMAC signature passes
+        cleanly when verification enforcement is active."""
+        expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
+
+        with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            self.check_webhook("ping", TOPIC_REPO, expected_message)
+
+    def test_github_webhook_missing_secret(self) -> None:
+        """Verifies that the backend drops the request if the webhook url
+        is invoked without providing the required webhook_secret parameter."""
+        with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            url = self.build_webhook_url()
+            result = self.client_post(
+                url,
+                self.get_payload("ping"),
+                content_type="application/json",
+                HTTP_X_HUB_SIGNATURE_256="sha256=somehash",
+            )
+            self.assert_json_error(
+                result,
+                "The webhook secret is missing. Please set the webhook_secret while generating the URL.",
+            )
 
 
 class GitHubSponsorsHookTests(WebhookTestCase):
