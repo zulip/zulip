@@ -22,12 +22,25 @@ from corporate.models.licenses import LicenseLedger
 from corporate.models.plans import CustomerPlan, CustomerPlanOffer, get_current_plan_by_customer
 from corporate.models.sponsorships import SponsoredPlanTypes, ZulipSponsorshipRequest
 from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user
 from zerver.actions.invites import do_create_multiuse_invite_link
-from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
+from zerver.actions.realm_settings import (
+    do_change_realm_org_type,
+    do_change_realm_permission_group_setting,
+    do_send_realm_reactivation_email,
+)
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserMessage, UserProfile
+from zerver.models import (
+    MultiuseInvite,
+    NamedUserGroup,
+    PreregistrationUser,
+    Realm,
+    UserMessage,
+    UserProfile,
+)
+from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import OrgTypeEnum, get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
@@ -2152,6 +2165,7 @@ class TestSupportEndpoint(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
         hamlet_email = hamlet.delivery_email
+        hamlet_id = hamlet.id
         realm = get_realm("zulip")
         self.login_user(cordelia)
 
@@ -2163,10 +2177,67 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
-        with mock.patch("corporate.views.support.do_delete_user_preserving_messages") as m:
-            result = self.client_post(
-                "/activity/support",
-                {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},
-            )
-            m.assert_called_once_with(hamlet, acting_user=self.example_user("iago"))
-            self.assert_in_success_response([f"{hamlet_email} in zulip deleted"], result)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        bot = do_create_user(
+            email="normal-bot@zulip.com",
+            password="",
+            realm=realm,
+            full_name="",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=hamlet,
+            acting_user=None,
+        )
+
+        # hamlet is the only member of the anonymous group used for
+        # can_manage_all_groups, a setting that cannot be set to the
+        # "Nobody" group. Deleting hamlet via the support panel still
+        # succeeds; the setting is reset to its replacement group,
+        # "role:owners", instead of blocking the deletion.
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            direct_members=[hamlet], direct_subgroups=[]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", setting_group, acting_user=None
+        )
+
+        # can_create_public_channel_group allows the "Nobody" group, so it is
+        # reset to "role:nobody" as usual.
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            direct_members=[hamlet], direct_subgroups=[]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_create_public_channel_group", setting_group, acting_user=None
+        )
+
+        # The bot owned by hamlet is the sole member of another "Nobody"-
+        # disallowing setting; it is reset too, since deleting hamlet
+        # cascades to deactivating the bot.
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            direct_members=[bot], direct_subgroups=[]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_billing_group", setting_group, acting_user=None
+        )
+
+        result = self.client_post(
+            "/activity/support",
+            {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},
+        )
+        self.assert_in_success_response([f"{hamlet_email} in zulip deleted"], result)
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.can_manage_all_groups_id, owners_group.id)
+        self.assertEqual(realm.can_create_public_channel_group_id, nobody_group.id)
+        self.assertEqual(realm.can_manage_billing_group_id, owners_group.id)
+
+        deleted_hamlet = UserProfile.objects.get(id=hamlet_id)
+        self.assertFalse(deleted_hamlet.is_active)
+        self.assertEqual(deleted_hamlet.delivery_email, f"deleteduser{hamlet_id}@zulip.testserver")
+        bot.refresh_from_db()
+        self.assertFalse(bot.is_active)
