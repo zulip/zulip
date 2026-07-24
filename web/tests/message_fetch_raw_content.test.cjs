@@ -7,9 +7,10 @@ const {run_test} = require("./lib/test.cjs");
 
 const stream_data = zrequire("stream_data");
 const message_store = zrequire("message_store");
-const message_fetch_raw_content = zrequire("message_fetch_raw_content");
 const message_fetch = mock_esm("../src/message_fetch");
+const narrow_state = mock_esm("../src/narrow_state");
 const channel = mock_esm("../src/channel");
+const message_fetch_raw_content = zrequire("message_fetch_raw_content");
 
 function add_messages_to_message_store(messages) {
     message_store.clear_for_testing();
@@ -18,10 +19,11 @@ function add_messages_to_message_store(messages) {
     }
 }
 
-// We only rely on message_fetch for type validation.
+// We only rely on message_fetch for type validation and narrow encoding.
 message_fetch.message_ids_response_schema = {
     parse: (data) => data,
 };
+message_fetch.get_narrow_for_message_fetch = () => "";
 
 const denmark = {
     subscribed: true,
@@ -77,11 +79,19 @@ run_test("get_raw_content_for_messages", ({override}) => {
     assert.ok(success_called, "Should call on_success immediately if all messages are hydrated");
     assert.equal(error_called, false);
 
-    // Case: Fetching missing raw_content successfully
+    // Case: Fetching missing raw_content successfully, with the current
+    // narrow passed so include_history can cover historical messages.
     let channel_get_args;
     success_called = false;
     error_called = false;
 
+    const fake_filter = {};
+    const encoded_narrow = JSON.stringify([{operator: "channel", operand: social.stream_id}]);
+    override(narrow_state, "filter", () => fake_filter);
+    override(message_fetch, "get_narrow_for_message_fetch", (filter) => {
+        assert.equal(filter, fake_filter);
+        return encoded_narrow;
+    });
     override(channel, "get", (args) => {
         channel_get_args = args;
         args.success({
@@ -105,11 +115,61 @@ run_test("get_raw_content_for_messages", ({override}) => {
         JSON.stringify([2]),
         "Should only request hydration for messages missing raw_content",
     );
+    assert.equal(channel_get_args.data.narrow, encoded_narrow);
     // It is safe to update raw_content for messages from channels
     // the user is subscribed to.
     assert.equal(msg_2.raw_content, "Fetched markdown content");
     assert.ok(success_called, "Should call on_success after successfully hydrating");
     assert.deepEqual(success_call_args, [msg_1.raw_content, msg_2.raw_content]);
+
+    // Case: Encoded narrow is empty — omit the narrow parameter.
+    success_called = false;
+    delete msg_2.raw_content;
+    override(narrow_state, "filter", () => fake_filter);
+    override(message_fetch, "get_narrow_for_message_fetch", () => "");
+    override(channel, "get", (args) => {
+        channel_get_args = args;
+        args.success({
+            messages: [
+                {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content"},
+            ],
+        });
+    });
+
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids: [1, 2],
+        on_success(args) {
+            success_called = true;
+            success_call_args = args;
+        },
+    });
+
+    assert.equal(channel_get_args.data.narrow, undefined);
+    assert.ok(success_called);
+
+    // Case: No current filter (e.g. recent conversations) — no narrow param.
+    success_called = false;
+    delete msg_2.raw_content;
+    override(narrow_state, "filter", () => undefined);
+    override(channel, "get", (args) => {
+        channel_get_args = args;
+        args.success({
+            messages: [
+                {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content"},
+            ],
+        });
+    });
+
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids: [1, 2],
+        on_success(args) {
+            success_called = true;
+            success_call_args = args;
+        },
+    });
+
+    assert.equal(channel_get_args.data.narrow, undefined);
+    assert.ok(success_called);
 
     // Case: Network error during hydration
     success_called = false;
@@ -132,6 +192,42 @@ run_test("get_raw_content_for_messages", ({override}) => {
 
     assert.equal(success_called, false);
     assert.ok(error_called, "Should call on_error if the network request fails");
+});
+
+// Separate test so we exercise the module-level default
+// get_narrow_for_message_fetch (returns "") without a prior override
+// of that function in the same test.
+run_test("get_raw_content_for_messages module default narrow helper", ({override}) => {
+    const msg_1 = {
+        id: 1,
+        content: "<p>HTML content</p>",
+        type: "stream",
+        stream_id: denmark.stream_id,
+    };
+    add_messages_to_message_store([msg_1]);
+
+    let channel_get_args;
+    const fake_filter = {};
+    override(narrow_state, "filter", () => fake_filter);
+    override(channel, "get", (args) => {
+        channel_get_args = args;
+        args.success({
+            messages: [
+                {id: 1, content_type: "text/x-markdown", content: "Fetched markdown content"},
+            ],
+        });
+    });
+
+    let success_called = false;
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids: [1],
+        on_success() {
+            success_called = true;
+        },
+    });
+
+    assert.ok(success_called);
+    assert.equal(channel_get_args.data.narrow, undefined);
 });
 
 run_test("get_raw_content_for_single_message", ({override}) => {

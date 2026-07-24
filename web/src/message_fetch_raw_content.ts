@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as channel from "./channel.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_store from "./message_store.ts";
+import * as narrow_state from "./narrow_state.ts";
 
 export function get_raw_content_for_messages(info: {
     message_ids: number[];
@@ -14,7 +15,7 @@ export function get_raw_content_for_messages(info: {
     const message_ids_that_require_fetching: number[] = [];
     const raw_content_arr: string[] = Array.from({length: message_ids.length});
 
-    // We fill what we can from the store
+    // We fill what we can from the store.
     for (const [i, id] of message_ids.entries()) {
         const message = message_store.get(id);
         assert(message !== undefined);
@@ -30,12 +31,25 @@ export function get_raw_content_for_messages(info: {
         return;
     }
 
+    // Multi-message quoting happens from the message feed. A user's
+    // personal message history does not include channel messages from
+    // before they subscribed
+    // (https://zulip.com/api/get-messages). Passing the current
+    // narrow lets GET /messages search shared history instead of only
+    // that personal history, so we get messages that lack a
+    // UserMessage row (e.g. unsubscribed public channels, or private
+    // channels with shared history before the user subscribed). See
+    // https://zulip.com/api/get-messages#parameter-narrow.
+    const filter = narrow_state.filter();
+    const narrow = filter !== undefined ? message_fetch.get_narrow_for_message_fetch(filter) : "";
+
     channel.get({
         url: "/json/messages",
         data: {
             allow_empty_topic_name: true,
             apply_markdown: false,
             message_ids: JSON.stringify(message_ids_that_require_fetching),
+            ...(narrow !== "" ? {narrow} : {}),
         },
         success(raw_data) {
             const data = message_fetch.message_ids_response_schema.parse(raw_data);
