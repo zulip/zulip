@@ -276,6 +276,8 @@ test("start", ({override, override_rewire, mock_template}) => {
     const me = make_user();
     set_current_user(me);
 
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+
     // Start direct message
     compose_defaults = {
         private_message_recipient_ids: [user1.user_id],
