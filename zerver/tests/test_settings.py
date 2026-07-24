@@ -7,11 +7,14 @@ import orjson
 from django.http import HttpRequest
 from django.test import override_settings
 
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
 from zerver.models import Draft, NamedUserGroup, ScheduledMessageNotificationEmail, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_user_profile_by_api_key
 
@@ -119,6 +122,114 @@ class ChangeSettingsTest(ZulipTestCase):
         # Now try too-short names
         json_result = self.client_patch("/json/settings", dict(full_name=""))
         self.assert_json_error(json_result, "Name must not be empty!")
+
+    def test_unauthorized_name_changes_with_group_settings(self) -> None:
+        user = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = user.realm
+        old_full_name = user.full_name
+        self.login_user(user)
+
+        admin_group = NamedUserGroup.objects.get(
+            realm_for_sharding=realm,
+            name=SystemGroups.ADMINISTRATORS,
+            is_system_group=True,
+        )
+        named_group = create_user_group_in_database(
+            "name-change-test-group",
+            [cordelia],
+            realm,
+            acting_user=self.example_user("iago"),
+        )
+        anonymous_group = self.create_or_update_anonymous_group_for_setting([cordelia], [])
+
+        for setting_group in [admin_group, named_group, anonymous_group]:
+            with self.subTest(setting_group_id=setting_group.id):
+                do_change_realm_permission_group_setting(
+                    realm,
+                    "can_change_own_name_group",
+                    setting_group,
+                    acting_user=None,
+                )
+                json_result = self.client_patch("/json/settings", {"full_name": "Sir Hamlet"})
+                self.assert_json_success(json_result)
+
+                user.refresh_from_db()
+                self.assertEqual(user.full_name, old_full_name)
+
+    def test_authorized_name_changes_with_group_settings(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+        old_full_name = user.full_name
+        self.login_user(user)
+
+        members_group = NamedUserGroup.objects.get(
+            realm_for_sharding=realm,
+            name=SystemGroups.MEMBERS,
+            is_system_group=True,
+        )
+        named_group = create_user_group_in_database(
+            "name-change-allowed-group",
+            [user],
+            realm,
+            acting_user=self.example_user("iago"),
+        )
+        anonymous_group = self.create_or_update_anonymous_group_for_setting([user], [])
+
+        for setting_group in [members_group, named_group, anonymous_group]:
+            with self.subTest(setting_group_id=setting_group.id):
+                do_change_realm_permission_group_setting(
+                    realm,
+                    "can_change_own_name_group",
+                    setting_group,
+                    acting_user=None,
+                )
+                new_full_name = f"Sir Hamlet {setting_group.id}"
+                json_result = self.client_patch("/json/settings", {"full_name": new_full_name})
+                self.assert_json_success(json_result)
+
+                user.refresh_from_db()
+                self.assertEqual(user.full_name, new_full_name)
+
+                user.full_name = old_full_name
+                user.save(update_fields=["full_name"])
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_change_own_name_group",
+            named_group,
+            acting_user=None,
+        )
+        with self.settings(NAME_CHANGES_DISABLED=True):
+            json_result = self.client_patch("/json/settings", {"full_name": "Server Disabled Name"})
+        self.assert_json_success(json_result)
+
+        user.refresh_from_db()
+        self.assertEqual(user.full_name, old_full_name)
+
+    def test_admin_can_change_own_name_when_disallowed_by_group(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        owners_group = NamedUserGroup.objects.get(
+            realm_for_sharding=admin.realm,
+            is_system_group=True,
+            name=SystemGroups.OWNERS,
+        )
+        do_change_realm_permission_group_setting(
+            admin.realm,
+            "can_change_own_name_group",
+            owners_group,
+            acting_user=None,
+        )
+        self.assertFalse(admin.has_permission("can_change_own_name_group"))
+
+        with self.settings(NAME_CHANGES_DISABLED=True):
+            json_result = self.client_patch("/json/settings", dict(full_name="Updated Name"))
+        self.assert_json_success(json_result)
+
+        admin.refresh_from_db()
+        self.assertEqual(admin.full_name, "Updated Name")
 
     def test_illegal_characters_in_name_changes(self) -> None:
         self.login("hamlet")
