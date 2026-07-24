@@ -156,12 +156,15 @@ export type MessageCleanReaction = {
     class: string;
     count: number;
     emoji_alt_code: boolean;
+    emoji_animation_setting: string;
     emoji_code: string;
     emoji_name: string;
     is_realm_emoji: boolean;
     label: string;
     local_id: string;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
+    still_url?: string | null;
+    url?: string;
     user_ids: number[];
     vote_text: string;
 };

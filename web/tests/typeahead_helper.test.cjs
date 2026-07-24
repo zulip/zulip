@@ -1124,6 +1124,8 @@ test("render_emoji", ({mock_template}) => {
     expected_template_data = {
         primary: "realm emoji",
         img_src: "TBD",
+        still_url: null,
+        emoji_animation_setting: undefined,
         is_emoji: true,
         has_image: true,
         has_pronouns: false,

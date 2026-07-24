@@ -10,6 +10,7 @@ import type {EmojiRenderingDetails} from "./emoji.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as people from "./people.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 
@@ -35,6 +36,7 @@ export function open_user_status_modal(): void {
     const rendered_set_status_overlay = render_set_status_overlay({
         default_status_messages_and_emoji_info,
         selected_emoji_info,
+        emoji_animation_setting: user_settings.web_animate_image_previews,
     });
 
     dialog_widget.launch({
@@ -134,7 +136,10 @@ function emoji_status_fields_changed(
 function rebuild_status_emoji_selector_ui(selected_emoji_info: Partial<UserStatusEmojiInfo>): void {
     let selected_emoji = null;
     if (selected_emoji_info && Object.keys(selected_emoji_info).length > 0) {
-        selected_emoji = selected_emoji_info;
+        selected_emoji = {
+            ...selected_emoji_info,
+            emoji_animation_setting: user_settings.web_animate_image_previews,
+        };
     }
     const rendered_status_emoji_selector = render_status_emoji_selector({selected_emoji});
     $("#set-user-status-modal .status-emoji-wrapper").html(rendered_status_emoji_selector);

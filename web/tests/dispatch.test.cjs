@@ -1333,6 +1333,8 @@ run_test("user_settings", ({override}) => {
         assert.equal(user_settings.web_home_view, "inbox");
     }
     {
+        override(activity_ui, "build_user_sidebar", noop);
+        override(pm_list, "update_private_messages", noop);
         event = event_fixtures.user_settings__web_animate_image_previews_always;
         override(user_settings, "web_animate_image_previews", "on_hover");
         dispatch(event);
@@ -1340,6 +1342,8 @@ run_test("user_settings", ({override}) => {
     }
 
     {
+        override(activity_ui, "build_user_sidebar", noop);
+        override(pm_list, "update_private_messages", noop);
         event = event_fixtures.user_settings__web_animate_image_previews_on_hover;
         override(user_settings, "web_animate_image_previews", "never");
         dispatch(event);
@@ -1347,6 +1351,8 @@ run_test("user_settings", ({override}) => {
     }
 
     {
+        override(activity_ui, "build_user_sidebar", noop);
+        override(pm_list, "update_private_messages", noop);
         event = event_fixtures.user_settings__web_animate_image_previews_never;
         override(user_settings, "web_animate_image_previews", "always");
         dispatch(event);
@@ -1654,6 +1660,7 @@ run_test("user_status", ({override}) => {
             reaction_type: "unicode_emoji",
             // Extra parameters that were added by `emoji.get_emoji_details_by_name`
             emoji_alt_code: false,
+            emoji_animation_setting: undefined,
         });
     }
 
