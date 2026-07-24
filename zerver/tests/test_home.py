@@ -102,6 +102,7 @@ class HomeTest(ZulipTestCase):
         "is_guest",
         "is_moderator",
         "is_owner",
+        "jitsi_jwt_enabled",
         "jitsi_server_url",
         "klipy_api_key",
         "last_event_id",

@@ -25,6 +25,7 @@ const alert_words_ui = mock_esm("../src/alert_words_ui");
 const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
+const compose_call_ui = mock_esm("../src/compose_call_ui");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const {electron_bridge} = mock_esm("../src/electron_bridge", {
     electron_bridge: {},
@@ -683,6 +684,7 @@ run_test("realm settings", ({override}) => {
     override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
     override(compose_recipient, "update_topic_inputbox_on_topics_policy_change", noop);
     override(compose_recipient, "update_compose_area_placeholder_text", noop);
+    override(compose_call_ui, "update_audio_and_video_chat_button_display", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
         with_overrides(({override}) => {
@@ -776,6 +778,8 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
     override(realm, "max_file_upload_size_mib", 10);
+    override(realm, "realm_jitsi_server_url", "https://jitsi-old.example.com");
+    override(realm, "jitsi_jwt_enabled", false);
     override(realm, "server_supported_permission_settings", {
         realm: {
             create_multiuse_invite_group: {},
@@ -815,6 +819,8 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
     assert_same(realm.max_file_upload_size_mib, 1024);
+    assert_same(realm.realm_jitsi_server_url, "https://jitsi.example.com");
+    assert_same(realm.jitsi_jwt_enabled, true);
     assert_same(add_subscribers_element_updated, true);
 
     event = event_fixtures.realm__update_dict__icon;
