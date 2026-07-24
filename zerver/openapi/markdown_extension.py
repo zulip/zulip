@@ -245,6 +245,13 @@ cURL example."""
         # We currently don't have any non-JSON encoded arrays.
         assert parameter.json_encoded
         if curl_argument:
+            if parameter.kind == "body":
+                # A whole-body JSON payload is the entire request body, not a
+                # named field, so it's sent with --json rather than a key=value.
+                # Pretty-print it, preserving the documented key order, since a
+                # dense single line is hard to read.
+                pretty_json = json.dumps(parameter.example, indent=4)
+                return "    --json " + shlex.quote(pretty_json)
             return "    --data-urlencode " + shlex.quote(f"{parameter.name}={ordered_ex_val_str}")
         return ordered_ex_val_str  # nocoverage
     else:

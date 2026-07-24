@@ -246,8 +246,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Zulip outgoing webhook payload
         "/zulip-outgoing-webhook",
         #### Bouncer endpoints
-        # Higher priority to document
-        "/remotes/push/e2ee/notify",
         # Lower priority to document
         "/remotes/server/register",
         "/remotes/server/register/transfer",
@@ -745,6 +743,37 @@ class TestCurlExampleGeneration(ZulipTestCase):
         },
     }
 
+    spec_mock_using_json_body = {
+        "security": [{"basicAuth": []}],
+        "paths": {
+            "/endpoint": {
+                "post": {
+                    "description": "Send a JSON request body.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "description": "The JSON request body.",
+                                    "properties": {
+                                        "name": {"type": "string"},
+                                        "age": {"type": "integer"},
+                                    },
+                                    "required": ["name", "age"],
+                                },
+                                "example": {
+                                    "name": "Zulip",
+                                    "age": 10,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+
     def curl_example(self, endpoint: str, method: str, *args: Any, **kwargs: Any) -> list[str]:
         return generate_curl_example(endpoint, method, "http://localhost:9991/api", *args, **kwargs)
 
@@ -830,6 +859,19 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\",
             "    -u EMAIL_ADDRESS:API_KEY \\",
             '    --data-urlencode \'param1={"key": "value"}\'',
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_generate_and_render_curl_with_json_body(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_using_json_body
+        generated_curl_example = self.curl_example("/endpoint", "POST")
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/endpoint \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            '    --json \'{\n    "name": "Zulip",\n    "age": 10\n}\'',
             "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
