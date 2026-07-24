@@ -11,7 +11,7 @@
     "number": 1,
     "state": "open",
     "locked": false,
-    "title": "Update the README with new information",
+    "title": "This is a very long Pull request title to test topic truncation when renaming",
     "user": {
       "login": "baxterthehacker",
       "id": 6752317,
