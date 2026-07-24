@@ -16,6 +16,7 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
@@ -892,6 +893,9 @@ export function dispatch_normal_event(event) {
                     blueslip.error("Unexpected event type subscription/" + event.op);
                     break;
             }
+            break;
+        case "compose_link_preview":
+            compose_ui.update_compose_link_preview(event.content, event.rendered_content);
             break;
         case "typing":
             if (event.sender.user_id === current_user.user_id) {

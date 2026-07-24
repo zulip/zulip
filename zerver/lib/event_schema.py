@@ -26,6 +26,7 @@ from zerver.lib.event_types import (
     ChannelFolderAddEvent,
     ChannelFolderReorderEvent,
     ChannelFolderUpdateEvent,
+    ComposeLinkPreviewEvent,
     CustomProfileFieldsEvent,
     DefaultStreamGroupsEvent,
     DefaultStreamsEvent,
@@ -181,6 +182,7 @@ check_attachment_remove = make_checker(AttachmentRemoveEvent)
 check_attachment_update = make_checker(AttachmentUpdateEvent)
 check_channel_folder_add = make_checker(ChannelFolderAddEvent)
 check_channel_folder_reorder = make_checker(ChannelFolderReorderEvent)
+check_compose_link_preview = make_checker(ComposeLinkPreviewEvent)
 check_custom_profile_fields = make_checker(CustomProfileFieldsEvent)
 check_default_stream_groups = make_checker(DefaultStreamGroupsEvent)
 check_default_streams = make_checker(DefaultStreamsEvent)

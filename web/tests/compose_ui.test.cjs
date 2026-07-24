@@ -1571,3 +1571,38 @@ run_test("handle_list_indent", ({override}) => {
         assert.equal($t[0].value, "  1. Item 1");
     }
 });
+
+run_test("update_compose_link_preview", ({override_rewire}) => {
+    let apply_args;
+    override_rewire(compose_ui, "apply_preview_render", (...args) => {
+        apply_args = args;
+    });
+
+    const $compose = $("#compose");
+    const content = "http://example.com/";
+    const rendered_content = '<p><a href="http://example.com/">example</a></p>';
+    $("textarea#compose-textarea").val(content);
+
+    // Not in preview mode: the update is ignored.
+    $compose.removeClass("preview_mode");
+    apply_args = undefined;
+    compose_ui.update_compose_link_preview(content, rendered_content);
+    assert.equal(apply_args, undefined);
+
+    // In preview mode but the draft changed since the fetch: ignored.
+    $compose.addClass("preview_mode");
+    $("textarea#compose-textarea").val("http://example.com/ edited");
+    apply_args = undefined;
+    compose_ui.update_compose_link_preview(content, rendered_content);
+    assert.equal(apply_args, undefined);
+
+    // In preview mode and the draft still matches: apply the render.
+    $("textarea#compose-textarea").val(content);
+    apply_args = undefined;
+    compose_ui.update_compose_link_preview(content, rendered_content);
+    assert.ok(apply_args !== undefined);
+    assert.equal(apply_args[3], content);
+    assert.equal(apply_args[4], rendered_content);
+    assert.equal(apply_args[5], content);
+    assert.equal(apply_args[6], true);
+});
