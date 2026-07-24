@@ -860,7 +860,7 @@ A temporary team so that I can get some webhook fixtures!
         with override_settings(VERIFY_WEBHOOK_SIGNATURES=True):
             url = self.build_webhook_url()
             set_bot_config(self.test_user, "webhook_secret", self.WEBHOOK_TEST_SECRET)
-            
+
             result = self.client_post(
                 url,
                 self.get_payload("ping"),

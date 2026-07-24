@@ -57,7 +57,6 @@ from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.cache import bounce_key_prefix_for_testing
-from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
 from zerver.lib.initial_password import initial_password
 from zerver.lib.integrations import WEBHOOK_SIGNATURE_CONFIGS
@@ -2759,7 +2758,7 @@ one or more new messages.
         webhook_secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
         if webhook_secret is not None:
             set_bot_config(self.test_user, "webhook_secret", webhook_secret)
-            
+
         payload = self.get_payload(fixture_name)
         extra["content_type"] = content_type
 

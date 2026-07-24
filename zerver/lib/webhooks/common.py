@@ -345,7 +345,7 @@ def validate_webhook_delivery(
 
     if not webhook_secret:
         raise JsonableError(_("Webhook secret is not configured for this bot."))
-    
+
     signature_header = request.headers.get(signature_header_name, "")
     signature = signature_header.split("=")[-1] if "=" in signature_header else signature_header
 
