@@ -1159,15 +1159,26 @@ export function maybe_remove_diacritics_from_name(
     return user.full_name;
 }
 
-export function build_termlet_matcher(termlet: string): (user: User) => boolean {
+export function build_termlet_matcher(
+    termlet: string,
+    is_unspaced = false,
+): (user: User) => boolean {
     // Note: termlets are required to be lower case.
     termlet = termlet.trim();
     const should_remove_diacritics = !typeahead.contains_diacritics(termlet);
 
     return function (user: User): boolean {
-        const full_name = maybe_remove_diacritics_from_name(user, should_remove_diacritics);
+        const full_name = maybe_remove_diacritics_from_name(
+            user,
+            should_remove_diacritics,
+        ).toLowerCase();
 
-        const names = full_name.toLowerCase().split(" ");
+        if (is_unspaced) {
+            const name_without_spaces = full_name.replaceAll(/\s+/g, "");
+            return name_without_spaces.includes(termlet);
+        }
+
+        const names = full_name.split(" ");
 
         return names.some((name) => name.startsWith(termlet));
     };
@@ -1176,8 +1187,12 @@ export function build_termlet_matcher(termlet: string): (user: User) => boolean 
 export function build_person_matcher(query: string): (user: User) => boolean {
     query = query.trim();
 
+    const is_unspaced_query = typeahead.has_unspaced_script(query);
+
     const termlets = query.toLowerCase().split(/\s+/);
-    const termlet_matchers = termlets.map((termlet) => build_termlet_matcher(termlet));
+    const termlet_matchers = termlets.map((termlet) =>
+        build_termlet_matcher(termlet, is_unspaced_query),
+    );
 
     return function (user: User): boolean {
         if (String(user.user_id) === query) {

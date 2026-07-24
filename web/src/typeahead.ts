@@ -104,6 +104,19 @@ export function last_prefix_match(prefix: string, words: string[]): number | nul
     return null;
 }
 
+// Scripts that don't typically use spaces for word separation.
+const UNSPACED_SCRIPT_NAMES = ["Han", "Hiragana", "Katakana", "Thai", "Lao"];
+
+// Constructs: /[\p{Script=Han}\p{Script=Hiragana}...]/u
+const unspaced_scripts_regex = new RegExp(
+    `[${UNSPACED_SCRIPT_NAMES.map((s) => `\\p{Script=${s}}`).join("")}]`,
+    "u",
+);
+
+export function has_unspaced_script(text: string): boolean {
+    return unspaced_scripts_regex.test(text);
+}
+
 export function query_matches_string_in_order(
     query: string,
     source_str: string,
@@ -167,6 +180,12 @@ export function query_matches_string_in_any_order(
 
     query = query.toLowerCase();
     query = remove_diacritics(query);
+
+    if (has_unspaced_script(query)) {
+        const source_without_spaces = source_str.replaceAll(/\s+/g, "");
+        const search_words = query.split(/\s+/).filter(Boolean);
+        return search_words.every((search_word) => source_without_spaces.includes(search_word));
+    }
 
     const search_words = query.split(split_char).filter(Boolean);
     const source_words = source_str.split(split_char).filter(Boolean);

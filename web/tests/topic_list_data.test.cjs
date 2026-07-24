@@ -583,3 +583,34 @@ test("get_list_info with specific topics and searches", () => {
     list_info = get_list_info(true, "nonexistent");
     assert.equal(list_info.items.length, 0);
 });
+
+test("get_list_info with unspaced scripts", () => {
+    let list_info;
+
+    function add_topic_message(topic_name, message_id) {
+        stream_topic_history.add_message({
+            stream_id: general.stream_id,
+            topic_name,
+            message_id,
+        });
+    }
+
+    add_topic_message("テスト中", 1001);
+    add_topic_message("การทดสอบ", 1002);
+    add_topic_message("ການທົດສອບ", 1003);
+
+    // Test Japanese
+    list_info = get_list_info(true, "中");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "テスト中");
+
+    // Test Thai
+    list_info = get_list_info(true, "สอบ");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "การทดสอบ");
+
+    // Test Lao
+    list_info = get_list_info(true, "ສອບ");
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "ການທົດສອບ");
+});
