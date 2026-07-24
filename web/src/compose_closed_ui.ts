@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import render_reply_recipient_label from "../templates/reply_recipient_label.hbs";
 
 import * as compose_actions from "./compose_actions.ts";
+import * as compose_state from "./compose_state.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
@@ -17,8 +18,12 @@ import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 
+// `label_text` is a flat, pre-formatted string used by
+// `get_recipient_label_for_call` to build a meeting/room name.
+// The reply-button template uses the structured `stream` / `topic_display_name`
+// fields instead, so it can render the decorated channel icon.
 type RecipientLabel = {
-    label_text?: string;
+    label_text: string;
     has_empty_string_topic?: boolean;
     stream?: StreamSubscription;
     topic_display_name?: string;
@@ -31,6 +36,7 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
     const topic_display_name = util.get_final_topic_display_name(topic);
     if (stream) {
         const recipient_label: RecipientLabel = {
+            label_text: `#${stream.name} > ${topic_display_name}`,
             has_empty_string_topic: topic === "",
             stream,
             topic_display_name,
@@ -54,6 +60,35 @@ function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel 
         user_ids,
     };
     return recipient_label;
+}
+
+export function get_recipient_label_for_call(
+    edit_message_id: string | undefined,
+): RecipientLabel | undefined {
+    if (edit_message_id !== undefined) {
+        const message = message_store.get(Number(edit_message_id));
+        if (message === undefined) {
+            return undefined;
+        }
+        if (message.type === "stream") {
+            return get_stream_recipient_label(message.stream_id, message.topic);
+        }
+        const user_ids = people.user_ids_string_to_ids_array(message.to_user_ids);
+        return get_direct_message_recipient_label(user_ids);
+    }
+
+    const message_type = compose_state.get_message_type();
+    if (message_type === "stream") {
+        const stream_id = compose_state.stream_id();
+        if (stream_id === undefined) {
+            return undefined;
+        }
+        return get_stream_recipient_label(stream_id, compose_state.topic());
+    }
+    if (message_type === "private") {
+        return get_direct_message_recipient_label(compose_state.private_message_recipient_ids());
+    }
+    return undefined;
 }
 
 export type ReplyRecipientInformation = {
