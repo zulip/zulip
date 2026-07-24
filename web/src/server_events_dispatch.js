@@ -1169,11 +1169,10 @@ export function dispatch_normal_event(event) {
 
                     if (event.op === "add") {
                         starred_messages.add(event.messages);
-                        starred_messages_ui.rerender_ui();
                     } else {
                         starred_messages.remove(event.messages);
-                        starred_messages_ui.rerender_ui();
                     }
+                    starred_messages_ui.rerender_ui();
                     message_events.update_views_filtered_on_message_property(
                         event.messages,
                         "is-starred",
