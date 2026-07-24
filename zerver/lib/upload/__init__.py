@@ -139,9 +139,15 @@ def create_attachment(
         content_type=content_type,
     )
     maybe_thumbnail(file_vips_data, content_type, path_id, realm.id)
-    from zerver.actions.uploads import notify_attachment_update
+    from zerver.lib.event_types import Attachment as AttachmentData
+    from zerver.lib.event_types import AttachmentAddEvent
+    from zerver.tornado.django_api import send_event_on_commit
 
-    notify_attachment_update(user_profile, "add", attachment.to_dict())
+    event = AttachmentAddEvent(
+        attachment=AttachmentData(**attachment.to_dict()),
+        upload_space_used=user_profile.realm.currently_used_upload_space_bytes(),
+    )
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def get_file_info(user_file: UploadedFile) -> tuple[str, str]:

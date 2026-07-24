@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Any
 
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.event_types import MutedTopicsEvent, UserTopicEvent
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
 from zerver.lib.user_topics import (
@@ -49,19 +49,15 @@ def bulk_do_set_user_topic_visibility_policy(
         # once clients are migrated to handle the user_topic event type
         # instead.
         if not skip_muted_topics_event:
-            muted_topics_event = dict(
-                type="muted_topics", muted_topics=get_topic_mutes(user_profile)
-            )
+            muted_topics_event = MutedTopicsEvent(muted_topics=get_topic_mutes(user_profile))
             send_event_on_commit(user_profile.realm, muted_topics_event, [user_profile.id])
 
-        user_topic_event: dict[str, Any] = {
-            "type": "user_topic",
-            "stream_id": stream.id,
-            "topic_name": topic_name,
-            "last_updated": datetime_to_timestamp(last_updated),
-            "visibility_policy": visibility_policy,
-        }
-
+        user_topic_event = UserTopicEvent(
+            stream_id=stream.id,
+            topic_name=topic_name,
+            last_updated=datetime_to_timestamp(last_updated),
+            visibility_policy=visibility_policy,
+        )
         send_event_on_commit(user_profile.realm, user_topic_event, [user_profile.id])
 
 

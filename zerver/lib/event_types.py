@@ -1,8 +1,9 @@
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from pydantic import AfterValidator, BaseModel
+from typing_extensions import override
 
 from zerver.lib.types import UserGroupMembersDict
 from zerver.models.realms import RealmExportSlug
@@ -20,11 +21,24 @@ Url = Annotated[str, AfterValidator(check_url)]
 
 
 class BaseEvent(BaseModel):
-    pass
+    @override
+    def model_post_init(self, context: Any) -> None:
+        # We serialize events with model_dump(exclude_unset=True) so an
+        # event constructed with a subset of its kwargs has the same
+        # field-presence shape as the legacy dict construction. To make
+        # discriminator fields (type, op) survive that pruning when they
+        # rely on a class-level default, mark any non-None defaulted
+        # field as "set" so it ends up in the serialized output.
+        for name, field_info in type(self).model_fields.items():
+            if name in self.__pydantic_fields_set__:
+                continue
+            default = field_info.get_default(call_default_factory=True)
+            if default is not None:
+                self.__pydantic_fields_set__.add(name)
 
 
 class AlertWordsEvent(BaseEvent):
-    type: Literal["alert_words"]
+    type: Literal["alert_words"] = "alert_words"
     alert_words: list[str]
 
 
@@ -38,8 +52,8 @@ class Attachment(BaseModel):
 
 
 class AttachmentAddEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["add"]
+    type: Literal["attachment"] = "attachment"
+    op: Literal["add"] = "add"
     attachment: Attachment
     upload_space_used: int
 
@@ -49,15 +63,15 @@ class AttachmentFieldForAttachmentRemoveEvent(BaseModel):
 
 
 class AttachmentRemoveEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["remove"]
+    type: Literal["attachment"] = "attachment"
+    op: Literal["remove"] = "remove"
     attachment: AttachmentFieldForAttachmentRemoveEvent
     upload_space_used: int
 
 
 class AttachmentUpdateEvent(BaseEvent):
-    type: Literal["attachment"]
-    op: Literal["update"]
+    type: Literal["attachment"] = "attachment"
+    op: Literal["update"] = "update"
     attachment: Attachment
     upload_space_used: int
 
@@ -127,12 +141,12 @@ class StreamGroup(BaseModel):
 
 
 class DefaultStreamGroupsEvent(BaseEvent):
-    type: Literal["default_stream_groups"]
+    type: Literal["default_stream_groups"] = "default_stream_groups"
     default_stream_groups: list[StreamGroup]
 
 
 class DefaultStreamsEvent(BaseEvent):
-    type: Literal["default_streams"]
+    type: Literal["default_streams"] = "default_streams"
     default_streams: list[int]
 
 
@@ -220,12 +234,12 @@ class DraftsUpdateEvent(BaseEvent):
 
 
 class HasZoomTokenEvent(BaseEvent):
-    type: Literal["has_zoom_token"]
+    type: Literal["has_zoom_token"] = "has_zoom_token"
     value: bool
 
 
 class HasWebexTokenEvent(BaseEvent):
-    type: Literal["has_webex_token"]
+    type: Literal["has_webex_token"] = "has_webex_token"
     value: bool
 
 
@@ -266,7 +280,7 @@ class MessageEvent(BaseEvent):
 
 
 class MutedTopicsEvent(BaseEvent):
-    type: Literal["muted_topics"]
+    type: Literal["muted_topics"] = "muted_topics"
     muted_topics: list[list[str | int]]
 
 
@@ -276,7 +290,7 @@ class MutedUser(BaseModel):
 
 
 class MutedUsersEvent(BaseEvent):
-    type: Literal["muted_users"]
+    type: Literal["muted_users"] = "muted_users"
     muted_users: list[MutedUser]
 
 
@@ -286,25 +300,25 @@ class OnboardingSteps(BaseModel):
 
 
 class OnboardingStepsEvent(BaseEvent):
-    type: Literal["onboarding_steps"]
+    type: Literal["onboarding_steps"] = "onboarding_steps"
     onboarding_steps: list[OnboardingSteps]
 
 
 class DeviceAddEvent(BaseEvent):
-    type: Literal["device"]
-    op: Literal["add"]
+    type: Literal["device"] = "device"
+    op: Literal["add"] = "add"
     device_id: int
 
 
 class DeviceRemoveEvent(BaseEvent):
-    type: Literal["device"]
-    op: Literal["remove"]
+    type: Literal["device"] = "device"
+    op: Literal["remove"] = "remove"
     device_id: int
 
 
 class DeviceUpdateEvent(BaseEvent):
-    type: Literal["device"]
-    op: Literal["update"]
+    type: Literal["device"] = "device"
+    op: Literal["update"] = "update"
     device_id: int
     push_key_id: int | None = None
     push_token_id: str | None = None
@@ -320,14 +334,14 @@ class NavigationViewFields(BaseModel):
 
 
 class NavigationViewAddEvent(BaseEvent):
-    type: Literal["navigation_view"]
-    op: Literal["add"]
+    type: Literal["navigation_view"] = "navigation_view"
+    op: Literal["add"] = "add"
     navigation_view: NavigationViewFields
 
 
 class NavigationViewRemoveEvent(BaseEvent):
-    type: Literal["navigation_view"]
-    op: Literal["remove"]
+    type: Literal["navigation_view"] = "navigation_view"
+    op: Literal["remove"] = "remove"
     fragment: str
 
 
@@ -337,8 +351,8 @@ class NavigationViewFieldsForUpdate(BaseModel):
 
 
 class NavigationViewUpdateEvent(BaseEvent):
-    type: Literal["navigation_view"]
-    op: Literal["update"]
+    type: Literal["navigation_view"] = "navigation_view"
+    op: Literal["update"] = "update"
     fragment: str
     data: NavigationViewFieldsForUpdate
 
@@ -373,8 +387,8 @@ class ModernPresenceEvent(BaseEvent):
 
 
 class ReactionAddEvent(BaseEvent):
-    type: Literal["reaction"]
-    op: Literal["add"]
+    type: Literal["reaction"] = "reaction"
+    op: Literal["add"] = "add"
     message_id: int
     emoji_name: str
     emoji_code: str
@@ -383,8 +397,8 @@ class ReactionAddEvent(BaseEvent):
 
 
 class ReactionRemoveEvent(BaseEvent):
-    type: Literal["reaction"]
-    op: Literal["remove"]
+    type: Literal["reaction"] = "reaction"
+    op: Literal["remove"] = "remove"
     message_id: int
     emoji_name: str
     emoji_code: str
@@ -412,8 +426,8 @@ class Bot(BaseModel):
 
 
 class RealmBotAddEvent(BaseEvent):
-    type: Literal["realm_bot"]
-    op: Literal["add"]
+    type: Literal["realm_bot"] = "realm_bot"
+    op: Literal["add"] = "add"
     bot: Bot
 
 
@@ -422,8 +436,8 @@ class BotTypeForDelete(BaseModel):
 
 
 class RealmBotDeleteEvent(BaseEvent):
-    type: Literal["realm_bot"]
-    op: Literal["delete"]
+    type: Literal["realm_bot"] = "realm_bot"
+    op: Literal["delete"] = "delete"
     bot: BotTypeForDelete
 
 
@@ -440,8 +454,8 @@ class BotTypeForUpdate(BotTypeForUpdateCore):
 
 
 class RealmBotUpdateEvent(BaseEvent):
-    type: Literal["realm_bot"]
-    op: Literal["update"]
+    type: Literal["realm_bot"] = "realm_bot"
+    op: Literal["update"] = "update"
     bot: BotTypeForUpdate
 
 
@@ -457,20 +471,20 @@ class RealmDomain(BaseModel):
 
 
 class RealmDomainsAddEvent(BaseEvent):
-    type: Literal["realm_domains"]
-    op: Literal["add"]
+    type: Literal["realm_domains"] = "realm_domains"
+    op: Literal["add"] = "add"
     realm_domain: RealmDomain
 
 
 class RealmDomainsChangeEvent(BaseEvent):
-    type: Literal["realm_domains"]
-    op: Literal["change"]
+    type: Literal["realm_domains"] = "realm_domains"
+    op: Literal["change"] = "change"
     realm_domain: RealmDomain
 
 
 class RealmDomainsRemoveEvent(BaseEvent):
-    type: Literal["realm_domains"]
-    op: Literal["remove"]
+    type: Literal["realm_domains"] = "realm_domains"
+    op: Literal["remove"] = "remove"
     domain: str
 
 
@@ -525,7 +539,7 @@ class Export(BaseModel):
 
 
 class RealmExportEvent(BaseEvent):
-    type: Literal["realm_export"]
+    type: Literal["realm_export"] = "realm_export"
     exports: list[Export]
 
 
@@ -539,7 +553,7 @@ class RealmLinkifier(BaseModel):
 
 
 class RealmLinkifiersEvent(BaseEvent):
-    type: Literal["realm_linkifiers"]
+    type: Literal["realm_linkifiers"] = "realm_linkifiers"
     realm_linkifiers: list[RealmLinkifier]
 
 
@@ -551,7 +565,7 @@ class RealmPlayground(BaseModel):
 
 
 class RealmPlaygroundsEvent(BaseEvent):
-    type: Literal["realm_playgrounds"]
+    type: Literal["realm_playgrounds"] = "realm_playgrounds"
     realm_playgrounds: list[RealmPlayground]
 
 
@@ -650,8 +664,8 @@ class PlanTypeData(BaseModel):
 
 
 class RealmUpdateDictEvent(BaseEvent):
-    type: Literal["realm"]
-    op: Literal["update_dict"]
+    type: Literal["realm"] = "realm"
+    op: Literal["update_dict"] = "update_dict"
     property: Literal["default", "icon", "logo", "night_logo"]
     data: (
         AllowMessageEditingData
@@ -785,8 +799,8 @@ class PersonDateJoined(BaseModel):
 
 
 class RealmUserUpdateEvent(BaseEvent):
-    type: Literal["realm_user"]
-    op: Literal["update"]
+    type: Literal["realm_user"] = "realm_user"
+    op: Literal["update"] = "update"
     person: (
         PersonAvatarFields
         | PersonBotOwnerId
@@ -818,20 +832,20 @@ class SavedSnippetFields(BaseModel):
 
 
 class SavedSnippetsAddEvent(BaseEvent):
-    type: Literal["saved_snippets"]
-    op: Literal["add"]
+    type: Literal["saved_snippets"] = "saved_snippets"
+    op: Literal["add"] = "add"
     saved_snippet: SavedSnippetFields
 
 
 class SavedSnippetsUpdateEvent(BaseEvent):
-    type: Literal["saved_snippets"]
-    op: Literal["update"]
+    type: Literal["saved_snippets"] = "saved_snippets"
+    op: Literal["update"] = "update"
     saved_snippet: SavedSnippetFields
 
 
 class SavedSnippetsRemoveEvent(BaseEvent):
-    type: Literal["saved_snippets"]
-    op: Literal["remove"]
+    type: Literal["saved_snippets"] = "saved_snippets"
+    op: Literal["remove"] = "remove"
     saved_snippet_id: int
 
 
@@ -851,20 +865,20 @@ class ScheduledMessageFields(ScheduledMessageFieldsCore):
 
 
 class ScheduledMessagesAddEvent(BaseEvent):
-    type: Literal["scheduled_messages"]
-    op: Literal["add"]
+    type: Literal["scheduled_messages"] = "scheduled_messages"
+    op: Literal["add"] = "add"
     scheduled_messages: list[ScheduledMessageFields]
 
 
 class ScheduledMessagesRemoveEvent(BaseEvent):
-    type: Literal["scheduled_messages"]
-    op: Literal["remove"]
+    type: Literal["scheduled_messages"] = "scheduled_messages"
+    op: Literal["remove"] = "remove"
     scheduled_message_id: int
 
 
 class ScheduledMessagesUpdateEvent(BaseEvent):
-    type: Literal["scheduled_messages"]
-    op: Literal["update"]
+    type: Literal["scheduled_messages"] = "scheduled_messages"
+    op: Literal["update"] = "update"
     scheduled_message: ScheduledMessageFields
 
 
@@ -880,14 +894,14 @@ class ReminderFields(BaseModel):
 
 
 class RemindersAddEvent(BaseEvent):
-    type: Literal["reminders"]
-    op: Literal["add"]
+    type: Literal["reminders"] = "reminders"
+    op: Literal["add"] = "add"
     reminders: list[ReminderFields]
 
 
 class RemindersRemoveEvent(BaseEvent):
-    type: Literal["reminders"]
-    op: Literal["remove"]
+    type: Literal["reminders"] = "reminders"
+    op: Literal["remove"] = "remove"
     reminder_id: int
 
 
@@ -951,7 +965,7 @@ class StreamUpdateEvent(StreamUpdateCoreEvent):
 
 
 class SubmessageEvent(BaseEvent):
-    type: Literal["submessage"]
+    type: Literal["submessage"] = "submessage"
     message_id: int
     submessage_id: int
     sender_id: int
@@ -1043,8 +1057,8 @@ class TypingPerson(BaseModel):
 
 
 class TypingStartCoreEvent(BaseEvent):
-    type: Literal["typing"]
-    op: Literal["start"]
+    type: Literal["typing"] = "typing"
+    op: Literal["start"] = "start"
     message_type: Literal["direct", "stream"]
     sender: TypingPerson
 
@@ -1057,8 +1071,8 @@ class TypingStartEvent(TypingStartCoreEvent):
 
 
 class TypingStopCoreEvent(BaseEvent):
-    type: Literal["typing"]
-    op: Literal["stop"]
+    type: Literal["typing"] = "typing"
+    op: Literal["stop"] = "stop"
     message_type: Literal["direct", "stream"]
     sender: TypingPerson
 
@@ -1082,16 +1096,16 @@ class RecipientFieldForTypingEditDirectMessage(BaseModel):
 
 
 class TypingEditMessageStartEvent(BaseEvent):
-    type: Literal["typing_edit_message"]
-    op: Literal["start"]
+    type: Literal["typing_edit_message"] = "typing_edit_message"
+    op: Literal["start"] = "start"
     sender_id: int
     message_id: int
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
 class TypingEditMessageStopEvent(BaseEvent):
-    type: Literal["typing_edit_message"]
-    op: Literal["stop"]
+    type: Literal["typing_edit_message"] = "typing_edit_message"
+    op: Literal["stop"] = "stop"
     sender_id: int
     message_id: int
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
@@ -1124,9 +1138,9 @@ class UpdateMessageEvent(UpdateMessageCoreEvent):
 
 
 class UpdateMessageFlagsAddEvent(BaseEvent):
-    type: Literal["update_message_flags"]
-    op: Literal["add"]
-    operation: Literal["add"]
+    type: Literal["update_message_flags"] = "update_message_flags"
+    op: Literal["add"] = "add"
+    operation: Literal["add"] = "add"
     flag: str
     messages: list[int]
     all: bool
@@ -1146,9 +1160,9 @@ class MessageDetails(MessageDetailsCore):
 
 
 class UpdateMessageFlagsRemoveCoreEvent(BaseEvent):
-    type: Literal["update_message_flags"]
-    op: Literal["remove"]
-    operation: Literal["remove"]
+    type: Literal["update_message_flags"] = "update_message_flags"
+    op: Literal["remove"] = "remove"
+    operation: Literal["remove"] = "remove"
     flag: str
     messages: list[int]
     all: bool
@@ -1254,7 +1268,7 @@ class UserSettingsUpdateEvent(UserSettingsUpdateCoreEvent):
 
 
 class UserStatusCoreEvent(BaseEvent):
-    type: Literal["user_status"]
+    type: Literal["user_status"] = "user_status"
     user_id: int
 
 
@@ -1268,7 +1282,7 @@ class UserStatusEvent(UserStatusCoreEvent):
 
 
 class UserTopicEvent(BaseEvent):
-    type: Literal["user_topic"]
+    type: Literal["user_topic"] = "user_topic"
     stream_id: int
     topic_name: str
     last_updated: int

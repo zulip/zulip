@@ -62,7 +62,7 @@ from zerver.models.recipients import DirectMessageGroup
 
 
 class MessageDetailsDict(TypedDict, total=False):
-    type: str
+    type: Literal["private", "stream"]
     mentioned: bool
     user_ids: list[int]
     stream_id: int
