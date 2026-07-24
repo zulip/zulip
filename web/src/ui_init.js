@@ -23,6 +23,7 @@ import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_popover from "./channel_folders_popover.ts";
 import * as click_handlers from "./click_handlers.ts";
+import * as code_block_lightbox from "./code_block_lightbox.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.ts";
@@ -638,6 +639,7 @@ export async function initialize_everything(state_data) {
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();
+    code_block_lightbox.initialize();
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();

@@ -90,3 +90,4 @@ core
 ## Miscellaneous
 # (Ideally this section is empty.)
 .transifexrc
+.claude/settings.local.json

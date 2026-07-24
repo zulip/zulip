@@ -1,0 +1,59 @@
+
+
+<div id="code_block_lightbox_overlay" class="overlay" data-overlay="code-block-lightbox" data-noclose="false">
+    <div class="code-block-lightbox-content" role="dialog" aria-modal="true" aria-label="{{t 'Code block lightbox' }}">
+        <div class="code-block-lightbox-header">
+            <div class="code-block-lightbox-title"></div>
+            <div class="code-block-lightbox-actions">
+                <button
+                  type="button"
+                  class="edit-code-in-lightbox tippy-zulip-tooltip"
+                  data-tippy-content="{{t 'Edit' }}"
+                  data-tippy-theme="code-block-lightbox-label"
+                  aria-label="{{t 'Edit code' }}"
+                  >
+                    <i class="zulip-icon zulip-icon-edit" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="lightbox-media-action save-edits-in-lightbox">{{t "Save" }}</button>
+                <button type="button" class="lightbox-media-action discard-edits-in-lightbox">{{t "Discard" }}</button>
+                <button
+                  type="button"
+                  class="lightbox-media-action copy-code-in-new-tab tippy-zulip-tooltip"
+                  data-tippy-content="{{t 'Copy code' }}"
+                  data-tippy-theme="code-block-lightbox-label"
+                  aria-label="{{t 'Copy code' }}"
+                  >
+                    <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="open-code-in-new-tab">{{t "Open text in new tab" }}</button>
+                <button
+                  type="button"
+                  class="exit tippy-zulip-tooltip"
+                  data-tippy-content="{{t 'Close' }}"
+                  data-tippy-theme="code-block-lightbox-label"
+                  aria-label="{{t 'Close' }}"
+                  >
+                    <span aria-hidden="true" class="zulip-icon zulip-icon-close"></span>
+                </button>
+            </div>
+        </div>
+        <div class="codehilite code-block-lightbox-hilite">
+            <div class="code-block-lightbox-scroll-area">
+                <div class="code-block-lightbox-gutter" aria-hidden="true"></div>
+                <pre><code></code></pre>
+            </div>
+        </div>
+        <div class="code-block-lightbox-edit-row">
+            <div class="code-block-lightbox-gutter" aria-hidden="true"></div>
+            <textarea class="code-block-lightbox-editor" aria-label="{{t 'Edit code in lightbox' }}"></textarea>
+        </div>
+        <div class="code-block-lightbox-close-prompt" aria-live="polite">
+            <div class="prompt-text">{{t "Save changes before closing?" }}</div>
+            <div class="prompt-actions">
+                <button type="button" class="prompt-save">{{t "Save" }}</button>
+                <button type="button" class="prompt-discard">{{t "Discard" }}</button>
+                <button type="button" class="prompt-cancel">{{t "Cancel" }}</button>
+            </div>
+        </div>
+    </div>
+</div>

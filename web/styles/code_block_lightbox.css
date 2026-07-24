@@ -1,0 +1,244 @@
+#code_block_lightbox_overlay {
+    z-index: 220;
+
+    --code-block-lightbox-label-blue: hsl(205deg 82% 72%);
+
+    .code-block-lightbox-content {
+        width: min(92vw, 1200px);
+        height: min(85vh, 900px);
+        margin: 4vh auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        border: 1px solid var(--color-markdown-pre-border);
+        border-radius: 6px;
+        background-color: var(--color-background);
+    }
+
+    .code-block-lightbox-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--color-markdown-pre-border);
+    }
+
+    .code-block-lightbox-title {
+        font-weight: 600;
+    }
+
+    .code-block-lightbox-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .open-code-in-new-tab {
+        border: 1px solid var(--color-border-input-default);
+        background: transparent;
+        border-radius: 4px;
+        padding: 3px 8px;
+        color: var(--code-block-lightbox-label-blue);
+        transition:
+            color 120ms ease,
+            background-color 120ms ease,
+            border-color 120ms ease;
+    }
+
+    .open-code-in-new-tab:hover,
+    .open-code-in-new-tab:focus-visible {
+        background: hsl(205deg 82% 72% / 12%);
+        border-color: var(--code-block-lightbox-label-blue);
+        color: var(--code-block-lightbox-label-blue);
+    }
+
+    .edit-code-in-lightbox,
+    .save-edits-in-lightbox,
+    .discard-edits-in-lightbox,
+    .copy-code-in-new-tab {
+        border: 1px solid var(--color-border-input-default);
+        background: transparent;
+        border-radius: 4px;
+        padding: 3px 8px;
+        line-height: 1;
+    }
+
+    .save-edits-in-lightbox,
+    .discard-edits-in-lightbox {
+        display: none;
+    }
+
+    .edit-code-in-lightbox.active {
+        background: var(--color-background-list-item-selected);
+    }
+
+    .exit {
+        border: none;
+        background: transparent;
+        line-height: 1;
+        padding: 2px;
+    }
+
+    /* `.codehilite { display: block !important }` in rendered_markdown.css
+       would otherwise defeat flex layout and break overflow scrolling on pre. */
+    .codehilite.code-block-lightbox-hilite {
+        display: flex !important;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .code-block-lightbox-scroll-area,
+    .code-block-lightbox-edit-row {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        min-height: 0;
+        align-items: stretch;
+        overflow: hidden;
+    }
+
+    .code-block-lightbox-edit-row {
+        display: none;
+    }
+
+    .code-block-lightbox-gutter {
+        box-sizing: border-box;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        min-width: 2.5em;
+        padding: 10px 0.6em 10px 0.8em;
+        overflow: hidden auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        text-align: right;
+        user-select: none;
+        color: hsl(0deg 0% 50%);
+        font-size: 0.9em;
+        line-height: 1.4;
+        font-family:
+            ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+            "Liberation Mono", "Courier New", monospace;
+        border-right: 1px solid var(--color-markdown-pre-border);
+        background-color: var(--color-markdown-pre-background);
+    }
+
+    .code-block-lightbox-gutter::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+
+    .code-block-lightbox-gutter span {
+        display: block;
+    }
+
+    :root.dark-theme & .code-block-lightbox-gutter {
+        color: hsl(0deg 0% 62%);
+    }
+
+    pre {
+        margin: 0;
+        padding: 10px 12px;
+        overflow: auto;
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        border: 0;
+        border-radius: 0;
+        background-color: var(--color-markdown-pre-background);
+        color: var(--color-markdown-pre-text);
+        font-size: 0.9em;
+        line-height: 1.4;
+        white-space: pre;
+    }
+
+    code {
+        background: none;
+        border: 0;
+        color: inherit;
+        padding: 0;
+        white-space: inherit;
+    }
+
+    .code-block-lightbox-editor {
+        margin: 0;
+        padding: 10px 12px;
+        box-sizing: border-box;
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        border: 0;
+        border-radius: 0;
+        background-color: var(--color-markdown-pre-background);
+        color: var(--color-markdown-pre-text);
+        font-size: 0.9em;
+        line-height: 1.4;
+        white-space: pre;
+        overflow: auto;
+        resize: none;
+        font-family:
+            ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+            "Liberation Mono", "Courier New", monospace;
+    }
+
+    .code-block-lightbox-close-prompt {
+        display: none;
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        z-index: 1;
+        border: 1px solid var(--color-border-input-default);
+        border-radius: 6px;
+        background: var(--color-background);
+        padding: 8px;
+        box-shadow: 0 2px 8px hsl(0deg 0% 0% / 20%);
+    }
+
+    .prompt-text {
+        margin-bottom: 6px;
+        font-size: 0.95em;
+    }
+
+    .prompt-actions {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+
+    .prompt-actions button {
+        border: 1px solid var(--color-border-input-default);
+        background: transparent;
+        border-radius: 4px;
+        padding: 3px 8px;
+    }
+
+    &.show-close-prompt .code-block-lightbox-close-prompt {
+        display: block;
+    }
+
+    &.code-block-lightbox-edit-mode {
+        .code-block-lightbox-hilite {
+            display: none !important;
+        }
+
+        .code-block-lightbox-edit-row {
+            display: flex;
+        }
+
+        .save-edits-in-lightbox,
+        .discard-edits-in-lightbox {
+            display: inline-flex;
+        }
+    }
+}
+
+[data-tippy-root] {
+    .tippy-box[data-theme~="code-block-lightbox-label"] {
+        .tippy-content {
+            color: hsl(205deg 82% 72%);
+        }
+    }
+}
