@@ -7,6 +7,7 @@ import assert from "minimalistic-assert";
 import render_copied_recipient_header from "../templates/copied_recipient_header.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import * as compose_paste from "./compose_paste.ts";
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
 import {the} from "./util.ts";
@@ -576,7 +577,7 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     construct_copy_div($div, start_id, end_id);
 
     const html_content = $div.html().trim();
-    const plain_text = $div.text().trim();
+    const plain_text = compose_paste.paste_handler_converter(html_content);
     ev.clipboardData?.setData("text/html", html_content);
     ev.clipboardData?.setData("text/plain", plain_text);
 
