@@ -10,9 +10,13 @@ import ZulipNote from "../../components/ZulipNote.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 
+import CloseIcon from "~icons/zulip-icon/close";
+
 Zulip displays previews of images, videos, audio files and websites in your
 message feed. You can [configure](#configure-how-animated-images-are-played) how
-animated images are previewed.
+animated images are previewed, and
+[remove](#remove-a-link-preview-from-your-message) an individual link preview
+from a message.
 
 Organization administrators can:
 
@@ -23,6 +27,25 @@ Organization administrators can:
 * Configure whether [previews of linked images and
   videos](#configure-whether-previews-of-linked-images-and-videos-are-shown) are
   shown.
+
+## Remove a link preview from your message
+
+When a message contains a link, Zulip may show a preview of the linked content.
+If a preview isn't helpful, you can remove it. Removing a preview does not remove
+the link itself, and it removes the preview for everyone.
+
+You can remove a preview from any message whose content you can
+[edit](/help/edit-a-message). There is currently no way to restore a removed
+preview.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    1. Hover over the preview you want to remove.
+    1. Click the **remove link preview** (<CloseIcon />) button in the upper
+       right corner of the preview.
+    1. Approve by clicking **Confirm**.
+  </TabItem>
+</Tabs>
 
 ## Configure how animated images are played
 

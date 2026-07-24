@@ -26,7 +26,12 @@ from zerver.actions.message_send import (
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib import utils
-from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
+from zerver.lib.cache import (
+    cache_delete_many,
+    cache_get,
+    preview_url_cache_key,
+    to_dict_cache_key_id,
+)
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
@@ -130,11 +135,12 @@ def validate_message_edit_payload(
     propagate_mode: str | None,
     content: str | None,
     prev_content_sha256: str | None,
+    hide_preview_url: str | None = None,
 ) -> None:
     """
     Validates that a message edit request is well-formed. Does not handle permissions.
     """
-    if topic_name is None and content is None and stream_id is None:
+    if topic_name is None and content is None and stream_id is None and hide_preview_url is None:
         raise JsonableError(_("Nothing to change"))
 
     if not message.is_channel_message:
@@ -157,6 +163,15 @@ def validate_message_edit_payload(
 
     if stream_id is not None and content is not None:
         raise JsonableError(_("Cannot change message content while changing channel"))
+
+    if hide_preview_url is not None and (topic_name is not None or stream_id is not None):
+        raise JsonableError(_("Cannot remove link preview while moving message"))
+
+    if content is not None and hide_preview_url is not None:
+        raise JsonableError(_("Cannot remove link preview while editing message content"))
+
+    # Whether hide_preview_url actually has a preview is validated in
+    # _do_hide_preview_url, which has the rendered result to check against.
 
     # Right now, we prevent users from editing widgets.
     if content is not None and is_widget_message(message):
@@ -502,6 +517,77 @@ def do_update_embedded_data(
         }
 
     send_event_on_commit(user_profile.realm, event, list(map(user_info, filtered_ums)))
+
+
+def get_hidden_preview_urls(message: Message) -> list[str]:
+    """Return the list of hidden preview URLs for a message, or empty list."""
+    return message.hidden_preview_urls or []
+
+
+def _do_hide_preview_url(
+    user_profile: UserProfile,
+    message: Message,
+    hide_preview_url: str,
+) -> bool:
+    """Hide a link preview and re-render the message.
+
+    Returns whether the message was changed; hiding an already-hidden
+    URL is a no-op.
+    """
+    hidden_urls = get_hidden_preview_urls(message)
+    if hide_preview_url in hidden_urls:
+        return False
+
+    realm = message.get_realm()
+    mention_data = MentionData(
+        mention_backend=MentionBackend(message.realm_id),
+        content=message.content,
+        message_sender=message.sender,
+    )
+    # Render with the URL marked hidden.  previewable_urls is collected
+    # before previews are skipped, so it still lists hide_preview_url if
+    # it's a real previewable link -- letting us reject URLs that have no
+    # preview to hide (e.g. a bare substring, or a URL in a code block).
+    message.hidden_preview_urls = [*hidden_urls, hide_preview_url]
+    rendering_result = render_incoming_message(
+        message,
+        message.content,
+        realm,
+        mention_data=mention_data,
+    )
+    if hide_preview_url not in rendering_result.previewable_urls:
+        raise JsonableError(_("URL does not have a link preview"))
+
+    # Embed HTML is rendered inline and not stored, so the render above drops
+    # the other previews.  Reuse their cached embed data to keep them inline;
+    # URLs missing from the cache are left for the embed worker to restore.
+    cached_url_embed_data = {
+        url: cached[0]
+        for url in rendering_result.links_for_preview
+        if (cached := cache_get(preview_url_cache_key(url))) is not None
+    }
+    if cached_url_embed_data:
+        rendering_result = render_incoming_message(
+            message,
+            message.content,
+            realm,
+            url_embed_data=cached_url_embed_data,
+            mention_data=mention_data,
+        )
+
+    message.save(update_fields=["hidden_preview_urls"])
+
+    if rendering_result.links_for_preview:
+        event_data = {
+            "message_id": message.id,
+            "message_content": message.content,
+            "message_realm_id": realm.id,
+            "urls": list(rendering_result.links_for_preview),
+        }
+        queue_event_on_commit("embed_links", event_data)
+
+    do_update_embedded_data(user_profile, message, rendering_result, mention_data)
+    return True
 
 
 def get_visibility_policy_after_merge(
@@ -1545,7 +1631,7 @@ def build_message_edit_request(
         return DirectMessageEditRequest(
             content=new_content,
             orig_content=message.content,
-            is_content_edited=True,
+            is_content_edited=is_content_edited,
         )
 
     is_topic_edited = False
@@ -1662,6 +1748,7 @@ def check_update_message(
     send_notification_to_new_thread: bool = True,
     content: str | None = None,
     prev_content_sha256: str | None = None,
+    hide_preview_url: str | None = None,
 ) -> UpdateMessageResult:
     """This will update a message given the message id and user profile.
     It checks whether the user profile has the permission to edit the message
@@ -1673,7 +1760,7 @@ def check_update_message(
     # If there is a change to the content, check that it hasn't been too long
     # This buffer stays in sync with the client-side editing grace period.
     edit_limit_buffer = MESSAGE_EDIT_TIME_LIMIT_BUFFER_SECONDS
-    if content is not None:
+    if content is not None or hide_preview_url is not None:
         validate_user_can_edit_message(user_profile, message, edit_limit_buffer)
 
     if topic_name is not None:
@@ -1687,7 +1774,13 @@ def check_update_message(
             topic_name = None
 
     validate_message_edit_payload(
-        message, stream_id, topic_name, propagate_mode, content, prev_content_sha256
+        message,
+        stream_id,
+        topic_name,
+        propagate_mode,
+        content,
+        prev_content_sha256,
+        hide_preview_url,
     )
 
     message_edit_request = build_message_edit_request(
@@ -1805,6 +1898,11 @@ def check_update_message(
                 user_group_membership_details,
                 system_groups_name_dict,
             )
+
+    if hide_preview_url is not None:
+        # content is guaranteed None here by validate_message_edit_payload.
+        changed = _do_hide_preview_url(user_profile, message, hide_preview_url)
+        return UpdateMessageResult(changed_message_count=1 if changed else 0, detached_uploads=[])
 
     updated_message_result = do_update_message(
         user_profile,
