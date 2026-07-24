@@ -2448,7 +2448,7 @@
     /* Same color as background color of header / footer */
     --color-border-emoji-picker-tippy-arrow: light-dark(
         hsl(0deg 0% 93%),
-        hsl(211.58deg 33.33% 11.18%)
+        hsl(0deg 0% 0% / 20%)
     );
 
     /* Dropdown / Typeahead constants */
