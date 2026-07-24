@@ -17,7 +17,7 @@ from django.core.management.base import CommandError
 from django.core.validators import validate_email
 from django.db import connection, transaction
 from django.db.backends.utils import CursorWrapper
-from django.db.models import Count, Q
+from django.db.models import Count, Q, prefetch_related_objects
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
@@ -2648,6 +2648,10 @@ def add_users_to_system_user_groups(
     for role in NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
         group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
         role_system_groups_dict[role] = system_groups_name_dict[group_name]
+
+    # is_provisional_member consults a member-role bot's owner; prefetch it so
+    # the loop below does not issue a query per bot.
+    prefetch_related_objects(user_profiles, "bot_owner")
 
     usergroup_memberships = []
     for user_profile in user_profiles:

@@ -2,6 +2,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_user import created_bot_event
+from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.models import RealmAuditLog, Stream, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids, bot_owner_user_ids
@@ -66,6 +67,13 @@ def do_change_bot_owner(
     )
 
     send_bot_owner_update_events(user_profile, bot_owner, previous_owner)
+
+    if user_profile.role == UserProfile.ROLE_MEMBER:
+        # A member-role bot's full-member status follows its owner, so a
+        # change of owner can promote or demote the bot.
+        update_users_in_full_members_system_group(
+            user_profile.realm, [user_profile.id], acting_user=acting_user
+        )
 
 
 @transaction.atomic(durable=True)

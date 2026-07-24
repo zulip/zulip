@@ -48,6 +48,23 @@ class MemberGroupUserDict(TypedDict):
     id: int
     role: int
     date_joined: datetime
+    is_bot: bool
+    bot_owner_id: int | None
+    bot_owner__role: int | None
+    bot_owner__date_joined: datetime | None
+
+
+# The bot_owner fields let us pin a member-role bot's full-member status to
+# its owner; see UserProfile.determine_is_provisional_member.
+MEMBER_GROUP_USER_FIELDS = (
+    "id",
+    "role",
+    "date_joined",
+    "is_bot",
+    "bot_owner_id",
+    "bot_owner__role",
+    "bot_owner__date_joined",
+)
 
 
 @transaction.atomic(savepoint=False)
@@ -124,27 +141,39 @@ def update_users_in_full_members_system_group(
     if affected_user_ids:
         full_member_group_users = list(
             full_members_system_group.direct_members.filter(id__in=affected_user_ids).values(
-                "id", "role", "date_joined"
+                *MEMBER_GROUP_USER_FIELDS
             )
         )
         member_group_users = list(
             members_system_group.direct_members.filter(id__in=affected_user_ids).values(
-                "id", "role", "date_joined"
+                *MEMBER_GROUP_USER_FIELDS
             )
         )
     else:
         full_member_group_users = list(
-            full_members_system_group.direct_members.all().values("id", "role", "date_joined")
+            full_members_system_group.direct_members.all().values(*MEMBER_GROUP_USER_FIELDS)
         )
         member_group_users = list(
-            members_system_group.direct_members.all().values("id", "role", "date_joined")
+            members_system_group.direct_members.all().values(*MEMBER_GROUP_USER_FIELDS)
         )
 
     def is_provisional_member(user: MemberGroupUserDict) -> bool:
-        diff = (timezone_now() - user["date_joined"]).days
-        if diff < realm.waiting_period_threshold:
-            return True
-        return False
+        bot_owner_role: int | None = None
+        bot_owner_date_joined: datetime | None = None
+        if (
+            user["is_bot"]
+            and user["role"] == UserProfile.ROLE_MEMBER
+            and user["bot_owner_id"] is not None
+        ):
+            bot_owner_role = user["bot_owner__role"]
+            bot_owner_date_joined = user["bot_owner__date_joined"]
+        return UserProfile.determine_is_provisional_member(
+            role=user["role"],
+            date_joined=user["date_joined"],
+            waiting_period_threshold=realm.waiting_period_threshold,
+            bot_owner_role=bot_owner_role,
+            bot_owner_date_joined=bot_owner_date_joined,
+        )
 
     old_full_members = [
         user
