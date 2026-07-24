@@ -29,7 +29,6 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_usermessages,
     build_zerver_realm,
-    convert_html_to_text,
     create_converted_data_files,
     get_attachment_path_and_content,
     get_data_file,
@@ -38,6 +37,10 @@ from zerver.data_import.import_util import (
     scrub_missing_upload_records_after_download,
     validate_user_emails_for_import,
     write_response_file_stream_to_path,
+)
+from zerver.data_import.microsoft_teams_message_conversion import (
+    HOSTED_CONTENT_MARKDOWN_IMAGE_SYNTAX_REGEX,
+    convert_microsoft_teams_html_to_markdown,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
@@ -210,16 +213,6 @@ class ODataQueryParameter:
 
 
 MICROSOFT_GRAPH_API_URL = "https://graph.microsoft.com/v1.0{endpoint}"
-
-# https://learn.microsoft.com/en-us/graph/api/chatmessagehostedcontent-get
-HOSTED_CONTENT_GRAPH_API_URL_REGEX = r"https://graph\.microsoft\.com/v1\.0/teams/[^/]+/channels/[^/]+/messages/[^/]+/hostedContents/[^/]+/\$value"
-HOSTED_CONTENT_MARKDOWN_IMAGE_SYNTAX_REGEX = rf"""
-            !\[
-               (?P<file_name>[^\]]+)
-            \]\(
-               (?P<api_url>{HOSTED_CONTENT_GRAPH_API_URL_REGEX})
-            \)
-            """
 
 
 def get_microsoft_graph_api_data(
@@ -507,8 +500,8 @@ def process_hosted_content_attachments(
      * code snippets
 
     Since custom emoji and code snippet are formatted as custom HTML blocks,
-    convert_html_to_text will turn them into empty strings, so this currently
-    only supports processing image hosted contents.
+    convert_microsoft_teams_html_to_markdown will turn them into empty strings,
+    so this currently only supports processing image hosted contents.
 
     It's worth checking the API documentation for the hosted content once in a
     while to verify what file types "hosted content" includes, since the code path
@@ -592,7 +585,7 @@ def process_messages(
         message_content_type = message["Body"]["ContentType"]
         if message_content_type == "html":
             try:
-                content = convert_html_to_text(message["Body"]["Content"])
+                content = convert_microsoft_teams_html_to_markdown(message["Body"]["Content"])
             except Exception:  # nocoverage
                 logging.warning(
                     "Error converting HTML to text for message: '%s'; continuing", content
