@@ -57,17 +57,26 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 
-def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithSize) -> str:
+def needs_charset_detection(content_type: str) -> bool:
     # We only add a charset if it doesn't already have one, and is a
     # text type which we serve inline; currently, this is only text/plain.
     fake_msg = EmailMessage()
     fake_msg["content-type"] = content_type
-    if (
-        fake_msg.get_content_maintype() != "text"
-        or fake_msg.get_content_type() not in INLINE_MIME_TYPES
-        or fake_msg.get_content_charset() is not None
-    ):
-        return content_type
+    return (
+        fake_msg.get_content_maintype() == "text"
+        and fake_msg.get_content_type() in INLINE_MIME_TYPES
+        and fake_msg.get_content_charset() is None
+    )
+
+
+def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithSize) -> str:
+    # Callers must gate on needs_charset_detection(content_type) first,
+    # so that they can avoid opening file_data at all when it won't be
+    # inspected -- with the S3 backend, opening a source starts an open
+    # GetObject read immediately, rather than lazily on first read.
+    assert needs_charset_detection(content_type)
+    fake_msg = EmailMessage()
+    fake_msg["content-type"] = content_type
 
     early_abort = False
     if isinstance(file_data, bytes):
@@ -75,23 +84,25 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
     else:
         chunk_size = 4096
         reader = file_data.reader()
-        detector = chardet.UniversalDetector()
-        total_read = 0
-        while True:
-            data = reader.read(chunk_size)
-            detector.feed(data)
-            if detector.done or len(data) < chunk_size:
-                break
-            total_read += chunk_size
-            if total_read >= 32 * 1024:
-                # If there's no BOM and no high bytes, the detector
-                # never says "done" before EOF -- we bail out
-                # arbitrarily at 32k.
-                early_abort = True
-                break
-        detector.close()
-        reader.close()
-        detected = detector.result
+        try:
+            detector = chardet.UniversalDetector()
+            total_read = 0
+            while True:
+                data = reader.read(chunk_size)
+                detector.feed(data)
+                if detector.done or len(data) < chunk_size:
+                    break
+                total_read += chunk_size
+                if total_read >= 32 * 1024:
+                    # If there's no BOM and no high bytes, the detector
+                    # never says "done" before EOF -- we bail out
+                    # arbitrarily at 32k.
+                    early_abort = True
+                    break
+            detector.close()
+            detected = detector.result
+        finally:
+            reader.close()
     if early_abort and detected["confidence"] == 1.0 and detected["encoding"] == "ascii":
         # An early abort which didn't see high-byte characters is not
         # a confident "ASCII", as they may come later in the file; we
@@ -257,7 +268,8 @@ def upload_message_attachment(
     path_id = get_upload_backend().generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
-    content_type = maybe_add_charset(content_type, file_data)
+    if needs_charset_detection(content_type):
+        content_type = maybe_add_charset(content_type, file_data)
 
     # NULL bytes are the one thing we can't store in the original
     # filename column, due to PostgreSQL limitations
