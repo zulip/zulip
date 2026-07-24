@@ -133,6 +133,7 @@ const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const emoji_picker = zrequire("emoji_picker");
+const linkifiers = zrequire("linkifiers");
 const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -2284,7 +2285,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         type: "input",
     };
 
-    function get_values(input, rest) {
+    function get_values(input, rest = "") {
         // Stub out split_at_cursor that uses $(':focus')
         override_rewire(ct, "split_at_cursor", () => [input, rest]);
         const values = ct.get_candidates(input, input_element);
@@ -2787,6 +2788,66 @@ test("begins_typeahead", ({override, override_rewire}) => {
         assert_typeahead_starts_with("```p", symbol, p_langs);
         assert_typeahead_starts_with("~~~p", symbol, p_langs);
     }
+
+    // Set up a linkifier that matches #channel markdown.
+    linkifiers.update_linkifier_rules([
+        {
+            pattern: "#(?P<id>[A-Za-z*]+)",
+            url_template: "https://github.com/zulip/issues/{id}",
+            id: 1,
+        },
+    ]);
+
+    // Channel typeahead suppressed when matching linkifier with short token.
+    assert.deepEqual(get_values("#Sw"), []);
+    assert.deepEqual(get_values("#De"), []);
+    assert.deepEqual(get_values("#**Sw"), []);
+
+    // typeahead returns results when there are multiple(>3) token matches.
+    assert.deepEqual(get_values("#Swe"), [sweden_stream]);
+
+    // Set up a linkifier that matches @mention markdown.
+    linkifiers.update_linkifier_rules([
+        {
+            pattern: "@(?P<id>[a-zA-Z0-9_]+)",
+            url_template: "https://github.com/zulip/issues/{id}",
+            id: 2,
+        },
+    ]);
+
+    // Mention typeahead suppressed when matching linkifier with short token.
+    assert.deepEqual(get_values("@le"), []);
+    assert.deepEqual(get_values("@ki"), []);
+    assert.deepEqual(get_values("@_le"), []);
+    assert.deepEqual(get_values("@_ki"), []);
+
+    // typeahead returns results when there are multiple(>3) token matches.
+    assert.deepEqual(get_values("@lear"), [
+        {is_silent: false, ...cordelia_item},
+        {is_silent: false, ...lear_item},
+    ]);
+    assert.deepEqual(get_values("@_lear"), [
+        {is_silent: true, ...cordelia_item},
+        {is_silent: true, ...lear_item},
+    ]);
+
+    // Set up a linkifier that matches :emoji markdown.
+    linkifiers.update_linkifier_rules([
+        {
+            pattern: ":(?P<id>[a-z]+)",
+            url_template: "https://github.com/zulip/issues/{id}",
+            id: 3,
+        },
+    ]);
+
+    // Emoji typeahead suppressed when matching linkifier with short token.
+    assert.deepEqual(get_values(":ta"), []);
+    assert.deepEqual(get_values(":st"), []);
+
+    // typeahead returns results when there are multiple(>3) token matches.
+    assert.deepEqual(get_values(":tad"), emoji_objects([emoji_tada.name, emoji_stadium.name]));
+
+    linkifiers.update_linkifier_rules([]);
 });
 
 test("tokenizing", () => {
