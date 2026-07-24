@@ -652,7 +652,11 @@ export function rewire_message_send_error(value: typeof message_send_error): voi
     message_send_error = value;
 }
 
-function abort_message(message: Message): void {
+export function abort_message(message: LocalMessage): void {
+    // Removing it from the feed isn't enough: a failed send is also tracked
+    // in waiting_for_ack, which other modules read as live-echo state.
+    echo_state.remove_message_from_waiting_for_ack(message.local_id);
+
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);

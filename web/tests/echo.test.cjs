@@ -64,6 +64,7 @@ message_lists.current = {
     },
     change_message_id: noop,
     add_messages: noop,
+    remove_and_rerender: noop,
 };
 const home_msg_list = {
     view: {
@@ -80,6 +81,7 @@ const home_msg_list = {
     preserver_rendered_state: true,
     change_message_id: noop,
     add_messages: noop,
+    remove_and_rerender: noop,
 };
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 message_lists.non_rendered_data = () => [];
@@ -659,6 +661,34 @@ run_test("resend error on a message removed from the store doesn't crash", ({ove
     // The detached message was left untouched, since there was no stored entry
     // to mark as failed.
     assert.equal(message.failed_request, false);
+});
+
+run_test("abort_message clears the failed echo from waiting_for_ack", ({override}) => {
+    // Dismissing a failed send must drop its echo from waiting_for_ack, not
+    // just from the rendered lists.
+    const local_id = "77.01";
+    const message = {
+        id: 77,
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        locally_echoed: true,
+        failed_request: true,
+    };
+    echo_state._patch_waiting_for_ack(new Map([[local_id, message]]));
+    assert.equal(echo_state.get_message_waiting_for_ack(local_id), message);
+
+    const removed_ids = [];
+    override(message_lists.current, "remove_and_rerender", (ids) => {
+        removed_ids.push(...ids);
+    });
+
+    echo.abort_message(message);
+
+    // Removed from the feed and, crucially, from waiting_for_ack.
+    assert.deepEqual(removed_ids, [77]);
+    assert.equal(echo_state.get_message_waiting_for_ack(local_id), undefined);
 });
 
 run_test("reify_message_id counts a sent direct message", ({override}) => {
