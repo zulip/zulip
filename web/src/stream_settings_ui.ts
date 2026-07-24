@@ -728,8 +728,6 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
         return Number.parseInt($(row).attr("data-stream-id")!, 10);
     }
 
-    const widgets = new Map<number, JQuery>();
-
     const stream_ids = [];
 
     for (const row of $("#channels_overlay_container .stream-row")) {
@@ -741,35 +739,37 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
 
     // If we just re-built the DOM from scratch we wouldn't need
     // all this hidden/notdisplayed logic.
-    const hidden_ids = new Set();
-
-    for (const stream_id of buckets.other) {
-        hidden_ids.add(stream_id);
-    }
+    const hidden_ids = new Set(buckets.other);
 
     for (const row of $("#channels_overlay_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
 
-        // Below code goes away if we don't do sort-DOM-in-place.
         if (hidden_ids.has(stream_id)) {
             $(row).addClass("notdisplayed");
         } else {
             $(row).removeClass("notdisplayed");
         }
-
-        widgets.set(stream_id, $(row).detach());
     }
 
     scroll_util.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
 
-    for (const stream_id of all_stream_ids) {
-        const $widget = widgets.get(stream_id);
-        assert($widget !== undefined);
-        scroll_util
-            .get_content_element($("#channels_overlay_container .streams-list"))
-            .append($widget);
+    if (!stream_ids.every((stream_id, index) => stream_id === all_stream_ids[index])) {
+        const widgets = new Map<number, JQuery>();
+
+        for (const row of $("#channels_overlay_container .stream-row")) {
+            const stream_id = stream_id_for_row(row);
+            widgets.set(stream_id, $(row).detach());
+        }
+
+        for (const stream_id of all_stream_ids) {
+            const $widget = widgets.get(stream_id);
+            assert($widget !== undefined);
+            scroll_util
+                .get_content_element($("#channels_overlay_container .streams-list"))
+                .append($widget);
+        }
     }
     update_empty_left_panel_message();
 
