@@ -8,7 +8,7 @@ h3,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
 .settings-section-title {
-    .fa-info-circle {
+    .zulip-icon-info {
         top: 1px;
         position: relative;
     }
@@ -17,8 +17,10 @@ h3,
 /* TODO: This should ideally be added to help_link_widget.hbs,
    allowing us to deduplicate at least the opacity CSS with the
    fa-question-circle-o logic above. */
-.settings-info-icon {
-    padding-left: 3px;
+i.settings-info-icon {
+    vertical-align: -0.11em;
+    padding-left: 2px;
+    font-size: 0.91em;
     opacity: 0.7;
 
     &:hover {
@@ -182,7 +184,7 @@ h3,
 
 .play_notification_sound {
     .notification-sound-icon {
-        font-size: 1.5714em; /* 22px at 14px / em */
+        font-size: 1.4857em; /* 20.6px at 14px / em */
         /* Visually center with chevron in select
         by setting the line-height equal to the height
         of select which is equal to - 1.4em + 8px (4px
@@ -190,6 +192,7 @@ h3,
         for top and bottom borders). */
         line-height: calc(1.4 * var(--base-font-size-px) + 10px);
         cursor: pointer;
+        vertical-align: middle;
     }
 }
 
@@ -1028,15 +1031,19 @@ input[type="checkbox"] {
 .admin_channel_folders_table {
     .movable-row {
         .move-handle {
+            vertical-align: middle;
             cursor: move;
             user-select: none;
             margin-right: 5px;
         }
 
-        .fa-ellipsis-v {
+        .zulip-icon-more-vertical {
             color: hsl(0deg 0% 75%);
-            position: relative;
-            top: 1px;
+            vertical-align: -0.1em;
+
+            &:first-child {
+                margin-right: -0.6em;
+            }
         }
     }
 }
