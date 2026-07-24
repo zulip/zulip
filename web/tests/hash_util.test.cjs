@@ -214,6 +214,42 @@ run_test("test_parse_narrow", () => {
     ]);
 });
 
+run_test("parse_narrow_legacy_email_slugs", () => {
+    // Before we switched to user-ID-based slugs, DM and sender narrow
+    // links used the (escaped) email address as the slug. Those old
+    // links must still resolve to user IDs; "hamlet@example.com"
+    // encodes as "hamlet.40example.2Ecom".
+    const hamlet_email_slug = "hamlet.40example.2Ecom";
+
+    assert.deepEqual(hash_util.decode_operand("dm", hamlet_email_slug), [hamlet.user_id]);
+    assert.deepEqual(hash_util.decode_operand("dm-including", hamlet_email_slug), [hamlet.user_id]);
+    assert.equal(hash_util.decode_operand("sender", hamlet_email_slug), hamlet.user_id);
+
+    // The full parse must satisfy the narrow term schema, which
+    // requires numeric operands for these operators; a stringy email
+    // operand would previously throw and show an "Invalid URL" banner.
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "dm", hamlet_email_slug]), [
+        {negated: false, operator: "dm", operand: [hamlet.user_id]},
+    ]);
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "sender", hamlet_email_slug]), [
+        {negated: false, operator: "sender", operand: hamlet.user_id},
+    ]);
+
+    // An unknown email degrades to the -1 sentinel rather than
+    // throwing, so the header and narrow banner can flag the unknown
+    // user. In a group slug, the recipients that do resolve are kept.
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "sender", "nobody.40example.2Ecom"]), [
+        {negated: false, operator: "sender", operand: -1},
+    ]);
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "dm", "nobody.40example.2Ecom"]), [
+        {negated: false, operator: "dm", operand: [-1]},
+    ]);
+    assert.deepEqual(
+        hash_util.decode_operand("dm", "hamlet.40example.2Ecom,nobody.40example.2Ecom"),
+        [hamlet.user_id, -1],
+    );
+});
+
 run_test("test_channels_settings_edit_url", () => {
     const sub = {
         name: "research & development",
