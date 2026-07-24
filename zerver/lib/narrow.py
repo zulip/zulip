@@ -539,7 +539,7 @@ class NarrowBuilder:
                 cond = Q(pk__in=[])  # Always false.
                 return query.filter(maybe_negate(cond))
 
-            recipient = recipient_for_user_profiles(
+            recipient, _ = recipient_for_user_profiles(
                 user_profiles=user_profiles,
                 forwarded_mirror_message=False,
                 forwarder_user_profile=None,
