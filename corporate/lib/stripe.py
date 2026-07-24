@@ -2778,6 +2778,11 @@ class BillingSession(ABC):
                         )
                     )
                 )
+            elif last_sent_invoice.status == Invoice.VOID:
+                # An unpaid free-trial invoice downgrades the plan at trial end
+                # (see make_end_of_cycle_updates), so show that pending
+                # downgrade rather than a prompt to pay the voided invoice.
+                downgrade_at_end_of_free_trial = True
 
         billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
 

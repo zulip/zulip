@@ -162,9 +162,11 @@ class Invoice(models.Model):
     def get_last_associated_event(self) -> Event | None:
         if self.status == Invoice.PAID:
             event_type = "invoice.paid"
-        # TODO: Add test for this case. Not sure how to trigger naturally.
-        else:  # nocoverage
-            return None  # nocoverage
+        elif self.status == Invoice.VOID:
+            event_type = "invoice.voided"
+        # A SENT invoice has no associated event yet.
+        else:
+            return None
         return get_last_associated_event_by_type(self, event_type)
 
     def to_dict(self) -> dict[str, Any]:
