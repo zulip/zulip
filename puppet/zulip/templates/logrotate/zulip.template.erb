@@ -41,6 +41,7 @@
     create 644 zulip zulip
 }
 
+<% if @supervisor_output != 'syslog' -%>
 # Logfiles generated from supervisor _do not_ understand logrotate,
 # and thus must use copytruncate.  They also must not use supervisor's
 # built-in log rotation.
@@ -56,3 +57,4 @@
     notifempty
     copytruncate
 }
+<% end -%>

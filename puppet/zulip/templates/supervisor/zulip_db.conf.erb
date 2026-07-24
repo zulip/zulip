@@ -7,4 +7,9 @@ stopsignal=TERM                ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                     ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/fts-updates.log         ; stdout log path, NONE for none; default AUTO
+<% end -%>
