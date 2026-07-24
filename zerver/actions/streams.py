@@ -38,7 +38,6 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
-    check_basic_stream_access,
     get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_policy_key,
     get_stream_post_policy_value_based_on_group_setting,
@@ -47,11 +46,14 @@ from zerver.lib.streams import (
     send_stream_creation_event,
     send_stream_deletion_event,
     stream_to_dict,
+    user_has_content_access,
+    user_has_metadata_access,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info, get_subscribers_query
 from zerver.lib.topic import get_topic_display_name
 from zerver.lib.types import APISubscriptionDict, UserGroupMembersData
 from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
     convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
@@ -1006,17 +1008,39 @@ def send_subscription_remove_events(
         }
         queue_event_on_commit("deferred_work", event)
 
-        if not user_profile.is_realm_admin:
-            inaccessible_streams = [
-                stream
-                for stream in streams_by_user[user_profile.id]
-                if not check_basic_stream_access(
-                    user_profile, stream, is_subscribed=False, require_content_access=False
-                )
-            ]
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        streams_losing_content_access: list[Stream] = []
+        inaccessible_streams: list[Stream] = []
+        for stream in streams_by_user[user_profile.id]:
+            if not user_has_content_access(
+                user_profile,
+                stream,
+                user_group_membership_details,
+                is_subscribed=False,
+            ):
+                streams_losing_content_access.append(stream)
+            if not user_profile.is_realm_admin and not user_has_metadata_access(
+                user_profile,
+                stream,
+                user_group_membership_details,
+                is_subscribed=False,
+            ):
+                inaccessible_streams.append(stream)
 
-            if inaccessible_streams:
-                send_stream_deletion_event(realm, [user_profile.id], inaccessible_streams)
+        if streams_losing_content_access:
+            queue_event_on_commit(
+                "deferred_work",
+                {
+                    "type": "unstar_inaccessible_stream_messages",
+                    "user_profile_id": user_profile.id,
+                    "stream_recipient_ids": [
+                        stream.recipient_id for stream in streams_losing_content_access
+                    ],
+                },
+            )
+
+        if inaccessible_streams:
+            send_stream_deletion_event(realm, [user_profile.id], inaccessible_streams)
 
 
 def send_user_remove_events_on_removing_subscriptions(
