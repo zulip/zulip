@@ -266,28 +266,32 @@
     outline-offset: -2px;
 }
 
-#stream-actions-menu-popover,
-#stream-card-popover {
+#stream-actions-menu-popover {
     .popover-stream-name {
         font-weight: 600;
         color: var(--color-text-popover-menu);
         line-height: 1.1;
-    }
-
-    .popover-stream-name,
-    .stream-privacy.filter-icon {
         margin-top: 4px;
     }
 
+    .stream-privacy.filter-icon {
+        margin-top: 4px;
+    }
+}
+
+#stream-actions-menu-popover,
+#stream-card-popover {
     .zulip-icon-lock {
         /* Override the margin-top set on the stream lock icon
            at the top-level, since we don't need to pull up this
            icon for the stream actions popover header.  */
         margin: 0 !important;
     }
+}
 
-    .popover-stream-info-menu-description {
-        color: var(--color-text-popover-menu);
+#stream-card-popover {
+    .simplebar-content {
+        min-width: var(--stream-card-popover-min-width);
     }
 }
 
@@ -310,94 +314,88 @@
     width: max-content;
 }
 
-.popover-group-menu-info {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 3px var(--user-group-popover-horizontal-padding);
+/* The channel and group cards use the same header and description markup,
+   so that the two cards stay visually consistent. The .popover-menu-list-item
+   in these selectors is only there to outweigh the base .text-item rules. */
+.popover-menu-list-item.popover-card-header.text-item {
+    /* Keep the name and description tight together, rather than
+       padding them out to the height of a clickable menu item. */
+    min-height: 0;
 }
 
-.popover-group-menu-name-container {
-    display: flex;
-    align-items: flex-start;
-    gap: 5px;
-    /* 18px at 15px/1em */
-    font-size: 1.2em;
+.popover-menu-list-item.popover-card-description-item.text-item {
+    min-height: 0;
+    padding-top: 0;
+}
+
+.popover-menu-list-item.popover-card-header {
+    .popover-menu-icon {
+        color: var(--color-icon-purple);
+        /* Drop the 1px lift used for menu-item icons; the card header
+           icon is aligned with the name, not with a menu label. */
+        top: 0;
+    }
+
+    .stream-privacy {
+        /* Give the channel privacy icon the same box as the group card's
+           .popover-menu-icon, so both card headers are the same height;
+           otherwise the icon font's line box makes this header taller. */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* 16px at 15px/1em */
+        font-size: 1.0667em;
+        /* 16px at 16px/1em */
+        width: 1em;
+        height: 1em;
+    }
+}
+
+.popover-card-name {
     font-weight: 600;
-    /* 20px at 18px/1em */
-    line-height: 1.1111em;
-    color: var(--color-text-full-name);
+    line-height: 1.1;
+    color: var(--color-text-popover-menu);
+    /* Break very long channel and group names rather than
+       widening the card. */
     overflow-wrap: anywhere;
 }
 
-.popover-group-menu-description {
+.popover-card-description {
     /* 15px at 15px/1em */
     font-size: 1em;
     /* 16px at 15px/1em */
     line-height: 1.0667em;
+    color: var(--color-text-popover-menu);
+    /* Clamp the description to two lines, with a native ellipsis. The
+       tooltip set in tippyjs.ts points to settings for the full text. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-width: 0;
 }
 
-ul.popover-group-menu-member-list {
-    max-height: 300px;
+.popover-group-menu-members-summary {
     display: flex;
-    flex-direction: column;
-
-    .simplebar-content {
-        display: grid;
-        grid-template-areas: "group-member-icon gap group-member-name";
-        grid-template-columns:
-            max-content var(--user-group-popover-icon-text-gap)
-            minmax(0, 1fr);
-        width: unset;
-    }
-
-    .popover-group-menu-member {
-        display: grid;
-        grid-template-columns: subgrid;
-        grid-column: 1 / -1;
-        align-items: center;
-        padding: 0 var(--user-group-popover-horizontal-padding);
-    }
-
-    .popover-group-member-icon {
-        justify-self: center;
-        grid-area: group-member-icon;
-    }
-
-    .popover-group-menu-member-name {
-        grid-area: group-member-name;
-    }
+    min-width: 0;
 }
 
-.popover-group-menu-placeholder {
-    padding: 0 var(--user-group-popover-horizontal-padding);
-}
-
-.popover-group-menu-member {
-    .zulip-icon-user-group {
-        color: var(--color-icon-purple);
-    }
-}
-
-.popover-group-menu-member-name {
+.popover-group-menu-member-names {
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
     white-space: nowrap;
 }
 
-.popover-group-menu-description,
-.popover-group-menu-member-name,
-.popover-group-menu-placeholder {
-    color: var(--color-text-popover-menu);
+.popover-group-menu-more-count {
+    /* Always keep the "and N more" count on the same line as the names. */
+    white-space: nowrap;
+    flex: none;
 }
 
 .user-status-icon-wrapper {
     display: flex;
-}
-
-.popover-group-menu-user-presence {
-    /* 11px at 16px/1em */
-    font-size: 0.6875em;
 }
 
 .user_profile_presence {
@@ -1189,12 +1187,6 @@ ul.popover-group-menu-member-list {
 .user-group-info-popover {
     .simplebar-content {
         min-width: var(--user-group-info-popover-min-width);
-    }
-}
-
-#stream-card-popover {
-    .simplebar-content {
-        min-width: var(--stream-card-popover-min-width);
     }
 }
 
