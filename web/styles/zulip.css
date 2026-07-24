@@ -2263,6 +2263,13 @@ body:not(.spectator-view) {
                 align-self: start;
             }
         }
+
+        /* Match the row height of items without buttons (e.g. "None")
+           to the 1.75em first row used by items with buttons. */
+        .dropdown-list-item-name:not(:has(.dropdown-list-buttons)) {
+            min-height: 1.75em;
+            align-content: center;
+        }
     }
 
     .no-dropdown-items {
