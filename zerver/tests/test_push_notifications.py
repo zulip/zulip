@@ -588,9 +588,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "user_id": hamlet.id,
             "user_uuid": str(hamlet.uuid),
             "realm_uuid": str(hamlet.realm.uuid),
-            "gcm_payload": {},
-            "apns_payload": {},
-            "gcm_options": {},
         }
         with (
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
@@ -656,7 +653,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "user_id": hamlet.id,
             "user_uuid": str(hamlet.uuid),
             "realm_uuid": str(hamlet.realm.uuid),
-            "gcm_payload": {"event": "remove", "zulip_message_ids": many_ids},
+            "gcm_payload": {
+                "realm_url": hamlet.realm.url,
+                "realm_name": hamlet.realm.name,
+                "user_id": hamlet.id,
+                "event": "remove",
+                "zulip_message_ids": many_ids,
+            },
             "apns_payload": {
                 "badge": 0,
                 "custom": {"zulip": {"event": "remove", "zulip_message_ids": many_ids}},
@@ -724,7 +727,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
         android_push.assert_called_once_with(
             user_identity,
             uuid_android_tokens,
-            {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
+            {
+                "realm_url": hamlet.realm.url,
+                "realm_name": hamlet.realm.name,
+                "user_id": hamlet.id,
+                "event": "remove",
+                "zulip_message_ids": ",".join(str(i) for i in range(50, 250)),
+            },
             {},
             remote=server,
         )
@@ -733,6 +742,74 @@ class PushBouncerNotificationTest(BouncerTestCase):
         server.refresh_from_db()
         self.assertEqual(remote_realm.last_request_datetime, time_sent)
         self.assertEqual(server.last_request_datetime, time_sent)
+
+    def test_send_notification_endpoint_single_platform_device(self) -> None:
+        """When a user has devices on only one platform, the server sends
+        a literal empty dict for the other platform's payload (see
+        get_payload_legacy in push_notifications.py). This must still
+        validate successfully rather than being rejected as malformed.
+        """
+        hamlet = self.example_user("hamlet")
+        server = self.server
+
+        android_token = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.FCM,
+            token="android-only",
+            user_uuid=hamlet.uuid,
+            server=server,
+        )
+
+        payload = {
+            "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
+            "realm_uuid": str(hamlet.realm.uuid),
+            "gcm_payload": {
+                "realm_url": hamlet.realm.url,
+                "realm_name": hamlet.realm.name,
+                "user_id": hamlet.id,
+                "event": "remove",
+                "zulip_message_ids": "1,2,3",
+            },
+            "apns_payload": {},
+            "gcm_options": {"priority": "normal"},
+        }
+
+        with (
+            mock.patch(
+                "zilencer.views.send_android_push_notification", return_value=1
+            ) as android_push,
+            mock.patch("zilencer.views.send_apple_push_notification", return_value=0) as apple_push,
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
+            ),
+            self.assertLogs("zilencer.views", level="INFO"),
+        ):
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+            )
+        data = self.assert_json_success(result)
+        self.assertEqual(data["total_android_devices"], 1)
+        self.assertEqual(data["total_apple_devices"], 0)
+
+        user_identity = UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid))
+        android_push.assert_called_once_with(
+            user_identity,
+            [android_token],
+            {
+                "realm_url": hamlet.realm.url,
+                "realm_name": hamlet.realm.name,
+                "user_id": hamlet.id,
+                "event": "remove",
+                "zulip_message_ids": "1,2,3",
+            },
+            {"priority": "normal"},
+            remote=server,
+        )
+        apple_push.assert_called_once_with(user_identity, [], {}, remote=server)
 
     def test_send_notification_endpoint_on_free_plans(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -760,7 +837,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         message.save()
 
-        # Test old zulip server case.
+        # Test old zulip server case. This uses a payload shape from
+        # before `realm_url` existed (it only had `realm_uri`; see
+        # commit ac4dde24ae), to verify we still accept payloads from
+        # self-hosted servers running old versions of Zulip.
         self.assertIsNone(remote_server.last_api_feature_level)
         old_apns_payload = {
             "alert": {
@@ -779,12 +859,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": hamlet.realm.id,
                     "realm_uri": hamlet.realm.url,
-                    "realm_url": hamlet.realm.url,
                     "user_id": othello.id,
                 }
             },
         }
         old_gcm_payload = {
+            "realm_uri": hamlet.realm.url,
+            "realm_name": hamlet.realm.name,
             "user_id": othello.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
@@ -793,8 +874,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "content": message.content,
             "server": settings.EXTERNAL_HOST,
             "realm_id": hamlet.realm.id,
-            "realm_uri": hamlet.realm.url,
-            "realm_url": hamlet.realm.url,
             "sender_id": hamlet.id,
             "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
