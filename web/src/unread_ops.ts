@@ -31,7 +31,6 @@ import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as watchdog from "./watchdog.ts";
 
-let update_read_flag_banner_displayed = false;
 let unsubscribed_ignored_channels: number[] = [];
 
 // We might want to use a slightly smaller batch for the first
@@ -162,21 +161,16 @@ function show_read_flag_update_progress_banner(
     // we don't bother distracting the user with the banner
     // since the success is obvious through the updating UI.
     popup_banners.open_update_read_flags_for_narrow_banner(operation, messages_updated);
-    update_read_flag_banner_displayed = true;
 }
 
 function show_read_flag_update_success_banner(
     operation: "read" | "unread",
     messages_updated: number,
 ): void {
-    if (!update_read_flag_banner_displayed) {
-        // If the operation completed in a single batch,
-        // and we never showed the progress banner,
-        // we skip showing the success banner as well.
+    if (messages_updated === 0) {
         return;
     }
     popup_banners.open_update_read_flags_for_narrow_banner(operation, messages_updated, true);
-    update_read_flag_banner_displayed = false;
 }
 
 function bulk_update_read_flags_for_narrow(
@@ -197,6 +191,11 @@ function bulk_update_read_flags_for_narrow(
     } = {},
     caller_modal_id?: string,
 ): void {
+    const is_initial_call = anchor === "oldest" && messages_read_till_now === 0;
+    if (is_initial_call) {
+        const operation = op === "add" ? "read" : "unread";
+        popup_banners.open_update_read_flags_for_narrow_banner(operation, 0);
+    }
     const terms_with_integer_channel_id = narrow.map((term) => {
         if (term.operator === "channel") {
             return {
