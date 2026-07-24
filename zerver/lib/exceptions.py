@@ -1,3 +1,4 @@
+import math
 from enum import Enum, auto
 from typing import Any
 
@@ -291,7 +292,7 @@ class RateLimitedError(JsonableError):
     def extra_headers(self) -> dict[str, Any]:
         extra_headers_dict = super().extra_headers
         if self.secs_to_freedom is not None:
-            extra_headers_dict["Retry-After"] = self.secs_to_freedom
+            extra_headers_dict["Retry-After"] = math.ceil(self.secs_to_freedom * 100) / 100
 
         return extra_headers_dict
 
@@ -299,7 +300,11 @@ class RateLimitedError(JsonableError):
     @override
     def data(self) -> dict[str, Any]:
         data_dict = super().data
-        data_dict["retry-after"] = self.secs_to_freedom
+        data_dict["retry-after"] = (
+            math.ceil(self.secs_to_freedom * 100) / 100
+            if self.secs_to_freedom is not None
+            else None
+        )
 
         return data_dict
 
