@@ -231,8 +231,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
         "/realm/profile_fields/{field_id}",
-        "/realm/icon",
-        "/realm/logo",
         "/realm/deactivate",
         "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
@@ -628,6 +626,46 @@ class TestCurlExampleGeneration(ZulipTestCase):
         },
     }
 
+    spec_mock_with_multipart_and_extra_param = {
+        "security": [{"basicAuth": []}],
+        "paths": {
+            "/endpoint": {
+                "post": {
+                    "description": "Upload something, with an extra parameter.",
+                    "parameters": [
+                        {
+                            "name": "night",
+                            "in": "query",
+                            "description": "Whether to use the night version.",
+                            "schema": {
+                                "type": "boolean",
+                            },
+                            "example": False,
+                            "required": True,
+                        },
+                    ],
+                    "requestBody": {
+                        "content": {
+                            "multipart/form-data": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "file": {
+                                            "type": "string",
+                                            "format": "binary",
+                                            "example": "path/to/file.png",
+                                        },
+                                    },
+                                    "required": ["file"],
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+
     spec_mock_with_invalid_method: dict[str, object] = {
         "security": [{"basicAuth": []}],
         "paths": {
@@ -790,6 +828,22 @@ class TestCurlExampleGeneration(ZulipTestCase):
         self.assertEqual(generated_curl_example, expected_curl_example)
 
     @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_generate_and_render_curl_with_multipart_and_extra_param(
+        self, spec_mock: MagicMock
+    ) -> None:
+        spec_mock.return_value = self.spec_mock_with_multipart_and_extra_param
+        generated_curl_example = self.curl_example("/endpoint", "POST")
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/endpoint \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    -F night=false \\",
+            "    -F file=@path/to/file.png",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
     def test_generate_and_render_curl_with_invalid_method(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_with_invalid_method
         with self.assertRaises(ValueError):
@@ -940,6 +994,11 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 tag = operation["tags"][0]
                 assert tag in VALID_TAGS
                 for status_code, response in operation["responses"].items():
+                    if status_code.startswith("3"):
+                        # Redirect responses only set a Location header;
+                        # they have no JSON body to validate.
+                        assert "content" not in response
+                        continue
                     schema = response["content"]["application/json"]["schema"]
                     # Validate the documented examples for each event type
                     # in api/get-events for the documented event schemas.

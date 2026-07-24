@@ -5,6 +5,7 @@
 # definitions and validate that Zulip's implementation matches what is
 # described in our documentation.
 
+import http.client
 import json
 import os
 import re
@@ -271,17 +272,21 @@ def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
     for status_code in sorted(
         openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
     ):
-        if (
-            "oneOf"
-            in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-                "content"
-            ]["application/json"]["schema"]
-        ):
-            subschema_count = len(
-                openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-                    "content"
-                ]["application/json"]["schema"]["oneOf"]
-            )
+        response = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
+            status_code
+        ]
+        if "content" not in response:
+            # Redirect responses have no JSON body; render the status
+            # line and headers instead of a JSON fixture.
+            reason = http.client.responses.get(int(status_code), "")
+            fixture.append("``` http")
+            fixture.append(f"HTTP/1.1 {status_code} {reason}")
+            for header_name, header in response.get("headers", {}).items():
+                fixture.append(f"{header_name}: {header['example']}")
+            fixture.append("```")
+            continue
+        if "oneOf" in response["content"]["application/json"]["schema"]:
+            subschema_count = len(response["content"]["application/json"]["schema"]["oneOf"])
         else:
             subschema_count = 1
         for subschema_index in range(subschema_count):
@@ -409,12 +414,44 @@ def get_openapi_parameters(
                 )
             )
 
+    if "requestBody" in operation and "multipart/form-data" in (
+        content := operation["requestBody"]["content"]
+    ):
+        media_type = content["multipart/form-data"]
+        required = media_type["schema"].get("required", [])
+        for key, schema in media_type["schema"]["properties"].items():
+            if schema.get("format") == "binary":
+                # File upload properties aren't typed_endpoint arguments.
+                continue
+            json_encoded = (
+                media_type.get("encoding", {}).get(key, {}).get("contentType") == "application/json"
+                or schema.get("type") == "object"
+            )
+
+            parameters.append(
+                Parameter(
+                    kind="formData",
+                    name=key,
+                    description=schema["description"],
+                    json_encoded=json_encoded,
+                    value_schema=schema,
+                    example=schema.get("example"),
+                    required=key in required,
+                    deprecated=schema.get("deprecated", False),
+                )
+            )
+
     return parameters
 
 
 def get_openapi_return_values(endpoint: str, method: str) -> dict[str, Any]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
-    schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
+    response = operation["responses"].get("200")
+    if response is None or "content" not in response:
+        # No documented JSON success response (e.g., a redirect) means
+        # there are no return values to describe.
+        return {}
+    schema = response["content"]["application/json"]["schema"]
     # We do not currently have documented endpoints that have multiple schemas
     # ("oneOf", "anyOf", "allOf") for success ("200") responses. If this changes,
     # then the assertion below will need to be removed, and this function updated
