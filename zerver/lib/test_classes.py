@@ -25,7 +25,7 @@ from django.core.signals import got_request_exception
 from django.db import connection, transaction
 from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
-from django.db.models import QuerySet
+from django.db.models import Model, QuerySet
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.http.response import ResponseHeaders
@@ -2460,16 +2460,15 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         do_change_full_name(user_profile, full_name, acting_user=None, notify=False)
 
 
-def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
+def get_row_pks_in_all_tables() -> Iterator[tuple[type[Model], set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
 
     for model in all_models:
-        table_name = model._meta.db_table
-        if table_name in ignored_tables:
+        if model._meta.db_table in ignored_tables:
             continue
         pks = model._default_manager.all().values_list("pk", flat=True)
-        yield table_name, set(pks)
+        yield model, set(pks)
 
 
 class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
@@ -2507,11 +2506,11 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
         test database.
         """
         super().tearDown()
-        for table_name, pks in get_row_pks_in_all_tables():
+        for model, pks in get_row_pks_in_all_tables():
             self.assertSetEqual(
-                self.models_pks_set[table_name],
+                self.models_pks_set[model],
                 pks,
-                f"{table_name} got a different set of primary key values after this test",
+                f"{model._meta.db_table} got a different set of primary key values after this test",
             )
 
     def _fixture_teardown(self) -> None:

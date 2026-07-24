@@ -9089,6 +9089,15 @@ paths:
       description: |
         Send a [channel message](/help/introduction-to-topics) or a
         [direct message](/help/direct-messages).
+
+        This endpoint supports an optional
+        [`Idempotency-Key`](/api/http-headers#the-idempotency-key-request-header)
+        request header. When a client includes it, the server guarantees that
+        the message is sent at most once, even if the same request is retried
+        or replayed with the same key.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-6a766a). Added support
+        for the `Idempotency-Key` request header.
       requestBody:
         required: true
         content:

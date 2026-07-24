@@ -458,3 +458,15 @@ class DirectMessageEditRequest:
 class Invitee:
     email: str
     full_name: str = ""
+
+
+@dataclass
+class SentMessageResult:
+    """Changes to this class must be done carefully to
+    support message_response_deserializer correctly
+    deserializing values previously serialized by
+    message_response_serializer in previous versions of the server.
+    """
+
+    message_id: int
+    automatic_new_visibility_policy: int | None = None
