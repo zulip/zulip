@@ -38,6 +38,7 @@ type InputPillCreateOptions<ItemType> = {
     ) => void;
     show_outline_on_invalid_input?: boolean;
     split_text_to_form_pills?: (pills: string) => string[];
+    disable_pill_editing?: boolean;
 };
 
 export type InputPill<ItemType> = {
@@ -65,6 +66,8 @@ type InputPillStore<ItemType> = {
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
     split_text_to_form_pills: InputPillCreateOptions<ItemType>["split_text_to_form_pills"];
+    setupTypeahead?: ($input: JQuery) => void;
+    disable_pill_editing: boolean;
 };
 
 // These are the functions that are exposed to other modules.
@@ -86,6 +89,9 @@ export type InputPillContainer<ItemType> = {
     onPillExpand: (callback: (pill: JQuery) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
+    setSetupTypeahead: (callback: ($input: JQuery) => void) => void;
+    updatePillAfterEdit: (new_item: ItemType, triggered_by_blur?: boolean) => void;
+    finalize_pending_edit: () => boolean;
     clear: (quiet?: boolean) => void;
     clear_text: () => void;
     getCurrentText: () => string | null;
@@ -94,6 +100,26 @@ export type InputPillContainer<ItemType> = {
 };
 
 export type RemovePillTrigger = "close" | "backspace" | "clear";
+
+function is_cursor_at_start(): boolean {
+    const selection = window.getSelection();
+    return selection !== null && selection.anchorOffset === 0 && !selection.toString();
+}
+
+function is_cursor_at_end(element: HTMLElement): boolean {
+    const selection = window.getSelection();
+    if (!selection || selection.toString() || selection.rangeCount === 0) {
+        return false;
+    }
+    // Measure the text between the caret and the element's end, rather
+    // than comparing node offsets, so a trailing <br> (which browsers add
+    // to contenteditable) isn't counted as content after the caret.
+    const cursor = selection.getRangeAt(0);
+    const to_end = document.createRange();
+    to_end.selectNodeContents(element);
+    to_end.setStart(cursor.endContainer, cursor.endOffset);
+    return to_end.toString() === "";
+}
 
 export function create<ItemType extends {type: string}>(
     opts: InputPillCreateOptions<ItemType>,
@@ -114,7 +140,12 @@ export function create<ItemType extends {type: string}>(
         on_pill_exit: opts.on_pill_exit,
         show_outline_on_invalid_input: opts.show_outline_on_invalid_input ?? false,
         split_text_to_form_pills: opts.split_text_to_form_pills,
+        disable_pill_editing: opts.disable_pill_editing ?? false,
     };
+
+    // The pill being edited in place and its contenteditable input, or
+    // undefined when not editing; `$input` identifies stale blur callbacks.
+    let editing: {pill: InputPill<ItemType>; $input: JQuery} | undefined;
 
     // a dictionary of internal functions. Some of these are exposed as well,
     // and nothing in here should be assumed to be private (due to the passing)
@@ -147,7 +178,12 @@ export function create<ItemType extends {type: string}>(
         },
 
         create_item(text: string) {
-            const existing_items = funcs.items();
+            // Exclude the pill being edited so it can re-commit its own value
+            // without colliding with itself. This is the only reader that
+            // needs the exclusion; items() returns the full set.
+            const existing_items = store.pills
+                .filter((pill) => pill !== editing?.pill)
+                .map((pill) => pill.item);
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
             if (!item) {
                 store.$input.addClass("shake");
@@ -169,6 +205,20 @@ export function create<ItemType extends {type: string}>(
                 display_value: store.get_display_value_from_item(item),
                 disabled,
             });
+        },
+
+        updatePillAfterEdit(new_item: ItemType, triggered_by_blur = false): void {
+            if (editing === undefined) {
+                return;
+            }
+            const {pill} = editing;
+            editing = undefined;
+            funcs.updatePill(util.the(pill.$element), new_item);
+            store.onPillRemove?.(pill, "close");
+            store.onPillCreate?.();
+            if (!triggered_by_blur) {
+                store.$input.trigger("focus");
+            }
         },
 
         // This is generally called by typeahead logic, where we have all
@@ -231,6 +281,11 @@ export function create<ItemType extends {type: string}>(
                 if (store.pills[idx]!.disabled) {
                     return undefined;
                 }
+                // If this pill is mid-edit, drop the edit state so a pending
+                // blur-commit doesn't fire against a now-removed pill.
+                if (editing?.pill === store.pills[idx]) {
+                    editing = undefined;
+                }
                 store.pills[idx]!.$element.remove();
                 const pill = util.the(store.pills.splice(idx, 1));
                 if (store.onPillRemove !== undefined) {
@@ -255,6 +310,10 @@ export function create<ItemType extends {type: string}>(
         // the pills.
         removeLastPill(trigger: RemovePillTrigger, quiet?: boolean) {
             const pill = store.pills.pop();
+
+            if (pill && editing?.pill === pill) {
+                editing = undefined;
+            }
 
             if (pill && !pill.disabled) {
                 pill.$element.remove();
@@ -305,12 +364,13 @@ export function create<ItemType extends {type: string}>(
             return store.pills.find((pill) => pill.$element[0] === element);
         },
 
-        // This searches for a pill using a predicate function and returns it,
-        // or undefined if no pill matches.
+        // Returns the first matching pill, or undefined. Skips the pill being
+        // edited: callers are live-update handlers that call updatePill, which
+        // would replace the element and destroy the in-progress edit.
         getPillByPredicate(
             predicate: (item: ItemType) => boolean,
         ): InputPill<ItemType> | undefined {
-            return store.pills.find((pill) => predicate(pill.item));
+            return store.pills.find((pill) => pill !== editing?.pill && predicate(pill.item));
         },
 
         // Updates a pill's item data and refreshes its HTML representation in-place.
@@ -338,6 +398,9 @@ export function create<ItemType extends {type: string}>(
         },
 
         items() {
+            // Returns every pill's item, including the one being edited (as
+            // its pre-edit value). Submit paths that must not act on an
+            // unresolved edit call finalize_pending_edit() first.
             return store.pills.map((pill) => pill.item);
         },
 
@@ -347,6 +410,194 @@ export function create<ItemType extends {type: string}>(
                 return undefined;
             }
             return true;
+        },
+
+        startEditingPill(pill: InputPill<ItemType>, consume_enter_keypress = false): void {
+            if (pill.disabled) {
+                return;
+            }
+            if (editing !== undefined) {
+                return;
+            }
+
+            // Seed the edit box with the displayed text, not the internal
+            // text: e.g. a "role:administrators" system group shows as
+            // "Administrators". The unchanged check in commitEditingPill
+            // compares against the same value.
+            const text = store.get_display_value_from_item(pill.item);
+            const $edit = pill.$element.find(".pill-edit-input");
+            $edit.text(text);
+
+            pill.$element.addClass("editing");
+            editing = {pill, $input: $edit};
+
+            ui_util.place_caret_at_end(util.the($edit));
+
+            if (store.setupTypeahead !== undefined) {
+                if (consume_enter_keypress) {
+                    // Absorb the Enter keypress and keyup that triggered this edit,
+                    // so they don't commit the edit or select a typeahead suggestion.
+                    function block_enter(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent): void {
+                        if (keydown_util.is_enter_event(e)) {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                        }
+                    }
+                    $edit.one("keypress", block_enter);
+                    $edit.one("keyup", block_enter);
+                }
+
+                store.setupTypeahead($edit);
+            }
+
+            $edit.on("keydown", (e) => {
+                // Stop keydown events from bubbling to the .pill keydown handler.
+                e.stopPropagation();
+                if (keydown_util.is_enter_event(e)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Defer to typeahead when it has an active selection.
+                    if (
+                        $edit.text().trim().length === 0 ||
+                        !(store.setupTypeahead !== undefined && $(".typeahead .active").length > 0)
+                    ) {
+                        funcs.commitEditingPill($edit, false);
+                    }
+                    // Block the corresponding keyup Enter from reaching outer handlers.
+                    function block_enter_keyup(ev: JQuery.KeyUpEvent): void {
+                        if (keydown_util.is_enter_event(ev)) {
+                            ev.stopPropagation();
+                        }
+                    }
+                    store.$parent.one("keyup", block_enter_keyup);
+                    return;
+                }
+                switch (e.key) {
+                    case "Escape": {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        funcs.cancelEditingPill($edit);
+                        break;
+                    }
+                    case "ArrowLeft": {
+                        if (is_cursor_at_start()) {
+                            const $prev = pill.$element.prev(".pill");
+                            if ($prev.length > 0) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                funcs.cancelEditingPill($edit);
+                                $prev.trigger("focus");
+                            }
+                        }
+                        break;
+                    }
+                    case "ArrowRight": {
+                        if (is_cursor_at_end(util.the($edit))) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const $next = pill.$element.next();
+                            funcs.cancelEditingPill($edit);
+                            if ($next.length > 0) {
+                                $next.trigger("focus");
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+
+            // Defer commit to allow a typeahead click to complete first.
+            const check_commit_on_blur = (): void => {
+                if (editing?.pill !== pill || editing?.$input !== $edit) {
+                    return;
+                }
+                if ($(".typeahead:hover").length > 0) {
+                    setTimeout(check_commit_on_blur, 100);
+                    return;
+                }
+                funcs.commitEditingPill($edit, true);
+            };
+
+            $edit.on("blur", () => {
+                setTimeout(check_commit_on_blur, 200);
+            });
+        },
+
+        // Resolves the active edit and reports whether it ended in a clean
+        // state: true if the pill was updated, deleted, or left unchanged;
+        // false if the text is invalid and the edit is still pending.
+        commitEditingPill($edit: JQuery, triggered_by_blur: boolean): boolean {
+            if (editing?.$input !== $edit) {
+                return true;
+            }
+
+            const text = $edit.text().trim();
+            if (text === store.get_display_value_from_item(editing.pill.item)) {
+                funcs.cancelEditingPill($edit);
+                return true;
+            }
+
+            if (text.length === 0) {
+                const {pill} = editing;
+                editing = undefined;
+                const idx = store.pills.findIndex((p) => p.$element[0] === pill.$element[0]);
+                if (idx !== -1) {
+                    store.pills.splice(idx, 1);
+                }
+                pill.$element.remove();
+                store.onPillRemove?.(pill, "close");
+                if (!triggered_by_blur) {
+                    store.$input.trigger("focus");
+                }
+                return true;
+            }
+
+            // Use create_item directly to avoid comma-splitting via insertManyPills.
+            const item = funcs.create_item(text);
+
+            if (item !== undefined) {
+                funcs.updatePillAfterEdit(item, triggered_by_blur);
+                return true;
+            }
+
+            const {pill} = editing;
+            editing = undefined;
+            pill.$element.removeClass("editing");
+            $(".typeahead").hide();
+
+            // Redirect the invalid-input shake from the input to the pill.
+            store.$input.removeClass("shake");
+            if (store.show_outline_on_invalid_input) {
+                store.$parent.removeClass("invalid");
+            }
+            pill.$element.addClass("shake");
+            if (!triggered_by_blur) {
+                pill.$element.trigger("focus");
+            }
+            return false;
+        },
+
+        // Called by submit/save handlers before they read the pill set, to
+        // turn an in-flight edit into a real pill first. Returns false when
+        // the edit can't be resolved, so the caller can block the action.
+        finalize_pending_edit(): boolean {
+            if (editing === undefined) {
+                return true;
+            }
+            return funcs.commitEditingPill(editing.$input, true);
+        },
+
+        cancelEditingPill($edit: JQuery): void {
+            if (editing?.$input !== $edit) {
+                return;
+            }
+            const {pill} = editing;
+            editing = undefined;
+            pill.$element.removeClass("editing");
+
+            // Prevent focus from jumping to <body>.
+            pill.$element.trigger("focus");
+            $(".typeahead").hide();
         },
     };
 
@@ -390,11 +641,7 @@ export function create<ItemType extends {type: string}>(
             // If no text is selected, and the cursor is just to the
             // right of the last pill (with or without text in the
             // input), then backspace highlights or deletes the last pill.
-            if (
-                e.key === "Backspace" &&
-                (funcs.value(this).length === 0 ||
-                    (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
-            ) {
+            if (e.key === "Backspace" && (funcs.value(this).length === 0 || is_cursor_at_start())) {
                 e.preventDefault();
                 const pill = store.pills.at(-1);
                 // We focus the pill first first, as a signal that the pill
@@ -468,12 +715,36 @@ export function create<ItemType extends {type: string}>(
                     e.preventDefault();
                     break;
                 }
+                case "Enter": {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!store.disable_pill_editing) {
+                        const pill = funcs.getByElement(util.the($pill));
+                        if (pill !== undefined) {
+                            funcs.startEditingPill(pill, true);
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+
+        store.$parent.on("dblclick", ".pill", function (this: HTMLElement, e) {
+            if ($(e.target).closest(".exit, .expand").length > 0) {
+                return;
+            }
+            e.preventDefault();
+            if (!store.disable_pill_editing) {
+                const pill = funcs.getByElement(this);
+                if (pill !== undefined) {
+                    funcs.startEditingPill(pill);
+                }
             }
         });
 
         // when the shake animation is applied to the ".input" on invalid input,
         // we want to remove the class when finished automatically.
-        store.$parent.on("animationend", ".input", function () {
+        store.$parent.on("animationend", ".input, .pill", function () {
             $(this).removeClass("shake");
         });
 
@@ -533,6 +804,11 @@ export function create<ItemType extends {type: string}>(
         });
 
         store.$parent.on("copy", ".pill", function (this: HTMLElement, e) {
+            // Don't override the clipboard while editing: the selection is
+            // inside the edit box, so let the browser copy that text.
+            if ($(this).hasClass("editing")) {
+                return;
+            }
             const {item} = funcs.getByElement(this)!;
             assert(e.originalEvent instanceof ClipboardEvent);
             e.originalEvent.clipboardData?.setData("text/plain", store.get_text_from_item(item));
@@ -571,6 +847,13 @@ export function create<ItemType extends {type: string}>(
         createPillonPaste(callback) {
             store.createPillonPaste = callback;
         },
+
+        setSetupTypeahead(callback) {
+            store.setupTypeahead = callback;
+        },
+
+        updatePillAfterEdit: funcs.updatePillAfterEdit.bind(funcs),
+        finalize_pending_edit: funcs.finalize_pending_edit.bind(funcs),
 
         clear(quiet?: boolean) {
             funcs.removeAllPills.bind(funcs)("clear", quiet);

@@ -187,6 +187,10 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
+        // Resolve any in-flight pill edit before reading the member set.
+        if (!pill_widget.finalize_pending_edit()) {
+            return;
+        }
         void (async () => {
             loading.make_indicator($(".add-group-member-loading-spinner"), {
                 height: 56, // 4em at 14px / 1em

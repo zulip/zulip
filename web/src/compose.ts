@@ -11,6 +11,7 @@ import render_wildcard_mention_not_allowed_error from "../templates/compose_bann
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -361,6 +362,15 @@ export let finish = (scheduling_message = false): boolean | undefined => {
         do_post_send_tasks();
         clear_compose_box();
         return undefined;
+    }
+
+    // Resolve any in-flight recipient pill edit before reading the
+    // recipient list; refuse to send if it can't be resolved.
+    if (
+        compose_state.get_message_type() === "private" &&
+        !compose_pm_pill.finalize_pending_edit()
+    ) {
+        return false;
     }
 
     compose_ui.show_compose_spinner();
