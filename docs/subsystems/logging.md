@@ -233,7 +233,13 @@ You can enable it by:
     ```
 3.  If you wish to [sample][sentry-sample] some fraction of the errors, you
     should adjust `SENTRY_FRONTEND_SAMPLE_RATE` down from `1.0`.
-4.  As the `zulip` user, restart Zulip by running:
+4.  As root, run:
+    ```shell
+        /home/zulip/deployments/current/scripts/zulip-puppet-apply
+    ```
+    This installs the `sentry_events` queue worker, which handles
+    forwarding browser errors to Sentry asynchronously.
+5.  As the `zulip` user, restart Zulip by running:
     ```shell
     /home/zulip/deployments/current/scripts/restart-server
     ```
