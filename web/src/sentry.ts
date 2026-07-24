@@ -112,6 +112,12 @@ if (
             // on parse failure; only the terminal post-cap throw
             // should reach Sentry, not each self-healing retry.
             "page_params parse failed; reload scheduled",
+            // Brave for iOS (a fork of the Firefox for iOS codebase)
+            // injects a __firefox__ global for its native bridge; its
+            // injected scripts throw when the bridge object isn't
+            // defined yet during page load. The error surfaces via
+            // window.onerror but originates outside our code.
+            "__firefox__",
         ],
     });
 } else {
