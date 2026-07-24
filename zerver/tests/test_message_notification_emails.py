@@ -16,6 +16,7 @@ from django_stubs_ext import StrPromise
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import internal_send_private_message
+from zerver.actions.reactions import do_add_reaction
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -1824,7 +1825,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(msg_id, verify_body_include, email_subject, verify_html_body=True)
 
-    @override_settings(MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2)
+    @override_settings(
+        MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2, MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION=2
+    )
     def test_long_term_idle_user_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
@@ -1982,6 +1985,99 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         reset_hamlet_as_soft_deactivated_user()
         self.expect_to_stay_long_term_idle(hamlet, send_large_group_mention)
+
+        self.subscribe(cordelia, "Denmark")
+        self.send_stream_message(othello, "Denmark", "msg", topic_name="large_topic")
+        self.send_stream_message(cordelia, "Denmark", "msg", topic_name="large_topic")
+        self.send_stream_message(hamlet, "Denmark", "msg", topic_name="large_topic")
+
+        self.send_stream_message(othello, "Denmark", "msg", topic_name="small_topic")
+        self.send_stream_message(hamlet, "Denmark", "msg", topic_name="small_topic")
+
+        def send_small_topic_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="small_topic"
+            )
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                    ),
+                },
+            )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_small_topic_mention)
+
+        def send_large_topic_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="large_topic"
+            )
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                    ),
+                },
+            )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_large_topic_mention)
+
+        def send_mixed_batch_topic_mentions() -> None:
+            mention = "@**topic**"
+            large_topic_msg_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="large_topic"
+            )
+            small_topic_msg_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="small_topic"
+            )
+
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    large_topic_msg_id: MissedMessageData(
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                    ),
+                    small_topic_msg_id: MissedMessageData(
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                    ),
+                },
+            )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_mixed_batch_topic_mentions)
+
+        # Reactors count toward the cap too, so senders within the cap
+        # plus reactors can still exceed it.
+        def send_reaction_heavy_topic_mention() -> None:
+            initial_msg_id = self.send_stream_message(
+                othello, "Denmark", "msg", topic_name="reaction_topic"
+            )
+            initial_msg = Message.objects.get(id=initial_msg_id)
+
+            do_add_reaction(cordelia, initial_msg, "smile", "1f642", "unicode_emoji")
+            do_add_reaction(hamlet, initial_msg, "tada", "1f389", "unicode_emoji")
+
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="reaction_topic"
+            )
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                    ),
+                },
+            )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_reaction_heavy_topic_mention)
 
     def test_followed_topic_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")

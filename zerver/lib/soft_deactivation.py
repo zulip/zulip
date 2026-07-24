@@ -13,6 +13,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.topic import participants_for_topic_count_capped
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -419,22 +420,57 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
         queue_event_on_commit("deferred_work", event)
 
 
+def has_small_topic_wildcard_mention(
+    missed_messages: list[dict[str, Any]], user_profile: UserProfile
+) -> bool:
+    """Whether any topic wildcard (@topic) mention in this batch targets a
+    topic small enough to soft-reactivate the recipient for: at most
+    'settings.MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION' participants
+    (senders plus reactors, matching who @topic notifies). Callers pass
+    the already-fetched message under the "message" key.
+    """
+    topic_wildcard_triggers = {
+        NotificationTriggers.TOPIC_WILDCARD_MENTION,
+        NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+    }
+
+    unique_topics: set[tuple[int, str]] = set()
+    for missed_message in missed_messages:
+        if missed_message["trigger"] not in topic_wildcard_triggers:
+            continue
+        message = missed_message["message"]
+        if message.is_channel_message:
+            unique_topics.add((message.recipient_id, message.topic_name()))
+
+    cap = settings.MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION
+    for recipient_id, topic_name in unique_topics:
+        count = participants_for_topic_count_capped(
+            user_profile.realm_id, recipient_id, topic_name, cap=cap
+        )
+        if count <= cap:
+            return True
+    return False
+
+
 def soft_reactivate_if_personal_notification(
     user_profile: UserProfile,
     unique_triggers: set[str],
     mentioned_user_group_members_count: int | None,
+    missed_messages: list[dict[str, Any]],
 ) -> None:
     """When we're about to send an email/push notification to a
     long_term_idle user, it's very likely that the user will try to
     return to Zulip. As a result, it makes sense to optimistically
     soft-reactivate that user, to give them a good return experience.
 
-    It's important that we do nothing for stream wildcard or large
+    It's important that we do nothing for stream wildcard, large
     group mentions (size > 'settings.MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION'),
-    because soft-reactivating an entire realm or a large group would be
+    or large topic mentions (size > 'settings.MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION')
+    because soft-reactivating an entire realm or a large group/topic would be
     very expensive. The caller is responsible for passing a
     mentioned_user_group_members_count that is None for messages that
-    contain both a personal mention and a group mention.
+    contain both a personal mention and a group mention. missed_messages
+    must include the already-fetched message under the "message" key.
     """
     if not user_profile.long_term_idle:
         return
@@ -449,18 +485,11 @@ def soft_reactivate_if_personal_notification(
         elif mentioned_user_group_members_count <= settings.MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION:
             small_group_mention = True
 
-    topic_wildcard_mention = any(
-        trigger in unique_triggers
-        for trigger in [
-            NotificationTriggers.TOPIC_WILDCARD_MENTION,
-            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
-        ]
-    )
-    if (
-        not direct_message
-        and not personal_mention
-        and not small_group_mention
-        and not topic_wildcard_mention
+    if not (
+        direct_message
+        or personal_mention
+        or small_group_mention
+        or has_small_topic_wildcard_mention(missed_messages, user_profile)
     ):
         return
 
