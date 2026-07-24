@@ -313,7 +313,7 @@ function update_form_for_field_type_selection(): void {
         $("#profile_field_display_in_profile_summary").closest(".input-group").show();
         const is_first_pronoun_field =
             profile_field_type === field_types.PRONOUNS.id &&
-            get_first_pronoun_field() === undefined;
+            get_first_pronoun_field_id_by_order() === null;
         const check_display_in_profile_summary_by_default =
             is_first_pronoun_field ||
             (profile_field_type === field_types.PRONOUNS.id &&
@@ -485,7 +485,7 @@ function show_modal_for_deleting_options(
     });
 }
 
-function get_profile_field(id: number): CustomProfileField | undefined {
+export function get_profile_field(id: number): CustomProfileField | undefined {
     return realm.custom_profile_fields.find((field) => field.id === id);
 }
 
@@ -787,7 +787,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
     });
 }
 
-function get_first_field_id_by_type_and_order(field_type: number): number | null {
+export function get_first_field_id_by_type_and_order(field_type: number): number | null {
     for (const field_id of order) {
         const field = get_profile_field(field_id);
         if (field?.type === field_type) {
@@ -797,14 +797,8 @@ function get_first_field_id_by_type_and_order(field_type: number): number | null
     return null;
 }
 
-function get_first_pronoun_field_id_by_order(): number | null {
+export function get_first_pronoun_field_id_by_order(): number | null {
     return get_first_field_id_by_type_and_order(realm.custom_profile_field_types.PRONOUNS.id);
-}
-
-export function get_first_pronoun_field(): CustomProfileField | undefined {
-    return realm.custom_profile_fields.find(
-        (f) => f.type === realm.custom_profile_field_types.PRONOUNS.id,
-    );
 }
 
 function update_profile_fields_checkboxes(): void {

@@ -39,7 +39,7 @@ import {hide_all} from "./popovers.ts";
 import * as presence from "./presence.ts";
 import * as rows from "./rows.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
-import {get_first_pronoun_field} from "./settings_profile_fields.ts";
+import {get_first_pronoun_field_id_by_order, get_profile_field} from "./settings_profile_fields.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
@@ -350,17 +350,20 @@ function get_user_card_popover_data(
     const field_types = realm.custom_profile_field_types;
 
     // Get the first pronoun field (by order) to display in the header.
-    const first_pronoun_field = get_first_pronoun_field();
+    const first_pronoun_field_id = get_first_pronoun_field_id_by_order();
 
     let pronouns = "";
-    if (first_pronoun_field) {
-        const first_pronoun_data = user_profile.get_custom_profile_field_data(
-            user,
-            first_pronoun_field,
-            field_types,
-        );
-        if (first_pronoun_data) {
-            pronouns = first_pronoun_data.value ?? "";
+    if (first_pronoun_field_id !== null) {
+        const first_pronoun_field = get_profile_field(first_pronoun_field_id);
+        if (first_pronoun_field) {
+            const first_pronoun_data = user_profile.get_custom_profile_field_data(
+                user,
+                first_pronoun_field,
+                field_types,
+            );
+            if (first_pronoun_data) {
+                pronouns = first_pronoun_data.value ?? "";
+            }
         }
     }
 
@@ -371,7 +374,7 @@ function get_user_card_popover_data(
                 f.display_in_profile_summary &&
                 f.value !== undefined &&
                 f.value !== null &&
-                f.id !== first_pronoun_field?.id,
+                f.id !== first_pronoun_field_id,
         );
 
     const user_id_string = user.user_id.toString();

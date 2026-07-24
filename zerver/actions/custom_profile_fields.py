@@ -12,7 +12,10 @@ from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
 from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
-from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.custom_profile_fields import (
+    custom_profile_fields_for_realm,
+    get_first_pronoun_field,
+)
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -63,6 +66,9 @@ def try_add_realm_custom_profile_field(
     editable_by_user: bool = True,
     use_for_user_matching: bool = False,
 ) -> CustomProfileField:
+    if field_type == CustomProfileField.PRONOUNS and get_first_pronoun_field(realm) is None:
+        display_in_profile_summary = True
+
     custom_profile_field = CustomProfileField(
         realm=realm,
         name=name,
@@ -93,27 +99,13 @@ def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField
     associated with it in CustomProfileFieldValue model.
     """
     was_first_pronoun_field = (
-        field.field_type == CustomProfileField.PRONOUNS
-        and CustomProfileField.objects.filter(
-            realm=realm,
-            field_type=CustomProfileField.PRONOUNS,
-        )
-        .order_by("order")
-        .first()
-        == field
+        field.field_type == CustomProfileField.PRONOUNS and get_first_pronoun_field(realm) == field
     )
 
     field.delete()
 
     if was_first_pronoun_field:
-        new_first_pronoun_field = (
-            CustomProfileField.objects.filter(
-                realm=realm,
-                field_type=CustomProfileField.PRONOUNS,
-            )
-            .order_by("order")
-            .first()
-        )
+        new_first_pronoun_field = get_first_pronoun_field(realm)
         if new_first_pronoun_field and not new_first_pronoun_field.display_in_profile_summary:
             new_first_pronoun_field.display_in_profile_summary = True
             new_first_pronoun_field.save(update_fields=["display_in_profile_summary"])
