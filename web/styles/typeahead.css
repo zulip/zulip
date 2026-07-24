@@ -145,6 +145,11 @@
         margin: 4px 0;
         max-height: min(248px, 95vh);
         overflow-y: auto;
+        margin-bottom: 0;
+
+        /* Mask image to fade out the bottom of the menu when it is scrollable. */
+        padding-bottom: 10px;
+        mask-image: var(--mask-dropdown-bottom-fade);
     }
 
     .typeahead-footer {
