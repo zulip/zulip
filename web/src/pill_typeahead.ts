@@ -276,7 +276,7 @@ export function set_up_combined(
         return;
     }
     const include_streams = (query: string): boolean =>
-        opts.stream !== undefined && query.trim().startsWith("#");
+        opts.stream !== undefined && query.trimStart().startsWith("#");
     const include_user_groups = opts.user_group;
     const include_users = opts.user;
     const exclude_bots = opts.exclude_bots;
