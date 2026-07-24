@@ -359,6 +359,10 @@ def generate_curl_example(
     ):
         properties = content["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
+            if include is not None and key not in include:
+                continue
+            if exclude is not None and key in exclude:
+                continue
             lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
 
     for i in range(1, len(lines) - 1):
