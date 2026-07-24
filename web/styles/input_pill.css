@@ -302,6 +302,7 @@
 }
 
 .add_subscribers_container .pill-container,
+.remove_subscribers_container .pill-container,
 .add_streams_container .pill-container,
 .add-user-group-container .pill-container,
 .add_members_container .pill-container {
