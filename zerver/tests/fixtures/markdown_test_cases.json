@@ -55,6 +55,12 @@
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good."
     },
     {
+      "name": "indented_codeblock",
+      "input": "\tprint(hello_world)",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>print(hello_world)\n</code></pre></div>",
+      "text_content": "print(hello_world)\n"
+    },
+    {
       "name": "inline_code_spaces",
       "input": "` outer ` ```    space    ```",
       "expected_output": "<p><code> outer </code> <code>    space    </code></p>",
@@ -278,6 +284,12 @@
       "text_content": "Nested list\n\nI am outer list\nI am inner nested list first item\nI am inner nested list second item\n\n\n"
     },
     {
+        "name": "ulist_nested_ulist_tab_indent",
+        "input": "- outer\n\t- inner first\n\t- inner second\n\t\t- deep nested",
+        "expected_output": "<ul>\n<li>outer<ul>\n<li>inner first</li>\n<li>inner second<ul>\n<li>deep nested</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>",
+        "text_content": "\nouter\ninner first\ninner second\ndeep nested\n\n\n\n\n"
+    },
+    {
       "name": "ulist_list_two_space_indent",
       "input": "* I am outer list\n  I am something inside",
       "expected_output": "<ul>\n<li>I am outer list<br>\n  I am something inside</li>\n</ul>",
@@ -398,6 +410,12 @@
       "input": "1. A\n3. B\n  2. C\n1. D",
       "expected_output": "<ol>\n<li>A</li>\n<li>B<ol start=\"2\">\n<li>C</li>\n</ol>\n</li>\n<li>D</li>\n</ol>",
       "text_content": "1. A\n2. B\n  2. C\n3. D"
+    },
+    {
+      "name": "numbered_list_double_digit",
+      "input": "List without a gap\n10. One\n11. Two",
+      "expected_output": "<p>List without a gap</p>\n<ol start=\"10\">\n<li>One</li>\n<li>Two</li>\n</ol>",
+      "text_content": "List without a gap\n10. One\n11. Two"
     },
     {
       "name": "linkify_interference",
