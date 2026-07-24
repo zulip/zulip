@@ -98,26 +98,34 @@ THUMBNAIL_OUTPUT_FORMATS = (
 TRANSCODED_IMAGE_FORMAT = ThumbnailFormat("webp", 4032, 3024, animated=False)
 
 
+# THUMBNAIL_IMAGE_LOADER_MAP is a mapping between supported image
+# content-types and their corresponding pyvips loader.
+#
+# THUMBNAIL_IMAGE_LOADER_MAP.keys() defines THUMBNAIL_ACCEPT_IMAGE_TYPES.
+# THUMBNAIL_IMAGE_LOADER_MAP.values() is used below for security
+# enforcement.
+#
+# THUMBNAIL_IMAGE_LOADER_MAP is also used to guess at content-types
+# based on the loader, in maybe_correct_content_type.
+#
+# The keys should be kept synced with the client-side list in
+# web/src/upload.ts.
+THUMBNAIL_IMAGE_LOADER_MAP = {
+    "image/avif": ("VipsForeignLoadHeif", "heif"),
+    "image/gif": ("VipsForeignLoadNsgif", "gif"),
+    "image/heic": ("VipsForeignLoadHeif", "heif"),
+    "image/jpeg": ("VipsForeignLoadJpeg", "jpeg"),
+    "image/png": ("VipsForeignLoadPng", "png"),
+    "image/tiff": ("VipsForeignLoadTiff", "tiff"),
+    "image/webp": ("VipsForeignLoadWebp", "webp"),
+}
+
 # These are the image content-types which the server supports parsing
-# and thumbnailing; these do not need to supported on all browsers,
+# and thumbnailing; these do not need to be supported on all browsers,
 # since we will the serving thumbnailed versions of them.  Note that
 # this does not provide any *security*, since the content-type is
 # provided by the browser, and may not match the bytes they uploaded.
-#
-# This should be kept synced with the client-side list in
-# web/src/upload.ts.  Any additions below must be accompanied by
-# changes to the pyvips block below as well.
-THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
-    [
-        "image/avif",
-        "image/gif",
-        "image/heic",
-        "image/jpeg",
-        "image/png",
-        "image/tiff",
-        "image/webp",
-    ]
-)
+THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(THUMBNAIL_IMAGE_LOADER_MAP.keys())
 
 # This is what enforces security limitations on which formats are
 # parsed; we disable all loaders, then re-enable the ones we support
@@ -128,12 +136,8 @@ THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
 # Note that only libvips >= 8.13 (Ubuntu 24.04 or later, Debian 12 or
 # later) supports this!  These are no-ops on earlier versions of libvips.
 pyvips.operation_block_set("VipsForeignLoad", True)
-pyvips.operation_block_set("VipsForeignLoadHeif", False)  # image/avif, image/heic
-pyvips.operation_block_set("VipsForeignLoadNsgif", False)  # image/gif
-pyvips.operation_block_set("VipsForeignLoadJpeg", False)  # image/jpeg
-pyvips.operation_block_set("VipsForeignLoadPng", False)  # image/png
-pyvips.operation_block_set("VipsForeignLoadTiff", False)  # image/tiff
-pyvips.operation_block_set("VipsForeignLoadWebp", False)  # image/webp
+for loader_tuple_value in set(THUMBNAIL_IMAGE_LOADER_MAP.values()):
+    pyvips.operation_block_set(loader_tuple_value[0], False)
 pyvips.block_untrusted_set(True)
 
 # Disable the operations cache; our only use here is thumbnail_buffer,
@@ -352,6 +356,34 @@ def missing_thumbnails(
     return needed_thumbnails
 
 
+# Sometimes, the image has the wrong content-type, so try to fix it.
+def maybe_correct_content_type(image: pyvips.Image, content_type: str) -> str:
+    expected_loader_tuple = THUMBNAIL_IMAGE_LOADER_MAP.get(bare_content_type(content_type))
+    expected_loader_string = expected_loader_tuple[1] if expected_loader_tuple is not None else None
+    # The end of this string will vary by type of image source, so we'll just care about the
+    # beginning.
+    loader_string = image.get("vips-loader")
+
+    if expected_loader_tuple is None or not loader_string.startswith(expected_loader_string):
+        if loader_string.startswith("heif"):
+            # This is a guess! The heif loader is used for both avif and heic images, but as it
+            # happens, we mostly only care about getting the right content-type for correctly
+            # identifying heic images, so the lightbox can show the transcoded version on
+            # non-safari browsers.
+            #
+            # If we eventually need to correct mistyped avif files, we'll need to somehow use
+            # vips to distinguish avif from heic. Currently, this will further mislabel an avif
+            # (with an incorrect content-type) to "image/heic".
+            return "image/heic"
+
+        # We do a reverse map lookup to get the correct content-type.
+        for content_type_key, loader_tuple_value in THUMBNAIL_IMAGE_LOADER_MAP.items():
+            if loader_string.startswith(loader_tuple_value[1]):
+                return content_type_key
+
+    return content_type
+
+
 def maybe_thumbnail(
     content: bytes | pyvips.Source,
     content_type: str | None,
@@ -377,6 +409,8 @@ def maybe_thumbnail(
                 (width, height) = (image.height, image.width)
             else:
                 (width, height) = (image.width, image.height)
+
+            content_type = maybe_correct_content_type(image, content_type)
 
             image_row = ImageAttachment.objects.create(
                 realm_id=realm_id,
