@@ -83,16 +83,69 @@ export function clear(): void {
     latest_key = 0;
 }
 
-export function get_superset_datasets(filter: Filter): MessageListData[] {
-    const superset_datasets = [];
-    // Try to get exact match first.
-    const superset_data = get(filter);
-    if (superset_data !== undefined) {
-        // TODO: Search for additional superset datasets.
-        superset_datasets.push(superset_data);
+function get_supersets_containing_anchor_msg(filter: Filter): MessageListData[] {
+    // For a target conversation view anchored at a `near`/`with` message,
+    // look for other cached conversation views (with or without their own
+    // `near`/`with`) that already hold that message. Restricting candidates
+    // to conversation views via `is_conversation_view` ensures a candidate
+    // cannot have silently dropped a message the target needs:
+    //
+    //  - `excludes_muted_topics` is false for every conversation-view shape,
+    //    so muted-topic filtering never drops a candidate message.
+    //  - `excludes_muted_users` is true for channel+topic shapes (and false
+    //    for DM shapes), but channel and DM messages never share a dataset,
+    //    and the flag is identical across views of the same shape. So
+    //    whenever a candidate can actually supply the target's messages, it
+    //    has dropped only the messages the target would drop too.
+    let message_id: number | undefined;
+    if (filter.has_operator("with")) {
+        message_id = Number.parseInt(filter.terms_with_operator("with")[0]!.operand, 10);
+    } else if (filter.has_operator("near")) {
+        message_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
+    }
+    if (message_id === undefined || Number.isNaN(message_id)) {
+        return [];
     }
 
-    return [...superset_datasets, recent_view_messages_data.recent_view_messages_data];
+    // Iterate most-recently-used first so the freshest cached dataset wins
+    // when several contain the anchor.
+    const supersets: MessageListData[] = [];
+    for (const cached_data of [...cache.values()].toReversed()) {
+        if (!cached_data.filter.is_conversation_view()) {
+            continue;
+        }
+        if (cached_data.get(message_id) !== undefined) {
+            supersets.push(cached_data);
+        }
+    }
+    return supersets;
+}
+
+export function get_superset_datasets(filter: Filter): MessageListData[] {
+    // The returned datasets are tried in order by the caller; the first one
+    // that contains the messages needed to locally render the target narrow
+    // wins. Earlier entries are higher-priority (more specific) candidates.
+    const supersets: MessageListData[] = [];
+    const recent = recent_view_messages_data.recent_view_messages_data;
+
+    const exact_match = get(filter);
+    if (exact_match !== undefined) {
+        supersets.push(exact_match);
+    }
+
+    if (filter.is_conversation_view()) {
+        for (const cached_data of get_supersets_containing_anchor_msg(filter)) {
+            if (!supersets.includes(cached_data)) {
+                supersets.push(cached_data);
+            }
+        }
+    }
+
+    if (!supersets.includes(recent)) {
+        supersets.push(recent);
+    }
+
+    return supersets;
 }
 
 export function remove(filter: Filter): void {
