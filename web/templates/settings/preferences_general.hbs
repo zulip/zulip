@@ -91,4 +91,20 @@
               }}
         </div>
     </div>
+
+    <div class="input-group">
+        <label for="{{prefix}}file_preview_extensions" class="settings-field-label">
+            {{ settings_label.file_preview_extensions }}
+            {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+            {{/if}}
+        </label>
+        <input type="text"
+               name="file_preview_extensions"
+               class="setting_file_preview_extensions prop-element settings_text_input bootstrap-focus-style"
+               id="{{prefix}}file_preview_extensions"
+               value="{{settings_object.file_preview_extensions}}"
+               data-setting-widget-type="string"
+               placeholder="log,conf,env (leave empty for built-in types only; &quot;none&quot; to disable)" />
+    </div>
 </div>
