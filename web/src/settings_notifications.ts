@@ -11,6 +11,7 @@ import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import * as desktop_notifications from "./desktop_notifications.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_notifications from "./message_notifications.ts";
@@ -402,9 +403,13 @@ export function set_up(settings_panel: SettingsPanel): void {
         // do not need to do a mobile check here--as that banner is
         // not shown in a mobile context anyway.
         void (async () => {
+            desktop_notifications.suppress_next_focus_close();
             const permission = await Notification.requestPermission();
             if (permission === "granted") {
                 update_desktop_notification_banner();
+                message_notifications.send_test_notification(
+                    $t({defaultMessage: "Zulip desktop notifications enabled"}),
+                );
             } else if (permission === "denied") {
                 window.open(
                     "/help/desktop-notifications#check-platform-settings",
