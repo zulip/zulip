@@ -168,6 +168,10 @@ def set_up_streams_and_groups_for_new_human_user(
     else:
         streams = []
 
+    # Lock the subscriber row so that a concurrent (un)subscription of
+    # this user serializes with this one and they cannot race to create
+    # or double-count a subscription.
+    list(UserProfile.objects.filter(id=user_profile.id).select_for_update(no_key=True))
     bulk_add_subscriptions(
         realm,
         streams,
