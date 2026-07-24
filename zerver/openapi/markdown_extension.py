@@ -28,6 +28,7 @@ from zerver.openapi.openapi import (
     check_additional_imports,
     check_requires_administrator,
     check_requires_owner,
+    check_web_app_pending_implementation,
     generate_openapi_fixture,
     get_curl_include_exclude,
     get_openapi_description,
@@ -527,6 +528,11 @@ class APIHeaderPreprocessor(BasePreprocessor):
         description_dict = get_openapi_description(path, method)
         return [
             *("# " + line for line in raw_title.splitlines()),
+            *(
+                ["{!api-pending-web.md!}"]
+                if check_web_app_pending_implementation(path, method)
+                else []
+            ),
             *(["{!api-admin-only.md!}"] if check_requires_administrator(path, method) else []),
             *(["{!api-owner-only.md!}"] if check_requires_owner(path, method) else []),
             "",
