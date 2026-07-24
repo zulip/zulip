@@ -269,7 +269,6 @@ python_rules = RuleList(
         },
         {
             "pattern": "msgid|MSGID",
-            "exclude": {"tools/check-capitalization"},
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
@@ -859,8 +858,6 @@ markdown_rules = RuleList(
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",
             "exclude": {
                 "api_docs/",
-                "docs/contributing/contributing.md",
-                "docs/overview/readme.md",
                 "docs/README.md",
                 "docs/subsystems/email.md",
             },
@@ -881,7 +878,6 @@ markdown_rules = RuleList(
         {
             "pattern": r"\][(][^#h]",
             "exclude_pattern": "mailto:",
-            "include_only": {"README.md", "CONTRIBUTING.md"},
             "description": "Use absolute links from docs served by GitHub",
         },
         {
