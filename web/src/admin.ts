@@ -366,8 +366,7 @@ export function launch(section: string, settings_tab: string | undefined): void 
     }
     if (section === "users") {
         settings_panel_menu.org_settings.set_user_settings_tab(settings_tab);
-    }
-    if (section === "bots") {
+    } else if (section === "bots") {
         assert(settings_tab !== undefined);
         settings_panel_menu.org_settings.set_bot_settings_tab(settings_tab, "org");
     }

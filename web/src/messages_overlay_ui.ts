@@ -95,9 +95,7 @@ export function modals_handle_events(event_key: string, context: Context): void 
 
     if (event_key === "backspace" || event_key === "delete") {
         context.on_delete();
-    }
-
-    if (event_key === "enter") {
+    } else if (event_key === "enter") {
         context.on_enter();
     }
 }
