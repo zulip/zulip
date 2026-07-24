@@ -182,11 +182,11 @@ run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
             </math>
             </span>
             <span class="katex-html" aria-hidden="true">
-            <span class="base">
+            <span class="katex-base">
                 <span class="mord mathnormal">x</span>
                 <span class="mbin">+</span>
             </span>
-            <span class="base">
+            <span class="katex-base">
                 <span class="mord mathnormal">y</span>
                 <span class="mord">2</span>
             </span>

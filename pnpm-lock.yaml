@@ -191,8 +191,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.5
       katex:
-        specifier: ^0.16.2
-        version: 0.16.45
+        specifier: ^0.18.1
+        version: 0.18.1
       koa:
         specifier: ^3.0.0
         version: 3.2.0
@@ -6321,8 +6321,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  katex@0.16.45:
-    resolution: {integrity: sha512-pQpZbdBu7wCTmQUh7ufPmLr0pFoObnGUoL/yhtwJDgmmQpbkg/0HSVti25Fu4rmd1oCR6NGWe9vqTWuWv3GcNA==}
+  katex@0.18.1:
+    resolution: {integrity: sha512-Td8GCYSxDAoMhHOlKmCFMJ/hz5qlAAb71n66Dryw9nfCVfumLo7nhuotbvKom/XPADmrYC3O5QR71EPq4DarJQ==}
     hasBin: true
 
   kdbush@3.0.0:
@@ -16668,7 +16668,7 @@ snapshots:
       '@jsep-plugin/regex': 1.0.4(jsep@1.4.0)
       jsep: 1.4.0
 
-  katex@0.16.45:
+  katex@0.18.1:
     dependencies:
       commander: 8.3.0
 
