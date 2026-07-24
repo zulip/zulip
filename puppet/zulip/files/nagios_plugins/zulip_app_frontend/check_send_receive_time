@@ -15,6 +15,8 @@ import time
 import traceback
 from typing import Any, Literal, NoReturn
 
+from zerver.lib.users import get_api_key
+
 sys.path.append(".")
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
@@ -92,7 +94,7 @@ else:
 
 zulip_sender = zulip.Client(
     email=sender.email,
-    api_key=sender.api_key,
+    api_key=get_api_key(sender),
     verbose=True,
     insecure=options.insecure,
     client="ZulipMonitoring/0.1",
@@ -101,7 +103,7 @@ zulip_sender = zulip.Client(
 
 zulip_recipient = zulip.Client(
     email=recipient.email,
-    api_key=recipient.api_key,
+    api_key=get_api_key(recipient),
     verbose=True,
     insecure=options.insecure,
     client="ZulipMonitoring/0.1",

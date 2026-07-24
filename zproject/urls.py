@@ -24,6 +24,7 @@ from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
     api_fetch_api_key,
     api_get_server_settings,
+    get_user_api_keys,
     json_fetch_api_key,
     jwt_fetch_api_key,
     log_into_subdomain,
@@ -236,6 +237,7 @@ from zerver.views.user_settings import (
     delete_avatar_backend,
     json_change_settings,
     regenerate_api_key,
+    regenerate_single_api_key,
     set_avatar_backend,
 )
 from zerver.views.user_topics import update_muted_topic, update_user_topic
@@ -609,6 +611,9 @@ v1_api_and_json_patterns = [
     rest_path("export/realm/consents", GET=get_users_export_consents),
     rest_path("register_client_device", POST=register_device),
     rest_path("remove_client_device", POST=remove_device),
+    # users/me/api_keys -> zerver.views.auth
+    rest_path("users/me/api_keys", GET=get_user_api_keys),
+    rest_path("users/me/api_keys/<int:key_id>/regenerate", POST=regenerate_single_api_key),
 ]
 
 # These views serve pages (HTML). As such, their internationalization

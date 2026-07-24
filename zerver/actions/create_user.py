@@ -527,6 +527,7 @@ def do_create_user(
     email_address_visibility: int | None = None,
     add_initial_stream_subscriptions: bool = True,
     external_auth_id_dict: dict[str, str] | None = None,
+    description: str | None = None,
 ) -> UserProfile:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
@@ -549,6 +550,7 @@ def do_create_user(
         source_profile=source_profile,
         enable_marketing_emails=enable_marketing_emails,
         email_address_visibility=email_address_visibility,
+        description=description,
     )
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
