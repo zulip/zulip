@@ -99,6 +99,19 @@ export let notify_old_thread_default = false;
 
 export let notify_new_thread_default = true;
 
+// Injected by compose_setup to avoid an import cycle with message_view. After
+// a successful edit in a channel you're viewing but not subscribed to, this
+// reloads the narrow, since such channels don't deliver live update events.
+let reload_unsubscribed_channel_narrow_after_edit: (stream_id: number) => void = () => {
+    // No-op until wired up at startup.
+};
+
+export function set_reload_unsubscribed_channel_narrow_after_edit(
+    reload: (stream_id: number) => void,
+): void {
+    reload_unsubscribed_channel_narrow_after_edit = reload;
+}
+
 export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
     if (!is_message_editable_ignoring_permissions(message)) {
         return false;
@@ -1394,6 +1407,10 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
+            }
+
+            if (stream_id !== undefined) {
+                reload_unsubscribed_channel_narrow_after_edit(stream_id);
             }
 
             // Ordinarily, in a code path like this, we'd make

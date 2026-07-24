@@ -73,10 +73,6 @@ export const get_message_too_long_for_compose_error = (): string =>
         {max_length: realm.max_message_length},
     );
 export const NO_MESSAGE_CONTENT_ERROR_MESSAGE = $t({defaultMessage: "Compose a message."});
-export const UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE = $t({
-    defaultMessage:
-        "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
-});
 export const CHANNEL_WILDCARD_ACKNOWLEDGE_MISSING_ERROR_TOOLTIP_MESSAGE = $t({
     defaultMessage: "Please acknowledge the warning to send the message.",
 });
@@ -881,14 +877,6 @@ function validate_permission_to_post_messages_in_stream(sub: StreamSubscription)
         compose_banner.show_stream_does_not_exist_error(sub.name);
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = INVALID_CHANNEL_ERROR_TOOLTIP_MESSAGE;
-        }
-        return false;
-    }
-
-    if (!sub.subscribed) {
-        compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message_html = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
         }
         return false;
     }
