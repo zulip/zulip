@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.message import event_recipient_ids_for_action_on_messages
 from zerver.lib.streams import is_user_in_groups_granting_content_access
 from zerver.lib.upload import delete_message_attachment
 from zerver.lib.user_groups import get_recursive_membership_groups
@@ -28,6 +29,15 @@ from zerver.models import (
 def user_attachments(user_profile: UserProfile) -> list[dict[str, Any]]:
     attachments = Attachment.objects.filter(owner=user_profile).prefetch_related("messages")
     return [a.to_dict() for a in attachments]
+
+
+def attachment_update_user_ids(attachment: Attachment) -> set[int]:
+    user_ids = {attachment.owner_id}
+    for message in attachment.messages.all().select_related("recipient"):
+        user_ids.update(
+            event_recipient_ids_for_action_on_messages([message.id], message.is_channel_message)
+        )
+    return user_ids
 
 
 def access_attachment_by_id(
