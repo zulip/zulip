@@ -1145,6 +1145,56 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     return false;
 }
 
+// Remove the DOM rows for conversations that filter_and_sort() just hid.
+//
+// Ideally every event that hides a rendered conversation would rerender
+// that row, and the remove path in inplace_rerender would keep the DOM
+// and meta.offset consistent. But some events change the filter
+// predicate's inputs without any per-row notification reaching us:
+//
+// - Reads of messages this client never fetched: a conversation's row
+//   exists because its latest message was fetched, but its unread count
+//   also covers older messages beyond our fetch horizon. When another
+//   client reads those, the flags event carries only message ids --
+//   unread counts update, but ids absent from message_store cannot be
+//   mapped back to a row, and recent view is not registered in
+//   unread_ui's coarse update hooks. Under the "unread" filter, the
+//   row silently hides.
+// - Renames while a search keyword is active: the search matches topic
+//   rows against the live channel name and DM rows against participant
+//   names, so renaming a channel or a user can flip rows' visibility.
+//   The rename handlers cannot know which rows flipped -- finding them
+//   would mean re-evaluating every rendered row against the filters,
+//   which is exactly the reconciliation done here.
+//
+// When filter_and_sort() drops such a conversation, its row is stranded:
+// the DOM holds more rows than meta.offset accounts for, and a later
+// render() re-appends rows already on screen, showing duplicates. A
+// stranded key is gone from the filtered list, so later calls cannot
+// find it via get_rendered_list() -- this reconciliation must run at
+// every filter_and_sort() call, on the rows rendered just before it.
+function remove_now_hidden_rendered_rows(previously_rendered_rows: ConversationData[]): void {
+    assert(topics_widget !== undefined);
+    for (const topic_data of previously_rendered_rows) {
+        if (!filters_should_hide_row(topic_data)) {
+            continue;
+        }
+        const $topic_row = get_topic_row(topic_data);
+        if ($topic_row.length === 0) {
+            continue;
+        }
+        // If the row being removed is the focused last row, adjust row_focus
+        // so it doesn't reset to the first or a middle row. We read the
+        // focused row from the DOM since the filtered list no longer contains
+        // this conversation.
+        const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
+        if (row_is_focused && row_focus >= topics_widget.get_current_list().length) {
+            row_focus = topics_widget.get_current_list().length - 1;
+        }
+        topics_widget.remove_rendered_row($topic_row);
+    }
+}
+
 export function bulk_inplace_rerender(row_keys: string[]): void {
     if (!topics_widget || !recent_view_util.is_visible()) {
         return;
@@ -1157,8 +1207,14 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     // Save whether all rows were rendered before updating the data,
     // so we know if it's safe to use render() for new items below.
     const was_all_rendered = topics_widget.all_rendered();
+    const previously_rendered_rows = topics_widget.get_rendered_list();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     topics_widget.filter_and_sort();
+    // Drop the rows that filter_and_sort() just hid but left in the DOM;
+    // the loop below only reconciles row_keys, so without this a
+    // conversation hidden outside of row_keys would linger and desync
+    // meta.offset. See remove_now_hidden_rendered_rows() for details.
+    remove_now_hidden_rendered_rows(previously_rendered_rows);
     // Iterate in the order in which the rows should be present so that
     // we are not inserting rows without any rows being present around them.
     let processed_count = 0;
@@ -1199,11 +1255,6 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
 
     const topic_data = recent_view_data.conversations.get(topic_key);
     assert(topic_data !== undefined);
-    const $topic_row = get_topic_row(topic_data);
-    // We cannot rely on `topic_widget.meta.filtered_list` to know
-    // if a topic is rendered since the `filtered_list` might have
-    // already been updated via other calls.
-    const is_topic_rendered = $topic_row.length;
     assert(topics_widget !== undefined);
     if (!is_bulk_rerender) {
         // Resorting the topics_widget is important for the case where we
@@ -1212,39 +1263,32 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         //
         // NOTE: This doesn't add any new entry to the original list but updates the filtered list
         // based on the current filters and updated row data.
+        const previously_rendered_rows = topics_widget.get_rendered_list();
         topics_widget.filter_and_sort();
+        remove_now_hidden_rendered_rows(previously_rendered_rows);
     }
 
+    // We cannot rely on `topic_widget.meta.filtered_list` to know if a topic
+    // is rendered since the `filtered_list` might have already been updated
+    // via other calls; read its presence from the DOM instead.
+    const $topic_row = get_topic_row(topic_data);
+    const is_topic_rendered = $topic_row.length;
     const current_topics_list = topics_widget.get_current_list();
-    if (is_topic_rendered && filters_should_hide_row(topic_data)) {
-        // Since the row needs to be removed from DOM, we need to adjust `row_focus`
-        // if the row being removed is focused and is the last row in the list.
-        // This prevents the row_focus either being reset to the first row or
-        // middle of the visible table rows.
-        // We need to get the current focused row details from DOM since we cannot
-        // rely on `current_topics_list` since it has already been updated and row
-        // doesn't exist inside it.
-        const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
-        if (row_is_focused && row_focus >= current_topics_list.length) {
-            row_focus = current_topics_list.length - 1;
-        }
-        topics_widget.remove_rendered_row($topic_row);
-    } else if (!is_topic_rendered && filters_should_hide_row(topic_data)) {
-        // In case `topic_row` is not present, our job is already done here
-        // since it has not been rendered yet and we already removed it from
-        // the filtered list in `topic_widget`. So, it won't be displayed in
-        // the future too.
-    } else if (is_topic_rendered && !filters_should_hide_row(topic_data)) {
+    if (is_topic_rendered && !filters_should_hide_row(topic_data)) {
         // Only a re-render is required in this case.
         topics_widget.render_item(topic_data);
-    } else {
-        // Final case: !is_topic_rendered && !filters_should_hide_row(topic_data).
+    } else if (!is_topic_rendered && !filters_should_hide_row(topic_data)) {
+        // Newly visible: insert it at its sorted position.
         topics_widget.insert_rendered_row(topic_data, () =>
             current_topics_list.findIndex(
                 (list_item) => list_item.last_msg_id === topic_data.last_msg_id,
             ),
         );
     }
+    // A row the filters now hide needs no work here: if it was rendered,
+    // remove_now_hidden_rendered_rows() above removed it (or, for a bulk
+    // rerender, bulk_inplace_rerender() did); if it was never rendered, it
+    // simply stays absent.
     if (!is_bulk_rerender) {
         update_unread_sort_header_state();
         setTimeout(revive_current_focus, 0);
