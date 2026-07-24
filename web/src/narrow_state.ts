@@ -315,6 +315,10 @@ export let _possible_unread_message_ids = (message_list_filter: Filter): number[
         return unread.get_msg_ids_for_mentions();
     }
 
+    if (message_list_filter.can_bucket_by("is-alerted")) {
+        return unread.get_msg_ids_for_alert_words();
+    }
+
     if (message_list_filter.can_bucket_by("is-starred")) {
         return unread.get_msg_ids_for_starred();
     }
