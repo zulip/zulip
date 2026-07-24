@@ -334,7 +334,7 @@ NO_EXAMPLE = object()
 
 
 class Parameter(BaseModel):
-    kind: Literal["query", "path", "formData"]
+    kind: Literal["query", "path", "formData", "body"]
     name: str
     description: str
     json_encoded: bool
@@ -408,6 +408,26 @@ def get_openapi_parameters(
                     deprecated=schema.get("deprecated", False),
                 )
             )
+
+    if "requestBody" in operation and "application/json" in (
+        content := operation["requestBody"]["content"]
+    ):
+        # typed_endpoint registers a whole-body JsonBodyPayload argument under
+        # the fixed name "request"; match that so the consistency check passes.
+        media_type = content["application/json"]
+        schema = media_type["schema"]
+        parameters.append(
+            Parameter(
+                kind="body",
+                name="request",
+                description=schema["description"],
+                json_encoded=True,
+                value_schema=schema,
+                example=media_type.get("example", NO_EXAMPLE),
+                required=operation["requestBody"].get("required", False),
+                deprecated=False,
+            )
+        )
 
     return parameters
 
