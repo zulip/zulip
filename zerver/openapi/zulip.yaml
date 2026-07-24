@@ -13493,6 +13493,19 @@ paths:
                           with users about the effect of this request.
 
                           **Changes**: New in Zulip 11.0 (feature level 397).
+                      messages_sent_to_removed_subscribers:
+                        type: boolean
+                        description: |
+                          Only present if the parameter `send_messages_to_removed_subscribers`
+                          in the request was `true`.
+
+                          Whether Notification Bot DMs were in fact sent to the removed
+                          subscribers as requested by the
+                          `send_messages_to_removed_subscribers` parameter. Clients may
+                          find this value useful to communicate with users about the
+                          effect of this request.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-515bab).
                     example:
                       {
                         "msg": "",
@@ -13523,7 +13536,14 @@ paths:
           by the [`can_remove_subscribers_group`][can-remove-parameter]
           for the channel.
 
-        **Changes**: Before Zulip 10.0 (feature level 362),
+        **Changes**: In Zulip 13.0 (feature level ZF-515bab), the server began sending a
+        Notification Bot direct message to users who have been
+        unsubscribed from one or more channels by another user, with
+        accompanying `send_messages_to_removed_subscribers` request
+        parameter and `messages_sent_to_removed_subscribers` response
+        field documented below.
+
+        Before Zulip 10.0 (feature level 362),
         subscriptions in archived channels could not be modified.
 
         Before Zulip 8.0 (feature level 208), if a user specified by
@@ -13579,12 +13599,29 @@ paths:
                   example: ["Verona", "Denmark"]
                 principals:
                   $ref: "#/components/schemas/Principals"
+                send_messages_to_removed_subscribers:
+                  description: |
+                    Whether other users unsubscribed via this request should be sent a
+                    direct message, from Notification Bot, notifying them that they
+                    were unsubscribed and by whom.
+
+                    The server will never send direct messages when the total number of
+                    users who were unsubscribed from channels in this request was more
+                    than the value of `max_bulk_subscription_messages`, which is
+                    available in the [`POST /register`](/api/register-queue) response.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-515bab).
+                  type: boolean
+                  default: true
+                  example: true
               required:
                 - subscriptions
             encoding:
               subscriptions:
                 contentType: application/json
               principals:
+                contentType: application/json
+              send_messages_to_removed_subscribers:
                 contentType: application/json
       responses:
         "200":
@@ -13613,6 +13650,19 @@ paths:
                         description: |
                           A list of the names of channels which were unsubscribed from as a result
                           of the query.
+                      messages_sent_to_removed_subscribers:
+                        type: boolean
+                        description: |
+                          Only present if the parameter `send_messages_to_removed_subscribers`
+                          in the request was `true`.
+
+                          Whether Notification Bot DMs were in fact sent to the removed
+                          subscribers as requested by the
+                          `send_messages_to_removed_subscribers` parameter. Clients may
+                          find this value useful to communicate with users about the
+                          effect of this request.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-515bab).
                     example:
                       {
                         "msg": "",
@@ -22741,13 +22791,19 @@ paths:
                               Configuration for group level group permission settings.
                             additionalProperties:
                               $ref: "#/components/schemas/GroupPermissionSetting"
-                      max_bulk_new_subscription_messages:
+                      max_bulk_subscription_messages:
                         description: |
-                          Maximum number of new subscribers for which the server will
+                          Maximum number of affected users for which the server will
                           respect the `send_new_subscription_messages` parameter when
-                          [adding subscribers to a channel](/api/subscribe#parameter-send_new_subscription_messages).
+                          [adding subscribers to a channel](/api/subscribe#parameter-send_new_subscription_messages),
+                          or the `send_messages_to_removed_subscribers` parameter when
+                          [unsubscribing users from a channel](/api/unsubscribe#parameter-send_messages_to_removed_subscribers).
 
-                          **Changes**: New in Zulip 11.0 (feature level 397).
+                          **Changes**: In Zulip 13.0 (feature level ZF-515bab), renamed from
+                          `max_bulk_new_subscription_messages`; the cap now applies to
+                          both subscription and unsubscription notifications.
+
+                          New in Zulip 11.0 (feature level 397).
                         type: number
                         example: 100
                     example:
@@ -25337,7 +25393,7 @@ paths:
             The target message's ID.
           schema:
             type: integer
-          example: 47
+          example: 48
           required: true
       requestBody:
         required: true
@@ -30883,7 +30939,7 @@ components:
 
         The server will never send direct messages when the total number of users
         who were subscribed to channels in this request was more than the value
-        of `max_bulk_new_subscription_messages`, which is available in the [`POST
+        of `max_bulk_subscription_messages`, which is available in the [`POST
         /register`](/api/register-queue) response.
 
         **Changes**: Before Zulip 11.0 (feature level 397), new subscribers

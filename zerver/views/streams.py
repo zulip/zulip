@@ -619,6 +619,7 @@ def remove_subscriptions_backend(
     user_profile: UserProfile,
     *,
     principals: Json[list[str] | list[int]] | None = None,
+    send_messages_to_removed_subscribers: Json[bool] = True,
     streams_raw: Annotated[Json[list[str]], ApiParamConfig("subscriptions")],
 ) -> HttpResponse:
     realm = user_profile.realm
@@ -643,10 +644,16 @@ def remove_subscriptions_backend(
         unsubscribing_others=unsubscribing_others,
     )
 
-    result: dict[str, list[str]] = dict(removed=[], not_removed=[])
+    result: dict[str, Any] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
+
+    if send_messages_to_removed_subscribers:
+        result["messages_sent_to_removed_subscribers"] = send_user_unsubscribed_notifications(
+            acting_user=user_profile,
+            removed=removed,
+        )
 
     for subscriber, removed_stream in removed:
         result["removed"].append(removed_stream.name)
@@ -656,25 +663,51 @@ def remove_subscriptions_backend(
     return json_success(request, data=result)
 
 
+def format_channel_notification_message(
+    acting_user: UserProfile,
+    channel_names: set[str],
+    single_channel_message: str,
+    multiple_channels_message: str,
+) -> str:
+    # The message templates are passed in already translated so that their
+    # literals stay individually extractable for translation.
+    channels = sorted(channel_names)
+    user_full_name = silent_mention_syntax_for_user(acting_user)
+    if len(channels) == 1:
+        return single_channel_message.format(
+            user_full_name=user_full_name,
+            channel_name=f"#**{channels[0]}**",
+        )
+
+    message = multiple_channels_message.format(user_full_name=user_full_name)
+    message += "\n\n"
+    for channel_name in channels:
+        message += f"* #**{channel_name}**\n"
+    return message
+
+
 def you_were_just_subscribed_message(
     acting_user: UserProfile, recipient_user: UserProfile, stream_names: set[str]
 ) -> str:
-    subscriptions = sorted(stream_names)
-    if len(subscriptions) == 1:
-        with override_language(recipient_user.default_language):
-            return _("{user_full_name} subscribed you to {channel_name}.").format(
-                user_full_name=silent_mention_syntax_for_user(acting_user),
-                channel_name=f"#**{subscriptions[0]}**",
-            )
-
     with override_language(recipient_user.default_language):
-        message = _("{user_full_name} subscribed you to the following channels:").format(
-            user_full_name=silent_mention_syntax_for_user(acting_user),
+        single_channel_message = _("{user_full_name} subscribed you to {channel_name}.")
+        multiple_channels_message = _("{user_full_name} subscribed you to the following channels:")
+    return format_channel_notification_message(
+        acting_user, stream_names, single_channel_message, multiple_channels_message
+    )
+
+
+def you_were_just_unsubscribed_message(
+    acting_user: UserProfile, recipient_user: UserProfile, channel_names: set[str]
+) -> str:
+    with override_language(recipient_user.default_language):
+        single_channel_message = _("{user_full_name} unsubscribed you from {channel_name}.")
+        multiple_channels_message = _(
+            "{user_full_name} unsubscribed you from the following channels:"
         )
-    message += "\n\n"
-    for channel_name in subscriptions:
-        message += f"* #**{channel_name}**\n"
-    return message
+    return format_channel_notification_message(
+        acting_user, channel_names, single_channel_message, multiple_channels_message
+    )
 
 
 RETENTION_DEFAULT: str | int = "realm_default"
@@ -962,7 +995,7 @@ def add_subscriptions_backend(
 
     if send_new_subscription_messages:
         send_user_subscribed_direct_messages = (
-            len(result["subscribed"]) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
+            len(result["subscribed"]) <= settings.MAX_BULK_SUBSCRIPTION_MESSAGES
         )
         result["new_subscription_messages_sent"] = send_user_subscribed_direct_messages
     else:
@@ -982,6 +1015,57 @@ def add_subscriptions_backend(
     if not authorization_errors_fatal:
         result["unauthorized"] = [s.name for s in unauthorized_streams]
     return json_success(request, data=result)
+
+
+def send_user_unsubscribed_notifications(
+    acting_user: UserProfile,
+    removed: list[tuple[UserProfile, Stream]],
+) -> bool:
+    """Notifies each user unsubscribed by someone else with a Notification
+    Bot direct message, and returns whether any such messages were sent.
+    Self-unsubscribes and bots do not receive these notifications."""
+    channels_by_user: dict[int, set[str]] = defaultdict(set)
+    user_by_id: dict[int, UserProfile] = {}
+    for user, channel in removed:
+        if user.id == acting_user.id:
+            # Don't notify users who unsubscribed themselves.
+            continue
+        if user.is_bot:
+            # Don't send notification DMs to bots.
+            continue
+        channels_by_user[user.id].add(channel.name)
+        user_by_id[user.id] = user
+
+    if not channels_by_user:
+        return False
+
+    if len(channels_by_user) > settings.MAX_BULK_SUBSCRIPTION_MESSAGES:
+        # Skip these DMs when a very large number of users are unsubscribed
+        # at once, as sending them can be expensive and spammy.
+        return False
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    mention_backend = MentionBackend(acting_user.realm_id)
+    notifications = []
+    for user_id, channel_names in channels_by_user.items():
+        recipient_user = user_by_id[user_id]
+        msg = you_were_just_unsubscribed_message(
+            acting_user=acting_user,
+            recipient_user=recipient_user,
+            channel_names=channel_names,
+        )
+        notifications.append(
+            internal_prep_private_message(
+                sender=sender,
+                recipient_user=recipient_user,
+                content=msg,
+                mention_backend=mention_backend,
+                acting_user=acting_user,
+            )
+        )
+
+    do_send_messages(notifications)
+    return True
 
 
 def send_user_subscribed_and_new_channel_notifications(
