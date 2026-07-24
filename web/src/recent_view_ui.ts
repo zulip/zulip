@@ -1697,6 +1697,27 @@ function set_time_column_width_css_variable(): void {
     $(":root").css("--recent-view-time-text-width", `${Math.ceil(max_width)}px`);
 }
 
+function set_channel_header_min_width_css_variable(): void {
+    if (page_params.is_node_test) {
+        return;
+    }
+    const $channel_sort_header = $(".recent-view-channel-sort-header");
+    if ($channel_sort_header.length === 0) {
+        return;
+    }
+    // Measure the "Channel" sort header's intrinsic width by cloning
+    // it into a hidden max-content wrapper inside the header cell (so
+    // it keeps the same styles). CSS floors the channel column to this
+    // width so the label never overlaps the "Conversation" header.
+    const measure_wrapper = util.make_offscreen_measurement_container();
+    measure_wrapper.append($channel_sort_header[0]!.cloneNode(true));
+    const $header_cell = $channel_sort_header.closest("th");
+    $header_cell[0]!.append(measure_wrapper);
+    const width = measure_wrapper.getBoundingClientRect().width;
+    measure_wrapper.remove();
+    $(":root").css("--recent-view-channel-header-min-width", `${Math.ceil(width)}px`);
+}
+
 export function update_participants_column_class(): void {
     if (!page_params.is_node_test) {
         max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
@@ -1740,6 +1761,9 @@ export function complete_rerender(coming_from_other_views = false): void {
         ...get_recent_view_filters_params(),
     });
     $("#recent_view_table").html(rendered_body);
+
+    // Measure the "Channel" header now that it is in the DOM.
+    set_channel_header_min_width_css_variable();
 
     // `show_selected_filters` needs to be called after the Recent
     // Conversations view has been added to the DOM, to ensure that filters

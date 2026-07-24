@@ -1232,6 +1232,8 @@
 
     /* Recent view */
     --recent-view-body-border-width: 1px;
+    --recent-view-header-border-width: 1px;
+    --recent-view-row-left-padding: 0.75em; /* 12px at 16px / 1em */
     --recent-view-max-avatars: 4;
     --recent-view-participant-item-width: 1.5em; /* 24px at 16px / 1em */
     --recent-view-participant-item-padding-x: 0.0938em; /* 1.5px at 16px / 1em */
