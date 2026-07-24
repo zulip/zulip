@@ -827,7 +827,7 @@ def do_update_outgoing_webhook_service(
 def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
-    updated_config_data = get_bot_config(bot_profile)
+    service_dicts = get_service_dicts_for_bot(bot_profile.id)
     send_event_on_commit(
         bot_profile.realm,
         dict(
@@ -835,7 +835,7 @@ def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, s
             op="update",
             bot=dict(
                 user_id=bot_profile.id,
-                services=[dict(config_data=updated_config_data)],
+                services=service_dicts,
             ),
         ),
         bot_owner_user_ids(bot_profile),

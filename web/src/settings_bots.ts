@@ -13,6 +13,7 @@ import * as bot_helper from "./bot_helper.ts";
 import {
     EMBEDDED_BOT_TYPE,
     GENERIC_BOT_TYPE,
+    INCOMING_WEBHOOK_BOT_TYPE,
     INCOMING_WEBHOOK_BOT_TYPE_INT,
     OUTGOING_WEBHOOK_BOT_TYPE,
     OUTGOING_WEBHOOK_BOT_TYPE_INT,
@@ -298,6 +299,20 @@ export function add_a_new_bot(): void {
                 formData.append("interface_type", interface_type);
                 break;
             }
+            case INCOMING_WEBHOOK_BOT_TYPE: {
+                const config_data: Record<string, string> = {};
+                $<HTMLInputElement>("#webhook_secret_inputbox input").each(function () {
+                    const key = $(this).attr("name")!;
+                    const value = $(this).val()?.trim()!;
+                    if (value) {
+                        config_data[key] = value;
+                    }
+                });
+                if (Object.keys(config_data).length > 0) {
+                    formData.append("config_data", JSON.stringify(config_data));
+                }
+                break;
+            }
             case EMBEDDED_BOT_TYPE: {
                 formData.append("service_name", service_name);
                 const config_data: Record<string, string> = {};
@@ -336,7 +351,7 @@ export function add_a_new_bot(): void {
     }
 
     function set_up_form_fields(): void {
-        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE_INT);
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE).trigger("change");
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
@@ -362,7 +377,13 @@ export function add_a_new_bot(): void {
 
             $("#payload_url_inputbox").hide();
             $("#create_payload_url").removeClass("required");
+
+            $("#webhook_secret_inputbox").hide();
             switch (bot_type) {
+                case INCOMING_WEBHOOK_BOT_TYPE: {
+                    $("#webhook_secret_inputbox").show();
+                    break;
+                }
                 case OUTGOING_WEBHOOK_BOT_TYPE: {
                     $("#payload_url_inputbox").show();
                     $("#create_payload_url").addClass("required");
@@ -377,7 +398,7 @@ export function add_a_new_bot(): void {
                 }
             }
         });
-
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE).trigger("change");
         $("#select_service_name").on("change", () => {
             $("#config_inputbox").children().hide();
             const selected_bot = $<HTMLSelectOneElement>(

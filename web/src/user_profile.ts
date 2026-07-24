@@ -23,6 +23,7 @@ import * as bot_data from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
 import {
     EMBEDDED_BOT_TYPE,
+    INCOMING_WEBHOOK_BOT_TYPE,
     INCOMING_WEBHOOK_BOT_TYPE_INT,
     OUTGOING_WEBHOOK_BOT_TYPE,
 } from "./bot_type_values.ts";
@@ -930,6 +931,11 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 config_data[$(this).attr("name")!] = $(this).val()!;
             });
             formData.append("config_data", JSON.stringify(config_data));
+        } else if (bot_type === INCOMING_WEBHOOK_BOT_TYPE) {
+            const webhook_secret = $<HTMLInputElement>("#edit_webhook_secret").val()?.trim();
+            if (webhook_secret) {
+                formData.append("config_data", JSON.stringify({webhook_secret}));
+            }
         }
 
         const files = util.the(
@@ -952,6 +958,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             contentType: false,
             success() {
                 $("#bot-edit-form-error").hide();
+                $("#edit_webhook_secret").val("");
                 avatar_widget.clear();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#bot-edit-form"));

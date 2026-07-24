@@ -53,6 +53,13 @@
                 <div><label for="create_interface_type" generated="true" class="text-error"></label></div>
             </div>
         </div>
+        <div id="webhook_secret_inputbox">
+            <div class="input-group">
+                <label for="create_webhook_secret" class="modal-field-label">{{t "Webhook secret" }}</label>
+                <input type="password" name="webhook_secret" id="create_webhook_secret" class="modal_text_input" placeholder="{{ t 'Optional secret' }}" value=""/>
+                <div><label for="create_webhook_secret" generated="true" class="text-error"></label></div>
+            </div>
+        </div>
         <div id="config_inputbox">
             {{#each realm_embedded_bots}}
                 {{#each (object_entries config) as |entry|}}
