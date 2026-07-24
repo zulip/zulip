@@ -104,7 +104,9 @@ Only a bot's owner has access to its API key.
 
   <ZulipTip>
     To generate a new API key, click the **generate new API key** (<RefreshIcon />)
-    icon.
+    icon, and then click **Confirm key rotation**. This invalidates the bot's
+    current API key, so any integrations using it will stop working until you
+    update them with the new key.
   </ZulipTip>
 </FlattenedSteps>
 

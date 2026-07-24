@@ -4,8 +4,15 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
+
+const channel = mock_esm("../src/channel", {post: noop});
+mock_esm("../src/buttons", {
+    show_button_loading_indicator: noop,
+    hide_button_loading_indicator: noop,
+});
 
 const bot_data = zrequire("bot_data");
 const bot_helper = zrequire("bot_helper");
@@ -79,6 +86,111 @@ test("generate_zuliprc_content", () => {
         "site=https://chat.example.com\n";
 
     assert.equal(content, expected);
+});
+
+test("regenerate_bot_api_key_inline_confirmation", () => {
+    bot_helper.initialize_bot_click_handlers();
+
+    const $container = $.create("bot-api-key-container-stub");
+    $container.attr("data-user-id", "1");
+
+    const $regenerate_button = $(".regenerate-button-stub");
+    const $cancel_button = $(".cancel-button-stub");
+    const $confirm_button = $(".confirm-button-stub");
+    const $copy_button = $(".copy-button-stub");
+    const $warning = $.create("regenerate-warning-stub");
+    $cancel_button.addClass("hide");
+    $confirm_button.addClass("hide");
+    $warning.addClass("hide");
+
+    $regenerate_button.set_closest_results(".bot-api-key-container", $container);
+    $cancel_button.set_closest_results(".bot-api-key-container", $container);
+    $confirm_button.set_closest_results(".bot-api-key-container", $container);
+    $container.set_find_results(".bot-modal-regenerate-bot-api-key", $regenerate_button);
+    $container.set_find_results(".bot-modal-cancel-regenerate-bot-api-key", $cancel_button);
+    $container.set_find_results(".bot-modal-confirm-regenerate-bot-api-key", $confirm_button);
+    $container.set_find_results(".copy-api-key", $copy_button);
+    $container.set_find_results(".bot-api-key-regenerate-warning", $warning);
+
+    const $api_key_input = $.create("api-key-input-stub");
+    const $error = $.create("api-key-error-stub");
+    $container.set_find_results(".api-key", $api_key_input);
+    $container.set_find_results(".bot-modal-api-key-error", $error);
+
+    let post_opts;
+    channel.post = (opts) => {
+        post_opts = opts;
+    };
+
+    const regenerate_handler = $("body").get_on_handler(
+        "click",
+        "button.bot-modal-regenerate-bot-api-key",
+    );
+    const cancel_handler = $("body").get_on_handler(
+        "click",
+        "button.bot-modal-cancel-regenerate-bot-api-key",
+    );
+    const confirm_handler = $("body").get_on_handler(
+        "click",
+        "button.bot-modal-confirm-regenerate-bot-api-key",
+    );
+
+    regenerate_handler({preventDefault: noop, currentTarget: ".regenerate-button-stub"});
+
+    assert.equal(post_opts, undefined);
+    assert.ok($regenerate_button.hasClass("hide"));
+    assert.ok($copy_button.hasClass("hide"));
+    assert.ok(!$cancel_button.hasClass("hide"));
+    assert.ok(!$confirm_button.hasClass("hide"));
+    assert.ok(!$warning.hasClass("hide"));
+    // Focus lands on Cancel, not Confirm, so a second Enter or double-click backs out.
+    assert.ok($cancel_button.is_focused());
+    assert.ok(!$confirm_button.is_focused());
+    cancel_handler({preventDefault: noop, currentTarget: ".cancel-button-stub"});
+    assert.equal(post_opts, undefined);
+    assert.ok(!$regenerate_button.hasClass("hide"));
+    assert.ok(!$copy_button.hasClass("hide"));
+    assert.ok($cancel_button.hasClass("hide"));
+    assert.ok($confirm_button.hasClass("hide"));
+    assert.ok($warning.hasClass("hide"));
+    assert.ok($regenerate_button.is_focused());
+
+    regenerate_handler({preventDefault: noop, currentTarget: ".regenerate-button-stub"});
+    confirm_handler.call(".confirm-button-stub", {preventDefault: noop});
+    assert.equal(post_opts.url, "/json/bots/1/api_key/regenerate");
+    assert.ok($cancel_button.hasClass("hide"));
+
+    post_opts.success({api_key: "new-api-key"});
+    post_opts.complete();
+    assert.equal($api_key_input.val(), "new-api-key");
+    assert.equal($container.attr("data-api-key"), "new-api-key");
+    assert.ok(!$regenerate_button.hasClass("hide"));
+    assert.ok(!$copy_button.hasClass("hide"));
+    assert.ok($cancel_button.hasClass("hide"));
+    assert.ok($confirm_button.hasClass("hide"));
+    assert.ok($warning.hasClass("hide"));
+
+    // A crafted server error message is shown below the key; this one is
+    // what access_bot_by_id raises when the owner loses permission for
+    // the bot between opening the modal and confirming.
+    regenerate_handler({preventDefault: noop, currentTarget: ".regenerate-button-stub"});
+    confirm_handler.call(".confirm-button-stub", {preventDefault: noop});
+    post_opts.error({status: 400, responseJSON: {msg: "Insufficient permission"}});
+    post_opts.complete();
+    assert.equal($error.text(), "Insufficient permission");
+    assert.ok($error.visible());
+
+    // A failure without a JSON body (network failure, or a proxy-level
+    // 502 during a server restart) must still surface a generic error
+    // rather than failing silently.
+    regenerate_handler({preventDefault: noop, currentTarget: ".regenerate-button-stub"});
+    confirm_handler.call(".confirm-button-stub", {preventDefault: noop});
+    post_opts.error({status: 0});
+    post_opts.complete();
+    assert.equal($error.text(), "translated: Failed to generate new API key");
+    assert.ok($error.visible());
+    assert.ok(!$regenerate_button.hasClass("hide"));
+    assert.ok($confirm_button.hasClass("hide"));
 });
 
 test("generate_botserverrc_content", () => {
