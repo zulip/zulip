@@ -15,6 +15,7 @@ import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_selection_content from "./message_selection_content.ts";
 import * as message_store from "./message_store.ts";
 import {type Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -616,6 +617,7 @@ type QuoteAsset = {
 export function build_and_process_quote_assets_for_messages(
     message_ids: number[],
     callback: (quote_assets: QuoteAsset[]) => void,
+    known_quote_content_by_id: ReadonlyMap<number, string> = new Map(),
 ): void {
     const messages: Message[] = [];
     for (const id of message_ids) {
@@ -624,38 +626,111 @@ export function build_and_process_quote_assets_for_messages(
         messages.push(message);
     }
 
-    const quote_assets: QuoteAsset[] = [];
+    const quote_content_by_id = new Map(known_quote_content_by_id);
+    const ids_needing_raw_content = message_ids.filter((id) => !quote_content_by_id.has(id));
+
+    const finish = (): void => {
+        const quote_assets: QuoteAsset[] = [];
+        for (const message of messages) {
+            const quote_content = quote_content_by_id.get(message.id);
+            assert(quote_content !== undefined);
+            quote_assets.push({message, quote_content});
+        }
+        callback(quote_assets);
+    };
+
+    if (ids_needing_raw_content.length === 0) {
+        finish();
+        return;
+    }
+
     message_fetch_raw_content.get_raw_content_for_messages({
-        message_ids,
+        message_ids: ids_needing_raw_content,
         on_success(raw_content_arr) {
-            for (const [i, message] of messages.entries()) {
+            // raw_content_arr is aligned with ids_needing_raw_content, not
+            // the full message_ids list.
+            for (const [i, id] of ids_needing_raw_content.entries()) {
                 const raw_content = raw_content_arr[i];
                 assert(raw_content !== undefined);
-                quote_assets.push({message, quote_content: raw_content});
+                quote_content_by_id.set(id, raw_content);
             }
-            callback(quote_assets);
+            finish();
         },
         on_error() {
-            for (const message of messages) {
-                const fallback_markdown_content = compose_paste.paste_handler_converter(
-                    message.content,
-                );
-                quote_assets.push({
-                    message,
-                    quote_content: message.raw_content ?? fallback_markdown_content,
-                });
+            // Prefer locally cached raw_content; otherwise convert the
+            // already-rendered HTML (e.g. when the client is offline).
+            for (const id of ids_needing_raw_content) {
+                const message = message_store.get(id);
+                assert(message !== undefined);
+                const from_rendered_html = compose_paste.paste_handler_converter(message.content);
+                quote_content_by_id.set(id, message.raw_content ?? from_rendered_html);
             }
-            callback(quote_assets);
+            finish();
         },
         timeout_ms: 1000,
     });
 }
 
+// Partial first/last bookend selection as markdown (undefined when full).
+function partial_bookend_markdown(message_ids: number[]): {
+    first: string | undefined;
+    last: string | undefined;
+} {
+    assert(message_ids.length > 0);
+    const bookends = message_selection_content.get_multi_message_bookend_contents(message_ids);
+    const first =
+        bookends.first?.is_partial === true
+            ? compose_paste.paste_handler_converter(bookends.first.html)
+            : undefined;
+    const last =
+        bookends.last?.is_partial === true && message_ids.at(-1) !== message_ids[0]
+            ? compose_paste.paste_handler_converter(bookends.last.html)
+            : undefined;
+    return {first, last};
+}
+
 function quote_multiple_messages(opts: QuoteMessageOpts): void {
     const highlighted_message_ids = opts.highlighted_message_ids;
     assert(highlighted_message_ids !== undefined && highlighted_message_ids.length > 1);
+
+    const start_id = highlighted_message_ids[0]!;
+    const end_id = highlighted_message_ids.at(-1)!;
+    const selected_contentful_message_ids =
+        message_selection_content.get_selected_contentful_message_ids(start_id, end_id) ??
+        highlighted_message_ids;
+
+    if (selected_contentful_message_ids.length === 0) {
+        quote_single_message(opts);
+        return;
+    }
+
+    // Capture partial bookends before any async raw_content fetch.
+    const partial_bookends = partial_bookend_markdown(selected_contentful_message_ids);
+
+    if (selected_contentful_message_ids.length === 1) {
+        const only_id = selected_contentful_message_ids[0]!;
+        opts.highlighted_message_ids = selected_contentful_message_ids;
+        if (partial_bookends.first !== undefined) {
+            opts.quote_content = partial_bookends.first;
+            opts.message_id = only_id;
+        }
+        quote_single_message(opts);
+        return;
+    }
+
+    const known_quote_content_by_id = new Map<number, string>();
+    if (partial_bookends.first !== undefined) {
+        known_quote_content_by_id.set(selected_contentful_message_ids[0]!, partial_bookends.first);
+    }
+    if (partial_bookends.last !== undefined) {
+        known_quote_content_by_id.set(
+            selected_contentful_message_ids.at(-1)!,
+            partial_bookends.last,
+        );
+    }
+
     build_and_process_quote_assets_for_messages(
-        highlighted_message_ids,
+        selected_contentful_message_ids,
         (quote_assets: QuoteAsset[]) => {
             const msg_for_compose_box = quote_assets[0]!.message;
             const messages = quote_assets.map((asset) => asset.message);
@@ -712,6 +787,7 @@ function quote_multiple_messages(opts: QuoteMessageOpts): void {
                 forward_message: opts.forward_message,
             });
         },
+        known_quote_content_by_id,
     );
 }
 
