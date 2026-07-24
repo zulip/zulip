@@ -1280,6 +1280,38 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
 
 class TestMissedMessageEmailMessages(ZulipTestCase):
+    def send_group_direct_message_and_get_reply_address(
+        self, sender: UserProfile, recipients: list[UserProfile], replier: UserProfile
+    ) -> str:
+        # Send a group direct message from `sender` to `recipients`,
+        # and return a missed-message reply address for `replier`.
+        self.login_user(sender)
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "original group direct message",
+                "to": orjson.dumps([user.id for user in recipients]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        usermessage = most_recent_usermessage(replier)
+        # We don't want to send actual emails, but we do need to
+        # create and store the token for looking up who did reply.
+        return create_missed_message_address(replier, usermessage.message)
+
+    def build_missed_message_email_reply(
+        self, replier: UserProfile, mm_address: str, body: str
+    ) -> EmailMessage:
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(body)
+        incoming_valid_message["Subject"] = "reply subject"
+        incoming_valid_message["From"] = replier.delivery_email
+        incoming_valid_message["To"] = mm_address
+        incoming_valid_message["Reply-to"] = replier.delivery_email
+        return incoming_valid_message
+
     def test_receive_missed_personal_message_email_messages(self) -> None:
         # Build dummy messages for message notification email reply.
         # Have Hamlet send Othello a direct message. Othello will
@@ -1312,7 +1344,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
@@ -1329,52 +1361,113 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         # Have Othello send Iago and Cordelia a group direct message.
         # Cordelia will reply via email Iago and Othello will receive
         # the message.
-        self.login("othello")
+        othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "private",
-                "content": "test_receive_missed_message_email_messages",
-                "to": orjson.dumps([cordelia.id, iago.id]).decode(),
-            },
+        mm_address = self.send_group_direct_message_and_get_reply_address(
+            othello, [cordelia, iago], cordelia
         )
-        self.assert_json_success(result)
 
-        user_profile = self.example_user("cordelia")
-        usermessage = most_recent_usermessage(user_profile)
+        incoming_valid_message = self.build_missed_message_email_reply(
+            cordelia, mm_address, "TestMissedGroupDirectMessageEmailMessages body"
+        )
 
-        # we don't want to send actual emails but we do need to create and store the
-        # token for looking up who did reply.
-        mm_address = create_missed_message_address(user_profile, usermessage.message)
-
-        incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedGroupDirectMessageEmailMessages body")
-
-        incoming_valid_message["Subject"] = "TestMissedGroupDirectMessageEmailMessages subject"
-        incoming_valid_message["From"] = self.example_email("cordelia")
-        incoming_valid_message["To"] = mm_address
-        incoming_valid_message["Reply-to"] = self.example_email("cordelia")
-
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             process_message(incoming_valid_message)
 
-        # Confirm Iago received the message.
-        user_profile = self.example_user("iago")
-        message = most_recent_message(user_profile)
+        # Confirm Iago and Othello received the message.
+        for user_profile in [iago, othello]:
+            message = most_recent_message(user_profile)
+            self.assertEqual(message.content, "TestMissedGroupDirectMessageEmailMessages body")
+            self.assertEqual(message.sender, cordelia)
+            self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
-        self.assertEqual(message.content, "TestMissedGroupDirectMessageEmailMessages body")
-        self.assertEqual(message.sender, self.example_user("cordelia"))
+    def test_receive_missed_group_direct_message_email_with_deactivated_user(self) -> None:
+        # A reply to a message notification email for a group direct
+        # message is delivered to the remaining active members when a
+        # member of the group has since been deactivated, and the
+        # conversation remains a group direct message.
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        mm_address = self.send_group_direct_message_and_get_reply_address(
+            othello, [cordelia, iago, hamlet], cordelia
+        )
+
+        iago_message_before = most_recent_message(iago)
+        do_deactivate_user(iago, acting_user=None)
+
+        incoming_valid_message = self.build_missed_message_email_reply(
+            cordelia, mm_address, "Reply with deactivated group member body"
+        )
+        process_message(incoming_valid_message)
+
+        # The remaining active members received the message, in the
+        # direct message group of just the active members.
+        direct_message_group = get_or_create_direct_message_group(
+            id_list=[othello.id, cordelia.id, hamlet.id]
+        )
+        for user_profile in [othello, hamlet]:
+            message = most_recent_message(user_profile)
+            self.assertEqual(message.content, "Reply with deactivated group member body")
+            self.assertEqual(message.sender, cordelia)
+            self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+            self.assertEqual(message.recipient.type_id, direct_message_group.id)
+
+        # The deactivated user did not receive the message.
+        self.assertEqual(most_recent_message(iago).id, iago_message_before.id)
+
+    def test_receive_missed_group_direct_message_email_reduced_to_two_active_users(self) -> None:
+        # With a three-person group direct message where one member is
+        # deactivated, the reply is delivered to the one remaining
+        # active recipient.
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        mm_address = self.send_group_direct_message_and_get_reply_address(
+            othello, [cordelia, iago], cordelia
+        )
+
+        do_deactivate_user(iago, acting_user=None)
+
+        incoming_valid_message = self.build_missed_message_email_reply(
+            cordelia, mm_address, "Reply to remaining active user body"
+        )
+        process_message(incoming_valid_message)
+
+        direct_message_group = get_or_create_direct_message_group(id_list=[othello.id, cordelia.id])
+        message = most_recent_message(othello)
+        self.assertEqual(message.content, "Reply to remaining active user body")
+        self.assertEqual(message.sender, cordelia)
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(message.recipient.type_id, direct_message_group.id)
 
-        # Confirm Othello received the message.
-        user_profile = self.example_user("othello")
-        message = most_recent_message(user_profile)
+    def test_receive_missed_group_direct_message_email_all_recipients_deactivated(self) -> None:
+        # If every member other than the sender has been deactivated,
+        # the reply is dropped with a log message rather than an
+        # exception. Since personal recipients no longer exist, this
+        # also covers replying to a 1:1 direct message whose other
+        # participant was deactivated.
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        mm_address = self.send_group_direct_message_and_get_reply_address(
+            othello, [cordelia], cordelia
+        )
 
-        self.assertEqual(message.content, "TestMissedGroupDirectMessageEmailMessages body")
-        self.assertEqual(message.sender, self.example_user("cordelia"))
-        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        do_deactivate_user(othello, acting_user=None)
+
+        incoming_valid_message = self.build_missed_message_email_reply(
+            cordelia, mm_address, "Reply with no active recipients body"
+        )
+        initial_last_message = self.get_last_message()
+        with self.assertLogs("zerver.lib.email_mirror", level="INFO") as info_logs:
+            process_message(incoming_valid_message)
+        self.assertIn(
+            f"INFO:zerver.lib.email_mirror:Dropping message notification email reply from user {cordelia.id} to a group direct message with no active recipients",
+            info_logs.output,
+        )
+        self.assertEqual(initial_last_message, self.get_last_message())
 
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply
