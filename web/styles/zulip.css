@@ -1487,7 +1487,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .deactivated_user .deactivated-user-icon {
     color: inherit;
     margin-left: 2px;
-    font-size: 0.9em;
+    font-size: 0.78em;
 }
 
 .no-drag {
@@ -2552,11 +2552,11 @@ body:not(.spectator-view) {
     .deactivated-user-icon {
         background-color: var(--color-background);
         color: var(--color-user-circle-deactivated);
-        padding: 2px;
-        font-size: 0.8em;
+        padding: 2.4px;
+        font-size: 0.69em;
         position: absolute;
         border-radius: 10px;
-        bottom: -2px;
+        bottom: -1px;
         right: -2px;
     }
 }
