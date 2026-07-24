@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from typing_extensions import override
 
 from zerver.lib.storage import static_path
+from zerver.lib.validator import check_string
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 from zerver.webhooks import fixtureless_integrations
 
@@ -784,7 +785,17 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("incident_activated_new_default_payload.json")],
         display_name="New Relic",
     ),
-    IncomingWebhookIntegration("notion", ["productivity", "project-management"]),
+    IncomingWebhookIntegration(
+        "notion",
+        ["productivity", "project-management"],
+        config_options=[
+            WebhookConfigOption(
+                name="notion_token",
+                label="Notion API integration token",
+                validator=check_string,
+            ),
+        ],
+    ),
     IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
