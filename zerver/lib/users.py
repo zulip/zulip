@@ -9,7 +9,7 @@ from typing import Any, TypedDict
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import Q, QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.db.models.functions import Upper
 from django.utils.translation import gettext as _
 from django_otp.middleware import is_verified
@@ -753,13 +753,13 @@ def check_can_access_user(
     if not user_access_restricted_in_realm(target_user, realm):
         return True
 
+    if user_profile is not None and target_user.id == user_profile.id:
+        return True
+
     if check_user_can_access_all_users(user_profile):
         return True
 
     assert user_profile is not None
-
-    if target_user.id == user_profile.id:
-        return True
 
     # These include Subscription objects for streams as well as group DMs.
     subscribed_recipient_ids = Subscription.objects.filter(
@@ -776,6 +776,40 @@ def check_can_access_user(
     ).exists()
 
 
+def get_inaccessible_users_queryset(
+    target_user_ids: list[int], acting_user: UserProfile
+) -> QuerySet[UserProfile]:
+    """
+    Fetch human users who have no subscription to a recipient
+    the acting_user is also subscribed to.
+    """
+    acting_user_recipient_ids = Subscription.objects.filter(
+        user_profile=acting_user,
+        active=True,
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+    ).values("recipient_id")
+
+    common_subscriptions = Subscription.objects.filter(
+        recipient_id__in=acting_user_recipient_ids,
+        user_profile_id=OuterRef("pk"),
+        active=True,
+        is_user_active=True,
+    )
+    # All users can access all the bots, so we exclude them.
+    target_human_users = UserProfile.objects.filter(id__in=target_user_ids, is_bot=False)
+    return target_human_users.exclude(Exists(common_subscriptions))
+
+
+def has_inaccessible_users(target_user_ids: list[int], acting_user: UserProfile) -> bool:
+    if len(target_user_ids) == 1 and target_user_ids[0] == acting_user.id:
+        return False
+
+    if check_user_can_access_all_users(acting_user):
+        return False
+
+    return get_inaccessible_users_queryset(target_user_ids, acting_user).exists()
+
+
 def get_inaccessible_user_ids(
     target_user_ids: list[int], acting_user: UserProfile | None
 ) -> set[int]:
@@ -784,33 +818,9 @@ def get_inaccessible_user_ids(
 
     assert acting_user is not None
 
-    # All users can access all the bots, so we just exclude them.
-    target_human_user_ids = UserProfile.objects.filter(
-        id__in=target_user_ids, is_bot=False
-    ).values_list("id", flat=True)
-
-    if not target_human_user_ids:
-        return set()
-
-    subscribed_recipient_ids = Subscription.objects.filter(
-        user_profile=acting_user,
-        active=True,
-        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
-    ).values_list("recipient_id", flat=True)
-
-    common_subscription_user_ids = (
-        Subscription.objects.filter(
-            recipient_id__in=subscribed_recipient_ids,
-            user_profile_id__in=target_human_user_ids,
-            active=True,
-            is_user_active=True,
-        )
-        .distinct("user_profile_id")
-        .values_list("user_profile_id", flat=True)
+    return set(
+        get_inaccessible_users_queryset(target_user_ids, acting_user).values_list("id", flat=True)
     )
-
-    possible_inaccessible_user_ids = set(target_human_user_ids) - set(common_subscription_user_ids)
-    return possible_inaccessible_user_ids
 
 
 def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
