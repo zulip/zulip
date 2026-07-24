@@ -3693,6 +3693,12 @@ class NormalActionsTest(BaseAction):
             hamletcharacters_group, "can_mention_group", setting_group, acting_user=None
         )
 
+        # Subscribe both users to a common stream so the deactivated user
+        # appears in self.user_profile's subscriber lists. This exercises
+        # the in-place removal branch in apply_events for subscription/peer_remove.
+        self.subscribe(user_profile, "Verona")
+        self.subscribe(hamlet, "Verona")
+
         with self.verify_action(num_events=2) as events:
             do_deactivate_user(user_profile, acting_user=None)
         check_subscription_peer_remove("events[0]", events[0])
