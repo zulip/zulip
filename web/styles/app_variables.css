@@ -1322,8 +1322,12 @@
         hsl(0deg 0% 0% / 40%)
     );
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
-    --color-compose-send-button-background: hsl(240deg 96% 68%);
-    --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
+    --color-compose-send-button-background: var(
+        --color-background-modal-confirm-button
+    );
+    --color-compose-send-button-background-interactive: var(
+        --color-background-modal-confirm-button-hover
+    );
     --color-compose-send-button-focus-border: hsl(232deg 20% 10%);
     --color-compose-send-button-focus-shadow: light-dark(
         hsl(230deg 100% 20%),
@@ -2716,7 +2720,7 @@
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
     --color-background-danger-solid-action-button: light-dark(
-        hsl(4deg 75% 53%),
+        hsl(4deg 75% 51%),
         hsl(2deg 74% 47%)
     );
     --color-background-danger-solid-action-button-hover: light-dark(
@@ -2725,7 +2729,7 @@
     );
     --color-background-danger-solid-action-button-active: light-dark(
         hsl(359deg 93% 39%),
-        hsl(2deg 74% 47%)
+        hsl(2deg 92% 33%)
     );
     --color-text-danger-subtle-action-button: light-dark(
         hsl(359deg 94% 35%),
