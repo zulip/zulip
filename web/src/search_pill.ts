@@ -235,7 +235,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                         text_query === "" ||
                         index < search_terms.length - 1 ||
                         // case 2
-                        text_query.trim().endsWith("topic:")
+                        text_query.trimEnd().endsWith("topic:")
                     ) {
                         // We want to show a combined pill for the case
                         // where the preceding operator is a `channel`.
