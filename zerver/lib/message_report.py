@@ -117,10 +117,8 @@ def send_message_report(
     else:
         direct_message_link = pm_message_url(
             realm,
-            dict(
-                id=reported_message.id,
-                display_recipient=get_display_recipient(reported_message.recipient),
-            ),
+            reported_message.id,
+            get_display_recipient(reported_message.recipient),
         )
         original_message_string = _("[Original message]({direct_message_link})").format(
             direct_message_link=direct_message_link

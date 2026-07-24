@@ -17,6 +17,7 @@ from zerver.lib.outgoing_webhook import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.url_encoding import message_link_url
 from zerver.lib.users import add_service
 from zerver.models import Recipient, Service, SubMessage, UserProfile
@@ -530,15 +531,17 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
 
             self.assert_length(responses.calls, 1)
 
-            # create message dict to get the message url
-            message = {
-                "display_recipient": [{"id": bot.id}, {"id": sender.id}],
-                "stream_id": 999,
-                TOPIC_NAME: "Foo",
-                "id": message_id,
-                "type": "",
-            }
-            message_url = message_link_url(realm, message)
+            # create the display recipient to get the message url
+            display_recipient: list[UserDisplayRecipient] = [
+                dict(id=bot.id, email=bot.email, full_name=bot.full_name, is_mirror_dummy=False),
+                dict(
+                    id=sender.id,
+                    email=sender.email,
+                    full_name=sender.full_name,
+                    is_mirror_dummy=False,
+                ),
+            ]
+            message_url = message_link_url(realm, message_id, display_recipient)
 
             last_message = self.get_last_message()
             self.assertEqual(
@@ -653,14 +656,13 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         )
 
         last_message = self.get_last_message()
-        message_dict = {
-            "stream_id": get_stream("Denmark", realm).id,
-            "display_recipient": "Denmark",
-            TOPIC_NAME: "bar",
-            "id": sent_message_id,
-            "type": "stream",
-        }
-        message_url = message_link_url(realm, message_dict)
+        message_url = message_link_url(
+            realm,
+            sent_message_id,
+            "Denmark",
+            get_stream("Denmark", realm).id,
+            "bar",
+        )
         self.assertEqual(
             last_message.content,
             f"[A message]({message_url}) to your bot @_**{bot.full_name}** triggered an outgoing webhook.\n"
