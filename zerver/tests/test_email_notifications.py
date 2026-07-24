@@ -491,8 +491,14 @@ class TestFollowupEmails(ZulipTestCase):
                 "zerver/emails/onboarding_team_to_zulip",
             )
 
-        # The insert into the deferred_email_senders queue
-        self.assert_length(callbacks, 1)
+        # The insert into the deferred_email_senders queue, plus
+        # one _drain_buffer per outermost atomic that mutated the
+        # cache invalidation buffer (one per send_account_registered_email
+        # / enqueue_welcome_emails call).
+        from zerver.lib.cache_invalidation_buffer import _drain_buffer
+
+        user_callbacks = [cb for cb in callbacks if cb is not _drain_buffer]
+        self.assert_length(user_callbacks, 1)
 
         # Exiting the block does the email-sending
         from django.core.mail import outbox
