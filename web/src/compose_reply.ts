@@ -833,6 +833,7 @@ export let get_message_selection = (selection = window.getSelection()): string =
     // in one selection), and also compute their combined bounding rect.
     for (let i = 0; i < selection.rangeCount; i = i + 1) {
         let range = selection.getRangeAt(i);
+        copy_messages.improve_mention_selection_range(range);
         const range_common_ancestor = range.commonAncestorContainer;
         let html_to_convert = "";
         let message_content;

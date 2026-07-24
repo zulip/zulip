@@ -8,6 +8,7 @@ const katex_tests = require("../../zerver/tests/fixtures/katex_test_cases.json")
 const {parse} = require("../src/markdown.ts");
 
 const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -21,6 +22,7 @@ const compose_ui = zrequire("compose_ui");
 const linkifiers = zrequire("linkifiers");
 const markdown = zrequire("markdown");
 const markdown_config = zrequire("markdown_config");
+const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -37,6 +39,15 @@ initialize_user_settings({
     },
 });
 markdown.initialize(markdown_config.get_helpers());
+
+// User and group ids match the ids used in the mention test fixtures
+// below.
+const king_hamlet = make_user({user_id: 10, full_name: "King Hamlet"});
+const desdemona = make_user({user_id: 9, full_name: "Desdemona"});
+const polonius = make_user({user_id: 13, full_name: "Polonius"});
+people.add_active_user(king_hamlet);
+people.add_active_user(desdemona);
+people.add_active_user(polonius);
 
 stream_data.add_sub_for_tests(
     make_stream({
@@ -662,4 +673,158 @@ run_test("paste_handler_converter", () => {
             span_conversion_test.expected_output,
         );
     }
+    const meta = '<meta http-equiv="content-type" content="text/html; charset=utf-8">';
+
+    let firefox_input;
+
+    // Non-silent user mention
+    firefox_input =
+        meta +
+        '<p><span class="user-mention" data-user-id="10">' +
+        '<span class="mention-content-wrapper">@King Hamlet</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@**King Hamlet|10**");
+
+    // Guest user mention: rendered_markdown.ts adds a "(guest)" suffix
+    // to the display name (commit 70c9d0765f). The people-store lookup
+    // returns the canonical full_name, so the suffix is dropped naturally.
+    firefox_input =
+        meta +
+        '<p><span class="user-mention" data-user-id="13">' +
+        '<span class="mention-content-wrapper">@Polonius (guest)</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@**Polonius|13**");
+
+    // Silent user mention
+    firefox_input =
+        meta +
+        '<p><span class="user-mention silent" data-user-id="10">' +
+        '<span class="mention-content-wrapper">King Hamlet</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@_**King Hamlet|10**");
+
+    // Self-mention adds a `user-mention-me` modifier class.
+    firefox_input =
+        meta +
+        '<p><span class="user-mention user-mention-me" data-user-id="9">' +
+        '<span class="mention-content-wrapper">@Desdemona</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@**Desdemona|9**");
+
+    // Non-silent group mention (single-asterisk syntax)
+    firefox_input =
+        meta +
+        '<p><span class="user-group-mention" data-user-group-id="24">' +
+        '<span class="mention-content-wrapper">@hamletcharacters</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@*hamletcharacters*");
+
+    // Silent group mention
+    firefox_input =
+        meta +
+        '<p><span class="user-group-mention silent" data-user-group-id="24">' +
+        '<span class="mention-content-wrapper">hamletcharacters</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@_*hamletcharacters*");
+
+    // Non-silent topic mention
+    firefox_input =
+        meta +
+        '<p><span class="topic-mention">' +
+        '<span class="mention-content-wrapper">@topic</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@**topic**");
+
+    // Silent topic mention
+    firefox_input =
+        meta +
+        '<p><span class="topic-mention silent">' +
+        '<span class="mention-content-wrapper">topic</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@_**topic**");
+
+    // Non-silent channel wildcard mention (no |user_id suffix)
+    firefox_input =
+        meta +
+        '<p><span class="user-mention channel-wildcard-mention" data-user-id="*">' +
+        '<span class="mention-content-wrapper">@all</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@**all**");
+
+    // Silent channel wildcard mention
+    firefox_input =
+        meta +
+        '<p><span class="user-mention channel-wildcard-mention silent" data-user-id="*">' +
+        '<span class="mention-content-wrapper">all</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@_**all**");
+
+    // Mention inline with surrounding text.
+    firefox_input =
+        meta +
+        '<p>Hey <span class="user-mention" data-user-id="10">' +
+        '<span class="mention-content-wrapper">@King Hamlet</span></span>, how are you?</p>';
+    assert.equal(
+        compose_paste.paste_handler_converter(firefox_input),
+        "Hey @**King Hamlet|10**, how are you?",
+    );
+
+    // Lone mention without ancestor wrapper (bare span), as can happen
+    // when keyboard selection contains only the mention element.
+    firefox_input =
+        meta +
+        '<span class="user-mention" data-user-id="10">' +
+        '<span class="mention-content-wrapper">@King Hamlet</span></span>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@**King Hamlet|10**");
+
+    // Unknown user (not in the people store) falls back to the id-only
+    // @**|id** syntax; the backend resolves it on send.
+    firefox_input =
+        meta +
+        '<p><span class="user-mention" data-user-id="9999">' +
+        '<span class="mention-content-wrapper">@Unknown</span></span></p>';
+    assert.equal(compose_paste.paste_handler_converter(firefox_input), "@**|9999**");
+
+    let chrome_input;
+
+    // Non-silent user mention.
+    chrome_input = `<html><body><!--StartFragment--><span class="user-mention" data-user-id="10" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgba(255, 255, 255, 0.8); background-color: rgba(100, 100, 206, 0.25); cursor: pointer; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">@King Hamlet</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">, how are you?</span><!--EndFragment--></body></html>`;
+    assert.equal(
+        compose_paste.paste_handler_converter(chrome_input),
+        "@**King Hamlet|10**, how are you?",
+    );
+
+    // Silent user mention.
+    chrome_input = `<html><body><!--StartFragment--><span class="user-mention silent" data-user-id="10" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgba(255, 255, 255, 0.8); background-color: rgba(100, 100, 206, 0.45); cursor: pointer; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">King Hamlet</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">, silent test</span><!--EndFragment--></body></html>`;
+    assert.equal(
+        compose_paste.paste_handler_converter(chrome_input),
+        "@_**King Hamlet|10**, silent test",
+    );
+
+    // Self-mention adds a user-mention-me modifier class.
+    chrome_input = `<html><body><!--StartFragment--><span class="user-mention user-mention-me" data-user-id="9" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgb(194, 194, 255); background-color: rgba(100, 100, 206, 0.45); cursor: pointer; font-weight: 600; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">@Desdemona</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(35, 35, 46); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"> hello</span><!--EndFragment--></body></html>`;
+    assert.equal(compose_paste.paste_handler_converter(chrome_input), "@**Desdemona|9** hello");
+
+    // Guest user mention: rendered_markdown.ts adds a "(guest)" suffix to
+    // the display name (commit 70c9d0765f). The @**|id** syntax sidesteps
+    // this since the backend resolves by id, not name.
+    chrome_input = `<html><body><!--StartFragment--><span class="user-mention" data-user-id="13" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgba(255, 255, 255, 0.8); background-color: rgba(100, 100, 206, 0.45); cursor: pointer; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">@Polonius (guest)</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(34, 34, 34); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"><span> </span>guest</span><!--EndFragment--></body></html>`;
+    assert.equal(compose_paste.paste_handler_converter(chrome_input), "@**Polonius|13** guest");
+
+    // Non-silent group mention (single-asterisk syntax).
+    chrome_input = `<html><body><!--StartFragment--><span class="user-group-mention user-mention-me" data-user-group-id="35" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; cursor: pointer; color: rgb(112, 203, 210); background-color: rgba(49, 150, 155, 0.2); font-weight: 600; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">@announce</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"> group ping</span><!--EndFragment--></body></html>`;
+    assert.equal(compose_paste.paste_handler_converter(chrome_input), "@*announce* group ping");
+
+    // Silent group mention.
+    chrome_input = `<html><body><!--StartFragment--><span class="user-group-mention silent" data-user-group-id="24" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; cursor: pointer; color: rgba(255, 255, 255, 0.8); background-color: rgba(49, 150, 155, 0.3); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">hamletcharacters</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">, silent group</span><!--EndFragment--></body></html>`;
+    assert.equal(
+        compose_paste.paste_handler_converter(chrome_input),
+        "@_*hamletcharacters*, silent group",
+    );
+
+    // Non-silent topic mention.
+    chrome_input = `<html><body><!--StartFragment--><span class="topic-mention user-mention-me" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgb(112, 203, 210); background-color: rgba(49, 150, 155, 0.2); font-weight: 600; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">@topic</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"> topic test</span><!--EndFragment--></body></html>`;
+    assert.equal(compose_paste.paste_handler_converter(chrome_input), "@**topic** topic test");
+
+    // Silent topic mention.
+    chrome_input = `<html><body><!--StartFragment--><span class="topic-mention silent" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgba(255, 255, 255, 0.8); background-color: rgba(49, 150, 155, 0.2); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">topic</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(34, 34, 34); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"> silent topic</span><!--EndFragment--></body></html>`;
+    assert.equal(compose_paste.paste_handler_converter(chrome_input), "@_**topic** silent topic");
+
+    // Non-silent channel wildcard mention (no |user_id suffix).
+    chrome_input = `<html><body><!--StartFragment--><span class="user-mention channel-wildcard-mention user-mention-me" data-user-id="*" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgb(112, 203, 210); background-color: rgba(49, 150, 155, 0.2); cursor: pointer; font-weight: 600; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">@all</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"> wildcard</span><!--EndFragment--></body></html>`;
+    assert.equal(compose_paste.paste_handler_converter(chrome_input), "@**all** wildcard");
+
+    // Silent channel wildcard mention.
+    chrome_input = `<html><body><!--StartFragment--><span class="user-mention channel-wildcard-mention silent user-mention-me" data-user-id="*" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgb(112, 203, 210); background-color: rgba(49, 150, 155, 0.2); cursor: pointer; font-weight: 600; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">all</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"> silently</span><!--EndFragment--></body></html>`;
+    assert.equal(compose_paste.paste_handler_converter(chrome_input), "@_**all** silently");
 });
