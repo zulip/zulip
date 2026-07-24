@@ -6,17 +6,20 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
+import render_success_split_messages_scheduled_banner from "../templates/compose_banner/success_split_messages_scheduled_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {PostMessageAPIData} from "./echo.ts";
+import {$t} from "./i18n.ts";
 import * as message_events from "./message_events.ts";
 import type {LocalMessage} from "./message_helper.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -108,8 +111,10 @@ export function clear_compose_box(): void {
         compose_ui.make_compose_box_original_size();
     }
     clear_preview_area();
-    $("textarea#compose-textarea").val("").trigger("focus");
+    $("textarea#compose-textarea").prop("readonly", false).val("").trigger("focus");
     compose_ui.compose_textarea_typeahead?.hide();
+    compose_split_messages.set_split_messages_enabled(false);
+    compose_banner.clear_split_messages_info_banner();
     compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
     drafts.set_compose_draft_id(undefined);
@@ -131,28 +136,39 @@ export type SentMessageData = SendMessageData & {
 export function send_message_success(
     sent_message: SentMessageData | LocalMessage,
     data: PostMessageAPIData,
+    is_partial_send = false,
 ): void {
-    if (!sent_message.locally_echoed) {
+    if (!sent_message.locally_echoed && !is_partial_send) {
         clear_compose_box();
     }
 
     echo.reify_message_id(sent_message.local_id, data.id);
-    drafts.draft_model.deleteDrafts([sent_message.draft_id]);
 
-    if (sent_message.type === "stream") {
-        if (data.automatic_new_visibility_policy) {
-            if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
-                return;
-            }
-            // topic has been automatically unmuted or followed. No need to
-            // suggest the user to unmute. Show the banner and return.
-            compose_notifications.notify_automatic_new_visibility_policy(sent_message, {
-                ...data,
-                automatic_new_visibility_policy: data.automatic_new_visibility_policy,
-            });
+    if (!is_partial_send) {
+        drafts.draft_model.deleteDrafts([sent_message.draft_id]);
+    }
+
+    if (sent_message.type === "stream" && data.automatic_new_visibility_policy) {
+        // Handled for whichever part carries it, which is an early (partial)
+        // part for a split send.
+        if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
             return;
         }
+        // topic has been automatically unmuted or followed. No need to
+        // suggest the user to unmute. Show the banner and return.
+        compose_notifications.notify_automatic_new_visibility_policy(sent_message, {
+            ...data,
+            automatic_new_visibility_policy: data.automatic_new_visibility_policy,
+        });
+        return;
+    }
 
+    if (is_partial_send) {
+        // Defer the remaining post-send side effects to the final part.
+        return;
+    }
+
+    if (sent_message.type === "stream") {
         const muted_narrow = compose_notifications.get_muted_narrow(sent_message);
         if (muted_narrow) {
             compose_notifications.notify_unmute(
@@ -164,14 +180,88 @@ export function send_message_success(
     }
 }
 
-export let send_message = (): void => {
-    // Changes here must also be kept in sync with echo.try_deliver_locally
+export function toggle_split_messages(): void {
+    const state = compose_split_messages.is_split_messages_enabled();
+    compose_split_messages.set_split_messages_enabled(!state);
+    // preview area and compose banner should be updated with the new setting
+    if ($("#compose .preview_message_area").css("display") !== "none") {
+        // re-render the preview area if it is currently visible
+        clear_preview_area();
+        show_preview_area();
+    }
+    compose_banner.update_split_messages_info_banner();
+    compose_validate.check_overflow_text($("#send_message_form"));
+    compose_validate.validate_and_update_send_button_status();
+}
+
+type CapturedRecipient =
+    | {
+          type: "private";
+          recipient_emails: string;
+          recipient_ids: number[];
+      }
+    | {
+          type: "stream";
+          stream_id: number;
+          topic: string;
+      };
+
+function capture_current_recipient(): CapturedRecipient {
+    const message_type = compose_state.get_message_type();
+    assert(message_type !== undefined);
+    if (message_type === "private") {
+        return {
+            type: "private",
+            recipient_emails: compose_state.private_message_recipient_emails(),
+            recipient_ids: compose_state.private_message_recipient_ids(),
+        };
+    }
+    const stream_id = compose_state.stream_id();
+    assert(stream_id !== undefined);
+    return {
+        type: "stream",
+        stream_id,
+        topic: compose_state.topic(),
+    };
+}
+
+export let send_message = (
+    message_content: string = compose_state.message_content(),
+    captured_recipient: CapturedRecipient = capture_current_recipient(),
+    sent_count = 0,
+    draft_id?: string,
+): boolean => {
+    // Changes here must also be kept in sync with echo.try_deliver_locally.
+    const is_recursive_call = sent_count > 0;
+
+    if (!is_recursive_call) {
+        const part_count = compose_split_messages.get_all_split_parts(message_content).length;
+        if (part_count > compose_split_messages.MAX_SPLIT_PARTS) {
+            compose_banner.show_error_message(
+                $t(
+                    {
+                        defaultMessage:
+                            "Cannot send more than {max} messages at once. Please remove some blank-line separators or split your message manually.",
+                    },
+                    {max: compose_split_messages.MAX_SPLIT_PARTS},
+                ),
+                compose_banner.CLASSNAMES.generic_compose_error,
+                $("#compose_banners"),
+            );
+            compose_ui.hide_compose_spinner();
+            return false;
+        }
+    }
+
+    const [content_to_send, rest_of_the_content] =
+        compose_split_messages.split_message(message_content);
+    const is_content_to_send_split = rest_of_the_content !== "";
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
 
     // Silently save / update a draft to ensure the message is not lost in case send fails.
     // We delete the draft on successful send.
-    const draft_id = drafts.update_draft({
+    draft_id ??= drafts.update_draft({
         no_notify: true,
         update_count: false,
         is_sending_saving: true,
@@ -182,44 +272,41 @@ export let send_message = (): void => {
     });
     assert(draft_id !== undefined);
 
-    const message_type = compose_state.get_message_type();
-    assert(message_type !== undefined);
     let message_data: SendMessageData;
-    if (message_type === "private") {
-        const recipient_emails = compose_state.private_message_recipient_emails();
-        const recipient_ids = compose_state.private_message_recipient_ids();
+    if (captured_recipient.type === "private") {
         message_data = {
-            type: message_type,
-            content: compose_state.message_content(),
+            type: "private",
+            content: content_to_send,
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: "",
-            to: JSON.stringify(recipient_ids),
-            reply_to: recipient_emails,
-            private_message_recipient: recipient_emails,
-            to_user_ids: util.sorted_ids(recipient_ids).join(","),
+            to: JSON.stringify(captured_recipient.recipient_ids),
+            reply_to: captured_recipient.recipient_emails,
+            private_message_recipient: captured_recipient.recipient_emails,
+            to_user_ids: util.sorted_ids(captured_recipient.recipient_ids).join(","),
             draft_id,
             stream_id: undefined,
         };
     } else {
-        const stream_id = compose_state.stream_id();
-        assert(stream_id !== undefined);
-        const topic = compose_state.topic();
+        const topic = captured_recipient.topic;
         message_data = {
-            type: message_type,
-            content: compose_state.message_content(),
+            type: "stream",
+            content: content_to_send,
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: util.is_topic_name_considered_empty(topic) ? "" : topic,
-            stream_id,
-            to: JSON.stringify([stream_id]),
+            stream_id: captured_recipient.stream_id,
+            to: JSON.stringify([captured_recipient.stream_id]),
             draft_id,
         };
     }
 
     let local_id: string;
 
-    const message = echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+    const message =
+        !is_recursive_call && !is_content_to_send_split
+            ? echo.try_deliver_locally(message_data, message_events.insert_new_messages)
+            : undefined;
     const locally_echoed = Boolean(message);
     if (message) {
         // We are rendering this message locally with an id
@@ -250,7 +337,24 @@ export let send_message = (): void => {
                 resend: false,
             },
             parsed_data,
+            is_content_to_send_split,
         );
+        if (is_content_to_send_split) {
+            // This part was delivered; rewrite the in-flight draft to only the
+            // still-unsent remainder, so a reload mid-split can't re-send parts
+            // that already went through.
+            assert(draft_id !== undefined);
+            const draft = drafts.draft_model.getDraft(draft_id);
+            if (draft !== false) {
+                draft.content =
+                    compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content);
+                drafts.draft_model.editDraft(draft_id, draft);
+            }
+            send_message(rest_of_the_content, captured_recipient, sent_count + 1, draft_id);
+        } else {
+            compose_banner.clear_split_messages_info_banner();
+            compose_ui.hide_compose_spinner();
+        }
     }
 
     function error(response: string, server_error_code: string): void {
@@ -275,7 +379,6 @@ export let send_message = (): void => {
                     $("textarea#compose-textarea"),
                 );
             }
-
             // For messages that were not locally echoed, we're
             // responsible for hiding the compose spinner to restore
             // the compose box so one can send a next message.
@@ -283,21 +386,48 @@ export let send_message = (): void => {
             // (Restoring this state is handled by clear_compose_box
             // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
-            return;
+        } else {
+            assert(message !== undefined);
+            echo.message_send_error(message.id, response);
+            // We might not have updated the draft count because we assumed the
+            // message would send. Ensure that the displayed count is correct.
+            drafts.sync_count();
+            assert(draft_id !== undefined);
+            const draft = drafts.draft_model.getDraft(draft_id);
+            assert(draft !== false);
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(draft_id, draft);
         }
 
-        assert(message !== undefined);
-        echo.message_send_error(message.id, response);
+        // Restore the textarea to only what still needs to be sent.
+        if (sent_count > 0 || is_content_to_send_split) {
+            const remaining = is_content_to_send_split
+                ? content_to_send +
+                  compose_split_messages.SPLIT_DELIMITER +
+                  compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content)
+                : content_to_send;
+            compose_state.message_content(remaining);
+            $("textarea#compose-textarea").prop("readonly", false).trigger("input");
+            compose_ui.autosize_textarea($("textarea#compose-textarea"));
+            // Sync the shared draft with the restored content, no longer in-flight.
+            drafts.update_draft({
+                no_notify: true,
+                update_count: false,
+                is_sending_saving: false,
+                force_save: true,
+            });
+        }
 
-        // We might not have updated the draft count because we assumed the
-        // message would send. Ensure that the displayed count is correct.
-        drafts.sync_count();
+        if (sent_count > 0) {
+            compose_banner.show_partial_send_failure(sent_count);
+        }
+    }
 
-        assert(draft_id !== undefined);
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+    if (!is_recursive_call && is_content_to_send_split) {
+        // A split send keeps the full content visible across several
+        // sequential round-trips; make it read-only so edits during that
+        // window aren't silently discarded by the final clear_compose_box().
+        $("textarea#compose-textarea").prop("readonly", true);
     }
 
     transmit.send_message(
@@ -318,6 +448,7 @@ export let send_message = (): void => {
             echo.display_slow_send_loading_spinner(message);
         }, 5000);
     }
+    return true;
 };
 
 export function rewire_send_message(value: typeof send_message): void {
@@ -371,10 +502,11 @@ export let finish = (scheduling_message = false): boolean | undefined => {
         return false;
     }
 
-    if (scheduling_message) {
-        schedule_message_to_custom_date();
-    } else {
-        send_message();
+    const message_sent = scheduling_message ? schedule_message_to_custom_date() : send_message();
+    if (!message_sent) {
+        // The send was refused before dispatch (e.g. too many split parts,
+        // or scheduling a split message); skip the post-send side effects.
+        return false;
     }
     do_post_send_tasks();
     return true;
@@ -392,35 +524,50 @@ export function do_post_send_tasks(): void {
     reload.maybe_reset_pending_reload_timeout("compose_end");
 }
 
-function schedule_message_to_custom_date(): void {
-    const deliver_at = scheduled_messages.get_formatted_selected_send_later_time();
-    const scheduled_delivery_timestamp = scheduled_messages.get_selected_send_later_timestamp();
+// Schedules the message currently in the compose box. When splitting is
+// enabled this schedules each part as its own message, posting them
+// sequentially (each in the previous part's success callback) so that they
+// get ascending scheduled-message ids and therefore deliver in order. State
+// (recipient, timestamp, content) is captured on the first call and threaded
+// through the recursion, mirroring send_message.
+export let schedule_message_to_custom_date = (
+    message_content: string = compose_state.message_content(),
+    captured_recipient: CapturedRecipient = capture_current_recipient(),
+    scheduled_count = 0,
+    draft_id?: string,
+    scheduled_delivery_timestamp:
+        | number
+        | undefined = scheduled_messages.get_selected_send_later_timestamp(),
+    deliver_at: string | undefined = scheduled_messages.get_formatted_selected_send_later_time(),
+): boolean => {
+    const is_recursive_call = scheduled_count > 0;
 
-    const message_type = compose_state.get_message_type();
-    let req_type;
-
-    if (message_type === "private") {
-        req_type = "direct";
-    } else {
-        req_type = message_type;
+    if (!is_recursive_call) {
+        const part_count = compose_split_messages.get_all_split_parts(message_content).length;
+        if (part_count > compose_split_messages.MAX_SPLIT_PARTS) {
+            compose_banner.show_error_message(
+                $t(
+                    {
+                        defaultMessage:
+                            "Cannot schedule more than {max} messages at once. Please remove some blank-line separators or split your message manually.",
+                    },
+                    {max: compose_split_messages.MAX_SPLIT_PARTS},
+                ),
+                compose_banner.CLASSNAMES.generic_compose_error,
+                $("#compose_banners"),
+            );
+            compose_ui.hide_compose_spinner();
+            return false;
+        }
     }
 
-    let message_to;
-    if (message_type === "private") {
-        message_to = compose_state.private_message_recipient_ids();
-    } else {
-        message_to = compose_state.stream_id();
-    }
+    const [content_to_send, rest_of_the_content] =
+        compose_split_messages.split_message(message_content);
+    const is_content_to_send_split = rest_of_the_content !== "";
 
-    const scheduled_message_data = {
-        type: req_type,
-        to: JSON.stringify(message_to),
-        topic: message_type === "stream" ? compose_state.topic() : "",
-        content: compose_state.message_content(),
-        scheduled_delivery_timestamp,
-    };
-
-    const draft_id = drafts.update_draft({
+    // Silently save / update a draft so the message isn't lost if scheduling
+    // fails. Created once and reused across parts; deleted on the final part.
+    draft_id ??= drafts.update_draft({
         no_notify: true,
         update_count: false,
         is_sending_saving: true,
@@ -428,20 +575,74 @@ function schedule_message_to_custom_date(): void {
     });
     assert(draft_id !== undefined);
 
+    let scheduled_message_data;
+    if (captured_recipient.type === "private") {
+        scheduled_message_data = {
+            type: "direct",
+            to: JSON.stringify(captured_recipient.recipient_ids),
+            topic: "",
+            content: content_to_send,
+            scheduled_delivery_timestamp,
+        };
+    } else {
+        scheduled_message_data = {
+            type: "stream",
+            to: JSON.stringify(captured_recipient.stream_id),
+            topic: captured_recipient.topic,
+            content: content_to_send,
+            scheduled_delivery_timestamp,
+        };
+    }
+
     const $banner_container = $("#compose_banners");
     const success = function (data: unknown): void {
+        const {scheduled_message_id} = z.object({scheduled_message_id: z.number()}).parse(data);
+        if (is_content_to_send_split) {
+            // This part is scheduled; rewrite the in-flight draft to only the
+            // still-unscheduled remainder, so a reload mid-schedule can't
+            // re-schedule parts that already went through.
+            assert(draft_id !== undefined);
+            const draft = drafts.draft_model.getDraft(draft_id);
+            if (draft !== false) {
+                draft.content =
+                    compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content);
+                drafts.draft_model.editDraft(draft_id, draft);
+            }
+            schedule_message_to_custom_date(
+                rest_of_the_content,
+                captured_recipient,
+                scheduled_count + 1,
+                draft_id,
+                scheduled_delivery_timestamp,
+                deliver_at,
+            );
+            return;
+        }
+
         drafts.draft_model.deleteDrafts([draft_id]);
         clear_compose_box();
-        const {scheduled_message_id} = z.object({scheduled_message_id: z.number()}).parse(data);
-        const new_row_html = render_success_message_scheduled_banner({
-            scheduled_message_id,
-            minimum_scheduled_message_delay_minutes:
-                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
-            deliver_at,
-            minimum_scheduled_message_delay_minutes_note:
-                scheduled_messages.show_minimum_scheduled_message_delay_minutes_note,
-        });
         compose_banner.clear_message_sent_banners();
+        const message_count = scheduled_count + 1;
+        let new_row_html;
+        if (message_count === 1) {
+            new_row_html = render_success_message_scheduled_banner({
+                scheduled_message_id,
+                minimum_scheduled_message_delay_minutes:
+                    scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
+                deliver_at,
+                minimum_scheduled_message_delay_minutes_note:
+                    scheduled_messages.show_minimum_scheduled_message_delay_minutes_note,
+            });
+        } else {
+            new_row_html = render_success_split_messages_scheduled_banner({
+                message_count,
+                minimum_scheduled_message_delay_minutes:
+                    scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
+                deliver_at,
+                minimum_scheduled_message_delay_minutes_note:
+                    scheduled_messages.show_minimum_scheduled_message_delay_minutes_note,
+            });
+        }
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
     };
 
@@ -454,11 +655,44 @@ function schedule_message_to_custom_date(): void {
             $banner_container,
             $("textarea#compose-textarea"),
         );
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+
+        if (scheduled_count > 0 || is_content_to_send_split) {
+            // Restore only the still-unscheduled content to the compose box.
+            // Already-scheduled parts are left scheduled (no rollback), so
+            // retrying can't re-schedule them.
+            const remaining = is_content_to_send_split
+                ? content_to_send +
+                  compose_split_messages.SPLIT_DELIMITER +
+                  compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content)
+                : content_to_send;
+            compose_state.message_content(remaining);
+            $("textarea#compose-textarea").prop("readonly", false).trigger("input");
+            compose_ui.autosize_textarea($("textarea#compose-textarea"));
+            drafts.update_draft({
+                no_notify: true,
+                update_count: false,
+                is_sending_saving: false,
+                force_save: true,
+            });
+        } else {
+            assert(draft_id !== undefined);
+            const draft = drafts.draft_model.getDraft(draft_id);
+            assert(draft !== false);
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(draft_id, draft);
+        }
+
+        if (scheduled_count > 0) {
+            compose_banner.show_partial_schedule_failure(scheduled_count);
+        }
     };
+
+    if (!is_recursive_call && is_content_to_send_split) {
+        // A split schedule keeps the full content visible across several
+        // sequential round-trips; make it read-only so edits during that
+        // window aren't silently discarded by the final clear_compose_box().
+        $("textarea#compose-textarea").prop("readonly", true);
+    }
 
     channel.post({
         url: "/json/scheduled_messages",
@@ -466,6 +700,13 @@ function schedule_message_to_custom_date(): void {
         success,
         error,
     });
+    return true;
+};
+
+export function rewire_schedule_message_to_custom_date(
+    value: typeof schedule_message_to_custom_date,
+): void {
+    schedule_message_to_custom_date = value;
 }
 
 export function is_topic_input_focused(): boolean {
