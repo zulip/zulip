@@ -2767,7 +2767,7 @@ To Do
 
         mock_save_attachment_contents.assert_called_once()
         mock_do_convert_zipfile.assert_called_once_with(
-            mock.ANY, mock.ANY, event["slack_access_token"]
+            mock.ANY, mock.ANY, event["slack_access_token"], convert_slack_threads=True
         )
         mock_do_import_realm.assert_called_once_with(
             mock.ANY, prereg_realm.string_id, on_realm_created=mock.ANY
@@ -2935,7 +2935,7 @@ To Do
 
         mock_save_attachment_contents.assert_called_once()
         mock_do_convert_zipfile.assert_called_once_with(
-            mock.ANY, mock.ANY, event["slack_access_token"]
+            mock.ANY, mock.ANY, event["slack_access_token"], convert_slack_threads=True
         )
         mock_do_import_realm.assert_called_once_with(
             mock.ANY, prereg_realm.string_id, on_realm_created=mock.ANY

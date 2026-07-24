@@ -112,6 +112,7 @@ def import_slack_data(event: dict[str, Any]) -> None:
                 fh.name,
                 output_dir,
                 event["slack_access_token"],
+                convert_slack_threads=True,
             )
             attachment_size = sum(
                 os.path.getsize(os.path.join(dirpath, filename))
