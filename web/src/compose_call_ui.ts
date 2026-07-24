@@ -243,6 +243,43 @@ export function generate_and_insert_audio_or_video_call_link(
 
                 break;
             }
+            case available_providers.livekit?.id: {
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
+                        const data = call_response_schema.parse(response);
+                        if (is_audio_call) {
+                            insert_audio_call_url(data.url, $target_textarea);
+                        } else {
+                            insert_video_call_url(data.url, $target_textarea);
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _xhr: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const room_display_name = `${get_recipient_label()?.label_text ?? ""} call`;
+                xhr = channel.post({
+                    url: "/json/calls/livekit/create",
+                    data: {is_video_call: !is_audio_call, room_display_name},
+                    success: handle_success,
+                    error: handle_error,
+                });
+                break;
+            }
             case available_providers.jitsi_meet?.id: {
                 const video_call_id = util.random_int(100000000000000, 999999999999999);
                 const video_call_url = compose_call.get_jitsi_server_url(video_call_id.toString());

@@ -1,0 +1,26 @@
+diff --git a/dist/src/room/data-track/track-interfaces.d.ts b/dist/src/room/data-track/track-interfaces.d.ts
+index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644
+--- a/dist/src/room/data-track/track-interfaces.d.ts
++++ b/dist/src/room/data-track/track-interfaces.d.ts
+@@ -17,7 +17,7 @@ export declare const DataTrackSymbol: symbol;
+ /** An interface representing a data track, either local or remote. */
+ export interface IDataTrack extends ITrack {
+     readonly typeSymbol: typeof DataTrackSymbol;
+-    readonly info?: DataTrackInfo;
++    readonly info?: DataTrackInfo | undefined;
+ }
+ export declare function isDataTrack(subject: unknown): subject is IDataTrack;
+ //# sourceMappingURL=track-interfaces.d.ts.map
+diff --git a/dist/src/room/track/LocalAudioTrack.d.ts b/dist/src/room/track/LocalAudioTrack.d.ts
+index 2222222222222222222222222222222222222222..3333333333333333333333333333333333333333 100644
+--- a/dist/src/room/track/LocalAudioTrack.d.ts
++++ b/dist/src/room/track/LocalAudioTrack.d.ts
+@@ -9,7 +9,7 @@ export default class LocalAudioTrack extends LocalTrack<Track.Kind.Audio> {
+     stopOnMute: boolean;
+     private prevStats?;
+     private isKrispNoiseFilterEnabled;
+-    protected processor?: TrackProcessor<Track.Kind.Audio, AudioProcessorOptions> | undefined;
++    protected processor?: TrackProcessor<Track.Kind.Audio, AudioProcessorOptions>;
+     /**
+      * boolean indicating whether enhanced noise cancellation is currently being used on this track
+      */
