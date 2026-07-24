@@ -1342,11 +1342,11 @@ ul.popover-menu-list {
     list-style: none;
     margin: 0;
     padding: 4px 0;
+}
 
-    li.popover-menu-separator {
-        margin: 4px 0;
-        border-bottom: solid 1px var(--color-border-popover-menu-separator);
-    }
+.popover-menu-separator {
+    margin: 4px 0;
+    border-bottom: solid 1px var(--color-border-popover-menu-separator);
 }
 
 .popover-menu-hotkey-hints {
@@ -1415,4 +1415,69 @@ ul.popover-menu-list {
 #user-group-to-add {
     flex: 1;
     min-width: 0;
+}
+
+#topic-links-menu-popover {
+    color: var(--color-text-popover-menu) !important;
+
+    .popover-topic-links-list {
+        /* Equal padding on all sides; the bottom padding here stacks with
+           the next section title's top padding to leave a double-height
+           gap between the two link sections. */
+        padding: 0.6666em;
+    }
+
+    .topic-links-menu-title {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.6666em;
+        font-weight: 600;
+        margin: 0;
+
+        .help_link_widget {
+            /* Override bootstrap defaults */
+            &:focus {
+                outline: none;
+            }
+
+            &:focus-visible {
+                /* Undo a.help_link_widget's 0.7 opacity so the outline isn't dimmed. */
+                opacity: 1;
+                outline: 2px solid var(--color-outline-focus);
+                outline-offset: 2px;
+            }
+        }
+    }
+
+    .popover-menu-separator {
+        /* The space above and below each separator comes from the
+           adjacent title and list padding, so it stays symmetrical. */
+        margin: 0;
+    }
+
+    .topic-links-menu-title,
+    .popover-topic-links-list a {
+        width: fit-content;
+        max-width: 85vw;
+        white-space: nowrap;
+    }
+
+    .popover-topic-links-list a {
+        display: block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        /* External monitors sometimes cut off the edge of the message icon,
+           so add some extra margin. */
+        margin-right: 3px;
+    }
+
+    .popover-topic-links-list li + li {
+        margin-top: 0.5em;
+    }
+
+    ul {
+        margin: 0;
+        list-style: none;
+    }
 }

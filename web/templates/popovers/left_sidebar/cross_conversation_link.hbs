@@ -1,0 +1,9 @@
+<li>
+    {{~!-- Render each link identically to how it appears inline in
+    message content, reusing the markdown link templates. --~}}
+    {{~#if is_message_link~}}
+        {{> ../../channel_message_link stream=stream channel_name=channel_name topic_display_name_html=topic_display_name_html is_empty_string_topic=is_empty_string_topic href=url}}
+        {{~else~}}
+        {{> ../../topic_link channel_id=channel_id stream=stream channel_name=channel_name topic_display_name_html=topic_display_name_html is_empty_string_topic=is_empty_string_topic href=url}}
+    {{~/if~}}
+</li>
