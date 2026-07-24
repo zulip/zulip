@@ -57,6 +57,7 @@ from zerver.data_import.slack import (
     get_admin,
     get_guest,
     get_message_sending_user,
+    get_messages_iterator,
     get_owner,
     get_slack_api_data,
     get_subscription,
@@ -528,6 +529,32 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_chicago_timezone), "America/Chicago")
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
+
+    def test_get_messages_iterator_skips_invalid_timestamps(self) -> None:
+        # A single message with a missing or malformed `ts` used to
+        # abort the entire import with KeyError/ValueError when `ts`
+        # was used as the sort key, and a non-finite value like "NaN"
+        # silently produced an inconsistent sort order.
+        messages: list[dict[str, Any]] = [
+            {"ts": "1434139102.000002", "text": "valid later"},
+            {"text": "no ts field"},
+            {"ts": "not-a-number", "text": "malformed ts"},
+            {"ts": "NaN", "text": "non-finite ts"},
+            {"ts": "1434139101.000001", "text": "valid earlier"},
+        ]
+        with tempfile.TemporaryDirectory() as slack_data_dir:
+            os.makedirs(os.path.join(slack_data_dir, "general"))
+            with open(os.path.join(slack_data_dir, "general", "2015-06-12.json"), "wb") as f:
+                f.write(orjson.dumps(messages))
+
+            added_channels: AddedChannelsT = {"general": ("C061A0GJG", 1)}
+            with self.assertLogs(level="WARNING") as mock_log:
+                result = list(get_messages_iterator(slack_data_dir, added_channels, {}, {}))
+
+        self.assertEqual([message["text"] for message in result], ["valid earlier", "valid later"])
+        self.assert_length(mock_log.output, 3)
+        for log_line in mock_log.output:
+            self.assertIn("Skipping Slack message with invalid ts", log_line)
 
     @mock.patch("zerver.data_import.slack.get_data_file")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
