@@ -1,19 +1,23 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
+import * as z from "zod/mini";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_information_density_update_button_tooltip from "../templates/information_density_update_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
+import render_tooltip_loader from "../templates/tooltip_loader.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
 
+import * as channel from "./channel.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
+import * as preview_urls from "./preview_urls.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -691,6 +695,44 @@ export function initialize(): void {
         appendTo: () => document.body,
         onHidden(instance: tippy.Instance) {
             instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        // Hover previews for GitHub issue and pull request links. The Markdown
+        // renderer tags these anchors with the `previewable` class and the
+        // `data-preview-*` attributes the endpoint needs.
+        target: ".rendered_markdown a.previewable",
+        appendTo: () => document.body,
+        content: () => ui_util.parse_html(render_tooltip_loader()),
+        maxWidth: "350px",
+        delay: [300, 20],
+        onShow(instance: tippy.Instance) {
+            const link = instance.reference;
+            const platform = link.getAttribute("data-preview-platform");
+            const owner = link.getAttribute("data-preview-owner");
+            const repo = link.getAttribute("data-preview-repo");
+            const number = link.getAttribute("data-preview-number");
+            if (platform === null || owner === null || repo === null || number === null) {
+                return false;
+            }
+            channel.get({
+                url: "/json/url_preview",
+                data: {platform, owner, repo, number},
+                success(data) {
+                    const preview_data = preview_urls.preview_response_schema.parse(data);
+                    preview_urls.set_url_preview_tooltip_content(preview_data, instance);
+                },
+                error(xhr) {
+                    const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                    instance.setContent(
+                        parsed.success
+                            ? parsed.data.msg
+                            : $t({defaultMessage: "Unable to preview link."}),
+                    );
+                },
+            });
+            return undefined;
         },
     });
 

@@ -1165,6 +1165,11 @@ SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 
+# Optional token used to raise GitHub's API rate limit when generating hover
+# previews of GitHub issue and pull request links. Intended for access to
+# public data only; see docs/production/github-link-previews.md.
+GITHUB_API_AUTH_TOKEN = get_secret("github_api_auth_token")
+
 SOCIAL_AUTH_GOOGLE_SECRET = get_secret("social_auth_google_secret")
 # Fallback to google-oauth settings in case social auth settings for
 # Google are missing; this is for backwards-compatibility with older

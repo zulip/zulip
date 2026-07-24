@@ -680,6 +680,44 @@ class MarkdownLinkTest(ZulipTestCase):
             '<p><a href="http://example.com/#settings/">http://example.com/#settings/</a></p>',
         )
 
+    def test_github_issue_link_is_previewable(self) -> None:
+        realm = get_realm("zulip")
+        message = Message(sender=self.example_user("othello"), sending_client=get_client("test"))
+        rendered = markdown_convert(
+            "https://github.com/zulip/zulip/issues/19710", message_realm=realm, message=message
+        ).rendered_content
+        self.assertIn('class="previewable"', rendered)
+        self.assertIn('data-preview-platform="github"', rendered)
+        self.assertIn('data-preview-owner="zulip"', rendered)
+        self.assertIn('data-preview-repo="zulip"', rendered)
+        self.assertIn('data-preview-number="19710"', rendered)
+
+    def test_github_pull_request_link_is_previewable(self) -> None:
+        realm = get_realm("zulip")
+        message = Message(sender=self.example_user("othello"), sending_client=get_client("test"))
+        # The www. host and the /pull/ form are both handled.
+        rendered = markdown_convert(
+            "https://www.github.com/zulip/zulip/pull/22368", message_realm=realm, message=message
+        ).rendered_content
+        self.assertIn('class="previewable"', rendered)
+        self.assertIn('data-preview-number="22368"', rendered)
+
+    def test_non_github_links_are_not_previewable(self) -> None:
+        realm = get_realm("zulip")
+        message = Message(sender=self.example_user("othello"), sending_client=get_client("test"))
+        for content in [
+            "https://example.com/zulip/zulip/issues/1",  # not a GitHub host
+            "https://github.com/zulip/zulip/wiki/Home",  # not an issue/PR path
+            "https://github.com/zulip/zulip/issues/notanumber",  # non-numeric
+            "https://github.com/zulip/zulip",  # too few path segments
+            "https://github.com:8080/zulip/zulip/issues/4",  # has a port
+            "[x](https://github.com:notaport/zulip/zulip/issues/5)",  # malformed port
+        ]:
+            rendered = markdown_convert(
+                content, message_realm=realm, message=message
+            ).rendered_content
+            self.assertNotIn("previewable", rendered, content)
+
     def test_relative_link(self) -> None:
         realm = get_realm("zulip")
         sender_user_profile = self.example_user("othello")
