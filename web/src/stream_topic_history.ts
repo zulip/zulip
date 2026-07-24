@@ -370,7 +370,9 @@ export function mark_history_fetched_for(stream_id: number): void {
 }
 
 export function get_recent_topic_names(stream_id: number): string[] {
-    const history = find_or_create(stream_id);
+    // Not `find_or_create`: a missing history acts like an empty one,
+    // and caching one per channel would grow `stream_dict` without bound.
+    const history = stream_dict.get(stream_id) ?? new PerStreamHistory(stream_id);
 
     return history.get_recent_topic_names();
 }
