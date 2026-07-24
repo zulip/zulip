@@ -49,6 +49,7 @@ const channels_public_incompatible_patterns: TermPattern[] = [
     ...common_incompatible_patterns,
     {operator: "channels", operand: "public"},
     {operator: "channels", operand: "web-public"},
+    {operator: "channels", operand: "all"},
 ];
 
 // TODO: Expand this to support all available filters and its description.
@@ -77,6 +78,7 @@ type SearchFilter =
     | "channels:public"
     | "channels:web-public"
     | "channels:archived"
+    | "channels:all"
     | "is:resolved"
     | "-is:resolved"
     | "is:dm"
@@ -99,7 +101,9 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     "channels:archived": [
         ...common_incompatible_patterns,
         {operator: "channels", operand: "archived"},
+        {operator: "channels", operand: "all"},
     ],
+    "channels:all": channel_incompatible_patterns,
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
@@ -769,10 +773,14 @@ function get_channels_filter_suggestions(
     const public_channels_search_string = "channels:public";
     const web_public_channels_search_string = "channels:web-public";
     const archived_channels_search_string = "channels:archived";
+    const all_accessible_channels_search_string = "channels:all";
     const suggestions: Suggestion[] = [];
 
     if (!page_params.is_spectator) {
-        suggestions.push(...filter_suggestions_by_criteria(terms, [public_channels_search_string]));
+        suggestions.push(
+            ...filter_suggestions_by_criteria(terms, [all_accessible_channels_search_string]),
+            ...filter_suggestions_by_criteria(terms, [public_channels_search_string]),
+        );
     }
 
     if (stream_data.realm_has_web_public_streams()) {

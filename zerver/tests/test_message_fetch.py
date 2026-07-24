@@ -17,8 +17,9 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import build_message_edit_request, do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
@@ -239,6 +240,119 @@ class NarrowBuilderTest(ZulipTestCase):
             (stream.recipient_id,),
         )
 
+    def test_add_term_using_channels_operator_and_all_operand(self) -> None:
+        hamlet = self.user_profile
+        term = NarrowParameter(operator="channels", operand="all")
+        self._do_add_term_test(
+            term,
+            'WHERE "zerver_message"."recipient_id" IN (%s, %s, %s, %s, %s, %s, %s, %s)',
+        )
+        realm = get_realm("zulip")
+        hamlet_group = check_add_user_group(
+            realm,
+            "hamlet_group",
+            [hamlet],
+            acting_user=hamlet,
+        )
+        # Add new channels
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+                "can_add_subscribers_group": hamlet_group,
+            },
+            {
+                "name": "protected-group-access",
+                "description": "Protected-history channel hamlet can access via group",
+                "invite_only": True,
+                "history_public_to_subscribers": False,
+                "can_add_subscribers_group": hamlet_group,
+            },
+        ]
+        created, existing = create_streams_if_needed(realm, channel_dicts)
+
+        self.assert_length(created, 3)
+        self.assert_length(existing, 0)
+
+        # "private-channel-with-history" has public history and group-based
+        # content access, so it joins the plain recipient_id IN (...) arm.
+        # "protected-group-access" has protected history but the same group
+        # access, so — even without a subscription — it appears in the
+        # "recipient_id IN (...) AND EXISTS(usermessage)" arm, which restricts
+        # results to messages the user actually received. "private-channel"
+        # has neither public history nor group access, so it is excluded.
+        self._do_add_term_test(
+            term,
+            'WHERE ("zerver_message"."recipient_id" IN (%s, %s, %s, %s, %s, %s, %s, %s, %s) '
+            'OR ("zerver_message"."recipient_id" IN (%s) AND EXISTS('
+            'SELECT %s AS "a" FROM "zerver_usermessage" U0 WHERE '
+            '(U0."message_id" = ("zerver_message"."id") AND U0."user_profile_id" = %s) LIMIT 1)))',
+        )
+
+        # A user without group access still reaches the protected-history
+        # EXISTS(usermessage) arm by subscribing. cordelia is not in
+        # hamlet_group, so her only route to "private-channel" (protected
+        # history) is the subscription, which is why it is the sole channel in
+        # her EXISTS arm.
+        cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, "private-channel")
+        cordelia_query = NarrowBuilder(cordelia, self.realm).add_term(self.raw_query, term)
+        cordelia_sql, _params = cordelia_query.query.sql_with_params()
+        self.assertEqual(
+            cordelia_sql[cordelia_sql.index("WHERE ") :],
+            'WHERE ("zerver_message"."recipient_id" IN (%s, %s, %s, %s, %s, %s, %s) '
+            'OR ("zerver_message"."recipient_id" IN (%s) AND EXISTS('
+            'SELECT %s AS "a" FROM "zerver_usermessage" U0 WHERE '
+            '(U0."message_id" = ("zerver_message"."id") AND U0."user_profile_id" = %s) LIMIT 1)))',
+        )
+
+    def test_add_term_using_channels_operator_and_all_operand_negated(self) -> None:
+        hamlet = self.user_profile
+        term = NarrowParameter(operator="channels", operand="all", negated=True)
+        self._do_add_term_test(
+            term,
+            'WHERE NOT ("zerver_message"."recipient_id" IN (%s, %s, %s, %s, %s, %s, %s, %s))',
+        )
+        realm = get_realm("zulip")
+        hamlet_group = check_add_user_group(
+            realm,
+            "hamlet_group",
+            [hamlet],
+            acting_user=hamlet,
+        )
+        # Add new channels
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+                "can_add_subscribers_group": hamlet_group,
+            },
+        ]
+        created, existing = create_streams_if_needed(realm, channel_dicts)
+
+        self.assert_length(created, 2)
+        self.assert_length(existing, 0)
+
+        # Number of recipient ids will increase by 1 and not 2
+        self._do_add_term_test(
+            term,
+            'WHERE NOT ("zerver_message"."recipient_id" IN (%s, %s, %s, %s, %s, %s, %s, %s, %s))',
+        )
+
     def test_add_term_using_is_operator_and_dm_operand(self) -> None:
         term = NarrowParameter(operator="is", operand="dm")
         self._do_add_term_test(term, 'WHERE "zerver_usermessage"."flags" & %s != 0')
@@ -418,12 +532,35 @@ class NarrowBuilderTest(ZulipTestCase):
             self._build_query(channels_term)
         self.assertEqual(expected_error_message, str(error.exception))
 
+        channels_term = NarrowParameter(operator="channels", operand="all")
+        with self.assertRaises(BadNarrowOperatorError) as error:
+            self._build_query(channels_term)
+        self.assertEqual(expected_error_message, str(error.exception))
+
     def test_combined_channel_with_negated_is_dm(self) -> None:
         dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
         self._build_query(dm_term)
 
         channel_term = NarrowParameter(operator="channels", operand="public")
         self._build_query(channel_term)
+
+        channel_term = NarrowParameter(operator="channels", operand="all")
+        self._build_query(channel_term)
+
+    def test_negated_channels_all_conflicts_with_channel_narrow(self) -> None:
+        # -channels:all matches only direct messages, so combining it with a
+        # channel narrow can never match a message and is rejected. -is:dm is
+        # itself a channel narrow ("not a direct message"), so it conflicts too.
+        expected_error_message = (
+            "Invalid narrow operator: No message can be both a channel message and direct message"
+        )
+        term = NarrowParameter(operator="channels", operand="all", negated=True)
+        self._build_query(term)
+
+        negated_is_dm = NarrowParameter(operator="is", operand="dm", negated=True)
+        with self.assertRaises(BadNarrowOperatorError) as error:
+            self._build_query(negated_is_dm)
+        self.assertEqual(expected_error_message, str(error.exception))
 
     def test_combined_negated_channel_with_is_dm(self) -> None:
         dm_term = NarrowParameter(operator="is", operand="dm")
@@ -902,6 +1039,20 @@ class NarrowBuilderTest(ZulipTestCase):
             'WHERE NOT ("zerver_message"."recipient_id" IN (%s, %s, %s, %s, %s, %s, %s))',
         )
 
+    def test_add_term_using_streams_operator_and_all_operand(self) -> None:
+        term = NarrowParameter(operator="streams", operand="all")
+        self._do_add_term_test(
+            term,
+            'WHERE "zerver_message"."recipient_id" IN (%s, %s, %s, %s, %s, %s, %s, %s)',
+        )
+
+    def test_add_term_using_streams_operator_and_all_operand_negated(self) -> None:
+        term = NarrowParameter(operator="streams", operand="all", negated=True)
+        self._do_add_term_test(
+            term,
+            'WHERE NOT ("zerver_message"."recipient_id" IN (%s, %s, %s, %s, %s, %s, %s, %s))',
+        )
+
     def _do_add_term_test(
         self, term: NarrowParameter, where_clause: str, params: tuple[object, ...] | None = None
     ) -> None:
@@ -1285,6 +1436,9 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="channels", operand="archived")])
         )
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="channels", operand="all")])
+        )
 
         # "is:private" is a legacy alias for "is:dm".
         self.assertFalse(
@@ -1317,6 +1471,9 @@ class NarrowLibraryTest(ZulipTestCase):
         # "streams" is a legacy alias for "channels" operator
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="streams", operand="public")])
+        )
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="streams", operand="all")])
         )
 
 
@@ -1363,6 +1520,18 @@ class IncludeHistoryTest(ZulipTestCase):
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
             NarrowParameter(operator="channels", operand="archived", negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # channels:all searches should include history for non-guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="all"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Negated -channels:all searches should not include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand="all", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1446,6 +1615,36 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
+        # No point in searching history for is operator even if included with
+        # channels:all
+        narrow = [
+            NarrowParameter(operator="channels", operand="all"),
+            NarrowParameter(operator="is", operand="mentioned"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        narrow = [
+            NarrowParameter(operator="channels", operand="all"),
+            NarrowParameter(operator="is", operand="unread"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        narrow = [
+            NarrowParameter(operator="channels", operand="all"),
+            NarrowParameter(operator="is", operand="alerted"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        narrow = [
+            NarrowParameter(operator="channels", operand="all"),
+            NarrowParameter(operator="is", operand="resolved"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Search history for archived channel searches combined with channels:all.
+        narrow = [
+            NarrowParameter(operator="channels", operand="all"),
+            NarrowParameter(operator="channels", operand="archived"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
         # simple True case
         narrow = [
             NarrowParameter(operator="channel", operand="public_channel"),
@@ -1475,6 +1674,12 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             NarrowParameter(operator="channels", operand="public"),
             NarrowParameter(operator="channels", operand="archived"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+
+        # channels:all searches should not include history for guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="all"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
 
@@ -3855,6 +4060,205 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         self.assert_length(result["messages"], 1)
         self.assertEqual(result["messages"][0]["id"], anchor)
+
+    def test_get_messages_using_narrow_channels_all(self) -> None:
+        realm = get_realm("zulip")
+
+        iago = self.example_user("iago")
+        self.login("iago")
+
+        self.subscribe(iago, "public-channel")
+        self.subscribe(iago, "private-channel", invite_only=True)
+        self.make_stream(
+            "private-channel-with-history", invite_only=True, history_public_to_subscribers=True
+        )
+        self.subscribe(iago, "private-channel-with-history")
+        self.subscribe(iago, "protected-no-group-access", invite_only=True)
+
+        # Send one message to each channel before hamlet has any access, so we
+        # can verify how pre-subscription history is treated per channel type.
+        message_id = {
+            stream_name: self.send_stream_message(iago, stream_name)
+            for stream_name in [
+                "public-channel",
+                "private-channel",
+                "private-channel-with-history",
+                "protected-no-group-access",
+            ]
+        }
+        self.logout()
+
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        hamlet_group = check_add_user_group(
+            realm,
+            "hamlet_group",
+            [hamlet],
+            acting_user=hamlet,
+        )
+        # Grant hamlet permission-based access to the two private channels, but
+        # deliberately not to "protected-no-group-access".
+        for stream_name in ["private-channel", "private-channel-with-history"]:
+            do_change_stream_group_based_setting(
+                get_stream(stream_name, realm),
+                "can_add_subscribers_group",
+                hamlet_group,
+                acting_user=iago,
+            )
+
+        narrow = [dict(operator="channels", operand="all")]
+
+        def channels_all_message_ids() -> set[int]:
+            result = self.get_and_check_messages(
+                dict(
+                    narrow=orjson.dumps(narrow).decode(),
+                    anchor=message_id["public-channel"],
+                    num_before=0,
+                    num_after=10,
+                )
+            )
+            return {message["id"] for message in result["messages"]}
+
+        # Messages from public channels and from private channels whose history
+        # is public to subscribers are included, even without a subscription.
+        # The pre-subscription message in the protected-history "private-channel"
+        # is excluded, as is the message in "protected-no-group-access", which
+        # hamlet cannot access at all.
+        self.assertEqual(
+            channels_all_message_ids(),
+            {message_id["public-channel"], message_id["private-channel-with-history"]},
+        )
+
+        self.subscribe(hamlet, "private-channel")
+        # In a protected-history channel, the user only sees messages sent while
+        # subscribed: hamlet's new message appears, but iago's earlier message,
+        # sent before hamlet subscribed, remains hidden.
+        hamlet_private_message_id = self.send_stream_message(hamlet, "private-channel")
+        self.assertEqual(
+            channels_all_message_ids(),
+            {
+                message_id["public-channel"],
+                message_id["private-channel-with-history"],
+                hamlet_private_message_id,
+            },
+        )
+
+        # After unsubscribing, hamlet retains permission-based access to
+        # "private-channel" and still has a UserMessage row for the message he
+        # sent, so that message stays visible; the pre-subscription message
+        # remains excluded.
+        self.unsubscribe(hamlet, "private-channel")
+        self.assertEqual(
+            channels_all_message_ids(),
+            {
+                message_id["public-channel"],
+                message_id["private-channel-with-history"],
+                hamlet_private_message_id,
+            },
+        )
+
+        # "protected-no-group-access" has protected history and no group access,
+        # so hamlet's access depends solely on his subscription. While
+        # subscribed, his own message is visible.
+        self.subscribe(hamlet, "protected-no-group-access")
+        hamlet_no_access_message_id = self.send_stream_message(hamlet, "protected-no-group-access")
+        self.assertEqual(
+            channels_all_message_ids(),
+            {
+                message_id["public-channel"],
+                message_id["private-channel-with-history"],
+                hamlet_private_message_id,
+                hamlet_no_access_message_id,
+            },
+        )
+
+        # After unsubscribing he has no content access to the protected-history
+        # channel at all, so the message is excluded even though his UserMessage
+        # row for it still exists.
+        self.unsubscribe(hamlet, "protected-no-group-access")
+        self.assertEqual(
+            channels_all_message_ids(),
+            {
+                message_id["public-channel"],
+                message_id["private-channel-with-history"],
+                hamlet_private_message_id,
+            },
+        )
+
+    def test_get_messages_using_narrow_channels_all_for_guest(self) -> None:
+        iago = self.example_user("iago")
+        guest = self.example_user("polonius")
+        self.assertTrue(guest.is_guest)
+
+        # Start from a clean slate so the assertions below cover exactly the
+        # messages sent in this test.
+        Message.objects.all().delete()
+
+        self.login("iago")
+        self.subscribe(iago, "web-public-subscribed", is_web_public=True)
+        self.subscribe(iago, "web-public-unsubscribed", is_web_public=True)
+        self.subscribe(iago, "public-subscribed")
+        self.subscribe(iago, "private-subscribed", invite_only=True)
+
+        # Messages sent before the guest subscribes. Even for the web-public
+        # channel, the guest has no UserMessage row for these, so they are not
+        # surfaced by channels:all.
+        presubscription_web_public_id = self.send_stream_message(iago, "web-public-subscribed")
+        self.send_stream_message(iago, "public-subscribed")
+        self.send_stream_message(iago, "private-subscribed")
+
+        # Subscribe the guest before the remaining messages, so they have
+        # UserMessage rows for the messages in their subscribed channels.
+        self.subscribe(guest, "web-public-subscribed")
+        self.subscribe(guest, "public-subscribed")
+        self.subscribe(guest, "private-subscribed")
+
+        subscribed_web_public_id = self.send_stream_message(iago, "web-public-subscribed")
+        subscribed_public_id = self.send_stream_message(iago, "public-subscribed")
+        subscribed_private_id = self.send_stream_message(iago, "private-subscribed")
+        # A message in a web-public channel the guest is not subscribed to.
+        self.send_stream_message(iago, "web-public-unsubscribed")
+        self.logout()
+
+        self.login("polonius")
+        narrow = [dict(operator="channels", operand="all")]
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=presubscription_web_public_id,
+                num_before=0,
+                num_after=10,
+            )
+        )
+
+        # The guest sees messages only from their subscribed channels — web-public,
+        # public, and private alike — and only those sent while subscribed: the
+        # unsubscribed web-public channel's message and the pre-subscription
+        # messages are all excluded.
+        message_ids = {message["id"] for message in result["messages"]}
+        self.assertEqual(
+            message_ids,
+            {subscribed_web_public_id, subscribed_public_id, subscribed_private_id},
+        )
+
+    def test_get_messages_using_narrow_channels_all_for_spectator(self) -> None:
+        # An unauthenticated spectator must include channels:web-public for the
+        # request to be accepted as a web-public query (otherwise it is
+        # rejected by is_web_public_narrow). channels:all then resolves to the
+        # web-public channels, exercising the spectator branch of by_channels.
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(
+                    [
+                        dict(operator="channels", operand="web-public"),
+                        dict(operator="channels", operand="all"),
+                    ]
+                ).decode()
+            )
+        )
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["display_recipient"], "Rome")
 
     def test_get_visible_messages_with_anchor(self) -> None:
         def messages_matches_ids(messages: list[dict[str, Any]], message_ids: list[int]) -> None:

@@ -24,11 +24,16 @@ from zerver.lib.message import (
 )
 from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
+from zerver.lib.stream_subscription import (
+    get_subscribed_stream_ids_for_user,
+    get_user_subscribed_streams,
+)
 from zerver.lib.streams import (
     access_stream_common,
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
     get_archived_streams_queryset,
+    get_content_accessible_streams_queryset,
     get_public_streams_queryset,
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
@@ -316,6 +321,23 @@ class NarrowBuilder:
                 "No message can be both a channel message and direct message"
             )
 
+    def get_recipient_condition(self, queryset: QuerySet[Stream]) -> Q:
+        recipient_ids = queryset.values_list("recipient_id", flat=True).order_by("id")
+        return Q(recipient_id__in=list(recipient_ids))
+
+    def get_protected_history_condition(
+        self, streams_with_protected_history: QuerySet[Stream]
+    ) -> Q:
+        assert self.user_profile is not None
+
+        recipient_cond = self.get_recipient_condition(streams_with_protected_history)
+        has_usermessage = Exists(
+            UserMessage.objects.filter(
+                user_profile_id=self.user_profile.id, message_id=OuterRef("id")
+            )
+        )
+        return recipient_cond & Q(has_usermessage)
+
     def add_term(self, query: QuerySet[Message], term: NarrowParameter) -> QuerySet[Message]:
         """
         Extend the given query to one narrowed by the given term, and return the result.
@@ -455,21 +477,65 @@ class NarrowBuilder:
     def by_channels(
         self, query: QuerySet[Message], operand: str, maybe_negate: ConditionTransform
     ) -> QuerySet[Message]:
-        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
+        if maybe_negate is not_ and operand == "all":
+            # Negating all channels leaves only DMs, so treat -channels:all as a
+            # DM narrow.
+            self.check_not_both_channel_and_dm_narrow(
+                maybe_negate=lambda cond: cond, is_dm_narrow=True
+            )
+        else:
+            self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         if operand == "public":
             # Get all both subscribed and non-subscribed public channels
             # but exclude any private subscribed channels.
             recipient_queryset = get_public_streams_queryset(self.realm)
+            cond = self.get_recipient_condition(recipient_queryset)
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
+            cond = self.get_recipient_condition(recipient_queryset)
         elif operand == "archived":
             recipient_queryset = get_archived_streams_queryset(self.realm)
+            cond = self.get_recipient_condition(recipient_queryset)
+        elif operand == "all":
+            if self.user_profile is None:
+                recipient_queryset = get_web_public_streams_queryset(self.realm)
+                cond = self.get_recipient_condition(recipient_queryset)
+            elif self.user_profile.is_guest:
+                subscribed_streams = get_user_subscribed_streams(self.user_profile)
+                cond = self.get_recipient_condition(subscribed_streams)
+            else:
+                subscribed_stream_ids = get_subscribed_stream_ids_for_user(self.user_profile)
+                user_recursive_group_ids = set(
+                    get_recursive_membership_groups(self.user_profile).values_list("id", flat=True)
+                )
+
+                content_accessible_streams = get_content_accessible_streams_queryset(
+                    self.user_profile,
+                    subscribed_stream_ids,
+                    user_recursive_group_ids,
+                )
+
+                # Streams whose history is public to subscribers: every
+                # accessible message is fair game.
+                full_history_recipient_cond = self.get_recipient_condition(
+                    content_accessible_streams.filter(history_public_to_subscribers=True)
+                )
+
+                # For channels with protected history, this only includes channels the
+                # user can currently access. Combined with the UserMessage check in
+                # get_protected_history_condition, messages from protected-history
+                # channels the user has left are excluded, even though UserMessage rows
+                # still exist. This is intentional, since leaving such a channel
+                # revokes access to its history.
+                protected_history_recipient_cond = self.get_protected_history_condition(
+                    content_accessible_streams.filter(history_public_to_subscribers=False)
+                )
+
+                cond = full_history_recipient_cond | protected_history_recipient_cond
         else:
             raise BadNarrowOperatorError("unknown channels operand " + operand)
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
-        cond = Q(recipient_id__in=list(recipient_ids))
         return query.filter(maybe_negate(cond))
 
     def by_topic(
@@ -791,7 +857,7 @@ def ok_to_include_history(
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (
                 term.operator in channels_operators
-                and term.operand in ["public", "web-public"]
+                and term.operand in ["public", "web-public", "all"]
                 and not term.negated
                 and user_profile.can_access_public_streams()
             ):
