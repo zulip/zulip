@@ -292,9 +292,11 @@ run_test("attachments", ({override}) => {
     const stub = make_stub();
     // attachments_ui is hard to test deeply
     override(attachments_ui, "update_attachments", stub.f);
+    override(realm, "realm_upload_quota_used_bytes", 0);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     assert_same(stub.get_args("event").event, event);
+    assert_same(realm.realm_upload_quota_used_bytes, event.upload_space_used);
 });
 
 run_test("user groups", ({override}) => {
