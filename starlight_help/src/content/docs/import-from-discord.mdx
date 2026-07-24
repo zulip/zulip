@@ -1,0 +1,279 @@
+---
+title: Import from Discord
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ImportIntoASelfHostedServerDescription from "../include/_ImportIntoASelfHostedServerDescription.mdx";
+import ImportIntoASelfHostedServerInstructions from "../include/_ImportIntoASelfHostedServerInstructions.mdx";
+import ImportIntoAZulipCloudOrganization from "../include/_ImportIntoAZulipCloudOrganization.mdx";
+import ImportSelfHostedServerTips from "../include/_ImportSelfHostedServerTips.mdx";
+import ImportYourDataIntoZulip from "../include/_ImportYourDataIntoZulip.mdx";
+import ImportZulipCloudOrganizationWarning from "../include/_ImportZulipCloudOrganizationWarning.mdx";
+import ViewImportedUsers from "../include/_ViewImportedUsers.mdx";
+
+You can import your Discord server into a Zulip organization. It's a great way
+to preserve your history when you migrate to Zulip, and to make the transition
+easy for the members of your community.
+
+The import will include your Discord server's:
+
+* **Users**, with their display names taken from their server nicknames
+* **Channels** as Zulip channels, including private channels and the
+  subscriptions of everyone who posted in each channel
+* **Message history**, excluding direct messages and private threads
+
+<ZulipNote>
+  This feature is currently in beta. If you run into any problems, please
+  [report them](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html).
+</ZulipNote>
+
+<ZulipNote>
+  Discord does not export email addresses, so imported users **must log in with
+  Discord** for the first time. See [how users will log
+  in](#initial-log-in-method) before you start.
+</ZulipNote>
+
+## Import process overview
+
+To import your Discord data into Zulip, you will need to take the following
+steps, which are described in more detail below:
+
+<Steps>
+  1. [Create a Discord bot token](#create-a-discord-bot-token).
+  1. [Export your Discord data](#export-your-discord-data).
+  1. [Import your Discord data into Zulip](#import-your-data-into-zulip).
+  1. [Clean up after the Discord export](#clean-up-after-the-discord-export).
+  1. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
+</Steps>
+
+## Import your organization from Discord into Zulip
+
+### Create a Discord bot token
+
+Discord's export does not include the server owner or each channel's privacy
+setting, both of which are needed for a successful data conversion. The import
+tool looks these up through the Discord API using a bot token, and the same token
+can be used to export your data in the next step.
+
+<Steps>
+  1. Go to the [Discord Developer
+     Portal](https://discord.com/developers/applications) and click **New
+     Application**.
+  1. Open the application's **Bot** tab. In the **Privileged Gateway Intents**
+     section, set **Server Members Intent** and **Message Content Intent**
+     to true. Click **Reset Token** and copy the resulting **bot token**.
+  1. Add the bot to your server with permission to view every channel you plan
+     to import, including private ones (granting it the **Administrator**
+     permission is the simplest way). The import tool will get a permission
+     error if the bot cannot see a channel.
+</Steps>
+
+<ZulipNote>
+  The bot token is only used to read your server's owner and each channel's
+  permission overwrites. It is never imported into Zulip.
+</ZulipNote>
+
+### Export your Discord data
+
+Discord does not provide a built-in data export, so use the third-party
+[DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter) tool.
+
+<Steps>
+  1. Install
+     [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter/blob/master/.docs/Getting-started.md)
+     (GUI or CLI). The following instructions assume you are using the
+     GUI client.
+
+  1. Select the server and channels that you want to export.
+
+  1. Click the download button and an export menu will pop up.
+
+  1. To export all attachments, set **Download assets** to true.
+
+  1. Select **JSON** as the output format.
+
+  1. Set **Format markdown** to true.
+
+  1. If you're exporting a large server, set the **Partition limit** to a reasonable
+     number (e.g., 1000 messages per file).
+
+  1. Export into a single directory with this layout:
+
+     ```text
+     discord-export/
+     ├── channels/
+     │   ├── Server - Category - general [1234].json
+     │   ├── Server - Category - random [5678].json
+     │   └── ...
+     └── media/
+         ├── cat_image.png
+         └── ...
+     ```
+
+     * All channel data **must** be exported in a directory named `channels/`.
+       This is the only required part of the layout.
+     * Export the media files in a `media/` directory next to `channels/`.
+
+  1. Click **Export**.
+</Steps>
+
+<ZulipNote>
+  Extract your export if it is a `.zip` archive; importing a `.zip` directly is
+  not supported.
+</ZulipNote>
+
+### Import your data into Zulip
+
+<ImportYourDataIntoZulip />
+
+<Tabs>
+  <TabItem label="Zulip Cloud">
+    <ImportIntoAZulipCloudOrganization />
+
+    For a Discord import, also include the [Discord bot
+    token](#create-a-discord-bot-token) you created, which we need to look up
+    your server's owner and channel privacy.
+
+    <ImportZulipCloudOrganizationWarning />
+  </TabItem>
+
+  <TabItem label="Self hosting">
+    <ImportIntoASelfHostedServerDescription />
+
+    <FlattenedSteps>
+      <ImportIntoASelfHostedServerInstructions />
+
+      1. To import into an organization hosted on the root domain
+         (`EXTERNAL_HOST`) of the Zulip installation, run the following
+         commands, replacing `<token>` with your Discord bot token.
+         <ImportSelfHostedServerTips />
+         ```bash "<token>"
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_discord_data /tmp/discord-export/ --token <token> --output /tmp/converted_discord_data
+         ./manage.py import '' /tmp/converted_discord_data
+         ./scripts/start-server
+         ```
+         Alternatively, to import into a custom subdomain, run:
+         ```bash "<token>" "<subdomain>"
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_discord_data /tmp/discord-export/ --token <token> --output /tmp/converted_discord_data
+         ./manage.py import <subdomain> /tmp/converted_discord_data
+         ./scripts/start-server
+         ```
+      1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
+         of the guide for [installing a new Zulip
+         server](https://zulip.readthedocs.io/en/stable/production/install.html).
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+### Import details
+
+Because the import tool is currently in beta, the following data is not imported
+into Zulip. If importing any of this data is important for your organization,
+contact [support@zulip.com](mailto:support@zulip.com) to see if the import tool
+can be extended to include it.
+
+* Direct messages and private threads
+* Message reactions
+* Custom emoji
+* User avatars and the server icon
+* Message edit history, and system messages such as join notices, pinned-message
+  notices, and "started a thread"
+
+A few additional caveats to keep in mind:
+
+* Discord does not export email addresses, so users log in with Discord; see
+  [how users will log in](#initial-log-in-method).
+* Each user's name is taken from their Discord server nickname.
+* Mentions, channel links, replies, and custom emoji in message text are
+  imported verbatim, rather than being converted to their Zulip equivalents.
+* All of a channel's messages, including replies in its public threads, are
+  imported into a single "imported from Discord" topic.
+* A voice channel's text chat is imported as a channel named `[voice] <name>`,
+  so it does not collide with a same-named text channel.
+* A Discord announcement channel becomes your organization's channel for Zulip's
+  own update announcements.
+* Because Discord's export does not list channel membership, only the users who
+  posted in a channel are subscribed to it.
+
+#### User roles
+
+Microsoft tenant's user roles are mapped to Zulip's [user
+roles](/help/user-roles) in the following way:
+
+| Discord role | Zulip role |
+| ------------ | ---------- |
+| Owner        | Owner      |
+| Member       | Member     |
+
+#### Settings
+
+Organization settings and full user settings are not exported. Configure
+organization settings as described
+[below](#get-your-organization-started-with-zulip), and encourage users to
+[customize their account settings](/help/getting-started-with-zulip).
+
+## Initial log in method
+
+Discord's export does not include email addresses, so the import tool assigns
+each user a placeholder address of the form
+`<discord-user-id>@discordexport.zulip.com`. These are not real email addresses,
+so password reset emails will not reach users, and imported accounts have no
+password. Currently, the only way for a user to access their Zulip account is
+to authenticate through Discord. Zulip's Discord authentication backend will
+match the authenticated user to the Zulip account with the corresponding encoded
+email.
+
+<Steps>
+  1. [Enable Discord
+     authentication](/help/configure-authentication-methods) for your
+     organization. On a self-hosted server, you must first configure the Discord
+     backend; see [social
+     authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#social-authentication).
+  1. Let your users know that they should click **Log in with Discord** the
+     first time they log in.
+  1. Once logged in, users can [change their email
+     address](/help/change-your-email-address).
+</Steps>
+
+<ViewImportedUsers />
+
+## Clean up after the Discord export
+
+Once your organization has been successfully imported into Zulip, delete the
+[Discord application and bot](https://discord.com/developers/applications) that
+you created to export your data.
+
+## Get your organization started with Zulip
+
+Once the import process is completed, you will need to:
+
+<Steps>
+  1. [Configure the settings for your organization](/help/customize-organization-settings),
+     which are not exported. This includes settings like [email
+     visibility](/help/configure-email-visibility), [message editing
+     permissions](/help/restrict-message-editing-and-deletion),
+     and [how users can join your organization](/help/restrict-account-creation).
+  1. All users from your Discord server will have accounts in your new Zulip
+     organization. However, you will need to let users know about their new
+     accounts, and that they should [log in with
+     Discord](#initial-log-in-method) for the first time.
+  1. Share the URL for your new Zulip organization, and (recommended) the [Getting
+     started with Zulip guide](/help/getting-started-with-zulip).
+  1. Recreate your Discord bots using Zulip's [native
+     integrations](/integrations/) and [interactive bots](/help/writing-bots).
+</Steps>
+
+## Related articles
+
+* [Moving from Discord](/help/moving-from-discord)
+* [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
+* [Configure authentication methods](/help/configure-authentication-methods)
+* [Change your email address](/help/change-your-email-address)
+* [Getting started with Zulip](/help/getting-started-with-zulip)
