@@ -86,3 +86,12 @@ class LlmsTxtTest(ZulipTestCase):
         self.assertIn("Rome", content)
         # "Scotland" is a private stream — should NOT be listed.
         self.assertNotIn("Scotland", content)
+
+    def test_llms_txt_rejects_unsafe_methods(self) -> None:
+        """
+        /llms.txt only serves GET and HEAD; other methods get 405.
+        """
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
+        result = self.client_post("/llms.txt")
+        self.assertEqual(result.status_code, 405)
