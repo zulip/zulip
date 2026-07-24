@@ -8,7 +8,6 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 
 function show_history_limit_notice(): void {
-    $(".top-messages-logo").hide();
     $(".history-limited-box").show();
     // The history-limit notice and the empty-narrow banner are mutually
     // exclusive top-of-feed states; clear the latter when showing this.
@@ -18,7 +17,6 @@ function show_history_limit_notice(): void {
 }
 
 function hide_history_limit_notice(): void {
-    $(".top-messages-logo").show();
     $(".history-limited-box").hide();
 }
 
@@ -28,13 +26,10 @@ function hide_end_of_results_notice(): void {
 }
 
 function show_end_of_results_notice(): void {
-    // Both end-of-results notices are hidden for spectators, so leave the
-    // top-of-feed logo in place for them rather than hiding it and showing
-    // nothing.
+    // Both end-of-results notices are hidden for spectators.
     if (page_params.is_spectator) {
         return;
     }
-    $(".top-messages-logo").hide();
 
     const narrow_filter = narrow_state.filter();
     assert(narrow_filter !== undefined);
@@ -51,12 +46,22 @@ function show_end_of_results_notice(): void {
     $(".all-messages-search-caution .search-shared-history").attr("data-url", update_hash);
 }
 
+export function update_top_of_feed_logo(): void {
+    if (message_lists.current?.data.fetch_status.has_found_oldest()) {
+        $(".top-messages-logo").hide();
+    } else {
+        $(".top-messages-logo").show();
+    }
+}
+
 export function update_top_of_narrow_notices(msg_list: MessageList): void {
     // Assumes that the current state is all notices hidden (i.e. this
     // will not hide a notice that should not be there)
     if (message_lists.current === undefined || msg_list !== message_lists.current) {
         return;
     }
+
+    update_top_of_feed_logo();
 
     if (msg_list.data.fetch_status.has_found_oldest()) {
         const filter = narrow_state.filter();
@@ -77,6 +82,11 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
 }
 
 export function hide_top_of_narrow_notices(): void {
+    // Restore the top-of-feed logo; this runs when resetting for a new
+    // narrow, whose fetch status we don't know yet. It is hidden again
+    // once we learn we have the narrow's oldest message (see
+    // update_top_of_feed_logo).
+    $(".top-messages-logo").show();
     hide_end_of_results_notice();
     hide_history_limit_notice();
 }
