@@ -1735,17 +1735,25 @@ def check_update_message(
         )
         links_for_embed |= rendering_result.links_for_preview
 
-        if message.is_channel_message and rendering_result.mentions_stream_wildcard:
+        stream = None
+        if message.is_channel_message and (
+            rendering_result.mentions_stream_wildcard or rendering_result.mentions_topic_wildcard
+        ):
             stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
-            if not stream_wildcard_mention_allowed(message.sender, stream, message.realm):
-                raise StreamWildcardMentionNotAllowedError
 
-        if message.is_channel_message and rendering_result.mentions_topic_wildcard:
+        if (
+            stream is not None
+            and rendering_result.mentions_stream_wildcard
+            and not stream_wildcard_mention_allowed(message.sender, stream, message.realm)
+        ):
+            raise StreamWildcardMentionNotAllowedError
+
+        if stream is not None and rendering_result.mentions_topic_wildcard:
             topic_participant_count = len(
                 participants_for_topic(message.realm.id, message.recipient.id, message.topic_name())
             )
             if not topic_wildcard_mention_allowed(
-                message.sender, topic_participant_count, message.realm
+                message.sender, topic_participant_count, message.realm, stream
             ):
                 raise TopicWildcardMentionNotAllowedError
 

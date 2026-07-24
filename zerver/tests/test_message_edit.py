@@ -7,7 +7,7 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.message_edit import get_mentions_for_message_updates
+from zerver.actions.message_edit import check_update_message, get_mentions_for_message_updates
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
@@ -18,6 +18,7 @@ from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_us
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib import utils
+from zerver.lib.exceptions import StreamWildcardMentionNotAllowedError
 from zerver.lib.message import messages_for_ids, visible_edit_history_for_message
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -2144,6 +2145,85 @@ class EditMessageTest(ZulipTestCase):
                 },
             )
         self.assert_json_success(result)
+
+    def test_channel_level_stream_wildcard_mention_restrictions_when_editing(self) -> None:
+        cordelia = self.example_user("cordelia")
+        shiva = self.example_user("shiva")
+        self.login("cordelia")
+        stream_name = "Macbeth"
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(shiva, stream_name)
+        message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
+
+        realm = cordelia.realm
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        stream = get_stream(stream_name, realm)
+
+        # Set org-level to Nobody so only channel-level matters.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        # Channel-level set to Members: cordelia (member) can edit to add wildcard.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            members_system_group,
+            acting_user=shiva,
+        )
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            check_update_message(
+                user_profile=cordelia,
+                message_id=message_id,
+                content="Hello @**everyone**",
+            )
+
+        # Channel-level set to Moderators: cordelia (member) is now blocked.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            moderators_system_group,
+            acting_user=shiva,
+        )
+        with (
+            mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17),
+            self.assertRaises(StreamWildcardMentionNotAllowedError),
+        ):
+            check_update_message(
+                user_profile=cordelia,
+                message_id=message_id,
+                content="Hello @**everyone**",
+            )
+
+        # Below the threshold, restriction is bypassed.
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
+            check_update_message(
+                user_profile=cordelia,
+                message_id=message_id,
+                content="Hello @**everyone**",
+            )
+
+        # Shiva (moderator) can edit with wildcard when subscriber count is high.
+        message_id_shiva = self.send_stream_message(shiva, stream_name, "Hi everyone")
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            check_update_message(
+                user_profile=shiva,
+                message_id=message_id_shiva,
+                content="Hello @**everyone**",
+            )
 
     def test_user_group_mentions_via_subgroup_when_editing(self) -> None:
         user_profile = self.example_user("iago")
