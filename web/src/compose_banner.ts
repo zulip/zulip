@@ -1,11 +1,13 @@
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 
+import render_banner from "../templates/components/banner.hbs";
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_long_paste_options from "../templates/compose_banner/long_paste_options.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
-import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
+import render_topics_required_error_message from "../templates/topics_required_error_message.hbs";
 
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -233,10 +235,16 @@ export function cannot_send_direct_message_error(error_message: string): void {
 }
 
 export function topic_missing_error(empty_string_topic_display_name: string): void {
-    const new_row_html = render_topics_required_error_banner({
-        banner_type: ERROR,
-        empty_string_topic_display_name,
-        classname: CLASSNAMES.topic_missing,
+    const new_row_html = render_banner({
+        intent: "danger",
+        label: new Handlebars.SafeString(
+            render_topics_required_error_message({empty_string_topic_display_name}),
+        ),
+        buttons: [],
+        close_button: true,
+        // Preserve legacy classes so has_error() / clear_validation_errors()
+        // keep matching this banner after the markup change.
+        custom_classes: `${ERROR} ${CLASSNAMES.topic_missing}`,
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     hide_compose_spinner();

@@ -300,8 +300,9 @@ test_ui("validate", ({mock_template, override}) => {
     compose_state.set_stream_id(denmark.stream_id);
     override(realm, "realm_topics_policy", "disable_empty_topic");
     let missing_topic_error_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
+    mock_template("topics_required_error_message.hbs", false, () => "<topic-required-stub>");
+    mock_template("components/banner.hbs", false, (data) => {
+        assert.ok(data.custom_classes.includes(compose_banner.CLASSNAMES.topic_missing));
         missing_topic_error_rendered = true;
         return "<banner-stub>";
     });
