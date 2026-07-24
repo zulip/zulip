@@ -1,6 +1,7 @@
 import itertools
 import json
 import logging
+import math
 import os
 import re
 import shutil
@@ -897,6 +898,17 @@ def get_messages_iterator(
                     # and we don't have a clean way to import at the
                     # moment.  We skip them on import.
                     continue
+                if not message_has_valid_timestamp(message):
+                    # `ts` is used as the sort key below and as
+                    # `date_sent` later; one malformed value would
+                    # abort the entire import.  Skip such messages
+                    # with a warning instead.
+                    logging.warning(
+                        "Skipping Slack message with invalid ts %r in %s",
+                        message.get("ts"),
+                        message_dir,
+                    )
+                    continue
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
@@ -1459,6 +1471,21 @@ def get_message_sending_user(message: ZerverFieldsT) -> str | None:
 
 def get_timestamp_from_message(message: ZerverFieldsT) -> float:
     return float(message["ts"])
+
+
+def message_has_valid_timestamp(message: ZerverFieldsT) -> bool:
+    """Whether `ts` is present and parses to a finite float.
+
+    `get_timestamp_from_message` is used both as a sort key and for
+    `date_sent`, so a missing or malformed `ts` on a single message
+    would otherwise abort the entire import — and a non-finite value
+    like "NaN" would not even raise, instead silently producing an
+    inconsistent sort order.
+    """
+    try:
+        return math.isfinite(float(message["ts"]))
+    except (KeyError, TypeError, ValueError):
+        return False
 
 
 def is_integration_bot_message(message: ZerverFieldsT) -> bool:
