@@ -9,7 +9,7 @@ from zulip_bots.lib import extract_query_without_mention
 from zerver.lib.bot_lib import (
     EmbeddedBotHandler,
     EmbeddedBotQuitError,
-    do_flag_service_bots_messages_as_processed,
+    do_flag_message_handling_bots_messages_as_processed,
     get_bot_handler,
 )
 from zerver.models import UserProfile
@@ -58,4 +58,4 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 )
             except EmbeddedBotQuitError as e:
                 logging.warning("%s", e)
-        do_flag_service_bots_messages_as_processed(user_profile, [message["id"]])
+        do_flag_message_handling_bots_messages_as_processed(user_profile, [message["id"]])

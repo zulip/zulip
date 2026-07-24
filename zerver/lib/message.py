@@ -147,7 +147,7 @@ class SendMessageRequest:
     um_eligible_user_ids: set[int]
     long_term_idle_user_ids: set[int]
     default_bot_user_ids: set[int]
-    service_bot_tuples: list[tuple[int, int]]
+    message_handling_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
     push_device_registered_user_ids: set[int]
     # IDs of topic participants who should be notified of topic wildcard mention.
@@ -179,7 +179,7 @@ class SendMessageRequest:
     deliver_at: datetime | None = None
     delivery_type: str | None = None
     limit_unread_user_ids: set[int] | None = None
-    service_queue_events: dict[str, list[dict[str, Any]]] | None = None
+    message_handling_queue_events: dict[str, list[dict[str, Any]]] | None = None
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: int | None = None
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
