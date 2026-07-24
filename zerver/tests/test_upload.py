@@ -1885,7 +1885,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_valid_icons(self) -> None:
         """
         A PUT request to /json/realm/icon with a valid file should return a URL
-        and actually create an realm icon.
+        and actually create a realm icon.
         """
         for fname, rfname in self.correct_files:
             with self.subTest(fname=fname):
@@ -2080,7 +2080,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_valid_logos(self) -> None:
         """
         A PUT request to /json/realm/logo with a valid file should return a URL
-        and actually create an realm logo.
+        and actually create a realm logo.
         """
         for fname, rfname in self.correct_files:
             with self.subTest(fname=fname):

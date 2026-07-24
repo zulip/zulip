@@ -749,7 +749,7 @@ def send_restart_events() -> None:
 
 def mark_clients_to_reload(queue_ids: Iterable[str]) -> None:
     # Build web_reload_clients, which is a sorted-by-realm-id list of
-    # website client queue-ids which were were loaded from old Tornado
+    # website client queue-ids which were loaded from old Tornado
     # instances.  We use an (ordered) dict to make removing one be
     # O(1), as well as pulling an ordered N of them to be O(N).  We
     # sort by realm_id so that restarts are rolling by realm.

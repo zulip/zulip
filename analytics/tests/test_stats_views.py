@@ -562,7 +562,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data/realm/zulip", {"chart_name": "number_of_humans"}
         )
-        self.assert_json_error(result, "Must be an server administrator", 400)
+        self.assert_json_error(result, "Must be a server administrator", 400)
 
         user = self.example_user("hamlet")
         user.is_staff = True
@@ -588,7 +588,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data/installation", {"chart_name": "number_of_humans"}
         )
-        self.assert_json_error(result, "Must be an server administrator", 400)
+        self.assert_json_error(result, "Must be a server administrator", 400)
 
         user = self.example_user("hamlet")
         user.is_staff = True
