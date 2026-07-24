@@ -290,6 +290,81 @@ function get_channel_suggestions(
     });
 }
 
+// Once a `channel:` pill (or a multi-channel `channels:` list) exists,
+// offer to add more channels, transforming the narrow into a
+// `channels:` list of IDs. This mirrors get_group_suggestions, which
+// grows a `dm:` term by adding users.
+function get_add_channel_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
+    if (terms.length === 0) {
+        return [];
+    }
+    const last_complete_term = terms.at(-1)!;
+
+    let existing_channel_ids: number[];
+    if (last_complete_term.operator === "channel") {
+        const channel_id = Number.parseInt(last_complete_term.operand, 10);
+        if (Number.isNaN(channel_id)) {
+            return [];
+        }
+        existing_channel_ids = [channel_id];
+    } else if (
+        last_complete_term.operator === "channels" &&
+        Array.isArray(last_complete_term.operand)
+    ) {
+        existing_channel_ids = last_complete_term.operand;
+    } else {
+        return [];
+    }
+
+    // Only grow the list while the user is adding to it (empty input or
+    // free text), not after they've started an unrelated operator.
+    let new_query: string;
+    if (last.operator === "search") {
+        new_query = last.operand;
+    } else if (last.operator === "") {
+        new_query = "";
+    } else {
+        return [];
+    }
+
+    let matching_channel_names = stream_data.subscribed_stream_names().filter((channel_name) => {
+        const channel = stream_data.get_sub_by_name(channel_name);
+        return (
+            channel !== undefined &&
+            !existing_channel_ids.includes(channel.stream_id) &&
+            channel_matches_query(channel_name, new_query)
+        );
+    });
+    matching_channel_names = typeahead_helper.sorter(new_query, matching_channel_names, (x) => x);
+
+    return matching_channel_names.slice(0, 15).map((channel_name) => {
+        const channel = stream_data.get_sub_by_name(channel_name);
+        assert(channel !== undefined);
+        const term: NarrowCanonicalTerm = {
+            operator: "channels",
+            operand: [...existing_channel_ids, channel.stream_id],
+            negated: last_complete_term.negated,
+        };
+        return Filter.unparse([term]);
+    });
+}
+
+// Extracts the channel IDs from an unparsed `channel:`/`channels:`
+// search string when its operand is a numeric ID list (returns null
+// for string filters like `channels:public`). Used to decide when a
+// multi-channel suggestion should replace, rather than append to, the
+// existing channel pill.
+function channel_ids_in_search_string(search_string: string): number[] | null {
+    const match = /^-?channels?:(\d+(?:,\d+)*)$/.exec(search_string);
+    if (match === null) {
+        return null;
+    }
+    return match[1]!.split(",").map(Number);
+}
+
 function get_group_suggestions(
     group_operator: "dm" | "dm-including",
 ): (last: NarrowCanonicalTermSuggestion, terms: NarrowCanonicalTerm[]) => Suggestion[] {
@@ -1076,10 +1151,21 @@ class Attacher {
                 const last_base_term = this.base.at(-1)!;
                 const last_base_string = last_base_term;
                 const new_search_string = suggestion;
+                // A multi-channel `channels:` suggestion replaces the
+                // existing `channel:`/`channels:` pill when it extends
+                // that pill's channel list, rather than adding a second
+                // pill.
+                const base_channel_ids = channel_ids_in_search_string(last_base_string);
+                const new_channel_ids = channel_ids_in_search_string(new_search_string);
+                const extends_channel_pill =
+                    base_channel_ids !== null &&
+                    new_channel_ids !== null &&
+                    base_channel_ids.every((id) => new_channel_ids.includes(id));
                 if (
-                    (new_search_string.startsWith("dm:") ||
+                    ((new_search_string.startsWith("dm:") ||
                         new_search_string.startsWith("dm-including:")) &&
-                    new_search_string.includes(last_base_string)
+                        new_search_string.includes(last_base_string)) ||
+                    extends_channel_pill
                 ) {
                     suggestion_line = [...this.base.slice(0, -1), suggestion];
                 } else {
@@ -1223,6 +1309,7 @@ export let get_suggestions = function (
         get_operator_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
+        get_add_channel_suggestions,
         get_channel_suggestions,
         get_people("dm"),
         get_people("sender"),
@@ -1238,6 +1325,7 @@ export let get_suggestions = function (
             get_channels_filter_suggestions,
             get_operator_suggestions,
             get_is_filter_suggestions,
+            get_add_channel_suggestions,
             get_channel_suggestions,
             get_people("sender"),
             get_topic_suggestions,

@@ -54,6 +54,15 @@ run_test("hash_util", () => {
     operand = "testing 123";
 
     encode_decode_operand(operator, operand, "testing.20123");
+
+    // A multi-channel `channels` operand round-trips as comma-separated
+    // channel IDs, while a string type filter is unchanged.
+    const backend = make_stream({stream_id: 100, name: "backend"});
+    stream_data.add_sub_for_tests(backend);
+    assert.equal(hash_util.encode_operand({operator: "channels", operand: [99, 100]}), "99,100");
+    assert.deepEqual(hash_util.decode_operand("channels", "99,100"), [99, 100]);
+    assert.equal(hash_util.encode_operand({operator: "channels", operand: "public"}), "public");
+    assert.equal(hash_util.decode_operand("channels", "public"), "public");
 });
 
 run_test("test_get_hash_category", () => {

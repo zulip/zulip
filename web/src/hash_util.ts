@@ -49,6 +49,14 @@ export function encode_operand(term: NarrowCanonicalTerm): string {
             break;
         case "channel":
             return encode_stream_id(Number.parseInt(term.operand, 10));
+        case "channels":
+            // A list-of-IDs operand is encoded as comma-separated
+            // channel IDs (e.g. "channels/1,2,3"); string type filters
+            // ("public", etc.) fall through to the default encoding.
+            if (Array.isArray(term.operand)) {
+                return term.operand.join(",");
+            }
+            break;
     }
 
     return slug ?? internal_url.encodeHashComponent(String(term.operand));
@@ -95,6 +103,13 @@ export function decode_operand(
             return -1;
         }
         return util.the(user_ids);
+    }
+
+    if (operator === "channels" && /^\d+(,\d+)*$/.test(operand)) {
+        // A comma-separated list of channel IDs narrows to those
+        // specific channels; bare string operands ("public", etc.)
+        // fall through and are returned unchanged.
+        return operand.split(",").map(Number);
     }
 
     operand = internal_url.decodeHashComponent(operand);

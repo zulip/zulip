@@ -1,5 +1,6 @@
 import re
 from collections.abc import Callable, Iterable, Sequence
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Generic, Literal, TypeAlias, TypedDict, TypeVar
@@ -25,6 +26,7 @@ from zerver.lib.message import (
 from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.streams import (
+    access_stream_by_id,
     access_stream_common,
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
@@ -108,7 +110,10 @@ class NarrowParameter(BaseModel):
             "mentions",
             "with",
         ]
-        operators_supporting_ids = ["pm-with", "dm"]
+        # The "channels"/"streams" operators accept either a string
+        # operand (e.g. "public") or a list of channel IDs, branching
+        # like "dm".
+        operators_supporting_ids = ["pm-with", "dm", *channels_operators]
         operators_non_empty_operand = {"search"}
 
         operator = self.operator
@@ -262,10 +267,14 @@ class NarrowBuilder:
         realm: Realm,
         *,
         is_web_public_query: bool = False,
+        narrow: list["NarrowParameter"] | None = None,
     ) -> None:
         self.user_profile = user_profile
         self.realm = realm
         self.is_web_public_query = is_web_public_query
+        # The full narrow is retained so that `is:muted` can scope the
+        # muting rules it applies to any channels the narrow restricts to.
+        self.narrow = narrow
         self.by_method_map = {
             "has": self.by_has,
             "in": self.by_in,
@@ -419,11 +428,16 @@ class NarrowBuilder:
             cond = get_followed_topic_condition_q(self.user_profile.id)
             return query.filter(maybe_negate(cond))
         elif operand == "muted":
-            # TODO: If we also have a channel operator, this could be
-            # a lot more efficient if limited to only those muting
-            # rules that appear in such channels.
+            # When the narrow is restricted to specific channels, `is:muted`
+            # only hides topics muted within those channels and must not
+            # treat an explicitly-listed channel as muted. We therefore pass
+            # the full narrow (rather than a synthetic one) so that
+            # exclude_muting_conditions can scope the mutes to those channels.
             conditions = exclude_muting_conditions(
-                self.user_profile, [NarrowParameter(operator="is", operand="muted")]
+                self.user_profile,
+                self.narrow
+                if self.narrow is not None
+                else [NarrowParameter(operator="is", operand="muted")],
             )
             return query.filter(maybe_negate(~conditions))
 
@@ -453,23 +467,62 @@ class NarrowBuilder:
         return query.filter(maybe_negate(cond))
 
     def by_channels(
-        self, query: QuerySet[Message], operand: str, maybe_negate: ConditionTransform
+        self, query: QuerySet[Message], operand: str | list[int], maybe_negate: ConditionTransform
     ) -> QuerySet[Message]:
         self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
-        if operand == "public":
-            # Get all both subscribed and non-subscribed public channels
-            # but exclude any private subscribed channels.
-            recipient_queryset = get_public_streams_queryset(self.realm)
-        elif operand == "web-public":
-            recipient_queryset = get_web_public_streams_queryset(self.realm)
-        elif operand == "archived":
-            recipient_queryset = get_archived_streams_queryset(self.realm)
-        else:
-            raise BadNarrowOperatorError("unknown channels operand " + operand)
+        if isinstance(operand, str):
+            if operand == "public":
+                # Get all both subscribed and non-subscribed public channels
+                # but exclude any private subscribed channels.
+                recipient_queryset = get_public_streams_queryset(self.realm)
+            elif operand == "web-public":
+                recipient_queryset = get_web_public_streams_queryset(self.realm)
+            elif operand == "archived":
+                recipient_queryset = get_archived_streams_queryset(self.realm)
+            else:
+                raise BadNarrowOperatorError("unknown channels operand " + operand)
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
-        cond = Q(recipient_id__in=list(recipient_ids))
+            recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
+            cond = Q(recipient_id__in=list(recipient_ids))
+            return query.filter(maybe_negate(cond))
+
+        # The operand is a list of channel IDs. We require the user to
+        # have access to every listed channel, and reject the whole
+        # narrow if any channel is inaccessible or does not exist,
+        # rather than silently dropping channels from the results.
+        #
+        # We check access one channel at a time via the audited
+        # access_stream_by_id path. This runs once while building the
+        # query (not per message) over a user-supplied, bounded list,
+        # so reusing the shared access logic is preferable to a custom
+        # bulk access check here.
+        channel_recipient_ids = []
+        for channel_id in operand:
+            if self.is_web_public_query:
+                try:
+                    channel = get_stream_by_narrow_operand_access_unchecked(channel_id, self.realm)
+                except Stream.DoesNotExist:
+                    raise BadNarrowOperatorError("unknown channel " + str(channel_id))
+                if not channel.is_web_public:
+                    raise BadNarrowOperatorError("unknown web-public channel " + str(channel_id))
+            else:
+                assert self.user_profile is not None
+                try:
+                    # We allow narrowing to archived channels by ID, so
+                    # we don't require the channel to be active here.
+                    channel, _sub = access_stream_by_id(
+                        self.user_profile,
+                        channel_id,
+                        require_active_channel=False,
+                    )
+                except JsonableError:
+                    raise BadNarrowOperatorError("unknown channel " + str(channel_id))
+
+            assert channel.recipient_id is not None
+            channel_recipient_ids.append(channel.recipient_id)
+
+        cond = Q(recipient_id__in=channel_recipient_ids)
         return query.filter(maybe_negate(cond))
 
     def by_topic(
@@ -789,13 +842,22 @@ def ok_to_include_history(
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
                     include_history = can_access_stream_history_by_id(user_profile, operand)
-            elif (
-                term.operator in channels_operators
-                and term.operand in ["public", "web-public"]
-                and not term.negated
-                and user_profile.can_access_public_streams()
-            ):
-                include_history = True
+            elif term.operator in channels_operators and not term.negated:
+                channels_operand = term.operand
+                if isinstance(channels_operand, list):
+                    # For a list of channel IDs, we can only include
+                    # history if the user is allowed to access history
+                    # for every listed channel; otherwise we must
+                    # restrict to the user's own UserMessage rows.
+                    include_history = len(channels_operand) > 0 and all(
+                        can_access_stream_history_by_id(user_profile, channel_id)
+                        for channel_id in channels_operand
+                    )
+                elif (
+                    channels_operand in ["public", "web-public"]
+                    and user_profile.can_access_public_streams()
+                ):
+                    include_history = True
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
@@ -807,14 +869,30 @@ def ok_to_include_history(
     return include_history
 
 
-def get_channel_from_narrow_access_unchecked(
+def get_channel_ids_from_narrow_access_unchecked(
     narrow: list[NarrowParameter] | None, realm: Realm
-) -> Stream | None:
-    if narrow is not None:
-        for term in narrow:
-            if term.operator in channel_operators:
-                return get_stream_by_narrow_operand_access_unchecked(term.operand, realm)
-    return None
+) -> list[int]:
+    # Returns the channel IDs that the narrow restricts to via a
+    # `channel`/`channels` operator with an ID-based operand. This is
+    # used only to scope which mutes apply, so we deliberately do not
+    # check the user's access to these channels here.
+    if narrow is None:
+        return []
+
+    channel_ids: list[int] = []
+    for term in narrow:
+        if term.operator in channel_operators:
+            channel = get_stream_by_narrow_operand_access_unchecked(term.operand, realm)
+            channel_ids.append(channel.id)
+        elif (
+            term.operator in channels_operators
+            and isinstance(term.operand, list)
+            and not term.negated
+        ):
+            for channel_id in term.operand:
+                channel = get_stream_by_narrow_operand_access_unchecked(channel_id, realm)
+                channel_ids.append(channel.id)
+    return channel_ids
 
 
 # This function verifies if the current narrow has the necessary
@@ -938,18 +1016,14 @@ def update_narrow_terms_containing_with_operator(
 
 
 def exclude_muting_conditions(user_profile: UserProfile, narrow: list[NarrowParameter] | None) -> Q:
-    channel_id = None
-    try:
-        # Note: It is okay here to not check access to channel
-        # because we are only using the channel ID to exclude data,
-        # not to include results.
-        channel = get_channel_from_narrow_access_unchecked(narrow, user_profile.realm)
-        if channel is not None:
-            channel_id = channel.id
-    except Stream.DoesNotExist:
-        pass
+    channel_ids: list[int] = []
+    # Note: It is okay here to not check access to the channels
+    # because we are only using their IDs to exclude data, not to
+    # include results.
+    with suppress(Stream.DoesNotExist):
+        channel_ids = get_channel_ids_from_narrow_access_unchecked(narrow, user_profile.realm)
 
-    conditions = exclude_stream_and_topic_mutes(user_profile, channel_id)
+    conditions = exclude_stream_and_topic_mutes(user_profile, channel_ids)
 
     # Muted user logic for hiding messages is implemented entirely
     # client-side. This is by design, as it allows UI to hint that
@@ -1039,6 +1113,7 @@ def add_narrow_conditions(
         user_profile,
         realm,
         is_web_public_query=is_web_public_query,
+        narrow=narrow,
     )
     search_operands = []
 

@@ -1207,3 +1207,28 @@ test("queries_with_spaces", () => {
     expected = [`channel:${dev_help_id}`];
     assert.deepEqual(suggestions, expected);
 });
+
+test("channel pill offers adding more channels", () => {
+    const scotland_id = new_stream_id();
+    const verona_id = new_stream_id();
+    const denmark_id = new_stream_id();
+    for (const [name, stream_id] of [
+        ["Scotland", scotland_id],
+        ["Verona", verona_id],
+        ["Denmark", denmark_id],
+    ]) {
+        stream_data.add_sub_for_tests(make_stream({name, stream_id, subscribed: true}));
+    }
+
+    // A single channel pill offers extending into a multi-channel
+    // narrow, mirroring how a dm pill offers adding more users.
+    let suggestions = get_suggestions("", `channel:${scotland_id}`);
+    assert.ok(suggestions.includes(`channels:${scotland_id},${verona_id}`));
+    assert.ok(suggestions.includes(`channels:${scotland_id},${denmark_id}`));
+
+    // An existing multi-channel pill offers adding one more channel and
+    // doesn't re-suggest channels already in the list.
+    suggestions = get_suggestions("", `channels:${scotland_id},${verona_id}`);
+    assert.ok(suggestions.includes(`channels:${scotland_id},${verona_id},${denmark_id}`));
+    assert.ok(!suggestions.includes(`channels:${scotland_id},${verona_id},${verona_id}`));
+});

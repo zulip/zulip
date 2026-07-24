@@ -58,6 +58,10 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 13.0 (feature level ZF-5aa045), support was added for the `channels`
+  operator to accept a JSON array of channel IDs as its operand. This allows
+  searching messages across multiple channels in a single narrow.
+
 * In Zulip 12.0 (feature level 489), support was added for a new
   filter, `channels:archived`, which returns messages the current user
   received in channels that have been [archived](/help/archive-a-channel).
@@ -172,6 +176,8 @@ that use either channel IDs or user IDs that are not documented in the
 help center because they are primarily useful to API clients:
 
 * `channel:1234`: Search messages sent to the channel with ID `1234`.
+* `channels:1234,5678`: Search messages in channels with IDs `1234` and `5678`.
+  **New in Zulip 13.0 (feature level ZF-5aa045).**
 * `sender:1234`: Search messages sent by user ID `1234`.
 * `dm:1234`: Search the direct message conversation between
   you and user ID `1234`.
@@ -189,7 +195,8 @@ help center because they are primarily useful to API clients:
 The operands for these search options must be encoded either as an
 integer ID or a JSON list of integer IDs. For example, to query
 messages sent by a user 1234 to a direct message thread with yourself,
-user 1234, and user 5678, the correct JSON-encoded query is:
+user 1234, and user 5678, or messages in channels 1 and 2, the
+correct JSON-encoded queries are:
 
 ```json
 [
@@ -200,6 +207,17 @@ user 1234, and user 5678, the correct JSON-encoded query is:
     {
         "operator": "sender",
         "operand": 1234
+    }
+]
+```
+
+Or:
+
+```json
+[
+    {
+        "operator": "channels",
+        "operand": [1, 2]
     }
 ]
 ```

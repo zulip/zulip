@@ -88,7 +88,11 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     }),
     z.object({
         operator: z.literal("channels"),
-        operand: z.string(),
+        // A string operand is one of the type filters ("public",
+        // "web-public", "archived"); an array of channel IDs narrows
+        // to messages in those specific channels, mirroring how "dm"
+        // takes a list of user IDs.
+        operand: z.union([z.string(), z.array(z.number())]),
         negated: z.optional(z.boolean()),
     }),
     z.object({
