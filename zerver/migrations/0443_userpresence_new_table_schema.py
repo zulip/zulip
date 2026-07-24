@@ -3,7 +3,7 @@ import django.utils.timezone
 from django.conf import settings
 from django.db import migrations, models
 
-from zerver.lib.migrate import rename_indexes_constraints
+from zerver.lib.migrate import add_index, rename_indexes_constraints
 
 
 class Migration(migrations.Migration):
@@ -13,6 +13,8 @@ class Migration(migrations.Migration):
     data can be ported over from the current UserPresence model.
     In the last step, the old model will be replaced with the new one.
     """
+
+    atomic = not settings.MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY
 
     dependencies = [
         ("zerver", "0442_remove_realmfilter_url_format_string"),
@@ -81,14 +83,14 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
-        migrations.AddIndex(
+        add_index(
             model_name="userpresence",
             index=models.Index(
                 fields=["realm", "last_active_time"],
                 name="zerver_userpresence_realm_id_last_active_time_1c5aa9a2_idx",
             ),
         ),
-        migrations.AddIndex(
+        add_index(
             model_name="userpresence",
             index=models.Index(
                 fields=["realm", "last_connected_time"],
