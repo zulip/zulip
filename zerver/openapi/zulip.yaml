@@ -549,8 +549,13 @@ paths:
                                             - "G" = Hosted by Gravatar
                                             - "J" = Generated using Jdenticon
                                             - "U" = Uploaded by user
+                                            - "S" = System (provided by Zulip)
 
-                                            **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
+                                            Currently, the "S" value is only assigned to deactivated
+                                            users whose profile has been deleted.
+
+                                            **Changes**: The "S" value is new in Zulip 13.0 (feature level ZF-1b973a).
+                                            The "J" value is new in Zulip 12.0 (feature level 466).
                                         avatar_url_medium:
                                           type: string
                                           description: |
@@ -5469,8 +5474,11 @@ paths:
                                         - "G" = Hosted by Gravatar
                                         - "J" = Generated using Jdenticon
 
-                                        Note that "U" is not a supported value here, since there is
-                                        no such thing as a "default" user-uploaded avatar.
+                                        The "U" and "S" (System) values will not appear here, as
+                                        neither is ever used as a default source for new users.
+                                        There is no such thing as a "default" user-uploaded avatar
+                                        ("U"), and no user is created with a system-provided avatar
+                                        ("S").
 
                                         **Changes**: New in Zulip 12.0 (feature level 456).
                                     default_code_block_language:
@@ -21561,8 +21569,11 @@ paths:
                           - "G" = Hosted by Gravatar
                           - "J" = Generated using Jdenticon
 
-                          Note that "U" is not a supported value here, since there is
-                          no such thing as a "default" user-uploaded avatar.
+                          The "U" and "S" (System) values will not appear here, as
+                          neither is ever used as a default source for new users.
+                          There is no such thing as a "default" user-uploaded avatar
+                          ("U"), and no user is created with a system-provided avatar
+                          ("S").
 
                           **Changes**: New in Zulip 12.0 (feature level 456).
                       jitsi_server_url:
@@ -22495,9 +22506,16 @@ paths:
                           - "G" = Hosted by Gravatar
                           - "J" = Generated using Jdenticon
                           - "U" = Uploaded by user
+                          - "S" = System (provided by Zulip)
 
-                          **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
-                          The avatar data source type for the current user.
+                          The "S" value is normally only set for deactivated users
+                          whose profile has been deleted, who cannot authenticate.
+                          However, it can still appear here if such a user is later
+                          reactivated, since reactivation does not reset their
+                          avatar_source.
+
+                          **Changes**: The "S" value is new in Zulip 13.0 (feature level ZF-1b973a).
+                          The "J" value is new in Zulip 12.0 (feature level 466).
                       avatar_url_medium:
                         type: string
                         description: |
