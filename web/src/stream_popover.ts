@@ -375,6 +375,30 @@ async function get_message_placement_in_conversation(
     );
 }
 
+function can_move_oldest_message_in_data(
+    current_stream_id: number,
+    topic_name: string,
+    move_limit_buffer: number,
+): boolean {
+    const messages_in_topic = message_util.get_loaded_messages_in_topic(
+        current_stream_id,
+        topic_name,
+    );
+    if (messages_in_topic.length > 0) {
+        messages_in_topic.sort((a, b) => a.id - b.id);
+        const oldest_msg = messages_in_topic[0];
+        assert(oldest_msg !== undefined);
+        const can_move_msg =
+            message_edit.is_topic_editable(oldest_msg, move_limit_buffer) ||
+            message_edit.is_stream_editable(oldest_msg, move_limit_buffer);
+
+        if (!can_move_msg) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export async function build_move_topic_to_stream_popover(
     current_stream_id: number,
     topic_name: string,
@@ -397,6 +421,7 @@ export async function build_move_topic_to_stream_popover(
         only_topic_edit: boolean;
         disable_topic_input?: boolean;
         message_placement?: "first" | "intermediate" | "last";
+        can_move_oldest_message_in_data: boolean;
         stream: sub_store.StreamSubscription | undefined;
         max_topic_length: number;
     } = {
@@ -409,6 +434,7 @@ export async function build_move_topic_to_stream_popover(
         from_message_actions_popover: message !== undefined,
         only_topic_edit,
         max_topic_length: realm.max_topic_length,
+        can_move_oldest_message_in_data: true,
     };
 
     // When the modal is opened for moving the whole topic from left sidebar,
@@ -481,6 +507,12 @@ export async function build_move_topic_to_stream_popover(
         const move_limit_buffer = 5;
         args.disable_topic_input = !message_edit.is_topic_editable(message, move_limit_buffer);
         disable_stream_input = !message_edit.is_stream_editable(message, move_limit_buffer);
+
+        args.can_move_oldest_message_in_data = can_move_oldest_message_in_data(
+            current_stream_id,
+            topic_name,
+            move_limit_buffer,
+        );
 
         // If message is in a search view, default to "move only this message" option,
         // same as if it were the last message in any view.
