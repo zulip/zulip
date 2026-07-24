@@ -380,9 +380,7 @@ export function get_tooltip_context_for_info_density_buttons(
                 }
             }
         }
-    }
-
-    if (property === "web_line_height_percent") {
+    } else if (property === "web_line_height_percent") {
         if (is_default_button) {
             if (is_current_value_default) {
                 tooltip_first_line = $t({defaultMessage: "Already at default line spacing"});

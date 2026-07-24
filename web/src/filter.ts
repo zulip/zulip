@@ -946,34 +946,39 @@ export class Filter {
             }
             const prefix_for_operator = this.operator_to_prefix(term.operator, term.negated);
             if (prefix_for_operator !== "") {
-                if (term.operator === "channel") {
-                    const stream = stream_data.get_sub_by_id_string(term.operand);
-                    const verb = term.negated ? "exclude " : "";
-                    if (stream) {
-                        return {
-                            type: "channel",
-                            prefix_for_operator: verb + "messages in ",
-                            stream,
-                        };
+                switch (term.operator) {
+                    case "channel": {
+                        const stream = stream_data.get_sub_by_id_string(term.operand);
+                        const verb = term.negated ? "exclude " : "";
+                        if (stream) {
+                            return {
+                                type: "channel",
+                                prefix_for_operator: verb + "messages in ",
+                                stream,
+                            };
+                        }
+                        // Assume the operand is a partially formed name and return
+                        // the operator as the channel name in the next block.
+                        /* istanbul ignore next */
+                        break;
                     }
-                    // Assume the operand is a partially formed name and return
-                    // the operator as the channel name in the next block.
-                }
-                if (term.operator === "date") {
-                    return {
-                        type: "prefix_for_operator",
-                        prefix_for_operator:
-                            term.operand === "" ? prefix_for_operator : "messages sent around",
-                        operand: date_util.convert_date_str_to_description_date(term.operand),
-                    };
-                }
-                if (term.operator === "topic" && !is_operator_suggestion) {
-                    return {
-                        type: "prefix_for_operator",
-                        prefix_for_operator,
-                        operand: util.get_final_topic_display_name(term.operand),
-                        is_empty_string_topic: term.operand === "",
-                    };
+                    case "date":
+                        return {
+                            type: "prefix_for_operator",
+                            prefix_for_operator:
+                                term.operand === "" ? prefix_for_operator : "messages sent around",
+                            operand: date_util.convert_date_str_to_description_date(term.operand),
+                        };
+                    case "topic":
+                        if (!is_operator_suggestion) {
+                            return {
+                                type: "prefix_for_operator",
+                                prefix_for_operator,
+                                operand: util.get_final_topic_display_name(term.operand),
+                                is_empty_string_topic: term.operand === "",
+                            };
+                        }
+                        break;
                 }
                 return {
                     type: "prefix_for_operator",

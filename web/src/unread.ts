@@ -842,9 +842,7 @@ export function process_unread_message(message: UnreadMessageData): void {
             message_id: message.id,
             user_ids_string: message.user_ids_string,
         });
-    }
-
-    if (message.type === "stream") {
+    } else if (message.type === "stream") {
         unread_topic_counter.add({
             message_id: message.id,
             stream_id: message.stream_id,

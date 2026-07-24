@@ -401,11 +401,6 @@ export function dispatch_normal_event(event) {
                                     realm["realm_" + key] = value;
                                 }
 
-                                if (key === "topics_policy") {
-                                    compose_recipient.update_topic_inputbox_on_topics_policy_change();
-                                    compose_recipient.update_compose_area_placeholder_text();
-                                }
-
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                     realm_settings[key]();
@@ -422,51 +417,50 @@ export function dispatch_normal_event(event) {
                                     );
                                 }
 
-                                if (
-                                    key === "create_multiuse_invite_group" ||
-                                    key === "can_invite_users_group"
-                                ) {
-                                    settings_invites.update_invite_user_panel();
-                                    sidebar_ui.update_invite_user_option();
-                                    gear_menu.rerender();
-                                }
-
-                                if (
-                                    key === "direct_message_initiator_group" ||
-                                    key === "direct_message_permission_group"
-                                ) {
-                                    settings_org.check_disable_direct_message_initiator_group_widget();
-                                    compose_closed_ui.maybe_update_buttons_for_dm_recipient();
-                                    compose_validate.validate_and_update_send_button_status();
-                                }
-
-                                if (
-                                    key === "can_move_messages_between_topics_group" ||
-                                    key === "can_resolve_topics_group"
-                                ) {
-                                    // Technically we just need to rerender the message recipient
-                                    // bars to update the buttons for editing or resolving a topic,
-                                    // but because these policies are changed rarely, it's fine to
-                                    // rerender the entire message feed.
-                                    message_live_update.rerender_messages_view();
-                                }
-
-                                if (key === "plan_type") {
-                                    gear_menu.rerender();
-                                }
-
-                                if (
-                                    key === "can_add_subscribers_group" &&
-                                    overlays.streams_open()
-                                ) {
-                                    const active_stream_id =
-                                        stream_settings_components.get_active_data().id;
-                                    if (active_stream_id !== undefined) {
-                                        const slim_sub = sub_store.get(active_stream_id);
-                                        const sub =
-                                            stream_settings_data.get_sub_for_settings(slim_sub);
-                                        stream_ui_updates.update_add_subscriptions_elements(sub);
-                                    }
+                                switch (key) {
+                                    case "topics_policy":
+                                        compose_recipient.update_topic_inputbox_on_topics_policy_change();
+                                        compose_recipient.update_compose_area_placeholder_text();
+                                        break;
+                                    case "create_multiuse_invite_group":
+                                    case "can_invite_users_group":
+                                        settings_invites.update_invite_user_panel();
+                                        sidebar_ui.update_invite_user_option();
+                                        gear_menu.rerender();
+                                        break;
+                                    case "direct_message_initiator_group":
+                                    case "direct_message_permission_group":
+                                        settings_org.check_disable_direct_message_initiator_group_widget();
+                                        compose_closed_ui.maybe_update_buttons_for_dm_recipient();
+                                        compose_validate.validate_and_update_send_button_status();
+                                        break;
+                                    case "can_move_messages_between_topics_group":
+                                    case "can_resolve_topics_group":
+                                        // Technically we just need to rerender the message recipient
+                                        // bars to update the buttons for editing or resolving a topic,
+                                        // but because these policies are changed rarely, it's fine to
+                                        // rerender the entire message feed.
+                                        message_live_update.rerender_messages_view();
+                                        break;
+                                    case "plan_type":
+                                        gear_menu.rerender();
+                                        break;
+                                    case "can_add_subscribers_group":
+                                        if (overlays.streams_open()) {
+                                            const active_stream_id =
+                                                stream_settings_components.get_active_data().id;
+                                            if (active_stream_id !== undefined) {
+                                                const slim_sub = sub_store.get(active_stream_id);
+                                                const sub =
+                                                    stream_settings_data.get_sub_for_settings(
+                                                        slim_sub,
+                                                    );
+                                                stream_ui_updates.update_add_subscriptions_elements(
+                                                    sub,
+                                                );
+                                            }
+                                        }
+                                        break;
                                 }
                             }
                             if (event.data.authentication_methods !== undefined) {
@@ -973,8 +967,7 @@ export function dispatch_normal_event(event) {
                 settings_account.update_privacy_settings_box(event.property);
                 if (event.property === "presence_enabled") {
                     activity_ui.redraw_user(current_user.user_id);
-                }
-                if (event.property === "allow_private_data_export") {
+                } else if (event.property === "allow_private_data_export") {
                     settings_exports.refresh_allow_private_data_export_banner();
                 }
                 break;
@@ -1014,145 +1007,142 @@ export function dispatch_normal_event(event) {
             if (user_preferences.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
-            if (event.property === "default_language") {
-                // We additionally need to set the language name.
-                //
-                // Note that this does not change translations at all;
-                // a reload is fundamentally required because we
-                // cannot rerender with the new language the strings
-                // present in the backend/Jinja2 templates.
-                settings_preferences.set_default_language(event.value);
-            }
-            if (event.property === "web_home_view") {
-                left_sidebar_navigation_area.handle_home_view_changed(event.value);
+            switch (event.property) {
+                case "default_language":
+                    // We additionally need to set the language name.
+                    //
+                    // Note that this does not change translations at all;
+                    // a reload is fundamentally required because we
+                    // cannot rerender with the new language the strings
+                    // present in the backend/Jinja2 templates.
+                    settings_preferences.set_default_language(event.value);
 
-                // If current hash is empty (home view), and the
-                // user changes the home view while in settings,
-                // then going back to an empty hash on closing the
-                // overlay will not match the view currently displayed
-                // under settings, so we set the hash to the previous
-                // value of the home view.
-                if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
-                    browser_history.state.hash_before_overlay = "#" + original_home_view;
-                }
-            }
-            if (event.property === "twenty_four_hour_time") {
-                // Recalculate timestamp column width
-                information_density.calculate_timestamp_widths();
-                // Rerender the whole message list UI
-                for (const msg_list of message_lists.all_rendered_message_lists()) {
-                    msg_list.rerender();
-                }
-            }
-            if (event.property === "high_contrast_mode") {
-                $("body").toggleClass("high-contrast", event.value);
-            }
-            if (event.property === "demote_inactive_streams") {
-                stream_list_sort.set_filter_out_inactives();
-                stream_list.update_streams_sidebar(true);
-            }
-            if (event.property === "web_animate_image_previews") {
-                // Rerender the whole message list UI
-                for (const msg_list of message_lists.all_rendered_message_lists()) {
-                    msg_list.rerender();
-                }
-            }
-            if (event.property === "web_stream_unreads_count_display_policy") {
-                stream_list.build_stream_list(true);
-            }
-            if (event.property === "user_list_style") {
-                settings_preferences.report_user_list_style_change(
-                    settings_preferences.user_settings_panel,
-                );
-                activity_ui.build_user_sidebar();
-            }
-            if (
-                event.property === "web_font_size_px" ||
-                event.property === "web_line_height_percent"
-            ) {
-                // We just ignore events for web_font_size_px"
-                // and "web_line_height_percent" settings as we
-                // are fine with a window not being updated due
-                // to changes being done from another window and
-                // also helps in avoiding weird issues on clicking
-                // the "+"/"-" buttons multiple times quickly when
-                // updating these settings.
-            }
+                    // TODO: Make this change the view immediately rather than
+                    // requiring a reload.  This is likely fairly difficult,
+                    // because various i18n strings are rendered by the
+                    // server; we may want to instead just trigger a page
+                    // reload.
+                    break;
+                case "web_home_view":
+                    left_sidebar_navigation_area.handle_home_view_changed(event.value);
 
-            if (event.property === "web_mark_read_on_scroll_policy") {
-                unread_ui.update_unread_banner();
-            }
-            if (event.property === "color_scheme") {
-                requestAnimationFrame(() => {
-                    theme.set_theme_and_update(event.value);
-                });
-            }
-            if (event.property === "starred_message_counts") {
-                starred_messages_ui.rerender_ui();
-            }
-            if (event.property === "web_left_sidebar_unreads_count_summary") {
-                stream_list.update_unread_counts_visibility();
-            }
-            if (event.property === "web_left_sidebar_show_channel_folders") {
-                stream_list.update_collapsed_state_on_show_channel_folders_change();
-                stream_list.build_stream_list(true);
-            }
-            if (event.property === "web_inbox_show_channel_folders") {
-                inbox_ui.complete_rerender();
-            }
-            if (
-                event.property === "receives_typing_notifications" &&
-                !user_settings.receives_typing_notifications
-            ) {
-                typing_events.disable_typing_notification();
-            }
-            if (event.property === "fluid_layout_width") {
-                scroll_bar.set_layout_width();
-            }
-            if (event.property === "default_language") {
-                // TODO: Make this change the view immediately rather than
-                // requiring a reload.  This is likely fairly difficult,
-                // because various i18n strings are rendered by the
-                // server; we may want to instead just trigger a page
-                // reload.
-            }
-            if (event.property === "emojiset") {
-                settings_preferences.report_emojiset_change(
-                    settings_preferences.user_settings_panel,
-                );
-                // Rerender the whole message list UI
-                for (const msg_list of message_lists.all_rendered_message_lists()) {
-                    msg_list.rerender();
-                }
-                // Rerender buddy list status emoji
-                activity_ui.build_user_sidebar();
-            }
-
-            if (event.property === "display_emoji_reaction_users") {
-                message_live_update.rerender_messages_view();
-            }
-            if (event.property === "web_escape_navigates_to_home_view") {
-                $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass(
-                    "notdisplayed",
-                    !event.value,
-                );
-            }
-            if (event.property === "web_suggest_update_timezone") {
-                $("#automatically_offer_update_time_zone").prop("checked", event.value);
-            }
-            if (event.property === "web_channel_default_view") {
-                // We need to rerender wherever `channel_url_by_user_setting` is used in the DOM.
-                // Left sidebar
-                const force_rerender = true;
-                stream_list.create_initial_sidebar_rows(force_rerender);
-                stream_list.update_streams_sidebar(force_rerender);
-                // Inbox View
-                inbox_ui.complete_rerender();
-                // Recent View
-                recent_view_ui.complete_rerender();
-                // Message feed
-                for (const msg_list of message_lists.all_rendered_message_lists()) {
-                    msg_list.rerender();
+                    // If current hash is empty (home view), and the
+                    // user changes the home view while in settings,
+                    // then going back to an empty hash on closing the
+                    // overlay will not match the view currently displayed
+                    // under settings, so we set the hash to the previous
+                    // value of the home view.
+                    if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
+                        browser_history.state.hash_before_overlay = "#" + original_home_view;
+                    }
+                    break;
+                case "twenty_four_hour_time":
+                    // Recalculate timestamp column width
+                    information_density.calculate_timestamp_widths();
+                    // Rerender the whole message list UI
+                    for (const msg_list of message_lists.all_rendered_message_lists()) {
+                        msg_list.rerender();
+                    }
+                    break;
+                case "high_contrast_mode":
+                    $("body").toggleClass("high-contrast", event.value);
+                    break;
+                case "demote_inactive_streams":
+                    stream_list_sort.set_filter_out_inactives();
+                    stream_list.update_streams_sidebar(true);
+                    break;
+                case "web_animate_image_previews":
+                    // Rerender the whole message list UI
+                    for (const msg_list of message_lists.all_rendered_message_lists()) {
+                        msg_list.rerender();
+                    }
+                    break;
+                case "web_stream_unreads_count_display_policy":
+                    stream_list.build_stream_list(true);
+                    break;
+                case "user_list_style":
+                    settings_preferences.report_user_list_style_change(
+                        settings_preferences.user_settings_panel,
+                    );
+                    activity_ui.build_user_sidebar();
+                    break;
+                case "web_font_size_px":
+                case "web_line_height_percent":
+                    // We just ignore events for web_font_size_px"
+                    // and "web_line_height_percent" settings as we
+                    // are fine with a window not being updated due
+                    // to changes being done from another window and
+                    // also helps in avoiding weird issues on clicking
+                    // the "+"/"-" buttons multiple times quickly when
+                    // updating these settings.
+                    break;
+                case "web_mark_read_on_scroll_policy":
+                    unread_ui.update_unread_banner();
+                    break;
+                case "color_scheme":
+                    requestAnimationFrame(() => {
+                        theme.set_theme_and_update(event.value);
+                    });
+                    break;
+                case "starred_message_counts":
+                    starred_messages_ui.rerender_ui();
+                    break;
+                case "web_left_sidebar_unreads_count_summary":
+                    stream_list.update_unread_counts_visibility();
+                    break;
+                case "web_left_sidebar_show_channel_folders":
+                    stream_list.update_collapsed_state_on_show_channel_folders_change();
+                    stream_list.build_stream_list(true);
+                    break;
+                case "web_inbox_show_channel_folders":
+                    inbox_ui.complete_rerender();
+                    break;
+                case "receives_typing_notifications":
+                    if (!user_settings.receives_typing_notifications) {
+                        typing_events.disable_typing_notification();
+                    }
+                    break;
+                case "fluid_layout_width":
+                    scroll_bar.set_layout_width();
+                    break;
+                case "emojiset":
+                    settings_preferences.report_emojiset_change(
+                        settings_preferences.user_settings_panel,
+                    );
+                    // Rerender the whole message list UI
+                    for (const msg_list of message_lists.all_rendered_message_lists()) {
+                        msg_list.rerender();
+                    }
+                    // Rerender buddy list status emoji
+                    activity_ui.build_user_sidebar();
+                    break;
+                case "display_emoji_reaction_users":
+                    message_live_update.rerender_messages_view();
+                    break;
+                case "web_escape_navigates_to_home_view":
+                    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass(
+                        "notdisplayed",
+                        !event.value,
+                    );
+                    break;
+                case "web_suggest_update_timezone":
+                    $("#automatically_offer_update_time_zone").prop("checked", event.value);
+                    break;
+                case "web_channel_default_view": {
+                    // We need to rerender wherever `channel_url_by_user_setting` is used in the DOM.
+                    // Left sidebar
+                    const force_rerender = true;
+                    stream_list.create_initial_sidebar_rows(force_rerender);
+                    stream_list.update_streams_sidebar(force_rerender);
+                    // Inbox View
+                    inbox_ui.complete_rerender();
+                    // Recent View
+                    recent_view_ui.complete_rerender();
+                    // Message feed
+                    for (const msg_list of message_lists.all_rendered_message_lists()) {
+                        msg_list.rerender();
+                    }
+                    break;
                 }
             }
             settings_preferences.update_page(event.property);

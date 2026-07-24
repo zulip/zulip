@@ -113,9 +113,7 @@ export function update_channel_folder(
     if (property === "name") {
         channel_folder_name_dict.delete(old_value);
         channel_folder_name_dict.set(channel_folder.name, channel_folder);
-    }
-
-    if (property === "rendered_description") {
+    } else if (property === "rendered_description") {
         clean_up_description(channel_folder);
     }
 }
