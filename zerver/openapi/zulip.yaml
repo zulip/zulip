@@ -5148,915 +5148,171 @@ paths:
                                     is sent for each changed setting.
                                   properties:
                                     allow_message_editing:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization's [message edit policy][config-message-editing]
-                                        allows editing the content of messages.
-
-                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
-                                        history of how message editing permissions work.
-
-                                        [config-message-editing]: /help/restrict-message-editing-and-deletion
+                                      $ref: "#/components/schemas/RealmAllowMessageEditing"
                                     authentication_methods:
-                                      type: object
-                                      additionalProperties:
-                                        $ref: "#/components/schemas/RealmAuthenticationMethod"
-                                      description: |
-                                        Dictionary of authentication method keys mapped to dictionaries that
-                                        describe the properties of the named authentication method for the
-                                        organization - its enabled status and availability for use by the
-                                        organization.
-
-                                        Clients should use this to implement server-settings UI to change which
-                                        methods are enabled for the organization. For authentication UI itself,
-                                        clients should use the pre-authentication metadata returned by
-                                        [`GET /server_settings`](/api/get-server-settings).
-
-                                        **Changes**: In Zulip 9.0 (feature level 243), the values in this
-                                        dictionary were changed. Previously, the values were a simple boolean
-                                        indicating whether the backend is enabled or not.
+                                      $ref: "#/components/schemas/RealmAuthenticationMethods"
                                     can_access_all_users_group:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the
-                                            set of users who are allowed to access all users in the
-                                            organization.
-
-                                            **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
-                                            to be of type integer and did not accept anonymous user groups.
-
-                                            New in Zulip 8.0 (feature level 225).
+                                      $ref: "#/components/schemas/RealmCanAccessAllUsersGroup"
                                     can_create_groups:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining
-                                            the set of users who have permission to create user
-                                            groups in this organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 299). Previously
-                                            `user_group_edit_policy` field used to control the permission
-                                            to create user groups.
+                                      $ref: "#/components/schemas/RealmCanCreateGroups"
                                     can_create_bots_group:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining
-                                            the set of users who have permission to create all types of bot users
-                                            in the organization. See also `can_create_write_only_bots_group`.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
-                                            permission was controlled by the enum `bot_creation_policy`. Values
-                                            were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
+                                      $ref: "#/components/schemas/RealmCanCreateBotsGroup"
                                     can_create_write_only_bots_group:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining
-                                            the set of users who have permission to create bot users that
-                                            can only send messages in the organization, i.e. incoming webhooks,
-                                            in addition to the users who are present in `can_create_bots_group`.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
-                                            permission was controlled by the enum `bot_creation_policy`. Values
-                                            were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
+                                      $ref: "#/components/schemas/RealmCanCreateWriteOnlyBotsGroup"
                                     can_create_public_channel_group:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining
-                                            the set of users who have permission to create public
-                                            channels in this organization.
-
-                                            **Changes**: New in Zulip 9.0 (feature level 264). Previously
-                                            `realm_create_public_stream_policy` field used to control the
-                                            permission to create public channels.
+                                      $ref: "#/components/schemas/RealmCanCreatePublicChannelGroup"
                                     can_create_private_channel_group:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining
-                                            the set of users who have permission to create private
-                                            channels in this organization.
-
-                                            **Changes**: New in Zulip 9.0 (feature level 266). Previously
-                                            `realm_create_private_stream_policy` field used to control the
-                                            permission to create private channels.
+                                      $ref: "#/components/schemas/RealmCanCreatePrivateChannelGroup"
                                     can_create_web_public_channel_group:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining
-                                            the set of users who have permission to create web-public
-                                            channels in this organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 280). Previously
-                                            `realm_create_web_public_stream_policy` field used to control
-                                            the permission to create web-public channels.
+                                      $ref: "#/components/schemas/RealmCanCreateWebPublicChannelGroup"
                                     can_add_custom_emoji_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to add custom emoji in the organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 307). Previously, this
-                                            permission was controlled by the enum `add_custom_emoji_policy`. Values
-                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
-
-                                            Before Zulip 5.0 (feature level 85), the `realm_add_emoji_by_admins_only`
-                                            boolean setting controlled this permission; `true` corresponded to `Admins`,
-                                            and `false` to `Everyone`.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanAddCustomEmojiGroup"
                                     can_add_subscribers_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to add subscribers to channels in the organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 341). Previously, this
-                                            permission was controlled by the enum `invite_to_stream_policy`. Values
-                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanAddSubscribersGroup"
                                     can_delete_any_message_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to delete any message in the organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 281). Previously, this
-                                            permission was limited to administrators only and was uneditable.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanDeleteAnyMessageGroup"
                                     can_delete_own_message_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to delete messages that they have sent in the
-                                            organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 291). Previously, this
-                                            permission was controlled by the enum `delete_own_message_policy`. Values
-                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone.
-
-                                            Before Zulip 5.0 (feature level 101), the `allow_message_deleting` boolean
-                                            setting controlled this permission; `true` corresponded to `Everyone`, and
-                                            `false` to `Admins`.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanDeleteOwnMessageGroup"
                                     can_set_delete_message_policy_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to change per-channel `can_delete_any_message_group`
-                                            and `can_delete_own_message_group` permission settings. Note that the user
-                                            must be a member of both this group and the `can_administer_channel_group`
-                                            of the channel whose message delete settings they want to change.
-
-                                            Organization administrators can always change these settings of
-                                            every channel.
-
-                                            **Changes**: New in Zulip 11.0 (feature level 407).
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanSetDeleteMessagePolicyGroup"
                                     can_set_topics_policy_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to change per-channel `topics_policy` setting. Note that
-                                            the user must be a member of both this group and the `can_administer_channel_group`
-                                            of the channel whose `topics_policy` they want to change.
-
-                                            Organization administrators can always change the `topics_policy` setting of
-                                            every channel.
-
-                                            **Changes**: New in Zulip 11.0 (feature level 392).
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanSetTopicsPolicyGroup"
                                     can_invite_users_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to send email invitations for inviting other users
-                                            to the organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 321). Previously, this
-                                            permission was controlled by the enum `invite_to_realm_policy`. Values
-                                            were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
-
-                                            Before Zulip 4.0 (feature level 50), the `invite_by_admins_only` boolean
-                                            setting controlled this permission; `true` corresponded to `Admins`, and
-                                            `false` to `Members`.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanInviteUsersGroup"
                                     can_mention_many_users_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to use wildcard mentions in large channels.
-
-                                            All users will receive a warning/reminder when using mentions in large
-                                            channels, even when permitted to do so.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 352). Previously, this
-                                            permission was controlled by the enum `wildcard_mention_policy`.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanMentionManyUsersGroup"
                                     can_move_messages_between_channels_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to move messages from one channel to another
-                                            in the organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 310). Previously, this
-                                            permission was controlled by the enum `move_messages_between_streams_policy`.
-                                            Values were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
-
-                                            In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
-                                            `move_messages_between_streams_policy` enum.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanMoveMessagesBetweenChannelsGroup"
                                     can_move_messages_between_topics_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to move messages from one topic to another
-                                            within a channel in the organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 316). Previously, this
-                                            permission was controlled by the enum `edit_topic_policy`. Values were
-                                            1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone, 6=Nobody.
-
-                                            In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
-                                            `edit_topic_policy` enum.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanMoveMessagesBetweenTopicsGroup"
                                     can_resolve_topics_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining
-                                            the set of users who have permission to [resolve topics](/help/resolve-a-topic)
-                                            in the organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 367). Previously, permission to
-                                            resolve topics was controlled by the more general
-                                            can_move_messages_between_topics_group permission for moving messages.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanResolveTopicsGroup"
                                     can_manage_all_groups:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values)
-                                            defining the set of users who have permission to
-                                            administer all existing groups in this organization.
-
-                                            **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
-                                            were a member of the group or had the moderator role or above could
-                                            exercise the permission on a given group.
-
-                                            New in Zulip 10.0 (feature level 299). Previously the
-                                            `user_group_edit_policy` field controlled the permission
-                                            to manage user groups. Valid values were as follows:
-
-                                            - 1 = All members can create and edit user groups
-                                            - 2 = Only organization administrators can create and edit
-                                              user groups
-                                            - 3 = Only [full members][calc-full-member] can create and
-                                              edit user groups.
-                                            - 4 = Only organization administrators and moderators can
-                                              create and edit user groups.
-
-                                            [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                      $ref: "#/components/schemas/RealmCanManageAllGroups"
                                     can_manage_billing_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to manage plans and billing in the organization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 363). Previously, only owners
-                                            and users with `is_billing_admin` property set to `true` were allowed to
-                                            manage plans and billing.
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmCanManageBillingGroup"
                                     can_summarize_topics_group:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the
-                                            set of users who are allowed to use AI summarization.
-
-                                            **Changes**: New in Zulip 10.0 (feature level 350).
+                                      $ref: "#/components/schemas/RealmCanSummarizeTopicsGroup"
                                     create_multiuse_invite_group:
-                                      allOf:
-                                        - $ref: "#/components/schemas/GroupSettingValue"
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the
-                                            set of users who are allowed to create [reusable invitation
-                                            links](/help/invite-new-users#create-a-reusable-invitation-link)
-                                            to the organization.
-
-                                            **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
-                                            to be of type integer and did not accept anonymous user groups.
-
-                                            New in Zulip 8.0 (feature level 209).
+                                      $ref: "#/components/schemas/RealmCreateMultiuseInviteGroup"
                                     default_avatar_source:
-                                      type: string
-                                      description: |
-                                        The avatar data source type for new users.
-
-                                        - "G" = Hosted by Gravatar
-                                        - "J" = Generated using Jdenticon
-
-                                        Note that "U" is not a supported value here, since there is
-                                        no such thing as a "default" user-uploaded avatar.
-
-                                        **Changes**: New in Zulip 12.0 (feature level 456).
+                                      $ref: "#/components/schemas/RealmDefaultAvatarSource"
                                     default_code_block_language:
-                                      type: string
-                                      description: |
-                                        The default pygments language code to be used for code blocks in this
-                                        organization. If an empty string, no default has been set.
-
-                                        **Changes**: Prior to Zulip 8.0 (feature level 195), a server bug meant
-                                        that both `null` and an empty string could represent that no default was
-                                        set for this realm setting in the [`POST /register`](/api/register-queue)
-                                        response. The documentation for both that endpoint and this event
-                                        incorrectly stated that the only representation for no default language
-                                        was `null`. This event in fact uses the empty string to indicate that no
-                                        default has been set in all server versions.
+                                      $ref: "#/components/schemas/RealmDefaultCodeBlockLanguage"
                                     default_language:
-                                      type: string
-                                      description: |
-                                        The default language for the organization.
+                                      $ref: "#/components/schemas/RealmDefaultLanguage"
                                     description:
-                                      type: string
-                                      description: |
-                                        The description of the organization, used on login and registration pages.
+                                      $ref: "#/components/schemas/RealmDescription"
                                     digest_emails_enabled:
-                                      type: boolean
-                                      description: |
-                                        Whether the organization has enabled [weekly digest emails](/help/digest-emails).
+                                      $ref: "#/components/schemas/RealmDigestEmailsEnabled"
                                     digest_weekday:
-                                      type: integer
-                                      description: |
-                                        The day of the week when the organization will send
-                                        its weekly digest email to inactive users.
+                                      $ref: "#/components/schemas/RealmDigestWeekday"
                                     direct_message_initiator_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to start a new direct message conversation
-                                            involving other non-bot users. Users who are outside this group and attempt
-                                            to send the first direct message to a given collection of recipient users
-                                            will receive an error, unless all other recipients are bots or the sender.
-
-                                            **Changes**: New in Zulip 9.0 (feature level 270).
-
-                                            Previously, access to send direct messages was controlled by the
-                                            `private_message_policy` realm setting, which supported values of
-                                            1 (enabled) and 2 (disabled).
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmDirectMessageInitiatorGroup"
                                     direct_message_permission_group:
-                                      allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who have permission to fully use direct messages. Users outside
-                                            this group can only send direct messages to conversations where all the
-                                            recipients are in this group, are bots, or are the sender, ensuring that
-                                            every direct message conversation will be visible to at least one user in
-                                            this group.
-
-                                            **Changes**: New in Zulip 9.0 (feature level 270).
-
-                                            Previously, access to send direct messages was controlled by the
-                                            `private_message_policy` realm setting, which supported values of
-                                            1 (enabled) and 2 (disabled).
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                      $ref: "#/components/schemas/RealmDirectMessagePermissionGroup"
                                     disallow_disposable_email_addresses:
-                                      type: boolean
-                                      description: |
-                                        Whether the organization disallows disposable email
-                                        addresses.
+                                      $ref: "#/components/schemas/RealmDisallowDisposableEmailAddresses"
                                     email_changes_disabled:
-                                      type: boolean
-                                      description: |
-                                        Whether users are allowed to change their own email address in this
-                                        organization. This is typically disabled for organizations that
-                                        synchronize accounts from LDAP or a similar corporate database.
+                                      $ref: "#/components/schemas/RealmEmailChangesDisabled"
                                     enable_read_receipts:
-                                      type: boolean
-                                      description: |
-                                        Whether read receipts is enabled in the organization or not.
-
-                                        If disabled, read receipt data will be unavailable to clients, regardless
-                                        of individual users' personal read receipt settings. See also the
-                                        `send_read_receipts` setting within `realm_user_settings_defaults`.
-
-                                        **Changes**: New in Zulip 6.0 (feature level 137).
+                                      $ref: "#/components/schemas/RealmEnableReadReceipts"
                                     emails_restricted_to_domains:
-                                      type: boolean
-                                      description: |
-                                        Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
-                                        this organization are required to have an email
-                                        address in one of the `realm_domains` configured for the organization.
+                                      $ref: "#/components/schemas/RealmEmailsRestrictedToDomains"
                                     enable_guest_user_dm_warning:
-                                      type: boolean
-                                      description: |
-                                        Whether clients should show a warning when a user is composing
-                                        a DM to a guest user in this organization.
-
-                                        **Changes**: New in Zulip 10.0 (feature level 348).
+                                      $ref: "#/components/schemas/RealmEnableGuestUserDmWarning"
                                     enable_guest_user_indicator:
-                                      type: boolean
-                                      description: |
-                                        Whether clients should display "(guest)" after the names of
-                                        guest users to prominently highlight their status.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 216).
+                                      $ref: "#/components/schemas/RealmEnableGuestUserIndicator"
                                     enable_spectator_access:
-                                      type: boolean
-                                      description: |
-                                        Whether web-public channels are enabled in this organization.
-
-                                        Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
-                                        [server setting][server-settings] is enabled on the Zulip
-                                        server. See also the `can_create_web_public_channel_group`
-                                        realm setting.
-
-                                        [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
-
-                                        **Changes**: New in Zulip 5.0 (feature level 109).
+                                      $ref: "#/components/schemas/RealmEnableSpectatorAccess"
                                     gif_rating_policy:
-                                      type: integer
-                                      description: |
-                                        Maximum rating of the GIFs that will be retrieved by the
-                                        GIPHY and Tenor integrations in this organization.
-
-                                        **Changes**: Before Zulip 12.0 (feature level 453),
-                                        this was called `giphy_rating`.
-
-                                        Before Zulip 12.0 (feature level 442), this was only used
-                                        for the Giphy integration.
-
-                                        New in Zulip 4.0 (feature level 55).
+                                      $ref: "#/components/schemas/RealmGifRatingPolicy"
                                     icon_source:
-                                      type: string
-                                      description: |
-                                        String indicating whether the organization's
-                                        [profile icon](/help/create-your-organization-profile) was uploaded
-                                        by a user or is the default. Useful for UI allowing editing the organization's icon.
-
-                                        - "G" means generated by Gravatar (the default).
-                                        - "U" means uploaded by an organization administrator.
+                                      $ref: "#/components/schemas/RealmIconSource"
                                     icon_url:
-                                      type: string
-                                      description: |
-                                        The URL of the organization's [profile icon](/help/create-your-organization-profile).
+                                      $ref: "#/components/schemas/RealmIconUrl"
                                     media_preview_size:
-                                      type: integer
-                                      enum:
-                                        - 100
-                                        - 150
-                                        - 200
-                                      description: |
-                                        The organization's policy for the size of image and video
-                                        thumbnails in messages, expressed as a percentage of the
-                                        default height. Currently, only certain values are permitted.
-
-                                        - `100`: 100% height (the default).
-                                        - `150`: 150% height.
-                                        - `200`: 200% height.
-
-                                        **Changes**: New in Zulip 12.0 (feature level 469).
+                                      $ref: "#/components/schemas/RealmMediaPreviewSize"
                                     inline_image_preview:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization has been configured to enable
-                                        [previews of linked images](/help/image-video-and-website-previews).
+                                      $ref: "#/components/schemas/RealmInlineImagePreview"
                                     inline_url_embed_preview:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization has been configured to enable
-                                        [previews of linked websites](/help/image-video-and-website-previews).
+                                      $ref: "#/components/schemas/RealmInlineUrlEmbedPreview"
                                     invite_required:
-                                      type: boolean
-                                      description: |
-                                        Whether an invitation is required to join this organization.
+                                      $ref: "#/components/schemas/RealmInviteRequired"
                                     jitsi_server_url:
-                                      type: string
-                                      nullable: true
-                                      description: |
-                                        The URL of the custom Jitsi Meet server configured in this organization's
-                                        settings.
-
-                                        `null`, the default, means that the organization is using the should use the
-                                        server-level configuration, `server_jitsi_server_url`.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
-                                        available as a server-level configuration, and required a server restart to
-                                        change.
+                                      $ref: "#/components/schemas/RealmJitsiServerUrl"
                                     logo_source:
-                                      type: string
-                                      description: |
-                                        String indicating whether the organization's
-                                        [profile wide logo](/help/create-your-organization-profile) was uploaded
-                                        by a user or is the default. Useful for UI allowing editing the
-                                        organization's wide logo.
-
-                                        - "D" means the logo is the default Zulip logo.
-                                        - "U" means uploaded by an organization administrator.
+                                      $ref: "#/components/schemas/RealmLogoSource"
                                     logo_url:
-                                      type: string
-                                      description: |
-                                        The URL of the organization's wide logo configured in the
-                                        [organization profile](/help/create-your-organization-profile).
+                                      $ref: "#/components/schemas/RealmLogoUrl"
                                     topics_policy:
-                                      type: string
-                                      enum:
-                                        - allow_empty_topic
-                                        - disable_empty_topic
-                                      description: |
-                                        The organization's default policy for sending channel messages to the
-                                        [empty "general chat" topic](/help/general-chat-topic).
-
-                                        - `"allow_empty_topic"`: Channel messages can be sent to the empty topic.
-                                        - `"disable_empty_topic"`: Channel messages cannot be sent to the empty topic.
-
-                                        **Changes**: New in Zulip 11.0 (feature level 392). Previously, this was
-                                        controlled by the boolean realm `mandatory_topics` setting, which is now
-                                        deprecated.
+                                      $ref: "#/components/schemas/RealmTopicsPolicy"
                                     mandatory_topics:
-                                      type: boolean
-                                      deprecated: true
-                                      description: |
-                                        Whether [topics are required](/help/require-topics) for messages in this
-                                        organization.
-
-                                        **Changes**: Deprecated in Zulip 11.0 (feature level 392). This is now
-                                        controlled by the realm `topics_policy` setting.
-                                    max_file_upload_size_mib:
-                                      type: integer
-                                      description: |
-                                        The new maximum file size that can be uploaded to this Zulip organization.
-
-                                        **Changes**: New in Zulip 10.0 (feature level 306). Previously, this field of
-                                        the core state did not support being updated via the events system, as it was
-                                        typically hardcoded for a given Zulip installation.
-                                    message_content_allowed_in_email_notifications:
-                                      type: boolean
-                                      description: |
-                                        Whether notification emails in this organization are allowed to
-                                        contain Zulip the message content, or simply indicate that a new
-                                        message was sent.
-                                    message_content_delete_limit_seconds:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot be deleted
-                                        with this organization's
-                                        [message deletion policy](/help/restrict-message-editing-and-deletion).
-
-                                        Will not be 0. A `null` value means no limit: messages can be deleted
-                                        regardless of how long ago they were sent.
-
-                                        **Changes**: No limit was represented using the
-                                        special value `0` before Zulip 5.0 (feature level 100).
-                                    message_content_edit_limit_seconds:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot be edited
-                                        with this organization's
-                                        [message edit policy](/help/restrict-message-editing-and-deletion).
-
-                                        Will not be `0`. A `null` value means no limit, so messages can be edited
-                                        regardless of how long ago they were sent.
-
-                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
-                                        history of how message editing permissions work.
-
-                                        **Changes**: Before Zulip 6.0 (feature level 138), no limit was
-                                        represented using the special value `0`.
-                                    message_edit_history_visibility_policy:
-                                      type: string
-                                      description: |
-                                        Which type of message edit history is configured to allow users to
-                                        access [message edit history](/help/view-a-messages-edit-history).
-
-                                        - "all" = All edit history is visible.
-                                        - "moves" = Only moves are visible.
-                                        - "none" = No edit history is visible.
-
-                                        **Changes**: New in Zulip 10.0 (feature level 358), replacing the previous
-                                        `allow_edit_history` boolean setting; `true` corresponds to `all`,
-                                        and `false` to `none`.
-                                    moderation_request_channel_id:
-                                      type: integer
-                                      description: |
-                                        The ID of the private channel to which messages flagged by users for
-                                        moderation are sent. Moderators can use this channel to review and
-                                        act on reported content.
-
-                                        Will be `-1` if moderation requests are disabled.
-
-                                        Clients should check whether moderation requests are disabled to
-                                        determine whether to present a "report message" feature in their UI
-                                        within a given organization.
-
-                                        **Changes**: New in Zulip 10.0 (feature level 331). Previously,
-                                        no "report message" features existed in Zulip.
-                                    move_messages_within_stream_limit_seconds:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot be moved within a
-                                        channel to another topic by users who have permission to do so based on this
-                                        organization's [topic edit policy](/help/restrict-moving-messages). This
-                                        setting does not affect moderators and administrators.
-
-                                        Will not be `0`. A `null` value means no limit, so message topics can be
-                                        edited regardless of how long ago they were sent.
-
-                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
-                                        history of how message editing permissions work.
-
-                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
-                                        limit was always 72 hours for users who were not administrators or
-                                        moderators.
-                                    move_messages_between_streams_limit_seconds:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot be moved between
-                                        channels by users who have permission to do so based on this organization's
-                                        [message move policy](/help/restrict-moving-messages). This setting does
-                                        not affect moderators and administrators.
-
-                                        Will not be `0`. A `null` value means no limit, so messages can be moved
-                                        regardless of how long ago they were sent.
-
-                                        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
-                                        history of how message editing permissions work.
-
-                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
-                                        no time limit for moving messages between channels for users with permission
-                                        to do so.
-                                    name:
-                                      type: string
-                                      description: |
-                                        The name of the organization, used in login pages etc.
-                                    name_changes_disabled:
-                                      type: boolean
-                                      description: |
-                                        Indicates whether users are
-                                        [allowed to change](/help/restrict-name-and-email-changes) their name
-                                        via the Zulip UI in this organization. Typically disabled
-                                        in organizations syncing this type of account information from
-                                        an external user database like LDAP.
-                                    night_logo_source:
-                                      type: string
-                                      description: |
-                                        String indicating whether the organization's dark theme
-                                        [profile wide logo](/help/create-your-organization-profile) was uploaded
-                                        by a user or is the default. Useful for UI allowing editing the
-                                        organization's wide logo.
-
-                                        - "D" means the logo is the default Zulip logo.
-                                        - "U" means uploaded by an organization administrator.
-                                    night_logo_url:
-                                      type: string
-                                      description: |
-                                        The URL of the organization's dark theme wide-format logo configured in the
-                                        [organization profile](/help/create-your-organization-profile).
-                                    new_stream_announcements_stream_id:
-                                      type: integer
-                                      description: |
-                                        The ID of the channel to which automated messages announcing the
-                                        [creation of new channels][new-channel-announce] are sent.
-
-                                        Will be `-1` if such automated messages are disabled.
-
-                                        Since these automated messages are sent by the server, this field is
-                                        primarily relevant to clients containing UI for changing it.
-
-                                        [new-channel-announce]: /help/configure-automated-notices#new-channel-announcements
-
-                                        **Changes**: In Zulip 9.0 (feature level 241), renamed `notifications_stream_id`
-                                        to `new_stream_announcements_stream_id`.
-                                    org_type:
-                                      type: integer
-                                      description: |
-                                        The [organization type](/help/organization-type)
-                                        for the realm.
-
-                                        - 0 = Unspecified
-                                        - 10 = Business
-                                        - 20 = Open-source project
-                                        - 30 = Education (non-profit)
-                                        - 35 = Education (for-profit)
-                                        - 40 = Research
-                                        - 50 = Event or conference
-                                        - 60 = Non-profit (registered)
-                                        - 70 = Government
-                                        - 80 = Political group
-                                        - 90 = Community
-                                        - 100 = Personal
-                                        - 1000 = Other
-
-                                        **Changes**: New in Zulip 6.0 (feature level 128).
-                                    plan_type:
-                                      type: integer
-                                      description: |
-                                        The plan type of the organization.
-
-                                        - 1 = Self-hosted organization (SELF_HOSTED)
-                                        - 2 = Zulip Cloud free plan (LIMITED)
-                                        - 3 = Zulip Cloud Standard plan (STANDARD)
-                                        - 4 = Zulip Cloud Standard plan, sponsored for free (STANDARD_FREE)
-                                    presence_disabled:
-                                      type: boolean
-                                      description: |
-                                        Whether online presence of other users is shown in this
-                                        organization.
-                                    push_notifications_enabled:
-                                      type: boolean
-                                      description: |
-                                        Whether push notifications are enabled for this organization. Typically
-                                        `true` for Zulip Cloud and self-hosted realms that have a valid
-                                        registration for the [Mobile push notifications
-                                        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
-                                        and `false` for self-hosted servers that do not.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 231).
-                                        Previously, this value was never updated via events.
-                                    push_notifications_enabled_end_timestamp:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        If the server expects the realm's push notifications access to end at a
-                                        definite time in the future, the time at which this is expected to happen.
-                                        Mobile clients should use this field to display warnings to users when the
-                                        indicated timestamp is near.
-
-                                        **Changes**: New in Zulip 8.0 (feature level 231).
-                                    rendered_description:
-                                      type: string
-                                      description: |
-                                        Note: Only present if the changed property was `description`.
-
-                                        The organization description rendered as HTML, intended to
-                                        be used when displaying the organization description in a UI.
-
-                                        One should use the standard Zulip rendered_markdown CSS when
-                                        displaying this content so that emoji, LaTeX, and other syntax
-                                        work correctly. And any client-side security logic for
-                                        user-generated message content should be applied when displaying
-                                        this HTML as though it were the body of a Zulip message.
-
-                                        **Changes**: New in Zulip 12.0 (feature level 464). Previously
-                                        in feature levels 462-463, an `update` event had been sent
-                                        when updating the realm's `description`.
-                                    require_e2ee_push_notifications:
-                                      type: boolean
-                                      description: |
-                                        Whether this realm is configured to disallow sending mobile
-                                        push notifications through the legacy mobile push
-                                        notifications APIs. The new API uses end-to-end encryption
-                                        to protect message content and metadata from being
-                                        accessible to the push bouncer service, APNs, and FCM.
-                                        Clients that support the new E2EE API will use it
-                                        automatically regardless of this setting.
-
-                                        If `true`, legacy mobile push notifications will not be
-                                        sent. Only updated version of clients (which support E2EE
-                                        push notifications) will receive push notifications.
-
-                                        **Changes**: In Zulip 12.1 (feature levels 500-501, and 504+), this
-                                        setting now completely disables legacy push notifications
-                                        rather than sending them with redacted content.
-
-                                        New in Zulip 11.0 (feature level 409). Previously,
-                                        this behavior was available only via the
-                                        `PUSH_NOTIFICATION_REDACT_CONTENT` global server setting.
-                                    require_unique_names:
-                                      type: boolean
-                                      description: |
-                                        Indicates whether the organization is configured to require users to have
-                                        unique full names. If true, the server will reject attempts to create a
-                                        new user, or change the name of an existing user, where doing so would
-                                        lead to two users whose names are identical modulo case and unicode
-                                        normalization.
-
-                                        **Changes**: New in Zulip 9.0 (feature level 246). Previously, the Zulip
-                                        server could not be configured to enforce unique names.
-                                    send_channel_events_messages:
-                                      type: boolean
-                                      description: |
-                                        Indicates whether channel event messages are sent in this organization.
-
-                                        **Changes**: New in Zulip 12.0 (feature level 434). Previously,
-                                        channel events were sent unconditionally.
-                                    send_welcome_emails:
-                                      type: boolean
-                                      description: |
-                                        Whether or not this organization is configured to send the standard Zulip
-                                        [welcome emails](/help/disable-welcome-emails) to new users joining the organization.
-                                    signup_announcements_stream_id:
-                                      type: integer
-                                      description: |
-                                        The ID of the channel to which automated messages announcing
-                                        that [new users have joined the organization][new-user-announce] are sent.
-
-                                        Will be `-1` if such automated messages are disabled.
-
-                                        Since these automated messages are sent by the server, this field is
-                                        primarily relevant to clients containing UI for changing it.
-
-                                        [new-user-announce]: /help/configure-automated-notices#new-user-announcements
-
-                                        **Changes**: In Zulip 9.0 (feature level 241), renamed
-                                        `signup_notifications_stream_id` to `signup_announcements_stream_id`.
-                                    upload_quota_mib:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        The new upload quota for the Zulip organization.
-
-                                        If `null`, there is no limit.
-
-                                        **Changes**: New in Zulip 10.0 (feature level 306). Previously,
-                                        this was present changed via an `upload_quota` field in `extra_data` property
-                                        of [realm/update](#realm-update) event format for `plan_type` events.
-                                    video_chat_provider:
-                                      type: integer
-                                      description: |
-                                        The configured [video call provider](/help/configure-call-provider) for the
-                                        organization.
-
-                                        - 0 = None
-                                        - 1 = Jitsi Meet
-                                        - 3 = Zoom (User OAuth integration)
-                                        - 4 = BigBlueButton
-                                        - 5 = Zoom (Server to Server OAuth integration)
-                                        - 6 = Constructor Groups
-                                        - 7 = Nextcloud Talk
-                                        - 8 = Webex (User OAuth integration)
-
-                                        Note that only one of the [Zoom integrations][zoom-video-calls] can
-                                        be configured on a Zulip server.
-
-                                        **Changes**: In Zulip 12.0 (feature level 493),
-                                        added the Webex OAuth option.
-
-                                        In Zulip 12.0 (feature level 465), added the
-                                        Nextcloud Talk option.
-
-                                        In Zulip 12.0 (feature level 460), added the
-                                        Constructor Groups option.
-
-                                        In Zulip 10.0 (feature level 353), added the Zoom Server
-                                        to Server OAuth option.
-
-                                        In Zulip 3.0 (feature level 1), added the None option
-                                        to disable video call UI.
-
-                                        [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
-                                    waiting_period_threshold:
-                                      type: integer
-                                      description: |
-                                        Members whose accounts have been created at least this many days ago
-                                        will be treated as [full members][calc-full-member]
-                                        for the purpose of settings that restrict access to new members.
-
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-                                    want_advertise_in_communities_directory:
-                                      type: boolean
-                                      description: |
-                                        Whether the organization has given permission to be advertised in the
-                                        Zulip [communities directory](/help/communities-directory).
-
-                                        **Changes**: New in Zulip 6.0 (feature level 129).
-                                    welcome_message_custom_text:
-                                      type: string
-                                      description: |
-                                        This organization's configured custom message for Welcome Bot
-                                        to send to new user accounts, in Zulip Markdown format.
-
-                                        Maximum length is 8000 Unicode code points.
-
-                                        **Changes**: New in Zulip 11.0 (feature level 416).
-                                    workplace_users_group:
                                       allOf:
-                                        - description: |
-                                            A [group-setting value](/api/group-setting-values) defining the set of
-                                            users who will be considered as workplace users for billing.
-
-                                            **Changes**: New in Zulip 12.0 (feature level 477).
-                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - $ref: "#/components/schemas/RealmMandatoryTopics"
+                                      deprecated: true
+                                    max_file_upload_size_mib:
+                                      $ref: "#/components/schemas/RealmMaxFileUploadSizeMib"
+                                    message_content_allowed_in_email_notifications:
+                                      $ref: "#/components/schemas/RealmMessageContentAllowedInEmailNotifications"
+                                    message_content_delete_limit_seconds:
+                                      $ref: "#/components/schemas/RealmMessageContentDeleteLimitSeconds"
+                                    message_content_edit_limit_seconds:
+                                      $ref: "#/components/schemas/RealmMessageContentEditLimitSeconds"
+                                    message_edit_history_visibility_policy:
+                                      $ref: "#/components/schemas/RealmMessageEditHistoryVisibilityPolicy"
+                                    moderation_request_channel_id:
+                                      $ref: "#/components/schemas/RealmModerationRequestChannelId"
+                                    move_messages_within_stream_limit_seconds:
+                                      $ref: "#/components/schemas/RealmMoveMessagesWithinStreamLimitSeconds"
+                                    move_messages_between_streams_limit_seconds:
+                                      $ref: "#/components/schemas/RealmMoveMessagesBetweenStreamsLimitSeconds"
+                                    name:
+                                      $ref: "#/components/schemas/RealmName"
+                                    name_changes_disabled:
+                                      $ref: "#/components/schemas/RealmNameChangesDisabled"
+                                    night_logo_source:
+                                      $ref: "#/components/schemas/RealmNightLogoSource"
+                                    night_logo_url:
+                                      $ref: "#/components/schemas/RealmNightLogoUrl"
+                                    new_stream_announcements_stream_id:
+                                      $ref: "#/components/schemas/RealmNewStreamAnnouncementsStreamId"
+                                    org_type:
+                                      $ref: "#/components/schemas/RealmOrgType"
+                                    plan_type:
+                                      $ref: "#/components/schemas/RealmPlanType"
+                                    presence_disabled:
+                                      $ref: "#/components/schemas/RealmPresenceDisabled"
+                                    push_notifications_enabled:
+                                      $ref: "#/components/schemas/RealmPushNotificationsEnabled"
+                                    push_notifications_enabled_end_timestamp:
+                                      $ref: "#/components/schemas/RealmPushNotificationsEnabledEndTimestamp"
+                                    rendered_description:
+                                      $ref: "#/components/schemas/RealmRenderedDescription"
+                                    require_e2ee_push_notifications:
+                                      $ref: "#/components/schemas/RealmRequireE2eePushNotifications"
+                                    require_unique_names:
+                                      $ref: "#/components/schemas/RealmRequireUniqueNames"
+                                    send_channel_events_messages:
+                                      $ref: "#/components/schemas/RealmSendChannelEventsMessages"
+                                    send_welcome_emails:
+                                      $ref: "#/components/schemas/RealmSendWelcomeEmails"
+                                    signup_announcements_stream_id:
+                                      $ref: "#/components/schemas/RealmSignupAnnouncementsStreamId"
+                                    upload_quota_mib:
+                                      $ref: "#/components/schemas/RealmUploadQuotaMib"
+                                    video_chat_provider:
+                                      $ref: "#/components/schemas/RealmVideoChatProviderEvent"
+                                    waiting_period_threshold:
+                                      $ref: "#/components/schemas/RealmWaitingPeriodThresholdEvent"
+                                    want_advertise_in_communities_directory:
+                                      $ref: "#/components/schemas/RealmWantAdvertiseInCommunitiesDirectory"
+                                    welcome_message_custom_text:
+                                      $ref: "#/components/schemas/RealmWelcomeMessageCustomText"
+                                    workplace_users_group:
+                                      $ref: "#/components/schemas/RealmWorkplaceUsersGroup"
                                     zulip_update_announcements_stream_id:
-                                      type: integer
-                                      description: |
-                                        The ID of the channel to which automated messages announcing
-                                        new features or other end-user updates about the Zulip software are sent.
-
-                                        Will be `-1` if such automated messages are disabled.
-
-                                        Since these automated messages are sent by the server, this field is
-                                        primarily relevant to clients containing UI for changing it.
-
-                                        **Changes**: New in Zulip 9.0 (feature level 242).
+                                      $ref: "#/components/schemas/RealmZulipUpdateAnnouncementsStreamId"
                                   additionalProperties: false
                               example:
                                 {
@@ -14864,6 +14120,469 @@ paths:
                         "result": "success",
                         "server_timestamp": 1656958539.6287155,
                       }
+  /realm:
+    patch:
+      operationId: update-realm
+      summary: Update organization settings
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        See [Customize organization settings](https://zulip.com/help/customize-organization-settings).
+
+        The `string_id` parameter can only be changed for demo organizations.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - name
+                - description
+                - emails_restricted_to_domains
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                allow_message_editing:
+                  $ref: "#/components/schemas/RealmAllowMessageEditing"
+                authentication_methods:
+                  type: object
+                  description: |
+                    A dictionary mapping authentication method names to boolean values indicating whether that method is enabled.
+                  example:
+                    Google: true
+                avatar_changes_disabled:
+                  type: boolean
+                  description: |
+                    Whether users are prevented from changing their avatars.
+                  example: false
+                can_access_all_users_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_add_custom_emoji_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_add_subscribers_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_bots_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_groups:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_private_channel_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_public_channel_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_web_public_channel_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_write_only_bots_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_delete_any_message_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_delete_own_message_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_invite_users_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_manage_all_groups:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_manage_billing_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_mention_many_users_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_move_messages_between_channels_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_move_messages_between_topics_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_resolve_topics_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_set_delete_message_policy_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_set_topics_policy_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_summarize_topics_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                create_multiuse_invite_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                default_avatar_source:
+                  type: string
+                  description: |
+                    The default avatar source for users.
+                  example: "G"
+                default_code_block_language:
+                  type: string
+                  description: |
+                    The default language used for formatting code blocks.
+                  example: "python"
+                default_language:
+                  $ref: "#/components/schemas/RealmDefaultLanguage"
+                description:
+                  $ref: "#/components/schemas/RealmDescription"
+                digest_emails_enabled:
+                  $ref: "#/components/schemas/RealmDigestEmailsEnabled"
+                digest_weekday:
+                  type: integer
+                  description: |
+                    The day of the week when digest emails are sent.
+                  example: 1
+                direct_message_initiator_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                direct_message_permission_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                disallow_disposable_email_addresses:
+                  type: boolean
+                  description: |
+                    Whether users are restricted from using disposable email addresses.
+                  example: true
+                email_changes_disabled:
+                  $ref: "#/components/schemas/RealmEmailChangesDisabled"
+                emails_restricted_to_domains:
+                  $ref: "#/components/schemas/RealmEmailsRestrictedToDomains"
+                enable_guest_user_dm_warning:
+                  type: boolean
+                  description: |
+                    Whether to warn before sending a direct message to a guest user.
+                  example: false
+                enable_guest_user_indicator:
+                  type: boolean
+                  description: |
+                    Whether to show a visual indicator for guest users.
+                  example: false
+                enable_read_receipts:
+                  type: boolean
+                  description: |
+                    Whether read receipts are enabled in the organization.
+                  example: true
+                enable_spectator_access:
+                  $ref: "#/components/schemas/RealmEnableSpectatorAccess"
+                gif_rating_policy:
+                  type: integer
+                  description: |
+                    The policy for acceptable GIF content ratings.
+                  example: 1
+                inline_image_preview:
+                  $ref: "#/components/schemas/RealmInlineImagePreview"
+                inline_url_embed_preview:
+                  $ref: "#/components/schemas/RealmInlineUrlEmbedPreview"
+                invite_required:
+                  $ref: "#/components/schemas/RealmInviteRequired"
+                jitsi_server_url:
+                  type: string
+                  description: |
+                    The Jitsi server URL for video calls.
+                  example: "https://jitsi.example.com"
+                media_preview_size:
+                  type: string
+                  description: |
+                    The size configuration for media previews.
+                  example: "large"
+                message_content_allowed_in_email_notifications:
+                  type: boolean
+                  description: |
+                    Whether message content is permitted in email notifications.
+                  example: true
+                message_content_delete_limit_seconds:
+                  $ref: "#/components/schemas/RealmMessageContentDeleteLimitSeconds"
+                message_content_edit_limit_seconds:
+                  $ref: "#/components/schemas/RealmMessageContentEditLimitSeconds"
+                message_edit_history_visibility_policy:
+                  type: string
+                  description: |
+                    The policy governing the visibility of message edit history.
+                  example: "all"
+                message_retention_days:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  description: |
+                    The number of days to retain messages before they are automatically removed.
+                  example: 365
+                moderation_request_channel_id:
+                  type: integer
+                  description: |
+                    The channel ID where moderation requests are sent.
+                  example: 1
+                move_messages_between_streams_limit_seconds:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  description: |
+                    The time limit in seconds for moving messages between channels. Use "unlimited" for no limit.
+                  example: 3600
+                move_messages_within_stream_limit_seconds:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  description: |
+                    The time limit in seconds for moving messages within a channel. Use "unlimited" for no limit.
+                  example: 3600
+                name:
+                  $ref: "#/components/schemas/RealmName"
+                name_changes_disabled:
+                  $ref: "#/components/schemas/RealmNameChangesDisabled"
+                new_stream_announcements_stream_id:
+                  type: integer
+                  description: |
+                    The channel ID where new stream announcements are posted.
+                  example: 1
+                org_type:
+                  $ref: "#/components/schemas/RealmOrgType"
+                require_e2ee_push_notifications:
+                  type: boolean
+                  description: |
+                    Whether to require end-to-end encrypted push notifications.
+                  example: false
+                require_unique_names:
+                  type: boolean
+                  description: |
+                    Whether users must have unique names.
+                  example: true
+                send_channel_events_messages:
+                  type: boolean
+                  description: |
+                    Whether to send channel creation and deletion event messages.
+                  example: true
+                send_welcome_emails:
+                  $ref: "#/components/schemas/RealmSendWelcomeEmails"
+                signup_announcements_stream_id:
+                  type: integer
+                  description: |
+                    The channel ID where new user signup announcements are posted.
+                  example: 1
+                string_id:
+                  type: string
+                  description: |
+                    The new subdomain for the organization.
+                  example: "acme"
+                topics_policy:
+                  type: string
+                  enum:
+                    - allow_empty_topic
+                    - disable_empty_topic
+                  description: |
+                    The policy for sending messages to the empty "general chat" topic.
+                  example: "allow_empty_topic"
+                video_chat_provider:
+                  $ref: "#/components/schemas/RealmVideoChatProvider"
+                waiting_period_threshold:
+                  $ref: "#/components/schemas/RealmWaitingPeriodThreshold"
+                want_advertise_in_communities_directory:
+                  type: boolean
+                  description: |
+                    Whether to advertise the organization in the directory.
+                  example: true
+                welcome_message_custom_text:
+                  type: string
+                  description: |
+                    Custom text for the welcome message sent to new users.
+                  example: "Welcome to our organization!"
+                workplace_users_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                zulip_update_announcements_stream_id:
+                  type: integer
+                  description: |
+                    The channel ID where Zulip server update announcements are posted.
+                  example: 1
+            encoding:
+              allow_message_editing:
+                contentType: application/json
+              authentication_methods:
+                contentType: application/json
+              avatar_changes_disabled:
+                contentType: application/json
+              can_access_all_users_group:
+                contentType: application/json
+              can_add_custom_emoji_group:
+                contentType: application/json
+              can_add_subscribers_group:
+                contentType: application/json
+              can_create_bots_group:
+                contentType: application/json
+              can_create_groups:
+                contentType: application/json
+              can_create_private_channel_group:
+                contentType: application/json
+              can_create_public_channel_group:
+                contentType: application/json
+              can_create_web_public_channel_group:
+                contentType: application/json
+              can_create_write_only_bots_group:
+                contentType: application/json
+              can_delete_any_message_group:
+                contentType: application/json
+              can_delete_own_message_group:
+                contentType: application/json
+              can_invite_users_group:
+                contentType: application/json
+              can_manage_all_groups:
+                contentType: application/json
+              can_manage_billing_group:
+                contentType: application/json
+              can_mention_many_users_group:
+                contentType: application/json
+              can_move_messages_between_channels_group:
+                contentType: application/json
+              can_move_messages_between_topics_group:
+                contentType: application/json
+              can_resolve_topics_group:
+                contentType: application/json
+              can_set_delete_message_policy_group:
+                contentType: application/json
+              can_set_topics_policy_group:
+                contentType: application/json
+              can_summarize_topics_group:
+                contentType: application/json
+              create_multiuse_invite_group:
+                contentType: application/json
+              digest_emails_enabled:
+                contentType: application/json
+              direct_message_initiator_group:
+                contentType: application/json
+              direct_message_permission_group:
+                contentType: application/json
+              email_changes_disabled:
+                contentType: application/json
+              emails_restricted_to_domains:
+                contentType: application/json
+              enable_spectator_access:
+                contentType: application/json
+              inline_image_preview:
+                contentType: application/json
+              inline_url_embed_preview:
+                contentType: application/json
+              invite_required:
+                contentType: application/json
+              message_content_delete_limit_seconds:
+                contentType: application/json
+              message_content_edit_limit_seconds:
+                contentType: application/json
+              message_retention_days:
+                contentType: application/json
+              org_type:
+                contentType: application/json
+              send_welcome_emails:
+                contentType: application/json
+              video_chat_provider:
+                contentType: application/json
+              waiting_period_threshold:
+                contentType: application/json
+              workplace_users_group:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: {}
+              examples:
+                success:
+                  summary: Successful response
+                  value:
+                    result: success
+                    msg: ""
   /realm/domains:
     get:
       operationId: get-realm-domains
@@ -27995,6 +27714,13 @@ components:
           type: string
           description: |
             The name of the onboarding step.
+    RealmAuthenticationMethods:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/RealmAuthenticationMethod"
+      description: |
+        Dictionary whose keys are authentication method names and values are
+        objects describing each method's enabled status and availability.
     RealmAuthenticationMethod:
       type: object
       properties:
@@ -28019,6 +27745,1033 @@ components:
         Dictionary describing the properties of an authentication method for the
         organization - its enabled status and availability for use by the
         organization.
+    RealmCanAccessAllUsersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the
+        set of users who are allowed to access all users in the
+        organization.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
+        to be of type integer and did not accept anonymous user groups.
+
+        New in Zulip 8.0 (feature level 225).
+    RealmCanCreateGroups:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A group-setting value defining
+        the set of users who have permission to create user
+        groups in this organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 299). Previously
+        realm_user_group_edit_policy field used to control the
+        permission to create user groups.
+    RealmCanCreateBotsGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining
+        the set of users who have permission to create all types of bot users
+        in the organization. See also can_create_write_only_bots_group.
+
+        **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+        permission was controlled by the enum bot_creation_policy. Values
+        were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
+    RealmCanCreateWriteOnlyBotsGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A group-setting value defining
+        the set of users who have permission to create bot users that
+        can only send messages in the organization, i.e. incoming webhooks,
+        in addition to the users who are present in can_create_bots_group.
+
+        **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+        permission was controlled by the enum bot_creation_policy. Values
+        were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
+    RealmCanCreatePublicChannelGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value](/api/group-setting-values) defining
+            the set of users who have permission to create public
+            channels in this organization.
+
+            **Changes**: New in Zulip 9.0 (feature level 264). Previously
+            `realm_create_public_stream_policy` field used to control the
+            permission to create public channels.
+    RealmCanCreatePrivateChannelGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value](/api/group-setting-values) defining
+            the set of users who have permission to create private
+            channels in this organization.
+
+            **Changes**: New in Zulip 9.0 (feature level 266). Previously
+            `realm_create_private_stream_policy` field used to control the
+            permission to create private channels.
+    RealmCanCreateWebPublicChannelGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value](/api/group-setting-values) defining
+            the set of users who have permission to create web-public
+            channels in this organization.
+
+            **Changes**: New in Zulip 10.0 (feature level 280). Previously
+            `realm_create_web_public_stream_policy` field used to control
+            the permission to create web-public channels.
+    RealmCanAddCustomEmojiGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value](/api/group-setting-values) defining the set of
+            users who have permission to add custom emoji in the organization.
+
+            **Changes**: New in Zulip 10.0 (feature level 307). Previously, this
+            permission was controlled by the enum `add_custom_emoji_policy`. Values
+            were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
+
+            Before Zulip 5.0 (feature level 85), the `realm_add_emoji_by_admins_only`
+            boolean setting controlled this permission; `true` corresponded to `Admins`,
+            and `false` to `Everyone`.
+    RealmCanAddSubscribersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value](/api/group-setting-values) defining the set of
+            users who have permission to add subscribers to channels in the organization.
+
+            **Changes**: New in Zulip 10.0 (feature level 341). Previously, this
+            permission was controlled by the enum `invite_to_stream_policy`. Values
+            were 1=Members, 2=Admins, 3=Full members, 4=Moderators.
+      example: 2
+    RealmCanDeleteAnyMessageGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to delete any message in the organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 281). Previously, this
+        permission was limited to administrators only and was uneditable.
+      example: 2
+    RealmCanDeleteOwnMessageGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to delete messages that they have sent in the
+        organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 291). Previously, this
+        permission was controlled by the enum `delete_own_message_policy`. Values
+        were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone.
+
+        Before Zulip 5.0 (feature level 101), the `allow_message_deleting` boolean
+        setting controlled this permission; `true` corresponded to `Everyone`, and
+        `false` to `Admins`.
+      example: 2
+    RealmCanSetDeleteMessagePolicyGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to change per-channel `can_delete_any_message_group`
+        and `can_delete_own_message_group` permission settings. Note that the user
+        must be a member of both this group and the `can_administer_channel_group`
+        of the channel whose message delete settings they want to change.
+
+        Organization administrators can always change these settings of
+        every channel.
+
+        **Changes**: New in Zulip 11.0 (feature level 407).
+      example: 2
+    RealmCanSetTopicsPolicyGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to change per-channel `topics_policy` setting. Note that
+        the user must be a member of both this group and the `can_administer_channel_group`
+        of the channel whose `topics_policy` they want to change.
+
+        Organization administrators can always change the `topics_policy` setting of
+        every channel.
+
+        **Changes**: New in Zulip 11.0 (feature level 392).
+      example: 2
+    RealmCanInviteUsersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to send email invitations for inviting other users
+        to the organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 321). Previously, this
+        permission was controlled by the enum `invite_to_realm_policy`. Values
+        were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
+
+        Before Zulip 4.0 (feature level 50), the `invite_by_admins_only` boolean
+        setting controlled this permission; `true` corresponded to `Admins`, and
+        `false` to `Members`.
+      example: 2
+    RealmCanMentionManyUsersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to use wildcard mentions in large channels.
+
+        All users will receive a warning/reminder when using mentions in large
+        channels, even when permitted to do so.
+
+        **Changes**: New in Zulip 10.0 (feature level 352). Previously, this
+        permission was controlled by the enum `wildcard_mention_policy`.
+      example: 2
+    RealmCanMoveMessagesBetweenChannelsGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to move messages from one channel to another
+        in the organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 310). Previously, this
+        permission was controlled by the enum `move_messages_between_streams_policy`.
+        Values were 1=Members, 2=Admins, 3=Full members, 4=Moderators, 6=Nobody.
+
+        In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+        `move_messages_between_streams_policy` enum.
+      example: 2
+    RealmCanMoveMessagesBetweenTopicsGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to move messages from one topic to another
+        within a channel in the organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 316). Previously, this
+        permission was controlled by the enum `edit_topic_policy`. Values were
+        1=Members, 2=Admins, 3=Full members, 4=Moderators, 5=Everyone, 6=Nobody.
+
+        In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
+        `edit_topic_policy` enum.
+      example: 2
+    RealmCanResolveTopicsGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining
+        the set of users who have permission to [resolve topics](/help/resolve-a-topic)
+        in the organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 367). Previously, permission to
+        resolve topics was controlled by the more general
+        can_move_messages_between_topics_group permission for moving messages.
+      example: 2
+    RealmCanManageAllGroups:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values)
+        defining the set of users who have permission to
+        administer all existing groups in this organization.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 305), only users who
+        were a member of the group or had the moderator role or above could
+        exercise the permission on a given group.
+
+        New in Zulip 10.0 (feature level 299). Previously the
+        `user_group_edit_policy` field controlled the permission
+        to manage user groups. Valid values were as follows:
+
+        - 1 = All members can create and edit user groups
+        - 2 = Only organization administrators can create and edit
+          user groups
+        - 3 = Only [full members][calc-full-member] can create and
+          edit user groups.
+        - 4 = Only organization administrators and moderators can
+          create and edit user groups.
+
+        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+      example: 2
+    RealmCanManageBillingGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to manage plans and billing in the organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 363). Previously, only owners
+        and users with `is_billing_admin` property set to `true` were allowed to
+        manage plans and billing.
+      example: 2
+    RealmCanSummarizeTopicsGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the
+        set of users who are allowed to use AI summarization.
+
+        **Changes**: New in Zulip 10.0 (feature level 350).
+      example: 2
+    RealmCreateMultiuseInviteGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the
+        set of users who are allowed to create [reusable invitation
+        links](/help/invite-new-users#create-a-reusable-invitation-link)
+        to the organization.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 314), this value used
+        to be of type integer and did not accept anonymous user groups.
+
+        New in Zulip 8.0 (feature level 209).
+      example: 2
+    RealmDefaultAvatarSource:
+      type: string
+      description: |
+        The avatar data source type for new users.
+
+        - "G" = Hosted by Gravatar
+        - "J" = Generated using Jdenticon
+
+        Note that "U" is not a supported value here, since there is
+        no such thing as a "default" user-uploaded avatar.
+
+        **Changes**: New in Zulip 12.0 (feature level 456).
+      example: "J"
+    RealmDefaultCodeBlockLanguage:
+      type: string
+      description: |
+        The default pygments language code to be used for code blocks in this
+        organization. If an empty string, no default has been set.
+
+        **Changes**: Prior to Zulip 8.0 (feature level 195), a server bug meant
+        that both `null` and an empty string could represent that no default was
+        set for this realm setting in the [`POST /register`](/api/register-queue)
+        response. The documentation for both that endpoint and this event
+        incorrectly stated that the only representation for no default language
+        was `null`. This event in fact uses the empty string to indicate that no
+        default has been set in all server versions.
+      example: "python"
+    RealmDigestWeekday:
+      type: integer
+      description: |
+        The day of the week when the organization will send
+        its weekly digest email to inactive users.
+      example: 1
+    RealmDirectMessageInitiatorGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to start a new direct message conversation
+        involving other non-bot users. Users who are outside this group and attempt
+        to send the first direct message to a given collection of recipient users
+        will receive an error, unless all other recipients are bots or the sender.
+
+        **Changes**: New in Zulip 9.0 (feature level 270).
+
+        Previously, access to send direct messages was controlled by the
+        `private_message_policy` realm setting, which supported values of
+        1 (enabled) and 2 (disabled).
+      example: 2
+    RealmDirectMessagePermissionGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who have permission to fully use direct messages. Users outside
+        this group can only send direct messages to conversations where all the
+        recipients are in this group, are bots, or are the sender, ensuring that
+        every direct message conversation will be visible to at least one user in
+        this group.
+
+        **Changes**: New in Zulip 9.0 (feature level 270).
+
+        Previously, access to send direct messages was controlled by the
+        `private_message_policy` realm setting, which supported values of
+        1 (enabled) and 2 (disabled).
+      example: 2
+    RealmDisallowDisposableEmailAddresses:
+      type: boolean
+      description: |
+        Whether the organization disallows disposable email
+        addresses.
+      example: false
+    RealmEnableReadReceipts:
+      type: boolean
+      description: |
+        Whether read receipts is enabled in the organization or not.
+
+        If disabled, read receipt data will be unavailable to clients, regardless
+        of individual users' personal read receipt settings. See also the
+        `send_read_receipts` setting within `realm_user_settings_defaults`.
+
+        **Changes**: New in Zulip 6.0 (feature level 137).
+      example: true
+    RealmEnableGuestUserDmWarning:
+      type: boolean
+      description: |
+        Whether clients should show a warning when a user is composing
+        a DM to a guest user in this organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 348).
+      example: true
+    RealmEnableGuestUserIndicator:
+      type: boolean
+      description: |
+        Whether clients should display "(guest)" after the names of
+        guest users to prominently highlight their status.
+
+        **Changes**: New in Zulip 8.0 (feature level 216).
+      example: true
+    RealmGifRatingPolicy:
+      type: integer
+      description: |
+        Maximum rating of the GIFs that will be retrieved by the
+        GIPHY and Tenor integrations in this organization.
+
+        **Changes**: Before Zulip 12.0 (feature level 453),
+        this was called `giphy_rating`.
+
+        Before Zulip 12.0 (feature level 442), this was only used
+        for the Giphy integration.
+
+        New in Zulip 4.0 (feature level 55).
+      example: 2
+    RealmIconSource:
+      type: string
+      description: |
+        String indicating whether the organization's
+        [profile icon](/help/create-your-organization-profile) was uploaded
+        by a user or is the default. Useful for UI allowing editing the organization's icon.
+
+        - "G" means generated by Gravatar (the default).
+        - "U" means uploaded by an organization administrator.
+      example: "G"
+    RealmIconUrl:
+      type: string
+      description: |
+        The URL of the organization's [profile icon](/help/create-your-organization-profile).
+      example: "https://chat.example.com/icon.png"
+    RealmMediaPreviewSize:
+      type: integer
+      enum:
+        - 100
+        - 150
+        - 200
+      description: |
+        The organization's policy for the size of image and video
+        thumbnails in messages, expressed as a percentage of the
+        default height. Currently, only certain values are permitted.
+
+        - `100`: 100% height (the default).
+        - `150`: 150% height.
+        - `200`: 200% height.
+
+        **Changes**: New in Zulip 12.0 (feature level 469).
+      example: 100
+    RealmJitsiServerUrl:
+      type: string
+      nullable: true
+      description: |
+        The URL of the custom Jitsi Meet server configured in this organization's
+        settings.
+
+        `null`, the default, means that the organization is using the should use the
+        server-level configuration, `server_jitsi_server_url`.
+
+        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+        available as a server-level configuration, and required a server restart to
+        change.
+      example: "https://meet.example.com"
+    RealmLogoSource:
+      type: string
+      description: |
+        String indicating whether the organization's
+        [profile wide logo](/help/create-your-organization-profile) was uploaded
+        by a user or is the default. Useful for UI allowing editing the
+        organization's wide logo.
+
+        - "D" means the logo is the default Zulip logo.
+        - "U" means uploaded by an organization administrator.
+      example: "D"
+    RealmLogoUrl:
+      type: string
+      description: |
+        The URL of the organization's wide logo configured in the
+        [organization profile](/help/create-your-organization-profile).
+      example: "https://chat.example.com/logo.png"
+    RealmTopicsPolicy:
+      type: string
+      enum:
+        - allow_empty_topic
+        - disable_empty_topic
+      description: |
+        The organization's default policy for sending channel messages to the
+        [empty "general chat" topic](/help/general-chat-topic).
+
+        - `"allow_empty_topic"`: Channel messages can be sent to the empty topic.
+        - `"disable_empty_topic"`: Channel messages cannot be sent to the empty topic.
+
+        **Changes**: New in Zulip 11.0 (feature level 392). Previously, this was
+        controlled by the boolean realm `mandatory_topics` setting, which is now
+        deprecated.
+      example: "allow_empty_topic"
+    RealmMaxFileUploadSizeMib:
+      type: integer
+      description: |
+        The new maximum file size that can be uploaded to this Zulip organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 306). Previously, this field of
+        the core state did not support being updated via the events system, as it was
+        typically hardcoded for a given Zulip installation.
+      example: 25
+    RealmMessageContentAllowedInEmailNotifications:
+      type: boolean
+      description: |
+        Whether notification emails in this organization are allowed to
+        contain Zulip the message content, or simply indicate that a new
+        message was sent.
+      example: true
+    RealmMessageEditHistoryVisibilityPolicy:
+      type: string
+      description: |
+        Which type of message edit history is configured to allow users to
+        access [message edit history](/help/view-a-messages-edit-history).
+
+        - "all" = All edit history is visible.
+        - "moves" = Only moves are visible.
+        - "none" = No edit history is visible.
+
+        **Changes**: New in Zulip 10.0 (feature level 358), replacing the previous
+        `allow_edit_history` boolean setting; `true` corresponds to `all`,
+        and `false` to `none`.
+      example: "all"
+    RealmModerationRequestChannelId:
+      type: integer
+      description: |
+        The ID of the private channel to which messages flagged by users for
+        moderation are sent. Moderators can use this channel to review and
+        act on reported content.
+
+        Will be `-1` if moderation requests are disabled.
+
+        Clients should check whether moderation requests are disabled to
+        determine whether to present a "report message" feature in their UI
+        within a given organization.
+
+        **Changes**: New in Zulip 10.0 (feature level 331). Previously,
+        no "report message" features existed in Zulip.
+      example: -1
+    RealmMoveMessagesWithinStreamLimitSeconds:
+      type: integer
+      nullable: true
+      description: |
+        Messages sent more than this many seconds ago cannot be moved within a
+        channel to another topic by users who have permission to do so based on this
+        organization's [topic edit policy](/help/restrict-moving-messages). This
+        setting does not affect moderators and administrators.
+
+        Will not be `0`. A `null` value means no limit, so message topics can be
+        edited regardless of how long ago they were sent.
+
+        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+        history of how message editing permissions work.
+
+        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
+        limit was always 72 hours for users who were not administrators or
+        moderators.
+      example: 259200
+    RealmMoveMessagesBetweenStreamsLimitSeconds:
+      type: integer
+      nullable: true
+      description: |
+        Messages sent more than this many seconds ago cannot be moved between
+        channels by users who have permission to do so based on this organization's
+        [message move policy](/help/restrict-moving-messages). This setting does
+        not affect moderators and administrators.
+
+        Will not be `0`. A `null` value means no limit, so messages can be moved
+        regardless of how long ago they were sent.
+
+        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+        history of how message editing permissions work.
+
+        **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
+        no time limit for moving messages between channels for users with permission
+        to do so.
+      example: 259200
+    RealmNightLogoSource:
+      type: string
+      description: |
+        String indicating whether the organization's dark theme
+        [profile wide logo](/help/create-your-organization-profile) was uploaded
+        by a user or is the default. Useful for UI allowing editing the
+        organization's wide logo.
+
+        - "D" means the logo is the default Zulip logo.
+        - "U" means uploaded by an organization administrator.
+      example: "D"
+    RealmNightLogoUrl:
+      type: string
+      description: |
+        The URL of the organization's dark theme wide-format logo configured in the
+        [organization profile](/help/create-your-organization-profile).
+      example: "https://chat.example.com/night-logo.png"
+    RealmNewStreamAnnouncementsStreamId:
+      type: integer
+      description: |
+        The ID of the channel to which automated messages announcing the
+        [creation of new channels][new-channel-announce] are sent.
+
+        Will be `-1` if such automated messages are disabled.
+
+        Since these automated messages are sent by the server, this field is
+        primarily relevant to clients containing UI for changing it.
+
+        [new-channel-announce]: /help/configure-automated-notices#new-channel-announcements
+
+        **Changes**: In Zulip 9.0 (feature level 241), renamed `notifications_stream_id`
+        to `new_stream_announcements_stream_id`.
+      example: -1
+    RealmPresenceDisabled:
+      type: boolean
+      description: |
+        Whether online presence of other users is shown in this
+        organization.
+      example: false
+    RealmPushNotificationsEnabled:
+      type: boolean
+      description: |
+        Whether push notifications are enabled for this organization. Typically
+        `true` for Zulip Cloud and self-hosted realms that have a valid
+        registration for the [Mobile push notifications
+        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+        and `false` for self-hosted servers that do not.
+
+        **Changes**: New in Zulip 8.0 (feature level 231).
+        Previously, this value was never updated via events.
+      example: true
+    RealmPushNotificationsEnabledEndTimestamp:
+      type: integer
+      nullable: true
+      description: |
+        If the server expects the realm's push notifications access to end at a
+        definite time in the future, the time at which this is expected to happen.
+        Mobile clients should use this field to display warnings to users when the
+        indicated timestamp is near.
+
+        **Changes**: New in Zulip 8.0 (feature level 231).
+      example: 1735689600
+    RealmRenderedDescription:
+      type: string
+      description: |
+        Note: Only present if the changed property was `description`.
+
+        The organization description rendered as HTML, intended to
+        be used when displaying the organization description in a UI.
+
+        One should use the standard Zulip rendered_markdown CSS when
+        displaying this content so that emoji, LaTeX, and other syntax
+        work correctly. And any client-side security logic for
+        user-generated message content should be applied when displaying
+        this HTML as though it were the body of a Zulip message.
+
+        **Changes**: New in Zulip 12.0 (feature level 464). Previously
+        in feature levels 462-463, an `update` event had been sent
+        when updating the realm's `description`.
+      example: "<p>The official Zulip organization.</p>"
+    RealmRequireE2eePushNotifications:
+      type: boolean
+      description: |
+        Whether this realm is configured to disallow sending mobile
+        push notifications through the legacy mobile push
+        notifications APIs. The new API uses end-to-end encryption
+        to protect message content and metadata from being
+        accessible to the push bouncer service, APNs, and FCM.
+        Clients that support the new E2EE API will use it
+        automatically regardless of this setting.
+
+        If `true`, legacy mobile push notifications will not be
+        sent. Only updated version of clients (which support E2EE
+        push notifications) will receive push notifications.
+
+        **Changes**: In Zulip 12.1 (feature levels 500-501, and 504+), this
+        setting now completely disables legacy push notifications
+        rather than sending them with redacted content.
+
+        New in Zulip 11.0 (feature level 409). Previously,
+        this behavior was available only via the
+        `PUSH_NOTIFICATION_REDACT_CONTENT` global server setting.
+      example: false
+    RealmRequireUniqueNames:
+      type: boolean
+      description: |
+        Indicates whether the organization is configured to require users to have
+        unique full names. If true, the server will reject attempts to create a
+        new user, or change the name of an existing user, where doing so would
+        lead to two users whose names are identical modulo case and unicode
+        normalization.
+
+        **Changes**: New in Zulip 9.0 (feature level 246). Previously, the Zulip
+        server could not be configured to enforce unique names.
+      example: false
+    RealmSendChannelEventsMessages:
+      type: boolean
+      description: |
+        Indicates whether channel event messages are sent in this organization.
+
+        **Changes**: New in Zulip 12.0 (feature level 434). Previously,
+        channel events were sent unconditionally.
+      example: true
+    RealmSendWelcomeEmails:
+      type: boolean
+      description: |
+        Whether or not this organization is configured to send the standard Zulip
+        [welcome emails](/help/disable-welcome-emails) to new users joining the organization.
+      example: true
+    RealmSignupAnnouncementsStreamId:
+      type: integer
+      description: |
+        The ID of the channel to which automated messages announcing
+        that [new users have joined the organization][new-user-announce] are sent.
+
+        Will be `-1` if such automated messages are disabled.
+
+        Since these automated messages are sent by the server, this field is
+        primarily relevant to clients containing UI for changing it.
+
+        [new-user-announce]: /help/configure-automated-notices#new-user-announcements
+
+        **Changes**: In Zulip 9.0 (feature level 241), renamed
+        `signup_notifications_stream_id` to `signup_announcements_stream_id`.
+      example: -1
+    RealmUploadQuotaMib:
+      type: integer
+      nullable: true
+      description: |
+        The new upload quota for the Zulip organization.
+
+        If `null`, there is no limit.
+
+        **Changes**: New in Zulip 10.0 (feature level 306). Previously,
+        this was present changed via an `upload_quota` field in `extra_data` property
+        of [realm/update](/api/get-events#realm-update) event format for `plan_type` events.
+      example: null
+    RealmVideoChatProviderEvent:
+      type: integer
+      description: |
+        The configured [video call provider](/help/configure-call-provider) for the
+        organization.
+
+        - 0 = None
+        - 1 = Jitsi Meet
+        - 3 = Zoom (User OAuth integration)
+        - 4 = BigBlueButton
+        - 5 = Zoom (Server to Server OAuth integration)
+        - 6 = Constructor Groups
+        - 7 = Nextcloud Talk
+        - 8 = Webex (User OAuth integration)
+
+        Note that only one of the [Zoom integrations][zoom-video-calls] can
+        be configured on a Zulip server.
+
+        **Changes**: In Zulip 12.0 (feature level 493), added the Webex OAuth option.
+
+        In Zulip 12.0 (feature level 465), added the Nextcloud Talk option.
+
+        In Zulip 12.0 (feature level 460), added the Constructor Groups option.
+
+        In Zulip 10.0 (feature level 353), added the Zoom Server
+        to Server OAuth option.
+
+        In Zulip 3.0 (feature level 1), added the None option
+        to disable video call UI.
+
+        [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
+      example: 1
+    RealmWaitingPeriodThresholdEvent:
+      type: integer
+      description: |
+        Members whose accounts have been created at least this many days ago
+        will be treated as [full members][calc-full-member]
+        for the purpose of settings that restrict access to new members.
+
+        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+      example: 3
+    RealmWantAdvertiseInCommunitiesDirectory:
+      type: boolean
+      description: |
+        Whether the organization has given permission to be advertised in the
+        Zulip [communities directory](/help/communities-directory).
+
+        **Changes**: New in Zulip 6.0 (feature level 129).
+      example: false
+    RealmWelcomeMessageCustomText:
+      type: string
+      description: |
+        This organization's configured custom message for Welcome Bot
+        to send to new user accounts, in Zulip Markdown format.
+
+        Maximum length is 8000 Unicode code points.
+
+        **Changes**: New in Zulip 11.0 (feature level 416).
+      example: "Welcome to the organization!"
+    RealmWorkplaceUsersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+      description: |
+        A [group-setting value](/api/group-setting-values) defining the set of
+        users who will be considered as workplace users for billing.
+
+        **Changes**: New in Zulip 12.0 (feature level 477).
+      example: 2
+    RealmZulipUpdateAnnouncementsStreamId:
+      type: integer
+      description: |
+        The ID of the channel to which automated messages announcing
+        new features or other end-user updates about the Zulip software are sent.
+
+        Will be `-1` if such automated messages are disabled.
+
+        Since these automated messages are sent by the server, this field is
+        primarily relevant to clients containing UI for changing it.
+
+        **Changes**: New in Zulip 9.0 (feature level 242).
+      example: -1
+    RealmPlanType:
+      type: integer
+      description: |
+        The plan type of the organization.
+
+        - 1 = Self-hosted organization (SELF_HOSTED)
+        - 2 = Zulip Cloud free plan (LIMITED)
+        - 3 = Zulip Cloud Standard plan (STANDARD)
+        - 4 = Zulip Cloud Standard plan, sponsored for free (STANDARD_FREE)
+      example: 1
+    RealmWaitingPeriodThreshold:
+      type: integer
+      description: |
+        Members whose accounts have been created at least this many days ago
+        will be treated as [full members][calc-full-member]
+        for the purpose of settings that restrict access to new members.
+
+        **Changes**: As of Zulip 6.0 (feature level 143), only organization owners can
+        change this setting.
+
+        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+      example: 3
+    RealmVideoChatProvider:
+      type: integer
+      description: |
+        The configured [video call provider](/help/configure-call-provider)
+        for the organization.
+
+        - 0 = None
+        - 1 = Jitsi Meet
+        - 3 = Zoom (User OAuth integration)
+        - 4 = BigBlueButton
+        - 5 = Zoom (Server to Server OAuth integration)
+        - 6 = Constructor Groups
+        - 7 = Nextcloud Talk
+        - 8 = Webex (User OAuth integration)
+
+        Note that only one of the [Zoom integrations][zoom-video-calls]
+        can be configured on a Zulip server.
+
+        [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
+      example: 1
+
+    RealmAllowMessageEditing:
+      type: boolean
+      description: |
+        Whether this organization's [message edit policy][config-message-editing]
+        allows editing the content of messages.
+
+        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+        history of how message editing permissions work.
+
+        [config-message-editing]: /help/restrict-message-editing-and-deletion
+      example: true
+    RealmMessageContentDeleteLimitSeconds:
+      oneOf:
+        - type: integer
+          nullable: true
+        - type: string
+      description: |
+        The message deletion time limit, in seconds.
+
+        Will not be `0` on modern server versions.
+
+        In `realm` events, a `null` value means no limit: messages can be
+        deleted regardless of how long ago they were sent.
+
+        In `PATCH /realm` requests, clients can set no limit using
+        the string `"unlimited"`.
+
+        **Changes**: No limit was represented using the special
+        value `0` before Zulip 5.0 (feature level 100).
+
+        As of Zulip 5.0 (feature level 138), clients set no limit by
+        passing the string `"unlimited"` rather than the integer `0`
+        when updating the setting.
+      example: 600
+    RealmMessageContentEditLimitSeconds:
+      oneOf:
+        - type: integer
+          nullable: true
+        - type: string
+      description: |
+        The message edit time limit, in seconds.
+
+        Will not be `0` on modern server versions.
+
+        In `realm` events, a `null` value means no limit: messages can be
+        edited regardless of how long ago they were sent.
+
+        In `PATCH /realm` requests, clients can set no limit using
+        the string `"unlimited"`.
+
+        See [`PATCH /messages/{message_id}`](/api/update-message) for details and
+        history of how message editing permissions work.
+
+        **Changes**: Before Zulip 6.0 (feature level 138), no limit was
+        represented using the special value `0`.
+
+        As of Zulip 5.0 (feature level 138), clients set no limit by
+        passing the string `"unlimited"` rather than the integer `0`
+        when updating the setting.
+      example: 600
+    RealmName:
+      type: string
+      description: |
+        The name of the organization, used in login pages and organization UI.
+
+        **Changes**: Prior to Zulip 4.0 (feature level 52), this parameter
+        required JSON-encoding.
+      example: "Zulip HQ"
+    RealmNameChangesDisabled:
+      type: boolean
+      description: |
+        Whether users are
+        [allowed to change](/help/restrict-name-and-email-changes) their name
+        via the Zulip UI in this organization. Typically disabled
+        in organizations syncing this type of account information from
+        an external user database like LDAP.
+      example: false
+    RealmOrgType:
+      type: integer
+      description: |
+        The [organization type](/help/organization-type) for the realm.
+
+        - 0 = Unspecified
+        - 10 = Business
+        - 20 = Open-source project
+        - 30 = Education (non-profit)
+        - 35 = Education (for-profit)
+        - 40 = Research
+        - 50 = Event or conference
+        - 60 = Non-profit (registered)
+        - 70 = Government
+        - 80 = Political group
+        - 90 = Community
+        - 100 = Personal
+        - 1000 = Other
+
+        **Changes**: New in Zulip 6.0 (feature level 128) in realm events.
+
+        New in Zulip 5.0 (feature level 128) in `PATCH /realm` parameter docs.
+      example: 1
+    RealmDefaultLanguage:
+      type: string
+      description: |
+        The default language for the organization.
+
+        **Changes**: Prior to Zulip 4.0 (feature level 52), this parameter required JSON-encoding.
+      example: "en"
+    RealmDescription:
+      type: string
+      description: |
+        The description of the organization, used on login and registration pages.
+
+        **Changes**: Prior to Zulip 4.0 (feature level 52), this parameter required JSON-encoding.
+      example: "The official Zulip organization."
+    RealmDigestEmailsEnabled:
+      type: boolean
+      description: |
+        Whether the organization has enabled [weekly digest emails](/help/digest-emails).
+
+        **Changes**: New in Zulip 2.1.
+      example: true
+    RealmEmailChangesDisabled:
+      type: boolean
+      description: |
+        Whether users are prevented from changing their email addresses.
+      example: false
+    RealmEmailsRestrictedToDomains:
+      type: boolean
+      description: |
+        Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
+        this organization are required to have an email address in one of
+        the `realm_domains` configured for the organization.
+
+        **Changes**: As of Zulip 6.0 (feature level 143), only organization owners can
+        change this setting.
+      example: false
+    RealmEnableSpectatorAccess:
+      type: boolean
+      description: |
+        Whether web-public channels are enabled in this organization.
+
+        Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
+        [server setting][server-settings] is enabled on the Zulip
+        server. See also the `can_create_web_public_channel_group`
+        realm setting.
+
+        [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
+        **Changes**: New in Zulip 5.0 (feature level 109).
+      example: false
+    RealmInlineImagePreview:
+      type: boolean
+      description: |
+        Whether this organization has been configured to enable
+        [previews of linked images](/help/image-video-and-website-previews).
+      example: true
+    RealmInlineUrlEmbedPreview:
+      type: boolean
+      description: |
+        Whether this organization has been configured to enable
+        [previews of linked websites](/help/image-video-and-website-previews).
+      example: true
+    RealmInviteRequired:
+      type: boolean
+      description: |
+        Whether an invitation is required to join this organization.
+
+        **Changes**: As of Zulip 6.0 (feature level 143), only organization owners can
+        change this setting.
+      example: true
+    RealmMandatoryTopics:
+      type: boolean
+      deprecated: true
+      description: |
+        Whether [topics are required](/help/require-topics) for messages in this
+        organization.
+
+        **Changes**: Deprecated in Zulip 11.0 (feature level 392). This is now
+        controlled by the realm `topics_policy` setting.
+      example: true
     RealmEmoji:
       type: object
       additionalProperties: false
