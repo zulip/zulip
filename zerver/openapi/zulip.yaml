@@ -13994,6 +13994,8 @@ paths:
         It is not meant to be used by mobile clients directly.
 
         **Changes**: New in Zulip 11.0 (feature level 406).
+      security:
+        - remoteServerAuth: []
       requestBody:
         required: true
         content:
@@ -14090,6 +14092,134 @@ paths:
                     description: |
                       An example JSON response for when no realm is registered for
                       the authenticated server on the bouncer for the given `realm_uuid`:
+  /remotes/server/deactivate:
+    post:
+      operationId: deactivate-remote-server
+      summary: Deactivate a registered server
+      tags: ["server_and_organizations"]
+      description: |
+        Deactivate a self-hosted Zulip server's registration with the
+        [Mobile Push Notification Service][mobile-push].
+
+        A self-hosted server uses this endpoint to deactivate its own
+        registration with the service. It is not meant to be used by
+        mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security:
+        - remoteServerAuth: []
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+  /remotes/server/analytics/status:
+    get:
+      operationId: remote-server-check-analytics
+      summary: Check analytics upload status
+      tags: ["server_and_organizations"]
+      description: |
+        Fetch the IDs of the most recent analytics rows the [Mobile Push
+        Notification Service][mobile-push] has received from a self-hosted
+        Zulip server.
+
+        A self-hosted server uses this endpoint to determine which
+        analytics rows it still needs to upload via
+        `POST /remotes/server/analytics`. It is not meant to be used by
+        mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security:
+        - remoteServerAuth: []
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      last_realm_count_id:
+                        type: integer
+                        description: |
+                          The ID of the last `RealmCount` analytics row the
+                          service has received from this server.
+                      last_installation_count_id:
+                        type: integer
+                        description: |
+                          The ID of the last `InstallationCount` analytics row
+                          the service has received from this server.
+                      last_realmauditlog_id:
+                        type: integer
+                        description: |
+                          The ID of the last `RealmAuditLog` row the service has
+                          received from this server.
+                    example:
+                      {
+                        "last_installation_count_id": 0,
+                        "last_realm_count_id": 0,
+                        "last_realmauditlog_id": 0,
+                        "msg": "",
+                        "result": "success",
+                      }
+  /remotes/server/register/transfer:
+    post:
+      operationId: transfer-remote-server-registration
+      summary: Begin transferring a server registration
+      tags: ["server_and_organizations"]
+      description: |
+        Begin transferring an existing server's registration with the
+        [Mobile Push Notification Service][mobile-push] to a server that
+        no longer has the original registration credentials.
+
+        The service returns a short-lived `verification_secret` that the
+        requesting server proves it controls by serving it from the
+        registered hostname; the service then reissues the credentials.
+        This endpoint is unauthenticated, since a server performing a
+        transfer does not have valid credentials to authenticate with.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                hostname:
+                  description: |
+                    The hostname of the registration to transfer. It must
+                    already be registered with the service.
+                  type: string
+                  example: "zulip.example.com"
+              required:
+                - hostname
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      verification_secret:
+                        type: string
+                        description: |
+                          The secret the requesting server should serve from
+                          its hostname to prove control of it.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "verification_secret": "3430...",
+                      }
   /register_client_device:
     post:
       operationId: register-client-device
@@ -27345,6 +27475,18 @@ components:
         Basic authentication, with the user's email as the username, and the API
         key as the password. The API key can be fetched using the
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
+    remoteServerAuth:
+      type: http
+      scheme: basic
+      description: |
+        Basic authentication used by self-hosted Zulip servers to
+        communicate with the [Mobile Push Notification Service][mobile-push].
+        Unlike the user-facing API, the username is the server's
+        `zulip_org_id` (a UUID) and the password is its `zulip_org_key`,
+        both obtained when the server registers with the service using
+        `manage.py register_server`.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
 
   schemas:
     IgnoredParametersUnsupported:
