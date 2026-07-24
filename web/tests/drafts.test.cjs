@@ -343,9 +343,9 @@ test("draft row focus ignores child controls", ({override}) => {
         activated_element = element;
     });
 
-    const draft_row = Object.create(HTMLElement.prototype);
+    const draft_row = Object.create(window.HTMLElement.prototype);
     draft_row.closest = () => draft_row;
-    const draft_child_control = Object.create(HTMLElement.prototype);
+    const draft_child_control = Object.create(window.HTMLElement.prototype);
     draft_child_control.closest = () => draft_row;
     draft_child_control.matches = (selector) => selector !== ":focus-visible";
     const focus_handler = $("body").get_on_handler("focus", "#draft_overlay");
