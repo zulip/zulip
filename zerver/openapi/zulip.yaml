@@ -15275,6 +15275,162 @@ paths:
                         description: |
                           The ID for the custom profile field.
                     example: {"result": "success", "msg": "", "id": 9}
+  /realm/profile_fields/{field_id}:
+    patch:
+      operationId: update-custom-profile-field
+      summary: Update a custom profile field
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Update the configuration of a
+        [custom profile field](/help/custom-profile-fields) in the user's
+        organization.
+
+        Only the parameters that are passed are modified; any parameter that
+        is omitted is left unchanged. A field's type cannot be changed after
+        it is created.
+
+        The `name`, `hint`, and `field_data` of a custom profile field using
+        one of Zulip's default external account providers (e.g., GitHub,
+        Twitter) cannot be changed; only its `display_in_profile_summary`,
+        `required`, `editable_by_user`, and `use_for_user_matching`
+        properties can be updated.
+
+        At most 2 fields can have `display_in_profile_summary` set to
+        `true` in an organization. In the web application, the checkbox
+        for this option is disabled for other fields once two are already
+        selected, with a tooltip explaining the limit.
+
+        **Changes**: Before Zulip 9.0 (feature level 252), the `name`, `hint`,
+        `field_data`, `display_in_profile_summary` and `required` parameters
+        were all required in every request, even when their values were
+        unchanged.
+      parameters:
+        - $ref: "#/components/parameters/CustomProfileFieldId"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: |
+                    The name of the custom profile field, which appears both in
+                    the user-facing settings UI for configuring the custom profile
+                    fields and in the UI displaying a user's profile.
+                  type: string
+                  example: "Programming language"
+                hint:
+                  $ref: "#/components/schemas/CustomProfileFieldHintSchema"
+                field_data:
+                  $ref: "#/components/schemas/CustomProfileFieldDataSchema"
+                display_in_profile_summary:
+                  $ref: "#/components/schemas/CustomProfileFieldDisplayInProfileSummarySchema"
+                required:
+                  $ref: "#/components/schemas/CustomProfileFieldRequiredSchema"
+                editable_by_user:
+                  $ref: "#/components/schemas/CustomProfileFieldEditableByUserSchema"
+                use_for_user_matching:
+                  $ref: "#/components/schemas/CustomProfileFieldUseForUserMatchingSchema"
+            encoding:
+              field_data:
+                contentType: application/json
+              display_in_profile_summary:
+                contentType: application/json
+              required:
+                contentType: application/json
+              editable_by_user:
+                contentType: application/json
+              use_for_user_matching:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Field id 4 not found.",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when there is no custom profile
+                          field with the requested ID:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "A field with that label already exists.",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when another custom profile field
+                          already uses the requested name:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Only 2 custom profile fields can be displayed in the profile summary.",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when setting
+                          `display_in_profile_summary` to `true` would exceed the
+                          organization's limit of 2 such fields:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Default custom field cannot be updated.",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when attempting to change the
+                          `name`, `hint`, or `field_data` of a default external account field:
+    delete:
+      operationId: delete-custom-profile-field
+      summary: Delete a custom profile field
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Delete a [custom profile field](/help/custom-profile-fields) in the
+        user's organization.
+
+        Deleting a custom profile field also removes the values configured for
+        that field from every user's profile. In the web application, the
+        number of affected users is shown in the delete confirmation modal
+        before the field is removed.
+      parameters:
+        - $ref: "#/components/parameters/CustomProfileFieldId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Field id 4 not found.",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response for when there is no custom profile
+                      field with the requested ID:
   /realm/user_settings_defaults:
     patch:
       operationId: update-realm-user-settings-defaults
@@ -27910,6 +28066,10 @@ components:
         dropdown UI for individual users to select an option.
 
         The interface for field type 7 is not yet stabilized.
+
+        See [profile field types](/help/custom-profile-fields#profile-field-types)
+        or the [`field_type` parameter](/api/create-custom-profile-field#parameter-field_type)
+        for what each field type number means.
       type: object
       example:
         {
@@ -31414,4 +31574,13 @@ components:
       schema:
         type: integer
       example: 17
+      required: true
+    CustomProfileFieldId:
+      name: field_id
+      in: path
+      description: |
+        The ID of the target custom profile field.
+      schema:
+        type: integer
+      example: 4
       required: true
