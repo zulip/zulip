@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from collections.abc import Collection, Iterable, Mapping
 from typing import Any, TypeAlias
@@ -754,6 +755,66 @@ def send_user_creation_events_on_adding_subscriptions(
 SubT: TypeAlias = tuple[list[SubInfo], list[SubInfo]]
 
 
+def send_private_channel_subscription_notification(
+    stream: Stream,
+    subscribed_users: list[UserProfile],
+    *,
+    acting_user: UserProfile,
+    op: str,
+) -> None:
+    if not stream.invite_only:
+        return
+
+    # Skip notifications for deactivated streams — the notification bot
+    # cannot post to an archived invite-only channel, and there is no
+    # meaningful audience for join/leave events on a stream being torn down.
+    if stream.deactivated:
+        return
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    acting_user_mention = silent_mention_syntax_for_user(acting_user)
+
+    with override_language(stream.realm.default_language):
+        for user in subscribed_users:
+            if op == "add":
+                if user.id == acting_user.id:
+                    # User subscribed themselves — no notice needed; they already know.
+                    continue
+                notification_string = _(
+                    "{acting_user} subscribed {subscribed_user} to this channel."
+                )
+                notification_string = notification_string.format(
+                    acting_user=acting_user_mention,
+                    subscribed_user=silent_mention_syntax_for_user(user),
+                )
+            else:
+                if user.id == acting_user.id:
+                    notification_string = _("{user} unsubscribed from this channel.")
+                    notification_string = notification_string.format(
+                        user=acting_user_mention,
+                    )
+                else:
+                    notification_string = _(
+                        "{acting_user} unsubscribed {unsubscribed_user} from this channel."
+                    )
+                    notification_string = notification_string.format(
+                        acting_user=acting_user_mention,
+                        unsubscribed_user=silent_mention_syntax_for_user(user),
+                    )
+            try:
+                maybe_send_channel_events_notice(
+                    sender,
+                    stream,
+                    notification_string,
+                )
+            except Exception:
+                logging.exception(
+                    "Failed to send subscription notice to stream %d",
+                    stream.id,
+                    stack_info=True,
+                )
+
+
 @transaction.atomic(savepoint=False)
 def bulk_add_subscriptions(
     realm: Realm,
@@ -925,6 +986,28 @@ def bulk_add_subscriptions(
         stream_dict=stream_dict,
         subscriber_peer_info=subscriber_peer_info,
     )
+
+    if not from_user_creation and acting_user is not None:
+        users_by_stream: dict[int, list[UserProfile]] = defaultdict(list)
+        for sub_info in subs_to_add + subs_to_activate:
+            users_by_stream[sub_info.stream.id].append(sub_info.user)
+        streams_to_notify = [
+            (stream, users_by_stream[stream.id])
+            for stream in streams
+            if stream.id in users_by_stream
+        ]
+        acting_user_non_none: UserProfile = acting_user
+
+        def send_add_notifications() -> None:
+            for notify_stream, notify_users in streams_to_notify:
+                send_private_channel_subscription_notification(
+                    notify_stream,
+                    notify_users,
+                    acting_user=acting_user_non_none,
+                    op="add",
+                )
+
+        transaction.on_commit(send_add_notifications)
 
     return (
         subs_to_add + subs_to_activate,
@@ -1177,6 +1260,19 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
+
+    if acting_user is not None and not skip_events_for_removed_user:
+        users_by_stream: dict[int, list[UserProfile]] = defaultdict(list)
+        for user, stream in removed_sub_tuples:
+            users_by_stream[stream.id].append(user)
+        for stream in streams:
+            if stream.id in users_by_stream and not stream.deactivated:
+                send_private_channel_subscription_notification(
+                    stream,
+                    users_by_stream[stream.id],
+                    acting_user=acting_user,
+                    op="remove",
+                )
 
     return (
         removed_sub_tuples,
