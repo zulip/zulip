@@ -132,6 +132,4 @@ process.exitCode = 1;
     }
 
     process.exitCode = exit_code;
-})().catch((error) => /* istanbul ignore next */ {
-    console.error(error);
-});
+})();
