@@ -11,6 +11,12 @@ const $ = require("./lib/zjquery.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
+const drafts = mock_esm("../src/drafts", {
+    draft_model: {
+        deleteDrafts: noop,
+    },
+    notify_draft_update: noop,
+});
 const hash_util = mock_esm("../src/hash_util");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
@@ -64,6 +70,7 @@ message_lists.current = {
     },
     change_message_id: noop,
     add_messages: noop,
+    remove_and_rerender: noop,
 };
 const home_msg_list = {
     view: {
@@ -80,6 +87,7 @@ const home_msg_list = {
     preserver_rendered_state: true,
     change_message_id: noop,
     add_messages: noop,
+    remove_and_rerender: noop,
 };
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 message_lists.non_rendered_data = () => [];
@@ -569,9 +577,16 @@ run_test("resend error re-marks a present message as failed", ({override}) => {
         on_error("error response", "");
     };
 
+    let notified = 0;
+    override(drafts, "notify_draft_update", () => {
+        notified += 1;
+    });
+
     echo.resend_message(message, make_spinner_row(), {on_send_message_success: noop, send_message});
 
     assert.equal(message.failed_request, true);
+    // Also nudges the overlay so an open Outbox surfaces the failure.
+    assert.equal(notified, 1);
 });
 
 run_test("resend doesn't crash when the message was already reconciled", ({override}) => {
@@ -710,3 +725,139 @@ run_test("reify_message_id counts a sent direct message", ({override}) => {
     const {user_ids} = increment_stub.get_args("user_ids");
     assert.deepEqual(user_ids, [cordelia.user_id]);
 });
+
+run_test("get_message_waiting_for_ack_by_draft_id", () => {
+    const message = {draft_id: "draft123"};
+    const waiting_for_ack = new Map([["123.04", message]]);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
+    assert.equal(echo_state.get_message_waiting_for_ack_by_draft_id("draft123"), message);
+    assert.equal(echo_state.get_message_waiting_for_ack_by_draft_id("nonexistent"), undefined);
+});
+
+run_test("abort_messages_by_draft_ids deletes drafts and clears echo", ({override}) => {
+    const msg_a = {draft_id: "abort-a", local_id: "55.01", id: 55};
+    const msg_b = {draft_id: "abort-b", local_id: "56.01", id: 56};
+    echo_state._patch_waiting_for_ack(
+        new Map([
+            ["55.01", msg_a],
+            ["56.01", msg_b],
+        ]),
+    );
+
+    let deleted_ids;
+    override(drafts.draft_model, "deleteDrafts", (ids) => {
+        deleted_ids = ids;
+    });
+
+    echo.abort_messages_by_draft_ids(["abort-a", "abort-b"]);
+
+    // Single batched delete fires the listener once.
+    assert.deepEqual(deleted_ids, ["abort-a", "abort-b"]);
+    assert.equal(echo_state.get_message_waiting_for_ack("55.01"), undefined);
+    assert.equal(echo_state.get_message_waiting_for_ack("56.01"), undefined);
+
+    // Missing draft_ids are skipped without erroring; empty input is also safe.
+    echo_state._patch_waiting_for_ack(new Map());
+    echo.abort_messages_by_draft_ids(["nonexistent"]);
+    echo.abort_messages_by_draft_ids([]);
+});
+
+run_test("get_local_echo_status_for_draft", () => {
+    const failed_message = {draft_id: "failed-draft", failed_request: true};
+    const in_flight_message = {draft_id: "in-flight-draft"};
+    echo_state._patch_waiting_for_ack(
+        new Map([
+            ["77.01", failed_message],
+            ["77.02", in_flight_message],
+        ]),
+    );
+    assert.equal(echo.get_local_echo_status_for_draft("failed-draft"), "failed");
+    assert.equal(echo.get_local_echo_status_for_draft("in-flight-draft"), "in_flight");
+    assert.equal(echo.get_local_echo_status_for_draft("nonexistent"), "none");
+
+    echo_state._patch_waiting_for_ack(new Map());
+    assert.equal(echo.get_local_echo_status_for_draft("failed-draft"), "none");
+});
+
+run_test("resend_message_by_draft_id", ({override}) => {
+    // The overlay's per-row resend has only a draft_id and no message row, so
+    // it relies on the callbacks stashed at initialize to drive resend_message.
+    const local_id = "90.01";
+    const message = {
+        id: 90,
+        local_id,
+        draft_id: "resend-draft",
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "retry me",
+        content: "<p>retry me</p>",
+        locally_echoed: true,
+        failed_request: true,
+    };
+    echo_state._patch_waiting_for_ack(new Map([[local_id, message]]));
+
+    override(message_lists, "all_rendered_row_for_message_id", () => make_spinner_row());
+
+    let sent_message;
+    echo.initialize({
+        on_send_message_success: noop,
+        send_message(msg) {
+            sent_message = msg;
+        },
+    });
+
+    echo.resend_message_by_draft_id("resend-draft");
+    assert.equal(sent_message, message);
+});
+
+run_test(
+    "resend_message_by_draft_id can't double-send when the feed row isn't rendered",
+    ({override}) => {
+        // No rendered row means show_retry_spinner can't dedup, so
+        // resend_in_progress is the only thing stopping a double-send.
+        const local_id = "95.01";
+        const message = {
+            id: 95,
+            local_id,
+            draft_id: "dup-draft",
+            type: "stream",
+            stream_id: general_sub.stream_id,
+            topic: "test",
+            raw_content: "retry me",
+            content: "<p>retry me</p>",
+            locally_echoed: true,
+            failed_request: true,
+        };
+        echo_state._patch_waiting_for_ack(new Map([[local_id, message]]));
+
+        // Fresh empty spinner each call, so show_retry_spinner never dedups.
+        let row_seq = 0;
+        override(message_lists, "all_rendered_row_for_message_id", () => {
+            row_seq += 1;
+            const $row = $.create(`unrendered-row-${row_seq}`);
+            $row.set_find_results(".refresh-failed-message", $.create(`no-spinner-${row_seq}`));
+            return $row;
+        });
+
+        const captured = [];
+        echo.initialize({
+            on_send_message_success: noop,
+            send_message(msg, _on_success, on_error) {
+                // Leave the resend in flight (no callback).
+                captured.push({msg, on_error});
+            },
+        });
+
+        echo.resend_message_by_draft_id("dup-draft");
+        echo.resend_message_by_draft_id("dup-draft");
+        assert.equal(captured.length, 1);
+        assert.equal(message.resend_in_progress, true);
+
+        // The guard clears on failure, so a real retry can send again.
+        captured[0].on_error("simulated failure", "");
+        assert.equal(message.resend_in_progress, false);
+        echo.resend_message_by_draft_id("dup-draft");
+        assert.equal(captured.length, 2);
+    },
+);

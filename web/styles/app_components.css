@@ -895,7 +895,8 @@ input.settings_text_input {
 
     /* min-height: 0 lets the tab pane shrink inside the 1fr grid row
        (grid items default to min-height: auto). */
-    .drafts-tab-pane {
+    .drafts-tab-pane,
+    .outbox-tab-pane {
         min-height: 0;
     }
 
@@ -988,9 +989,10 @@ input.settings_text_input {
                 }
             }
 
-            .delete-overlay-message {
+            .delete-overlay-message,
+            .outbox-resend-message,
+            .outbox-cancel-message {
                 cursor: pointer;
-                color: hsl(357deg 52% 57%);
                 opacity: 0.7;
                 padding: 0;
                 font-size: 1.2em;
@@ -998,6 +1000,10 @@ input.settings_text_input {
                 &:hover {
                     opacity: 1;
                 }
+            }
+
+            .delete-overlay-message {
+                color: hsl(357deg 52% 57%);
             }
         }
 

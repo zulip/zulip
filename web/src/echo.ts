@@ -11,6 +11,7 @@ import * as browser_history from "./browser_history.ts";
 import type * as compose from "./compose.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as drafts from "./drafts.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
@@ -159,22 +160,25 @@ function failed_message_success(message_id: number): void {
     show_failed_message_success(message_id);
 }
 
+type ResendCallbacks = {
+    on_send_message_success: typeof compose.send_message_success;
+    send_message: typeof transmit.send_message;
+};
+
 export function resend_message(
     message: LocalMessage,
     $row: JQuery,
-    {
-        on_send_message_success,
-        send_message,
-    }: {
-        on_send_message_success: typeof compose.send_message_success;
-        send_message: typeof transmit.send_message;
-    },
+    {on_send_message_success, send_message}: ResendCallbacks,
 ): void {
     message_store.update_message_content(message, message.raw_content!);
-    if (show_retry_spinner($row)) {
-        // retry already in in progress
+    if (message.resend_in_progress) {
+        // Guard on the message itself, since show_retry_spinner (below) only
+        // dedupes when the feed row is rendered, which it may not be.
         return;
     }
+    message.resend_in_progress = true;
+    // Start the retry spinner if the feed row is rendered (no-op otherwise).
+    show_retry_spinner($row);
 
     message.resend = true;
 
@@ -182,6 +186,7 @@ export function resend_message(
         const data = send_message_api_response_schema.parse(raw_data);
         const message_id = data.id;
 
+        message.resend_in_progress = false;
         hide_retry_spinner($row);
 
         on_send_message_success(message, data);
@@ -191,6 +196,7 @@ export function resend_message(
     }
 
     function on_error(response: string, _server_error_code: string): void {
+        message.resend_in_progress = false;
         message_send_error(message.id, response);
         setTimeout(() => {
             hide_retry_spinner($row);
@@ -646,13 +652,21 @@ export let message_send_error = (message_id: number, error_response: string): vo
     message.show_slow_send_spinner = false;
 
     show_message_failed(message_id, error_response);
+
+    // A failed send doesn't write to the draft model, so nudge the drafts
+    // overlay directly to surface this message in an open Outbox tab.
+    drafts.notify_draft_update();
 };
 
 export function rewire_message_send_error(value: typeof message_send_error): void {
     message_send_error = value;
 }
 
-function abort_message(message: Message): void {
+function remove_locally_echoed_message(message: LocalMessage): void {
+    // Draft handling is left to the caller; this only clears the feed and
+    // waiting_for_ack state.
+    echo_state.remove_message_from_waiting_for_ack(message.local_id);
+
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
@@ -661,6 +675,20 @@ function abort_message(message: Message): void {
     for (const msg_list_data of message_lists.non_rendered_data()) {
         msg_list_data.remove([message.id]);
     }
+}
+
+function abort_message(message: LocalMessage): void {
+    // Dismissing from the feed keeps the draft for later editing; reset
+    // is_sending_saving so it appears in Drafts rather than the Outbox.
+    if (message.draft_id !== undefined) {
+        const draft = drafts.draft_model.getDraft(message.draft_id);
+        if (draft !== false) {
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(message.draft_id, draft);
+        }
+    }
+
+    remove_locally_echoed_message(message);
 }
 
 export function display_slow_send_loading_spinner(message: Message): void {
@@ -675,26 +703,50 @@ export function display_slow_send_loading_spinner(message: Message): void {
     }
 }
 
-export function initialize({
-    on_send_message_success,
-    send_message,
-}: {
-    on_send_message_success: typeof compose.send_message_success;
-    send_message: typeof transmit.send_message;
-}): void {
+let resend_callbacks: ResendCallbacks | undefined;
+
+export function resend_message_by_draft_id(draft_id: string): void {
+    assert(resend_callbacks !== undefined);
+    const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+    if (message === undefined) {
+        // Shouldn't happen if the caller filtered for failed local echoes,
+        // but the echo may have been acked since the overlay was rendered.
+        blueslip.warn("resend_message_by_draft_id: no waiting message", {draft_id});
+        return;
+    }
+    const $row = message_lists.all_rendered_row_for_message_id(message.id);
+    resend_message(message, $row, resend_callbacks);
+}
+
+export function abort_messages_by_draft_ids(draft_ids: string[]): void {
+    // One deleteDrafts call so the draft-update listener fires once.
+    const messages_to_remove: LocalMessage[] = [];
+    for (const draft_id of draft_ids) {
+        const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+        if (message !== undefined) {
+            messages_to_remove.push(message);
+        }
+    }
+    for (const message of messages_to_remove) {
+        remove_locally_echoed_message(message);
+    }
+    drafts.draft_model.deleteDrafts(draft_ids);
+}
+
+export function get_local_echo_status_for_draft(draft_id: string): "failed" | "in_flight" | "none" {
+    const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+    if (message === undefined) {
+        return "none";
+    }
+    return message.failed_request ? "failed" : "in_flight";
+}
+
+export function initialize({on_send_message_success, send_message}: ResendCallbacks): void {
+    resend_callbacks = {on_send_message_success, send_message};
+
     function on_failed_action(
         selector: string,
-        callback: (
-            message: LocalMessage,
-            $row: JQuery,
-            {
-                on_send_message_success,
-                send_message,
-            }: {
-                on_send_message_success: typeof compose.send_message_success;
-                send_message: typeof transmit.send_message;
-            },
-        ) => void,
+        callback: (message: LocalMessage, $row: JQuery, callbacks: ResendCallbacks) => void,
     ): void {
         $("#main_div").on("click", selector, function (this: HTMLElement, e) {
             e.stopPropagation();
