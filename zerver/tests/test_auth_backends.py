@@ -5011,6 +5011,15 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
     USER_INFO_URL = f"{BASE_OIDC_URL}/userinfo"
     AUTH_FINISH_URL = "/complete/oidc/"
 
+    # id_token claims returned during the auth-finish step. Tests that need
+    # claims like "picture" (avatar sync) override this; the empty default
+    # preserves the existing behavior for all other tests.
+    mocked_id_token: dict[str, Any] = {}
+    # HTTP response served from mocked_id_token["picture"] (avatar download).
+    mocked_avatar_body: bytes = b""
+    mocked_avatar_content_type: str = "image/png"
+    mocked_avatar_status: int = 200
+
     def _default_discovery_payload(self, base_oidc_url: str) -> dict[str, Any]:
         # Example payload of the discovery endpoint (with appropriate values filled
         # in to match our test setup).
@@ -5078,10 +5087,13 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
         # successfully pass validation by validate_and_return_id_token is impractical
         # and unnecessary (see python-social-auth implementation of the method for
         # how the validation works).
-        # We can simply mock the method to make it succeed and return an empty dict, because
-        # the return value is not used for anything.
+        # We can simply mock the method to make it succeed and return the
+        # claims in self.mocked_id_token (empty by default). Tests that need
+        # id_token claims like "picture" (for avatar sync) override that.
         with mock.patch.object(
-            GenericOpenIdConnectBackend, "validate_and_return_id_token", return_value={}
+            GenericOpenIdConnectBackend,
+            "validate_and_return_id_token",
+            return_value=self.mocked_id_token,
         ):
             return super().social_auth_test_finish(*args, **kwargs)
 
@@ -5108,6 +5120,17 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
             body=body,
             content_type="application/json",
         )
+
+        # When a test configures avatar sync, serve the avatar from the
+        # "picture" claim's URL so get_user_avatar_from_provider can fetch it.
+        if picture_url := self.mocked_id_token.get("picture"):
+            requests_mock.add(
+                requests_mock.GET,
+                picture_url,
+                status=self.mocked_avatar_status,
+                body=self.mocked_avatar_body,
+                content_type=self.mocked_avatar_content_type,
+            )
 
     @override
     def generate_access_token_url_payload(self, account_data_dict: dict[str, str]) -> str:
@@ -5168,6 +5191,60 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
                 is_signup=is_signup,
                 multiuse_object_key=multiuse_object_key,
             )
+
+    def test_social_auth_avatar_sync_on_login(self) -> None:
+        example_avatar = read_test_image_file("img.png")
+
+        self.mocked_id_token = {"picture": "https://idp.example.com/me/photo.png"}
+        self.mocked_avatar_body = example_avatar
+        self.mocked_avatar_content_type = "image/png"
+
+        # hamlet starts without a user-uploaded avatar.
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+        with self.assertLogs(self.logger_string, level="INFO"):
+            result = self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+
+        # The avatar from the IdP's "picture" endpoint is applied.
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        url = avatar_url(self.user_profile)
+        assert url is not None
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.getvalue(), resize_avatar(example_avatar, DEFAULT_AVATAR_SIZE))
+
+    def test_social_auth_avatar_sync_skips_non_image(self) -> None:
+        self.mocked_id_token = {"picture": "https://idp.example.com/me/photo"}
+        self.mocked_avatar_body = b"<html>not an image</html>"
+        self.mocked_avatar_content_type = "text/html"
+
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            result = self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+            )
+        self.assertEqual(result.status_code, 302)
+
+        # A non-image response is rejected and the avatar is left unchanged.
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertIn(
+            f"INFO:{self.logger_string}:User avatar file is not an image file. Content type: text/html",
+            m.output,
+        )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_auto_signup(self) -> None:
