@@ -11,8 +11,10 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_flags from "./message_flags.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_report from "./message_report.ts";
+import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -65,6 +67,26 @@ export function toggle_message_actions_menu(message: Message): boolean {
     message_actions_popover_keyboard_toggle = true;
     $popover_reference.trigger("click");
     return true;
+}
+
+export function toggle_hide_link_previews(message: Message): void {
+    message.hide_link_previews = !message.hide_link_previews;
+
+    for (const list of message_lists.all_rendered_message_lists()) {
+        const $row = list.get_row(message.id);
+        if ($row.length > 0) {
+            $row.find(".message_content").toggleClass(
+                "hide-link-previews",
+                message.hide_link_previews,
+            );
+        }
+    }
+
+    assert(message_lists.current !== undefined);
+    message_lists.current.select_id(message.id, {then_scroll: true});
+
+    const op = message.hide_link_previews ? "add" : "remove";
+    message_flags.send_flag_update_for_messages([message.id], "hide_link_previews", op);
 }
 
 export function initialize({
@@ -199,6 +221,16 @@ export function initialize({
                 } else {
                     condense.collapse(message);
                 }
+                e.preventDefault();
+                e.stopPropagation();
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".popover_toggle_hide_link_previews", (e) => {
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                const message = message_store.get(message_id);
+                assert(message !== undefined);
+                toggle_hide_link_previews(message);
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
