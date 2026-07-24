@@ -52,6 +52,7 @@ export const CLASSNAMES = {
     guest_in_dm_recipient_warning: "guest_in_dm_recipient_warning",
     unscheduled_message: "unscheduled_message",
     search_view: "search_view",
+    message_edited_elsewhere: "message_edited_elsewhere",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",
@@ -83,7 +84,10 @@ export function append_compose_banner_to_banner_list(
     $banner: JQuery,
     $list_container: JQuery,
 ): boolean {
-    if ($banner.hasClass("warning") && has_error()) {
+    // Suppress a warning only when its own container already shows an
+    // error; an error elsewhere (e.g. the compose box) must not hide a
+    // warning targeting a different container.
+    if ($banner.hasClass("warning") && $list_container.find(`.${CSS.escape(ERROR)}`).length > 0) {
         return false;
     }
     scroll_util.get_content_element($list_container).append($banner);
@@ -216,6 +220,32 @@ export function show_error_message(
     }
 }
 
+export function show_warning_message(
+    message: string,
+    classname: string,
+    $container: JQuery,
+    {
+        button_text = null,
+        stream_id = null,
+        topic_name = null,
+    }: {button_text?: string | null; stream_id?: number | null; topic_name?: string | null} = {},
+): boolean {
+    // The warning counterpart of show_error_message: same classname-dedupe,
+    // and like that function it intentionally does not support HTML messages.
+    // Returns whether the banner was appended.
+    $container.find(`.${CSS.escape(classname)}`).remove();
+
+    const new_row_html = render_compose_banner({
+        banner_type: WARNING,
+        stream_id,
+        topic_name,
+        banner_text: message,
+        button_text,
+        classname,
+    });
+    return append_compose_banner_to_banner_list($(new_row_html), $container);
+}
+
 export function cannot_send_direct_message_error(error_message: string): void {
     // If a banner with this classname already exists, avoid removing
     // and re-creating it.
@@ -283,10 +313,6 @@ export function show_unknown_zoom_user_error(email: string): void {
         classname: CLASSNAMES.unknown_zoom_user,
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
-}
-
-export function has_error(): boolean {
-    return $("#compose_banners .error").length > 0;
 }
 
 export function show_convert_pasted_text_to_file_banner({

@@ -2,7 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 import type {ReferenceElement} from "tippy.js";
 
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_compose_mention_group_warning from "../templates/compose_banner/compose_mention_group_warning.hbs";
 import render_guest_in_dm_recipient_warning from "../templates/compose_banner/guest_in_dm_recipient_warning.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
@@ -122,11 +121,16 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
     const message_too_long = status;
     const $message_edit_save_container = $container.find(".message_edit_save_container");
     $message_edit_save_container.toggleClass("message-too-long-for-edit", message_too_long);
+    const $message_edit_save = $container.find(".message_edit_save");
     const save_is_disabled =
         message_too_long ||
-        $message_edit_save_container.hasClass("message-edit-time-limit-expired");
+        $message_edit_save_container.hasClass("message-edit-time-limit-expired") ||
+        // Keep the Save button disabled while a previous edit is still
+        // saving, so typing in the reopened form can't re-enable it and
+        // allow a double submission.
+        $message_edit_save.hasClass("saving");
 
-    $container.find(".message_edit_save").prop("disabled", save_is_disabled);
+    $message_edit_save.prop("disabled", save_is_disabled);
     $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
 }
 
@@ -136,6 +140,14 @@ export function get_disabled_send_tooltip_html(): string {
 
 export function get_disabled_save_tooltip($container: JQuery): string {
     const $button_wrapper = $container.find(".message_edit_save_container");
+    // While a previous edit is still being saved, Save is disabled to
+    // prevent a double submission; this takes precedence over the other
+    // tooltips.
+    if ($button_wrapper.find(".message_edit_save").hasClass("saving")) {
+        return $t({
+            defaultMessage: "Saving previous changes.",
+        });
+    }
     // The time limit expiry tooltip takes precedence over the message
     // length exceeded tooltip.
     if ($button_wrapper.hasClass("message-edit-time-limit-expired")) {
@@ -514,22 +526,14 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
             ? $t({defaultMessage: "Unresolve topic"})
             : null;
 
-        const context = {
-            banner_type: compose_banner.WARNING,
-            stream_id: sub.stream_id,
-            topic_name,
-            banner_text: $t({
+        const appended = compose_banner.show_warning_message(
+            $t({
                 defaultMessage:
                     "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.",
             }),
-            button_text,
-            classname: compose_banner.CLASSNAMES.topic_resolved,
-        };
-
-        const new_row_html = render_compose_banner(context);
-        const appended = compose_banner.append_compose_banner_to_banner_list(
-            $(new_row_html),
+            compose_banner.CLASSNAMES.topic_resolved,
             $("#compose_banners"),
+            {button_text, stream_id: sub.stream_id, topic_name},
         );
         if (appended) {
             compose_state.set_recipient_viewed_topic_resolved_banner(true);
@@ -623,18 +627,15 @@ export function inform_if_topic_is_moved(
 export function warn_if_in_search_view(): void {
     const filter = narrow_state.filter();
     if (filter && !filter.contains_no_partial_conversations()) {
-        const context = {
-            banner_type: compose_banner.WARNING,
-            banner_text: $t({
+        compose_banner.show_warning_message(
+            $t({
                 defaultMessage:
                     "This conversation may have additional messages not shown in this view.",
             }),
-            button_text: $t({defaultMessage: "Go to conversation"}),
-            classname: compose_banner.CLASSNAMES.search_view,
-        };
-
-        const new_row_html = render_compose_banner(context);
-        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+            compose_banner.CLASSNAMES.search_view,
+            $("#compose_banners"),
+            {button_text: $t({defaultMessage: "Go to conversation"})},
+        );
     }
 }
 

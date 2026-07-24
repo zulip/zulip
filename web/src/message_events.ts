@@ -474,8 +474,17 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 anchor_message.is_me_message = event.is_me_message;
             }
 
-            // mark the current message edit attempt as complete.
-            message_edit.end_message_edit(event.message_id);
+            // If an edit form is open for this message, keep it open and
+            // update its content in place for pure content edits; for
+            // moves (or when no form is open) close/clean up the edit UI.
+            const message_was_moved =
+                util.get_edit_event_topic(event) !== undefined || event.new_stream_id !== undefined;
+            const is_content_edit = event.rendered_content !== undefined;
+            message_edit.handle_message_edit_update(
+                event.message_id,
+                is_content_edit && !message_was_moved,
+                event.content,
+            );
 
             // Save the content edit to the front end anchor_message.edit_history
             // before topic edits to ensure that combined topic / content
