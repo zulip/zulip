@@ -72,6 +72,26 @@ class S3Test(ZulipTestCase):
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
     @use_s3_backend
+    def test_upload_message_attachment_filename_with_control_characters(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+        user_profile = self.example_user("hamlet")
+
+        # Some email clients send attachment filenames with a trailing
+        # newline, which must not reach the Content-Disposition header.
+        url, returned_filename = upload_message_attachment(
+            "quotes.txt\n", "text/plain", b"zulip!", user_profile
+        )
+        self.assertEqual(returned_filename, "quotes.txt")
+
+        path_id = url.removeprefix("/user_uploads/")
+        attachment = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(attachment.file_name, "quotes.txt")
+
+        content_disposition = bucket.Object(path_id).get()["ContentDisposition"]
+        self.assertEqual(content_disposition, 'inline; filename="quotes.txt"')
+        self.assertNotIn("\n", content_disposition)
+
+    @use_s3_backend
     def test_upload_message_attachment_thumbnail(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
         user_profile = self.example_user("hamlet")
