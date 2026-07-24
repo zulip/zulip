@@ -896,8 +896,11 @@ function register_click_handlers(): void {
         function (this: HTMLElement, e) {
             const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id")!, 10);
             const user = people.get_by_user_id(user_id);
+            // A mouse click hides any open user card via the mousedown that
+            // precedes it, but a click synthesized from the keyboard has no
+            // mousedown, so without this the cards would stack up.
+            hide_all_user_card_popovers();
             if ($(this).closest(".user-card-popover-bot-owner-field").length > 0) {
-                hide_all_user_card_popovers();
                 toggle_user_card_popover_for_bot_owner(this, user);
             } else {
                 toggle_user_card_popover(this, user);
