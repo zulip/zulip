@@ -12597,7 +12597,11 @@ paths:
                     field data for the user.
                   type: array
                   example:
-                    [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
+                    [
+                      {"id": 4, "value": "0"},
+                      {"id": 5, "value": ["0", "1"]},
+                      {"id": 6, "value": "1909-04-05"},
+                    ]
                   items:
                     $ref: "#/components/schemas/ProfileDataUpdate"
               required:
@@ -15158,6 +15162,16 @@ paths:
                               "required": false,
                               "editable_by_user": true,
                             },
+                            {
+                              "id": 10,
+                              "name": "Programming languages",
+                              "type": 9,
+                              "hint": "Select your favorite programming languages.",
+                              "field_data": '{"0":{"text":"Python","order":"1"},"1":{"text":"Rust","order":"2"},"2":{"text":"C++","order":"3"}}',
+                              "order": 10,
+                              "required": false,
+                              "editable_by_user": true,
+                            },
                           ],
                       }
     patch:
@@ -15187,7 +15201,7 @@ paths:
                   type: array
                   items:
                     type: integer
-                  example: [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+                  example: [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
               required:
                 - order
             encoding:
@@ -15237,18 +15251,22 @@ paths:
                     - **6**: Users
                     - **7**: External account
                     - **8**: Pronouns
+                    - **9**: Checkboxes
 
-                    **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
+                    **Changes**: Field type `9` added in Zulip 13.0 (feature level ZF-37c254).
+
+                    Field type `8` added in Zulip 6.0 (feature level 151).
                   type: integer
                   example: 3
                 field_data:
                   description: |
-                    Field types 3 (Dropdown) and 7 (External account) support storing
-                    additional configuration for the field type in the `field_data` attribute.
+                    Field types 3 (Dropdown), 7 (External account), and 9 (Checkboxes)
+                    support storing additional configuration for the field type in the
+                    `field_data` attribute.
 
-                    For field type 3 (Dropdown), this attribute is a JSON dictionary
-                    defining the choices and the order they will be displayed in the
-                    dropdown UI for individual users to select an option.
+                    For field types 3 (Dropdown) and 9 (Checkboxes), this attribute is
+                    a JSON dictionary defining the choices and the order they will be
+                    displayed in the UI for individual users to make their selection.
 
                     The interface for field type 7 is not yet stabilized.
                   type: object
@@ -18491,8 +18509,11 @@ paths:
                             - `EXTERNAL_ACCOUNT` for external accounts.
                             - `USER` for selecting a user for the field.
                             - `PRONOUNS` for a short text field with convenient typeahead for one's preferred pronouns.
+                            - `CHECKBOXES` for a field allowing users to select multiple options from a predefined list.
 
-                            **Changes**: `PRONOUNS` type added in Zulip 6.0 (feature level 151).
+                            **Changes**: `CHECKBOXES` type added in Zulip 13.0 (feature level ZF-37c254).
+
+                            `PRONOUNS` type added in Zulip 6.0 (feature level 151).
                           additionalProperties: false
                           properties:
                             id:
@@ -27895,8 +27916,11 @@ components:
             - **6**: Users
             - **7**: External account
             - **8**: Pronouns
+            - **9**: Checkboxes
 
-            **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
+            **Changes**: Field type `9` added in Zulip 13.0 (feature level ZF-37c254).
+
+            Field type `8` added in Zulip 6.0 (feature level 151).
         order:
           type: integer
           description: |
@@ -27914,12 +27938,13 @@ components:
         field_data:
           type: string
           description: |
-            Field types 3 (Dropdown) and 7 (External account) support storing
-            additional configuration for the field type in the `field_data` attribute.
+            Field types 3 (Dropdown), 7 (External account), and 9 (Checkboxes)
+            support storing additional configuration for the field type in the
+            `field_data` attribute.
 
-            For field type 3 (Dropdown), this attribute is a JSON dictionary
-            defining the choices and the order they will be displayed in the
-            dropdown UI for individual users to select an option.
+            For field types 3 (Dropdown) and 9 (Checkboxes), this attribute is
+            a JSON dictionary defining the choices and the order they will be
+            displayed in the UI for individual users to make their selection.
 
             The interface for field type 7 is not yet stabilized.
         display_in_profile_summary:
@@ -30084,6 +30109,17 @@ components:
               description: |
                 An array of integer user IDs, which is for the **Users** type of
                 [custom profile field](/help/custom-profile-fields#profile-field-types).
+
+            - type: array
+              minItems: 1
+              uniqueItems: true
+              items:
+                type: string
+              description: |
+                An array of string values, which is for the **Checkboxes** type of
+                [custom profile field](/help/custom-profile-fields#profile-field-types).
+
+                **Changes**: New in Zulip 13.0 (feature level ZF-37c254).
       required:
         - id
         - value
@@ -31273,7 +31309,11 @@ components:
                 items:
                   $ref: "#/components/schemas/ProfileDataUpdate"
                 example:
-                  [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
+                  [
+                    {"id": 4, "value": "0"},
+                    {"id": 5, "value": ["0", "1"]},
+                    {"id": 6, "value": "1909-04-05"},
+                  ]
               new_email:
                 description: |
                   New email address for the user. Requires the user making the request

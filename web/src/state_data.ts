@@ -405,6 +405,7 @@ const custom_profile_field_types_schema = z.object({
     PARAGRAPH: z.object({id: z.number(), name: z.string()}),
     DATE: z.object({id: z.number(), name: z.string()}),
     DROPDOWN: z.object({id: z.number(), name: z.string()}),
+    CHECKBOXES: z.object({id: z.number(), name: z.string()}),
     URL: z.object({id: z.number(), name: z.string()}),
     EXTERNAL_ACCOUNT: z.object({id: z.number(), name: z.string()}),
     USER: z.object({id: z.number(), name: z.string()}),
