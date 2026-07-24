@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+import orjson
+
 from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
@@ -451,70 +453,68 @@ A trivial change that should probably be ignored.
             "wiki_page_hook__wiki_page_edited", expected_topic_name, expected_message
         )
 
-    def test_build_created_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage was created."
+    def test_job_hook_build_created_event_message(self) -> None:
+        expected_topic_name = "TEST-1 / master"
+        expected_message = "Build deploy-job from deploy stage was created."
 
         self.check_webhook(
-            "build_created",
+            "job_hook__build_created",
             expected_topic_name,
             expected_message,
             HTTP_X_GITLAB_EVENT="Job Hook",
         )
 
-    def test_build_started_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage started."
+    def test_job_hook_build_started_event_message(self) -> None:
+        expected_topic_name = "TEST-1 / master"
+        expected_message = "Build build-job from build stage started."
+
+        self.check_job_hook_status_message(
+            build_status="running",
+            expected_topic_name=expected_topic_name,
+            expected_message=expected_message,
+        )
+
+    def test_job_hook_build_succeeded_event_message(self) -> None:
+        expected_topic_name = "TEST-1 / master"
+        expected_message = "Build build-job from build stage changed status to success."
+
+        self.check_job_hook_status_message(
+            build_status="success",
+            expected_topic_name=expected_topic_name,
+            expected_message=expected_message,
+        )
+
+    def test_job_hook_build_failed_event_message(self) -> None:
+        expected_topic_name = "TEST-1 / master"
+        expected_message = "Build build-job from build stage changed status to failed."
 
         self.check_webhook(
-            "build_started",
+            "job_hook__build_failed",
             expected_topic_name,
             expected_message,
             HTTP_X_GITLAB_EVENT="Job Hook",
         )
 
-    def test_build_succeeded_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage changed status to success."
+    def check_job_hook_status_message(
+        self, build_status: str, expected_topic_name: str, expected_message: str
+    ) -> None:
+        payload = orjson.loads(self.get_body("job_hook__build_failed"))
+        payload["build_status"] = build_status
 
-        self.check_webhook(
-            "build_succeeded",
-            expected_topic_name,
-            expected_message,
+        self.subscribe(self.test_user, self.channel_name)
+        msg = self.send_webhook_payload(
+            self.test_user,
+            self.url,
+            orjson.dumps(payload).decode(),
             HTTP_X_GITLAB_EVENT="Job Hook",
+            content_type="application/json",
         )
 
-    def test_build_created_event_message_legacy_event_name(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage was created."
-
-        self.check_webhook(
-            "build_created",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook",
-        )
-
-    def test_build_started_event_message_legacy_event_name(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage started."
-
-        self.check_webhook(
-            "build_started",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook",
-        )
-
-    def test_build_succeeded_event_message_legacy_event_name(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage changed status to success."
-
-        self.check_webhook(
-            "build_succeeded",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook",
+        self.assert_channel_message(
+            message=msg,
+            channel_name=self.channel_name,
+            topic_name=expected_topic_name,
+            content=expected_message,
         )
 
     def test_pipeline_succeeded_with_artifacts_event_message(self) -> None:
@@ -591,16 +591,20 @@ A trivial change that should probably be ignored.
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    def test_job_hook_event(self) -> None:
+    def test_job_hook_event_without_project_data(self) -> None:
         expected_topic_name = "gitlab_test / gitlab-script-trigger"
         expected_message = "Build test from test stage was created."
-        self.check_webhook("job_hook__build_created", expected_topic_name, expected_message)
+        self.check_webhook(
+            "job_hook__build_created_without_project", expected_topic_name, expected_message
+        )
 
-    def test_job_hook_event_topic(self) -> None:
+    def test_job_hook_event_without_project_data_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="provided topic")
         expected_topic_name = "provided topic"
         expected_message = "[[gitlab_test](http://192.168.64.1:3005/gitlab-org/gitlab-test)] Build test from test stage was created."
-        self.check_webhook("job_hook__build_created", expected_topic_name, expected_message)
+        self.check_webhook(
+            "job_hook__build_created_without_project", expected_topic_name, expected_message
+        )
 
     def test_system_push_event_message(self) -> None:
         expected_topic_name = "gitlab / master"
