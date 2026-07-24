@@ -1,3 +1,4 @@
+import os
 from collections.abc import Iterable
 from datetime import timedelta
 from email.headerregistry import Address
@@ -49,6 +50,7 @@ from zerver.lib.stream_subscription import get_user_subscribed_streams
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    avatar_disk_path,
     get_subscription,
     get_test_image_file,
     get_user_sent_message_ids,
@@ -56,7 +58,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
-from zerver.lib.types import Invitee
+from zerver.lib.types import Invitee, ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -72,11 +74,15 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
+    AlertWord,
     CustomProfileField,
     CustomProfileFieldValue,
+    Device,
+    EmailChangeStatus,
     Message,
     OnboardingStep,
     PreregistrationUser,
+    PushDeviceToken,
     RealmAuditLog,
     RealmDomain,
     RealmUserDefault,
@@ -86,6 +92,7 @@ from zerver.models import (
     Subscription,
     UserGroupMembership,
     UserProfile,
+    UserStatus,
     UserTopic,
 )
 from zerver.models.clients import get_client
@@ -4067,6 +4074,84 @@ class DeleteUserTest(ZulipTestCase):
             Message.objects.filter(realm_id=realm.id, sender_id=hamlet_user_id).count(),
             original_messages_from_hamlet_count,
         )
+
+    def test_do_delete_user_scrubs_custom_profile_field_values(self) -> None:
+        hamlet = self.example_user("hamlet")
+        phone_field = CustomProfileField.objects.get(name="Phone number", realm=hamlet.realm)
+        data: list[ProfileDataElementUpdateDict] = [
+            {"id": phone_field.id, "value": "555-test-1234"},
+        ]
+        self.set_user_custom_profile_data(hamlet, data)
+        self.assertTrue(
+            CustomProfileFieldValue.objects.filter(user_profile=hamlet, field=phone_field).exists()
+        )
+
+        do_delete_user(hamlet, acting_user=None)
+
+        self.assertFalse(CustomProfileFieldValue.objects.filter(user_profile=hamlet).exists())
+
+    def test_do_delete_user_scrubs_avatar_images(self) -> None:
+        self.login("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            self.client_post("/json/users/me/avatar", {"file": image_file})
+
+        hamlet = self.example_user("hamlet")
+        avatar_path = avatar_disk_path(hamlet)
+        avatar_original_path = avatar_disk_path(hamlet, original=True)
+        avatar_medium_path = avatar_disk_path(hamlet, medium=True)
+
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertTrue(os.path.isfile(avatar_path))
+        self.assertTrue(os.path.isfile(avatar_original_path))
+        self.assertTrue(os.path.isfile(avatar_medium_path))
+
+        do_delete_user(hamlet, acting_user=None)
+
+        self.assertFalse(os.path.isfile(avatar_path))
+        self.assertFalse(os.path.isfile(avatar_original_path))
+        self.assertFalse(os.path.isfile(avatar_medium_path))
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
+    def test_do_delete_user_scrubs_user_linked_pii_tables(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+        test_client = get_client("test")
+
+        UserStatus.objects.create(
+            user_profile=hamlet,
+            client=test_client,
+            timestamp=timezone_now(),
+            status_text="On vacation",
+        )
+        AlertWord.objects.create(realm=realm, user_profile=hamlet, word="urgent")
+        PushDeviceToken.objects.create(
+            user=hamlet,
+            kind=PushDeviceToken.APNS,
+            token="apns-token-test-deadbeef",
+        )
+        Device.objects.create(user=hamlet)
+        EmailChangeStatus.objects.create(
+            realm=realm,
+            user_profile=hamlet,
+            new_email="newhamlet@zulip.com",
+            old_email=hamlet.delivery_email,
+        )
+
+        self.assertTrue(UserStatus.objects.filter(user_profile=hamlet).exists())
+        self.assertTrue(AlertWord.objects.filter(user_profile=hamlet).exists())
+        self.assertTrue(PushDeviceToken.objects.filter(user=hamlet).exists())
+        self.assertTrue(Device.objects.filter(user=hamlet).exists())
+        self.assertTrue(EmailChangeStatus.objects.filter(user_profile=hamlet).exists())
+
+        do_delete_user(hamlet, acting_user=None)
+
+        self.assertFalse(UserStatus.objects.filter(user_profile=hamlet).exists())
+        self.assertFalse(AlertWord.objects.filter(user_profile=hamlet).exists())
+        self.assertFalse(PushDeviceToken.objects.filter(user=hamlet).exists())
+        self.assertFalse(Device.objects.filter(user=hamlet).exists())
+        self.assertFalse(EmailChangeStatus.objects.filter(user_profile=hamlet).exists())
 
 
 class FakeEmailDomainTest(ZulipTestCase):
