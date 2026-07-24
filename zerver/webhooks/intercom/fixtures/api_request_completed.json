@@ -1,0 +1,40 @@
+{
+    "type": "notification_event",
+    "app_id": "k9i0ocyc",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "api.request.completed",
+            "request_id": "0003pno49p6cud9jh7fg",
+            "timestamp": 1779078713,
+            "request": {
+                "method": "GET",
+                "path": "/admins",
+                "ip_address": "49.37.248.7",
+                "user_agent": "curl/8.18.0"
+            },
+            "authentication": {
+                "method": "oauth",
+                "token_id": "adc1872d_e62b_48c1_b08c_ca1d70a27ce8",
+                "oauth_client_id": "438cab76-9228-4138-b171-6768c15a7b69",
+                "app_package_code": "zulip-7cm5"
+            },
+            "response": {
+                "status": 200
+            },
+            "admin": {
+                "id": "10628207",
+                "email": "admin@example.com"
+            }
+        }
+    },
+    "links": {},
+    "id": "notif_dd5d1530-49b5-45dd-a114-506d0ea77655",
+    "topic": "api.request.completed",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1779078713,
+    "created_at": 1779078713,
+    "self": null
+}
