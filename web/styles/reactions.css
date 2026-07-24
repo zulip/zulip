@@ -286,6 +286,13 @@
             margin-top: 0;
         }
 
+        /* A native glyph sizes to its font rather than the sprite box, so
+           set a font-size that matches the 32px sprite preview above. */
+        .emoji-preview.emoji-native {
+            font-size: 2.1333em; /* 32px at 15px/em */
+            line-height: 1;
+        }
+
         .emoji-canonical-name {
             font-size: 1.0667em; /* 16px at 15px/em */
             position: relative;

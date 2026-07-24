@@ -15572,7 +15572,10 @@ paths:
 
                     - "google" - Google
                     - "twitter" - Twitter
+                    - "native" - Native
                     - "text" - Plain text
+
+                    **Changes**: New `"native"` option added in Zulip 12.0 (feature level ZF-e6bf89).
                   type: string
                   example: "google"
                 demote_inactive_streams:
@@ -19692,7 +19695,10 @@ paths:
 
                               - "google" - Google modern
                               - "twitter" - Twitter
+                              - "native" - Native
                               - "text" - Plain text
+
+                              **Changes**: New `"native"` option added in Zulip 12.0 (feature level ZF-e6bf89).
                           demote_inactive_streams:
                             type: integer
                             description: |
@@ -22101,7 +22107,10 @@ paths:
 
                               - "google" - Google modern
                               - "twitter" - Twitter
+                              - "native" - Native
                               - "text" - Plain text
+
+                              **Changes**: New `"native"` option added in Zulip 12.0 (feature level ZF-e6bf89).
                           demote_inactive_streams:
                             type: integer
                             description: |
@@ -23441,9 +23450,12 @@ paths:
 
                     - "google" - Google modern
                     - "twitter" - Twitter
+                    - "native" - Native
                     - "text" - Plain text
 
-                    **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+                    **Changes**: New `"native"` option added in Zulip 12.0 (feature level ZF-e6bf89).
+
+                    Before Zulip 5.0 (feature level 80), this setting was managed by
                     the `PATCH /settings/display` endpoint.
 
                     Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).

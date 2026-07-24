@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import {isValid, parseISO} from "date-fns";
+import {isEmojiSupported} from "is-emoji-supported";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -25,6 +26,7 @@ import * as rows from "./rows.ts";
 import * as rtl from "./rtl.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import {parse_unicode_emoji_code} from "./typeahead.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -428,5 +430,21 @@ export const update_elements = ($content: JQuery): void => {
             })
             .contents()
             .unwrap();
+    }
+
+    // For the "native" emojiset, replace Unicode emoji sprites with the
+    // glyph. Only span.emoji (Unicode) is touched; img.emoji (realm and
+    // custom emoji) is left as an image. Unsupported emoji keep the sprite.
+    if (user_settings.emojiset === "native") {
+        $content.find("span.emoji").each(function () {
+            const classes = $(this).attr("class") ?? "";
+            const match = /emoji-([0-9a-f-]+)/.exec(classes);
+            if (match?.[1]) {
+                const emoji_text = parse_unicode_emoji_code(match[1]);
+                if (isEmojiSupported(emoji_text)) {
+                    $(this).addClass("emoji-native").text(emoji_text);
+                }
+            }
+        });
     }
 };

@@ -136,7 +136,12 @@ class UserStatusSession {
             emoji_alt_code: user_settings.emojiset === "text",
         };
         if (!emoji_info.emoji_alt_code) {
-            emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
+            const details = emoji.get_emoji_details_by_name(emoji_name);
+            emoji_info = {
+                ...emoji_info,
+                ...details,
+                ...emoji.get_native_emoji_info(details),
+            };
         }
         user_status_ui.set_selected_emoji_info(emoji_info);
         user_status_ui.update_button();
@@ -512,7 +517,7 @@ function reset_emoji_showcase(): void {
     $(".emoji-showcase-container").empty();
 }
 
-function update_emoji_showcase($focused_emoji: JQuery): void {
+export function update_emoji_showcase($focused_emoji: JQuery): void {
     // Don't use jQuery's data() function here. It has the side-effect
     // of converting emoji names like :100:, :1234: etc to number.
     const focused_emoji_name = $focused_emoji.attr("data-emoji-name")!;
@@ -528,6 +533,10 @@ function update_emoji_showcase($focused_emoji: JQuery): void {
     const emoji_dict = {
         ...focused_emoji_dict,
         name: focused_emoji_name.replaceAll("_", " "),
+        // For the "native" emojiset, preview the platform's own glyph
+        // rather than the Google sprite, matching how the emoji renders
+        // in messages. Returns {} for realm emoji and other emojisets.
+        ...emoji.get_native_emoji_info(emoji.get_emoji_details_by_name(canonical_name)),
     };
     const rendered_showcase = render_emoji_showcase({
         emoji_dict,
