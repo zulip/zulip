@@ -26,6 +26,7 @@ import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
 import {compose_call_session_manager} from "./compose_call_session.ts";
+import * as compose_state from "./compose_state.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -629,17 +630,26 @@ function edit_message($row: JQuery, raw_content: string): void {
 
     const is_editable = is_content_editable(message, seconds_left_buffer);
 
+    const message_without_reply = compose_state.render_reply_and_get_parsed_message(raw_content);
     const $form = $(
         render_message_edit_form({
             message_id: message.id,
             is_editable,
-            content: raw_content,
+            content: message_without_reply,
             file_upload_enabled,
             giphy_enabled: gif_state.is_giphy_enabled(),
             tenor_enabled: gif_state.is_tenor_enabled(),
             minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
             max_message_length: realm.max_message_length,
         }),
+    );
+
+    // Second call, passing the container, renders the reply UI above
+    // the edit textarea; the return value is unused here.
+    compose_state.render_reply_and_get_parsed_message(
+        raw_content,
+        $form.find(".reply-container"),
+        is_editable,
     );
 
     const $button_bar = $form.find(".compose-scrollable-buttons");
@@ -1313,7 +1323,12 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     const $edit_content_input = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
     const can_edit_content = $edit_content_input.attr("readonly") !== "readonly";
     if (can_edit_content) {
-        new_content = $edit_content_input.val();
+        // Clearing a message's body deletes it (shows "(deleted)"); don't keep
+        // a reply's pointer line alive on its own when the body is emptied.
+        const has_body = ($edit_content_input.val()?.trimEnd() ?? "") !== "";
+        new_content = has_body
+            ? compose_state.get_message_with_raw_reply_content($edit_content_input)
+            : "";
         changed = old_content !== new_content;
     }
 
@@ -1837,12 +1852,20 @@ export function render_preview_area($row: JQuery): void {
     const content = $msg_edit_content.val();
     assert(content !== undefined);
     const $preview_message_area = $row.find(".preview_message_area");
+    // Preview the body with its reply line only when there's a body; an empty
+    // body previews as empty (the reply line alone isn't a sendable message),
+    // matching the compose preview.
+    const preview_content =
+        content.trimEnd() === ""
+            ? content
+            : compose_state.get_message_with_raw_reply_content($msg_edit_content);
     compose_ui.render_and_show_preview(
         $row,
         $row.find(".markdown_preview_spinner"),
         $row.find(".preview_content"),
-        content,
+        preview_content,
     );
+    $msg_edit_content.find(".reply-container").addClass("message-edit-reply-preview");
     const edit_height = $msg_edit_content.height();
     $preview_message_area.css({"min-height": edit_height + "px"});
     $preview_message_area.show();

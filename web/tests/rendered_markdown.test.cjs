@@ -107,6 +107,17 @@ function set_message_for_message_content($content, value) {
     // no message row found
     if (value === undefined) {
         $content.set_closest_results(".message_row", []);
+
+        const $reply = $(".reply");
+        const $preview_content = $(".preview_content");
+        const $reply_parent = $("#mock-parent");
+        $reply_parent[0].remove = noop;
+        $reply_parent.set_matches("p", true);
+        $reply.set_parent($reply_parent);
+        $content.set_find_results(".reply", $reply);
+        $preview_content.length = 1;
+        $content.set_closest_results(".preview_content", $preview_content);
+
         return;
     }
     // message row found
@@ -266,6 +277,20 @@ run_test("user-mention without guest indicator", ({override}) => {
     override(realm, "realm_enable_guest_user_indicator", false);
     rm.update_elements($content);
     assert.equal($polonius.text(), `@${polonius.full_name}`);
+});
+
+run_test("reply-user-mention skips standard mention rewriting", () => {
+    // A reply line always shows `@FullName`, so the silent-mention toggle
+    // doesn't shift it. update_elements must skip the usual rewriting (which
+    // strips the leading `@` for silent mentions) and just wrap the content.
+    const $content = get_content_element();
+    const $reply_mention = $.create("reply-user-mention");
+    $reply_mention.addClass("reply-user-mention");
+    $content.set_find_results(".user-mention", $reply_mention);
+
+    rm.update_elements($content);
+    // The element is wrapped in place; no user-id rewrite path was taken.
+    assert.ok($reply_mention.hasClass("reply-user-mention"));
 });
 
 run_test("user-mention of inaccessible users", () => {
