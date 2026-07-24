@@ -167,6 +167,8 @@
         width: 100%;
         background: var(--color-background-search);
         color: var(--color-text-search);
+        /* The bottom scroll fade blends into the search background. */
+        --typeahead-fade-color: var(--color-background-search);
 
         border-width: 0;
         border-top-width: 1px;
