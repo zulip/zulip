@@ -415,16 +415,15 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
-            const error_message = z.object({msg: z.optional(z.string())}).parse(xhr.responseJSON);
-            if (error_message?.msg?.includes("access")) {
+            const response_data = z
+                .object({
+                    msg: z.string(),
+                    code: z.optional(z.string()),
+                })
+                .safeParse(xhr.responseJSON);
+            if (response_data.success && response_data.data.code === "CHANNEL_ACCESS_DENIED") {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
-                //
-                // BUG: This check should be using error codes, not
-                // parsing the error string, so it works correctly
-                // with i18n.  And likely we should be reporting the
-                // error text directly rather than turning it into
-                // "Error creating channel"?
                 const rendered_error = render_channel_name_conflict_error({
                     stream_id: undefined,
                     is_archived: false,

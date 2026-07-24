@@ -57,6 +57,7 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
+    ChannelAccessError,
     JsonableError,
     OrganizationOwnerRequiredError,
 )
@@ -916,11 +917,7 @@ def add_subscriptions_backend(
     )
 
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        raise JsonableError(
-            _("Unable to access channel ({channel_name}).").format(
-                channel_name=unauthorized_streams[0].name,
-            )
-        )
+        raise ChannelAccessError(unauthorized_streams[0].name)
     if len(streams_to_which_user_cannot_add_subscribers) > 0:
         raise JsonableError(_("Insufficient permission"))
 
