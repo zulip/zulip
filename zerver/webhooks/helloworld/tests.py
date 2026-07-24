@@ -13,7 +13,7 @@ class HelloWorldHookTests(WebhookTestCase):
         expected_topic_name = "Hello World"
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
 
-        # use fixture named helloworld_hello
+        # use fixture named hello.json
         self.check_webhook(
             "hello",
             expected_topic_name,
@@ -25,7 +25,7 @@ class HelloWorldHookTests(WebhookTestCase):
         expected_topic_name = "Hello World"
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
-        # use fixture named helloworld_goodbye
+        # use fixture named goodbye.json
         self.check_webhook(
             "goodbye",
             expected_topic_name,

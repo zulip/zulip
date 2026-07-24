@@ -24,16 +24,16 @@ payload(s) from the service. Examining this data allows you to:
 
 - Determine how you will structure your webhook integration code,
   including what event types your integration should support and how.
-- Create fixtures. A test fixture is a small file containing test data,
-  generally one for each event type. Fixtures enable the testing of
+- Create fixtures. A test fixture is a small file containing test data
+  for one kind of event or scenario. Fixtures enable the testing of
   webhook integration code without the need to actually contact the
   service being integrated.
 
 You'll want to write a test for each distinct event type your incoming
-webhook integration supports, and you'll need a corresponding fixture
-for each of these tests. Depending on the type of data the third-party
-service sends, your fixtures may contain JSON, URL encoded text, or
-some other kind of data. [Step 5: Create automated tests](#step-5-create-automated-tests)
+webhook integration supports, and you'll need fixtures for these
+tests. Depending on the type of data the third-party service sends,
+your fixtures may contain JSON, URL encoded text, or some other kind
+of data. [Step 5: Create automated tests](#step-5-create-automated-tests)
 and [our testing documentation](../testing/testing.md) have further
 details about writing tests and using test fixtures.
 
@@ -44,15 +44,58 @@ it requires only one fixture,
 ```json
 {
   "featured_title":"Marilyn Monroe",
-  "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe",
+  "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe"
 }
 ```
 
-For integrations that send the event type or other important information as
-part of the HTTP header, you will need to record the header value for each
-fixture. Refer to
+### Fixture guidelines
+
+Fixtures for a real third-party service must always be actual
+captured payloads, or payloads from the service's official API
+documentation, never hand-written, invented, or AI-generated. A
+fabricated payload does not accurately reflect what the service
+really sends, so an integration developed against one may not work
+with real events.
+
+Collect only the fixtures your integration's tests need. If you want
+to test how the integration handles different values of a URL query
+parameter, prefer writing tests that reuse one fixture, instead of
+capturing several fixtures that are almost identical.
+
+When setting up the integration, make sure not to use any personal
+details that you would not want to be part of the fixtures. Use
+fixtures exactly as you captured them; do not edit their contents. An
+edited fixture no longer records what the service really sends, and
+subtle mistakes are easy to introduce without noticing. If you need a
+variation, capture a new fixture instead.
+
+If you absolutely must remove personal details from a captured
+payload, commit the captured fixture locally first, then replace the
+personal details with equally realistic strings and amend the commit.
+This makes the scrub a reviewable diff, and the original data never
+reaches the public history.
+
+Fixture data appears in the messages and topics that your integration
+produces, and in the auto-generated example screenshots in the
+integration's documentation, so when setting up the third-party
+service, use realistic names for projects, tasks, and other entities.
+
+Fixture files are named descriptively, in snake_case, after the event
+(and variant) they capture. The Hello World integration's fixture is
+`hello.json`; for a richer service, a fixture might be named
+something like `issue_created_with_assignee.json`.
+
+For integrations that send the event type or other important
+information as part of the HTTP header, the value of the header is
+encoded in the first part of the fixture's filename, separated from
+the rest by a double underscore. Refer to
 [the section on custom HTTP headers](incoming-webhooks-reference.md#custom-http-headers)
 in the reference guide for more details.
+
+Once captured, fixtures rarely need to be updated: as long as the
+fields your integration reads are still what the service sends, there
+is no need to update fixtures just because the service has added new
+fields over the years.
 
 ## Step 1: Initialize the python package
 
@@ -285,7 +328,7 @@ development environment.
 1. Click **Send**. The webhook notification message will be sent to the
    default Zulip organization in your development environment.
 
-By having Zulip open in one browsre tab and this tool in another, you can
+By having Zulip open in one browser tab and this tool in another, you can
 quickly tweak your webhook code and send sample messages for different
 test fixtures.
 
@@ -311,7 +354,7 @@ class HelloWorldHookTests(WebhookTestCase):
         expected_topic_name = "Hello World"
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
 
-        # use fixture named helloworld_hello
+        # use fixture named hello.json
         self.check_webhook(
             "hello",
             expected_topic_name,
@@ -332,9 +375,8 @@ class HelloWorldHookTests(WebhookTestCase):
         )
 ```
 
-When writing tests, you'll want to include one test function (and a
-corresponding test fixture) for each distinct event type and condition
-that the integration supports.
+When writing tests, you'll want to include one test function for each
+distinct event type and condition that the integration supports.
 
 If, for example, we added support for sending a goodbye message to the
 Hello World webhook, then we would add another test function to
@@ -345,7 +387,7 @@ Hello World webhook, then we would add another test function to
         expected_topic_name = "Hello World"
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
-        # use fixture named helloworld_goodbye
+        # use fixture named goodbye.json
         self.check_webhook(
             "goodbye",
             expected_topic_name,
@@ -360,7 +402,7 @@ As well as a new fixture `goodbye.json` in
 ```json
 {
   "featured_title":"Goodbye",
-  "featured_url":"https://en.wikipedia.org/wiki/Goodbye",
+  "featured_url":"https://en.wikipedia.org/wiki/Goodbye"
 }
 ```
 

@@ -57,9 +57,9 @@ allow using single underscores within each segment.
 
 ### Extracting event-type HTTP headers from fixtures
 
-To get the HTTP header value from the fixture's filename in your `tests.py`,
+To get the HTTP header value from the fixture's filename in your `view.py`,
 you can use the `default_fixture_to_headers` function in
-`zerver/webhooks/common.py`, like so:
+`zerver/lib/webhooks/common.py`, like so:
 
 ```python
 fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
@@ -70,9 +70,8 @@ fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
 The default implementation `default_fixture_to_headers` uses the first part
 of the fixture's filename as the header value, separated by a double
 underscore (`__`). If you need to use a different method for encoding the
-header value(s), you can directly pass your function with the custom parsing
-logic to the `fixture_to_headers` function defined in
-`zerver/tests/test_webhooks_common.py`, instead of using
+header value(s), you can define your own `fixture_to_headers` function with
+the custom parsing logic in your `view.py`, instead of using
 `default_fixture_to_headers`.
 
 ## Custom URL query parameters
@@ -194,11 +193,16 @@ For example, here is the definition of a webhook function that gets both
 `stream` and `topic` from the query parameters:
 
 ```python
+@webhook_view("Querytest")
 @typed_endpoint
-def api_querytest_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Annotated[str, ApiParamConfig(argument_type_is_body=True)],
-                          stream: str = "test",
-                          topic: str= "Default Alert":
+def api_querytest_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    payload: Annotated[str, ApiParamConfig(argument_type_is_body=True)],
+    stream: str = "test",
+    topic: str = "Default Alert",
+) -> HttpResponse:
 ```
 
 In actual use, you might configure the third-party service to call your
@@ -220,7 +224,6 @@ attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 class QuerytestHookTests(WebhookTestCase):
 
     TOPIC = "Default topic"
-    FIXTURE_DIR_NAME = 'querytest'
 
     def test_querytest_test_one(self) -> None:
         # construct the URL used for this test
