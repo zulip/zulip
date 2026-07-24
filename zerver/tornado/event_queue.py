@@ -1803,9 +1803,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     elif event["type"] == "realm_user" and event["op"] == "add":
         process_realm_user_add_event(event, cast(list[int], users))
     elif event["type"] == "user_group" and event["op"] == "update" and "name" in event["data"]:
-        # Only name can be changed for deactivated groups, so we handle the
-        # event sent for updating name separately for clients with different
-        # capabilities.
+        # We handle the event sent for updating a user group name
+        # separately for clients with different capabilities.
         process_user_group_name_update_event(event, cast(list[int], users))
     elif event["type"] == "user_group" and event["op"] == "add":
         process_user_group_creation_event(event, cast(list[int], users))
