@@ -13093,9 +13093,11 @@ paths:
                 subscriptions:
                   description: |
                     A list of dictionaries containing the key `name` and value
-                    specifying the name of the channel to subscribe. If the channel does not
-                    exist a new channel is created. The description of the channel created can
-                    be specified by setting the dictionary key `description` with an
+                    specifying the name of the channel to subscribe, optionally
+                    including the per-user `color` for that channel. If the
+                    channel does not exist a new channel is created. The
+                    description of the channel created can be specified by
+                    setting the dictionary key `description` with an
                     appropriate value.
                   type: array
                   items:
@@ -13110,6 +13112,12 @@ paths:
                           Clients should use the `max_stream_name_length` returned by the
                           [`POST /register`](/api/register-queue) endpoint to determine
                           the maximum channel name length.
+                      color:
+                        type: string
+                        description: |
+                          The user's personal color to assign to the channel, as a
+                          hex color code (e.g., `#e79ab5`). If not provided, a color
+                          is automatically assigned.
                       description:
                         type: string
                         description: |
@@ -13128,6 +13136,8 @@ paths:
                         value: {"name": "Verona"}
                       with-description:
                         value: {"name": "Verona", "description": "Italian city"}
+                      with-color:
+                        value: {"name": "Verona", "color": "#e79ab5"}
                   example: [{"name": "Verona", "description": "Italian city"}]
                 principals:
                   $ref: "#/components/schemas/Principals"
@@ -13368,140 +13378,6 @@ paths:
                     description: |
                       An example JSON response for when the requesting user does not have
                       access to a private channel and `"authorization_errors_fatal": true`:
-    patch:
-      operationId: update-subscriptions
-      summary: Update subscriptions
-      tags: ["channels"]
-      description: |
-        Update which channels you are subscribed to.
-
-        **Changes**: Before Zulip 10.0 (feature level 362),
-        subscriptions in archived channels could not be modified.
-      requestBody:
-        required: false
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                delete:
-                  description: |
-                    A list of channel names to unsubscribe from.
-                  type: array
-                  items:
-                    type: string
-                  example: ["Verona", "Denmark"]
-                add:
-                  description: |
-                    A list of objects describing which channels to subscribe to, optionally
-                    including per-user subscription parameters (e.g. color) and if the
-                    channel is to be created, its description.
-                  type: array
-                  items:
-                    type: object
-                    additionalProperties: false
-                    properties:
-                      name:
-                        type: string
-                      color:
-                        type: string
-                      description:
-                        type: string
-                  example:
-                    [
-                      {"name": "Verona"},
-                      {
-                        "name": "Denmark",
-                        "color": "#e79ab5",
-                        "description": "A Scandinavian country",
-                      },
-                    ]
-            encoding:
-              delete:
-                contentType: application/json
-              add:
-                contentType: application/json
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - required:
-                      - subscribed
-                      - already_subscribed
-                      - removed
-                    additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      ignored_parameters_unsupported: {}
-                      subscribed:
-                        type: object
-                        description: |
-                          A dictionary where the key is the Zulip API email
-                          address of the user/bot and the value is a
-                          list of the names of the channels that were
-                          subscribed to as a result of the query.
-                        additionalProperties:
-                          description: |
-                            `{email_id}`: A list of the names of channels that
-                            the user was subscribed to as a result of the query.
-                          type: array
-                          items:
-                            type: string
-                      already_subscribed:
-                        type: object
-                        description: |
-                          A dictionary where the key is the Zulip API email
-                          address of the user/bot and the value is a
-                          list of the names of the channels that the
-                          user/bot is already subscribed to.
-                        additionalProperties:
-                          description: |
-                            `{email_id}`: A list of the names of channels that
-                            the user was already subscribed to.
-                          type: array
-                          items:
-                            type: string
-                      not_removed:
-                        type: array
-                        items:
-                          type: string
-                        description: |
-                          A list of the names of channels that the user
-                          is already unsubscribed from, and hence
-                          doesn't need to be unsubscribed.
-                      removed:
-                        type: array
-                        items:
-                          type: string
-                        description: |
-                          A list of the names of channels which were unsubscribed
-                          from as a result of the query.
-                      new_subscription_messages_sent:
-                        type: boolean
-                        description: |
-                          Only present if the parameter `send_new_subscription_messages`
-                          in the request was `true`.
-
-                          Whether Notification Bot DMs in fact sent to the added
-                          subscribers as requested by the `send_new_subscription_messages`
-                          parameter. Clients may find this value useful to communicate
-                          with users about the effect of this request.
-
-                          **Changes**: New in Zulip 11.0 (feature level 397).
-                    example:
-                      {
-                        "msg": "",
-                        "subscribed": {},
-                        "already_subscribed": {"iago@zulip.com": ["Verona"]},
-                        "not_removed": [],
-                        "removed": ["testing-help"],
-                        "result": "success",
-                      }
     delete:
       operationId: unsubscribe
       summary: Unsubscribe from a channel

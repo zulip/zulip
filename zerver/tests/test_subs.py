@@ -3511,40 +3511,10 @@ class StreamAdminTest(ZulipTestCase):
 
 
 class SubscriptionRestApiTest(ZulipTestCase):
-    def test_basic_add_delete(self) -> None:
+    def test_add_with_invalid_color(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        # add
-        request = {
-            "add": orjson.dumps([{"name": "my_test_stream_1"}]).decode(),
-        }
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_success(result)
-        streams = self.get_streams(user)
-        self.assertTrue("my_test_stream_1" in streams)
-
-        # now delete the same stream
-        request = {
-            "delete": orjson.dumps(["my_test_stream_1"]).decode(),
-        }
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_success(result)
-        streams = self.get_streams(user)
-        self.assertTrue("my_test_stream_1" not in streams)
-
-    def test_add_with_color(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-
-        # add with color proposition
-        request = {
-            "add": orjson.dumps([{"name": "my_test_stream_2", "color": "#afafaf"}]).decode(),
-        }
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_success(result)
-
-        # incorrect color format
         subscriptions = [{"name": "my_test_stream_3", "color": "#0g0g0g"}]
         result = self.subscribe_via_post(user, subscriptions, allow_fail=True)
         self.assert_json_error(
@@ -3596,92 +3566,35 @@ class SubscriptionRestApiTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid channel ID")
 
-    def test_bad_add_parameters(self) -> None:
+    def test_add_with_valid_color(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        def check_for_error(val: Any, expected_message: str) -> None:
-            request = {
-                "add": orjson.dumps(val).decode(),
-            }
-            result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-            self.assert_json_error(result, expected_message)
-
-        check_for_error(
-            ["foo"],
-            "Invalid add[0]: Input should be a valid dictionary or instance of AddSubscriptionData",
+        result = self.subscribe_via_post(user, [{"name": "my_test_stream_2", "color": "#afafaf"}])
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(
+            user_profile=user,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=get_stream("my_test_stream_2", user.realm).id,
         )
-        check_for_error([{"bogus": "foo"}], 'add[0]["name"] field is missing: Field required')
-        check_for_error([{"name": {}}], 'add[0]["name"] is not a string')
+        self.assertEqual(sub.color, "#afafaf")
 
-    def test_bad_principals(self) -> None:
+    def test_delete_empty_stream_list(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
 
         request = {
-            "add": orjson.dumps([{"name": "my_new_stream"}]).decode(),
-            "principals": orjson.dumps([{}]).decode(),
+            "subscriptions": orjson.dumps([]).decode(),
         }
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, 'principals["list[str]"][0] is not a string')
-
-    def test_bad_delete_parameters(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-
-        request = {
-            "delete": orjson.dumps([{"name": "my_test_stream_1"}]).decode(),
-        }
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "delete[0] is not a string")
-
-    def test_add_or_delete_not_specified(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", {})
-        self.assert_json_error(result, 'Nothing to do. Specify at least one of "add" or "delete".')
-
-    def test_patch_enforces_valid_stream_name_check(self) -> None:
-        """
-        Only way to force an error is with a empty string.
-        """
-        user = self.example_user("hamlet")
-        self.login_user(user)
-
-        invalid_stream_name = ""
-        request = {
-            "delete": orjson.dumps([invalid_stream_name]).decode(),
-        }
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Channel name can't be empty.")
-
-    def test_stream_name_too_long(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-
-        long_stream_name = "a" * 61
-        request = {
-            "delete": orjson.dumps([long_stream_name]).decode(),
-        }
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Channel name too long (limit: 60 characters).")
-
-    def test_stream_name_contains_null(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-
-        stream_name = "abc\000"
-        request = {
-            "delete": orjson.dumps([stream_name]).decode(),
-        }
-        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
+        result = self.api_delete(user, "/api/v1/users/me/subscriptions", request)
+        json = self.assert_json_success(result)
+        self.assertEqual(json["removed"], [])
+        self.assertEqual(json["not_removed"], [])
 
     def test_compose_views_rollback(self) -> None:
         """
         The compose_views function() is used under the hood by
-        update_subscriptions_backend.  It's a pretty simple method in terms of
+        zerver.views.user_groups.  It's a pretty simple method in terms of
         control flow, but it uses a Django rollback, which may make it brittle
         code when we upgrade Django.  We test the functions's rollback logic
         here with a simple scenario to avoid false positives related to
