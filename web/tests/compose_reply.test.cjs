@@ -390,3 +390,135 @@ run_test("build_and_process_quote_assets_for_messages", ({override}) => {
         "Fallback to using paste_handler_converter",
     );
 });
+
+run_test("get_quote_menu_selection_opts", ({override_rewire}) => {
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
+    assert.deepEqual(compose_reply.get_quote_menu_selection_opts(10), {
+        kind: "full_message",
+        show_hotkey_hints: true,
+    });
+
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => [10]);
+    override_rewire(compose_reply, "get_message_selection", () => "partial text");
+    assert.deepEqual(compose_reply.get_quote_menu_selection_opts(10), {
+        kind: "highlighted_content_within_a_single_message",
+        quote_content: "partial text",
+        show_hotkey_hints: true,
+    });
+
+    // Username-only (or other non-content) selection: empty content → full message.
+    override_rewire(compose_reply, "get_message_selection", () => "   ");
+    assert.deepEqual(compose_reply.get_quote_menu_selection_opts(10), {
+        kind: "full_message",
+        show_hotkey_hints: true,
+    });
+
+    // Selection is on a different single message than the one whose menu opened.
+    override_rewire(compose_reply, "get_message_selection", () => "partial text");
+    assert.deepEqual(compose_reply.get_quote_menu_selection_opts(99), {
+        kind: "full_message",
+        show_hotkey_hints: false,
+    });
+
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => [10, 11, 12]);
+    assert.deepEqual(compose_reply.get_quote_menu_selection_opts(11), {
+        kind: "highlighted_messages",
+        highlighted_message_ids: [10, 11, 12],
+        show_hotkey_hints: true,
+    });
+
+    // Multi-message selection, but the menu was opened on a message outside it.
+    // Menu quotes only that full message; hotkeys would still multi-quote.
+    assert.deepEqual(compose_reply.get_quote_menu_selection_opts(99), {
+        kind: "full_message",
+        show_hotkey_hints: false,
+    });
+});
+
+run_test("get_quote_menu_labels", () => {
+    assert.deepEqual(compose_reply.get_quote_menu_labels("full_message"), {
+        quote_menu_label: "translated: Quote message",
+        forward_menu_label: "translated: Forward message",
+    });
+    assert.deepEqual(
+        compose_reply.get_quote_menu_labels("highlighted_content_within_a_single_message"),
+        {
+            quote_menu_label: "translated: Quote selection",
+            forward_menu_label: "translated: Forward selection",
+        },
+    );
+    assert.deepEqual(compose_reply.get_quote_menu_labels("highlighted_messages"), {
+        quote_menu_label: "translated: Quote selected messages",
+        forward_menu_label: "translated: Forward selected messages",
+    });
+});
+
+run_test("get_quote_menu_selection_opts_for_menu_open", ({override_rewire}) => {
+    // Live selection: partial content on message 10.
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => [10]);
+    override_rewire(compose_reply, "get_message_selection", () => "live partial");
+
+    const live_partial = {
+        kind: "highlighted_content_within_a_single_message",
+        quote_content: "live partial",
+        show_hotkey_hints: true,
+    };
+    const stale_full = {
+        kind: "full_message",
+        show_hotkey_hints: true,
+    };
+    const stale_partial = {
+        kind: "highlighted_content_within_a_single_message",
+        quote_content: "stale partial from earlier open",
+        show_hotkey_hints: true,
+    };
+
+    // Mouse open with matching mousedown snapshot reuses the snapshot
+    // (click has already cleared the live DOM selection).
+    assert.deepEqual(
+        compose_reply.get_quote_menu_selection_opts_for_menu_open(10, {
+            opened_via_keyboard: false,
+            mousedown_snapshot: {message_id: 10, opts: stale_partial},
+        }),
+        stale_partial,
+    );
+
+    // Orphaned snapshot for this message + keyboard open must reclassify
+    // from the live selection (jQuery `i` click does not re-capture mousedown).
+    // This is the stale-snapshot regression: reopen via keyboard after a
+    // ⋮ toggle that left an unused mousedown snapshot.
+    assert.deepEqual(
+        compose_reply.get_quote_menu_selection_opts_for_menu_open(10, {
+            opened_via_keyboard: true,
+            mousedown_snapshot: {message_id: 10, opts: stale_full},
+        }),
+        live_partial,
+    );
+
+    // Keyboard open with no snapshot still uses live selection.
+    assert.deepEqual(
+        compose_reply.get_quote_menu_selection_opts_for_menu_open(10, {
+            opened_via_keyboard: true,
+            mousedown_snapshot: undefined,
+        }),
+        live_partial,
+    );
+
+    // Mouse open with snapshot for a different message ignores it.
+    assert.deepEqual(
+        compose_reply.get_quote_menu_selection_opts_for_menu_open(10, {
+            opened_via_keyboard: false,
+            mousedown_snapshot: {message_id: 99, opts: stale_partial},
+        }),
+        live_partial,
+    );
+
+    // Mouse open with no snapshot classifies live.
+    assert.deepEqual(
+        compose_reply.get_quote_menu_selection_opts_for_menu_open(10, {
+            opened_via_keyboard: false,
+            mousedown_snapshot: undefined,
+        }),
+        live_partial,
+    );
+});
