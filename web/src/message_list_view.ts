@@ -1729,14 +1729,12 @@ export class MessageListView {
         //   of the bottom of the currently rendered window and the
         //   bottom of the window does not abut the end of the
         //   message list
-        if (
-            !(
-                (selected_idx - this._render_win_start < this._RENDER_THRESHOLD &&
-                    this._render_win_start !== 0) ||
-                (this._render_win_end - selected_idx <= this._RENDER_THRESHOLD &&
-                    this._render_win_end !== this.list.num_items())
-            )
-        ) {
+        if (!(
+            (selected_idx - this._render_win_start < this._RENDER_THRESHOLD &&
+                this._render_win_start !== 0) ||
+            (this._render_win_end - selected_idx <= this._RENDER_THRESHOLD &&
+                this._render_win_end !== this.list.num_items())
+        )) {
             return false;
         }
 

@@ -11,7 +11,9 @@ import {$} from "jquery";
 
 import {BlueslipError, display_stacktrace} from "./blueslip_stacktrace.ts";
 
+// eslint-disable-next-line unicorn/no-nonstandard-builtin-properties
 if (Error.stackTraceLimit !== undefined) {
+    // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties
     Error.stackTraceLimit = 100000;
 }
 

@@ -141,6 +141,7 @@ Handlebars.registerHelper("object_entries", (o: unknown) => {
         return [];
     }
     /* istanbul ignore if */
+    // eslint-disable-next-line unicorn/no-computed-property-existence-check
     if (Symbol.iterator in o) {
         blueslip.error("object_entries requires a plain object");
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -151,6 +152,7 @@ Handlebars.registerHelper("object_entries", (o: unknown) => {
 
 Handlebars.registerHelper("object_values", (o: unknown): unknown => {
     /* istanbul ignore if */
+    // eslint-disable-next-line unicorn/no-computed-property-existence-check
     if (typeof o !== "object" || o === null || Symbol.iterator in o) {
         blueslip.error("object_values requires a plain object");
         return o;

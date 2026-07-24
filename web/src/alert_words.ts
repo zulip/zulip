@@ -41,9 +41,8 @@ export function highlight_alert_words(content: string): string {
     let updated_content = content;
 
     for (const word of my_alert_words) {
-        const clean = _.escapeRegExp(word).replaceAll(
-            /["&'<>]/g,
-            (c) => alert_regex_replacements.get(c)!,
+        const clean = _.escapeRegExp(word).replaceAll(/["&'<>]/g, (c) =>
+            alert_regex_replacements.get(c)!,
         );
         const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
         const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";

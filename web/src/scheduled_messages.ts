@@ -9,11 +9,7 @@ import * as timerender from "./timerender.ts";
 export type ScheduledMessage = z.infer<typeof scheduled_message_schema>;
 
 type TimeKey =
-    | "today_nine_am"
-    | "today_four_pm"
-    | "tomorrow_nine_am"
-    | "tomorrow_four_pm"
-    | "monday_nine_am";
+    "today_nine_am" | "today_four_pm" | "tomorrow_nine_am" | "tomorrow_four_pm" | "monday_nine_am";
 
 type SendOption = Partial<Record<TimeKey, {text: string; stamp: number}>>;
 

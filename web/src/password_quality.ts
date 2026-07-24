@@ -1,10 +1,10 @@
-import {zxcvbn, zxcvbnOptions} from "@zxcvbn-ts/core";
+import {ZxcvbnFactory} from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
 import * as zxcvbnEnPackage from "@zxcvbn-ts/language-en";
 
 import {$t} from "./i18n.ts";
 
-zxcvbnOptions.setOptions({
+const zxcvbn = new ZxcvbnFactory({
     translations: zxcvbnEnPackage.translations,
     dictionary: {
         ...zxcvbnCommonPackage.dictionary,
@@ -29,14 +29,14 @@ export function password_quality(
     const max_length = Number($password_field.attr("data-max-length"));
     const min_guesses = Number($password_field.attr("data-min-guesses"));
 
-    const result = zxcvbn(password);
+    const result = zxcvbn.check(password);
     const acceptable =
         password.length >= min_length &&
         password.length <= max_length &&
         result.guesses >= min_guesses;
 
     if ($bar !== undefined) {
-        const t = result.crackTimesSeconds.offlineSlowHashing1e4PerSecond;
+        const t = result.crackTimes.offlineSlowHashingXPerSecond.seconds;
         let bar_progress = Math.min(1, Math.log(1 + t) / 22);
 
         // Even if zxcvbn loves your short password, the bar should be
@@ -73,5 +73,5 @@ export function password_warning(password: string, $password_field: JQuery): str
             {max: max_length},
         );
     }
-    return zxcvbn(password).feedback.warning ?? $t({defaultMessage: "Password is too weak."});
+    return zxcvbn.check(password).feedback.warning ?? $t({defaultMessage: "Password is too weak."});
 }

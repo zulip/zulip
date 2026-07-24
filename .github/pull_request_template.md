@@ -42,4 +42,5 @@ Completed manual review and testing of the following:
 - [ ] Strings and tooltips.
 - [ ] End-to-end functionality of buttons, interactions and flows.
 - [ ] Corner cases, error conditions, and easily imagined bugs.
+
 </details>
