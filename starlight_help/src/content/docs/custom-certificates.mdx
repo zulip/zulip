@@ -81,6 +81,37 @@ browser.
 
     You will need to restart the Zulip Desktop application to pick up the
     new certificate.
+
+    #### Snap
+
+    For installations via Snap, the certificate must be added to a Snap
+    specific `nss` database. Once the `nss` tools are installed, the command to
+    trust the certificate is:
+
+    ```bash "path/to/certificate.pem"
+    certutil \
+      -d sql:$(echo 'echo $SNAP_USER_DATA' | snap run --shell zulip)/.pki/nssdb \
+      -A -t "P,," -n zulip -i path/to/certificate.pem
+    ```
+
+    You will need to restart the Zulip Desktop application to pick up the
+    new certificate.
+
+    #### Flatpak
+
+    For installations via Flatpak, the certificate must be added to the system
+    certificate database and the `p11-kit` tools be installed. The steps to do
+    so vary by distribution.
+
+    On Ubuntu or Debian the commands are as follows:
+
+    ```bash "path/to/certificate.pem"
+    sudo cp path/to/certificate.pem /usr/local/share/ca-certificates/zulip.crt
+    sudo update-ca-certificates
+    ```
+
+    You will need to restart the Zulip Desktop application to pick up the
+    new certificate.
   </TabItem>
 </Tabs>
 
