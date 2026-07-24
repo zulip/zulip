@@ -6,6 +6,7 @@ import render_long_paste_options from "../templates/compose_banner/long_paste_op
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
+import render_user_group_mention_not_allowed_error from "../templates/compose_banner/user_group_mention_not_allowed_error.hbs";
 
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -58,6 +59,7 @@ export const CLASSNAMES = {
     stream_does_not_exist: "stream_does_not_exist",
     missing_stream: "missing_stream",
     no_post_permissions: "no_post_permissions",
+    user_group_mention_not_allowed: "user_group_mention_not_allowed",
     cannot_send_direct_message: "cannot_send_direct_message",
     missing_private_message_recipient: "missing_private_message_recipient",
     invalid_recipient: "invalid_recipient",
@@ -253,6 +255,19 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
 
     // Open stream select dropdown.
     $("#compose_select_recipient_widget").trigger("click");
+}
+
+export function show_user_group_mention_not_allowed_error(group_name: string): void {
+    // Remove any existing banners with this warning.
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.user_group_mention_not_allowed)}`).remove();
+
+    const new_row_html = render_user_group_mention_not_allowed_error({
+        banner_type: ERROR,
+        classname: CLASSNAMES.user_group_mention_not_allowed,
+        group_name,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+    hide_compose_spinner();
 }
 
 export function show_stream_not_subscribed_error(
