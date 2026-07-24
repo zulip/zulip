@@ -66,6 +66,10 @@ export function lightbox_open(): boolean {
     return open_overlay_name === "lightbox";
 }
 
+export function file_preview_open(): boolean {
+    return open_overlay_name === "file-attachment-preview";
+}
+
 export function drafts_open(): boolean {
     return open_overlay_name === "drafts";
 }

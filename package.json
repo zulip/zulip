@@ -50,6 +50,8 @@
     "ga-gtag": "^1.0.1",
     "handlebars": "^4.7.2",
     "handlebars-loader": "^1.7.1",
+    "highlight.js": "^11.11.0",
+    "pdfjs-dist": "^5.6.205",
     "html-webpack-plugin": "^5.3.2",
     "intl-messageformat": "^11.0.7",
     "is-url": "^1.2.4",

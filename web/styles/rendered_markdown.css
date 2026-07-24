@@ -786,6 +786,21 @@
         }
     }
 
+    .attachment-download-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 3px;
+        vertical-align: middle;
+        font-size: 0.85em;
+        opacity: 0.5;
+
+        &:hover {
+            text-decoration: none;
+            opacity: 1;
+        }
+    }
+
     .message_embed {
         display: grid;
         grid-template-columns:

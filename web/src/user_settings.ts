@@ -69,6 +69,7 @@ export const user_settings_schema = z.object({
     send_read_receipts: z.boolean(),
     send_stream_typing_notifications: z.boolean(),
     starred_message_counts: z.boolean(),
+    file_preview_extensions: z.string(),
     timezone: z.string(),
     translate_emoticons: z.boolean(),
     twenty_four_hour_time: z.boolean(),
