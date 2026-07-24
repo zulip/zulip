@@ -147,6 +147,7 @@ type BillingInfo = {
 
 export function get_actions_popover_content_context(message_id: number): ActionPopoverContext {
     assert(message_lists.current !== undefined);
+    const $message_row = message_lists.current.get_row(message_id);
     const message = message_lists.current.get(message_id);
     assert(message !== undefined);
     const not_spectator = !page_params.is_spectator;
@@ -185,24 +186,30 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     // To work around #22893, we also only offer the option if the
     // fetch_status data structure means we'll be able to mark
     // everything below the current message as read correctly.
-    const not_stream_message = message.type !== "stream";
-    const subscribed_to_stream =
-        message.type === "stream" && stream_data.is_subscribed(message.stream_id);
+    const stream_message = message.type === "stream";
+    const subscribed_to_stream = stream_message && stream_data.is_subscribed(message.stream_id);
     const should_display_mark_as_unread =
-        !message.unread && not_spectator && (not_stream_message || subscribed_to_stream);
+        !message.unread && not_spectator && (!stream_message || subscribed_to_stream);
 
     let stream_id;
-    if (!not_stream_message) {
+    if (stream_message) {
         stream_id = message.stream_id;
     }
 
-    // Disabling this for /me messages is a temporary workaround
-    // for the fact that we don't have a styling for how that
+    // Disabling these for /me messages is a workaround for
+    // the fact that we don't have a styling for how that
     // should look.  See also condense.js.
-    const should_display_collapse =
-        !message.locally_echoed && !message.is_me_message && !message.collapsed && not_spectator;
-    const should_display_uncollapse =
-        !message.locally_echoed && !message.is_me_message && message.collapsed;
+    function maybe_show_collapse_uncollapse(message: Message): boolean {
+        return !message.locally_echoed && !message.is_me_message && not_spectator;
+    }
+
+    let should_display_collapse = false;
+    let should_display_uncollapse = false;
+    if (maybe_show_collapse_uncollapse(message)) {
+        const message_condensed = $message_row.find(".message_content").hasClass("condensed");
+        should_display_collapse = !message.collapsed && !message_condensed;
+        should_display_uncollapse = message.collapsed || message_condensed;
+    }
 
     const should_display_quote_message = not_spectator;
 
@@ -224,9 +231,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         return true;
     };
 
-    function is_add_reaction_icon_visible(): boolean {
-        assert(message_lists.current !== undefined);
-        const $message_row = message_lists.current.get_row(message_id);
+    function is_add_reaction_icon_visible($message_row: JQuery): boolean {
         const $reaction_button = $message_row.find(".message_controls .reaction_button");
         return $reaction_button.length === 1 && $reaction_button.css("display") !== "none";
     }
@@ -236,7 +241,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     // popover if it is not displayed.
     const should_display_add_reaction_option =
         !message.is_me_message &&
-        !is_add_reaction_icon_visible() &&
+        !is_add_reaction_icon_visible($message_row) &&
         not_spectator &&
         !(stream_id && stream_data.is_stream_archived_by_id(stream_id));
 
