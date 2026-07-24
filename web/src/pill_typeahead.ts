@@ -213,9 +213,7 @@ export function set_up_group_setting_typeahead(
                 let matches = false;
                 if (item.type === "user_group") {
                     matches ||= group_matcher(query, item, should_remove_diacritics);
-                }
-
-                if (item.type === "user") {
+                } else if (item.type === "user") {
                     matches ||= person_matcher(query, item, should_remove_diacritics);
                 }
                 return matches;

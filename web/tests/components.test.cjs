@@ -63,8 +63,7 @@ function make_tab(i) {
     $self.trigger = (type) => {
         if (type === "focus") {
             env.focused_tab = i;
-        }
-        if (type === "click") {
+        } else if (type === "click") {
             env.click_f.call(env.tabs[i]);
         }
     };
