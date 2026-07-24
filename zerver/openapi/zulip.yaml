@@ -2748,6 +2748,57 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent when a user deletes the content of prior message
+                                revisions from a message's edit history. Sent to all users
+                                who have access to the message and whose realm's
+                                `message_edit_history_visibility_policy` is not `none`.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-bbdbb7).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - message_edit_history
+                                op:
+                                  type: string
+                                  enum:
+                                    - delete
+                                  description: |
+                                    The operation that was performed. Currently always `delete`.
+                                message_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the message whose edit history content was deleted.
+                                scope:
+                                  type: string
+                                  enum:
+                                    - all_content_revisions
+                                  description: |
+                                    The scope of the deletion. Currently always `all_content_revisions`.
+                                user_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user who deleted the edit history content.
+                                timestamp:
+                                  type: integer
+                                  description: |
+                                    Unix timestamp of when the edit history content was deleted.
+                              example:
+                                {
+                                  "type": "message_edit_history",
+                                  "op": "delete",
+                                  "message_id": 1,
+                                  "scope": "all_content_revisions",
+                                  "user_id": 10,
+                                  "timestamp": 1781543193,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent when the set of onboarding steps to show for the current user
                                 has changed (e.g. because the user dismissed one).
 
@@ -9464,6 +9515,24 @@ paths:
                               type: integer
                               description: |
                                 The UNIX timestamp for this edit.
+                            revision_deleted_by:
+                              type: integer
+                              description: |
+                                Only present when a content-edit entry's previous
+                                content has been deleted. Contains the ID of the user
+                                who deleted it. Any user with permission to delete the
+                                message also has permission to delete its edit history.
+
+                                **Changes**: New in Zulip 13.0 (feature level ZF-bbdbb7).
+                            revision_deleted_at:
+                              type: integer
+                              description: |
+                                Only present when `revision_deleted_by` is present.
+
+                                The UNIX timestamp at which the previous message
+                                content was deleted from this entry's edit history.
+
+                                **Changes**: New in Zulip 13.0 (feature level ZF-bbdbb7).
                         description: |
                           A chronologically sorted, oldest to newest, array
                           of `snapshot` objects, each one with the values of
@@ -9503,6 +9572,44 @@ paths:
                   - $ref: "#/components/schemas/InvalidMessageError"
                   - description: |
                       An example JSON response for when the specified message does not exist:
+  /messages/{message_id}/edit_history/delete_content_revisions:
+    post:
+      operationId: delete-message-edit-history-content-revisions
+      summary: Delete a message's prior content revisions
+      tags: ["messages"]
+      description: |
+        Delete the prior content revisions from a message's edit history.
+        The record that the message was edited (including topic or channel
+        moves) is preserved, and each affected entry will record who
+        performed the deletion and when.
+
+        Users who have permission to [delete a message](/help/delete-a-message)
+        also have permission to delete its edit history. The time limit that
+        applies to message deletion does not apply here.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-bbdbb7).
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+              examples:
+                response:
+                  value: {"msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      An example error response if the message has no
+                      content edits to delete.
   /messages/flags:
     post:
       operationId: update-message-flags
