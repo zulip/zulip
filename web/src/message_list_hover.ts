@@ -134,12 +134,21 @@ export function initialize(): void {
     });
 
     $("#main_div").on("mouseover", ".sender_info_hover", function (this: HTMLElement) {
-        const $row = $(this).closest(".message_row");
+        // The sticky avatar lives outside any `.message_row` (it's a direct
+        // child of `.sender-block`), so fall back to the block's first row
+        // when `.closest(".message_row")` doesn't find one.
+        let $row = $(this).closest(".message_row");
+        if ($row.length === 0) {
+            $row = $(this).closest(".sender-block").find(".message_row").first();
+        }
         $row.addClass("sender_info_hovered");
     });
 
     $("#main_div").on("mouseout", ".sender_info_hover", function (this: HTMLElement) {
-        const $row = $(this).closest(".message_row");
+        let $row = $(this).closest(".message_row");
+        if ($row.length === 0) {
+            $row = $(this).closest(".sender-block").find(".message_row").first();
+        }
         $row.removeClass("sender_info_hovered");
     });
 
