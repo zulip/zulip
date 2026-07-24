@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""Pre-build the OpenAPI JSON cache files for production.
+
+Parses zulip.yaml once and writes JSON cache files to
+static/generated/openapi/ so that production servers can skip
+the ~1s YAML parse on first load.
+"""
+
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from zerver.openapi.openapi import openapi_spec
+
+openapi_spec.check_reload()
