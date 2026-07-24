@@ -661,7 +661,7 @@ def reorder_realm_profile_fields(client: Client) -> None:
 
 
 @openapi_test_function("/realm/profile_fields:post")
-def create_realm_profile_field(client: Client) -> None:
+def create_realm_profile_field(client: Client) -> int:
     # {code_example|start}
     # Create a custom profile field in the user's organization.
     request = {"name": "Phone", "hint": "Contact no.", "field_type": 1}
@@ -669,6 +669,30 @@ def create_realm_profile_field(client: Client) -> None:
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/realm/profile_fields", "post", "200")
+    return result["id"]
+
+
+@openapi_test_function("/realm/profile_fields/{field_id}:patch")
+def update_realm_profile_field(client: Client, field_id: int) -> None:
+    # {code_example|start}
+    # Update a custom profile field in the user's organization.
+    request = {"name": "Cell", "hint": "Contact number."}
+    result = client.call_endpoint(
+        url=f"/realm/profile_fields/{field_id}", method="PATCH", request=request
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/realm/profile_fields/{field_id}", "patch", "200")
+
+
+@openapi_test_function("/realm/profile_fields/{field_id}:delete")
+def delete_realm_profile_field(client: Client, field_id: int) -> None:
+    # {code_example|start}
+    # Delete a custom profile field in the user's organization.
+    result = client.call_endpoint(url=f"/realm/profile_fields/{field_id}", method="DELETE")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/realm/profile_fields/{field_id}", "delete", "200")
 
 
 @openapi_test_function("/realm/filters:post")
@@ -2288,7 +2312,9 @@ def test_server_organizations(client: Client) -> None:
     delete_custom_emoji(client)
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
-    create_realm_profile_field(client)
+    profile_field_id = create_realm_profile_field(client)
+    update_realm_profile_field(client, profile_field_id)
+    delete_realm_profile_field(client, profile_field_id)
     export_realm(client)
     get_realm_exports(client)
     get_realm_export_consents(client)

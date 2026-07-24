@@ -26,7 +26,7 @@ command line option.
 Example:
     --custom-headers='{"X-Custom-Header": "value"}'
 
-The format is a JSON dictionary, so make sure that the header names do
+The format is a JSON object, so make sure that the header names do
 not contain any spaces in them and that you use the precise quoting
 approach shown above.
 """
