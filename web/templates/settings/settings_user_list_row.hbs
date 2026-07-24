@@ -14,20 +14,7 @@
     <td>
         <span class="user_role">{{user_role_text}}</span>
     </td>
-    {{#if is_bot}}
-    <td>
-        <span class="owner panel_user_list">
-            {{#if no_owner }}
-            {{bot_owner_full_name}}
-            {{else}}
-            {{> ../user_display_only_pill display_value=bot_owner_full_name user_id=bot_owner_id img_src=owner_img_src is_active=is_bot_owner_active}}
-            {{/if}}
-        </span>
-    </td>
-    <td class="bot_type">
-        <span class="bot type">{{bot_type}}</span>
-    </td>
-    {{else if display_last_active_column}}
+    {{#if display_last_active_column}}
     <td class="last_active">
         {{#if last_active_date}}
             {{last_active_date}}
@@ -36,34 +23,10 @@
         {{/if}}
     </td>
     {{/if}}
-    {{#if (or is_bot can_modify)}}
+    {{#if can_modify}}
     <td class="actions">
         <span class="user-status-settings">
-            {{#if (and is_bot show_download_zuliprc_button)}}
-            <a type="submit" download="zuliprc" data-user-id="{{user_id}}" class="hidden-zuliprc-download" hidden></a>
-            <span class="tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download zuliprc'}}">
-                {{> ../components/icon_button
-                  icon="download"
-                  intent="neutral"
-                  custom_classes="download-bot-zuliprc-button"
-                  }}
-            </span>
-            {{/if}}
-            {{#if (and is_bot show_generate_integration_url_button)}}
-            <span class="tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate URL for integration'}}">
-                {{> ../components/icon_button
-                  icon="link-2"
-                  intent="neutral"
-                  custom_classes="generate-integration-url-button"
-                  }}
-            </span>
-            {{/if}}
-            <span class="{{#if (and is_bot cannot_edit)}}tippy-zulip-tooltip{{else}}tippy-zulip-delayed-tooltip{{/if}}"
-              {{#if (and is_bot cannot_edit)}}
-              data-tippy-content="{{t 'This bot cannot be managed.'}}"
-              {{else}}
-              data-tippy-content="{{#if is_bot}}{{#unless cannot_edit}}{{t 'Manage bot'}}{{/unless}}{{else}}{{t 'Manage user'}}{{/if}}"
-              {{/if}}>
+            <span class="tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Manage user'}}">
                 {{> ../components/icon_button
                   icon="user-cog"
                   intent="neutral"
@@ -72,8 +35,8 @@
                   }}
             </span>
             {{#if is_active}}
-            <span class="{{#if is_bot}}deactivate-bot-tooltip{{else}}deactivate-user-tooltip{{/if}} {{#if cannot_deactivate}}tippy-zulip-tooltip{{/if}}"
-              {{#if (and is_bot cannot_deactivate)}}data-tippy-content="{{t 'This bot cannot be deactivated.'}}"{{else if cannot_deactivate}}data-tippy-content="{{t 'This user cannot be deactivated.'}}"{{/if}}>
+            <span class="deactivate-user-tooltip {{#if cannot_deactivate}}tippy-zulip-tooltip{{/if}}"
+              {{#if cannot_deactivate}}data-tippy-content="{{t 'This user cannot be deactivated.'}}"{{/if}}>
                 {{> ../components/icon_button
                   icon="user-x"
                   intent="danger"
@@ -82,7 +45,7 @@
                   }}
             </span>
             {{else}}
-            <span class="{{#if is_bot}}reactivate-bot-tooltip{{else}}reactivate-user-tooltip{{/if}}">
+            <span class="reactivate-user-tooltip">
                 {{> ../components/icon_button
                   icon="user-plus"
                   intent="success"
