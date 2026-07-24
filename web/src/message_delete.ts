@@ -1,19 +1,11 @@
-import $ from "jquery";
-import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
-import * as confirm_dialog from "./confirm_dialog.ts";
-import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as ui_report from "./ui_report.ts";
-
-let currently_deleting_messages: number[] = [];
 
 export function is_message_sent_by_my_bot(message: Message): boolean {
     const user = people.get_by_user_id(message.sender_id);
@@ -36,16 +28,19 @@ export function get_deletability(message: Message): boolean {
 
     if (message.type === "stream") {
         const stream = stream_data.get_sub_by_id(message.stream_id);
-        assert(stream !== undefined);
-
-        const can_delete_any_message_in_channel =
-            settings_data.user_has_permission_for_group_setting(
-                stream.can_delete_any_message_group,
-                "can_delete_any_message_group",
-                "stream",
-            );
-        if (can_delete_any_message_in_channel) {
-            return true;
+        // The channel may not be available locally (e.g. not yet loaded).
+        // Skip the channel-level permission check rather than crashing the
+        // message-list render, which now consults this for every message.
+        if (stream !== undefined) {
+            const can_delete_any_message_in_channel =
+                settings_data.user_has_permission_for_group_setting(
+                    stream.can_delete_any_message_group,
+                    "can_delete_any_message_group",
+                    "stream",
+                );
+            if (can_delete_any_message_in_channel) {
+                return true;
+            }
         }
     }
 
@@ -61,7 +56,10 @@ export function get_deletability(message: Message): boolean {
         }
 
         const stream = stream_data.get_sub_by_id(message.stream_id);
-        assert(stream !== undefined);
+        if (stream === undefined) {
+            // Channel not available locally; treat as non-deletable.
+            return false;
+        }
 
         const can_delete_own_message_in_channel =
             settings_data.user_has_permission_for_group_setting(
@@ -86,45 +84,6 @@ export function get_deletability(message: Message): boolean {
         return true;
     }
     return false;
-}
-
-export function delete_message(msg_id: number): void {
-    function do_delete_message(): void {
-        currently_deleting_messages.push(msg_id);
-        void channel.del({
-            url: "/json/messages/" + msg_id,
-            success() {
-                currently_deleting_messages = currently_deleting_messages.filter(
-                    (id) => id !== msg_id,
-                );
-                dialog_widget.hide_dialog_spinner();
-                dialog_widget.close();
-            },
-            error(xhr) {
-                currently_deleting_messages = currently_deleting_messages.filter(
-                    (id) => id !== msg_id,
-                );
-
-                dialog_widget.hide_dialog_spinner();
-                ui_report.error(
-                    $t_html({defaultMessage: "Error deleting message"}),
-                    xhr,
-                    $("#dialog_error"),
-                );
-            },
-        });
-    }
-
-    confirm_dialog.launch({
-        modal_title_html: $t_html({defaultMessage: "Delete message?"}),
-        modal_content_html: $t_html({
-            defaultMessage: "Deleting a message permanently removes it for everyone.",
-        }),
-        is_compact: true,
-        help_link: "/help/delete-a-message#delete-a-message-completely",
-        on_click: do_delete_message,
-        loading_spinner: true,
-    });
 }
 
 export function delete_topic(stream_id: number, topic_name: string, failures = 0): void {
