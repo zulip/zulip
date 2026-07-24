@@ -6,7 +6,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 // Important note on these tests:
@@ -555,13 +555,13 @@ test_while_not_editing_text("misc", ({override}) => {
         type: "stream",
         last_edit_timestamp: 123,
     }));
-    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true);
     override(message_lists.current, "selected_message", () => ({
         id: 2,
         type: "stream",
         last_moved_timestamp: 123,
     }));
-    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true);
     override(message_lists.current, "selected_message", () => ({
         id: 3,
         type: "stream",

@@ -1,5 +1,5 @@
 import {add} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -526,7 +526,7 @@ function update_view_welcome_bot_custom_message_button_status(
     assert(message_id !== undefined);
     $view_message_button.on("click", (e) => {
         e.preventDefault();
-        window.location.href = `#narrow/dm/${people.WELCOME_BOT.user_id}/near/${message_id}`;
+        window.location.assign(`#narrow/dm/${people.WELCOME_BOT.user_id}/near/${message_id}`);
     });
 }
 
@@ -853,8 +853,7 @@ export function discard_group_property_element_changes($elem: JQuery, group: Use
         group,
     );
 
-    const group_widget_settings = [...settings_components.group_setting_widget_map.keys()];
-    if (group_widget_settings.includes(property_name)) {
+    if (settings_components.group_setting_widget_map.has(property_name)) {
         const pill_widget = settings_components.get_group_setting_widget(property_name);
         assert(pill_widget !== null);
         settings_components.set_group_setting_widget_value(
@@ -1121,10 +1120,10 @@ export function deactivate_organization(e: JQuery.Event): void {
                 // that string elsewhere.
                 return $t({defaultMessage: "Custom time"});
             }
-            return $t({defaultMessage: `Custom time ({min}+ days)`}, {min: minimum_allowed_days});
+            return $t({defaultMessage: "Custom time ({min}+ days)"}, {min: minimum_allowed_days});
         }
         return $t(
-            {defaultMessage: `Custom time ({min}-{max} days)`},
+            {defaultMessage: "Custom time ({min}-{max} days)"},
             {min: minimum_allowed_days, max: maximum_allowed_days},
         );
     }

@@ -71,11 +71,7 @@ class MarkdownComparer {
     _reorderAttributes(node) {
         // Sorts every attribute in every element by name.  Ensures consistent diff HTML output
 
-        const attributeList = [];
-
-        for (const attr of node.attributes) {
-            attributeList.push(attr);
-        }
+        const attributeList = [...node.attributes];
 
         // If put in above forEach loop, causes issues (possible nodes.attribute invalidation?)
         for (const attr of attributeList) {
@@ -87,7 +83,8 @@ class MarkdownComparer {
             const name_b = b.name;
             if (name_a < name_b) {
                 return -1;
-            } else if (name_a > name_b) {
+            }
+            if (name_a > name_b) {
                 return 1;
             }
             /* istanbul ignore next */
@@ -119,10 +116,9 @@ class MarkdownComparer {
         const element_actual = this._htmlToElement(actual_markdown, ID_ACTUAL);
         const element_expected = this._htmlToElement(expected_markdown, ID_EXPECTED);
 
-        let are_equivalent = false;
         let html = {};
 
-        are_equivalent = this._haveEqualContents(element_actual, element_expected);
+        const are_equivalent = this._haveEqualContents(element_actual, element_expected);
         if (!are_equivalent) {
             html = {
                 actual: this._reorderAttributes(element_actual).innerHTML,
@@ -139,7 +135,7 @@ class MarkdownComparer {
     assertEqual(actual, expected, message) {
         const comparison_results = this._compare(actual, expected);
 
-        message = message || "";
+        message ||= "";
         message += "\n";
 
         /* istanbul ignore if */
@@ -158,7 +154,7 @@ class MarkdownComparer {
     assertNotEqual(actual, expected, message) {
         const comparison_results = this._compare(actual, expected);
 
-        message = message || "";
+        message ||= "";
         message += "\n";
 
         /* istanbul ignore if */

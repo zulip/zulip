@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -376,7 +376,7 @@ export function initialize_kitchen_sink_stuff() {
                         message_lists.current
                             .all_messages()
                             .map((message) => message.id)
-                            .toSorted(),
+                            .toSorted((a, b) => a - b),
                     ),
                     found_in_dom: $row_from_dom.length,
                 });
@@ -834,7 +834,7 @@ $(() => {
         needs_url_cleanup = true;
     }
     if (needs_url_cleanup) {
-        window.history.replaceState(window.history.state, "", url.toString());
+        window.history.replaceState(window.history.state, "", url);
     }
 
     if (page_params.no_event_queue) {

@@ -1,0 +1,27 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 82819c980d788846b0b25f4d49ecc4c9e76ca21e..f9a53cbe38eba45cc0d9ebf266217f400e86814d 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,13 +1,14 @@
+-import BonjourService, { Service as ServiceClass, Browser as BrowserClass } from './lib/bonjour';
+-import type { ServiceReferer as ServiceRefererType, ServiceConfig as ServiceConfigType, BrowserConfig as BrowserConfigType } from './lib/bonjour';
++import BonjourService from './lib/bonjour';
++import * as imported from './lib/bonjour';
+ declare class Bonjour extends BonjourService {
+ }
++import BonjourClass = Bonjour;
+ declare namespace Bonjour {
+-    const Bonjour: typeof import(".");
+-    const Service: typeof ServiceClass;
+-    const Browser: typeof BrowserClass;
+-    type ServiceReferer = ServiceRefererType;
+-    type ServiceConfig = ServiceConfigType;
+-    type BrowserConfig = BrowserConfigType;
++    export import Bonjour = BonjourClass;
++    export import Service = imported.Service;
++    export import Browser = imported.Browser;
++    export import ServiceReferer = imported.ServiceReferer;
++    export import ServiceConfig = imported.ServiceConfig;
++    export import BrowserConfig = imported.BrowserConfig;
+ }
+ export = Bonjour;

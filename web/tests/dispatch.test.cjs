@@ -10,7 +10,7 @@ const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespac
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const event_fixtures = events.fixtures;
@@ -841,7 +841,11 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_night_logo_source, "U");
 
     event = event_fixtures.realm__deactivated;
-    set_global("location", {});
+    set_global("location", {
+        assign(href) {
+            this.href = href;
+        },
+    });
     dispatch(event);
     assert_same(window.location.href, "/accounts/deactivated/");
 });

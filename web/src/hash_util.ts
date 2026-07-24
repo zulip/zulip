@@ -73,16 +73,12 @@ export function decode_operand(
             case "dm":
                 return [people.my_current_user_id()];
         }
-    }
-
-    if (operator === "dm-including" || operator === "dm") {
+    } else if (operator === "dm-including" || operator === "dm") {
         const user_ids = people.slug_to_user_ids(operand);
         if (user_ids) {
             return user_ids;
         }
-    }
-
-    if (operator === "sender" || operator === "mentions") {
+    } else if (operator === "sender" || operator === "mentions") {
         const user_ids = people.slug_to_user_ids(operand);
         if (user_ids?.length !== 1) {
             // User mistyped the URL since we don't support
@@ -179,7 +175,7 @@ export function by_conversation_and_time_url(message: Message): string {
         "//" +
         window.location.host +
         "/" +
-        window.location.pathname.split("/")[1];
+        window.location.pathname.split("/", 2)[1];
 
     const suffix = "/near/" + internal_url.encodeHashComponent(message.id.toString());
 

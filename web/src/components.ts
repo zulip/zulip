@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
@@ -104,7 +104,7 @@ export function toggle(opts: {
     function maybe_go_left(): boolean {
         // Select the first non-disabled tab to the left, if any.
         let i = 1;
-        while (meta.idx - i >= 0) {
+        while (meta.idx >= i) {
             if (select_tab(meta.idx - i)) {
                 return true;
             }

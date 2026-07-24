@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -188,7 +188,7 @@ export function set_up(): void {
     );
 
     $container.find(".reset-user-setting-to-default").on("click", function (this: HTMLElement) {
-        let property_list = [];
+        let property_list;
         if ($(this).closest(".info-density-controls").length > 0) {
             // Information density settings do not follow the usual
             // convention of having "div.input-group" container for

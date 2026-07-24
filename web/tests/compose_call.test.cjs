@@ -6,7 +6,7 @@ const events = require("./lib/events.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const channel = mock_esm("../src/channel");

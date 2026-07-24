@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},

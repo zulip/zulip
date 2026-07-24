@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
@@ -85,7 +85,8 @@ export function get_display_value_from_item(item: CombinedPill): string {
     if (item.type === "user_group") {
         const group = user_groups.get_user_group_from_id(item.group_id);
         return user_groups.get_display_group_name(group.name);
-    } else if (item.type === "stream") {
+    }
+    if (item.type === "stream") {
         return stream_pill.get_display_value_from_item(item);
     }
     assert(item.type === "user");
@@ -95,7 +96,8 @@ export function get_display_value_from_item(item: CombinedPill): string {
 export function generate_pill_html(item: CombinedPill): string {
     if (item.type === "user_group") {
         return user_group_pill.generate_pill_html(item);
-    } else if (item.type === "user") {
+    }
+    if (item.type === "user") {
         return user_pill.generate_pill_html(item);
     }
     assert(item.type === "stream");

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs";

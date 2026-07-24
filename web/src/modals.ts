@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 
@@ -127,7 +127,6 @@ export function open(
             // animation is complete. So, we manually add a class after the
             // animation is complete.
             $micromodal.addClass("modal--open");
-            $micromodal.removeClass("modal--opening");
 
             if (conf.on_shown) {
                 conf.on_shown();
@@ -142,6 +141,7 @@ export function open(
             if (conf.on_hidden) {
                 conf.on_hidden();
             }
+            Micromodal.removeModal(modal_id);
         }
     });
 

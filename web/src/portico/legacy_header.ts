@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 /* Used by pages that load the legacy navbar,
    templates/zerver/portico-header.html */

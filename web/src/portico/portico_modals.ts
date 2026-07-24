@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 
@@ -86,7 +86,6 @@ export function open(modal_id: string, recursive_call_count = 0): void {
             // animation is complete. So, we manually add a class after the
             // animation is complete.
             $micromodal.addClass("modal--open");
-            $micromodal.removeClass("modal--opening");
         } else if (animation_name === "mmfadeOut") {
             $micromodal.removeClass("modal--open");
         }

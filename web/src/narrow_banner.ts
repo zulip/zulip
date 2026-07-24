@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -560,7 +560,7 @@ export function pick_empty_narrow_banner(
                 };
             }
             const valid_people_in_dms: people.User[] = [];
-            for (const user of people_in_dms.values()) {
+            for (const user of people_in_dms) {
                 if (user === undefined) {
                     return {
                         // We don't pinpoint which user is invalid,

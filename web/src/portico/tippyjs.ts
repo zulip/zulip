@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as tippy from "tippy.js";
 
 const LONG_HOVER_DELAY: [number, number] = [750, 20];

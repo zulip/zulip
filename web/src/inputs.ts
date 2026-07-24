@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 $("body").on(
     "click",

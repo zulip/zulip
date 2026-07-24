@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -207,14 +207,14 @@ export function initialize(): void {
     $("body").on("click", ".login_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        window.location.href = spectators.build_login_link();
+        window.location.assign(spectators.build_login_link());
     });
 
     $("body").on("keydown", ".login_button", (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            window.location.href = spectators.build_login_link();
+            window.location.assign(spectators.build_login_link());
         }
     });
 

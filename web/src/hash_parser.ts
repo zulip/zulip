@@ -5,7 +5,7 @@ import * as util from "./util.ts";
 
 export function get_hash_category(hash?: string): string {
     // given "#channels/subscribed", returns "channels"
-    return hash ? hash.replace(/^#/, "").split(/\//)[0]! : "";
+    return hash ? hash.replace(/^#/, "").split(/\//, 1)[0]! : "";
 }
 
 export function get_hash_section(hash?: string): string {

@@ -16,7 +16,7 @@ const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const _document = {
     hasFocus() {
@@ -410,7 +410,7 @@ test("insert_one_user_into_empty_list", ({override}) => {
             },
             should_add_guest_user_indicator: false,
         });
-        num_calls = num_calls + 1;
+        num_calls += 1;
 
         return "<presence-row>";
     });

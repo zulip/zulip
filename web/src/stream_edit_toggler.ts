@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as browser_history from "./browser_history.ts";
 import * as components from "./components.ts";

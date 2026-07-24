@@ -35,6 +35,9 @@ const config = (
                 config: [import.meta.filename],
             },
         },
+        experiments: {
+            typescript: false,
+        },
     };
 
     const plugins: webpack.WebpackPluginInstance[] = [

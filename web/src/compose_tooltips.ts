@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
@@ -36,7 +36,7 @@ type SingletonTooltips = {
 const compose_button_singleton_context_map = new Map<SingletonContext, SingletonTooltips>();
 
 // Ensure proper teardown of singleton instances, especially for "Save/Cancel" actions or when handling edit window time limits.
-// Reference: http://atomiks.github.io/tippyjs/v6/addons/#destroy
+// Reference: https://atomiks.github.io/tippyjs/v6/addons/#destroy
 export function clean_up_compose_singleton_tooltip(context: SingletonContext): void {
     const singleton_tooltips = compose_button_singleton_context_map.get(context);
     if (singleton_tooltips) {
@@ -291,7 +291,7 @@ export function initialize(): void {
         onShow(instance) {
             instance.setContent(
                 $t(
-                    {defaultMessage: `Maximum message length: {max_length} characters`},
+                    {defaultMessage: "Maximum message length: {max_length} characters"},
                     {max_length: realm.max_message_length},
                 ),
             );

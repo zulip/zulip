@@ -12,7 +12,7 @@ const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user, make_cross_realm_bot} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 let autosize_called;
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
@@ -366,18 +366,18 @@ const light_command = {
 const light_command_item = slash_item(light_command);
 
 const name_to_codepoint = {};
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     name_to_codepoint[key] = val.emoji_code;
 }
 
 const codepoint_to_name = {};
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     codepoint_to_name[val.emoji_code] = key;
 }
 
 const emoji_codes = {
     name_to_codepoint,
-    names: [...emojis_by_name.keys()],
+    names: emojis_by_name.keys().toArray(),
     emoji_catalog: {},
     emoticon_conversions: {},
     codepoint_to_name,
@@ -389,7 +389,7 @@ emoji.initialize({
 });
 emoji.active_realm_emojis.clear();
 emoji.emojis_by_name.clear();
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     emoji.emojis_by_name.set(key, val);
 }
 typeahead.set_frequently_used_emojis(
@@ -1698,7 +1698,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Adds a `no break-space` at the end. This should fail
                 // if there wasn't any logic replacing `no break-space`
                 // with normal space.
-                query = "cordelia, lear's\u00A0";
+                query = "cordelia, lear's\u{A0}";
                 assert.equal(matcher(query, cordelia_item), true);
                 assert.equal(matcher(query, othello_item), false);
 
@@ -1714,7 +1714,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 options.query = "othello@zulip.com, cor";
                 appended_names = [];
-                actual_value = options.updater(cordelia_item, event);
+                options.updater(cordelia_item, event);
                 assert.deepEqual(appended_names, ["Cordelia, Lear's daughter"]);
 
                 const click_event = {type: "click", target: "#doesnotmatter"};
@@ -1722,7 +1722,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Focus lost (caused by the click event in the typeahead list)
                 $("#private_message_recipient").trigger("blur");
                 appended_names = [];
-                actual_value = options.updater(othello_item, click_event);
+                options.updater(othello_item, click_event);
                 assert.deepEqual(appended_names, ["Othello, the Moor of Venice"]);
 
                 cleared = false;
@@ -2776,7 +2776,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(":test", "ing", []);
     assert_typeahead_equals("```test", "ing", []);
     assert_typeahead_equals("~~~test", "ing", []);
-    const terminal_symbols = ",.;?!()[]> \u00A0\"'\n\t";
+    const terminal_symbols = ",.;?!()[]> \u{A0}\"'\n\t";
     for (const symbol of terminal_symbols.split()) {
         assert_typeahead_equals(
             "@othello",
@@ -2826,7 +2826,7 @@ test("tokenizing", () => {
 test("content_item_html", ({override_rewire}) => {
     ct.get_or_set_completing_for_tests("emoji");
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯", type: "emoji"};
-    let th_render_typeahead_item_called = false;
+    let th_render_typeahead_item_called;
     override_rewire(typeahead_helper, "render_emoji", (item) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;

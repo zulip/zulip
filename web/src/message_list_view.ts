@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import {isSameDay} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -1390,8 +1390,6 @@ export class MessageListView {
         const new_dom_elements = [];
         let $rendered_groups;
         let $dom_messages;
-        let $last_message_row;
-        let $last_group_row;
 
         for (const message_container of message_containers) {
             this.set_edited_notice_locations(message_container);
@@ -1444,8 +1442,8 @@ export class MessageListView {
 
         // Insert new messages in to the last message group
         if (message_actions.append_messages.length > 0) {
-            $last_message_row = this.$list.find(".message_row").last().expectOne();
-            $last_group_row = rows.get_message_recipient_row($last_message_row);
+            const $last_message_row = this.$list.find(".message_row").last().expectOne();
+            const $last_group_row = rows.get_message_recipient_row($last_message_row);
             $dom_messages = $(
                 message_actions.append_messages
                     .map((message_container) => this._get_message_template(message_container))
@@ -1731,14 +1729,12 @@ export class MessageListView {
         //   of the bottom of the currently rendered window and the
         //   bottom of the window does not abut the end of the
         //   message list
-        if (
-            !(
-                (selected_idx - this._render_win_start < this._RENDER_THRESHOLD &&
-                    this._render_win_start !== 0) ||
-                (this._render_win_end - selected_idx <= this._RENDER_THRESHOLD &&
-                    this._render_win_end !== this.list.num_items())
-            )
-        ) {
+        if (!(
+            (selected_idx - this._render_win_start < this._RENDER_THRESHOLD &&
+                this._render_win_start !== 0) ||
+            (this._render_win_end - selected_idx <= this._RENDER_THRESHOLD &&
+                this._render_win_end !== this.list.num_items())
+        )) {
             return false;
         }
 
@@ -2023,7 +2019,7 @@ export class MessageListView {
     }
 
     prepend(messages: Message[]): void {
-        if (this._render_win_end - this._render_win_start === 0) {
+        if (this._render_win_end === this._render_win_start) {
             // If the message list previously contained no visible
             // messages, appending and prepending are equivalent, but
             // the prepend logic will throw an exception, so just
@@ -2265,7 +2261,8 @@ export class MessageListView {
                 navbar_bottom + header_props.height + margin_between_recipient_rows;
             if (header_props.top < partially_hidden_header_position) {
                 return -1;
-            } else if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
+            }
+            if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
                 return 1;
             }
             /* Headers between `partially_hidden_header_position` and `sticky_or_about_to_be_sticky_header_position`
@@ -2290,7 +2287,8 @@ export class MessageListView {
             if (diff === 0) {
                 $sticky_header = $(header);
                 break;
-            } else if (diff === 1) {
+            }
+            if (diff === 1) {
                 end = mid - 1;
             } else {
                 start = mid + 1;

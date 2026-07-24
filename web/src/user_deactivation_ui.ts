@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as z from "zod/mini";
 
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
@@ -46,7 +46,7 @@ export function confirm_deactivation(
             let number_of_invites_by_user = 0;
             for (const invite of data.invites) {
                 if (invite.invited_by_user_id === user_id) {
-                    number_of_invites_by_user = number_of_invites_by_user + 1;
+                    number_of_invites_by_user += 1;
                 }
             }
 

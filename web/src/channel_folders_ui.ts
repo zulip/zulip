@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
@@ -151,7 +151,7 @@ function archive_folder(folder_id: number): void {
     }
 
     function on_success(): void {
-        successful_requests = successful_requests + 1;
+        successful_requests += 1;
 
         if (successful_requests === stream_ids.length) {
             // Make request to archive folder only after all channels
@@ -277,17 +277,12 @@ function get_edit_modal_folder_id_if_open(): number | undefined {
 function get_channel_folder_candidates(folder_id: number): dropdown_widget.Option[] {
     return stream_data
         .get_unsorted_subs()
-        .flatMap((stream) =>
-            stream.folder_id !== folder_id
-                ? [
-                      {
-                          name: stream.name,
-                          unique_id: stream.stream_id,
-                          stream,
-                      },
-                  ]
-                : [],
-        )
+        .filter((stream) => stream.folder_id !== folder_id)
+        .map((stream) => ({
+            name: stream.name,
+            unique_id: stream.stream_id,
+            stream,
+        }))
         .toSorted((a, b) => util.compare_stream_by_archived_then_name(a.stream, b.stream));
 }
 

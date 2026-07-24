@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as message_edit from "./message_edit.ts";
@@ -156,7 +156,7 @@ export function initialize(): void {
             );
             $img.attr(
                 "src",
-                $img.attr("src")!.replace(/\/[^/]+$/, "/" + thumbnail.animated_format.name),
+                $img.attr("src")!.replace(/\/[^/]+$/, () => "/" + thumbnail.animated_format.name),
             );
         },
     );
@@ -174,7 +174,7 @@ export function initialize(): void {
             );
             $img.attr(
                 "src",
-                $img.attr("src")!.replace(/\/[^/]+$/, "/" + thumbnail.preferred_format.name),
+                $img.attr("src")!.replace(/\/[^/]+$/, () => "/" + thumbnail.preferred_format.name),
             );
         },
     );

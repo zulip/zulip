@@ -1,5 +1,5 @@
 import Handlebars from "handlebars";
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_add_alert_word from "../templates/settings/add_alert_word.hbs";
 import render_alert_word_settings_item from "../templates/settings/alert_word_settings_item.hbs";
@@ -21,7 +21,7 @@ export function rerender_alert_words_ui(): void {
     }
 
     const words = alert_words.get_word_list();
-    words.sort();
+    words.sort((a, b) => Number(a.word > b.word) - Number(a.word < b.word));
     const $word_list = $("#alert-words-table");
 
     ListWidget.create($word_list, words, {

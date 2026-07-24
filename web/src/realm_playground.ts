@@ -61,7 +61,7 @@ function sort_pygments_pretty_names_by_priority(
 // to also be pygments languages! retain_unique_language_aliases will
 // deduplicate them.
 export function get_pygments_typeahead_list_for_composebox(): string[] {
-    const playground_pygment_langs = [...map_language_to_playground_info.keys()];
+    const playground_pygment_langs = map_language_to_playground_info.keys();
     const pygment_langs = Object.keys(pygments_data.langs);
 
     return [...playground_pygment_langs, ...pygment_langs];
@@ -82,8 +82,7 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
         );
     }
 
-    const playground_pygment_langs = [...map_language_to_playground_info.keys()];
-    for (const lang of playground_pygment_langs) {
+    for (const lang of map_language_to_playground_info.keys()) {
         language_labels.set(lang, $t({defaultMessage: "Custom language: {query}"}, {query: lang}));
     }
 

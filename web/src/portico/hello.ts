@@ -47,9 +47,7 @@ function update_client_logo(): void {
     const current_logo_class = client_logo_elt.className;
     current_client_logo_class_names.delete(current_logo_class);
 
-    const next_logo_class = get_random_item_from_array([
-        ...future_client_logo_class_names.values(),
-    ]);
+    const next_logo_class = get_random_item_from_array([...future_client_logo_class_names]);
     future_client_logo_class_names.delete(next_logo_class);
     client_logo_elt.className = next_logo_class;
     current_client_logo_class_names.add(next_logo_class);

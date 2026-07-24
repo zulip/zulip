@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
@@ -84,7 +84,8 @@ function sort_user(a: RealmExport, b: RealmExport): number {
     const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
     if (a_name > b_name) {
         return 1;
-    } else if (a_name === b_name) {
+    }
+    if (a_name === b_name) {
         return 0;
     }
     return -1;
@@ -166,7 +167,8 @@ function sort_user_by_name(a: ExportConsent, b: ExportConsent): number {
     const b_name = people.get_full_name(b.user_id).toLowerCase();
     if (a_name > b_name) {
         return 1;
-    } else if (a_name === b_name) {
+    }
+    if (a_name === b_name) {
         return 0;
     }
     return -1;
@@ -192,7 +194,7 @@ const filter_by_consent_options: Option[] = [
 
 function get_export_consents_having_consent_value(consent: boolean): ExportConsent[] {
     const export_consent_list: ExportConsent[] = [];
-    for (const [user_id, user_consent_info] of export_consents.entries()) {
+    for (const [user_id, user_consent_info] of export_consents) {
         const consented = user_consent_info.consented;
         const email_address_visibility = user_consent_info.email_address_visibility;
         if (consent === user_consent_info.consented) {
@@ -210,7 +212,7 @@ function get_export_consents_having_email_visibility_value(
     email_address_visibility_code: number,
 ): ExportConsent[] {
     const export_consent_list: ExportConsent[] = [];
-    for (const [user_id, user_consent_info] of export_consents.entries()) {
+    for (const [user_id, user_consent_info] of export_consents) {
         const consented = user_consent_info.consented;
         const email_address_visibility = user_consent_info.email_address_visibility;
         if (email_address_visibility_code === email_address_visibility) {
@@ -342,7 +344,7 @@ function maybe_show_notes_about_unusable_users_if_exported(
     //    being exported AND their email visibility is set to "nobody".
     //  - In a public export: they have set their email visibility to
     //    “nobody”.
-    let unusable_user_ids: number[] = [];
+    let unusable_user_ids;
     const $warning_container = $("div#unusable-user-accounts-warning");
     $warning_container.empty();
     if (export_type === settings_config.export_type_values.full_with_consent.slug) {

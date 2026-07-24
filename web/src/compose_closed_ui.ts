@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_reply_recipient_label from "../templates/reply_recipient_label.hbs";

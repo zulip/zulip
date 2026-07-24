@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
-import $ from "jquery";
+import {parseOneAddress} from "email-addresses";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -850,7 +851,11 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     assert(bot.is_bot);
     // Extract short_name from email (format: {short_name}-bot@domain)
-    const short_name = bot.email.split("@")[0]!.slice(0, -4);
+    const parsed_address = parseOneAddress(bot.email);
+    assert(parsed_address?.type === "mailbox");
+    const short_name = parsed_address.local.endsWith("-bot")
+        ? parsed_address.local.slice(0, -"-bot".length)
+        : parsed_address.local;
     const modal_content_html = render_edit_bot_form({
         user_id,
         is_active,

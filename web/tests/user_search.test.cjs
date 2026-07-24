@@ -9,7 +9,7 @@ const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
 

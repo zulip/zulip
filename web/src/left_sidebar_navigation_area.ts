@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 
 import * as drafts from "./drafts.ts";
@@ -126,7 +126,8 @@ export function handle_narrow_activated(filter: Filter): void {
         if (filter_name === "starred") {
             select_top_left_corner_item(".top_left_starred_messages");
             return;
-        } else if (filter_name === "mentioned") {
+        }
+        if (filter_name === "mentioned") {
             select_top_left_corner_item(".top_left_mentions");
             return;
         }
@@ -326,8 +327,8 @@ export function get_built_in_popover_condensed_views(): navigation_views.BuiltIn
             view.unread_count = drafts.draft_model.getDraftCount();
         }
         // Remove views that are already visible.
-        return !visible_condensed_views.some(
-            (visible_view) => visible_view.fragment === view.fragment,
+        return visible_condensed_views.every(
+            (visible_view) => visible_view.fragment !== view.fragment,
         );
     });
 }

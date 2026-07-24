@@ -7,7 +7,7 @@ const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const stream_data = zrequire("stream_data");
 stream_data.set_channel_has_locally_available_topic(() => false);

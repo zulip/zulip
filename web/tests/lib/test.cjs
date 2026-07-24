@@ -2,7 +2,7 @@
 
 const namespace = require("./namespace.cjs");
 const zblueslip = require("./zblueslip.cjs");
-const $ = require("./zjquery.cjs");
+const {$} = require("./zjquery.cjs");
 const zpage_billing_params = require("./zpage_billing_params.cjs");
 const zpage_params = require("./zpage_params.cjs");
 
@@ -50,6 +50,6 @@ async function execute_test(label, f) {
     zblueslip.reset();
 }
 
-exports.run_test = (label, f, opts) => {
-    exports.suite.push(() => execute_test(label, f, opts));
+exports.run_test = (label, f) => {
+    exports.suite.push(() => execute_test(label, f));
 };

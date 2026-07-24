@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as mouse_drag from "./mouse_drag.ts";
 import * as util from "./util.ts";
@@ -43,9 +43,9 @@ export const hide_spoilers_in_notification = ($content: JQuery): JQuery => {
         $(elem).find(".spoiler-content").remove();
         let text = $(elem).find(".spoiler-header").text().trim();
         if (text.length > 0) {
-            text = `${text} `;
+            text += " ";
         }
-        text = `${text}(…)`;
+        text += "(…)";
         $(elem).find(".spoiler-header").text(text);
     });
     return $content;

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
@@ -205,7 +205,7 @@ export function get_realm_default_setting_property_value(
 export function realm_authentication_methods_to_boolean_dict(): Record<string, boolean> {
     return Object.fromEntries(
         Object.entries(realm.realm_authentication_methods)
-            .toSorted()
+            .toSorted(([a], [b]) => Number(a > b) - Number(a < b))
             .map(([auth_method_name, auth_method_info]) => [
                 auth_method_name,
                 auth_method_info.enabled,
@@ -412,9 +412,8 @@ function read_custom_profile_field_choices_from_form(
 
     const old_option_value_map = new Map<string, string>();
     if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(
-            custom_profile_field_choices_schema.parse(old_field_data),
-        )) {
+        const choices = custom_profile_field_choices_schema.parse(old_field_data);
+        for (const [value, choice] of Object.entries(choices)) {
             assert(typeof choice !== "string");
             old_option_value_map.set(choice.text, value);
         }
@@ -487,7 +486,8 @@ export function read_field_data_from_form(
     // Only the following field types support associated field data.
     if (field_type_id === field_types.DROPDOWN.id) {
         return read_custom_profile_field_choices_from_form($profile_field_form, old_field_data);
-    } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
+    }
+    if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         const parsed_old_field_data = old_field_data
             ? external_account_field_schema.parse(old_field_data)
             : undefined;
@@ -540,7 +540,7 @@ export function get_widget_for_dropdown_list_settings(
 }
 
 export function set_dropdown_setting_widget(property_name: string, widget: DropdownWidget): void {
-    if (dropdown_widget_map.get(property_name) === undefined) {
+    if (!dropdown_widget_map.has(property_name)) {
         blueslip.error("No dropdown list widget for property", {property_name});
         return;
     }
@@ -787,7 +787,8 @@ export function set_input_element_value(
             assert(typeof value === "boolean");
             $input_elem.prop("checked", value);
             return;
-        } else if (input_type === "string" || input_type === "number") {
+        }
+        if (input_type === "string" || input_type === "number") {
             assert(typeof value !== "boolean");
             $input_elem.val(value);
             return;
@@ -1110,7 +1111,7 @@ export function populate_data_for_realm_settings_request(
         if (check_realm_settings_property_changed(input_elem)) {
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
-                let property_name: string;
+                let match_array;
                 if ($input_elem.attr("id")!.startsWith("id_authmethod")) {
                     // Authentication Method component IDs include authentication method name
                     // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
@@ -1118,16 +1119,12 @@ export function populate_data_for_realm_settings_request(
                     // The [\da-z]+ part of the regexp covers the auth method name itself.
                     // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
                     // this is ensured by a respective allowlist-based filter in populate_auth_methods().
-                    const match_array = /^id_authmethod[\da-z]+_(.*)$/.exec(
-                        $input_elem.attr("id")!,
-                    );
-                    assert(match_array !== null);
-                    property_name = match_array[1]!;
+                    match_array = /^id_authmethod[\da-z]+_(.*)$/.exec($input_elem.attr("id")!);
                 } else {
-                    const match_array = /^id_realm_(.*)$/.exec($input_elem.attr("id")!);
-                    assert(match_array !== null);
-                    property_name = match_array[1]!;
+                    match_array = /^id_realm_(.*)$/.exec($input_elem.attr("id")!);
                 }
+                assert(match_array !== null);
+                const property_name = match_array[1]!;
 
                 if (property_name === "org_join_restrictions") {
                     assert(typeof input_value === "string");

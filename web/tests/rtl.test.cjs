@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const rtl = zrequire("rtl");
 
@@ -23,8 +23,8 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction("۱۲۳"), "ltr");
     assert.equal(rtl.get_direction("1234"), "ltr");
 
-    const supp_plane_ltr_char = "\uD800\uDFA0";
-    const supp_plane_rtl_char = "\uD802\uDC40";
+    const supp_plane_ltr_char = "\u{103A0}";
+    const supp_plane_rtl_char = "\u{10840}";
 
     assert.equal(rtl.get_direction(supp_plane_ltr_char), "ltr");
     assert.equal(rtl.get_direction(supp_plane_rtl_char), "rtl");
@@ -41,8 +41,8 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction("b" + supp_plane_ltr_char + "." + supp_plane_rtl_char), "ltr");
     assert.equal(rtl.get_direction("b" + supp_plane_rtl_char + "." + supp_plane_ltr_char), "ltr");
 
-    const unmatched_surrogate_1 = "\uD800";
-    const unmatched_surrogate_2 = "\uDF00";
+    const unmatched_surrogate_1 = "\u{D800}";
+    const unmatched_surrogate_2 = "\u{DF00}";
 
     assert.equal(rtl.get_direction(unmatched_surrogate_1 + " "), "ltr");
     assert.equal(rtl.get_direction(unmatched_surrogate_2 + " "), "ltr");
@@ -60,8 +60,8 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction(supp_plane_rtl_char + unmatched_surrogate_2), "rtl");
 
     // Testing with some isolate initiators and PDIs.
-    const i_chars = "\u2066\u2067\u2068";
-    const pdi = "\u2069";
+    const i_chars = "\u{2066}\u{2067}\u{2068}";
+    const pdi = "\u{2069}";
 
     assert.equal(rtl.get_direction("aa" + i_chars.charAt(0) + "bb" + pdi + "cc"), "ltr");
     assert.equal(rtl.get_direction("دد" + i_chars.charAt(0) + "bb" + pdi + "cc"), "rtl");

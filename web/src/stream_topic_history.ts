@@ -112,7 +112,7 @@ export class PerStreamHistory {
     }
 
     has_resolved_topics(): boolean {
-        return [...this.topics.keys()].some((topic) => resolved_topics.is_resolved(topic));
+        return this.topics.keys().some((topic) => resolved_topics.is_resolved(topic));
     }
 
     has_topics(): boolean {
@@ -226,7 +226,7 @@ export class PerStreamHistory {
         // of topics the client knows about.
         //
         // This data source is this module's own data structures.
-        const my_recents = [...this.topics.values()];
+        const my_recents = this.topics.values().toArray();
         // This data source is older topics that we know exist because
         // we have unread messages in the topic, even if we don't have
         // any messages from the topic in our local cache.
@@ -238,7 +238,7 @@ export class PerStreamHistory {
         // This data source is locally echoed messages, which should
         // are treated as newer than all delivered messages.
         const local_echo_topics = [
-            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id).entries(),
+            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id),
         ].map(([topic, local_id]) => ({pretty_name: topic, message_id: local_id}));
         const local_echo_set = new Set<string>(
             local_echo_topics.map((message_topic) => message_topic.pretty_name.toLowerCase()),
@@ -256,10 +256,13 @@ export class PerStreamHistory {
     get_max_message_id(): number {
         // TODO: We probably want to migrate towards this function
         // ignoring locally echoed messages, and thus returning an integer.
-        const unacked_message_ids_in_stream = [
-            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id).values(),
-        ];
-        const max_message_id = Math.max(...unacked_message_ids_in_stream, this.max_message_id);
+        const unacked_message_ids_in_stream = echo_state.get_waiting_for_ack_local_ids_by_topic(
+            this.stream_id,
+        );
+        const max_message_id = Math.max(
+            ...unacked_message_ids_in_stream.values(),
+            this.max_message_id,
+        );
         return max_message_id;
     }
 }
@@ -430,11 +433,6 @@ export function remove_request_pending_for(stream_id: number): void {
 
 export function remove_history_for_stream(stream_id: number): void {
     // Currently only used when user loses access to a stream.
-    if (stream_dict.has(stream_id)) {
-        stream_dict.delete(stream_id);
-    }
-
-    if (fetched_stream_ids.has(stream_id)) {
-        fetched_stream_ids.delete(stream_id);
-    }
+    stream_dict.delete(stream_id);
+    fetched_stream_ids.delete(stream_id);
 }

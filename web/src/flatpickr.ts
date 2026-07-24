@@ -1,7 +1,7 @@
 import {formatISO} from "date-fns";
 import flatpickr from "flatpickr";
 import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {$t} from "./i18n.ts";
@@ -29,7 +29,7 @@ export function show_flatpickr(
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
-    options.enableTime = options.enableTime ?? ENABLE_TIME_DEFAULT;
+    options.enableTime ??= ENABLE_TIME_DEFAULT;
     if (hide_confirm_button && options.enableTime) {
         throw new Error(
             "`hide_confirm_button` is only supported for date-only flatpickr (set `enableTime` to false).",
@@ -143,35 +143,34 @@ export function show_flatpickr(
             return true;
         }
 
-        if (e.key === "Backspace" || e.key === "Delete") {
-            // Let backspace or delete be handled normally
-            return true;
-        }
-
-        if (e.key === "Enter") {
-            if (e.target.classList[0] === "flatpickr-day") {
-                // use flatpickr's built-in behavior to choose the selected day.
+        switch (e.key) {
+            case "Backspace":
+            case "Delete":
+                // Let backspace or delete be handled normally
                 return true;
-            }
-            if (!hide_confirm_button) {
-                $container.find(".flatpickr-confirm").trigger("click");
-            }
-        }
-
-        if (e.key === "Escape") {
-            flatpickr_instance?.close();
-            flatpickr_instance?.destroy();
-        }
-
-        if (e.key === "Tab") {
-            // Use flatpickr's built-in navigation between elements.
-            return true;
-        }
-
-        if (["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(e.key)) {
-            // use flatpickr's built-in navigation of the date grid.
-            e.stopPropagation();
-            return true;
+            case "Enter":
+                if (e.target.classList[0] === "flatpickr-day") {
+                    // use flatpickr's built-in behavior to choose the selected day.
+                    return true;
+                }
+                if (!hide_confirm_button) {
+                    $container.find(".flatpickr-confirm").trigger("click");
+                }
+                break;
+            case "Escape":
+                flatpickr_instance?.close();
+                flatpickr_instance?.destroy();
+                break;
+            case "Tab":
+                // Use flatpickr's built-in navigation between elements.
+                return true;
+            case "ArrowLeft":
+            case "ArrowUp":
+            case "ArrowRight":
+            case "ArrowDown":
+                // use flatpickr's built-in navigation of the date grid.
+                e.stopPropagation();
+                return true;
         }
 
         e.stopPropagation();

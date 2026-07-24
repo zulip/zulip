@@ -36,12 +36,11 @@ export function toggle_starred_and_update_server(message: Message): void {
     if (message.starred) {
         message_flags.send_flag_update_for_messages([message.id], "starred", "add");
         starred_messages.add([message.id]);
-        rerender_ui();
     } else {
         message_flags.send_flag_update_for_messages([message.id], "starred", "remove");
         starred_messages.remove([message.id]);
-        rerender_ui();
     }
+    rerender_ui();
 }
 
 // This updates the state of the starred flag in local data

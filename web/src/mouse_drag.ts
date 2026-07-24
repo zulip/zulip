@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 let start_x = 0;
 let start_y = 0;

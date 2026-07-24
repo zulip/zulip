@@ -1,7 +1,7 @@
 // Because this logic is heavily focused around managing browser quirks,
 // this module is currently tested manually and via
 // by web/e2e-tests/copy_messages.test.ts, not with node tests.
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_copied_recipient_header from "../templates/copied_recipient_header.hbs";
@@ -39,7 +39,8 @@ function find_boundary_tr(
     }
     if (j === 10) {
         return undefined;
-    } else if (j !== 0) {
+    }
+    if (j !== 0) {
         // If we updated tr, then we are not dealing with a selection
         // that is entirely within one td, and we can skip the same td
         // check (In fact, we need to because it won't work correctly
@@ -391,7 +392,8 @@ function improve_time_selection_range(range: Range): void {
     // Chrome strips <time> and .timestamp-content-wrapper from the
     // paste HTML, so wrap the date text in a <span data-datetime> that
     // the paste handler can read.
-    for (const time of new Set([start_time, end_time])) {
+    const times = new Set([start_time, end_time]);
+    for (const time of times) {
         if (!time) {
             continue;
         }
@@ -603,26 +605,20 @@ export function analyze_selection(selection: Selection): {
     // full content.
 
     let i;
-    let range;
     const ranges = [];
-    let $startc;
-    let $endc;
-    let $initial_end_tr;
     let start_id;
     let end_id;
-    let start_data;
-    let end_data;
     // skip_same_td_check is true whenever we know for a fact that the
     // selection covers multiple messages (and thus we should no
     // longer consider letting the browser handle the copy event).
     let skip_same_td_check = false;
 
     for (i = 0; i < selection.rangeCount; i += 1) {
-        range = selection.getRangeAt(i);
+        const range = selection.getRangeAt(i);
         ranges.push(range);
 
-        $startc = $(range.startContainer);
-        start_data = find_boundary_tr(
+        const $startc = $(range.startContainer);
+        const start_data = find_boundary_tr(
             $startc
                 .parents(".selectable_row, .message_header")
                 .not(".overlay-message-header")
@@ -637,9 +633,9 @@ export function analyze_selection(selection: Selection): {
         // touched by the selection.
         start_id ??= start_data[0];
 
-        $endc = $(range.endContainer);
-        $initial_end_tr = get_end_tr_from_endc($endc);
-        end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
+        const $endc = $(range.endContainer);
+        const $initial_end_tr = get_end_tr_from_endc($endc);
+        const end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
 
         if (end_data === undefined) {
             // Skip any selection sections that don't intersect a message.

@@ -1,6 +1,6 @@
 import ClipboardJS from "clipboard";
 import {isValid, parseISO} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -68,7 +68,7 @@ function get_user_group_id_for_mention_button(elem: HTMLElement): number {
 }
 
 // We pass a minimal mock stream object in info_overlay for rendering stream links.
-type StreamInfo = {stream_id: number; name: string} | sub_store.StreamSubscription;
+type StreamInfo = sub_store.StreamSubscription | {stream_id: number; name: string};
 
 export function update_stream_link_element($elem: JQuery, stream_info: StreamInfo): void {
     $elem.html(render_decorated_channel_name({stream: stream_info, inline_with_text: true}));

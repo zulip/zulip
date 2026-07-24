@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as z from "zod/mini";
 
 import * as loading from "../loading.ts";
@@ -123,7 +123,7 @@ export async function check_status(): Promise<boolean> {
 }
 
 async function start_status_polling(): Promise<void> {
-    let completed = false;
+    let completed;
     try {
         completed = await check_status();
     } catch {

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
@@ -152,7 +152,8 @@ export function alphabetic_sort<Prop extends string>(
 
         if (str1 === str2) {
             return 0;
-        } else if (str1 > str2) {
+        }
+        if (str1 > str2) {
             return 1;
         }
 
@@ -169,7 +170,8 @@ export function numeric_sort<Prop extends string>(
 
         if (a_prop > b_prop) {
             return 1;
-        } else if (a_prop === b_prop) {
+        }
+        if (a_prop === b_prop) {
             return 0;
         }
 

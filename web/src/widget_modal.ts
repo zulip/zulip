@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import SortableJS from "sortablejs";
 
 import render_poll_modal_option from "../templates/poll_modal_option.hbs";
@@ -84,10 +84,8 @@ export function todo_list_tasks_setup(): void {
 export function frame_poll_message_content(): string {
     const question = $<HTMLInputElement>("input#poll-question-input").val()!.trim();
     const options = $<HTMLInputElement>("input.poll-option-input")
-        .map(function () {
-            return $(this).val()!.trim();
-        })
-        .toArray()
+        .get()
+        .map((element) => $(element).val()!.trim())
         .filter(Boolean);
     return "/poll " + question + "\n" + options.join("\n");
 }

@@ -78,21 +78,23 @@ const fetch_user_subscriptions_response_schema = z.object({
 // delay each time) if the server keeps returning non-400 errors.
 export async function fetch_stream_subscribers_with_retry(
     stream_id: number,
-    num_attempts = 1,
 ): Promise<LazySet | null> {
-    const subscribers = await fetch_stream_subscribers(stream_id);
-    // Bad request, so just give up here.
-    if (subscribers === false) {
-        return null;
+    let num_attempts = 1;
+    while (true) {
+        const subscribers = await fetch_stream_subscribers(stream_id);
+        // Bad request, so just give up here.
+        if (subscribers === false) {
+            return null;
+        }
+        // Failed request, retry.
+        if (subscribers === null) {
+            num_attempts += 1;
+            const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
+            await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
+            continue;
+        }
+        return subscribers;
     }
-    // Failed request, retry.
-    if (subscribers === null) {
-        num_attempts += 1;
-        const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
-        await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
-        return fetch_stream_subscribers_with_retry(stream_id, num_attempts);
-    }
-    return subscribers;
 }
 
 // This function either waits for an existing pending request or kicks off
@@ -205,7 +207,7 @@ async function get_full_subscriber_set(
         if (fetched_subscribers === null || fetched_subscribers === false) {
             return null;
         }
-        set_subscribers(stream_id, [...fetched_subscribers.keys()]);
+        set_subscribers(stream_id, fetched_subscribers.keys().toArray());
     }
     return get_loaded_subscriber_subset(stream_id);
 }
@@ -223,7 +225,7 @@ export async function is_subscriber_subset(
         return null;
     }
 
-    return [...sub1_set.keys()].every((key) => {
+    return sub1_set.keys().every((key) => {
         // If the user is in the linked stream, the check passes.
         if (sub2_set.has(key)) {
             return true;
@@ -365,7 +367,7 @@ export function get_subscriber_ids_assert_loaded(stream_id: number): number[] {
     // want an array of user_ids who are subscribed to a stream.
     const subscribers = get_loaded_subscriber_subset(stream_id);
 
-    return [...subscribers.keys()];
+    return subscribers.keys().toArray();
 }
 
 export async function get_subscribers_with_possible_fetch(
@@ -380,7 +382,7 @@ export async function get_subscribers_with_possible_fetch(
     if (subscribers === null) {
         return null;
     }
-    return [...subscribers.keys()];
+    return subscribers.keys().toArray();
 }
 
 export function set_subscribers(stream_id: number, user_ids: number[], full_data = true): void {
@@ -583,11 +585,10 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
                 break;
             }
             // Failed request, so try again (unless we've reached the retry limit)
-            else if (result === null) {
+            if (result === null) {
                 num_attempts += 1;
                 const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
                 await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
-                continue;
             }
             // Success
             else {

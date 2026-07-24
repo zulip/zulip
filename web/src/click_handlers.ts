@@ -1,6 +1,6 @@
 // You won't find every click handler here, but it's a good place to start!
 
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
@@ -227,7 +227,7 @@ export function initialize(): void {
                 // This might happen for locally echoed messages, for example.
                 return;
             }
-            window.location.href = hash_util.by_conversation_and_time_url(message);
+            window.location.assign(hash_util.by_conversation_and_time_url(message));
             return;
         }
 
@@ -308,7 +308,7 @@ export function initialize(): void {
             browser_history.go_to_location(hash_util.channel_url_by_user_setting(stream_id));
             return;
         }
-        window.location.href = this.href;
+        window.location.assign(this.href);
     });
 
     $("body").on("click", ".not-subscribed-banner .load-newer-messages-button", (e) => {
@@ -913,7 +913,7 @@ export function initialize(): void {
         // ...less the width of the two scroller buttons.
         const button_adjusted_scroll_shift =
             button_bar_scroll_percentage * (button_container_width - 2 * scroller_button_width_px);
-        let new_scroll_position = 0;
+        let new_scroll_position;
 
         assert(typeof button_bar_scroll_left === "number");
 
@@ -1107,7 +1107,8 @@ export function initialize(): void {
                 // into compose and modify it.
                 $("textarea#compose-textarea").trigger("focus");
                 return;
-            } else if (
+            }
+            if (
                 !window.getSelection()?.toString() &&
                 // Clicking any input or text area should not close
                 // the compose box; this means using the sidebar

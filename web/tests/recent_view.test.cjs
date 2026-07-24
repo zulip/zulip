@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const {initialize_user_settings} = zrequire("user_settings");
@@ -132,9 +132,11 @@ mock_esm("../src/user_topics", {
     get_topic_visibility_policy(stream_id, topic) {
         if (stream_id === stream1 && topic === topic7) {
             return all_visibility_policies.MUTED;
-        } else if (stream_id === stream6 && topic === topic11) {
+        }
+        if (stream_id === stream6 && topic === topic11) {
             return all_visibility_policies.UNMUTED;
-        } else if (stream_id === stream6 && topic === topic12) {
+        }
+        if (stream_id === stream6 && topic === topic12) {
             return all_visibility_policies.FOLLOWED;
         }
         return all_visibility_policies.INHERIT;
@@ -788,7 +790,7 @@ test("test_filter_participated", ({mock_template}) => {
 
     mock_template("recent_view_row.hbs", false, (data) => {
         // All the row will be processed.
-        if (row_data[i]) {
+        if (row_data[i] !== undefined) {
             assert.deepEqual(data, row_data[i]);
             i += 1;
         }
@@ -951,11 +953,19 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     rt.process_messages([messages[9]]);
     // Check for expected lengths.
     // total 8 topics, 1 muted
-    assert.equal(all_topics.size, 11);
-    assert.equal(
-        [...all_topics.keys()].toString(),
-        "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
-    );
+    assert.deepEqual(all_topics.keys().toArray(), [
+        "6:topic-12",
+        "6:topic-11",
+        "6:topic-8",
+        "4:topic-10",
+        "1:topic-7",
+        "1:topic-6",
+        "1:topic-5",
+        "1:topic-4",
+        "1:topic-3",
+        "1:topic-2",
+        "1:topic-1",
+    ]);
 
     // Process direct message
     rt_data.process_message({
@@ -963,11 +973,20 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         to_user_ids: "6,7,8",
     });
     all_topics = rt_data.get_conversations();
-    assert.equal(all_topics.size, 12);
-    assert.equal(
-        [...all_topics.keys()].toString(),
-        "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1,6,7,8",
-    );
+    assert.deepEqual(all_topics.keys().toArray(), [
+        "6:topic-12",
+        "6:topic-11",
+        "6:topic-8",
+        "4:topic-10",
+        "1:topic-7",
+        "1:topic-6",
+        "1:topic-5",
+        "1:topic-4",
+        "1:topic-3",
+        "1:topic-2",
+        "1:topic-1",
+        "6,7,8",
+    ]);
 
     // participated
     verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
@@ -988,10 +1007,20 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     });
 
     all_topics = rt_data.get_conversations();
-    assert.equal(
-        [...all_topics.keys()].toString(),
-        "1:topic-3,6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
-    );
+    assert.deepEqual(all_topics.keys().toArray(), [
+        "1:topic-3",
+        "6:topic-12",
+        "6:topic-11",
+        "6:topic-8",
+        "4:topic-10",
+        "1:topic-7",
+        "1:topic-6",
+        "1:topic-5",
+        "1:topic-4",
+        "1:topic-2",
+        "1:topic-1",
+        "6,7,8",
+    ]);
     verify_topic_data(all_topics, stream1, topic3, id, true);
 
     // Send new message to topic7 (muted)
@@ -1005,10 +1034,20 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     });
 
     all_topics = rt_data.get_conversations();
-    assert.equal(
-        [...all_topics.keys()].toString(),
-        "1:topic-7,1:topic-3,6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
-    );
+    assert.deepEqual(all_topics.keys().toArray(), [
+        "1:topic-7",
+        "1:topic-3",
+        "6:topic-12",
+        "6:topic-11",
+        "6:topic-8",
+        "4:topic-10",
+        "1:topic-6",
+        "1:topic-5",
+        "1:topic-4",
+        "1:topic-2",
+        "1:topic-1",
+        "6,7,8",
+    ]);
 
     // update_topic_visibility_policy now relies on external libraries completely
     // so we don't need to check anythere here.
@@ -1082,17 +1121,34 @@ test("test_delete_messages", ({override}) => {
     override(recent_view_messages_data, "all_messages_after_mute_filtering", () => reduced_msgs);
 
     let all_topics = rt_data.get_conversations();
-    assert.equal(
-        [...all_topics.keys()].toString(),
-        "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
-    );
+    assert.deepEqual(all_topics.keys().toArray(), [
+        "6:topic-12",
+        "6:topic-11",
+        "6:topic-8",
+        "4:topic-10",
+        "1:topic-7",
+        "1:topic-6",
+        "1:topic-5",
+        "1:topic-4",
+        "1:topic-3",
+        "1:topic-2",
+        "1:topic-1",
+    ]);
     rt.update_topics_of_deleted_message_ids([messages[0].id]);
 
     all_topics = rt_data.get_conversations();
-    assert.equal(
-        [...all_topics.keys()].toString(),
-        "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2",
-    );
+    assert.deepEqual(all_topics.keys().toArray(), [
+        "6:topic-12",
+        "6:topic-11",
+        "6:topic-8",
+        "4:topic-10",
+        "1:topic-7",
+        "1:topic-6",
+        "1:topic-5",
+        "1:topic-4",
+        "1:topic-3",
+        "1:topic-2",
+    ]);
 
     // messages[0], messages[1] and message[2] were removed.
     reduced_msgs = messages.slice(3);
@@ -1100,10 +1156,17 @@ test("test_delete_messages", ({override}) => {
     rt.update_topics_of_deleted_message_ids([messages[1].id, messages[2].id]);
 
     all_topics = rt_data.get_conversations();
-    assert.equal(
-        [...all_topics.keys()].toString(),
-        "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3",
-    );
+    assert.deepEqual(all_topics.keys().toArray(), [
+        "6:topic-12",
+        "6:topic-11",
+        "6:topic-8",
+        "4:topic-10",
+        "1:topic-7",
+        "1:topic-6",
+        "1:topic-5",
+        "1:topic-4",
+        "1:topic-3",
+    ]);
     // test deleting a message which is not locally
     // stored, doesn't raise any errors.
     rt.update_topics_of_deleted_message_ids([-1]);
@@ -1119,10 +1182,19 @@ test("test_topic_edit", ({override}) => {
     rt.process_messages(messages);
 
     let all_topics = rt_data.get_conversations();
-    assert.equal(
-        [...all_topics.keys()].toString(),
-        "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
-    );
+    assert.deepEqual(all_topics.keys().toArray(), [
+        "6:topic-12",
+        "6:topic-11",
+        "6:topic-8",
+        "4:topic-10",
+        "1:topic-7",
+        "1:topic-6",
+        "1:topic-5",
+        "1:topic-4",
+        "1:topic-3",
+        "1:topic-2",
+        "1:topic-1",
+    ]);
 
     // ---------------- test change topic ----------------
     verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);

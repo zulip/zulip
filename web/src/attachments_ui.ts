@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import type * as z from "zod/mini";
 
 import render_confirm_delete_attachment from "../templates/confirm_dialog/confirm_delete_attachment.hbs";
@@ -144,7 +144,8 @@ function sort_mentioned_in(a: Attachment, b: Attachment): number {
 
     if (a_id > b_id) {
         return 1;
-    } else if (a_id === b_id) {
+    }
+    if (a_id === b_id) {
         return 0;
     }
 
@@ -267,7 +268,7 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
 
     function do_delete_attachments(): void {
         dialog_widget.show_dialog_spinner();
-        for (const [id, attachment] of attachments_map.entries()) {
+        for (const [id, attachment] of attachments_map) {
             void channel.del({
                 url: "/json/attachments/" + attachment.id,
                 success() {

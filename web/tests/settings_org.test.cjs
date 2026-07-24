@@ -6,7 +6,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const realm_icon = mock_esm("../src/realm_icon");
 
@@ -128,17 +128,14 @@ function test_submit_settings_form(override, submit_form) {
 
     let subsection = "other-permissions";
     let stubs = createSaveButtons(subsection);
-    let $save_button = stubs.$save_button;
     let $save_button_header = stubs.$save_button_header;
     $save_button_header.attr("id", `org-${subsection}`);
 
     $("#id_realm_waiting_period_threshold").val(10);
 
-    let $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-
     subsection = "user-defaults";
     stubs = createSaveButtons(subsection);
-    $save_button = stubs.$save_button;
+    const $save_button = stubs.$save_button;
     $save_button_header = stubs.$save_button_header;
     $save_button_header.attr("id", `org-${subsection}`);
 
@@ -146,7 +143,7 @@ function test_submit_settings_form(override, submit_form) {
     $realm_topics_policy_elem.val("disable_empty_topic");
     $realm_topics_policy_elem.attr("id", "id_realm_topics_policy");
 
-    $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
+    const $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     $subsection_elem.set_find_results(".prop-element", [$realm_topics_policy_elem]);
 
     submit_form.call({to_$: () => $(".save-button")}, ev);

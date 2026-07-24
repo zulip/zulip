@@ -7,7 +7,7 @@ import {defineConfig} from "eslint/config";
 import prettier from "eslint-config-prettier";
 import {configs as astroConfigs} from "eslint-plugin-astro";
 import formatjs from "eslint-plugin-formatjs";
-import importPlugin from "eslint-plugin-import";
+import * as importX from "eslint-plugin-import-x";
 import * as mdx from "eslint-plugin-mdx";
 import noJquery from "eslint-plugin-no-jquery";
 import promise from "eslint-plugin-promise";
@@ -23,18 +23,30 @@ export default defineConfig(
         // For our source code, instead of adding files here, consider using
         // specific eslint-disable comments in the files themselves.
         ignores: [
+            "**/.astro",
+            "**/.pnpm-store",
+            "**/.venv",
+            "**/dist",
             "docs/_build",
-            "static/generated",
+            "static/generated/*",
+            "!static/generated/README.md",
             "static/webpack-bundles",
             "var",
-            "web/generated",
+            "web/generated/*",
+            "!web/generated/README.md",
             "web/third",
+            "webpack-stats-production.json",
         ],
     },
     js.configs.recommended,
-    importPlugin.flatConfigs.recommended,
-    compat.config(noJquery.configs.recommended),
-    compat.config(noJquery.configs.deprecated),
+    importX.flatConfigs.recommended,
+    {
+        files: ["**/*.{,[cm]}[jt]s{,x}"],
+        extends: [
+            ...compat.config(noJquery.configs.recommended),
+            ...compat.config(noJquery.configs.deprecated),
+        ],
+    },
     unicorn.configs.recommended,
     promise.configs["flat/recommended"],
     prettier,
@@ -42,8 +54,14 @@ export default defineConfig(
     tseslint.configs.stylisticTypeChecked,
     mdx.flat,
     {
-        files: ["**/*.cts", "**/*.mts", "**/*.ts"],
-        extends: [importPlugin.flatConfigs.typescript],
+        files: ["**/*.{,[cm]}ts{,x}"],
+        extends: [importX.flatConfigs.typescript],
+        rules: {
+            "unicorn/require-array-sort-compare": "off",
+            "@typescript-eslint/require-array-sort-compare": "error",
+            "unicorn/no-useless-template-literals": "off",
+            "@typescript-eslint/no-unnecessary-template-expression": "error",
+        },
     },
     {
         plugins: {
@@ -67,11 +85,6 @@ export default defineConfig(
         settings: {
             formatjs: {
                 additionalFunctionNames: ["$t", "$t_html"],
-            },
-            "import/resolver": {
-                node: {
-                    extensions: [".ts", ".d.ts", ".js"],
-                },
             },
             "no-jquery": {
                 collectionReturningPlugins: {expectOne: "always"},
@@ -118,23 +131,25 @@ export default defineConfig(
             ],
             "formatjs/no-id": "error",
             "guard-for-in": "error",
-            "import/extensions": ["error", "ignorePackages"],
-            "import/first": "error",
-            "import/newline-after-import": "error",
-            "import/no-cycle": ["error", {ignoreExternal: true}],
-            "import/no-duplicates": "error",
-            "import/no-self-import": "error",
-            "import/no-unresolved": "off",
-            "import/no-useless-path-segments": "error",
-            "import/order": ["error", {alphabetize: {order: "asc"}, "newlines-between": "always"}],
-            "import/unambiguous": "error",
+            "import-x/extensions": ["error", "ignorePackages"],
+            "import-x/first": "error",
+            "import-x/newline-after-import": "error",
+            "import-x/no-cycle": ["error", {ignoreExternal: true}],
+            "import-x/no-duplicates": "error",
+            "import-x/no-self-import": "error",
+            "import-x/no-unresolved": "off",
+            "import-x/no-useless-path-segments": "error",
+            "import-x/order": [
+                "error",
+                {alphabetize: {order: "asc"}, "newlines-between": "always"},
+            ],
+            "import-x/unambiguous": "error",
             "lines-around-directive": "error",
             "new-cap": "error",
             "no-alert": "error",
             "no-bitwise": "error",
             "no-caller": "error",
             "no-constant-condition": ["error", {checkLoops: false}],
-            "no-div-regex": "error",
             "no-else-return": "error",
             "no-eval": "error",
             "no-implicit-coercion": "error",
@@ -165,21 +180,41 @@ export default defineConfig(
             "prefer-arrow-callback": "error",
             "prefer-const": ["error", {ignoreReadBeforeAssign: true}],
             "promise/no-promise-in-callback": "off",
-            "promise/prefer-await-to-then": ["error", {stict: true}],
+            "promise/prefer-await-to-then": ["error", {strict: true}],
             radix: "error",
             "sort-imports": ["error", {ignoreDeclarationSort: true}],
             "spaced-comment": ["error", "always", {markers: ["/"]}],
             strict: "error",
+            "unicorn/consistent-boolean-name": "off",
+            "unicorn/consistent-class-member-order": "off",
             "unicorn/consistent-function-scoping": "off",
+            "unicorn/dom-node-dataset": "off",
             "unicorn/filename-case": "off",
+            "unicorn/max-nested-calls": "off",
+            "unicorn/name-replacements": "off",
             "unicorn/no-await-expression-member": "off",
+            "unicorn/no-break-in-nested-loop": "off",
+            "unicorn/no-declarations-before-early-exit": "off",
+            "unicorn/no-duplicate-if-branches": "off",
             "unicorn/no-negated-condition": "off",
             "unicorn/no-null": "off",
             "unicorn/no-process-exit": "off",
+            "unicorn/no-this-outside-of-class": "off",
+            "unicorn/no-top-level-assignment-in-function": "off",
+            "unicorn/no-top-level-side-effects": "off",
             "unicorn/no-useless-undefined": "off",
             "unicorn/numeric-separators-style": "off",
-            "unicorn/prefer-dom-node-dataset": "off",
+            "unicorn/prefer-boolean-return": "off",
+            "unicorn/prefer-continue": "off",
+            "unicorn/prefer-dom-node-html-methods": "off",
+            "unicorn/prefer-early-return": "off",
+            "unicorn/prefer-includes-over-repeated-comparisons": "off",
             "unicorn/prefer-global-this": "off",
+            "unicorn/prefer-https": "off",
+            "unicorn/prefer-minimal-ternary": "off",
+            "unicorn/prefer-number-coercion": "off",
+            "unicorn/prefer-private-class-fields": "off",
+            "unicorn/prefer-simple-condition-first": "off",
             "unicorn/prefer-string-raw": "off",
             "unicorn/prefer-ternary": "off",
             "unicorn/prefer-top-level-await": "off",
@@ -213,15 +248,15 @@ export default defineConfig(
         rules: {
             "@typescript-eslint/no-unused-vars": "off",
             "comma-spacing": "error",
-            "import/extensions": "off",
-            "import/unambiguous": "off",
+            "import-x/extensions": "off",
             quotes: "error",
         },
     },
     {
-        files: ["**/*.md"],
+        files: ["**/*.md", "**/*.mdx"],
         rules: {
-            "import/unambiguous": "off",
+            "import-x/unambiguous": "off",
+            "unicorn/no-empty-file": "off",
         },
     },
     {
@@ -231,12 +266,16 @@ export default defineConfig(
             "@typescript-eslint/no-extraneous-class": "off",
             "no-jquery/no-selector-prop": "off",
             "no-redeclare": "off",
+            "unicorn/no-global-object-property-assignment": "off",
+            "unicorn/no-useless-template-literals": "off",
+            "unicorn/require-array-sort-compare": "off",
         },
     },
     {
         files: ["web/e2e-tests/**"],
         languageOptions: {
             globals: {
+                ...globals.browser,
                 zulip_test: "readonly",
             },
         },
@@ -244,7 +283,7 @@ export default defineConfig(
     {
         files: ["**/*.d.ts"],
         rules: {
-            "import/unambiguous": "off",
+            "import-x/unambiguous": "off",
         },
     },
     {
@@ -254,7 +293,7 @@ export default defineConfig(
         },
     },
     {
-        files: ["web/e2e-tests/**", "web/tests/**"],
+        files: ["web/tests/**"],
         languageOptions: {
             globals: {
                 CSS: "readonly",
@@ -266,6 +305,7 @@ export default defineConfig(
         rules: {
             "formatjs/no-id": "off",
             "new-cap": "off",
+            "unicorn/prefer-https": "off",
         },
     },
     {
@@ -279,7 +319,7 @@ export default defineConfig(
     {
         files: ["web/src/**"],
         settings: {
-            "import/resolver": {
+            "import-x/resolver": {
                 webpack: {
                     config: {},
                 },
@@ -316,7 +356,7 @@ export default defineConfig(
     {
         files: ["starlight_help/src/components/ZulipNote.astro"],
         rules: {
-            "import/unambiguous": "off",
+            "import-x/unambiguous": "off",
         },
     },
     {
@@ -325,7 +365,7 @@ export default defineConfig(
             // We need to turn off this rule since we want import statements
             // to be easily copy-paste-able between content/include and
             // content/docs.
-            "import/no-useless-path-segments": "off",
+            "import-x/no-useless-path-segments": "off",
         },
     },
 );

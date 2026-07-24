@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -312,7 +312,7 @@ export function initialize(): void {
                 onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
                 return;
             }
-            window.location.href = "/#settings/notifications";
+            window.location.assign("/#settings/notifications");
         },
     );
 

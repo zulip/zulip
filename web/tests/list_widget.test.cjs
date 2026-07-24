@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, mock_jquery, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects
@@ -26,8 +26,8 @@ mock_jquery((arg) => {
         addClass() {
             return this;
         },
-        replace(regex, string) {
-            arg = arg.replace(regex, string);
+        _replace(regex, string) {
+            arg = arg.replace(regex, () => string);
         },
         html: () => arg,
     };
@@ -836,7 +836,7 @@ run_test("render item", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
-    let called = false;
+    let called;
     $scroll_container.find = (element) => {
         const query = element.selector;
         const expected_queries = [
@@ -860,13 +860,13 @@ run_test("render item", () => {
             replaceWith($element) {
                 assert.equal(new_html, $element.html());
                 called = true;
-                $container.$appended_data.replace(regex, new_html);
+                $container.$appended_data._replace(regex, new_html);
             },
             length: 1,
         };
     };
 
-    const list = [...Array.from({length: 100}).keys()];
+    const list = Array.from({length: 100}).keys().toArray();
 
     let text = "initial";
     const get_item = (item) => ({text: `${text}: ${item}`, value: item});

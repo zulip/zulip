@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 export function collapse_or_expand({
     toggle_class,

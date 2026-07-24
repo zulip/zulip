@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as tippy from "tippy.js";
 
 import * as channel_folders from "./channel_folders.ts";
@@ -80,7 +80,8 @@ export function get_tooltip_text_for_folder_filter(folder_filter_value: number):
     const folder_filters = FOLDER_FILTERS;
     if (folder_filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
         return $t({defaultMessage: "Filter by folder"});
-    } else if (folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+    }
+    if (folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
         return $t({defaultMessage: "Viewing uncategorized channels"});
     }
     const folder = channel_folders.get_channel_folder_by_id(folder_filter_value);

@@ -1,7 +1,7 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import PlotlyBar from "plotly.js/lib/bar";
-import Plotly from "plotly.js/lib/core";
+import Plotly from "plotly.js/lib/core"; // eslint-disable-line import-x/default
 import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
@@ -122,7 +122,7 @@ const font_12pt = {
     color: "#000000",
 };
 
-let last_full_update = Number.POSITIVE_INFINITY;
+let last_full_update = Infinity;
 
 function handle_parse_server_stats_result<T>(
     result: z.core.util.SafeParseResult<T>,
@@ -513,10 +513,7 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
     }
 
     // Generate traces
-    let date_formatter = function (date: Date): string {
-        return format_date(date, true);
-    };
-    let values = {me: data.user.human, human: data.everyone.human, bot: data.everyone.bot};
+    let date_formatter: (date: Date) => string;
 
     let info = aggregate_data(data, "day");
     date_formatter = function (date) {
@@ -534,7 +531,7 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
     const dates = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
-    values = {
+    const values = {
         human: partial_sums(data.everyone.human),
         bot: partial_sums(data.everyone.bot),
         me: partial_sums(data.user.human),
@@ -739,10 +736,7 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
         });
     }
     label_values.sort((a, b) => b.value - a.value);
-    const labels: string[] = [];
-    for (const item of label_values) {
-        labels.push(item.label);
-    }
+    const labels = Array.from(label_values, (item) => item.label);
 
     function make_plot_data(
         time_series_data: Record<string, number[]>,
@@ -762,7 +756,7 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
                 annotations.values.push(plot_data.values[i]!);
                 annotations.labels.push(plot_data.labels[i]!);
                 annotations.text.push(
-                    "   " + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")",
+                    " ".repeat(3) + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")",
                 );
             }
         }
@@ -1272,10 +1266,7 @@ function populate_messages_read_over_time(raw_data: unknown): void {
     }
 
     // Generate traces
-    let date_formatter = function (date: Date): string {
-        return format_date(date, true);
-    };
-    let values = {me: data.user.read, everyone: data.everyone.read};
+    let date_formatter: (date: Date) => string;
 
     let info = aggregate_data(data, "day");
     date_formatter = function (date) {
@@ -1292,7 +1283,7 @@ function populate_messages_read_over_time(raw_data: unknown): void {
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
     const dates = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
-    values = {everyone: partial_sums(data.everyone.read), me: partial_sums(data.user.read)};
+    const values = {everyone: partial_sums(data.everyone.read), me: partial_sums(data.user.read)};
     date_formatter = function (date) {
         return format_date(date, true);
     };

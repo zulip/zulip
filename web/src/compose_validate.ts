@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import type {ReferenceElement} from "tippy.js";
 
@@ -69,7 +69,7 @@ export const get_topics_required_error_tooltip_message_html = (): string => {
 };
 export const get_message_too_long_for_compose_error = (): string =>
     $t(
-        {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
+        {defaultMessage: "Message length shouldn't be greater than {max_length} characters."},
         {max_length: realm.max_message_length},
     );
 export const NO_MESSAGE_CONTENT_ERROR_MESSAGE = $t({defaultMessage: "Compose a message."});
@@ -1226,7 +1226,8 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         }
         is_validating_compose_box = false;
         return false;
-    } else if ($("textarea#compose-textarea").hasClass("invalid")) {
+    }
+    if ($("textarea#compose-textarea").hasClass("invalid")) {
         // Hide the invalid indicator now that it's non-empty.
         $("textarea#compose-textarea").toggleClass("invalid", false);
     }

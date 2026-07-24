@@ -34,7 +34,7 @@ function make_zblueslip() {
     lib.expect = (name, message, expected_count = 1) => {
         assert.notEqual(opts[name], undefined, `unexpected arg for expect: ${name}`);
         assert.ok(
-            expected_count > 0 && Number.isInteger(expected_count),
+            expected_count > 0 && Number.isSafeInteger(expected_count),
             "expected count should be a positive integer",
         );
         const obj = {message, count: 0, expected_count};
@@ -43,21 +43,23 @@ function make_zblueslip() {
 
     const check_seen_messages = () => {
         for (const name of names) {
-            for (const obj of lib.test_logs[name]) {
+            const logs = lib.test_logs[name];
+            const data = lib.test_data[name];
+            for (const obj of logs) {
                 const message = obj.message;
-                const i = lib.test_data[name].findIndex((x) => x.message === message);
+                const i = data.findIndex((x) => x.message === message);
                 if (i === -1) {
                     // Only throw this for message types we want to explicitly track.
                     // For example, we do not want to throw here for debug messages.
-                    if (opts[name]) {
+                    if (opts[name] ?? false) {
                         throw new Error(`Unexpected '${name}' message: ${message}`);
                     }
                     continue;
                 }
-                lib.test_data[name][i].count += 1;
+                data[i].count += 1;
             }
 
-            for (const obj of lib.test_data[name]) {
+            for (const obj of data) {
                 const message = obj.message;
                 assert.equal(
                     obj.count,
@@ -83,7 +85,7 @@ function make_zblueslip() {
 
     // Create logging functions
     for (const name of names) {
-        if (!opts[name]) {
+        if (!(opts[name] ?? false)) {
             // should just log the message.
             lib[name] = function (message, more_info, cause) {
                 lib.test_logs[name].push({message, more_info, cause});
@@ -102,15 +104,14 @@ function make_zblueslip() {
                 }
             }
             lib.test_logs[name].push({message, more_info, cause});
-            const matched_error_message = lib.test_data[name].find((x) => x.message === message);
+            const matched_error_message = lib.test_data[name].some((x) => x.message === message);
             const exact_match_fail = !matched_error_message;
             if (exact_match_fail) {
-                const error = new Error(`Invalid ${name} message: "${message}".`);
+                const error = new Error(
+                    `Invalid ${name} message: "${message}".`,
+                    cause === undefined ? {} : {cause},
+                );
                 error.blueslip = true;
-                /* istanbul ignore if */
-                if (cause !== undefined) {
-                    error.cause = cause;
-                }
                 throw error;
             }
         };

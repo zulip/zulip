@@ -31,11 +31,9 @@ export function lower_bound<T1, T2>(
     const last = array.length;
 
     let len = last - first;
-    let middle;
-    let step;
     while (len > 0) {
-        step = Math.floor(len / 2);
-        middle = first + step;
+        const step = Math.floor(len / 2);
+        const middle = first + step;
         if (less(array[middle]!, value, middle)) {
             first = middle;
             first += 1;
@@ -75,8 +73,7 @@ export function extract_pm_recipients(recipients: string): string[] {
 // When the type is "private", properties from to_user_ids might be undefined.
 // See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
 export type Recipient =
-    | {type: "private"; to_user_ids?: string | undefined}
-    | ({type: "stream"} & StreamTopic);
+    {type: "private"; to_user_ids?: string | undefined} | ({type: "stream"} & StreamTopic);
 
 export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {
     if (a === undefined || b === undefined) {
@@ -88,7 +85,8 @@ export const same_recipient = function util_same_recipient(a?: Recipient, b?: Re
             return false;
         }
         return a.to_user_ids === b.to_user_ids;
-    } else if (a.type === "stream" && b.type === "stream") {
+    }
+    if (a.type === "stream" && b.type === "stream") {
         return same_stream_and_topic(a, b);
     }
 
@@ -484,7 +482,7 @@ export function check_time_input(input_value: string, keep_number_as_float = fal
     // Number.parseInt and Number.parseFloat will convert strings like
     // "24a" to 24.
     if (Number.isNaN(Number(input_value))) {
-        return Number.NaN;
+        return NaN;
     }
 
     if (keep_number_as_float) {
@@ -523,7 +521,8 @@ export function the<T>(items: T[] | JQuery<T>): T {
 export function compare_a_b<T>(a: T, b: T): number {
     if (a > b) {
         return 1;
-    } else if (a === b) {
+    }
+    if (a === b) {
         return 0;
     }
     return -1;

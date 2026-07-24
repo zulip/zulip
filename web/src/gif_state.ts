@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as blueslip from "./blueslip.ts";
 import {realm} from "./state_data.ts";

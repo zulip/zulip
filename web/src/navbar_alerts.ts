@@ -1,5 +1,5 @@
 import {addDays, differenceInCalendarDays} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_navbar_banners_testing_popover from "../templates/popovers/navbar_banners_testing_popover.hbs";
@@ -114,7 +114,7 @@ export function maybe_toggle_empty_required_profile_fields_banner(): void {
             ...f,
             value: people.my_custom_profile_data(f.id)?.value,
         }))
-        .find((f) => f.required && !f.value);
+        .some((f) => f.required && !f.value);
     if (empty_required_profile_fields_exist) {
         open_navbar_banner_and_resize(PROFILE_MISSING_REQUIRED_FIELDS_BANNER);
     } else if ($banner?.attr("data-process") === "profile-missing-required-fields") {
@@ -324,7 +324,7 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
-    let label = "";
+    let label;
     if (old_unreads_missing) {
         label = $t(
             {

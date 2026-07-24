@@ -10,7 +10,7 @@ const {make_user, Role} = require("./lib/example_user.cjs");
 const {mock_esm, with_overrides, zrequire, clock} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const message_store = zrequire("message_store");
@@ -747,7 +747,7 @@ test("basics", () => {
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
-    additional_terms_to_test = additional_terms_to_test || [];
+    additional_terms_to_test ||= [];
     let has_link_term = [{operator: "has", operand: "link"}];
     let filter = new Filter([...additional_terms_to_test, ...has_link_term]);
     assert.ok(!filter.can_mark_messages_read());
@@ -777,7 +777,7 @@ function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
     assert.ok(!filter.can_mark_messages_read());
 }
 function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
-    additional_terms_to_test = additional_terms_to_test || [];
+    additional_terms_to_test ||= [];
     let is_operator = [{operator: "is", operand: "starred"}];
     let filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
@@ -828,7 +828,7 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
 }
 
 function assert_not_mark_read_when_searching(additional_terms_to_test) {
-    additional_terms_to_test = additional_terms_to_test || [];
+    additional_terms_to_test ||= [];
     let search_op = [{operator: "search", operand: "keyword"}];
     let filter = new Filter([...additional_terms_to_test, ...search_op]);
     assert.ok(!filter.can_mark_messages_read());
@@ -1899,7 +1899,7 @@ test("unparse", () => {
     string = `channel:${foo_stream_id} topic:Bar`;
     assert.deepEqual(Filter.unparse(terms), string);
 
-    terms = [{operator: "topic", operand: '\t "%+.\u00A0'}];
+    terms = [{operator: "topic", operand: '\t "%+.\u{A0}'}];
     string = "topic:%09+%22%25%2B.%C2%A0";
     assert.equal(Filter.unparse(terms), string);
     assert_same_terms(Filter.parse(string), terms);

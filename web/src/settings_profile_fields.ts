@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 import type * as tippy from "tippy.js";
@@ -20,7 +20,7 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import * as settings_components from "./settings_components.ts";
-import type {FieldData, SelectFieldData} from "./settings_components.ts";
+import type {SelectFieldData} from "./settings_components.ts";
 import * as settings_ui from "./settings_ui.ts";
 import type {CustomProfileField} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -348,11 +348,10 @@ function open_custom_profile_field_creation_form_modal(): void {
     });
 
     function create_profile_field(): void {
-        let field_data: FieldData | undefined = {};
         const field_type = $<HTMLSelectOneElement>(
             "select:not([multiple])#profile_field_type",
         ).val()!;
-        field_data = settings_components.read_field_data_from_form(
+        const field_data = settings_components.read_field_data_from_form(
             Number.parseInt(field_type, 10),
             $(".new-profile-field-form"),
             undefined,
@@ -449,18 +448,18 @@ function delete_choice_row_for_edit(
 
 function show_modal_for_deleting_options(
     field: CustomProfileField,
-    deleted_values: Record<string, string>,
+    deleted_values: Map<string, string>,
     update_profile_field: () => void,
 ): void {
     const active_user_ids = people.get_active_user_ids();
     let users_count_with_deleted_option_selected = 0;
     for (const user_id of active_user_ids) {
         const field_value = people.get_custom_profile_data(user_id, field.id);
-        if (field_value !== undefined && deleted_values[field_value.value]) {
+        if (field_value !== undefined && deleted_values.has(field_value.value)) {
             users_count_with_deleted_option_selected += 1;
         }
     }
-    const deleted_options_count = Object.keys(deleted_values).length;
+    const deleted_options_count = deleted_values.size;
     const modal_content_html = render_confirm_delete_profile_field_option({
         count: users_count_with_deleted_option_selected,
         field_name: field.name,
@@ -738,16 +737,16 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
                     ),
                 ),
             );
-            const deleted_values: Record<string, string> = {};
+            const deleted_values = new Map<string, string>();
             const custom_profile_field_choices =
                 settings_components.custom_profile_field_choices_schema.parse(field_data);
             for (const [value, option] of Object.entries(custom_profile_field_choices)) {
                 if (!new_values.has(value)) {
-                    deleted_values[value] = option.text;
+                    deleted_values.set(value, option.text);
                 }
             }
 
-            if (Object.keys(deleted_values).length > 0) {
+            if (deleted_values.size > 0) {
                 const edit_custom_profile_field_modal_callback = (): void => {
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 };

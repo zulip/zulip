@@ -18,12 +18,13 @@ const examples_handler = function () {
     const examples = {};
     const response_data = [];
 
-    const make_result_object = (example, result, count = false) => {
-        const name = count !== false ? `${example.name}_${count}` : example.name;
+    const make_result_object = (example, result, count) => {
+        const name = count !== undefined ? `${example.name}_${count}` : example.name;
+        const [endpoint, method] = example.endpoint.split(":", 2);
         return {
             name,
-            endpoint: example.endpoint.split(":")[0],
-            method: example.endpoint.split(":")[1],
+            endpoint,
+            method,
             status_code: example.status_code.toString(),
             result,
         };

@@ -6,14 +6,7 @@
 // Size bounds and any mobile-disable behavior live in CSS.
 
 type Direction =
-    | "top"
-    | "right"
-    | "bottom"
-    | "left"
-    | "top_left"
-    | "top_right"
-    | "bottom_left"
-    | "bottom_right";
+    "top" | "right" | "bottom" | "left" | "top_left" | "top_right" | "bottom_left" | "bottom_right";
 
 type HandleSpec = {
     grows_width: boolean;
@@ -89,13 +82,13 @@ function attach_handle(
         if (spec.grows_width) {
             const delta = spec.dx_sign * (e.clientX - start_x);
             const min_width = parse_px_bound(style.minWidth, 0);
-            const max_width = parse_px_bound(style.maxWidth, Number.POSITIVE_INFINITY);
+            const max_width = parse_px_bound(style.maxWidth, Infinity);
             box.style.width = `${clamp(start_width + 2 * delta, min_width, max_width)}px`;
         }
         if (spec.grows_height) {
             const delta = spec.dy_sign * (e.clientY - start_y);
             const min_height = parse_px_bound(style.minHeight, 0);
-            const max_height = parse_px_bound(style.maxHeight, Number.POSITIVE_INFINITY);
+            const max_height = parse_px_bound(style.maxHeight, Infinity);
             box.style.height = `${clamp(start_height + 2 * delta, min_height, max_height)}px`;
         }
         on_resize?.();

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 function sync_open_organizations_page_with_current_hash(): void {
     const hash = window.location.hash;

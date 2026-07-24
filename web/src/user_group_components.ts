@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_nothing_selected_title from "../templates/user_group_settings/nothing_selected_title.hbs";
 import render_selected_group_title from "../templates/user_group_settings/selected_group_title.hbs";

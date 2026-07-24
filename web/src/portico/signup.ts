@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -420,7 +420,7 @@ $(() => {
             // Ensure we don't double-add hashes and handle query parameters properly
             const url = new URL(new_org_url);
             url.hash = url_hash;
-            new_org_url = url.toString();
+            new_org_url = url.href;
         }
         $deactivated_org_auto_redirect.attr("href", new_org_url);
 
@@ -433,7 +433,7 @@ $(() => {
                 $countdown_elt.text((current_countdown - 1).toString());
             } else {
                 const new_org_url = $deactivated_org_auto_redirect.attr("href")!;
-                window.location.href = new_org_url;
+                window.location.assign(new_org_url);
                 clearInterval(interval_id);
             }
         }, 1000);

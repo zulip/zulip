@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const sample_events = [
     {
@@ -96,7 +96,7 @@ test("activate", ({override}) => {
     $widget_content.addClass("widget-content");
     $row.set_find_results(".widget-content", $widget_content);
 
-    let is_widget_elem_inserted = false;
+    let is_widget_elem_inserted;
     let inserted_element;
 
     $message_content[0].append = (element) => {

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -211,7 +211,7 @@ function do_reload_app(
         blueslip.error("Failed to clean up before reloading", undefined, error);
     }
 
-    window.location.replace(reload_url.toString());
+    window.location.replace(reload_url);
 }
 
 export function initiate({

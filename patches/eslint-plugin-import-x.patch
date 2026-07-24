@@ -1,0 +1,126 @@
+diff --git a/lib/index.cjs b/lib/index.cjs
+index b04314774bb93ff76872fd3a54229f0c5189c04c..4ba475083a031781e8bb88fa97085a3e5e0f45d6 100644
+--- a/lib/index.cjs
++++ b/lib/index.cjs
+@@ -1584,10 +1584,9 @@ var ExportMap = class ExportMap {
+ 				}
+ 				for (const s of n.specifiers) processSpecifier(s, n, m);
+ 			}
+-			const exports$1 = ["TSExportAssignment"];
+-			if (isEsModuleInteropTrue()) exports$1.push("TSNamespaceExportDeclaration");
+-			if (exports$1.includes(n.type)) {
+-				const exportedName = n.type === "TSNamespaceExportDeclaration" ? (n.id || n.name).name : "expression" in n && n.expression && ("name" in n.expression && n.expression.name || "id" in n.expression && n.expression.id && n.expression.id.name) || null;
++			if (n.type === "TSExportAssignment") {
++				m.hasExportAssignment = true;
++				const exportedName = "expression" in n && n.expression && ("name" in n.expression && n.expression.name || "id" in n.expression && n.expression.id && n.expression.id.name) || null;
+ 				const getRoot = (node) => {
+ 					if (node.left.type === "TSQualifiedName") return getRoot(node.left);
+ 					return node.left;
+@@ -1660,6 +1659,8 @@ var ExportMap = class ExportMap {
+ 	/** Dependencies of this module that are not explicitly re-exported */
+ 	imports = new Map();
+ 	exports = new Map();
++	/** Whether this module has an `export = ns` assignment */
++	hasExportAssignment = false;
+ 	errors = [];
+ 	parseGoal = "ambiguous";
+ 	constructor(path$21) {
+@@ -4828,6 +4829,7 @@ var no_named_as_default_member_default = createRule({
+ 					if (fileImport == null) continue;
+ 					for (const { propName, node } of lookups) {
+ 						if (propName === "default") continue;
++						if (fileImport.exportMap.hasExportAssignment) continue;
+ 						if (!fileImport.exportMap.namespace.has(propName)) continue;
+ 						context.report({
+ 							node,
+@@ -4873,6 +4875,7 @@ var no_named_as_default_default = createRule({
+ 				}
+ 				if (!exportMapOfImported.hasDefault) return;
+ 				if (!exportMapOfImported.has(nameValue)) return;
++				if (exportMapOfImported.hasExportAssignment) return;
+ 				if (exportMapOfImported.exports.has("default") && exportMapOfImported.exports.has(nameValue)) context.report({
+ 					node: defaultSpecifier,
+ 					messageId: "default",
+diff --git a/lib/rules/no-named-as-default-member.js b/lib/rules/no-named-as-default-member.js
+index 3aae00046b68d3ac47549b9570529e867e3c1a88..59452aa7fa42b592c28ccf415c1bba5972f1b027 100644
+--- a/lib/rules/no-named-as-default-member.js
++++ b/lib/rules/no-named-as-default-member.js
+@@ -68,6 +68,9 @@ export default createRule({
+                         if (propName === 'default') {
+                             continue;
+                         }
++                        if (fileImport.exportMap.hasExportAssignment) {
++                            continue;
++                        }
+                         if (!fileImport.exportMap.namespace.has(propName)) {
+                             continue;
+                         }
+diff --git a/lib/rules/no-named-as-default.js b/lib/rules/no-named-as-default.js
+index cc08f38f05647d150e24e0b596c2caeeecdd362f..5b79fe484ac6ca4975f07c3ce2c8127188d01d07 100644
+--- a/lib/rules/no-named-as-default.js
++++ b/lib/rules/no-named-as-default.js
+@@ -35,6 +35,9 @@ export default createRule({
+                 if (!exportMapOfImported.has(nameValue)) {
+                     return;
+                 }
++                if (exportMapOfImported.hasExportAssignment) {
++                    return;
++                }
+                 if (exportMapOfImported.exports.has('default') &&
+                     exportMapOfImported.exports.has(nameValue)) {
+                     context.report({
+diff --git a/lib/utils/export-map.d.ts b/lib/utils/export-map.d.ts
+index 2c93f36928ba2aa7ffd4e78ebc3111833c9e09d4..0133cac6af6d40734715f987141835ea2e4f8d7a 100644
+--- a/lib/utils/export-map.d.ts
++++ b/lib/utils/export-map.d.ts
+@@ -29,6 +29,7 @@ export declare class ExportMap {
+     dependencies: Set<() => ExportMap | null>;
+     imports: Map<string, ModuleImport>;
+     exports: Map<string, TSESTree.Identifier | TSESTree.ProgramStatement>;
++    hasExportAssignment: boolean;
+     errors: ParseError[];
+     parseGoal: 'ambiguous' | 'Module' | 'Script';
+     visitorKeys: TSESLint.SourceCode.VisitorKeys | null;
+diff --git a/lib/utils/export-map.js b/lib/utils/export-map.js
+index 1595cf11112adf7d40cf947e8b92c489ef386bd2..c1cf2cb33081b314298ece64267be95744ad346e 100644
+--- a/lib/utils/export-map.js
++++ b/lib/utils/export-map.js
+@@ -343,21 +343,15 @@ export class ExportMap {
+                     processSpecifier(s, n, m);
+                 }
+             }
+-            const exports = ['TSExportAssignment'];
+-            if (isEsModuleInteropTrue()) {
+-                exports.push('TSNamespaceExportDeclaration');
+-            }
+-            if (exports.includes(n.type)) {
+-                const exportedName = n.type === 'TSNamespaceExportDeclaration'
+-                    ? (n.id ||
+-                        n.name).name
+-                    : ('expression' in n &&
+-                        n.expression &&
+-                        (('name' in n.expression && n.expression.name) ||
+-                            ('id' in n.expression &&
+-                                n.expression.id &&
+-                                n.expression.id.name))) ||
+-                        null;
++            if (n.type === 'TSExportAssignment') {
++                m.hasExportAssignment = true;
++                const exportedName = ('expression' in n &&
++                    n.expression &&
++                    (('name' in n.expression && n.expression.name) ||
++                        ('id' in n.expression &&
++                            n.expression.id &&
++                            n.expression.id.name))) ||
++                    null;
+                 const getRoot = (node) => {
+                     if (node.left.type === 'TSQualifiedName') {
+                         return getRoot(node.left);
+@@ -470,6 +464,7 @@ export class ExportMap {
+         this.dependencies = new Set();
+         this.imports = new Map();
+         this.exports = new Map();
++        this.hasExportAssignment = false;
+         this.errors = [];
+         this.parseGoal = 'ambiguous';
+     }

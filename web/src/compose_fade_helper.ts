@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import type {Message} from "./message_store.ts";
 import * as stream_data from "./stream_data.ts";
