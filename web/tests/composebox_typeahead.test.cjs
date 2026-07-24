@@ -937,6 +937,20 @@ test("topic typeahead source suppresses an exact-match topic", ({override}) => {
     assert.deepEqual(topic_edit_config.source("new"), ["design", "design docs"]);
 });
 
+test("topic typeahead matches diacritics agnostically", ({override}) => {
+    let topic_edit_config;
+    override(bootstrap_typeahead, "Typeahead", (_input_element, config) => {
+        topic_edit_config = config;
+    });
+
+    ct.initialize_topic_edit_typeahead($.create("fake-diacritic-input"), "The Netherlands", false);
+
+    assert.ok(topic_edit_config.matcher("gael")("Gaël"));
+    assert.ok(topic_edit_config.matcher("gaël")("gael"));
+    assert.deepEqual(topic_edit_config.sorter(["gael", "Gaël"], "gael"), ["gael", "Gaël"]);
+    assert.deepEqual(topic_edit_config.sorter(["gaël", "Gael"], "gaël"), ["gaël", "Gael"]);
+});
+
 test("content_typeahead_selected", ({override}) => {
     const input_element = {
         $element: {},

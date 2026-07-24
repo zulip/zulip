@@ -209,11 +209,16 @@ def build_email(
         from_address = FromAddress.SUPPORT
 
     # Set the "From" that is displayed separately from the envelope-from.
-    extra_headers["From"] = str(Address(display_name=from_name, addr_spec=from_address))
+    # We use formataddr rather than str(Address(...)) because formataddr
+    # properly RFC 2047-encodes non-ASCII display names (e.g. translated
+    # security email sender names like "Sécurité du compte Zulip Server"),
+    # whereas Address keeps them as raw Unicode, which SMTP servers
+    # without SMTPUTF8 support will reject.
+    extra_headers["From"] = formataddr((from_name, from_address))
     # As above, with the "To" line, we drop the name part if it would
     # result in an address which is longer than 320 bytes.
     if len(sanitize_address(extra_headers["From"], "utf-8")) > 320:
-        extra_headers["From"] = str(Address(addr_spec=from_address))
+        extra_headers["From"] = formataddr(("", from_address))
 
     # If we have an unsubscribe link for this email, configure it for
     # "Unsubscribe" buttons in email clients via the List-Unsubscribe header.

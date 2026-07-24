@@ -442,6 +442,29 @@ class TestSendEmail(ZulipTestCase):
                 )
                 self.assertTrue(info_log.output[1].startswith(f"ERROR:zulip.send_email:{message}"))
 
+    def test_send_email_non_ascii_from_name(self) -> None:
+        """Translated security email from names with non-ASCII characters
+        (e.g. French "Sécurité du compte ...") must be RFC 2047-encoded
+        in the From header so that SMTP servers without SMTPUTF8 support
+        can handle them. See https://github.com/zulip/zulip/issues/39649.
+        """
+        hamlet = self.example_user("hamlet")
+        # Simulate the French translation of the security email from name.
+        non_ascii_from_name = "Sécurité du compte Zulip Server"
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_emails=[hamlet.email],
+            from_name=non_ascii_from_name,
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+        from_header = mail.extra_headers["From"]
+        # The From header must not contain raw non-ASCII characters;
+        # it should be RFC 2047-encoded by formataddr.
+        self.assertTrue(from_header.isascii())
+        # Verify the encoded header still contains the email address.
+        self.assertIn(FromAddress.NOREPLY, from_header)
+
     def test_send_email_config_error_logging(self) -> None:
         hamlet = self.example_user("hamlet")
 
