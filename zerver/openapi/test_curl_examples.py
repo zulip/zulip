@@ -40,6 +40,12 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-constructor-groups-video-call",
     "create-nextcloud-talk-video-call",
     "create-webex-video-call",
+    # These return a 302 with no JSON body and the example uses a shell
+    # pipe, neither of which the curl test currently supports.
+    "get-user-avatar",
+    "get-user-avatar-by-email",
+    "get-user-medium-avatar",
+    "get-user-medium-avatar-by-email",
 }
 
 
