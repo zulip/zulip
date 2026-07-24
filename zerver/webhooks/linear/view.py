@@ -19,6 +19,47 @@ COMMENT_CREATE_OR_UPDATE_TEMPLATE = "{user} [{action}]({url}) on issue **{issue_
 COMMENT_REMOVE_TEMPLATE = "{user} has removed a comment."
 
 
+def get_project_message(payload: WildValue, event: str) -> str:
+    action = payload["action"].tame(check_string)
+    project = payload["data"]
+ 
+    project_name = project["name"].tame(check_string)
+ 
+    creator = "Unknown user"
+    creator_data = project.get("creator")
+ 
+    if creator_data is not None:
+        # Safely convert to dict if it isn't already
+        creator_data_dict = creator_data.tame(
+            lambda var_name, value: value if isinstance(value, dict) else {}
+        )
+        # Access the "name" safely; no .tame needed because it's already a string
+        creator = creator_data_dict.get("name", creator)
+ 
+    if action == "create":
+        return f'Project **{project_name}** was created by **{creator}**.'
+    elif action == "update":
+        return f'Project **{project_name}** was updated.'
+    elif action == "remove":
+        return f'Project **{project_name}** was removed.'
+ 
+    raise UnsupportedWebhookEventTypeError(f"Project:{action}")
+ 
+ 
+def get_project_update_message(payload: WildValue, event: str) -> str:
+    project = payload["data"]
+    project_name = project["name"].tame(check_string)
+    return f'Project **{project_name}** was updated.'
+ 
+ 
+EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, str], str]] = {
+    "issue": get_issue_or_sub_issue_message,
+    "sub_issue": get_issue_or_sub_issue_message,
+    "comment": get_comment_message,
+    "project": get_project_message,
+    "project_update": get_project_update_message,
+}
+
 def get_issue_created_or_updated_message(event: str, payload: WildValue, action: str) -> str:
     message = ISSUE_CREATE_OR_UPDATE_TEMPLATE.format(
         type="Issue" if event == "issue" else "Sub-Issue",
@@ -149,12 +190,16 @@ def get_topic(user_specified_topic: str | None, event: str, payload: WildValue) 
 
 def get_event_type(payload: WildValue) -> str | None:
     event_type = payload["type"].tame(check_string)
-
+ 
     if event_type == "Issue":
         has_parent_id = "parentId" in payload["data"]
         return "issue" if not has_parent_id else "sub_issue"
     elif event_type == "Comment":
         return "comment"
+    elif event_type == "Project":
+        return "project"
+    elif event_type == "ProjectUpdate":
+        return "project_update"
     elif event_type in IGNORED_EVENTS:
         return None
 
