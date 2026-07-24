@@ -26,6 +26,7 @@ from typing_extensions import override
 from analytics.models import RealmCount, StreamCount, UserCount
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import set_default_for_realm_permission_group_settings
+from zerver.actions.custom_profile_fields import render_custom_profile_fields
 from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_new_stream_announcements_stream,
@@ -38,6 +39,7 @@ from zerver.lib.bulk_create import bulk_set_stream_recipient_fields
 from zerver.lib.export import Field, Path, Record, TableName, date_fields_for_table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
+from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import get_last_message_id
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.mime_types import guess_type
@@ -2009,6 +2011,17 @@ def do_import_realm(
     re_map_foreign_keys(data, "zerver_customprofilefield", "realm", related_table="realm")
     update_model_ids(CustomProfileField, data, related_table="customprofilefield")
     bulk_import_model(data, CustomProfileField)
+
+    custom_profile_fields = list(CustomProfileField.objects.filter(realm=realm))
+    if custom_profile_fields:
+        all_field_text = "\n".join(f"{field.name}\n{field.hint}" for field in custom_profile_fields)
+        mention_data = MentionData(MentionBackend(realm.id), all_field_text, None)
+        for field in custom_profile_fields:
+            field.rendered_name = render_custom_profile_fields(field.name, realm, mention_data)
+            field.rendered_hint = render_custom_profile_fields(field.hint, realm, mention_data)
+        CustomProfileField.objects.bulk_update(
+            custom_profile_fields, ["rendered_name", "rendered_hint"]
+        )
 
     re_map_foreign_keys(
         data, "zerver_customprofilefieldvalue", "user_profile", related_table="user_profile"
