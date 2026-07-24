@@ -21,7 +21,7 @@ export type InputPillConfig = {
 type InputPillCreateOptions<ItemType> = {
     $container: JQuery;
     pill_config?: InputPillConfig | undefined;
-    split_text_on_comma?: boolean;
+    allow_comma_in_item_text?: boolean;
     convert_to_pill_on_enter?: boolean;
     create_item_from_text: (
         text: string,
@@ -61,7 +61,7 @@ type InputPillStore<ItemType> = {
     onPillRemove?: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void;
     onPillExpand?: (pill: JQuery) => void;
     createPillonPaste?: () => void;
-    split_text_on_comma: boolean;
+    allow_comma_in_item_text: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
     split_text_to_form_pills: InputPillCreateOptions<ItemType>["split_text_to_form_pills"];
@@ -108,7 +108,7 @@ export function create<ItemType extends {type: string}>(
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
         get_display_value_from_item: opts.get_display_value_from_item,
-        split_text_on_comma: opts.split_text_on_comma ?? true,
+        allow_comma_in_item_text: opts.allow_comma_in_item_text ?? false,
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
@@ -146,14 +146,16 @@ export function create<ItemType extends {type: string}>(
             return store.$input.text().trim() !== "";
         },
 
-        create_item(text: string) {
+        create_item(text: string, ignore_invalid_text = false) {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
             if (!item) {
-                store.$input.addClass("shake");
+                if (!ignore_invalid_text) {
+                    store.$input.addClass("shake");
 
-                if (store.show_outline_on_invalid_input) {
-                    store.$parent.addClass("invalid");
+                    if (store.show_outline_on_invalid_input) {
+                        store.$parent.addClass("invalid");
+                    }
                 }
                 return undefined;
             }
@@ -200,16 +202,16 @@ export function create<ItemType extends {type: string}>(
 
         // this appends a pill to the end of the container but before the
         // input block.
-        appendPill(value: string) {
+        appendPill(value: string, ignore_invalid_text = false) {
             if (value.length === 0) {
                 return true;
             }
-            if (store.split_text_on_comma && value.includes(",")) {
+            if (!store.allow_comma_in_item_text && value.includes(",")) {
                 funcs.insertManyPills(value);
                 return false;
             }
 
-            const payload = this.create_item(value);
+            const payload = this.create_item(value, ignore_invalid_text);
             // if the pill object is undefined, then it means the pill was
             // rejected so we should return out of this.
             if (payload === undefined) {
@@ -273,7 +275,7 @@ export function create<ItemType extends {type: string}>(
 
         insertManyPills(pills: string | string[]) {
             if (typeof pills === "string") {
-                if (!store.split_text_on_comma && store.split_text_to_form_pills) {
+                if (store.allow_comma_in_item_text && store.split_text_to_form_pills) {
                     pills = store.split_text_to_form_pills(pills);
                 } else {
                     pills = pills.split(/,/g).map((pill) => pill.trim());
@@ -367,7 +369,7 @@ export function create<ItemType extends {type: string}>(
                 if (value.length > 0) {
                     // If there are multiple values separated by commas, we should use insertManyPills
                     // to handle them properly when pressing the Enter key.
-                    if (!store.split_text_on_comma && value.includes(",")) {
+                    if (store.allow_comma_in_item_text && value.includes(",")) {
                         funcs.insertManyPills(value);
                         return;
                     }
@@ -416,15 +418,17 @@ export function create<ItemType extends {type: string}>(
 
             // Typing of the comma is prevented if the last field doesn't validate,
             // as well as when the new pill is created.
-            if (e.key === "," && store.split_text_on_comma) {
-                // if the pill is successful, it will create the pill and clear
-                // the input.
-                if (funcs.appendPill(store.$input.text().trim())) {
+            if (e.key === ",") {
+                if (funcs.appendPill(store.$input.text().trim(), store.allow_comma_in_item_text)) {
                     funcs.clear(util.the(store.$input));
+                    e.preventDefault();
+                    return;
                 }
-                e.preventDefault();
 
-                return;
+                if (!store.allow_comma_in_item_text) {
+                    e.preventDefault();
+                    return;
+                }
             }
         });
 
