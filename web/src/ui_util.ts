@@ -41,6 +41,25 @@ function extract_emoji_code_from_class(emoji_class_string: string | undefined): 
     return undefined;
 }
 
+export function convert_emoji_code_to_unicode(emoji_code: string): string | undefined {
+    // Convert a "-"-separated string of hex Unicode codepoints (e.g.
+    // "1f468-200d-1f373") into the emoji it represents, or undefined if
+    // any codepoint is invalid.
+    const emoji_unicode_parts: string[] = [];
+    for (const part of emoji_code.split("-")) {
+        const emoji_code_int = Number.parseInt(part, 16);
+        // Validate the parameter passed to String.fromCodePoint() (here, emoji_code_int).
+        // "An integer between 0 and 0x10FFFF (inclusive) representing a Unicode code point."
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint
+        // for details.
+        if (Number.isNaN(emoji_code_int) || !(emoji_code_int >= 0 && emoji_code_int <= 0x10ffff)) {
+            return undefined;
+        }
+        emoji_unicode_parts.push(String.fromCodePoint(emoji_code_int));
+    }
+    return emoji_unicode_parts.join("");
+}
+
 export function convert_emoji_element_to_unicode($emoji_elt: JQuery): string {
     // This is a custom emoji, we do not have corresponding emoji
     // unicode for these so we return original markdown.
@@ -54,24 +73,13 @@ export function convert_emoji_element_to_unicode($emoji_elt: JQuery): string {
         return $emoji_elt.text();
     }
 
-    const emoji_code_parts = emoji_code_hex_string.split("-");
-    const emoji_unicode = emoji_code_parts
-        .map((emoji_code) => {
-            const emoji_code_int = Number.parseInt(emoji_code, 16);
-            // Validate the parameter passed to String.fromCodePoint() (here, emoji_code_int).
-            // "An integer between 0 and 0x10FFFF (inclusive) representing a Unicode code point."
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint
-            // for details.
-            if (
-                Number.isNaN(emoji_code_int) ||
-                !(emoji_code_int >= 0 && emoji_code_int <= 0x10ffff)
-            ) {
-                blueslip.error("Invalid unicode codepoint for emoji", {emoji_code_int});
-                return $emoji_elt.text();
-            }
-            return String.fromCodePoint(emoji_code_int);
-        })
-        .join("");
+    const emoji_unicode = convert_emoji_code_to_unicode(emoji_code_hex_string);
+    if (emoji_unicode === undefined) {
+        blueslip.error("Invalid unicode codepoint for emoji", {
+            emoji_code: emoji_code_hex_string,
+        });
+        return $emoji_elt.text();
+    }
     return emoji_unicode;
 }
 
