@@ -92,9 +92,79 @@ the development environment][authentication-dev-server].
 See the mobile project's documentation on [getting set up to develop
 and contribute to the mobile app][mobile-development-guide].
 
+## Accessing development environment from other systems
+
+:::{warning}
+The development environment is not hardened against hostile
+traffic. Only expose it to networks you trust, and only while
+testing.
+:::
+
+By default, the development environment is reachable only from the
+machine it runs on. The most common reason to change that is running
+the mobile app on a phone or emulator against it (the [mobile
+dev-server guide][mobile-dev-server-guide] covers the client-side
+setup).
+
+First, find your host's IP address on your network:
+
+::::{tab-set}
+
+:::{tab-item} Windows
+:sync: os-windows
+
+Run `ipconfig` and look for the IPv4 address.
+:::
+
+:::{tab-item} macOS
+:sync: os-mac
+
+Run `ipconfig getifaddr en0`, or open the Network settings pane.
+:::
+
+:::{tab-item} Linux
+:sync: os-linux
+
+Run `ip addr` and look for your network interface's address.
+:::
+
+::::
+
+The development server listens on port 9991. The steps below use
+`192.168.1.10` as an example IP address, so the server ends up
+reachable at `192.168.1.10:9991`.
+
+1. If you're using Vagrant, [set `HOST_IP_ADDR 0.0.0.0` in
+   `~/.zulip-vagrant-config`][vagrant-host-ip] and run
+   `vagrant reload`, so that the VM accepts connections from other
+   machines.
+
+2. Start the development server with `EXTERNAL_HOST` set to the
+   address other systems will use to reach it, so that the Zulip
+   server knows what base URL it's being accessed at:
+
+   ```bash
+   env EXTERNAL_HOST=192.168.1.10:9991 ./tools/run-dev --interface=''
+   ```
+
+   `--interface=''` makes `run-dev` listen on all network
+   interfaces; it's needed only outside Vagrant, since inside the
+   VM `run-dev` already does this and Vagrant controls which ports
+   are exposed to the network.
+
+The development environment is now reachable from other devices on
+your network at `http://192.168.1.10:9991`.
+
+To instead let a service hosted outside your network (such as a
+cloud-hosted SaaS product) reach your development environment, you
+can use a tunneling tool to get a temporary public URL, and set
+`EXTERNAL_HOST` to the hostname the tunnel gives you.
+
 [rest-api]: https://zulip.com/api/rest
 [authentication-dev-server]: authentication.md
 [django-runserver]: https://docs.djangoproject.com/en/5.0/ref/django-admin/#runserver
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
 [mobile-development-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/setup.md
+[mobile-dev-server-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/howto/dev-server.md
+[vagrant-host-ip]: setup-recommended.md#using-a-different-port-for-vagrant
