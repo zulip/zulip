@@ -62,7 +62,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
-from zerver.models.recipients import get_direct_message_group_user_ids
+from zerver.models.recipients import get_direct_message_group_sorted_user_ids
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
@@ -930,7 +930,7 @@ def update_narrow_terms_containing_with_operator(
         return channel_conversation_terms + filtered_terms
 
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        huddle_user_ids = list(get_direct_message_group_user_ids(message.recipient))
+        huddle_user_ids = list(get_direct_message_group_sorted_user_ids(message.recipient))
         dm_conversation_terms = [NarrowParameter(operator="dm", operand=huddle_user_ids)]
         return dm_conversation_terms + filtered_terms
 

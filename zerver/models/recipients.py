@@ -2,8 +2,9 @@ import hashlib
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
-from django.db import models, transaction
+from django.db import connection, models, transaction
 from django.db.models import QuerySet
+from psycopg2.sql import SQL, Identifier
 from typing_extensions import override
 
 from zerver.lib.display_recipient import get_display_recipient
@@ -61,7 +62,7 @@ class Recipient(models.Model):
             return str(get_display_recipient(self))
 
 
-def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
+def get_direct_message_group_sorted_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
     from zerver.models import Subscription
 
     assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
@@ -73,6 +74,16 @@ def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscri
         .order_by("user_profile_id")
         .values_list("user_profile_id", flat=True)
     )
+
+
+def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
+    from zerver.models import Subscription
+
+    assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+
+    return Subscription.objects.filter(
+        recipient=recipient,
+    ).values_list("user_profile_id", flat=True)
 
 
 def bulk_get_direct_message_group_user_ids(recipient_ids: list[int]) -> dict[int, set[int]]:
@@ -156,23 +167,55 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
             huddle_hash=direct_message_group_hash,
             group_size=len(id_list),
         )
-        if created:
-            recipient = Recipient.objects.create(
-                type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP
+
+        if not created:
+            return direct_message_group
+
+        recipient = Recipient.objects.create(
+            type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP
+        )
+
+        # The equivalent effect of doing
+        # direct_message_group.save(update_fields(["recipient"]) is handled
+        # in the following raw query via UPDATE to save us a query.
+        direct_message_group.recipient = recipient
+
+        # In a single raw query, we do 2 required things after creating
+        # a new DirectMessageGroup object:
+        # 1- Update the recipient field to reflect the above assignment in db.
+        # 2- Bulk create subscriptions for the participants.
+        query = SQL(
+            """
+            UPDATE {dmg_table}
+            SET recipient_id = %(recipient_id)s
+            WHERE {dmg_table}.id = %(dmg_id)s;
+
+            INSERT INTO {subscription_table}
+                (user_profile_id, is_user_active, recipient_id, active)
+            SELECT
+                {user_profile_table}.id,
+                {user_profile_table}.is_active,
+                %(recipient_id)s,
+                %(active)s
+            FROM {user_profile_table}
+            WHERE {user_profile_table}.id = ANY(%(participant_ids)s);
+        """
+        ).format(
+            dmg_table=Identifier(DirectMessageGroup._meta.db_table),
+            subscription_table=Identifier(Subscription._meta.db_table),
+            user_profile_table=Identifier(UserProfile._meta.db_table),
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                query,
+                {
+                    "recipient_id": recipient.id,
+                    "dmg_id": direct_message_group.id,
+                    "active": Subscription._meta.get_field("active").get_default(),
+                    "participant_ids": id_list,
+                },
             )
-            direct_message_group.recipient = recipient
-            direct_message_group.save(update_fields=["recipient"])
-            subs_to_create = [
-                Subscription(
-                    recipient=recipient,
-                    user_profile_id=user_profile_id,
-                    is_user_active=is_active,
-                )
-                for user_profile_id, is_active in UserProfile.objects.filter(id__in=id_list)
-                .distinct("id")
-                .values_list("id", "is_active")
-            ]
-            Subscription.objects.bulk_create(subs_to_create)
+
         return direct_message_group
 
 
