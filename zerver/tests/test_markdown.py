@@ -71,7 +71,7 @@ from zerver.lib.types import UserGroupMembersData
 from zerver.lib.upload import get_emoji_url, upload_message_attachment
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import UserGroupMembershipDetails
-from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
+from zerver.models import Attachment, Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
@@ -735,6 +735,27 @@ class MarkdownLinkTest(ZulipTestCase):
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
             '<p><a href="http://zulip.testserver/not:relative">hello</a></p>',
+        )
+
+    def test_user_upload_file_size(self) -> None:
+        realm = get_realm("zulip")
+        sender = self.example_user("othello")
+        message = Message(sender=sender, sending_client=get_client("test"), realm=realm)
+
+        path_id = "1/ff/test_file.txt"
+        Attachment.objects.create(
+            file_name="test_file.txt",
+            path_id=path_id,
+            owner=sender,
+            realm=realm,
+            size=250880,
+            content_type="text/plain",
+        )
+
+        msg = f"[file](/user_uploads/{path_id})"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            f'<p><a data-file-size="250880" href="/user_uploads/{path_id}">file</a></p>',
         )
 
     def test_inline_file(self) -> None:
