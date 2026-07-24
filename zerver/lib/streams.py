@@ -638,7 +638,12 @@ def access_stream_for_send_message(
     archived_channel_notice: bool = False,
     user_group_membership_details: UserGroupMembershipDetails | None = None,
     system_groups_name_dict: dict[int, str] | None = None,
-) -> None:
+) -> dict[str, bool | None]:
+    """Raises JsonableError if the sender may not send to the stream, and
+    returns {"is_subscribed": ...} -- whether the sender is subscribed to
+    it, or None if that wasn't determined (e.g. a public channel, where
+    subscription is irrelevant to send access).
+    """
     # Our caller is responsible for making sure that `stream` actually
     # matches the realm of the sender.
     if system_groups_name_dict is None:
@@ -659,20 +664,20 @@ def access_stream_for_send_message(
             and forwarder_user_profile.realm_id == sender.realm_id
             and sender.realm_id == stream.realm_id
         ):
-            return
+            return {"is_subscribed": None}
         else:
             raise JsonableError(_("User not authorized for this query"))
 
     # You cannot send mesasges to archived channels
     if stream.deactivated:
         if archived_channel_notice:
-            return
+            return {"is_subscribed": None}
         raise JsonableError(
             _("Not authorized to send to channel '{channel_name}'").format(channel_name=stream.name)
         )
 
     if is_cross_realm_bot_email(sender.delivery_email):
-        return
+        return {"is_subscribed": None}
 
     if stream.realm_id != sender.realm_id:
         # Sending to other realm's streams is always disallowed,
@@ -681,25 +686,26 @@ def access_stream_for_send_message(
 
     if stream.is_web_public:
         # Even guest users can write to web-public streams.
-        return
+        return {"is_subscribed": None}
 
     if not (stream.invite_only or sender.is_guest):
         # This is a public stream and sender is not a guest user
-        return
+        return {"is_subscribed": None}
 
-    if subscribed_to_stream(sender, stream.id):
+    is_subscribed = subscribed_to_stream(sender, stream.id)
+    if is_subscribed:
         # It is private, but your are subscribed
-        return
+        return {"is_subscribed": is_subscribed}
 
     if sender.can_forge_sender:
         # can_forge_sender allows sending to any stream in the realm.
-        return
+        return {"is_subscribed": is_subscribed}
 
     if sender.is_bot and (
         sender.bot_owner is not None and subscribed_to_stream(sender.bot_owner, stream.id)
     ):
         # Bots can send to any stream their owner can.
-        return
+        return {"is_subscribed": is_subscribed}
 
     if stream.history_public_to_subscribers and not sender.is_guest:
         if user_group_membership_details.user_recursive_group_ids is None:
@@ -710,7 +716,7 @@ def access_stream_for_send_message(
         if is_user_in_groups_granting_content_access(
             stream, user_group_membership_details.user_recursive_group_ids
         ):
-            return
+            return {"is_subscribed": is_subscribed}
 
     # All other cases are an error.
     raise JsonableError(

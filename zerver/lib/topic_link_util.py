@@ -35,6 +35,28 @@ def escape_invalid_stream_topic_characters(text: str) -> str:
     )
 
 
+def get_message_link_label(
+    stream_name: str, topic_name: str | None = None, message_id: int | None = None
+) -> str:
+    """The text label for a channel/topic/message Markdown link, of the form
+    "#channel > topic @ 💬" (matching the web app's "Copy link to message").
+
+    Characters that would break the surrounding Markdown link syntax are
+    escaped, and an empty topic is shown using its fallback display name.
+    """
+    escape = escape_invalid_stream_topic_characters
+    text = f"#{escape(stream_name)}"
+    if topic_name is not None:
+        if topic_name == "":
+            topic_name = Message.EMPTY_TOPIC_FALLBACK_NAME
+        text += f" > {escape(topic_name)}"
+
+    if message_id is not None:
+        text += " @ 💬"
+
+    return text
+
+
 def get_fallback_markdown_link(
     stream_id: int, stream_name: str, topic_name: str | None = None, message_id: int | None = None
 ) -> str:
@@ -45,19 +67,14 @@ def get_fallback_markdown_link(
     a fallback for cases where the nicer Zulip link syntax would not
     render properly due to special characters in the channel or topic name.
     """
-    escape = escape_invalid_stream_topic_characters
     link = f"#narrow/channel/{encode_channel(stream_id, stream_name)}"
-    text = f"#{escape(stream_name)}"
     if topic_name is not None:
         link += f"/topic/{encode_hash_component(topic_name)}"
-        if topic_name == "":
-            topic_name = Message.EMPTY_TOPIC_FALLBACK_NAME
-        text += f" > {escape(topic_name)}"
 
     if message_id is not None:
         link += f"/near/{message_id}"
-        text += " @ 💬"
 
+    text = get_message_link_label(stream_name, topic_name, message_id)
     return f"[{text}]({link})"
 
 

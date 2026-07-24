@@ -9238,6 +9238,8 @@ paths:
                   - additionalProperties: false
                     required:
                       - id
+                      - message_url
+                      - message_link
                     properties:
                       result: {}
                       msg: {}
@@ -9246,6 +9248,34 @@ paths:
                         type: integer
                         description: |
                           The unique ID assigned to the sent message.
+                      message_url:
+                        type: string
+                        description: |
+                          A URL that links directly to the sent message within its
+                          conversation.
+
+                          For channel messages, the channel's name is included in the
+                          URL only when the sender has access to the channel's metadata.
+                          Otherwise, a URL referencing the channel by ID alone is
+                          returned, so that the channel's name is not revealed to a
+                          sender who cannot otherwise access it (such as a bot with
+                          permission to post to the channel but not to read it).
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-fcf0cf).
+                      message_link:
+                        type: string
+                        description: |
+                          A Markdown link to the sent message within its conversation,
+                          matching the link produced by the "Copy link to message"
+                          feature in the Zulip web app; for example,
+                          `[#channel name > topic name @ 💬](url)`.
+
+                          For direct messages, and for channel messages where the
+                          channel name is omitted from `message_url` as described above,
+                          there is no suitable text label, so this is the same plain URL
+                          as `message_url`.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-fcf0cf).
                       automatic_new_visibility_policy:
                         type: integer
                         enum:
@@ -9278,6 +9308,8 @@ paths:
                       {
                         "msg": "",
                         "id": 42,
+                        "message_url": "https://example.zulipchat.com/#narrow/channel/7-test-here/topic/test/near/42",
+                        "message_link": "[#test here > test @ 💬](https://example.zulipchat.com/#narrow/channel/7-test-here/topic/test/near/42)",
                         "automatic_new_visibility_policy": 2,
                         "result": "success",
                       }
