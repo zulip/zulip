@@ -2,11 +2,10 @@ import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
+import {GENERIC_BOT_TYPE, OUTGOING_WEBHOOK_BOT_TYPE} from "../src/bot_type_values.ts";
+
 import * as common from "./lib/common.ts";
 import {test_credentials} from "./lib/common.ts";
-
-const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-const GENERIC_BOT_TYPE = "1";
 
 const zuliprc_regex =
     /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
