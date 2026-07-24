@@ -291,8 +291,8 @@
 
     #avatar {
         display: inline-block;
-        height: 180px;
-        width: 180px;
+        height: var(--user-profile-avatar-size);
+        width: var(--user-profile-avatar-size);
         background-size: cover;
         background-position: center;
         border-radius: 5px;

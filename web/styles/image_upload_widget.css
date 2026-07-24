@@ -168,6 +168,14 @@
     }
 }
 
+#admin-user-avatar-upload-widget {
+    .image-block {
+        width: var(--user-profile-avatar-size);
+        height: var(--user-profile-avatar-size);
+        object-fit: cover;
+    }
+}
+
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;
