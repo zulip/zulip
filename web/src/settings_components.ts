@@ -1111,7 +1111,7 @@ export function populate_data_for_realm_settings_request(
         if (check_realm_settings_property_changed(input_elem)) {
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
-                let property_name: string;
+                let match_array;
                 if ($input_elem.attr("id")!.startsWith("id_authmethod")) {
                     // Authentication Method component IDs include authentication method name
                     // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
@@ -1119,16 +1119,12 @@ export function populate_data_for_realm_settings_request(
                     // The [\da-z]+ part of the regexp covers the auth method name itself.
                     // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
                     // this is ensured by a respective allowlist-based filter in populate_auth_methods().
-                    const match_array = /^id_authmethod[\da-z]+_(.*)$/.exec(
-                        $input_elem.attr("id")!,
-                    );
-                    assert(match_array !== null);
-                    property_name = match_array[1]!;
+                    match_array = /^id_authmethod[\da-z]+_(.*)$/.exec($input_elem.attr("id")!);
                 } else {
-                    const match_array = /^id_realm_(.*)$/.exec($input_elem.attr("id")!);
-                    assert(match_array !== null);
-                    property_name = match_array[1]!;
+                    match_array = /^id_realm_(.*)$/.exec($input_elem.attr("id")!);
                 }
+                assert(match_array !== null);
+                const property_name = match_array[1]!;
 
                 if (property_name === "org_join_restrictions") {
                     assert(typeof input_value === "string");

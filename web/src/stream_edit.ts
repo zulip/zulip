@@ -187,29 +187,28 @@ export function save_stream_info(): void {
                 assert(data.new_name !== undefined);
                 const existing_stream = stream_data.get_sub_by_name(data.new_name);
 
+                let rendered_error;
                 if (existing_stream) {
                     const can_rename =
                         existing_stream.is_archived &&
                         stream_settings_data.get_sub_for_settings(existing_stream)
                             .can_change_name_description;
 
-                    const rendered_error = render_channel_name_conflict_error({
+                    rendered_error = render_channel_name_conflict_error({
                         stream_id: existing_stream.stream_id,
                         is_archived: existing_stream.is_archived,
                         show_rename: can_rename,
                         can_view_channel: true,
                     });
-
-                    $("#change_stream_name_error").html(rendered_error).show();
                 } else {
-                    const rendered_error = render_channel_name_conflict_error({
+                    rendered_error = render_channel_name_conflict_error({
                         stream_id: undefined,
                         is_archived: false,
                         show_rename: false,
                         can_view_channel: false,
                     });
-                    $("#change_stream_name_error").html(rendered_error).show();
                 }
+                $("#change_stream_name_error").html(rendered_error).show();
                 $("#change_stream_name").trigger("focus");
             }
         },

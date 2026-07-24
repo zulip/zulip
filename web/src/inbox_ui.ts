@@ -1432,33 +1432,27 @@ export function collapse_or_expand(container_id: string): void {
     let $all_elements = $(".inbox-header.inbox-folder, .inbox-folder-components");
     const $blocker = $("#inbox-animation-extra-content-blocker");
     $all_elements = $all_elements.add($blocker);
-    // If a folder was expanded/collapsed.
+    let $content;
     if ($toggle_container.hasClass("inbox-folder")) {
-        const $content = $toggle_container.next(".inbox-folder-components");
-        animate.collapse_or_expand({
-            toggle_class: "inbox-collapsed-state",
-            $toggle_container,
-            $content,
-            $all_elements,
-            duration: animation_duration,
-        });
-        // If a channel was expanded/collapsed.
+        // If a folder was expanded/collapsed.
+        $content = $toggle_container.next(".inbox-folder-components");
     } else {
-        const $content = $toggle_container.next(".inbox-topic-container");
+        // If a channel was expanded/collapsed.
+        $content = $toggle_container.next(".inbox-topic-container");
         // Remove parent`.inbox-folder-components` and
         // add it's contents to `$all_elements`.
         const $parent_folder_components = $toggle_container.closest(".inbox-folder-components");
         $all_elements = $all_elements.not($parent_folder_components);
         const $parent_folder_components_children = $parent_folder_components.children().children();
         $all_elements = $all_elements.add($parent_folder_components_children);
-        animate.collapse_or_expand({
-            toggle_class: "inbox-collapsed-state",
-            $toggle_container,
-            $content,
-            $all_elements,
-            duration: animation_duration,
-        });
     }
+    animate.collapse_or_expand({
+        toggle_class: "inbox-collapsed-state",
+        $toggle_container,
+        $content,
+        $all_elements,
+        duration: animation_duration,
+    });
 
     if (collapsed_containers.has(container_id)) {
         collapsed_containers.delete(container_id);
