@@ -1,3 +1,4 @@
+import json
 import os
 import re
 from dataclasses import dataclass
@@ -49,6 +50,7 @@ from zerver.lib.markdown import (
     url_embed_preview_enabled,
     url_to_a,
 )
+from zerver.lib.markdown.api_return_values_table_generator import APIReturnValuesTablePreprocessor
 from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
 from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.mdiff import diff_strings
@@ -208,6 +210,65 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         ]
         lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
+
+
+class APIReturnValuesTablePreprocessorTest(ZulipTestCase):
+    def test_render_events_singular_example(self) -> None:
+        preprocessor = APIReturnValuesTablePreprocessor(Markdown(), {})
+        example = {"type": "test_event", "id": 1}
+        events_dict = {
+            "oneOf": [
+                {
+                    "description": "Test event description",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": ["test_event"],
+                            "description": "The type of the event.",
+                        },
+                    },
+                    "example": example,
+                }
+            ]
+        }
+
+        result = preprocessor.render_events(events_dict)
+
+        self.assertEqual(result.count("**Example**"), 1)
+        self.assertIn(json.dumps(example, indent=4, sort_keys=True), result)
+
+    def test_render_events_with_x_examples(self) -> None:
+        preprocessor = APIReturnValuesTablePreprocessor(Markdown(), {})
+        first_example = {"type": "test_event", "id": 1}
+        second_example = {"type": "test_event", "id": 2}
+        events_dict = {
+            "oneOf": [
+                {
+                    "description": "Test event description.",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": ["test_event"],
+                            "description": "The type of the event.",
+                        },
+                    },
+                    "example": first_example,
+                    "x-examples": {
+                        "case_one": {"label": "First case", "value": first_example},
+                        "case_two": {"label": "Second case", "value": second_example},
+                    },
+                }
+            ]
+        }
+
+        result = preprocessor.render_events(events_dict)
+
+        self.assertNotIn("**Example**", result)
+        first_index = result.index("**Example: First case**")
+        second_index = result.index("**Example: Second case**")
+        self.assertLess(first_index, second_index)
+        self.assertIn(json.dumps(first_example, indent=4, sort_keys=True), result)
+        self.assertIn(json.dumps(second_example, indent=4, sort_keys=True), result)
 
 
 def markdown_convert_wrapper(content: str) -> str:
