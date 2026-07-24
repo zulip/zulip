@@ -215,6 +215,9 @@ prod = [
 
   # Used to parse User-Agent string for OS & browser names
   "ua-parser[regex]>=1.0.2",
+
+  # Needed to make Zulip server act as OAuth2 Provider
+  "django-oauth-toolkit",
 ]
 docs = [
   # Needed to build RTD docs
@@ -444,6 +447,7 @@ module = [
     "talon_core.*",
     "tlds.*",
     "two_factor.*",
+    "oauth2_provider.*"
 ]
 ignore_missing_imports = true
 

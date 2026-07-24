@@ -789,3 +789,20 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
 # Minimum number of subscribers in a channel for us to no longer
 # send full subscriber data to the client.
 MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000
+
+# Experimental OAuth support is under development. It is not supported in
+# production environments or covered by security support. When False,
+# oauth2_provider is omitted from INSTALLED_APPS and OAuth code paths are
+# not loaded; set True and run migrations before using /o/ endpoints.
+ENABLE_ZULIP_OAUTH = False
+
+# No real OAuth scopes for now (tokens match API-key access).
+# django-oauth-toolkit requires a non-empty SCOPES dict; replace its default
+# read/write labels with one full-access entry. API requests do not check
+# scopes yet (see validate_oauth_key).
+OAUTH2_PROVIDER: dict[str, object] = {
+    "SCOPES": {
+        "api": "Full Zulip API access, equivalent to the user's API key.",
+    },
+    "DEFAULT_SCOPES": ["api"],
+}

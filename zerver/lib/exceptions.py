@@ -165,8 +165,13 @@ class UnauthorizedError(JsonableError):
         if msg is None:
             msg = _("Not logged in: API authentication or user session required")
         super().__init__(msg)
-        if www_authenticate is None:
+        if www_authenticate is None or www_authenticate == "basic":
             self.www_authenticate = 'Basic realm="zulip"'
+        elif www_authenticate == "bearer":
+            self.www_authenticate = 'Bearer realm="zulip"'
+        elif www_authenticate == "basic_or_bearer":
+            # RFC 7235 allows multiple challenges in one header field.
+            self.www_authenticate = 'Bearer realm="zulip", Basic realm="zulip"'
         elif www_authenticate == "session":
             self.www_authenticate = 'Session realm="zulip"'
         else:
