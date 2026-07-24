@@ -84,8 +84,9 @@ class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
     # Simulate code formatting.
 
     @override
-    def format_code(self, lang: str | None, code: str) -> str:
-        return (lang or "") + ":" + code
+    def format_code(self, lang: str | None, code: str, hl_lines: list[int] | None = None) -> str:
+        hl = f"[hl={hl_lines}]" if hl_lines else ""
+        return (lang or "") + ":" + hl + code
 
     @override
     def placeholder(self, s: str) -> str:
@@ -3945,6 +3946,15 @@ class MarkdownErrorTests(ZulipTestCase):
         self.assertIn("print('pygments fallback test')", rendered_html)
         mocked_hilite.assert_called()
         self.assertIn("Failed to highlight fenced code block", log.output[0])
+
+    def test_fenced_code_hl_lines(self) -> None:
+        """hl_lines in a code fence header highlights the requested lines."""
+        markdown_text = '```python hl_lines="2"\nfirst = 1\nsecond = 2\nthird = 3\n```'
+        rendered_html = markdown_convert(
+            markdown_text,
+            self.example_user("hamlet"),
+        ).rendered_content
+        self.assertIn('class="hll"', rendered_html)
 
 
 class TestHtmlToMarkdown(ZulipTestCase):
