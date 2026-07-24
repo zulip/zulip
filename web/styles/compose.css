@@ -1500,8 +1500,11 @@ textarea.new_message_textarea {
     color: var(--color-text-popover-menu);
 
     .enter_sends_choice {
-        padding: 4px 10px;
-        gap: 0 8px;
+        /* Adjust padding and gap to match popover-menu-link
+           (schedule message / view schedule messages) to ensure consistent
+           vertical alignment. */
+        padding: 0.2em 0.7em;
+        gap: 5px;
         display: grid;
         /* 1em and 1.5em were chosen from playing around with different values
            and picking some that looked reasonable. */
