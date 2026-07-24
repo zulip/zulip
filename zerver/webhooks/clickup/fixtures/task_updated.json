@@ -1,0 +1,41 @@
+{
+  "event": "taskUpdated",
+  "history_items": [
+    {
+      "id": "5130985483254231181",
+      "type": 1,
+      "date": "1781626706671",
+      "field": "status",
+      "parent_id": "901615428252",
+      "data": {
+        "status_type": "closed"
+      },
+      "source": null,
+      "user": {
+        "id": 272608942,
+        "username": "Sathwik Suresh Shetty",
+        "email": "sathwikshetty1234@gmail.com",
+        "color": "#595d66",
+        "initials": "SS",
+        "profilePicture": null,
+        "role": 1,
+        "role_subtype": 0
+      },
+      "before": {
+        "status": "to do",
+        "color": "#87909e",
+        "orderindex": 0,
+        "type": "open"
+      },
+      "after": {
+        "status": "complete",
+        "color": "#008844",
+        "orderindex": 1,
+        "type": "closed"
+      }
+    }
+  ],
+  "task_id": "86d3cc9fu",
+  "team_id": "90161438581",
+  "webhook_id": "7dd940c1-0525-42cb-8b7f-77627c1941b3"
+}
