@@ -43,6 +43,13 @@
             & th {
                 font-weight: 400;
             }
+
+            & > a:last-child {
+                display: inline-block;
+                border-top: 1px solid var(--color-border-modal-bar);
+                margin-top: 20px;
+                padding-top: 20px;
+            }
         }
     }
 
