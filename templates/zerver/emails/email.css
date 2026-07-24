@@ -356,3 +356,142 @@ p.digest_paragraph,
         max-width: 200px;
     }
 }
+
+.digest_rendered_markdown {
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.digest_rendered_markdown p {
+    margin: 5px 0;
+}
+
+.digest_rendered_markdown ul,
+.digest_rendered_markdown ol {
+    margin: 0 0 5px;
+    padding-left: 18px;
+}
+
+.digest_rendered_markdown li {
+    margin: 2px 0;
+}
+
+.digest_rendered_markdown strong,
+.digest_rendered_markdown b {
+    font-weight: bold;
+}
+
+.digest_rendered_markdown em {
+    font-style: italic;
+}
+
+.digest_rendered_markdown code {
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #000;
+    background-color: #f2f2f2;
+    padding: 1px 3px;
+    border-radius: 3px;
+}
+
+.digest_rendered_markdown pre {
+    margin: 5px 0;
+    padding: 5px;
+    font-family: monospace;
+    font-size: 0.85em;
+    line-height: 1.4;
+    background-color: #f7f7f7;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.digest_rendered_markdown pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+.digest_rendered_markdown blockquote {
+    margin: 5px 0;
+    padding-left: 8px;
+    border-left: 4px solid #ccc;
+}
+
+.digest_rendered_markdown h1,
+.digest_rendered_markdown h2,
+.digest_rendered_markdown h3,
+.digest_rendered_markdown h4,
+.digest_rendered_markdown h5,
+.digest_rendered_markdown h6 {
+    margin: 15px 0 5px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.digest_rendered_markdown h4 {
+    font-size: 1.1em;
+}
+
+.digest_rendered_markdown a {
+    color: #06c;
+    text-decoration: underline;
+    overflow-wrap: break-word;
+}
+
+.digest_rendered_markdown a:hover {
+    color: #004a99;
+}
+
+.digest_rendered_markdown .user-mention {
+    background-color: #e6e9ff;
+    padding: 0 3px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.digest_rendered_markdown img {
+    height: 20px;
+    width: 20px;
+    vertical-align: middle;
+    border: none;
+}
+
+.digest_rendered_markdown .spoiler-block {
+    width: fit-content;
+    margin: 5px 0;
+    padding-left: 5px;
+    padding-right: 5px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fafafa;
+}
+
+.spoiler-block .spoiler-title {
+    font-style: italic;
+}
+
+.digest_rendered_markdown time {
+    font-size: 0.95em;
+    background-color: #eee;
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.digest_rendered_markdown table {
+    margin: 5px 0;
+    border-collapse: collapse;
+}
+
+.digest_rendered_markdown th,
+.digest_rendered_markdown td {
+    border: 1px solid #ccc;
+    padding: 4px;
+    text-align: left;
+}
+
+.digest_rendered_markdown .katex-display {
+    margin: 0 0 5px;
+    overflow-x: auto;
+}
