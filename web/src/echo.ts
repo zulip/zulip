@@ -159,16 +159,15 @@ function failed_message_success(message_id: number): void {
     show_failed_message_success(message_id);
 }
 
+type ResendCallbacks = {
+    on_send_message_success: typeof compose.send_message_success;
+    send_message: typeof transmit.send_message;
+};
+
 export function resend_message(
     message: LocalMessage,
     $row: JQuery,
-    {
-        on_send_message_success,
-        send_message,
-    }: {
-        on_send_message_success: typeof compose.send_message_success;
-        send_message: typeof transmit.send_message;
-    },
+    {on_send_message_success, send_message}: ResendCallbacks,
 ): void {
     message_store.update_message_content(message, message.raw_content!);
     if (show_retry_spinner($row)) {
@@ -675,26 +674,10 @@ export function display_slow_send_loading_spinner(message: Message): void {
     }
 }
 
-export function initialize({
-    on_send_message_success,
-    send_message,
-}: {
-    on_send_message_success: typeof compose.send_message_success;
-    send_message: typeof transmit.send_message;
-}): void {
+export function initialize({on_send_message_success, send_message}: ResendCallbacks): void {
     function on_failed_action(
         selector: string,
-        callback: (
-            message: LocalMessage,
-            $row: JQuery,
-            {
-                on_send_message_success,
-                send_message,
-            }: {
-                on_send_message_success: typeof compose.send_message_success;
-                send_message: typeof transmit.send_message;
-            },
-        ) => void,
+        callback: (message: LocalMessage, $row: JQuery, callbacks: ResendCallbacks) => void,
     ): void {
         $("#main_div").on("click", selector, function (this: HTMLElement, e) {
             e.stopPropagation();
