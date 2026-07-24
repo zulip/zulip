@@ -26,8 +26,8 @@ mock_jquery((arg) => {
         addClass() {
             return this;
         },
-        replace(regex, string) {
-            arg = arg.replace(regex, string);
+        _replace(regex, string) {
+            arg = arg.replace(regex, () => string);
         },
         html: () => arg,
     };
@@ -860,7 +860,7 @@ run_test("render item", () => {
             replaceWith($element) {
                 assert.equal(new_html, $element.html());
                 called = true;
-                $container.$appended_data.replace(regex, new_html);
+                $container.$appended_data._replace(regex, new_html);
             },
             length: 1,
         };
