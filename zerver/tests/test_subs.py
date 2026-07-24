@@ -1,6 +1,7 @@
 import hashlib
 import random
 from collections.abc import Sequence
+from contextlib import redirect_stdout
 from datetime import timedelta
 from io import StringIO
 from typing import TYPE_CHECKING, Any
@@ -9,6 +10,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -34,6 +36,7 @@ from zerver.actions.streams import (
     do_deactivate_stream,
     do_set_stream_property,
     do_unarchive_stream,
+    get_subscription_change_notice_content,
 )
 from zerver.actions.user_groups import bulk_add_members_to_user_groups, check_add_user_group
 from zerver.actions.users import do_deactivate_user
@@ -3298,8 +3301,11 @@ class StreamAdminTest(ZulipTestCase):
         If you're a realm admin, you can remove other people from private streams you
         are on.
         """
+        # The query count is higher than the public-stream equivalent because
+        # removing a user from a private channel posts a "channel events"
+        # notification message, which takes additional queries to send.
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=35,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3315,8 +3321,11 @@ class StreamAdminTest(ZulipTestCase):
         If you're a realm admin, you can remove people from private
         streams you aren't on.
         """
+        # The query count is higher than the public-stream equivalent because
+        # removing a user from a private channel posts a "channel events"
+        # notification message, which takes additional queries to send.
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=35,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -5804,3 +5813,289 @@ class NoRecipientIDsTest(ZulipTestCase):
         #
         # This covers a rare corner case.
         self.assert_length(subs, 0)
+
+
+class PrivateStreamEventTest(ZulipTestCase):
+    """Interactive subscribe/unsubscribe posts a "channel events" notice to
+    private channels (see get_subscription_change_notice_content and
+    send_subscription_change_notices)."""
+
+    def enable_channel_events(self, realm: Realm) -> None:
+        realm.send_channel_events_messages = True
+        realm.save(update_fields=["send_channel_events_messages"])
+
+    def latest_channel_event(self, witness: UserProfile, stream: Stream) -> str:
+        return get_topic_messages(witness, stream, "channel events")[-1].content
+
+    def test_private_stream_join_leave_notifications(self) -> None:
+        """
+        Subscribing/unsubscribing a user names the acting user when they act
+        on someone else, and stays actor-less when a user changes their own
+        membership.  Iago stays subscribed throughout as the witness who
+        receives every notification.
+        """
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+        self.enable_channel_events(realm)
+
+        stream = self.make_stream("secret", realm=realm, invite_only=True)
+        # Iago witnesses the notices; this setup subscription posts none.
+        self.subscribe(iago, stream.name)
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 0)
+
+        iago_mention = f"@_**{iago.full_name}|{iago.id}**"
+        hamlet_mention = f"@_**{hamlet.full_name}|{hamlet.id}**"
+
+        # An admin adding another user names both the actor and the target.
+        self.login_user(iago)
+        self.subscribe_via_post(
+            iago, [stream.name], dict(principals=orjson.dumps([hamlet.id]).decode())
+        )
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 1)
+        self.assertEqual(
+            self.latest_channel_event(iago, stream),
+            f"{iago_mention} subscribed {hamlet_mention} to this channel.",
+        )
+
+        # An admin removing another user likewise names both.
+        self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([stream.name]).decode(),
+                "principals": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 2)
+        self.assertEqual(
+            self.latest_channel_event(iago, stream),
+            f"{iago_mention} unsubscribed {hamlet_mention} from this channel.",
+        )
+
+        # A user changing their own membership is not named as an actor.
+        # Allow Hamlet to subscribe himself to this private channel.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_subscribe_group",
+            UserGroupMembersData(direct_members=[hamlet.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+        self.login_user(hamlet)
+        self.subscribe_via_post(hamlet, [stream.name])
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 3)
+        self.assertEqual(
+            self.latest_channel_event(iago, stream),
+            f"{hamlet_mention} subscribed to this channel.",
+        )
+
+        self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([stream.name]).decode()},
+        )
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 4)
+        self.assertEqual(
+            self.latest_channel_event(iago, stream),
+            f"{hamlet_mention} unsubscribed from this channel.",
+        )
+
+    def test_private_stream_bulk_notifications(self) -> None:
+        """
+        A bulk membership change posts a single message: up to three users
+        are named inline; four or more collapse to a count with the full
+        roster in an expandable spoiler block.  Names are listed
+        alphabetically regardless of input order.
+        """
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        prospero = self.example_user("prospero")
+        realm = iago.realm
+        self.enable_channel_events(realm)
+
+        stream = self.make_stream("bulk-secret", realm=realm, invite_only=True)
+        # Iago witnesses the notices; this setup subscription posts none.
+        self.subscribe(iago, stream.name)
+        self.login_user(iago)
+
+        iago_mention = f"@_**{iago.full_name}|{iago.id}**"
+
+        def mention(user: UserProfile) -> str:
+            return f"@_**{user.full_name}|{user.id}**"
+
+        def add(users: list[UserProfile]) -> None:
+            self.subscribe_via_post(
+                iago,
+                [stream.name],
+                dict(principals=orjson.dumps([user.id for user in users]).decode()),
+            )
+
+        def remove(users: list[UserProfile]) -> None:
+            self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream.name]).decode(),
+                    "principals": orjson.dumps([user.id for user in users]).decode(),
+                },
+            )
+
+        # Two users: named inline as "A and B" (sorted by name, not input order).
+        add([hamlet, cordelia])
+        self.assertEqual(
+            self.latest_channel_event(iago, stream),
+            f"{iago_mention} subscribed {mention(cordelia)} and {mention(hamlet)} to this channel.",
+        )
+        remove([hamlet, cordelia])
+
+        # Three users: named inline as "A, B, and C".
+        add([othello, cordelia, hamlet])
+        self.assertEqual(
+            self.latest_channel_event(iago, stream),
+            f"{iago_mention} subscribed {mention(cordelia)}, {mention(hamlet)}, "
+            f"and {mention(othello)} to this channel.",
+        )
+        remove([othello, cordelia, hamlet])
+
+        # Four users: collapses to a count with the roster in a spoiler block.
+        members = [prospero, othello, cordelia, hamlet]
+        roster = ", ".join(mention(user) for user in [cordelia, hamlet, othello, prospero])
+        add(members)
+        self.assertEqual(
+            self.latest_channel_event(iago, stream),
+            f"```spoiler {iago_mention} subscribed 4 users to this channel.\n{roster}\n```",
+        )
+        remove(members)
+        self.assertEqual(
+            self.latest_channel_event(iago, stream),
+            f"```spoiler {iago_mention} unsubscribed 4 users from this channel.\n{roster}\n```",
+        )
+
+    def test_acting_user_excluded_from_target_list(self) -> None:
+        """
+        When the acting user is among those changed (e.g. an admin subscribing
+        themselves alongside others), they are named as the actor but not also
+        listed as one of the targets.
+        """
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        iago_mention = f"@_**{iago.full_name}|{iago.id}**"
+        hamlet_mention = f"@_**{hamlet.full_name}|{hamlet.id}**"
+
+        # Acting on themselves alongside another user: only the other user is
+        # named as a target.
+        self.assertEqual(
+            get_subscription_change_notice_content(
+                acting_user=iago, users=[iago, hamlet], subscribed=True
+            ),
+            f"{iago_mention} subscribed {hamlet_mention} to this channel.",
+        )
+        self.assertEqual(
+            get_subscription_change_notice_content(
+                acting_user=iago, users=[iago, hamlet], subscribed=False
+            ),
+            f"{iago_mention} unsubscribed {hamlet_mention} from this channel.",
+        )
+        # Acting only on themselves: no separate target list.
+        self.assertEqual(
+            get_subscription_change_notice_content(acting_user=iago, users=[iago], subscribed=True),
+            f"{iago_mention} subscribed to this channel.",
+        )
+
+    def test_public_stream_no_join_leave_notifications(self) -> None:
+        """
+        Public channels never receive subscription notifications; the notice
+        is only sent for private (invite-only) channels.
+        """
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+        self.enable_channel_events(realm)
+
+        stream = self.make_stream("public-stream", realm=realm, invite_only=False)
+        self.subscribe(iago, stream.name)
+
+        self.login_user(iago)
+        self.subscribe_via_post(
+            iago, [stream.name], dict(principals=orjson.dumps([hamlet.id]).decode())
+        )
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 0)
+
+    def test_bulk_primitives_do_not_send_notifications(self) -> None:
+        """
+        The low-level bulk_add_subscriptions/bulk_remove_subscriptions
+        primitives never post channel-events notices; the notice is sent only
+        from the interactive subscribe/unsubscribe flows.  This is what keeps
+        administrative callers -- user deletion, stream merges, and management
+        commands, all of which call the primitives directly -- from spamming
+        private channels.
+        """
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+        self.enable_channel_events(realm)
+
+        stream = self.make_stream("primitive-secret", realm=realm, invite_only=True)
+        # Iago witnesses any messages that might be posted to the channel.
+        self.subscribe(iago, stream.name)
+
+        bulk_add_subscriptions(realm, [stream], [hamlet], acting_user=None)
+        bulk_remove_subscriptions(realm, [hamlet], [stream], acting_user=None)
+
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 0)
+
+    def test_no_notice_when_setting_disabled(self) -> None:
+        """
+        With "Send automated messages for channel events" disabled, no notice
+        is posted even for a private-channel membership change.  The helper
+        returns before fetching the notification bot, so the disabled case
+        adds no query.
+        """
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+        realm.send_channel_events_messages = False
+        realm.save(update_fields=["send_channel_events_messages"])
+
+        stream = self.make_stream("quiet-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, stream.name)
+
+        self.login_user(iago)
+        self.subscribe_via_post(
+            iago, [stream.name], dict(principals=orjson.dumps([hamlet.id]).decode())
+        )
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 0)
+
+    def test_merge_streams_and_delete_user_commands_send_no_notice(self) -> None:
+        """
+        The management commands flagged in review -- `merge_streams` and
+        `delete_user` -- subscribe/unsubscribe users through the primitives
+        with no acting user.  Driving the actual commands, neither posts a
+        channel-events notice even with the setting enabled.
+        """
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = iago.realm
+        self.enable_channel_events(realm)
+
+        # `manage.py merge_streams keep-secret destroy-secret -r zulip` moves
+        # subscribers from the destroyed private channel to the surviving one;
+        # Iago witnesses the survivor.
+        keep = self.make_stream("keep-secret", realm=realm, invite_only=True)
+        destroy = self.make_stream("destroy-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, keep.name)
+        self.subscribe(hamlet, destroy.name)
+        # Both commands print status lines via print(); capture that so it
+        # doesn't trip the test suite's console-output check.
+        with redirect_stdout(StringIO()):
+            call_command("merge_streams", keep.name, destroy.name, "-r", realm.string_id)
+        self.assert_length(get_topic_messages(iago, keep, "channel events"), 0)
+
+        # `manage.py delete_user -f -r zulip -u cordelia@zulip.com` unsubscribes
+        # the deleted user from every private channel.
+        secret = self.make_stream("delete-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, secret.name)
+        self.subscribe(cordelia, secret.name)
+        with redirect_stdout(StringIO()):
+            call_command("delete_user", "-f", "-r", realm.string_id, "-u", cordelia.delivery_email)
+        self.assert_length(get_topic_messages(iago, secret, "channel events"), 0)
