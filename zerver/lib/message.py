@@ -37,6 +37,7 @@ from zerver.lib.topic import (
     MESSAGE__TOPIC,
     RESOLVED_TOPIC_PREFIX,
     TOPIC_NAME,
+    is_topic_resolved,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
@@ -274,11 +275,11 @@ def topic_resolve_toggled(topic: str, prev_topic: str) -> bool:
     resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
     truncation_len = len(TOPIC_TRUNCATION_MESSAGE)
     # Topic unresolved
-    if prev_topic.startswith(RESOLVED_TOPIC_PREFIX) and not topic.startswith(RESOLVED_TOPIC_PREFIX):
+    if is_topic_resolved(prev_topic) and not is_topic_resolved(topic):
         return prev_topic[resolved_prefix_len:] == topic
 
     # Topic resolved
-    if topic.startswith(RESOLVED_TOPIC_PREFIX) and not prev_topic.startswith(RESOLVED_TOPIC_PREFIX):
+    if is_topic_resolved(topic) and not is_topic_resolved(prev_topic):
         if len(prev_topic) <= MAX_TOPIC_NAME_LENGTH - resolved_prefix_len:
             # When the topic was resolved, it was not truncated,
             # so we remove the resolved prefix and compare.
