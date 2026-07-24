@@ -355,6 +355,8 @@ def compute_full_event_type(event: Mapping[str, Any]) -> str:
 
 
 class EventQueue:
+    MAX_QUEUE_SIZE = 2500
+
     def __init__(self, id: str) -> None:
         # When extending this list of properties, one must be sure to
         # update to_dict and from_dict.
@@ -365,6 +367,7 @@ class EventQueue:
         self.newest_pruned_id: int | None = -1
         self.id: str = id
         self.virtual_events: dict[str, dict[str, Any]] = {}
+        self.overflowed: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
@@ -375,6 +378,7 @@ class EventQueue:
             next_event_id=self.next_event_id,
             queue=list(self.queue),
             virtual_events=self.virtual_events,
+            overflowed=self.overflowed,
         )
         if self.newest_pruned_id is not None:
             d["newest_pruned_id"] = self.newest_pruned_id
@@ -387,6 +391,7 @@ class EventQueue:
         ret.newest_pruned_id = d.get("newest_pruned_id")
         ret.queue = deque(d["queue"])
         ret.virtual_events = d.get("virtual_events", {})
+        ret.overflowed = d.get("overflowed", False)
         return ret
 
     def push(self, orig_event: Mapping[str, Any]) -> None:
@@ -429,7 +434,12 @@ class EventQueue:
                 virtual_event["timestamp"] = event["timestamp"]
 
         else:
-            self.queue.append(event)
+            if self.overflowed or len(self.queue) >= self.MAX_QUEUE_SIZE:
+                self.overflowed = True
+                self.queue.clear()
+                self.virtual_events.clear()
+            else:
+                self.queue.append(event)
 
     # Note that pop ignores virtual events.  This is fine in our
     # current usage since virtual events should always be resolved to
@@ -447,6 +457,9 @@ class EventQueue:
             self.pop()
 
     def contents(self, include_internal_data: bool = False) -> list[dict[str, Any]]:
+        if self.overflowed and not include_internal_data:
+            raise BadEventQueueIdError(self.id)
+
         contents: list[dict[str, Any]] = []
         virtual_id_map: dict[str, dict[str, Any]] = {}
         for event_type in self.virtual_events:
