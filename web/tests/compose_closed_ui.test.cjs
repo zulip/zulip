@@ -33,6 +33,13 @@ mock_esm("../src/settings_data", {
 const message_util = mock_esm("../src/message_util", {
     user_can_send_direct_message: () => true,
 });
+const compose_state = mock_esm("../src/compose_state");
+const message_store = mock_esm("../src/message_store", {
+    get_pm_full_names(user_ids) {
+        const other_ids = people.sorted_other_user_ids(user_ids);
+        return people.get_display_full_names(other_ids).toSorted().join(", ");
+    },
+});
 
 const stream_data = zrequire("stream_data");
 // Code we're actually using/testing
@@ -249,6 +256,89 @@ run_test("test_non_message_list_input", ({mock_template}) => {
     });
     label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
+});
+
+run_test("get_recipient_label_for_call", ({override}) => {
+    const stream = make_stream({
+        subscribed: true,
+        name: "design",
+        stream_id: 200,
+    });
+    stream_data.add_sub_for_tests(stream);
+
+    // --- Compose-box branch (edit_message_id === undefined) ---
+
+    // Stream + non-empty topic.
+    override(compose_state, "get_message_type", () => "stream");
+    override(compose_state, "stream_id", () => stream.stream_id);
+    override(compose_state, "topic", () => "typography");
+    assert.equal(
+        compose_closed_ui.get_recipient_label_for_call(undefined).label_text,
+        "#design > typography",
+    );
+
+    // Stream + empty topic uses the realm's empty-topic display name.
+    override(compose_state, "topic", () => "");
+    assert.equal(
+        compose_closed_ui.get_recipient_label_for_call(undefined).label_text,
+        `#design > translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
+    );
+
+    // Stream with no stream_id → undefined.
+    override(compose_state, "stream_id", () => undefined);
+    assert.equal(compose_closed_ui.get_recipient_label_for_call(undefined), undefined);
+
+    // Stream lookup miss → undefined.
+    override(compose_state, "stream_id", () => 999);
+    assert.equal(compose_closed_ui.get_recipient_label_for_call(undefined), undefined);
+
+    // DM with distinct recipients uses the recipient full names. User 2 is
+    // "Bob", set up at the top of this file.
+    override(compose_state, "get_message_type", () => "private");
+    override(compose_state, "private_message_recipient_ids", () => [2]);
+    assert.equal(compose_closed_ui.get_recipient_label_for_call(undefined).label_text, "Bob");
+
+    // DM with only self → empty label_text, so the meeting name doesn't
+    // start with the current user's own name.
+    override(compose_state, "private_message_recipient_ids", () => [current_user.user_id]);
+    assert.equal(compose_closed_ui.get_recipient_label_for_call(undefined).label_text, "");
+
+    // Unknown message type → undefined.
+    override(compose_state, "get_message_type", () => undefined);
+    assert.equal(compose_closed_ui.get_recipient_label_for_call(undefined), undefined);
+
+    // --- Edit-form branch (edit_message_id !== undefined) ---
+    // The edit-form path reads from message_store, not compose_state, so we
+    // deliberately don't override compose_state here.
+
+    // Stream edit target uses the message's own stream/topic.
+    override(message_store, "get", () => ({
+        type: "stream",
+        stream_id: stream.stream_id,
+        topic: "reviews",
+    }));
+    assert.equal(
+        compose_closed_ui.get_recipient_label_for_call("42").label_text,
+        "#design > reviews",
+    );
+
+    // DM edit target uses the message's own recipients.
+    override(message_store, "get", () => ({
+        type: "private",
+        to_user_ids: "2",
+    }));
+    assert.equal(compose_closed_ui.get_recipient_label_for_call("43").label_text, "Bob");
+
+    // DM-to-self edit target → empty label_text.
+    override(message_store, "get", () => ({
+        type: "private",
+        to_user_ids: String(current_user.user_id),
+    }));
+    assert.equal(compose_closed_ui.get_recipient_label_for_call("44").label_text, "");
+
+    // Unknown/evicted message id → undefined.
+    override(message_store, "get", () => undefined);
+    assert.equal(compose_closed_ui.get_recipient_label_for_call("999"), undefined);
 });
 
 run_test("update_reply_button_state", ({override, override_rewire}) => {

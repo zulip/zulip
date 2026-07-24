@@ -5,9 +5,10 @@ import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
 import {compose_call_session_manager} from "./compose_call_session.ts";
-import {get_recipient_label} from "./compose_closed_ui.ts";
+import {get_recipient_label_for_call} from "./compose_closed_ui.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as people from "./people.ts";
 import * as rows from "./rows.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
@@ -149,7 +150,8 @@ export function generate_and_insert_audio_or_video_call_link(
     } else {
         switch (realm.realm_video_chat_provider) {
             case available_providers.big_blue_button?.id: {
-                const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
+                const meeting_name =
+                    `${get_recipient_label_for_call(edit_message_id)?.label_text ?? ""} meeting`.trimStart();
                 const request = {
                     meeting_name,
                     voice_only: is_audio_call,
@@ -207,8 +209,61 @@ export function generate_and_insert_audio_or_video_call_link(
                 });
                 break;
             }
+            case available_providers.galene?.id: {
+                const meeting_label = get_recipient_label_for_call(edit_message_id);
+
+                let stream: string;
+                let topic: string;
+                if (meeting_label?.user_ids) {
+                    // For a DM, use a sorted comma-joined user-id list
+                    // (including our own id) as the topic.
+                    stream = "dm";
+                    topic = people.concat_direct_message_group(
+                        meeting_label.user_ids,
+                        current_user.user_id,
+                    );
+                } else {
+                    stream = meeting_label?.stream?.name ?? "general_calls";
+                    topic = meeting_label?.topic_display_name ?? "";
+                }
+
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
+                        const data = call_response_schema.parse(response);
+                        insert_video_call_url(data.url, $target_textarea);
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _xhr: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.post({
+                    url: "/json/calls/galene/create",
+                    data: {
+                        channel: stream,
+                        topic,
+                    },
+                    success: handle_success,
+                    error: handle_error,
+                });
+                break;
+            }
             case available_providers.nextcloud_talk?.id: {
-                const room_name = `${get_recipient_label()?.label_text ?? ""} conversation`;
+                const room_name =
+                    `${get_recipient_label_for_call(edit_message_id)?.label_text ?? ""} conversation`.trimStart();
                 const request = {room_name};
 
                 const handle_success = (response: unknown): void => {
