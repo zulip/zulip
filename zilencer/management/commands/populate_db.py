@@ -872,6 +872,7 @@ class Command(ZulipBaseCommand):
                 "Pronouns",
                 CustomProfileField.PRONOUNS,
                 hint="What pronouns should people use to refer to you?",
+                display_in_profile_summary=True,
             )
 
             # Fill in values for Iago and Hamlet

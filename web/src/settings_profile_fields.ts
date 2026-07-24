@@ -311,9 +311,13 @@ function update_form_for_field_type_selection(): void {
     // Not showing "display on user card" option for long text/user profile field.
     if (is_valid_to_display_in_summary(profile_field_type)) {
         $("#profile_field_display_in_profile_summary").closest(".input-group").show();
-        const check_display_in_profile_summary_by_default =
+        const is_first_pronoun_field =
             profile_field_type === field_types.PRONOUNS.id &&
-            !display_in_profile_summary_fields_limit_reached;
+            get_first_pronoun_field_id_by_order() === null;
+        const check_display_in_profile_summary_by_default =
+            is_first_pronoun_field ||
+            (profile_field_type === field_types.PRONOUNS.id &&
+                !display_in_profile_summary_fields_limit_reached);
         $("#profile_field_display_in_profile_summary").prop(
             "checked",
             check_display_in_profile_summary_by_default,
@@ -481,7 +485,7 @@ function show_modal_for_deleting_options(
     });
 }
 
-function get_profile_field(id: number): CustomProfileField | undefined {
+export function get_profile_field(id: number): CustomProfileField | undefined {
     return realm.custom_profile_fields.find((field) => field.id === id);
 }
 
@@ -638,16 +642,25 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
 
     function set_initial_values_of_profile_field(): void {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
+        const first_pronoun_id = get_first_pronoun_field_id_by_order();
+        const is_first_pronoun = field_id === first_pronoun_id;
+        const $checkbox = $profile_field_form.find("input[name=display_in_profile_summary]");
+        const $label = $profile_field_form.find(".edit_profile_field_display_label");
 
-        // If it exceeds or equals the max limit, we are disabling option for display custom
-        // profile field on user card and adding tooltip, unless the field is already checked.
-        if (display_in_profile_summary_fields_limit_reached && !field.display_in_profile_summary) {
-            $profile_field_form
-                .find("input[name=display_in_profile_summary]")
-                .prop("disabled", true);
-            $profile_field_form
-                .find(".edit_profile_field_display_label")
-                .addClass("display_in_profile_summary_tooltip disabled_label");
+        // The first pronoun field is always disabled and checked. For other fields,
+        // if the limit is reached, we disable the option to display the custom profile
+        // field on user card and add a tooltip, unless the field is already checked.
+        if (is_first_pronoun) {
+            $checkbox.prop("disabled", true);
+            $checkbox.prop("checked", true);
+            $label.removeClass("display_in_profile_summary_tooltip disabled_label");
+            $label.addClass("first_pronoun_field_tooltip");
+        } else if (
+            display_in_profile_summary_fields_limit_reached &&
+            !field.display_in_profile_summary
+        ) {
+            $checkbox.prop("disabled", true);
+            $label.addClass("display_in_profile_summary_tooltip disabled_label");
         }
 
         if (field.type === field_types.DROPDOWN.id) {
@@ -774,10 +787,33 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
     });
 }
 
-// If exceeds or equals the max limit, we are disabling option for
-// display custom profile field on user card and adding tooltip.
+export function get_first_field_id_by_type_and_order(field_type: number): number | null {
+    for (const field_id of order) {
+        const field = get_profile_field(field_id);
+        if (field?.type === field_type) {
+            return field_id;
+        }
+    }
+    return null;
+}
+
+export function get_first_pronoun_field_id_by_order(): number | null {
+    return get_first_field_id_by_type_and_order(realm.custom_profile_field_types.PRONOUNS.id);
+}
+
 function update_profile_fields_checkboxes(): void {
-    // Disabling only uncheck checkboxes in table, so user should able uncheck checked checkboxes.
+    const first_pronoun_id = get_first_pronoun_field_id_by_order();
+
+    let count = 0;
+    $("#admin_profile_fields_table .display_in_profile_summary:checked").each(function () {
+        const field_id = Number.parseInt($(this).attr("data-profile-field-id")!, 10);
+        if (field_id !== first_pronoun_id) {
+            count += 1;
+        }
+    });
+    display_in_profile_summary_fields_limit_reached =
+        count >= realm.max_display_in_profile_summary_fields;
+
     $("#admin_profile_fields_table .display_in_profile_summary_checkbox_false").prop(
         "disabled",
         display_in_profile_summary_fields_limit_reached,
@@ -786,6 +822,18 @@ function update_profile_fields_checkboxes(): void {
         "display_in_profile_summary_tooltip",
         display_in_profile_summary_fields_limit_reached,
     );
+
+    if (first_pronoun_id !== null) {
+        const $first_pronoun_checkbox = $(
+            `#profile_field_display_in_profile_summary_${first_pronoun_id}`,
+        );
+        $first_pronoun_checkbox.prop("disabled", true);
+        $first_pronoun_checkbox.prop("checked", true);
+        $first_pronoun_checkbox
+            .closest("label")
+            .removeClass("display_in_profile_summary_tooltip")
+            .addClass("first_pronoun_field_tooltip");
+    }
 }
 
 function toggle_display_in_profile_summary_profile_field(
@@ -793,6 +841,17 @@ function toggle_display_in_profile_summary_profile_field(
     _event: JQuery.Event,
 ): void {
     const field_id = Number.parseInt($(this).attr("data-profile-field-id")!, 10);
+
+    const first_pronoun_id = get_first_pronoun_field_id_by_order();
+    if (field_id === first_pronoun_id && !this.checked) {
+        this.checked = true;
+        return;
+    }
+
+    if (this.checked && display_in_profile_summary_fields_limit_reached) {
+        this.checked = false;
+        return;
+    }
 
     const data = {
         display_in_profile_summary: this.checked,
@@ -854,16 +913,8 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
 
     order = [];
 
-    let display_in_profile_summary_fields_count = 0;
-
     for (const profile_field of profile_fields_data) {
         order.push(profile_field.id);
-
-        // Keeping counts of all display_in_profile_summary profile fields,
-        // to keep track of whether the limit has been reached.
-        if (profile_field.display_in_profile_summary) {
-            display_in_profile_summary_fields_count += 1;
-        }
     }
 
     ListWidget.create($profile_fields_table, profile_fields_data, {
@@ -892,9 +943,6 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
         $parent_container: $("#profile-field-settings").expectOne(),
         $simplebar_container: $("#profile-field-settings .progressive-table-wrapper"),
     });
-
-    // Update whether we're at the limit for display_in_profile_summary.
-    display_in_profile_summary_fields_limit_reached = display_in_profile_summary_fields_count >= 2;
 
     if (current_user.is_admin) {
         const field_list = util.the($("#admin_profile_fields_table"));

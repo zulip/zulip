@@ -39,6 +39,7 @@ import {hide_all} from "./popovers.ts";
 import * as presence from "./presence.ts";
 import * as rows from "./rows.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
+import {get_first_pronoun_field_id_by_order, get_profile_field} from "./settings_profile_fields.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
@@ -223,6 +224,7 @@ type UserCardPopoverData = {
     user_last_seen_time_status: string;
     user_time: string | undefined;
     user_type: string | undefined;
+    user_pronouns: string | undefined;
     status_content_available: boolean;
     status_text: string | undefined;
     status_emoji_info: user_status.UserStatusEmojiInfo | undefined;
@@ -346,9 +348,34 @@ function get_user_card_popover_data(
     }
     // Filtering out only those profile fields that can be display in the popover and are not empty.
     const field_types = realm.custom_profile_field_types;
+
+    // Get the first pronoun field (by order) to display in the header.
+    const first_pronoun_field_id = get_first_pronoun_field_id_by_order();
+
+    let pronouns = "";
+    if (first_pronoun_field_id !== null) {
+        const first_pronoun_field = get_profile_field(first_pronoun_field_id);
+        if (first_pronoun_field) {
+            const first_pronoun_data = user_profile.get_custom_profile_field_data(
+                user,
+                first_pronoun_field,
+                field_types,
+            );
+            if (first_pronoun_data) {
+                pronouns = first_pronoun_data.value ?? "";
+            }
+        }
+    }
+
     const display_profile_fields = realm.custom_profile_fields
         .flatMap((f) => user_profile.get_custom_profile_field_data(user, f, field_types) ?? [])
-        .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
+        .filter(
+            (f) =>
+                f.display_in_profile_summary &&
+                f.value !== undefined &&
+                f.value !== null &&
+                f.id !== first_pronoun_field_id,
+        );
 
     const user_id_string = user.user_id.toString();
     const can_send_private_message =
@@ -377,6 +404,7 @@ function get_user_card_popover_data(
         user_last_seen_time_status,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
+        user_pronouns: pronouns,
         status_content_available: Boolean(status_text ?? status_emoji_info),
         status_text,
         status_emoji_info,

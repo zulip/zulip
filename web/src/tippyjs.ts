@@ -410,6 +410,23 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: [
+            "#profile-field-settings .first_pronoun_field_tooltip",
+            "#edit-custom-profile-field-form-modal .first_pronoun_field_tooltip",
+        ].join(","),
+        content: $t({
+            defaultMessage:
+                "This pronoun field is displayed prominently on the user card, and does not count against the user card’s limit on custom fields.",
+        }),
+        appendTo: () => document.body,
+        onTrigger(instance) {
+            if (!instance.reference.classList.contains("first_pronoun_field_tooltip")) {
+                instance.destroy();
+            }
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#full_name_input_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
