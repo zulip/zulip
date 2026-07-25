@@ -1870,6 +1870,7 @@ export class MessageListView {
         }
         this._post_process($rendered_msg);
         $row.replaceWith($rendered_msg);
+        condense.condense_and_collapse($rendered_msg);
 
         message_list_hover.reapply_hover_on_row_replace($row, $rendered_msg, message_container.msg);
 
