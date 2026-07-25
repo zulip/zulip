@@ -15032,6 +15032,35 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /realm/deactivate:
+    post:
+      operationId: deactivate-realm
+      summary: Deactivate an organization
+      tags: ["server_and_organizations"]
+      x-requires-owner: true
+      description: |
+        Deactivate the organization.
+
+        This endpoint is only accessible to organization owners.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                deletion_delay_days:
+                  description: |
+                    The number of days to delay data deletion after deactivation.
+                    If not specified, the organization's default setting is used.
+                  type: integer
+                  nullable: true
+                  example: 30
+            encoding:
+              deletion_delay_days:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields
