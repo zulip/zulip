@@ -1438,8 +1438,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self.assertEqual(
             m.output,
             [
-                "WARNING:zerver.lib.email_notifications:Failed to convert time element "
-                "'2025-09-30T16:30:00Z': Invalid datetime format",
+                (
+                    "WARNING:zerver.lib.email_notifications:Failed to convert time element "
+                    "'2025-09-30T16:30:00Z': Invalid datetime format"
+                ),
             ],
         )
 

@@ -1975,8 +1975,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(
             m.output,
             [
-                "WARNING:root:Overriding HTTP method via 'method' parameter: "
-                f"original={result.request['REQUEST_METHOD']}, override={bot_info['method']}, client={request_notes.client_name}"
+                (
+                    "WARNING:root:Overriding HTTP method via 'method' parameter: "
+                    f"original={result.request['REQUEST_METHOD']}, override={bot_info['method']}, client={request_notes.client_name}"
+                )
             ],
         )
 
