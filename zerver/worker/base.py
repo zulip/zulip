@@ -266,11 +266,15 @@ class QueueProcessingWorker(ABC):
             )
             if isinstance(exception, WorkerTimeoutError):
                 scope.fingerprint = ["worker-timeout", self.queue_name]
-                logging.exception(exception, stack_info=True)
+                logging.error(exception, exc_info=exception, stack_info=True)
             else:
-                logging.exception(
-                    "Problem handling data on queue %s", self.queue_name, stack_info=True
+                logging.error(
+                    "Problem handling data on queue %s",
+                    self.queue_name,
+                    exc_info=exception,
+                    stack_info=True,
                 )
+
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
             os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
         # Use 'mark_sanitized' to prevent Pysa from detecting this false positive

@@ -148,7 +148,7 @@ class ZulipMessageHandler(MessageHandler):
             logger.debug("Dropping invalid TLS connection: %s", reason)
             return f"421 4.7.6 TLS error: {reason}"
         else:
-            logger.exception("SMTP session exception")
+            logger.error("SMTP session exception", exc_info=error)
             return "500 Server error"
 
 
