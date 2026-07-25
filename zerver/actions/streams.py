@@ -926,10 +926,46 @@ def bulk_add_subscriptions(
         subscriber_peer_info=subscriber_peer_info,
     )
 
+    added_subs = subs_to_add + subs_to_activate
+    subs_by_stream: dict[Stream, list[UserProfile]] = defaultdict(list)
+    for sub_info in added_subs:
+        subs_by_stream[sub_info.stream].append(sub_info.user)
+
+    for stream, user_profiles in subs_by_stream.items():
+        send_stream_subscription_notifications(acting_user, user_profiles, stream, is_subscribe=True)
+
     return (
-        subs_to_add + subs_to_activate,
+        added_subs,
         already_subscribed,
     )
+
+
+def send_stream_subscription_notifications(
+    acting_user: UserProfile | None,
+    user_profiles: list[UserProfile],
+    stream: Stream,
+    *,
+    is_subscribe: bool,
+) -> None:
+    if not stream.invite_only:
+        return
+
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
+
+    for target_user in user_profiles:
+        if acting_user is not None and acting_user.id != target_user.id:
+            if is_subscribe:
+                content = f"@_**{acting_user.full_name}** subscribed @_**{target_user.full_name}** to this channel."
+            else:
+                content = f"@_**{acting_user.full_name}** unsubscribed @_**{target_user.full_name}** from this channel."
+        else:
+            if is_subscribe:
+                content = f"@_**{target_user.full_name}** subscribed to this channel."
+            else:
+                content = f"@_**{target_user.full_name}** unsubscribed from this channel."
+
+        maybe_send_channel_events_notice(notification_bot, stream, content)
+
 
 
 def send_peer_remove_events(
@@ -1177,6 +1213,13 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
+
+    removed_subs_by_stream: dict[Stream, list[UserProfile]] = defaultdict(list)
+    for user, stream in removed_sub_tuples:
+        removed_subs_by_stream[stream].append(user)
+
+    for stream, user_profiles in removed_subs_by_stream.items():
+        send_stream_subscription_notifications(acting_user, user_profiles, stream, is_subscribe=False)
 
     return (
         removed_sub_tuples,
