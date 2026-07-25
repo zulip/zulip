@@ -40,6 +40,9 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-constructor-groups-video-call",
     "create-nextcloud-talk-video-call",
     "create-webex-video-call",
+    # Deactivating a realm destroys the test organization,
+    # breaking all subsequent curl example tests.
+    "deactivate-realm",
 }
 
 

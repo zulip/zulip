@@ -502,14 +502,6 @@ def delete_realm_domain_owner_auth() -> dict[str, object]:
     return {"domain": "delete-domain-example.com"}
 
 
-@openapi_param_value_generator(["/realm/deactivate:post"])
-def deactivate_realm_owner_auth() -> dict[str, object]:
-    # This endpoint requires organization owner permissions.
-    owner = helpers.example_user("desdemona")
-    AUTHENTICATION_LINE[0] = f"{owner.email}:{owner.api_key}"
-    return {}
-
-
 @openapi_param_value_generator(["/bot_storage:put"])
 def update_bot_storage_bot_auth() -> dict[str, object]:
     bot = helpers.example_user("default_bot")
