@@ -702,9 +702,7 @@ A temporary team so that I can get some webhook fixtures!
             team=dict(name="My Team"),
         )
 
-        log_mock = patch("zerver.decorator.webhook_unsupported_events_logger.exception")
-
-        with log_mock as m:
+        with self.assertLogs("zulip.zerver.webhooks.unsupported") as unsupported_log:
             channel_message = self.send_webhook_payload(
                 self.test_user,
                 self.url,
@@ -720,15 +718,15 @@ A temporary team so that I can get some webhook fixtures!
             content="Team has changes to `bogus_key1/bogus_key2` data.",
         )
 
-        m.assert_called_once()
-        msg = m.call_args[0][0]
-        stack_info = m.call_args[1]["stack_info"]
+        self.assert_length(unsupported_log.records, 1)
+        msg = unsupported_log.records[0].msg
+        stack_info = unsupported_log.records[0].stack_info
 
         self.assertIn(
             "The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook; ignoring",
             msg,
         )
-        self.assertTrue(stack_info)
+        self.assertIsInstance(stack_info, str)
 
     def test_discussion_answered(self) -> None:
         expected_message = "Niloth-p marked [comment #11460065](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460065) as the answer:\n\n``` quote\nIf you're looking for a detailed explanation of the project structure, I'd recommend checking out our CONTRIBUTING.md file. It includes a breakdown of the different directories and files, as well as some guidelines for contributing to the project.\n```"
