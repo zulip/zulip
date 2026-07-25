@@ -333,7 +333,7 @@ def delete_message_attachments(
     delete_from: tuple[type[ImageAttachment | Attachment | ArchivedAttachment], ...] = (),
 ) -> Iterator[Callable[[str], None]]:
     if delete_from == ():
-        flush_path_ids: None | Callable[[list[str]], None] = None
+        flush_path_ids: Callable[[list[str]], None] | None = None
     else:
 
         def delete_from_database(path_ids: list[str]) -> None:
