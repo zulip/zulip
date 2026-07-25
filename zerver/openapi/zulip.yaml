@@ -8091,6 +8091,9 @@ paths:
 
                     **Changes**: New in Zulip 11.0 (feature level 415).
                   example: "This is a reminder note."
+              required:
+                - message_id
+                - scheduled_delivery_timestamp
       responses:
         "200":
           description: Success.
