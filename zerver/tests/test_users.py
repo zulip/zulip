@@ -2499,10 +2499,12 @@ class ActivateTest(ZulipTestCase):
         self.assertEqual(
             info_log.output,
             [
-                f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
-                "had empty users and address attributes: "
-                "{'template_prefix': 'zerver/emails/onboarding_zulip_topics', 'from_name': None, "
-                "'from_address': None, 'language': None, 'context': {}}"
+                (
+                    f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
+                    "had empty users and address attributes: "
+                    "{'template_prefix': 'zerver/emails/onboarding_zulip_topics', 'from_name': None, "
+                    "'from_address': None, 'language': None, 'context': {}}"
+                )
             ],
         )
 

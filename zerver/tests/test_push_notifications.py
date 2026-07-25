@@ -698,11 +698,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assertEqual(
             logger.output,
             [
-                "INFO:zilencer.views:"
-                f"Deduplicating push registrations for server id:{server.id} user id:{hamlet.id} uuid:{hamlet.uuid} and tokens:{sorted(t.token for t in android_tokens)}",
-                "INFO:zilencer.views:"
-                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
-                "2 via FCM devices, 1 via APNs devices",
+                (
+                    "INFO:zilencer.views:"
+                    f"Deduplicating push registrations for server id:{server.id} user id:{hamlet.id} uuid:{hamlet.uuid} and tokens:{sorted(t.token for t in android_tokens)}"
+                ),
+                (
+                    "INFO:zilencer.views:"
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
+                    "2 via FCM devices, 1 via APNs devices"
+                ),
             ],
         )
 
@@ -1075,8 +1079,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:zilencer.views:/api/v1/remotes/push/register: "
-                f"Realm {remote_realm.uuid!s} exists, but not registered to server {self.server.id}"
+                (
+                    "WARNING:zilencer.views:/api/v1/remotes/push/register: "
+                    f"Realm {remote_realm.uuid!s} exists, but not registered to server {self.server.id}"
+                )
             ],
         )
 
