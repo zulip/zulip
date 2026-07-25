@@ -358,8 +358,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(
             mock_log.output,
             [
-                f"WARNING:zilencer.auth:Remote server {self.server.hostname} {str(self.server.uuid)[:12]} exceeded "
-                "rate limits on domain sends_email_by_remote_server"
+                (
+                    f"WARNING:zilencer.auth:Remote server {self.server.hostname} {str(self.server.uuid)[:12]} exceeded "
+                    "rate limits on domain sends_email_by_remote_server"
+                )
             ],
         )
 
@@ -715,8 +717,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(
             mock_logger.output,
             [
-                "INFO:corporate.stripe:Matching RemoteRealmBillingUser already exists for "
-                f"PreregistrationRemoteRealmBillingUser {second_prereg_user.id}"
+                (
+                    "INFO:corporate.stripe:Matching RemoteRealmBillingUser already exists for "
+                    f"PreregistrationRemoteRealmBillingUser {second_prereg_user.id}"
+                )
             ],
         )
 
@@ -899,8 +903,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(
             mock_warn.output,
             [
-                f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
-                "RemoteRealm customer already exists and plans can't be migrated automatically."
+                (
+                    f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
+                    "RemoteRealm customer already exists and plans can't be migrated automatically."
+                )
             ],
         )
         self.assert_json_error(
@@ -924,8 +930,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(
             mock_warn.output,
             [
-                f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
-                "RemoteRealm customer already exists and plans can't be migrated automatically."
+                (
+                    f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
+                    "RemoteRealm customer already exists and plans can't be migrated automatically."
+                )
             ],
         )
         self.assert_json_error(
@@ -949,8 +957,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(
             mock_warn.output,
             [
-                f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
-                "RemoteRealm customer already exists and plans can't be migrated automatically."
+                (
+                    f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
+                    "RemoteRealm customer already exists and plans can't be migrated automatically."
+                )
             ],
         )
         self.assert_json_error(
@@ -1369,8 +1379,10 @@ class LegacyServerLoginTest(RemoteServerTestCase):
         self.assertEqual(
             mock_log.output,
             [
-                f"WARNING:zilencer.auth:Remote server {self.server.hostname} {str(self.server.uuid)[:12]} exceeded "
-                "rate limits on domain sends_email_by_remote_server"
+                (
+                    f"WARNING:zilencer.auth:Remote server {self.server.hostname} {str(self.server.uuid)[:12]} exceeded "
+                    "rate limits on domain sends_email_by_remote_server"
+                )
             ],
         )
 

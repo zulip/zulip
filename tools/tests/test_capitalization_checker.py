@@ -130,12 +130,16 @@ class CheckCapitalizationTestCase(TestCase):
             banned,
             sorted(
                 [
-                    "realm found in 'Some text with realm in it'. "
-                    "The term realm should not appear in user-facing "
-                    "strings. Use organization instead.",
-                    "realm found in 'Realm in capital case'. "
-                    "The term realm should not appear in user-facing "
-                    "strings. Use organization instead.",
+                    (
+                        "realm found in 'Some text with realm in it'. "
+                        "The term realm should not appear in user-facing "
+                        "strings. Use organization instead."
+                    ),
+                    (
+                        "realm found in 'Realm in capital case'. "
+                        "The term realm should not appear in user-facing "
+                        "strings. Use organization instead."
+                    ),
                 ]
             ),
         )

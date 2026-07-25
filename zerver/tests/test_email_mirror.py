@@ -497,8 +497,10 @@ class TestStreamEmailMessages(ZulipTestCase):
         self.assertEqual(
             m.output,
             [
-                f"INFO:{logger_name}:Failed to process email to {stream.name} ({stream.realm.string_id}): "
-                f"Not authorized to send to channel '{stream.name}'",
+                (
+                    f"INFO:{logger_name}:Failed to process email to {stream.name} ({stream.realm.string_id}): "
+                    f"Not authorized to send to channel '{stream.name}'"
+                )
             ],
         )
         self.assertEqual(Message.objects.latest("id").id, last_message_id)

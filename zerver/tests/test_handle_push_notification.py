@@ -113,9 +113,11 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertEqual(
                 views_logger.output,
                 [
-                    "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
+                    (
+                        "INFO:zilencer.views:"
+                        f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
+                        f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
+                    ),
                 ],
             )
             for token in apns_devices:
@@ -303,9 +305,11 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertEqual(
                 views_logger.output,
                 [
-                    "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
+                    (
+                        "INFO:zilencer.views:"
+                        f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
+                        f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
+                    ),
                 ],
             )
             for token in apns_devices:
