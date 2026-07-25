@@ -40,9 +40,9 @@ class TornadoAdapter(HTTPAdapter):
         self,
         request: PreparedRequest,
         stream: bool = False,
-        timeout: None | float | tuple[float, float] | tuple[float, None] = 0.5,
+        timeout: float | tuple[float, float] | tuple[float, None] | None = 0.5,
         verify: bool | str = True,
-        cert: None | bytes | str | tuple[bytes | str, bytes | str] = None,
+        cert: bytes | str | tuple[bytes | str, bytes | str] | None = None,
         proxies: Mapping[str, str] | None = None,
     ) -> Response:
         # Don't talk to Tornado through proxies, which only allow

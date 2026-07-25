@@ -51,7 +51,7 @@ approach shown above.
             parser, help="Specify which realm/subdomain to connect to; default is zulip"
         )
 
-    def parse_headers(self, custom_headers: None | str) -> None | dict[str, str]:
+    def parse_headers(self, custom_headers: str | None) -> dict[str, str] | None:
         if not custom_headers:
             return {}
         try:
