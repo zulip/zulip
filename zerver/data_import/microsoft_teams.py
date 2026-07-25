@@ -571,7 +571,7 @@ def process_hosted_content_attachments(
 
 def process_messages(
     added_teams: dict[str, TeamMetadata],
-    channel_metadata: None | dict[str, ChannelMetadata],
+    channel_metadata: dict[str, ChannelMetadata] | None,
     do_download_and_export_upload_file: Callable[[ExportMessageAttachmentParameter], None],
     domain_name: str,
     messages: list[MicrosoftTeamsFieldsT],

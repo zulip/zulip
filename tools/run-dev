@@ -264,7 +264,7 @@ SKIP_AUTO_HEADERS = {
 
 
 async def forward(upstream_port: int, request: web.Request) -> web.StreamResponse:
-    upstream_response: None | aiohttp.ClientResponse = None
+    upstream_response: aiohttp.ClientResponse | None = None
     request_started = time.time()
     while upstream_response is None:
         try:
