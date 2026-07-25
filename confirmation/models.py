@@ -140,7 +140,7 @@ def create_confirmation_object(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
-    validity_in_minutes: int | None | Unset = UNSET,
+    validity_in_minutes: int | Unset | None = UNSET,
     no_associated_realm_object: bool = False,
 ) -> "Confirmation":
     # validity_in_minutes is an override for the default values which are
@@ -183,7 +183,7 @@ def create_confirmation_link(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
-    validity_in_minutes: int | None | Unset = UNSET,
+    validity_in_minutes: int | Unset | None = UNSET,
     url_args: Mapping[str, str] = {},
     no_associated_realm_object: bool = False,
 ) -> str:

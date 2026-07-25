@@ -125,7 +125,7 @@ class UserDataForRemoteBilling(BaseModel):
 def send_to_push_bouncer(
     method: str,
     endpoint: str,
-    post_data: bytes | Mapping[str, str | int | None | bytes],
+    post_data: bytes | Mapping[str, str | int | bytes | None],
     extra_headers: Mapping[str, str] = {},
 ) -> dict[str, object]:
     """While it does actually send the notice, this function has a lot of
