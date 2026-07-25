@@ -423,18 +423,16 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request._body = b"{}"
         request.content_type = "text/plain"
 
-        with mock.patch(
-            "zerver.decorator.webhook_unsupported_events_logger.exception"
-        ) as mock_exception:
+        with self.assertLogs("zulip.zerver.webhooks.unsupported") as unsupported_log:
             exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook; ignoring"
             with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 my_webhook_raises_exception(request)
 
-        mock_exception.assert_called_once()
-        self.assertIsInstance(mock_exception.call_args.args[0], UnsupportedWebhookEventTypeError)
-        self.assertEqual(mock_exception.call_args.args[0].event_type, "test_event")
-        self.assertEqual(mock_exception.call_args.args[0].msg, exception_msg)
-        self.assertEqual(mock_exception.call_args.kwargs, {"extra": {"request": request}})
+        self.assert_length(unsupported_log.records, 1)
+        assert isinstance(unsupported_log.records[0].msg, UnsupportedWebhookEventTypeError)
+        self.assertEqual(unsupported_log.records[0].msg.event_type, "test_event")
+        self.assertEqual(unsupported_log.records[0].msg.msg, exception_msg)
+        self.assertEqual(unsupported_log.records[0].request, request)  # type: ignore[attr-defined] # added via extra
 
     def test_authenticated_rest_api_view_with_non_webhook_view(self) -> None:
         @authenticated_rest_api_view()

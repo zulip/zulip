@@ -339,7 +339,7 @@ def log_unsupported_webhook_event(request: HttpRequest, summary: str) -> None:
     # really fit what a regular UnsupportedWebhookEventTypeError exception
     # represents.
     extra = {"request": request}
-    webhook_unsupported_events_logger.exception(summary, stack_info=True, extra=extra)
+    webhook_unsupported_events_logger.error(summary, stack_info=True, extra=extra)
 
 
 def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> None:
@@ -354,11 +354,11 @@ def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> Non
     # they are intentionally raised, and the stack_info between that
     # point and this one is not interesting.
     if isinstance(err, AnomalousWebhookPayloadError):
-        webhook_anomalous_payloads_logger.exception(err, extra=extra)
+        webhook_anomalous_payloads_logger.error(err, exc_info=err, extra=extra)
     elif isinstance(err, UnsupportedWebhookEventTypeError):
-        webhook_unsupported_events_logger.exception(err, extra=extra)
+        webhook_unsupported_events_logger.error(err, exc_info=err, extra=extra)
     else:
-        webhook_logger.exception(err, stack_info=True, extra=extra)
+        webhook_logger.error(err, exc_info=err, stack_info=True, extra=extra)
 
 
 def full_webhook_client_name(raw_client_name: str | None = None) -> str | None:
