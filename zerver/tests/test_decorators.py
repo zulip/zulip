@@ -11,6 +11,7 @@ import orjson
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
+from django.test import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -118,8 +119,7 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(parse_client(get_req_with_client), ("test_client_2", None))
 
     def test_unparsable_user_agent(self) -> None:
-        request = HttpRequest()
-        request.POST["param"] = "test"
+        request = RequestFactory().post("/", {"param": "test"})
         request.META["HTTP_USER_AGENT"] = "mocked should fail"
         with (
             mock.patch("zerver.middleware.parse_client", side_effect=JsonableError("message")) as m,
