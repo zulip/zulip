@@ -3329,8 +3329,10 @@ To Do
         self.assertEqual(
             logs.output,
             [
-                "INFO:zulip.registration:"
-                "(test-realm) Slack import already completed; skipping redelivery"
+                (
+                    "INFO:zulip.registration:"
+                    "(test-realm) Slack import already completed; skipping redelivery"
+                )
             ],
         )
 

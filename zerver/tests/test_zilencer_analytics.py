@@ -1393,8 +1393,10 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(
             analytics_logger.output,
             [
-                "WARNING:zulip.analytics:"
-                f"Received unexpected realm UUID from bouncer {deleted_realm_uuid}"
+                (
+                    "WARNING:zulip.analytics:"
+                    f"Received unexpected realm UUID from bouncer {deleted_realm_uuid}"
+                )
             ],
         )
 
