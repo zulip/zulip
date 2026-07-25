@@ -289,7 +289,7 @@ def maybe_mark_pushes_disabled(
     if isinstance(e, JsonableError):
         logger.warning(e.msg)
     else:
-        logger.exception("Exception communicating with %s", settings.ZULIP_SERVICES_URL)
+        logger.error("Exception communicating with %s", settings.ZULIP_SERVICES_URL, exc_info=e)
 
     # An exception was thrown talking to the push bouncer. There may
     # be certain transient failures that we could ignore here -
