@@ -34,7 +34,7 @@ if settings.USING_RABBITMQ:
 if sys.version_info < (3, 14):
     from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 
-    asyncio.set_event_loop_policy(NoAutoCreateEventLoopPolicy())
+    asyncio.set_event_loop_policy(NoAutoCreateEventLoopPolicy())  # type: ignore[deprecated] # Python < 3.14 compatibility
 
 
 class Command(ZulipBaseCommand):
