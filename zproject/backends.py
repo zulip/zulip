@@ -4129,6 +4129,37 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         return None
 
     @override
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
+        user_details = super().get_user_details(response)
+
+        # The email_verified claim may arrive in the UserInfo response
+        # or the ID token, so check both.
+        if "email_verified" in response:
+            email_verified = response["email_verified"]
+        else:
+            assert self.id_token is not None
+            email_verified = self.id_token.get("email_verified")  # type: ignore[unreachable]  # self.id_token is declared as None in the base class. mypy doesn't re-evaluate its type when request_access_token reassigns it.
+
+        result = {**user_details, "email_verified": email_verified}
+        self.logger.debug("get_user_details for <%s>: %s", self.name, result)
+        return result
+
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
+        # Unlike the shared social IdPs (Google/GitHub), a generic OIDC IdP
+        # is a single, administrator-configured identity source. email_verified
+        # is an optional OIDC claim: when the IdP omits it, we accept the email.
+        # We reject only when the IdP explicitly tells us the address is
+        # reported as unverified, since otherwise a user could log in with
+        # an email they have not proven they control.
+        # We expected this to be a very rare situation - a reasonably-configured
+        # IdP for OIDC should only send us trustable email values.
+        details = kwargs["details"]
+        email_verified = details.get("email_verified")
+        if email_verified is not None and not email_verified:
+            return []
+        return [details["email"]]
+
+    @override
     def get_key_and_secret(self) -> tuple[str, str]:
         client_id = self.settings_dict.get("client_id", "")
         assert isinstance(client_id, str)
