@@ -2840,7 +2840,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A guest with limited user access sends a personal message
         # to themself.
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(24):
             self.send_personal_message(polonius, polonius)
 
         # A guest with limited user access sends a personal message
