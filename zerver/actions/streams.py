@@ -967,7 +967,6 @@ def send_stream_subscription_notifications(
         maybe_send_channel_events_notice(notification_bot, stream, content)
 
 
-
 def send_peer_remove_events(
     realm: Realm,
     streams: list[Stream],
