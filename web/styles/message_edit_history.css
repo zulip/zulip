@@ -72,6 +72,64 @@
         }
     }
 
+    /* A link that was added or removed outright is wrapped by the
+       highlight, so its own underline takes the diff color. */
+    .highlight_text_inserted > a {
+        --color-message-edit-history-diff-text: var(
+            --color-message-edit-history-text-inserted
+        );
+    }
+
+    .highlight_text_deleted > a {
+        --color-message-edit-history-diff-text: var(
+            --color-message-edit-history-text-deleted
+        );
+    }
+
+    .highlight_text_inserted > a,
+    .highlight_text_deleted > a {
+        text-decoration-color: color-mix(
+            in oklch,
+            var(--color-message-edit-history-diff-text) 30%,
+            transparent
+        );
+
+        &:hover,
+        &:focus {
+            text-decoration-color: color-mix(
+                in oklch,
+                var(--color-message-edit-history-diff-text) 70%,
+                transparent
+            );
+        }
+
+        &:active {
+            text-decoration-color: var(--color-message-edit-history-diff-text);
+        }
+    }
+
+    /* When only part of a link changed, the highlights sit inside
+       the link, which keeps its own underline under the unchanged
+       text. Each changed run underlines itself in its own color,
+       drawn over the link's underline. */
+    a > .highlight_text_inserted,
+    a > .highlight_text_deleted {
+        text-decoration-thickness: 1px;
+        /* 3px at 14px em */
+        text-underline-offset: 0.2143em;
+    }
+
+    a > .highlight_text_inserted {
+        text-decoration-line: underline;
+    }
+
+    /* This run is already struck through, and both lines share one
+       color, so leaving the color alone keeps the strikethrough as
+       it was. */
+    a > .highlight_text_deleted {
+        text-decoration-line: underline line-through;
+    }
+
     /* Show `Link:` text of media beside it
        to clarify click area for opening media
        in new tab vs in lightbox. */
