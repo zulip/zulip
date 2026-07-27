@@ -828,6 +828,16 @@
                    unless we set the anchor to display as
                    a block. */
                 display: block;
+                /* A clamped title's ellipsis can't take an
+                   underline, so we keep this to hover only,
+                   as it was before. Only the line is toggled,
+                   so the color and thickness above still apply. */
+                text-decoration-line: none;
+
+                &:hover,
+                &:focus {
+                    text-decoration-line: underline;
+                }
             }
         }
 
@@ -859,7 +869,11 @@
 
     & a:not(.icon-button) {
         color: var(--color-markdown-link);
-        text-decoration: none;
+        text-decoration: underline;
+        text-decoration-color: var(--color-markdown-link-decoration);
+        text-decoration-thickness: 1px;
+        /* 3px at 14px em */
+        text-underline-offset: 0.2143em;
 
         & code {
             color: var(--color-markdown-code-link);
@@ -868,17 +882,36 @@
         &:hover,
         &:focus {
             color: var(--color-markdown-link-hover);
-            text-decoration: underline;
+            text-decoration-color: var(--color-markdown-link-decoration-hover);
 
             & code {
                 color: var(--color-markdown-code-link-hover);
             }
         }
 
+        &:active {
+            color: var(--color-markdown-link-active);
+            text-decoration-color: var(--color-markdown-link-decoration-active);
+
+            & code {
+                color: var(--color-markdown-code-link-active);
+            }
+        }
+
         /* Link styles that are also related to alert words */
         &:has(.alert-word) {
+            text-decoration-color: var(
+                --color-markdown-link-highlight-decoration
+            );
+
             &:hover,
             &:focus {
+                text-decoration-color: var(
+                    --color-markdown-link-alert-word-hover
+                );
+            }
+
+            &:active {
                 text-decoration-color: var(
                     --color-markdown-link-alert-word-hover
                 );
@@ -894,6 +927,15 @@
         &:focus .alert-word {
             color: var(--color-markdown-link-alert-word-hover);
         }
+    }
+
+    /* An underline would be drawn across the media. The last two
+       selectors cover legacy Twitter and Dropbox preview markup,
+       which predates the media-anchor-element class. */
+    & a.media-anchor-element,
+    .twitter-image > a,
+    .message_inline_ref > a {
+        text-decoration: none;
     }
 
     & pre {
@@ -1111,8 +1153,14 @@
 /* Link styles that are also related to search highlights */
 a:not(.icon-button) {
     &:has(.highlight) {
+        text-decoration-color: var(--color-markdown-link-highlight-decoration);
+
         &:hover,
         &:focus {
+            text-decoration-color: var(--color-markdown-link-highlight-hover);
+        }
+
+        &:active {
             text-decoration-color: var(--color-markdown-link-highlight-hover);
         }
     }
@@ -1135,6 +1183,12 @@ a:not(.icon-button) {
     code,
     .stream-topic {
         white-space: nowrap;
+    }
+
+    /* These contexts clip their overflow, and have no room below
+       the baseline for the offset links take elsewhere. */
+    a:not(.icon-button) {
+        text-underline-offset: auto;
     }
 }
 
