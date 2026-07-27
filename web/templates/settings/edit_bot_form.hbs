@@ -72,16 +72,6 @@
             <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
         </div>
     </form>
-    {{#if is_incoming_webhook_bot}}
-    <div class="input-group">
-        {{> ../components/action_button
-          label=(t "Generate URL for an integration")
-          variant="subtle"
-          intent="neutral"
-          custom_classes="generate_url_for_integration"
-          }}
-    </div>
-    {{/if}}
     {{#if (and is_active is_bot_owner_current_user)}}
     <div id="zuliprc-section" class="input-group">
         <div class="zuliprc-container">

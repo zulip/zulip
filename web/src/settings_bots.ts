@@ -14,7 +14,6 @@ import {
     EMBEDDED_BOT_TYPE,
     GENERIC_BOT_TYPE,
     INCOMING_WEBHOOK_BOT_TYPE,
-    INCOMING_WEBHOOK_BOT_TYPE,
     INCOMING_WEBHOOK_BOT_TYPE_INT,
     OUTGOING_WEBHOOK_BOT_TYPE,
     OUTGOING_WEBHOOK_BOT_TYPE_INT,
@@ -381,8 +380,7 @@ export function add_a_new_bot(): void {
             $("#create_payload_url").removeClass("required");
 
             $("#webhook_secret_inputbox").hide();
-
-            $("#webhook_secret_inputbox").hide();
+            
             switch (bot_type) {
                 case INCOMING_WEBHOOK_BOT_TYPE: {
                     $("#webhook_secret_inputbox").show();
