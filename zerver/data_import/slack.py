@@ -934,7 +934,7 @@ def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtyp
                 return thread_message["root"]["user"]
             except KeyError:
                 return thread_message["root"]["bot_id"]
-        elif thread_message["thread_ts"] == thread_message["ts"]:
+        elif is_thread_parent_message(thread_message):
             # This is the original thread message. We're following the logic recommended
             # in Slack's documentation here:
             # https://docs.slack.dev/messaging/retrieving-messages/#finding_threads
@@ -1029,6 +1029,15 @@ def is_message_skipped_during_conversion(message: ZerverFieldsT) -> bool:
     ]
 
 
+def is_thread_parent_message(message: ZerverFieldsT) -> bool:
+    """The first thread message has a "thread_ts" that matches its
+    "ts" field."""
+    thread_ts = message.get("thread_ts")
+    message_ts = message.get("ts")
+
+    return isinstance(thread_ts, str) and isinstance(message_ts, str) and (thread_ts == message_ts)
+
+
 def get_thread_key(message: ZerverFieldsT) -> str:
     thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
     thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
@@ -1063,13 +1072,11 @@ def create_topic_name_for_message(
         return MAIN_SLACK_IMPORT_TOPIC
 
     thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
-    message_ts = datetime.fromtimestamp(float(message["ts"]), tz=timezone.utc)
     thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
     thread_key = get_thread_key(message)
 
-    if thread_ts == message_ts:
-        # The first thread message has a `thread_ts` that matches its
-        # `message_ts`. Send this message to the main import topic
+    if is_thread_parent_message(message):
+        # Send the thread parent message to the main import topic
         # and add a cross-linking notification message to the thread
         # topic.
         thread_topic_name = get_zulip_thread_topic_name(content, thread_ts, thread_counter)
