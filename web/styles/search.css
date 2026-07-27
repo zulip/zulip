@@ -212,8 +212,8 @@
 
         color: var(--color-text-search);
 
-        display: flex;
-        align-items: center;
+        display: block;
+        align-self: center;
 
         &:empty::before {
             content: attr(data-placeholder-text);
