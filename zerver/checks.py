@@ -8,6 +8,20 @@ from django.conf import settings
 from django.core import checks
 
 
+def setting_name_and_location(setting_name: str) -> tuple[str, str]:
+    # Describe a setting the way the administrator knows it, along
+    # with where they should adjust it.  Even in Docker,
+    # MANUAL_CONFIGURATION means the admin manages
+    # /etc/zulip/settings.py themselves, so the SETTING_* environment
+    # variables are not where to make changes.
+    if settings.RUNNING_IN_HELM:
+        return ("zulip.environment.SETTING_" + setting_name, "your Helm values")
+    elif settings.RUNNING_IN_DOCKER and os.environ.get("MANUAL_CONFIGURATION") != "True":
+        return ("SETTING_" + setting_name, "your Docker environment configuration")
+    else:
+        return (setting_name, "/etc/zulip/settings.py")
+
+
 def check_required_settings(
     app_configs: Sequence[AppConfig] | None,
     databases: Sequence[str] | None,
@@ -31,18 +45,7 @@ def check_required_settings(
         if value and value != default:
             continue
 
-        # Even in Docker, MANUAL_CONFIGURATION means the admin
-        # manages /etc/zulip/settings.py themselves, so the SETTING_*
-        # environment variables are not where to make changes.
-        if settings.RUNNING_IN_HELM:
-            settings_location = "your Helm values"
-            setting_display_name = "zulip.environment.SETTING_" + setting_name
-        elif settings.RUNNING_IN_DOCKER and os.environ.get("MANUAL_CONFIGURATION") != "True":
-            settings_location = "your Docker environment configuration"
-            setting_display_name = "SETTING_" + setting_name
-        else:
-            settings_location = "/etc/zulip/settings.py"
-            setting_display_name = setting_name
+        setting_display_name, settings_location = setting_name_and_location(setting_name)
         if value:
             # The setting is still the example value from the
             # documentation, which the admin must replace -- saying
