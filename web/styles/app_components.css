@@ -353,10 +353,10 @@ input.settings_text_input {
     line-height: 38px;
 }
 
-.tip,
-.invite-stream-notice {
+.tip {
     position: relative;
     display: block;
+    margin: 10px 0;
     background-color: var(--color-background-tip);
     border: 1px solid var(--color-border-tip);
     border-radius: 4px;
@@ -367,15 +367,13 @@ input.settings_text_input {
     color: hsl(0deg 0% 40%);
 
     &::before {
+        content: "\f0a2";
         display: inline;
+        margin-right: 8px;
 
         font-family: FontAwesome;
         font-weight: 600;
     }
-}
-
-.tip {
-    margin: 10px 0;
 }
 
 .demo-organization-add-email-banner {
@@ -407,15 +405,6 @@ input.settings_text_input {
             flex-wrap: nowrap;
         }
     }
-}
-
-.invite-stream-notice {
-    margin-bottom: 20px;
-}
-
-.tip::before {
-    content: "\f0a2";
-    margin-right: 8px;
 }
 
 .demo-organization-warning {
