@@ -99,12 +99,6 @@
         opacity: 0.2;
     }
 
-    #recent_view_table {
-        .zulip-icon-user {
-            opacity: 0.7;
-        }
-    }
-
     #recent-view-content-table {
         border-bottom-width: 1px;
     }
