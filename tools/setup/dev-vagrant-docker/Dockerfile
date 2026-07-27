@@ -18,7 +18,6 @@ RUN echo locales locales/default_environment_locale select C.UTF-8 | debconf-set
            curl \
            locales \
            openssh-server \
-           python3 \
            sudo \
            systemd \
     && rm -rf /var/lib/apt/lists/*

@@ -11,7 +11,7 @@ ARCH=amd64 # TODO: maybe i686 too
 
 case "$RELEASE" in
     jammy)
-        extra_packages=(python3-pip)
+        extra_packages=()
         ;;
     *)
         echo "error: unsupported target release: $RELEASE" >&2
@@ -45,9 +45,9 @@ run apt-get dist-upgrade -y
 # As an optimization, we install a bunch of packages the installer
 # would install for itself.
 run apt-get install -y --no-install-recommends \
-    xvfb parallel unzip zip jq python3-pip curl eatmydata \
+    xvfb parallel unzip zip jq curl eatmydata \
     git crudini openssl ssl-cert \
-    build-essential python3-dev \
+    build-essential \
     memcached redis-server \
     hunspell-en-us supervisor libssl-dev puppet \
     gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
