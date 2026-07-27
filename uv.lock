@@ -6404,6 +6404,7 @@ dev = [
     { name = "python3-saml" },
     { name = "pyuca" },
     { name = "pyvips" },
+    { name = "pyyaml" },
     { name = "redis" },
     { name = "regex" },
     { name = "requests" },
@@ -6457,6 +6458,7 @@ dev = [
     { name = "zulint" },
     { name = "zulip" },
     { name = "zulip-bots" },
+    { name = "zulip-server" },
     { name = "zxcvbn" },
 ]
 docs = [
@@ -6466,6 +6468,10 @@ docs = [
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-rtd-theme" },
+]
+install = [
+    { name = "pyyaml" },
+    { name = "zulip-server" },
 ]
 prod = [
     { name = "aioapns" },
@@ -6529,6 +6535,7 @@ prod = [
     { name = "python3-saml" },
     { name = "pyuca" },
     { name = "pyvips" },
+    { name = "pyyaml" },
     { name = "redis" },
     { name = "regex" },
     { name = "requests" },
@@ -6549,6 +6556,7 @@ prod = [
     { name = "zstd" },
     { name = "zulip" },
     { name = "zulip-bots" },
+    { name = "zulip-server" },
     { name = "zxcvbn" },
 ]
 release-tools = [
@@ -6644,6 +6652,7 @@ dev = [
     { name = "python3-saml" },
     { name = "pyuca" },
     { name = "pyvips" },
+    { name = "pyyaml" },
     { name = "redis" },
     { name = "regex" },
     { name = "requests" },
@@ -6698,6 +6707,7 @@ dev = [
     { name = "zulint", git = "https://github.com/zulip/zulint.git" },
     { name = "zulip", git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip" },
     { name = "zulip-bots", git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip_bots" },
+    { name = "zulip-server" },
     { name = "zxcvbn" },
 ]
 docs = [
@@ -6707,6 +6717,10 @@ docs = [
     { name = "sphinx-copybutton" },
     { name = "sphinx-design", specifier = "<0.7" },
     { name = "sphinx-rtd-theme" },
+]
+install = [
+    { name = "pyyaml" },
+    { name = "zulip-server" },
 ]
 prod = [
     { name = "aioapns" },
@@ -6770,6 +6784,7 @@ prod = [
     { name = "python3-saml" },
     { name = "pyuca" },
     { name = "pyvips" },
+    { name = "pyyaml" },
     { name = "redis" },
     { name = "regex" },
     { name = "requests", extras = ["security"] },
@@ -6790,6 +6805,7 @@ prod = [
     { name = "zstd" },
     { name = "zulip", git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip" },
     { name = "zulip-bots", git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip_bots" },
+    { name = "zulip-server" },
     { name = "zxcvbn" },
 ]
 release-tools = [
