@@ -750,15 +750,18 @@ def check_can_access_user(
     # loaded but the caller has realm available from another source.
     realm: Realm | None = None,
 ) -> bool:
+    if user_profile is None:
+        # A spectator can access target_user since they
+        # have very limited access to users already.
+        return True
+
+    if user_profile.id == target_user.id:
+        return True
+
     if not user_access_restricted_in_realm(target_user, realm):
         return True
 
     if check_user_can_access_all_users(user_profile):
-        return True
-
-    assert user_profile is not None
-
-    if target_user.id == user_profile.id:
         return True
 
     # These include Subscription objects for streams as well as group DMs.

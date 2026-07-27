@@ -3786,23 +3786,29 @@ class GetProfileTest(ZulipTestCase):
 
     def test_check_can_access_user_for_a_guest_with_themself(self) -> None:
         """
-        Test that the behaviour is the same and record query count
+        Test that the behaviour and query count are the same
         for both cases, a normal guest and a guest with limited user access,
         when calling check_can_access_user() for a user on themself.
         """
         # A guest is not limited by default.
         polonius = self.example_user("polonius")
-        with self.assert_database_query_count(1):
+        with self.assert_database_query_count(0):
             self.assertTrue(check_can_access_user(polonius, polonius))
 
         # Give guests limited user access.
         self.set_up_db_for_testing_user_access()
         polonius = self.example_user("polonius")
 
-        # TODO: When guest has limited user access,
-        # we execute an extra query; we should avoid this.
-        with self.assert_database_query_count(2):
+        # When guest has limited user access,
+        # query count should not increase.
+        with self.assert_database_query_count(0):
             self.assertTrue(check_can_access_user(polonius, polonius))
+
+    def test_check_can_access_user_for_a_spectator(self) -> None:
+        # A spectator can always access users since spectators
+        # already have very limited access to users.
+        hamlet = self.example_user("hamlet")
+        self.assertTrue(check_can_access_user(hamlet, None))
 
     def test_get_users_involved_in_dms_excludes_deactivated_users(self) -> None:
         hamlet = self.example_user("hamlet")
