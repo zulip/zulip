@@ -191,13 +191,6 @@
         padding-left: 0.1428em; /* Legacy 2px size at 14px/1em. */
     }
 
-    .zulip-icon-user {
-        /* Legacy 11.2px size at 14px/1em. */
-        font-size: 0.8em;
-        text-align: center;
-        opacity: 0.6;
-    }
-
     .table_fix_head {
         padding: 0 !important;
         border: 1px solid var(--color-border-recent-view-table);
