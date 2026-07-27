@@ -15441,8 +15441,6 @@ paths:
                     The "Users" profile field is not supported, but that is likely to
                     be temporary.
 
-                    [profile-field-types]: /help/custom-profile-fields#profile-field-types
-
                     **Changes**: Before Zulip 12.0 (feature level 476), the
                     "Paragraph" field type was not supported.
 
