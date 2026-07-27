@@ -93,10 +93,10 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
     check_can_access_user,
-    get_inaccessible_user_ids,
     get_subscribers_of_target_user_subscriptions,
     get_user_ids_who_can_access_user,
     get_users_involved_in_dms_with_target_users,
+    has_inaccessible_users,
     user_access_restricted_in_realm,
 )
 from zerver.lib.validator import check_widget_content
@@ -1670,12 +1670,10 @@ def check_can_send_direct_message(
 
 
 def check_sender_can_access_recipients(
-    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
+    sender: UserProfile, user_profiles: Sequence[UserProfile]
 ) -> None:
     recipient_user_ids = [user.id for user in user_profiles]
-    inaccessible_recipients = get_inaccessible_user_ids(recipient_user_ids, sender)
-
-    if inaccessible_recipients:
+    if has_inaccessible_users(recipient_user_ids, sender):
         raise JsonableError(_("You do not have permission to access some of the recipients."))
 
 
@@ -1841,7 +1839,7 @@ def check_message(
             "JabberMirror",
         ]
 
-        check_sender_can_access_recipients(realm, sender, user_profiles)
+        check_sender_can_access_recipients(sender, user_profiles)
 
         recipients_for_user_creation_events = get_recipients_for_user_creation_events(
             realm, sender, user_profiles
