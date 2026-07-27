@@ -8187,9 +8187,8 @@ paths:
                       scheduled_messages:
                         type: array
                         description: |
-                          Returns all of the current user's undelivered scheduled
-                          messages, ordered by `scheduled_delivery_timestamp`
-                          (ascending).
+                          Returns all of the current user's undelivered scheduled messages,
+                          in ascending order by `scheduled_delivery_timestamp`.
                         items:
                           $ref: "#/components/schemas/ScheduledMessage"
                     example:
