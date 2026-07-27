@@ -460,9 +460,11 @@ class TestSendEmail(ZulipTestCase):
         self.assertEqual(
             error_log.output,
             [
-                "ERROR:zulip.send_email:"
-                "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD).  "
-                "To disable SMTP authentication, set EMAIL_HOST_USER to an empty string."
+                (
+                    "ERROR:zulip.send_email:"
+                    "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD).  "
+                    "To disable SMTP authentication, set EMAIL_HOST_USER to an empty string."
+                )
             ],
         )
 

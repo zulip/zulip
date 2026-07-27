@@ -1966,7 +1966,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
-    def zulip_specific_link_changes(self, el: Element) -> None | Element:
+    def zulip_specific_link_changes(self, el: Element) -> Element | None:
         href = el.get("href")
         assert href is not None
 
@@ -2024,7 +2024,7 @@ class AudioInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         return self.zulip_specific_src_changes(el)
 
-    def zulip_specific_src_changes(self, el: Element) -> None | Element:
+    def zulip_specific_src_changes(self, el: Element) -> Element | None:
         src = el.get("src")
         assert src is not None
 
@@ -2090,7 +2090,7 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
-    def zulip_specific_src_changes(self, img: Element) -> None | Element:
+    def zulip_specific_src_changes(self, img: Element) -> Element | None:
         # function partially copied from LinkInlineProcessor.zulip_specific_link_changes
         src = img.get("src")
         assert src is not None

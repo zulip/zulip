@@ -1159,8 +1159,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.assertEqual(
                 m.output,
                 [
-                    f"INFO:{self.logger_string}:Authentication attempt from 127.0.0.1: "
-                    f"subdomain=zulip;username={self.email};outcome=failed;return_data={{}}"
+                    (
+                        f"INFO:{self.logger_string}:Authentication attempt from 127.0.0.1: "
+                        f"subdomain=zulip;username={self.email};outcome=failed;return_data={{}}"
+                    )
                 ],
             )
 

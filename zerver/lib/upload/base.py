@@ -65,7 +65,7 @@ class ZulipUploadBackend:
         self,
         *,
         raw_paths: bool = False,
-        flush: None | Callable[[list[str]], None] = None,
+        flush: Callable[[list[str]], None] | None = None,
     ) -> Iterator[Callable[[str], None]]:
         def delete_one(path_id: str) -> None:
             self.delete_message_attachment_from_storage(path_id, raw_path=raw_paths)

@@ -5192,8 +5192,10 @@ class BillingHelpersTest(ZulipTestCase):
             self.assertEqual(
                 warning_log.output,
                 [
-                    "WARNING:corporate.stripe:Cannot deactivate remote server with ID "
-                    f"{remote_server.id}, server has already been deactivated."
+                    (
+                        "WARNING:corporate.stripe:Cannot deactivate remote server with ID "
+                        f"{remote_server.id}, server has already been deactivated."
+                    )
                 ],
             )
 
@@ -5211,8 +5213,10 @@ class BillingHelpersTest(ZulipTestCase):
             self.assertEqual(
                 warning_log.output,
                 [
-                    "WARNING:corporate.stripe:Cannot reactivate remote server with ID "
-                    f"{remote_server.id}, server is already active."
+                    (
+                        "WARNING:corporate.stripe:Cannot reactivate remote server with ID "
+                        f"{remote_server.id}, server is already active."
+                    )
                 ],
             )
 

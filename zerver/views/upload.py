@@ -41,6 +41,7 @@ from zerver.lib.upload import (
     check_upload_within_quota,
     get_public_upload_root_url,
     maybe_add_charset,
+    needs_charset_detection,
     upload_message_attachment_from_request,
 )
 from zerver.lib.upload.local import assert_is_local_storage_path
@@ -96,10 +97,11 @@ def serve_s3(
     # (as nginx does by default with the `slice` directive) for a
     # 0-byte file.
     if attachment.size == 0:
-        content_type = maybe_add_charset(
-            attachment.content_type or guess_type(filename)[0] or "application/octet-stream",
-            attachment_source(path_id),
+        content_type = (
+            attachment.content_type or guess_type(filename)[0] or "application/octet-stream"
         )
+        if needs_charset_detection(content_type):
+            content_type = maybe_add_charset(content_type, attachment_source(path_id))
         download = force_download or bare_content_type(content_type) not in INLINE_MIME_TYPES
 
         response = HttpResponse("", content_type=content_type)
@@ -154,7 +156,8 @@ def serve_local(
     if content_type is None:
         content_type = guess_type(filename)[0] or "application/octet-stream"
 
-    content_type = maybe_add_charset(content_type, attachment_source(path_id))
+    if needs_charset_detection(content_type):
+        content_type = maybe_add_charset(content_type, attachment_source(path_id))
     download = force_download or bare_content_type(content_type) not in INLINE_MIME_TYPES
 
     if settings.DEVELOPMENT:

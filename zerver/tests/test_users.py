@@ -999,7 +999,7 @@ class PermissionTest(ZulipTestCase):
         empty_profile_data = []
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            value: str | None | list[Any] = ""
+            value: str | list[Any] | None = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
             empty_profile_data.append(
@@ -2499,10 +2499,12 @@ class ActivateTest(ZulipTestCase):
         self.assertEqual(
             info_log.output,
             [
-                f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
-                "had empty users and address attributes: "
-                "{'template_prefix': 'zerver/emails/onboarding_zulip_topics', 'from_name': None, "
-                "'from_address': None, 'language': None, 'context': {}}"
+                (
+                    f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
+                    "had empty users and address attributes: "
+                    "{'template_prefix': 'zerver/emails/onboarding_zulip_topics', 'from_name': None, "
+                    "'from_address': None, 'language': None, 'context': {}}"
+                )
             ],
         )
 
