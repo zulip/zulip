@@ -7,6 +7,8 @@
     }
 
     .message_reaction_container {
+        max-width: 100%;
+
         &.disabled {
             cursor: not-allowed;
         }
@@ -19,6 +21,7 @@
         padding: 1.5px 4px 1.5px 3px;
         box-sizing: border-box;
         min-width: 44px;
+        max-width: 200px;
         cursor: pointer;
         color: var(--color-message-reaction-text);
         background-color: var(--color-message-reaction-background);
@@ -90,6 +93,10 @@
            count/name.
            13px at 12.6/1em */
         line-height: 1.0317em;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .message_reaction:hover .message_reaction_count {
