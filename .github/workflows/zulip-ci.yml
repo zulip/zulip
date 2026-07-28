@@ -86,12 +86,14 @@ jobs:
 
       - name: Restore pnpm store
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # zizmor: ignore[cache-poisoning]
         with:
           path: /__w/.pnpm-store
           key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore uv cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # zizmor: ignore[cache-poisoning]
         with:
           path: ~/.cache/uv
           key: uv-${{ matrix.os }}-${{ hashFiles('uv.lock') }}
@@ -99,6 +101,7 @@ jobs:
 
       - name: Restore emoji cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # zizmor: ignore[cache-poisoning]
         with:
           path: /srv/zulip-emoji-cache
           key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json', 'tools/setup/emoji/build_emoji', 'tools/setup/emoji/emoji_setup_utils.py', 'tools/setup/emoji/emoji_names.py', 'package.json') }}
