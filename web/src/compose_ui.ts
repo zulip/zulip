@@ -11,6 +11,7 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
+import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
@@ -1699,6 +1700,16 @@ export function enter_preview_mode($container: JQuery): void {
     $container.find(".undo_markdown_preview").trigger("focus");
 }
 
+// Replacing the preview's content removes its emoji without a
+// mouseleave event, which would leave their tooltips open.
+function destroy_preview_emoji_tooltips($container: JQuery): void {
+    for (const emoji_element of $container.find<tippy.ReferenceElement>(
+        ".preview_content .emoji",
+    )) {
+        emoji_element._tippy?.destroy();
+    }
+}
+
 export function exit_preview_mode($container: JQuery): void {
     $container.find("textarea.message-textarea").trigger("focus");
 
@@ -1709,6 +1720,7 @@ export function exit_preview_mode($container: JQuery): void {
 
     $container.find(".undo_markdown_preview").hide();
     $container.find(".preview_message_area").hide();
+    destroy_preview_emoji_tooltips($container);
     $container.find(".preview_content").empty();
     $container.find(".markdown_preview").show();
 }
@@ -1742,6 +1754,7 @@ export function render_and_show_preview(
             rendered_preview_html = rendered_content;
         }
 
+        destroy_preview_emoji_tooltips($preview_container);
         $preview_content_box.html(postprocess_content(rendered_preview_html));
         rendered_markdown.update_elements($preview_content_box);
 
