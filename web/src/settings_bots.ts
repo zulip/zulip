@@ -13,6 +13,7 @@ import * as bot_helper from "./bot_helper.ts";
 import {
     EMBEDDED_BOT_TYPE,
     GENERIC_BOT_TYPE,
+    INCOMING_WEBHOOK_BOT_TYPE,
     INCOMING_WEBHOOK_BOT_TYPE_INT,
     OUTGOING_WEBHOOK_BOT_TYPE,
     OUTGOING_WEBHOOK_BOT_TYPE_INT,
@@ -271,6 +272,7 @@ export function add_a_new_bot(): void {
     });
 
     let create_avatar_widget: UploadWidget;
+    let integration_input_dropdown_widget: dropdown_widget.DropdownWidget;
 
     function create_a_new_bot(): void {
         const bot_type = $<HTMLSelectOneElement>("select:not([multiple])#create_bot_type").val()!;
@@ -309,6 +311,11 @@ export function add_a_new_bot(): void {
                     config_data[key] = value;
                 });
                 formData.append("config_data", JSON.stringify(config_data));
+                break;
+            }
+            case INCOMING_WEBHOOK_BOT_TYPE: {
+                const integration_name = integration_input_dropdown_widget.value()!.toString();
+                formData.append("service_name", integration_name);
                 break;
             }
         }
@@ -353,16 +360,41 @@ export function add_a_new_bot(): void {
             demo_organizations_ui.show_configure_email_banner();
         }
 
+        integration_input_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: "integration-name",
+            get_options: integration_url_modal.get_options_for_integration_input_dropdown_widget,
+            $events_container: $("#create_bot_form"),
+            default_id: "",
+            text_if_current_value_not_in_options: $t({
+                defaultMessage: "Select an integration",
+            }),
+            unique_id_type: "string",
+            item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
+                integration_input_dropdown_widget.render();
+                dropdown.hide();
+                event.preventDefault();
+                event.stopPropagation();
+            },
+        });
+        integration_input_dropdown_widget.setup();
+
         $("#create_bot_type").on("change", () => {
             const bot_type = $("#create_bot_type").val();
             // For "generic bot" or "incoming webhook" both these fields need not be displayed.
             $("#service_name_list").hide();
             $("#select_service_name").removeClass("required");
+            $("#integration-name_widget_container").hide();
+            $("#integration-name_widget_container").removeClass("required");
             $("#config_inputbox").hide();
 
             $("#payload_url_inputbox").hide();
             $("#create_payload_url").removeClass("required");
             switch (bot_type) {
+                case INCOMING_WEBHOOK_BOT_TYPE: {
+                    $("#integration-name_widget_container").show();
+                    $("#integration-name_widget_container").addClass("required");
+                    break;
+                }
                 case OUTGOING_WEBHOOK_BOT_TYPE: {
                     $("#payload_url_inputbox").show();
                     $("#create_payload_url").addClass("required");
@@ -388,6 +420,18 @@ export function add_a_new_bot(): void {
     }
 
     function validate_input(): boolean {
+        const bot_type = $("#create_bot_type").val()!;
+        if (bot_type === INCOMING_WEBHOOK_BOT_TYPE) {
+            const integration_name = integration_input_dropdown_widget.value()!.toString();
+            if (integration_name === "") {
+                ui_report.error(
+                    $t_html({defaultMessage: "Please select an integration"}),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
+        }
         const bot_short_name = $<HTMLInputElement>("input#create_bot_short_name").val()!;
 
         if (bot_helper.validate_bot_short_name(bot_short_name)) {
@@ -806,7 +850,7 @@ function set_up_bot_handlers($container: JQuery): void {
             if (!api_key) {
                 return;
             }
-            integration_url_modal.show_generate_integration_url_modal(api_key);
+            integration_url_modal.show_generate_integration_url_modal(api_key, bot_id);
         })();
     });
 }
