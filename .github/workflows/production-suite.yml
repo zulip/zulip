@@ -68,6 +68,8 @@ jobs:
           sudo chmod -R 0777 /__w/_temp/
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Create cache directories
         run: |
