@@ -7,10 +7,14 @@ import {parse_html} from "./ui_util.ts";
 
 // Reads the canonical `:name:` an emoji carries in the DOM, so we
 // never rebuild it from the human-friendly `title` (which has spaces,
-// not underscores): custom emoji (<img>) use `alt` and Unicode emoji
-// (<span>) use their text content.
+// not underscores): custom emoji (<img>) use `alt`, Unicode emoji
+// (<span>) use their text content, status emoji use `data-tippy-content`.
 export function get_canonical_emoji_name(emoji_element: Element): string | undefined {
-    const raw = emoji_element.getAttribute("alt") ?? emoji_element.textContent ?? "";
+    const raw =
+        emoji_element.getAttribute("alt") ??
+        emoji_element.getAttribute("data-tippy-content") ??
+        emoji_element.textContent ??
+        "";
     if (raw.startsWith(":") && raw.endsWith(":") && raw.length > 2) {
         return raw.slice(1, -1);
     }
@@ -33,6 +37,10 @@ export function build_emoji_tooltip_content(
     // can't show a tooltip of its own inside this one.
     enlarged_emoji.removeAttribute("title");
     enlarged_emoji.removeAttribute("aria-label");
+    // Status emoji keep their tooltip in data-tippy-content, and layout
+    // classes for sitting beside a name; neither suits the copy.
+    enlarged_emoji.removeAttribute("data-tippy-content");
+    enlarged_emoji.classList.remove("status-emoji", "status-emoji-name");
     enlarged_emoji.classList.add("emoji-tooltip-enlarged");
 
     const fragment = parse_html(render_emoji_tooltip({emoji_name}));
