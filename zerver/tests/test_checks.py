@@ -164,6 +164,73 @@ class TestChecks(ZulipTestCase):
             PRODUCTION=True,
         )
 
+    def test_checks_fake_email_domain(self) -> None:
+        self.assert_check_with_error(None, FAKE_EMAIL_DOMAIN="fake-domain.example.com")
+
+        # An explicitly-set FAKE_EMAIL_DOMAIN which cannot form email
+        # addresses; a URL is a mistake users have actually made here.
+        self.assert_check_with_error(
+            re.compile(
+                re.escape(
+                    "(zulip.E007) FAKE_EMAIL_DOMAIN (http://fake.example.com) "
+                    "cannot be used to form email addresses"
+                )
+                + r"\s*HINT: Set FAKE_EMAIL_DOMAIN in /etc/zulip/settings\.py to a domain name"
+            ),
+            FAKE_EMAIL_DOMAIN="http://fake.example.com",
+        )
+
+        # FAKE_EMAIL_DOMAIN defaulted from an EXTERNAL_HOST which is an
+        # IP address.
+        self.assert_check_with_error(
+            re.compile(
+                re.escape(
+                    "(zulip.E007) EXTERNAL_HOST (192.168.0.79) is an IP address, "
+                    "which cannot be used in the email addresses Zulip generates "
+                    "for bots and users"
+                )
+                + r"\s*HINT: Using a hostname for EXTERNAL_HOST is strongly "
+                + r"recommended: if the server has no name in DNS, invent one "
+                + r"\(like zulip\.internal\), and map it to the server's IP address "
+                + r"in /etc/hosts"
+            ),
+            EXTERNAL_HOST="192.168.0.79",
+            EXTERNAL_HOST_WITHOUT_PORT="192.168.0.79",
+            FAKE_EMAIL_DOMAIN="192.168.0.79",
+        )
+        self.assert_check_with_error(
+            "(zulip.E007) EXTERNAL_HOST (192.168.0.79) is an IP address",
+            EXTERNAL_HOST="192.168.0.79:8443",
+            EXTERNAL_HOST_WITHOUT_PORT="192.168.0.79",
+            FAKE_EMAIL_DOMAIN="192.168.0.79",
+        )
+
+        # FAKE_EMAIL_DOMAIN defaulted from an EXTERNAL_HOST which is
+        # malformed in some non-IP way.
+        self.assert_check_with_error(
+            "(zulip.E007) FAKE_EMAIL_DOMAIN, which defaults to EXTERNAL_HOST "
+            "(bogus_host), cannot be used to form email addresses",
+            EXTERNAL_HOST="bogus_host",
+            EXTERNAL_HOST_WITHOUT_PORT="bogus_host",
+            FAKE_EMAIL_DOMAIN="bogus_host",
+        )
+
+    @override_settings(RUNNING_IN_DOCKER=True)
+    def test_checks_fake_email_domain_docker(self) -> None:
+        self.assert_check_with_error(
+            re.compile(
+                re.escape(
+                    "(zulip.E007) SETTING_EXTERNAL_HOST (192.168.0.79) is an IP "
+                    "address, which cannot be used in the email addresses Zulip "
+                    "generates for bots and users"
+                )
+                + r"\s*HINT: .*set SETTING_FAKE_EMAIL_DOMAIN in your Docker environment configuration"
+            ),
+            EXTERNAL_HOST="192.168.0.79",
+            EXTERNAL_HOST_WITHOUT_PORT="192.168.0.79",
+            FAKE_EMAIL_DOMAIN="192.168.0.79",
+        )
+
     def test_checks_auth(self) -> None:
         self.assert_check_with_error(
             (

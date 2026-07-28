@@ -29,5 +29,12 @@ export DEBIAN_FRONTEND=noninteractive
 # scripts/lib/upgrade-zulip instead.
 UPGRADE_SCRIPT=/home/zulip/deployments/current/scripts/lib/upgrade-zulip
 
+# The container's Zulip was installed with `--hostname 127.0.0.1` (see
+# Dockerfile.prod); newer Zulip versions refuse to run when
+# EXTERNAL_HOST is an IP address, unless FAKE_EMAIL_DOMAIN is set.
+# Setting it here also makes this a test of upgrading such a
+# deployment.
+echo 'FAKE_EMAIL_DOMAIN = "fake-domain.example.com"' >>/etc/zulip/settings.py
+
 # Execute the upgrade.
 sudo "$UPGRADE_SCRIPT" /tmp/zulip-server-test.tar.gz

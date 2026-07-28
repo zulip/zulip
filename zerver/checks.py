@@ -1,11 +1,15 @@
+import ipaddress
 import os
 import re
 from collections.abc import Iterable, Sequence
+from email.headerregistry import Address
 from typing import Any
 
 from django.apps.config import AppConfig
 from django.conf import settings
 from django.core import checks
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 
 def setting_name_and_location(setting_name: str) -> tuple[str, str]:
@@ -132,6 +136,82 @@ def check_external_host_setting(
             )
         )
     return errors
+
+
+def check_fake_email_domain_setting(
+    app_configs: Sequence[AppConfig] | None,
+    databases: Sequence[str] | None,
+    **kwargs: Any,
+) -> Iterable[checks.CheckMessage]:
+    if not hasattr(settings, "FAKE_EMAIL_DOMAIN"):  # nocoverage
+        return []
+
+    fake_email_domain = settings.FAKE_EMAIL_DOMAIN
+    try:
+        # The same invariant get_fake_email_domain relies on: the
+        # fallback domain for generated email addresses must itself
+        # form valid addresses.  Address() rejects some malformed
+        # domains with ValueError before validate_email sees them.
+        validate_email(Address(username="bot", domain=fake_email_domain).addr_spec)
+        return []
+    except (ValidationError, ValueError):
+        pass
+
+    fake_display_name, settings_location = setting_name_and_location("FAKE_EMAIL_DOMAIN")
+    # Users have tried IP addresses and URLs here, so the advice
+    # spells out what shape of value is valid.
+    advice = (
+        f"{fake_display_name} in {settings_location} to a domain name (not an "
+        'IP address or URL), like "fake-domain.example.com".  The email '
+        "addresses which Zulip generates for bots and users include this "
+        "domain and are stored permanently, so it should not change later."
+    )
+
+    if fake_email_domain != settings.EXTERNAL_HOST_WITHOUT_PORT:
+        return [
+            checks.Error(
+                f"{fake_display_name} ({fake_email_domain}) cannot be used to form email addresses",
+                hint="Set " + advice,
+                obj="settings.FAKE_EMAIL_DOMAIN",
+                id="zulip.E007",
+            )
+        ]
+
+    # FAKE_EMAIL_DOMAIN was defaulted from EXTERNAL_HOST, so the
+    # advice depends on what is wrong with that setting.
+    external_host_display_name, _ = setting_name_and_location("EXTERNAL_HOST")
+    try:
+        ipaddress.ip_address(fake_email_domain)
+    except ValueError:
+        # EXTERNAL_HOST is malformed in some way other than being an
+        # IP address; check_external_host_setting likely also has a
+        # complaint about it.
+        return [
+            checks.Error(
+                f"{fake_display_name}, which defaults to {external_host_display_name} "
+                f"({fake_email_domain}), cannot be used to form email addresses",
+                hint="Set " + advice,
+                obj="settings.FAKE_EMAIL_DOMAIN",
+                id="zulip.E007",
+            )
+        ]
+
+    return [
+        checks.Error(
+            f"{external_host_display_name} ({fake_email_domain}) is an IP address, "
+            "which cannot be used in the email addresses Zulip generates for bots "
+            "and users",
+            hint=(
+                f"Using a hostname for {external_host_display_name} is strongly "
+                "recommended: if the server has no name in DNS, invent one (like "
+                "zulip.internal), and map it to the server's IP address in "
+                "/etc/hosts on every machine that will access Zulip.  To keep the "
+                "IP address instead, set " + advice
+            ),
+            obj="settings.EXTERNAL_HOST",
+            id="zulip.E007",
+        )
+    ]
 
 
 def check_auth_settings(
