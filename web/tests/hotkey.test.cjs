@@ -84,6 +84,16 @@ const popovers = mock_esm("../src/user_card_popover", {
         is_open: () => false,
     },
 });
+const popover_menus = mock_esm("../src/popover_menus", {
+    get_visible_instance: () => undefined,
+    is_color_picker_popover_displayed: () => false,
+    is_gear_menu_popover_displayed: () => false,
+    is_message_actions_popover_displayed: () => false,
+    is_help_menu_popover_displayed: () => false,
+    is_personal_menu_popover_displayed: () => false,
+    is_stream_actions_popover_displayed: () => false,
+    sidebar_menu_instance_handle_keyboard() {},
+});
 const reactions = mock_esm("../src/reactions");
 const read_receipts = mock_esm("../src/read_receipts");
 const search = mock_esm("../src/search");
@@ -267,6 +277,20 @@ run_test("mappings", () => {
     assert.equal(map_down(".", false, true, false), undefined);
     assert.equal(map_down("p", false, false, true).name, "print");
     assert.equal(map_down("p", false, true, false), undefined);
+
+    for (const predicate of [
+        "is_message_actions_popover_displayed",
+        "is_gear_menu_popover_displayed",
+    ]) {
+        with_overrides(({override}) => {
+            override(popover_menus, predicate, () => true);
+            assert.equal(map_down("n", false, true, false).name, "down_arrow");
+            assert.equal(map_down("p", false, true, false).name, "up_arrow");
+            assert.equal(map_down("n", true, true, false), undefined);
+            assert.equal(map_down("n", false, true, true), undefined);
+            assert.equal(map_down("n", false, true, false, true), undefined);
+        });
+    }
     // Reset platform
     navigator.platform = "";
 
@@ -349,6 +373,21 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
     assert.equal(map_down("з", "KeyP", false, false, true).name, "print");
     assert.equal(map_down("з", "KeyP", false, true, false), undefined);
+
+    for (const predicate of [
+        "is_message_actions_popover_displayed",
+        "is_gear_menu_popover_displayed",
+    ]) {
+        with_overrides(({override}) => {
+            override(popover_menus, predicate, () => true);
+            assert.equal(map_down("т", "KeyN", false, true, false).name, "down_arrow");
+            assert.equal(map_down("з", "KeyP", false, true, false).name, "up_arrow");
+            assert.equal(map_down("k", "KeyN", false, true, false), undefined);
+            assert.equal(map_down("r", "KeyP", false, true, false), undefined);
+            assert.equal(map_down("n", "KeyJ", false, true, false).name, "down_arrow");
+            assert.equal(map_down("p", "KeyR", false, true, false).name, "up_arrow");
+        });
+    }
     // Reset platform
     navigator.platform = "";
 
@@ -357,6 +396,31 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("Ф", "KeyA", true).name, "stream_cycle_backward");
     assert.equal(map_down("С", "KeyC", false, true).name, "copy_with_c");
     assert.equal(map_down("З", "KeyP", false, false, false, true).name, "toggle_compose_preview");
+});
+
+run_test("macOS Ctrl navigation excludes other popovers", ({override}) => {
+    override(navigator, "platform", "MacIntel");
+
+    function check_shortcuts() {
+        for (const [key, code] of [
+            ["n", "KeyN"],
+            ["p", "KeyP"],
+            ["т", "KeyN"],
+            ["з", "KeyP"],
+        ]) {
+            assert.equal(hotkey.get_keydown_hotkey({key, code, ctrlKey: true}), undefined);
+        }
+        assert.equal(hotkey.get_keydown_hotkey({key: "ArrowDown"}).name, "down_arrow");
+        assert.equal(hotkey.get_keydown_hotkey({key: "ArrowUp"}).name, "up_arrow");
+    }
+
+    check_shortcuts();
+    // A visible popover outside the two supported menus must not enable
+    // Ctrl-N/P. This catches accidentally using get_visible_instance again.
+    const visible_popover = make_stub();
+    override(popover_menus, "get_visible_instance", visible_popover.f, {unused: false});
+    check_shortcuts();
+    assert.equal(visible_popover.num_calls, 0);
 });
 
 function process(s, shiftKey) {
