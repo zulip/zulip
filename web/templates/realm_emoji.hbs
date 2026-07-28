@@ -1,0 +1,7 @@
+{{~#if (and (eq emoji_animation_setting "on_hover") still_url) ~}}
+  <img class="emoji{{#if custom_classes}} {{custom_classes}}{{/if}}" src="{{still_url}}" data-animated-url="{{url}}" data-still-url="{{still_url}}"{{#if alt}} alt="{{alt}}"{{/if}}{{#if tippy_emoji_name}} data-tippy-content=":{{tippy_emoji_name}}:"{{/if}} />
+{{~else if (and (eq emoji_animation_setting "never") still_url) ~}}
+  <img class="emoji{{#if custom_classes}} {{custom_classes}}{{/if}}" src="{{still_url}}"{{#if alt}} alt="{{alt}}"{{/if}}{{#if tippy_emoji_name}} data-tippy-content=":{{tippy_emoji_name}}:"{{/if}} />
+{{~else ~}}
+  <img class="emoji{{#if custom_classes}} {{custom_classes}}{{/if}}" src="{{url}}"{{#if alt}} alt="{{alt}}"{{/if}}{{#if tippy_emoji_name}} data-tippy-content=":{{tippy_emoji_name}}:"{{/if}} />
+{{~/if ~}}

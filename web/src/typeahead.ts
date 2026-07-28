@@ -45,6 +45,7 @@ export type Emoji =
           reaction_type: "realm_emoji" | "zulip_extra_emoji";
           is_realm_emoji: true;
           emoji_url?: string | undefined;
+          still_url?: string | null;
           emoji_code?: undefined;
       }
     | UnicodeEmoji;

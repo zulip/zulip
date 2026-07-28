@@ -30,6 +30,7 @@ import type {UserGroupPill, UserGroupPillData} from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import type {UserPill, UserPillData} from "./user_pill.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -60,7 +61,10 @@ type StreamData = {
 export let render_typeahead_item = (args: {
     primary?: string | undefined;
     is_person?: boolean;
+    is_emoji?: boolean;
     img_src?: string;
+    still_url?: string | null;
+    emoji_animation_setting?: string;
     status_emoji_info?: UserStatusEmojiInfo | undefined;
     secondary?: string | null;
     secondary_html?: string | undefined;
@@ -242,6 +246,8 @@ export let render_emoji = (item: EmojiSuggestion): string => {
         return render_typeahead_item({
             ...args,
             img_src: item.emoji_url,
+            still_url: (item.is_realm_emoji ? item.still_url : null) ?? null,
+            emoji_animation_setting: user_settings.web_animate_image_previews,
         });
     }
     return render_typeahead_item({

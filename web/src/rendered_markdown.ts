@@ -15,6 +15,7 @@ import render_topic_link from "../templates/topic_link.hbs";
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as emoji from "./emoji.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
@@ -428,5 +429,42 @@ export const update_elements = ($content: JQuery): void => {
             })
             .contents()
             .unwrap();
+        return;
+    }
+
+    const setting = user_settings.web_animate_image_previews;
+    if (setting !== "always") {
+        $content.find<HTMLImageElement>("img.emoji").each(function () {
+            const $img = $(this);
+            // The backend already sets data-still-url for animated emojis,
+            // but rendered content from before this feature shipped (and from
+            // contexts other than realm-emoji markdown) won't have it. Fall
+            // back to looking up the emoji by its current src URL.
+            let still_url = $img.attr("data-still-url");
+            let animated_url = $img.attr("data-animated-url");
+            if (still_url === undefined) {
+                const src = $img.attr("src");
+                if (src === undefined) {
+                    return;
+                }
+                const emoji_obj = emoji.all_realm_emojis_by_url.get(src);
+                if (emoji_obj?.still_url === undefined || emoji_obj.still_url === null) {
+                    return;
+                }
+                still_url = emoji_obj.still_url;
+                animated_url = emoji_obj.emoji_url;
+                if (setting === "on_hover") {
+                    $img.attr("data-still-url", still_url);
+                    $img.attr("data-animated-url", animated_url);
+                }
+            }
+            if (setting === "on_hover" || setting === "never") {
+                $img.attr("src", still_url);
+            }
+            if (setting === "never") {
+                $img.removeAttr("data-animated-url");
+                $img.removeAttr("data-still-url");
+            }
+        });
     }
 };

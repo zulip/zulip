@@ -1,7 +1,7 @@
-<div class="typeahead-content">
+<div class="typeahead-content{{#if is_emoji}} emoji-animation-hover-area{{/if}}">
     {{#if is_emoji}}
         {{#if has_image}}
-            <img class="emoji" src="{{ img_src }}" />
+            {{> realm_emoji url=img_src still_url=still_url emoji_animation_setting=emoji_animation_setting }}
         {{else}}
             <span class='emoji emoji-{{ emoji_code }}'></span>
         {{/if}}

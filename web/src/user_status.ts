@@ -10,6 +10,7 @@ import {user_status_schema} from "./user_status_types.ts";
 export type UserStatus = z.infer<typeof user_status_schema>;
 export type UserStatusEmojiInfo = EmojiRenderingDetails & {
     emoji_alt_code?: boolean;
+    emoji_animation_setting: string;
 };
 
 const user_status_event_schema = z.intersection(
@@ -96,12 +97,21 @@ export function set_status_emoji(event: UserStatusEvent): void {
 
     user_status_emoji_info.set(opts.user_id, {
         emoji_alt_code: user_settings.emojiset === "text",
+        emoji_animation_setting: user_settings.web_animate_image_previews,
         ...emoji.get_emoji_details_for_rendering({
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
         }),
     });
+}
+
+export function rebuild_animation_setting_for_all_users(): void {
+    // Called when the user toggles web_animate_image_previews so that
+    // subsequent template renders see the up-to-date value.
+    for (const info of user_status_emoji_info.values()) {
+        info.emoji_animation_setting = user_settings.web_animate_image_previews;
+    }
 }
 
 export function initialize(params: StateData["user_status"]): void {
@@ -118,6 +128,7 @@ export function initialize(params: StateData["user_status"]): void {
 
         if (dct.emoji_name) {
             user_status_emoji_info.set(user_id, {
+                emoji_animation_setting: user_settings.web_animate_image_previews,
                 ...emoji.get_emoji_details_for_rendering(dct),
             });
         }

@@ -55,6 +55,7 @@ run_test("basics", () => {
     initialize();
 
     assert.deepEqual(user_status.get_status_emoji(5), {
+        emoji_animation_setting: undefined,
         emoji_code: "992",
         emoji_name: "deactivated_realm_emoji",
         reaction_type: "realm_emoji",
@@ -74,6 +75,7 @@ run_test("basics", () => {
 
     assert.deepEqual(user_status.get_status_emoji(5), {
         emoji_alt_code: false,
+        emoji_animation_setting: undefined,
         emoji_code: "991",
         emoji_name: "example_realm_emoji",
         reaction_type: "realm_emoji",
@@ -114,6 +116,7 @@ run_test("basics", () => {
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
         emoji_alt_code: false,
+        emoji_animation_setting: undefined,
     });
 
     user_status.set_status_emoji({

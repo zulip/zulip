@@ -458,6 +458,7 @@ function filter_emojis(): void {
         const sorted_search_results = typeahead.sort_emojis(search_results, query);
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: sorted_search_results,
+            emoji_animation_setting: user_settings.web_animate_image_previews,
         });
         $(".emoji-search-results").html(rendered_search_results);
         scroll_util.reset_scrollbar($(".emoji-search-results-container"));
@@ -531,6 +532,7 @@ function update_emoji_showcase($focused_emoji: JQuery): void {
     };
     const rendered_showcase = render_emoji_showcase({
         emoji_dict,
+        emoji_animation_setting: user_settings.web_animate_image_previews,
     });
 
     $(".emoji-showcase-container").html(rendered_showcase);
@@ -844,7 +846,12 @@ function get_default_emoji_popover_options(
             );
 
             const $container = $popover.find(".emoji-popover-emoji-map .simplebar-content");
-            $container.html(render_emoji_popover_emoji_map({emoji_categories: initial_catalog}));
+            $container.html(
+                render_emoji_popover_emoji_map({
+                    emoji_categories: initial_catalog,
+                    emoji_animation_setting: user_settings.web_animate_image_previews,
+                }),
+            );
 
             const $sections = $popover.find(".emoji-collection");
             const $first_emoji = $popover.find(".emoji-popover-emoji").first();
@@ -899,6 +906,8 @@ function get_default_emoji_popover_options(
                                         type: "emoji_picker_emoji",
                                         section: cat_index,
                                         index: idx,
+                                        emoji_animation_setting:
+                                            user_settings.web_animate_image_previews,
                                     }),
                                 )
                                 .join("");
