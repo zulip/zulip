@@ -988,6 +988,21 @@ run_test("multi_user_methods", () => {
     assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
     assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
     assert.equal(people.user_ids_to_slug([]), undefined);
+
+    // Legacy email-based slugs, used before we switched to
+    // user-ID-based slugs, still resolve to user IDs.
+    assert.deepEqual(people.email_slug_to_user_ids("emp401@example.com"), [401]);
+    assert.deepEqual(
+        people.email_slug_to_user_ids("emp401@example.com,EMP402@example.com"),
+        [401, 402],
+    );
+    // An unknown email resolves to the -1 sentinel; other recipients
+    // in the slug still resolve normally.
+    assert.deepEqual(people.email_slug_to_user_ids("nobody@example.com"), [-1]);
+    assert.deepEqual(
+        people.email_slug_to_user_ids("emp401@example.com,nobody@example.com"),
+        [401, -1],
+    );
 });
 
 run_test("user_ids_to_full_names_string", () => {

@@ -1624,7 +1624,9 @@ export class Filter {
             const names = user_ids.map((user_id) => {
                 const person = people.maybe_get_user_by_id(user_id, ignore_missing);
                 if (!person) {
-                    return $t({defaultMessage: "Unknown user ({user_id})"}, {user_id});
+                    return user_id < 0
+                        ? $t({defaultMessage: "Unknown user"})
+                        : $t({defaultMessage: "Unknown user ({user_id})"}, {user_id});
                 }
                 if (muted_users.is_user_muted(person.user_id)) {
                     if (people.should_add_guest_user_indicator(person.user_id)) {
