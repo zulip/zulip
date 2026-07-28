@@ -5838,6 +5838,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
             False,
             rendering_result,
             set(),
+            set(),
             mention_data=mention_data,
         )
 
