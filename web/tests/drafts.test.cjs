@@ -301,6 +301,14 @@ test("snapshot_message", ({override}) => {
 
     override(Date, "now", () => mock_current_timestamp);
 
+    const $stub_textarea = $("textarea#compose-textarea");
+    const $stub_reply = $("#message-content-container");
+    $stub_textarea.set_closest_results(
+        "#message-content-container, .edit-content-container",
+        $stub_reply,
+    );
+    $stub_reply.set_find_results(".reply", []);
+
     curr_draft = draft_1;
     set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), draft_1);
@@ -316,6 +324,49 @@ test("snapshot_message", ({override}) => {
     curr_draft = {type: false};
     set_compose_state();
     assert.equal(drafts.snapshot_message(), undefined);
+});
+
+test("snapshot_message serializes reply UI to markdown", ({override}) => {
+    // When the compose box has an active reply, the draft's `content`
+    // must include the reply markdown so reopening the draft can
+    // reconstruct the reply UI.
+    mock_banners();
+    override(Date, "now", () => mock_current_timestamp);
+
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(stream_1.stream_id);
+    compose_state.topic("topic");
+    compose_state.message_content("Sounds good.");
+
+    const $stub_textarea = $("textarea#compose-textarea");
+    const $stub_container = $("#message-content-container");
+    $stub_textarea.set_closest_results(
+        "#message-content-container, .edit-content-container",
+        $stub_container,
+    );
+
+    const $reply = $.create("reply-stub-drafts");
+    $stub_container.set_find_results(".reply", $reply);
+
+    const $mention = $.create("mention-stub-drafts");
+    $mention.attr("data-user-id", String(iago.user_id));
+    $mention.attr("data-full-name", "Iago");
+    $mention.set_matches(".user-mention", true);
+    $mention.set_matches(".referenced-message-link", false);
+
+    const $link = $.create("link-stub-drafts");
+    $link.attr("href", "/#narrow/channel/30-stream-1/topic/topic/near/77");
+    $link.text("Original message");
+    $link.set_matches(".user-mention", false);
+    $link.set_matches(".referenced-message-link", true);
+
+    $reply.set_children([$mention[0], $link[0]]);
+
+    const snapshot = drafts.snapshot_message();
+    assert.equal(
+        snapshot.content,
+        "translated: @**Iago|2** [Original message](/#narrow/channel/30-stream-1/topic/topic/near/77)\n\nSounds good.",
+    );
 });
 
 test("initialize", ({override_rewire}) => {
@@ -354,6 +405,12 @@ test("update_draft", ({override}) => {
 
     override(Date, "now", () => 5);
     override(Math, "random", () => 2);
+    $("textarea#compose-textarea").set_closest_results(
+        "#message-content-container, .edit-content-container",
+        $("#message-content-container"),
+    );
+
+    $("#message-content-container").set_find_results(".reply", []);
     draft_id = drafts.update_draft();
     assert.equal(draft_id, "5-2");
     assert.ok(tippy_show_called);

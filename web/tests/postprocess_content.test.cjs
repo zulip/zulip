@@ -11,6 +11,39 @@ const thumbnail = mock_esm("../src/thumbnail", {
     },
 });
 
+const hash_util = mock_esm("../src/hash_util", {
+    decode_stream_topic_from_url() {
+        return null;
+    },
+    decode_dm_recipient_user_ids_from_narrow_url() {
+        return null;
+    },
+});
+
+const message_store = mock_esm("../src/message_store", {
+    get() {
+        return undefined;
+    },
+});
+
+const stream_data = mock_esm("../src/stream_data", {
+    get_stream_name_from_id() {
+        return undefined;
+    },
+});
+
+const topic_link_util = mock_esm("../src/topic_link_util", {
+    get_topic_link_content_with_stream_id() {
+        return {label_text_markdown: "", url: ""};
+    },
+});
+
+const emoji = mock_esm("../src/emoji", {
+    get_realm_emoji_url() {
+        return undefined;
+    },
+});
+
 const {postprocess_content} = zrequire("postprocess_content");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -560,4 +593,798 @@ run_test("inline_images", ({override}) => {
         ),
         "",
     );
+});
+
+function reply_input(opts) {
+    // Builds the raw HTML the server sends when a message starts with a
+    // reply prefix: a leading paragraph with [user-mention, anchor], plus
+    // at least one extra node so postprocess_content actually runs the
+    // reply check (it skips single-node messages).
+    const mention_text = opts.silent ? opts.full_name : `@${opts.full_name}`;
+    const silent_class = opts.silent ? " silent" : "";
+    return (
+        `<p>` +
+        `<span class="user-mention${silent_class}" data-user-id="${opts.user_id}">` +
+        `${mention_text}</span> ` +
+        `<a href="${opts.href}">${opts.snippet_html}</a>` +
+        `</p>` +
+        `<p>Body of the reply.</p>`
+    );
+}
+
+run_test("reply_pattern_non_silent_same_topic", ({override}) => {
+    override(hash_util, "decode_stream_topic_from_url", () => ({
+        stream_id: 9,
+        topic_name: "grail",
+        message_id: "42",
+    }));
+    override(stream_data, "get_stream_name_from_id", (id) => (id === 9 ? "devel" : undefined));
+    override(topic_link_util, "get_topic_link_content_with_stream_id", () => ({
+        label_text_markdown: "#devel > grail",
+        url: "/#narrow/channel/9-devel/topic/grail/near/42",
+    }));
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Hello",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /<span class="reply">/u);
+    // The reply mention always renders as `@FullName` regardless of silent state.
+    assert.match(html, /data-full-name="Hamlet"/u);
+    assert.match(html, /@Hamlet/u);
+    // Non-silent → no `silent` class on the reply mention.
+    assert.doesNotMatch(html, /reply-user-mention[^"]*\bsilent\b/u);
+    // Topic link is suppressed when the compose target matches.
+    assert.match(html, /referenced-message-topic-link[^"]*\bhidden\b/u);
+});
+
+run_test("reply_pattern_silent_strips_leading_at", ({override}) => {
+    override(hash_util, "decode_stream_topic_from_url", () => ({
+        stream_id: 9,
+        topic_name: "grail",
+        message_id: "42",
+    }));
+    override(stream_data, "get_stream_name_from_id", () => "devel");
+    override(topic_link_util, "get_topic_link_content_with_stream_id", () => ({
+        label_text_markdown: "#devel > grail",
+        url: "/#narrow/channel/9-devel/topic/grail/near/42",
+    }));
+
+    // Server emits silent mentions as `Hamlet` (no leading `@`). The reply
+    // UI must always display `@Hamlet`; the `silent` class carries the
+    // state. This is the load-bearing "no text shift" property.
+    const html = postprocess_content(
+        reply_input({
+            silent: true,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Hello",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /reply-user-mention[^"]*\bsilent\b/u);
+    assert.match(html, /data-full-name="Hamlet"/u);
+    assert.match(html, /@Hamlet/u);
+});
+
+run_test("reply_pattern_different_topic_shows_link", ({override}) => {
+    override(hash_util, "decode_stream_topic_from_url", () => ({
+        stream_id: 9,
+        topic_name: "grail",
+        message_id: "42",
+    }));
+    override(stream_data, "get_stream_name_from_id", () => "devel");
+    override(topic_link_util, "get_topic_link_content_with_stream_id", () => ({
+        label_text_markdown: "#devel > grail",
+        url: "/#narrow/channel/9-devel/topic/grail/near/42",
+    }));
+
+    // Composing in a different topic than the referenced message → topic
+    // link is not hidden.
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Hello",
+        }),
+        "devel",
+        "different-topic",
+    );
+
+    assert.match(html, /referenced-message-topic-link(?![^"]*\bhidden\b)/u);
+    assert.match(html, />#devel &gt; grail</u);
+});
+
+run_test("reply_pattern_dm_url_renders", ({override}) => {
+    // DM narrows don't decode as channel/topic; they decode as recipient
+    // ids. The reply UI still renders, but no topic-link content is set.
+    override(hash_util, "decode_stream_topic_from_url", () => null);
+    override(hash_util, "decode_dm_recipient_user_ids_from_narrow_url", () => [7]);
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Othello",
+            user_id: 7,
+            href: "/#narrow/dm/7-Othello/near/42",
+            snippet_html: "Hi",
+        }),
+    );
+
+    assert.match(html, /<span class="reply">/u);
+    assert.match(html, /data-full-name="Othello"/u);
+});
+
+run_test("reply_pattern_invalid_url_leaves_paragraph_intact", () => {
+    // External link → not a valid topic/DM URL → no reply UI; the
+    // original <p> survives (mention and anchor still present in raw form).
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "https://example.com/some/page",
+            snippet_html: "click here",
+        }),
+    );
+
+    assert.doesNotMatch(html, /<span class="reply">/u);
+    assert.match(html, /class="user-mention"/u);
+});
+
+run_test("reply_pattern_preserves_inline_html_in_snippet", ({override}) => {
+    override(hash_util, "decode_stream_topic_from_url", () => ({
+        stream_id: 9,
+        topic_name: "grail",
+        message_id: "42",
+    }));
+    override(stream_data, "get_stream_name_from_id", () => "devel");
+    override(topic_link_util, "get_topic_link_content_with_stream_id", () => ({
+        label_text_markdown: "#devel > grail",
+        url: "/#narrow/channel/9-devel/topic/grail/near/42",
+    }));
+
+    // The snippet HTML inside the anchor — emoji spans, <strong>, etc. —
+    // must survive into the rendered reply line via {{{content_html}}}.
+    const snippet_html =
+        'hello <span aria-label="wave" class="emoji emoji-1f44b" role="img" title="wave">:wave:</span> <strong>world</strong>';
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html,
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /class="emoji emoji-1f44b"/u);
+    assert.match(html, /<strong>world<\/strong>/u);
+});
+
+run_test("reply_pattern_substitutes_realm_emoji_shortcodes", ({override}) => {
+    // The server's markdown processor doesn't expand emoji shortcodes
+    // inside link text (it wraps the link's text in AtomicString). On the
+    // receiving side, we substitute realm emoji shortcodes with their
+    // image element so custom emoji render as glyphs instead of literal
+    // text in the reply snippet.
+    override(hash_util, "decode_stream_topic_from_url", () => ({
+        stream_id: 9,
+        topic_name: "grail",
+        message_id: "42",
+    }));
+    override(stream_data, "get_stream_name_from_id", () => "devel");
+    override(topic_link_util, "get_topic_link_content_with_stream_id", () => ({
+        label_text_markdown: "#devel > grail",
+        url: "/#narrow/channel/9-devel/topic/grail/near/42",
+    }));
+    override(emoji, "get_realm_emoji_url", (name) =>
+        name === "zulip" ? "/realm-emoji/zulip.png" : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "All about headlights :zulip: running :unknown_emoji:",
+        }),
+        "devel",
+        "grail",
+    );
+
+    // Known realm emoji becomes an <img>.
+    assert.match(
+        html,
+        /<img[^>]*class="emoji"[^>]*alt=":zulip:"[^>]*src="\/realm-emoji\/zulip\.png"/u,
+    );
+    // Unknown shortcodes are left as-is.
+    assert.match(html, /:unknown_emoji:/u);
+});
+
+run_test("reply_pattern_uses_message_store_for_moved_message", ({override}) => {
+    // If the referenced message has been moved, we should compute the
+    // topic-link from the current message_store state, not the (stale)
+    // URL hash.
+    override(hash_util, "decode_stream_topic_from_url", () => ({
+        stream_id: 9,
+        topic_name: "old-topic",
+        message_id: "42",
+    }));
+    override(message_store, "get", (id) =>
+        id === 42 ? {is_stream: true, stream_id: 11, topic: "new-topic"} : undefined,
+    );
+    override(stream_data, "get_stream_name_from_id", (id) => (id === 11 ? "support" : undefined));
+    let received_opts;
+    override(topic_link_util, "get_topic_link_content_with_stream_id", (opts) => {
+        received_opts = opts;
+        return {label_text_markdown: "#support > new-topic", url: "/#narrow/.../new"};
+    });
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/old-topic/near/42",
+            snippet_html: "Hi",
+        }),
+        "devel",
+        "old-topic",
+    );
+
+    assert.deepEqual(received_opts, {
+        stream_id: 11,
+        topic_name: "new-topic",
+        message_id: undefined,
+    });
+    // After the move, the compose target ("devel"/"old-topic") doesn't
+    // match the message's actual location, so the topic link is shown.
+    assert.match(html, /referenced-message-topic-link(?![^"]*\bhidden\b)/u);
+});
+
+run_test("reply_pattern_extra_text_between_nodes_skips_reply", () => {
+    // A paragraph with real text between the mention and the link is an
+    // ordinary sentence, not a reply prefix, so it's left untouched.
+    const html = postprocess_content(
+        '<p><span class="user-mention" data-user-id="5">@Hamlet</span> said ' +
+            '<a href="/#narrow/channel/9-devel/topic/grail/near/42">hi</a></p>' +
+            "<p>Body.</p>",
+    );
+    assert.doesNotMatch(html, /<span class="reply">/u);
+    assert.match(html, /class="user-mention"/u);
+});
+
+run_test("reply_pattern_dm_without_near_still_renders", ({override}) => {
+    // A DM reply URL with no /near/ segment can't recover a message id, so we
+    // never hit the store (the default mock get is left uninvoked); the reply
+    // still renders from the sender's snippet.
+    override(hash_util, "decode_stream_topic_from_url", () => null);
+    override(hash_util, "decode_dm_recipient_user_ids_from_narrow_url", () => [7]);
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Othello",
+            user_id: 7,
+            href: "/#narrow/dm/7-Othello",
+            snippet_html: "Hi",
+        }),
+    );
+
+    assert.match(html, /<span class="reply">/u);
+});
+
+run_test("reply_pattern_unknown_stream_falls_back_to_empty_topic_link", ({override}) => {
+    // The referenced stream isn't locally known, so get_stream_name_from_id and
+    // get_topic_link_content_with_stream_id return their empty defaults; the
+    // reply still renders, with the topic link shown (location can't be matched).
+    override(hash_util, "decode_stream_topic_from_url", () => ({
+        stream_id: 9,
+        topic_name: "grail",
+        message_id: "42",
+    }));
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Hi",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /<span class="reply">/u);
+});
+
+function override_same_topic_reply(override) {
+    override(hash_util, "decode_stream_topic_from_url", () => ({
+        stream_id: 9,
+        topic_name: "grail",
+        message_id: "42",
+    }));
+    override(stream_data, "get_stream_name_from_id", () => "devel");
+    override(topic_link_util, "get_topic_link_content_with_stream_id", () => ({
+        label_text_markdown: "#devel > grail",
+        url: "/#narrow/channel/9-devel/topic/grail/near/42",
+    }));
+}
+
+run_test("reply_pattern_media_only_renders_badge_and_thumbnail", ({override}) => {
+    override_same_topic_reply(override);
+    // The referenced message is image-only. We classify it from its own
+    // content — not the sender's stored snippet text — so the badge is the
+    // same in every locale, and re-inject its thumbnail in a card cell.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content:
+                      '<div class="message_inline_image">' +
+                      '<a href="/user_uploads/x/photo.png" title="photo.png">' +
+                      '<img src="/user_uploads/thumbnail/x/photo.png/840x560.webp"></a></div>',
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Image photo.png",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /<span class="reply">/u);
+    assert.match(html, /reply-type-badge">[^<]*Image</u);
+    assert.match(html, /photo\.png/u);
+    // Thumbnail rendered in its own card cell, sourced from the message.
+    assert.match(html, /reply-thumbnail-cell/u);
+    assert.match(html, /class="reply-line-thumbnail"/u);
+    assert.match(html, /src="\/user_uploads\/thumbnail\/x\/photo\.png\/840x560\.webp"/u);
+});
+
+run_test("reply_pattern_link_preview_renders_badge_and_thumbnail", ({override}) => {
+    override_same_topic_reply(override);
+    // The referenced message is a bare link with a website preview: its only
+    // top-level text is the link itself, so it counts as media (Link badge +
+    // preview thumbnail) rather than being quoted as inline text.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content:
+                      '<p><a href="https://e.com">https://e.com</a></p>' +
+                      '<div class="message_embed">' +
+                      '<a class="message_embed_image" href="https://e.com" ' +
+                      'style="background-image: url(&quot;https://e.com/p.jpg&quot;)"></a>' +
+                      '<div class="message_embed_title"><a href="https://e.com">About</a></div></div>',
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Link About",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /reply-type-badge">[^<]*Link</u);
+    assert.match(html, /About/u);
+    assert.match(html, /src="https:\/\/e\.com\/p\.jpg"/u);
+});
+
+run_test("reply_pattern_math_only_renders_badge", ({override}) => {
+    override_same_topic_reply(override);
+    // Display math renders inside a `<p>`, and its MathML carries text — so
+    // without dropping `.katex-display` first, the message would look like it
+    // has quotable inline text and we'd keep the sender's flattened snippet
+    // ("Math x^2") instead of re-deriving the locale-correct Math badge.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content:
+                      '<p><span class="katex-display"><span class="katex">' +
+                      '<span class="katex-mathml"><math><semantics>' +
+                      '<annotation encoding="application/x-tex">x^2</annotation>' +
+                      "</semantics></math></span></span></span></p>",
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Math x^2",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /reply-type-badge">[^<]*Math</u);
+    assert.match(html, /x\^2/u);
+});
+
+run_test("reply_pattern_widget_renders_badge_from_submessages", ({override}) => {
+    override_same_topic_reply(override);
+    // A poll's rendered content is the literal "/poll …" command text, which
+    // must not be treated as quotable inline text. The badge and question
+    // come from the message's submessages.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  content: "<p>/poll Lunch?</p>",
+                  submessages: [
+                      {
+                          content: JSON.stringify({
+                              widget_type: "poll",
+                              extra_data: {question: "Lunch?"},
+                          }),
+                      },
+                  ],
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Poll Lunch?",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /reply-type-badge">[^<]*Poll</u);
+    assert.match(html, /Lunch\?/u);
+    // The raw "/poll" command text is never shown as the snippet.
+    assert.doesNotMatch(html, /\/poll/u);
+});
+
+run_test("reply_pattern_text_message_keeps_sender_snippet", ({override}) => {
+    override_same_topic_reply(override);
+    // A reply to an ordinary text message keeps the sender's rendered snippet
+    // and shows no type badge, even though the message is in the store.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content: "<p>Hello there</p>",
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Hello there",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.doesNotMatch(html, /reply-type-badge/u);
+    assert.match(html, />Hello there</u);
+});
+
+run_test("reply_pattern_text_snippet_rederives_mention_as_pill", ({override}) => {
+    override_same_topic_reply(override);
+    // The referenced message contains a mention. The sender's stored snippet
+    // flattens it to plain text (the AtomicString link label), but we re-derive
+    // the snippet from the referenced message itself so the mention renders as a
+    // pill — matching the compose preview.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content:
+                      '<p><span class="user-mention" data-user-id="11">@Cordelia</span>' +
+                      " can you take a look?</p>",
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Cordelia can you take a look?",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(
+        html,
+        /<span class="user-mention" data-user-id="11">@Cordelia<\/span> can you take a look\?/u,
+    );
+});
+
+run_test("reply_pattern_text_snippet_falls_back_when_message_uncached", ({override}) => {
+    override_same_topic_reply(override);
+    // The referenced message isn't in the local store, so we can't re-derive;
+    // fall back to the sender's stored (flattened) snippet.
+    override(message_store, "get", () => undefined);
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "the stored snippet text",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, />the stored snippet text</u);
+});
+
+run_test("reply_pattern_text_snippet_to_a_reply_drops_nested_pointer", ({override}) => {
+    override_same_topic_reply(override);
+    // The referenced message is itself a reply: its content starts with a reply
+    // pointer line. Re-deriving shows the body, not the nested pointer.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content:
+                      '<p><span class="user-mention" data-user-id="11">@Iago</span> ' +
+                      '<a href="/#narrow/channel/9-devel/topic/grail/near/7">earlier snippet</a></p>' +
+                      "<p>the actual body</p>",
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "earlier snippet",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, />the actual body</u);
+    assert.doesNotMatch(html, /earlier snippet/u);
+});
+
+run_test("reply_pattern_text_snippet_keeps_a_non_message_link_line", ({override}) => {
+    override_same_topic_reply(override);
+    // First block is a mention + a non-message link (no `/near/`): not a reply
+    // pointer, so it's kept rather than dropped.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content:
+                      '<p><span class="user-mention" data-user-id="11">@Cordelia</span> ' +
+                      '<a href="https://example.com">the site</a></p>',
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Cordelia the site",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /user-mention[^>]*>@Cordelia<\/span>/u);
+    assert.match(html, /the site/u);
+});
+
+run_test("reply_pattern_text_snippet_keeps_reply_line_with_extra_text", ({override}) => {
+    override_same_topic_reply(override);
+    // A first block that looks like a reply pointer but carries extra trailing
+    // text is not treated as a droppable reply line.
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content:
+                      '<p><span class="user-mention" data-user-id="11">@Iago</span> ' +
+                      '<a href="/#narrow/channel/9-devel/topic/grail/near/7">snip</a> and more</p>',
+              }
+            : undefined,
+    );
+
+    const html = postprocess_content(
+        reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "x",
+        }),
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /and more/u);
+});
+
+run_test("reply_pattern_edit_history_diff_wrapper_renders_card", ({override}) => {
+    override_same_topic_reply(override);
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content: "<p>Hello there</p>",
+              }
+            : undefined,
+    );
+    // The message-edit-history diff wraps the whole message in a single <div>.
+    // The reply line inside must still render as the reply card (not a raw
+    // link), and the wrapping <div> is preserved.
+    const html = postprocess_content(
+        `<div>${reply_input({
+            silent: false,
+            full_name: "Hamlet",
+            user_id: 5,
+            href: "/#narrow/channel/9-devel/topic/grail/near/42",
+            snippet_html: "Hello there",
+        })}</div>`,
+        "devel",
+        "grail",
+    );
+
+    assert.match(html, /^<div>/u);
+    assert.match(html, /<span class="reply">/u);
+    assert.match(html, />Hello there</u);
+});
+
+run_test("reply_pattern_edit_history_mention_toggle_renders_card", ({override}) => {
+    override_same_topic_reply(override);
+    override(message_store, "get", (id) =>
+        id === 42
+            ? {
+                  is_stream: true,
+                  stream_id: 9,
+                  topic: "grail",
+                  submessages: [],
+                  content: "<p>Hello there</p>",
+              }
+            : undefined,
+    );
+    // Edit-history diff for an edit that TOGGLED the mention: the mention is
+    // split across highlight spans. The reply must still render as the card
+    // (not a blue link), with the mention diff preserved inside it.
+    const diff =
+        "<div><p>" +
+        '<span class="highlight_text_inserted"><span class="user-mention silent" data-user-id="9">' +
+        '<span class="mention-content-wrapper">Hamlet</span></span></span> ' +
+        '<span class="highlight_text_deleted"><span class="user-mention" data-user-id="9">' +
+        '<span class="mention-content-wrapper">@Hamlet</span></span></span> ' +
+        '<a href="/#narrow/channel/9-devel/topic/grail/near/42">Hello there</a>' +
+        "</p><p>the body</p></div>";
+    const html = postprocess_content(diff, "devel", "grail");
+
+    // Renders the card, not a bare link, and keeps the highlight spans so the
+    // toggle still reads as a change.
+    assert.match(html, /<span class="reply">/u);
+    assert.match(html, /highlight_text_inserted/u);
+    assert.match(html, /highlight_text_deleted/u);
+    assert.match(html, /reply-user-mention/u);
+});
+
+run_test("reply_in_quote_block_is_delinked", () => {
+    // A scheduled reminder quotes a reply message's raw content inside a
+    // blockquote. Server-generated, it isn't de-linked at compose time, so its
+    // `@user [snippet](near)` pointer would render as a stray blue link. We
+    // de-link it: the snippet becomes plain text while the mention pill stays.
+    const reminder_html =
+        "<p>You requested a reminder for the following message.</p>" +
+        "<blockquote>" +
+        '<p><span class="user-mention" data-user-id="5">@Hamlet</span> ' +
+        '<a href="/#narrow/channel/9-devel/topic/grail/near/42">Original message.</a></p>' +
+        "<p>my reply body</p>" +
+        "</blockquote>";
+    const html = postprocess_content(reminder_html);
+
+    // The near-link is gone, but its text and the mention pill remain.
+    assert.doesNotMatch(html, /<a [^>]*href="[^"]*\/near\/42"/u);
+    assert.match(html, /Original message\./u);
+    assert.match(html, /class="user-mention"/u);
+    assert.match(html, /my reply body/u);
+});
+
+run_test("quote_block_without_reply_line_is_untouched", () => {
+    // A plain quote (no reply pointer) must pass through unchanged.
+    const html = postprocess_content(
+        "<p>intro</p><blockquote><p>just a normal quoted line</p></blockquote>",
+    );
+    assert.match(html, /just a normal quoted line/u);
+});
+
+run_test("quote_block_with_non_reply_link_is_untouched", () => {
+    // A quoted line that has two children but isn't a reply pointer (no
+    // mention, no `/near/` link) keeps its link rather than being de-linked.
+    const html = postprocess_content(
+        "<p>intro</p><blockquote>" +
+            '<p><strong>bold</strong> <a href="https://example.com">external</a></p>' +
+            "</blockquote>",
+    );
+    assert.match(html, /<a [^>]*href="https:\/\/example\.com"/u);
 });

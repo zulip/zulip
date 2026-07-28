@@ -129,7 +129,10 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
 // This enables mentions to display inline, while adjusting
 // the outer element's font-size for better appearance on
 // lines of message text.
-function wrap_mention_content_in_dom_element(element: HTMLElement, is_bot = false): HTMLElement {
+export function wrap_mention_content_in_dom_element(
+    element: HTMLElement,
+    is_bot = false,
+): HTMLElement {
     const mention_text = $(element).text();
     $(element).html(render_mention_content_wrapper({mention_text, is_bot}));
     return element;
@@ -187,8 +190,21 @@ export const update_elements = ($content: JQuery): void => {
         });
     });
 
+    // Don't show the reply part of the message when previewing the message
+    // as there will be reply UI already above the textarea.
+    if ($content.closest(".preview_content").length > 0) {
+        $content.find(".reply").parent("p").remove();
+    }
+
     // personal and stream wildcard mentions
     $content.find(".user-mention").each(function (): void {
+        // The reply line always shows `@FullName` so the silent-mention
+        // toggle doesn't shift it. Skip the standard rewriting, which
+        // would strip that leading `@` for silent mentions; just wrap.
+        if ($(this).hasClass("reply-user-mention")) {
+            wrap_mention_content_in_dom_element(this);
+            return;
+        }
         const user_id = get_user_id_for_mention_button(this);
         message ??= get_message_for_message_content($content);
         const user_is_bot =

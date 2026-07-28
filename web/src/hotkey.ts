@@ -1310,10 +1310,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
 
     // Shortcuts that are useful with an empty message feed, like opening compose.
     switch (event_name) {
-        case "reply_message": // 'r': respond to message
-            // Note that you can "Enter" to respond to messages as well,
-            // but that is handled in process_enter_key().
-            compose_reply.respond_to_message({trigger: "hotkey"});
+        case "reply_message": // 'r': reply to message without mention
+            compose_reply.quote_messages({
+                trigger: "hotkey",
+                reply_to_message: true,
+                force_silent_mention: true,
+            });
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {
@@ -1424,8 +1426,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "respond_to_author": // 'R': respond to author
             compose_reply.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
             return true;
-        case "compose_reply_with_mention": // '@': respond to message with mention to author
-            compose_reply.reply_with_mention({trigger: "hotkey"});
+        case "compose_reply_with_mention": // '@': reply to message with mention to author
+            compose_reply.quote_messages({
+                trigger: "hotkey",
+                reply_to_message: true,
+                force_silent_mention: false,
+            });
             return true;
         case "show_lightbox":
             lightbox.show_from_selected_message();

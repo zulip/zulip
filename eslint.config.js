@@ -258,6 +258,7 @@ export default defineConfig(
         languageOptions: {
             globals: {
                 CSS: "readonly",
+                DOMParser: "readonly",
                 document: "readonly",
                 navigator: "readonly",
                 window: "readonly",

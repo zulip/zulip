@@ -4,9 +4,11 @@ const assert = require("node:assert/strict");
 
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const compose_reply = zrequire("compose_reply");
 const message_store = zrequire("message_store");
+const {localstorage} = zrequire("localstorage");
 const message_fetch_raw_content = mock_esm("../src/message_fetch_raw_content");
 const compose_paste = mock_esm("../src/compose_paste");
 const message_lists = mock_esm("../src/message_lists");
@@ -389,4 +391,60 @@ run_test("build_and_process_quote_assets_for_messages", ({override}) => {
         {message: msg_unhydrated, quote_content: "converted_by_turndown: <p>unhydrated</p>"},
         "Fallback to using paste_handler_converter",
     );
+});
+
+function build_toggle_dom(label) {
+    const $toggle = $.create(`toggle-${label}`);
+    const $reply = $.create(`reply-${label}`);
+    $toggle.set_closest_results(".reply", $reply);
+
+    const $icon = $.create(`icon-${label}`);
+    $toggle.set_find_results(".zulip-icon", $icon);
+
+    const $user_mention = $.create(`user-mention-${label}`);
+    $user_mention.set_matches(".user-mention", true);
+    $reply.set_children([$user_mention[0]]);
+
+    return {$toggle, $reply, $user_mention, $icon};
+}
+
+run_test("toggle_silent_mention flips state without touching displayed text", () => {
+    const {$toggle, $user_mention, $icon} = build_toggle_dom("on-to-off");
+    // Sanity: starts in the non-silent state (no `.silent` class). The
+    // displayed `@FullName` should never change as we toggle.
+    $user_mention.text("@Hamlet");
+    assert.equal($user_mention.hasClass("silent"), false);
+
+    compose_reply.toggle_silent_mention($toggle);
+
+    assert.ok($user_mention.hasClass("silent"));
+    // Displayed text is untouched — this is the load-bearing property
+    // that prevents the reply line from shifting on click.
+    assert.equal($user_mention.text(), "@Hamlet");
+    // Icon now shows the "click to re-enable" affordance.
+    assert.ok($icon.hasClass("zulip-icon-at-sign"));
+    assert.equal($icon.hasClass("zulip-icon-at-sign-crossed"), false);
+    // Preference is persisted (silent = true).
+    assert.equal(localstorage().get(compose_reply.ls_mention_key), true);
+
+    compose_reply.toggle_silent_mention($toggle);
+
+    // Second toggle reverts everything.
+    assert.equal($user_mention.hasClass("silent"), false);
+    assert.equal($user_mention.text(), "@Hamlet");
+    assert.equal($icon.hasClass("zulip-icon-at-sign"), false);
+    assert.ok($icon.hasClass("zulip-icon-at-sign-crossed"));
+    assert.equal(localstorage().get(compose_reply.ls_mention_key), false);
+});
+
+run_test("toggle_silent_mention starting silent flips to non-silent", () => {
+    const {$toggle, $user_mention, $icon} = build_toggle_dom("starts-silent");
+    $user_mention.addClass("silent");
+
+    compose_reply.toggle_silent_mention($toggle);
+
+    assert.equal($user_mention.hasClass("silent"), false);
+    assert.equal($icon.hasClass("zulip-icon-at-sign"), false);
+    assert.ok($icon.hasClass("zulip-icon-at-sign-crossed"));
+    assert.equal(localstorage().get(compose_reply.ls_mention_key), false);
 });
