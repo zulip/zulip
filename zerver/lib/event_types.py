@@ -265,6 +265,12 @@ class MessageEvent(BaseEvent):
     message: MessageFieldForMessageEvent
 
 
+class RestoredMessageEvent(BaseEvent):
+    type: Literal["restored_message"]
+    flags: list[str]
+    message: MessageFieldForMessageEvent
+
+
 class MutedTopicsEvent(BaseEvent):
     type: Literal["muted_topics"]
     muted_topics: list[list[str | int]]

@@ -1,0 +1,136 @@
+/* Bulk-delete selection mode. `body.selection-mode-active` turns the mode
+ * on (checkboxes shown, per-message actions hidden); `.selection-mode-selected`
+ * marks which rows are picked. */
+
+/* Always in the DOM so re-rendered rows keep it; hidden outside the mode.
+ * Sits in the `controls` grid area, just left of the timestamp. */
+.message-selection-checkbox-wrapper {
+    display: none;
+    align-items: center;
+    justify-content: flex-end;
+    grid-area: controls;
+    padding-right: 0.25em;
+}
+
+.message-selection-checkbox {
+    cursor: pointer;
+    margin: 0;
+    width: 1em;
+    height: 1em;
+    accent-color: var(--color-selected-message-outline);
+}
+
+body.selection-mode-active {
+    .message-selection-checkbox-wrapper {
+        display: inline-flex;
+    }
+
+    /* `!important` because a `:hover` rule in message_row.css would
+     * otherwise reveal these. */
+    .message_controls,
+    .message_controls .message_control_button {
+        visibility: hidden !important;
+    }
+
+    /* Compose is inert during selection; gray it out. */
+    #compose {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+}
+
+/* Spec: selected rows keep their normal background, unselected rows lose
+ * it. The `body` class + `:not()` out-specifies the per-variant
+ * (stream/private/mention) backgrounds set on `.message_row`. */
+body.selection-mode-active .message_row:not(.selection-mode-selected) {
+    background-color: transparent;
+
+    /* Background-removal alone is nearly invisible in dark theme, so also
+     * fade unselected rows — but not the checkbox, which stays clickable. */
+    .messagebox-content > *:not(.message-selection-checkbox-wrapper) {
+        opacity: 0.5;
+    }
+}
+
+#selection_mode_banner {
+    display: none;
+}
+
+#selection_mode_banner.selection-mode-banner-visible {
+    display: block;
+    position: relative;
+    z-index: 105;
+}
+
+#selection_mode_banner.selection-mode-banner-visible + #top_navbar {
+    display: none;
+}
+
+/* Occupy the navbar's slot so the message area below doesn't shift. */
+.selection-mode-banner {
+    width: 100%;
+    height: var(--header-height);
+    box-sizing: border-box;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid var(--color-border-error-main-view-banner);
+    border-radius: 0;
+}
+
+/* Center the instruction and buttons as a group. */
+.selection-mode-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 12px;
+    height: 100%;
+}
+
+/* Override compose.css's `flex: 1 1 150px` so the text stays content-sized
+ * and the group stays centered (chained classes win on specificity). */
+.selection-mode-banner.main-view-banner
+    .banner_content.selection-mode-banner-text {
+    flex: 0 1 auto;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.selection-mode-banner-actions {
+    display: flex;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+/* Banner is `error` (spec "Color: danger"), so Delete inherits the
+ * medium-emphasis error button; we only add the disabled affordance. */
+.selection-mode-delete-button[disabled] {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+/* Cancel is low-emphasis (transparent); chained classes out-specify the
+ * filled error action-button from compose.css. */
+.selection-mode-banner.main-view-banner.error
+    .main-view-banner-action-button.selection-mode-cancel-button {
+    background-color: transparent;
+
+    &:hover {
+        background-color: var(
+            --color-background-error-main-view-banner-action-button
+        );
+    }
+}
+
+/* Drafts-style undo banner. The page scrolls at :root, so `sticky` pins it
+ * below the navbar; living in `#message_feed_container` spans the column. */
+#message_delete_undo_banner {
+    position: sticky;
+    top: var(--navbar-fixed-height);
+    z-index: 5;
+    margin: 0 7px 8px;
+}
+
+#message_delete_undo_banner:empty {
+    display: none;
+}

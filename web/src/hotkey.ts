@@ -38,6 +38,7 @@ import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
+import * as message_selection from "./message_selection.ts";
 import * as message_view from "./message_view.ts";
 import * as modals from "./modals.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -436,6 +437,11 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
 
     if (feedback_widget.is_open()) {
         feedback_widget.dismiss();
+        return true;
+    }
+
+    if (message_selection.is_active()) {
+        message_selection.exit();
         return true;
     }
 

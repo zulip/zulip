@@ -36,6 +36,7 @@ import {MessageListData} from "./message_list_data.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
+import * as message_selection from "./message_selection.ts";
 import {raw_message_schema} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -1731,6 +1732,9 @@ function handle_post_view_change(
         show_more_topics: boolean;
     },
 ): void {
+    // Selection mode is scoped to a single message list; navigating
+    // to a different one cancels the in-progress selection.
+    message_selection.maybe_exit_on_view_change();
     const filter = msg_list.data.filter;
 
     if (narrow_state.narrowed_by_reply()) {

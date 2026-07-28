@@ -1061,6 +1061,31 @@ def apply_event(
             ):
                 stream_dict["first_message_id"] = event["message"]["id"]
 
+    elif event["type"] == "restored_message":
+        # A message restored from the archive (an undone deletion) reappears
+        # with its original ID, so it can re-enter unread tracking and the
+        # recent direct message conversations, but never advances
+        # max_message_id and is not necessarily the latest message in its
+        # conversation. Any first_message_id change is delivered separately as
+        # a stream event.
+        state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
+        if "raw_unread_msgs" in state and "read" not in event["flags"]:
+            apply_unread_message_event(
+                user_profile,
+                state["raw_unread_msgs"],
+                event["message"],
+                event["flags"],
+            )
+
+        if event["message"]["type"] != "stream" and "raw_recent_private_conversations" in state:
+            conversations = state["raw_recent_private_conversations"]
+            userset = frozenset(
+                user_dict["id"]
+                for user_dict in event["message"]["display_recipient"]
+                if user_dict["id"] != user_profile.id
+            )
+            conversations[userset] = max(conversations.get(userset, 0), event["message"]["id"])
+
     elif event["type"] == "heartbeat":
         # It may be impossible for a heartbeat event to actually reach
         # this code path. But in any case, they're noops.

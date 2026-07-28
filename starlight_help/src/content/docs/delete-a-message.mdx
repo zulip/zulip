@@ -14,8 +14,9 @@ import MessageLongPressMenu from "../include/_MessageLongPressMenu.mdx";
 import EditIcon from "~icons/zulip-icon/edit";
 
 Zulip lets you delete the content of your messages or delete messages completely
-if these actions are allowed in your organization. Only server administrators
-can restore deleted messages.
+if these actions are allowed in your organization. Right after deleting
+messages, you can undo the deletion to restore them; otherwise, only server
+administrators can restore deleted messages.
 
 Organization administrators can
 [configure](/help/restrict-message-editing-and-deletion) who can edit and delete
@@ -80,9 +81,14 @@ you also delete the message.
     <FlattenedSteps>
       <MessageActionsMenu />
 
-      1. Select **Delete message**.
-      1. Approve by clicking **Confirm**.
+      1. Select **Delete messages**. The message you clicked on will be selected.
+      1. Optionally, select any other messages you want to delete.
+      1. Click **Delete messages**.
     </FlattenedSteps>
+
+    To undo, click **Undo** in the banner that appears right after deleting.
+    You have about 30 seconds to undo, while the banner is shown; after that,
+    the messages can no longer be restored this way.
   </TabItem>
 
   <TabItem label="Mobile">
@@ -101,6 +107,10 @@ you also delete the message.
 </ZulipTip>
 
 ## Restoring deleted messages
+
+Right after you delete messages, you can click **Undo** in the banner that
+appears to restore them. This option is available for about 30 seconds after
+deleting, while the banner is shown.
 
 For protection against accidental or immediately regretted
 deletions, messages deleted directly or via a [message retention

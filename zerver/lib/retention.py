@@ -157,7 +157,11 @@ def run_archiving(
     while True:
         start_time = time.time()
         with transaction.atomic(savepoint=False):
-            archive_transaction = ArchiveTransaction.objects.create(type=type, realm=realm)
+            archive_transaction = ArchiveTransaction.objects.create(
+                type=type,
+                realm=realm,
+                acting_user=acting_user if type == ArchiveTransaction.MANUAL else None,
+            )
             new_chunk = move_rows(
                 Message,
                 query,

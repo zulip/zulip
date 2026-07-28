@@ -59,7 +59,7 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
-from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages, do_restore_messages
 from zerver.actions.message_edit import (
     build_message_edit_request,
     do_update_embedded_data,
@@ -221,6 +221,7 @@ from zerver.lib.event_schema import (
     check_realm_user_update,
     check_reminder_add,
     check_reminder_remove,
+    check_restored_message,
     check_saved_snippets_add,
     check_saved_snippets_remove,
     check_saved_snippets_update,
@@ -283,6 +284,7 @@ from zerver.lib.user_groups import (
     get_role_based_system_groups_dict,
 )
 from zerver.models import (
+    ArchiveTransaction,
     Attachment,
     CustomProfileField,
     Device,
@@ -4169,6 +4171,30 @@ class NormalActionsTest(BaseAction):
             num_message_ids=1,
             is_legacy=False,
         )
+
+    def test_restore_message(self) -> None:
+        # A read stream message and an unread DM from another user, so that
+        # applying the restore events exercises both re-adding to unread and
+        # the recent direct message conversations.
+        cordelia = self.example_user("cordelia")
+        stream_msg_id = self.send_stream_message(self.user_profile, "Verona")
+        # Sent by someone else, so it is unread for self.user_profile.
+        dm_id = self.send_personal_message(cordelia, self.user_profile, "hi")
+        messages = list(Message.objects.filter(id__in=[stream_msg_id, dm_id]))
+        do_delete_messages(self.user_profile.realm, messages, acting_user=self.user_profile)
+        archive_transactions = list(
+            ArchiveTransaction.objects.filter(
+                acting_user=self.user_profile, type=ArchiveTransaction.MANUAL
+            )
+        )
+        with self.verify_action(state_change_expected=True, num_events=2) as events:
+            do_restore_messages(
+                self.user_profile.realm, archive_transactions, acting_user=self.user_profile
+            )
+        # The event schema models channel messages (as the message event does);
+        # the unread DM still exercises applying a restore to unread state and
+        # recent direct message conversations.
+        check_restored_message("events[0]", events[0])
 
     def test_check_update_all_streams_active_status(self) -> None:
         hamlet = self.example_user("hamlet")

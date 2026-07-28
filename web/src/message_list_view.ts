@@ -19,6 +19,7 @@ import * as condense from "./condense.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
+import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_list_hover from "./message_list_hover.ts";
@@ -65,6 +66,7 @@ export type MessageContainer = {
     message_edit_notices_in_left_col: boolean;
     message_edit_notices_alongside_sender: boolean;
     message_edit_notices_for_status_message: boolean;
+    message_is_deletable: boolean;
     modified: boolean;
     edited: boolean;
     moved: boolean;
@@ -598,6 +600,7 @@ export class MessageListView {
         sender_is_deactivated: boolean;
         should_add_guest_indicator_for_sender: boolean;
         is_hidden: boolean;
+        message_is_deletable: boolean;
         mention_classname: string | undefined;
         include_sender: boolean;
         status_message: string | false;
@@ -700,6 +703,8 @@ export class MessageListView {
             sender_is_deactivated,
             should_add_guest_indicator_for_sender,
             is_hidden,
+            // Whether to offer a selection checkbox for bulk deletion.
+            message_is_deletable: message_delete.get_deletability(message),
             mention_classname,
             include_sender,
             ...this._maybe_get_me_message(is_hidden, message),

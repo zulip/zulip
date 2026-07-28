@@ -94,6 +94,7 @@ function get_message_container_for_preview(message: Message): MessageContainer {
         message_edit_notices_alongside_sender: false,
         message_edit_notices_for_status_message: false,
         message_edit_notices_in_left_col: false,
+        message_is_deletable: false,
         modified: false,
         moved: false,
         widget_edited: false,
