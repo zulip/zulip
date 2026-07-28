@@ -2,9 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
+
+const navigator = set_global("navigator", {platform: ""});
 
 const keydown_util = zrequire("keydown_util");
 
@@ -43,6 +45,70 @@ run_test("test_early_returns", () => {
     };
 
     $stub.trigger(e3);
+});
+
+run_test("get_mac_ctrl_navigation_key", () => {
+    navigator.platform = "MacIntel";
+
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({key: "n", code: "KeyN", ctrlKey: true}),
+        "ArrowDown",
+    );
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({key: "p", code: "KeyP", ctrlKey: true}),
+        "ArrowUp",
+    );
+
+    // Caps Lock and non-Latin keyboard layouts should not affect the shortcuts.
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({key: "N", code: "KeyN", ctrlKey: true}),
+        "ArrowDown",
+    );
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({key: "т", code: "KeyN", ctrlKey: true}),
+        "ArrowDown",
+    );
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({key: "з", code: "KeyP", ctrlKey: true}),
+        "ArrowUp",
+    );
+
+    // Ctrl must be the only modifier key pressed.
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({
+            key: "n",
+            code: "KeyN",
+            ctrlKey: true,
+            shiftKey: true,
+        }),
+        undefined,
+    );
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({
+            key: "n",
+            code: "KeyN",
+            ctrlKey: true,
+            altKey: true,
+        }),
+        undefined,
+    );
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({
+            key: "n",
+            code: "KeyN",
+            ctrlKey: true,
+            metaKey: true,
+        }),
+        undefined,
+    );
+
+    navigator.platform = "Linux x86_64";
+    assert.equal(
+        keydown_util.get_mac_ctrl_navigation_key({key: "n", code: "KeyN", ctrlKey: true}),
+        undefined,
+    );
+
+    navigator.platform = "";
 });
 
 run_test("test_ime_enter_events", () => {
