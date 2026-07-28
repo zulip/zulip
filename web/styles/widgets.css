@@ -25,12 +25,16 @@
 }
 
 .todo-widget {
-    .todo-task-list-title-bar {
+    .todo-task-list-title-bar,
+    .todo-task-edit-bar {
         flex: 1 1 auto;
         display: flex;
         /* Ensure controls remain visible on narrower screens. */
         flex-flow: row wrap;
         gap: 5px;
+    }
+
+    .todo-task-list-title-bar {
         margin-bottom: var(--markdown-interelement-space-px);
     }
 
@@ -274,10 +278,16 @@ input {
     font-size: 0.8571em; /* 12px at 14px/em */
     display: flex;
     align-items: center;
+
+    &:empty {
+        display: none;
+    }
 }
 
 .poll-question-check,
 .poll-question-remove,
+.todo-task-edit-check,
+.todo-task-edit-cancel,
 .todo-task-list-title-check,
 .todo-task-list-title-remove {
     align-self: stretch;
@@ -293,6 +303,35 @@ input {
     &:hover {
         border-color: var(--color-border-zulip-button-interactive);
         background-color: var(--color-background-zulip-button-hover);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+    }
+}
+
+.todo-task-spinner {
+    animation: rotate 1s infinite linear;
+}
+
+.todo-edit-task-icon {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+    color: var(--color-message-action-visible);
+
+    /* Always display edit icon for touch based devices */
+    @media (hover: none) {
+        opacity: 1;
+        transition: none;
+    }
+}
+
+.todo-widget li:hover .todo-edit-task-icon {
+    opacity: 1;
+    transition: opacity 0.1s ease-in;
+
+    &:hover {
+        color: var(--color-message-action-interactive);
     }
 }
 
