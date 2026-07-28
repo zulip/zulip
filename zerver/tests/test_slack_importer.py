@@ -240,7 +240,11 @@ class SlackImporter(ZulipTestCase):
                 )
 
         added_channels: dict[str, tuple[str, int]] = kwargs.get(
-            "added_channels", {"random": ("c5", 1), "general": ("c6", 2)}
+            "added_channels",
+            {
+                "random": ("c5", slack_recipient_name_to_zulip_recipient_id["random"]),
+                "general": ("c6", slack_recipient_name_to_zulip_recipient_id["general"]),
+            },
         )
 
         convert_slack_threads = kwargs.get("convert_slack_threads", True)
