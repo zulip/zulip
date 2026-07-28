@@ -35,8 +35,7 @@ import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
 
 export type UserOrMention =
-    | {type: "broadcast"; user: PseudoMentionUser}
-    | {type: "user"; user: User};
+    {type: "broadcast"; user: PseudoMentionUser} | {type: "user"; user: User};
 export type UserOrMentionPillData = UserOrMention & {
     is_silent?: boolean;
 };

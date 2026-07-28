@@ -23,7 +23,7 @@ import _ from "lodash";
  */
 function convert_from_raw(digits: string, part_length: number, raw: string): number[] {
     const result = [];
-    for (let i = 0; i < raw.length; ) {
+    for (let i = 0; i < raw.length;) {
         let t = 0;
         for (let j = 0; j < part_length; j += 1) {
             t = t * digits.length + digits.indexOf(raw.charAt(i));

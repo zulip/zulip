@@ -43,8 +43,7 @@ import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 let password_quality:
-    | ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean)
-    | undefined; // Loaded asynchronously
+    ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean) | undefined; // Loaded asynchronously
 let user_avatar_widget_created = false;
 let user_timezone_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 

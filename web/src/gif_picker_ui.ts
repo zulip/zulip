@@ -308,6 +308,7 @@ function toggle_picker_popover(target: HTMLElement): void {
                 )[0];
                 assert(scroll_element instanceof HTMLElement);
 
+                // eslint-disable-next-line unicorn/prefer-observer-apis
                 scroll_element.addEventListener("scroll", () => {
                     if (
                         scroll_element.scrollTop + scroll_element.clientHeight >

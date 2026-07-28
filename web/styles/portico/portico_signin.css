@@ -496,14 +496,14 @@ html {
 
     .alert {
         &:not(
-                #server-deactivate-error,
-                #server-login-error,
-                .alert-info,
-                .billing-page-success,
-                .upgrade-page-success,
-                .sponsorship-page-success,
-                #autopay-error
-            ) {
+            #server-deactivate-error,
+            #server-login-error,
+            .alert-info,
+            .billing-page-success,
+            .upgrade-page-success,
+            .sponsorship-page-success,
+            #autopay-error
+        ) {
             padding: 0;
             margin-bottom: 5px;
             font-weight: 600;

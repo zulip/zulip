@@ -62,8 +62,7 @@ export type EmojiSuggestion = Emoji & {
 };
 
 export type BaseEmoji = {emoji_name: string} & (
-    | {is_realm_emoji: false; emoji_code: string}
-    | {is_realm_emoji: true; emoji_code?: undefined}
+    {is_realm_emoji: false; emoji_code: string} | {is_realm_emoji: true; emoji_code?: undefined}
 );
 
 export function remove_diacritics(s: string): string {

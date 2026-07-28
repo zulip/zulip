@@ -139,8 +139,7 @@ type Booleans = {
 };
 
 type RawMessageWithBooleans = (
-    | Omit<RawMessage & {type: "private"}, "flags">
-    | Omit<RawMessage & {type: "stream"}, "flags">
+    Omit<RawMessage & {type: "private"}, "flags"> | Omit<RawMessage & {type: "stream"}, "flags">
 ) &
     Booleans;
 

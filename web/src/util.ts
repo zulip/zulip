@@ -73,8 +73,7 @@ export function extract_pm_recipients(recipients: string): string[] {
 // When the type is "private", properties from to_user_ids might be undefined.
 // See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
 export type Recipient =
-    | {type: "private"; to_user_ids?: string | undefined}
-    | ({type: "stream"} & StreamTopic);
+    {type: "private"; to_user_ids?: string | undefined} | ({type: "stream"} & StreamTopic);
 
 export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {
     if (a === undefined || b === undefined) {
@@ -483,7 +482,7 @@ export function check_time_input(input_value: string, keep_number_as_float = fal
     // Number.parseInt and Number.parseFloat will convert strings like
     // "24a" to 24.
     if (Number.isNaN(Number(input_value))) {
-        return Number.NaN;
+        return NaN;
     }
 
     if (keep_number_as_float) {

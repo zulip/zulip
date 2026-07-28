@@ -31,7 +31,7 @@ Object.defineProperty(global, "navigator", {
     writable: true,
 });
 
-require("@babel/register")({
+require("@babel/register").default({
     extensions: [".cjs", ".cts", ".js", ".mjs", ".mts", ".ts"],
     root: path.resolve(__dirname, "../.."),
 });

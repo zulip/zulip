@@ -307,6 +307,7 @@ export function is_empty_group(user_group_id: number): boolean {
             return false;
         }
         for (const direct_subgroup_id of subgroup.direct_subgroup_ids) {
+            // eslint-disable-next-line unicorn/no-loop-iterable-mutation
             subgroup_ids.add(direct_subgroup_id);
         }
     }
@@ -366,6 +367,7 @@ export function get_recursive_subgroups(target_user_group: UserGroup): Set<numbe
         }
 
         for (const direct_subgroup_id of subgroup.direct_subgroup_ids) {
+            // eslint-disable-next-line unicorn/no-loop-iterable-mutation
             subgroup_ids.add(direct_subgroup_id);
         }
     }
