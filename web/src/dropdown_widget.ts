@@ -445,7 +445,9 @@ export class DropdownWidget {
                 // Keyboard handler
                 $popper.on("keydown", (e) => {
                     function trigger_element_focus($element: JQuery): void {
+                        // eslint-disable-next-line unicorn/no-late-event-control
                         e.preventDefault();
+                        // eslint-disable-next-line unicorn/no-late-event-control
                         e.stopPropagation();
                         // When bringing a non-visible element into view, scroll as minimum as possible.
                         $element[0]?.scrollIntoView({block: "nearest"});

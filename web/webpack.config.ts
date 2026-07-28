@@ -35,6 +35,9 @@ const config = (
                 config: [import.meta.filename],
             },
         },
+        resolve: {
+            tsconfig: false,
+        },
     };
 
     const plugins: webpack.WebpackPluginInstance[] = [
@@ -271,7 +274,7 @@ const config = (
         name: "server",
         target: "node",
         entry: {
-            katex_server: "babel-loader!./server/katex_server.ts",
+            katex_server: "./server/katex_server.ts",
             "katex-cli": "shebang-loader!katex/cli",
             jdenticon: "shebang-loader!../node_modules/jdenticon/bin/jdenticon.js",
         },

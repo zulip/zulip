@@ -39,4 +39,4 @@ const config = (ctx) => ({
         }),
     ],
 });
-export default config;
+export default config; // eslint-disable-line unicorn/default-export-style

@@ -1,0 +1,12 @@
+diff --git a/index.js b/index.js
+index 1ed39563614cefc375876e2c08bcc9f95f3dde10..a009091d5ef41da696f00dbfede41681cd2687e2 100644
+--- a/index.js
++++ b/index.js
+@@ -270,7 +270,6 @@ const plugin = declare((api, options) => {
+ 	functionNames.add("$t");
+ 	functionNames.add("$formatMessage");
+ 	return {
+-		inherits: babelPluginSyntaxJsx,
+ 		pre() {
+ 			this.componentNames = Array.from(componentNames);
+ 			this.functionNames = Array.from(functionNames);

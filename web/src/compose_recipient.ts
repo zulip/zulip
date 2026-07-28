@@ -466,8 +466,8 @@ export function initialize(): void {
                 .map((item) => item.stream)
                 .toArray();
             const sorted_streams = typeahead_helper.sort_streams(stream_items, filter_value);
-            const sorted_stream_items = sorted_streams.map(
-                (stream) => stream_items_by_stream_id.get(stream.stream_id)!,
+            const sorted_stream_items = sorted_streams.map((stream) =>
+                stream_items_by_stream_id.get(stream.stream_id)!,
             );
 
             if (non_stream_items.length > 0) {

@@ -15,7 +15,10 @@ const presetEnvOptions = {
     shippedProposals: true,
 };
 
-/** @type {import("@babel/core").TransformOptions} */
+/** @type {import("@babel/core").PluginItem} */
+const istanbulPlugin = ["istanbul", {exclude: []}];
+
+/** @type {import("@babel/core").InputOptions} */
 const config = {
     only: [new RegExp("^" + _.escapeRegExp(path.resolve(import.meta.dirname, "src") + path.sep))],
     plugins: [
@@ -26,7 +29,7 @@ const config = {
     env: {
         test: {
             plugins: [
-                ...(process.env["USING_INSTRUMENTED_CODE"] ? [["istanbul", {exclude: []}]] : []),
+                ...(process.env["USING_INSTRUMENTED_CODE"] ? [istanbulPlugin] : []),
                 ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
             ],
         },
