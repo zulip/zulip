@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const {JSDOM} = require("jsdom");
 
+const render_status_emoji = require("../templates/status_emoji.hbs");
+
 const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -45,6 +47,14 @@ function render_message_emoji(raw_content) {
     return emoji_element;
 }
 
+function render_status_emoji_element(status_emoji_info) {
+    const container = document.createElement("div");
+    container.innerHTML = render_status_emoji(status_emoji_info);
+    const emoji_element = container.querySelector(".status-emoji-name");
+    assert.ok(emoji_element !== null);
+    return emoji_element;
+}
+
 run_test("get_canonical_emoji_name reads the name from the DOM", () => {
     assert.equal(
         emoji_tooltip.get_canonical_emoji_name(render_message_emoji(":heart_eyes:")),
@@ -55,6 +65,19 @@ run_test("get_canonical_emoji_name reads the name from the DOM", () => {
     const custom_emoji = render_message_emoji(":green_tick:");
     assert.equal(custom_emoji.getAttribute("title"), "green tick");
     assert.equal(emoji_tooltip.get_canonical_emoji_name(custom_emoji), "green_tick");
+
+    // Status emoji carry the name only in `data-tippy-content`.
+    const unicode_status_emoji = render_status_emoji_element(
+        emoji.get_emoji_details_by_name("working_on_it"),
+    );
+    assert.equal(emoji_tooltip.get_canonical_emoji_name(unicode_status_emoji), "working_on_it");
+
+    const custom_status_emoji = render_status_emoji_element(
+        emoji.get_emoji_details_by_name("green_tick"),
+    );
+    assert.equal(custom_status_emoji.nodeName, "IMG");
+    assert.equal(custom_status_emoji.getAttribute("alt"), null);
+    assert.equal(emoji_tooltip.get_canonical_emoji_name(custom_status_emoji), "green_tick");
 
     // Nothing we render omits the `:name:`, so build that case by hand.
     const unnamed_emoji = document.createElement("span");
@@ -81,6 +104,19 @@ run_test("build_emoji_tooltip_content renders an enlarged copy and :name:", () =
     assert.equal(enlarged_emoji.getAttribute("aria-hidden"), "true");
     assert.equal(enlarged_emoji.getAttribute("title"), null);
     assert.equal(enlarged_emoji.getAttribute("aria-label"), null);
+});
+
+run_test("build_emoji_tooltip_content strips status-emoji layout from the copy", () => {
+    const fragment = emoji_tooltip.build_emoji_tooltip_content(
+        render_status_emoji_element(emoji.get_emoji_details_by_name("working_on_it")),
+        "working_on_it",
+    );
+
+    const enlarged_emoji = fragment.querySelector(".emoji-tooltip-emoji span");
+    assert.ok(enlarged_emoji !== null);
+    assert.ok(!enlarged_emoji.classList.contains("status-emoji"));
+    assert.ok(!enlarged_emoji.classList.contains("status-emoji-name"));
+    assert.equal(enlarged_emoji.getAttribute("data-tippy-content"), null);
 });
 
 run_test("build_emoji_tooltip_content does not mutate the original element", () => {
