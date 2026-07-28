@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
             name="field_type",
             field=models.PositiveSmallIntegerField(
                 choices=[
+                    (9, "Checkboxes"),
                     (4, "Date"),
                     (3, "Dropdown"),
                     (7, "External account"),

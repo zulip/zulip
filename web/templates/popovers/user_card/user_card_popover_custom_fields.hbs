@@ -22,6 +22,10 @@
             <div class="custom-profile-field-value rendered_markdown" data-tippy-content="{{this.name}}">
                 {{rendered_markdown this.rendered_value}}
             </div>
+        {{else if this.is_checkboxes_field}}
+            <div class="custom-profile-field-value popover-checkboxes-value" data-tippy-content="{{this.name}}">
+                <span class="custom-profile-field-text">{{this.value}}</span>
+            </div>
         {{else}}
             <div class="custom-profile-field-value" data-tippy-content="{{this.name}}">
                 <span class="custom-profile-field-text">{{this.value}}</span>

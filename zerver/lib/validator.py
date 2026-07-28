@@ -385,10 +385,14 @@ def check_external_account_url_pattern(var_name: str, val: object) -> str:
 
 def validate_custom_profile_field_choices(
     field_data: ProfileFieldData,
+    existing_field_data: ProfileFieldData | None = None,
 ) -> dict[str, dict[str, str]]:
     """
     This function is used to validate the data sent to the server while
     creating/editing choices of the choice field in Organization settings.
+
+    The text length limit applies only to new or changed options, so existing
+    fields with longer options stay editable.
     """
     validator = check_dict_only(
         [
@@ -396,6 +400,10 @@ def validate_custom_profile_field_choices(
             ("order", check_required_string),
         ]
     )
+
+    # For choice fields, every field_data value is a choice dict, so this cast
+    # lets the per-choice lookups below be typed without a runtime check.
+    existing_choices = cast(dict[str, dict[str, str]], existing_field_data or {})
 
     # To create an array of texts of each option
     distinct_field_names: set[str] = set()
@@ -406,6 +414,11 @@ def validate_custom_profile_field_choices(
 
         valid_value = validator("field_data", value)
         assert value is valid_value  # To justify the unchecked cast below
+
+        # Enforce the length cap only on new or changed option text.
+        existing_choice = existing_choices.get(key)
+        if existing_choice is None or existing_choice["text"] != valid_value["text"]:
+            check_short_string('field_data["text"]', valid_value["text"])
 
         distinct_field_names.add(valid_value["text"])
 
@@ -587,6 +600,27 @@ def check_string_or_int(var_name: str, val: object) -> str | int:
         return val
 
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
+
+
+def validate_checkboxes_field(var_name: str, field_data: str, value: object) -> list[str]:
+    items = check_list(check_string)(var_name, value)
+
+    if not items:
+        raise ValidationError(_("{var_name} cannot be empty.").format(var_name=var_name))
+
+    if len(set(items)) != len(items):
+        raise ValidationError(
+            _("{var_name} cannot have duplicate choices.").format(var_name=var_name)
+        )
+
+    field_data_dict = orjson.loads(field_data)
+
+    for item in items:
+        if item not in field_data_dict:
+            msg = _("'{value}' is not a valid choice for '{field_name}'.")
+            raise ValidationError(msg.format(value=item, field_name=var_name))
+
+    return items
 
 
 @dataclass(eq=False)

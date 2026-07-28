@@ -1,26 +1,56 @@
-<p>
-    {{#if (eq count 1)}}
-        {{#tr}}
-            This will clear the <z-field-name></z-field-name> profile field for 1 user.
-            {{#*inline "z-field-name"}}<strong>{{field_name}}</strong>{{/inline}}
-        {{/tr}}
-    {{else}}
-        {{#tr}}
-            This will clear the <z-field-name></z-field-name> profile field for <z-count></z-count> users.
-            {{#*inline "z-count"}}{{count}}{{/inline}}
-            {{#*inline "z-field-name"}}<strong>{{field_name}}</strong>{{/inline}}
-        {{/tr}}
-    {{/if}}
-</p>
-<div>
-    {{#if (eq deleted_options_count 1)}}
-        {{t "Deleted option:" }}
-    {{else}}
-        {{t "Deleted options:" }}
-    {{/if}}
-</div>
-<ul class="modal-options-list">
-    {{#each (object_values deleted_values)}}
-        <li>{{this}}</li>
-    {{/each}}
-</ul>
+{{#if is_checkboxes_field}}
+    <p>
+        {{#if (eq deleted_options_count 1)}}
+            {{#tr}}
+                The following option will be deleted: <z-options></z-options>.
+                {{#*inline "z-options"}}<strong>{{deleted_options_string}}</strong>{{/inline}}
+            {{/tr}}
+        {{else}}
+            {{#tr}}
+                The following options will be deleted: <z-options></z-options>.
+                {{#*inline "z-options"}}<strong>{{deleted_options_string}}</strong>{{/inline}}
+            {{/tr}}
+        {{/if}}
+    </p>
+    <p>
+        {{#if (eq count 1)}}
+            {{#tr}}
+                This will modify the <z-field-name></z-field-name> profile field for 1 user.
+                {{#*inline "z-field-name"}}<strong>{{field_name}}</strong>{{/inline}}
+            {{/tr}}
+        {{else}}
+            {{#tr}}
+                This will modify the <z-field-name></z-field-name> profile field for <z-count></z-count> users.
+                {{#*inline "z-count"}}{{count}}{{/inline}}
+                {{#*inline "z-field-name"}}<strong>{{field_name}}</strong>{{/inline}}
+            {{/tr}}
+        {{/if}}
+    </p>
+{{else}}
+    <p>
+        {{#if (eq count 1)}}
+            {{#tr}}
+                This will clear the <z-field-name></z-field-name> profile field for 1 user.
+                {{#*inline "z-field-name"}}<strong>{{field_name}}</strong>{{/inline}}
+            {{/tr}}
+        {{else}}
+            {{#tr}}
+                This will clear the <z-field-name></z-field-name> profile field for <z-count></z-count> users.
+                {{#*inline "z-count"}}{{count}}{{/inline}}
+                {{#*inline "z-field-name"}}<strong>{{field_name}}</strong>{{/inline}}
+            {{/tr}}
+        {{/if}}
+    </p>
+    <div>
+        {{#if (eq deleted_options_count 1)}}
+            {{t "Deleted option:" }}
+        {{else}}
+            {{t "Deleted options:" }}
+        {{/if}}
+    </div>
+    <ul class="modal-options-list">
+        {{#each (object_values deleted_values)}}
+            <li>{{this}}</li>
+        {{/each}}
+    </ul>
+{{/if}}
