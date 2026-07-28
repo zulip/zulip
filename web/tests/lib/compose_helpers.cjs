@@ -29,6 +29,7 @@ class FakeComposeBox {
             ".markdown_preview_spinner",
             $("#compose .markdown_preview_spinner"),
         );
+        $compose.set_find_results(".preview_content .emoji", []);
 
         this.$send_message_form.set_find_results(
             ".message-limit-indicator",

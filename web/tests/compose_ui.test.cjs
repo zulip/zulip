@@ -1609,6 +1609,7 @@ function make_open_preview(selector) {
     );
     $container.set_find_results(".markdown_preview_spinner", $spinner);
     $container.set_find_results(".preview_content", $preview_content);
+    $container.set_find_results(".preview_content .emoji", []);
     $container.addClass("preview_mode");
     return {$container, $preview_content};
 }
