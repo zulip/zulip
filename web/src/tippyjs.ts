@@ -695,7 +695,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
         placement: "top",
-        delay: INSTANT_HOVER_DELAY,
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
 
         /*
@@ -707,6 +707,7 @@ export function initialize(): void {
         */
 
         plugins: [hide_on_reference_removal_plugin],
+        onShow: show_emoji_tooltip,
         onHidden(instance) {
             instance.destroy();
         },
