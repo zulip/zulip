@@ -2549,7 +2549,9 @@ class StripeTest(StripeTestCase):
             self.local_upgrade(
                 self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
             )
-        plan = get_current_plan_by_realm(user.realm)
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        plan = get_current_plan_by_customer(customer)
         assert plan is not None
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
@@ -2561,10 +2563,7 @@ class StripeTest(StripeTestCase):
                 "/billing/plan",
                 {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
             )
-            stripe_customer_id = Customer.objects.get(realm=user.realm).id
-            new_plan = get_current_plan_by_realm(user.realm)
-            assert new_plan is not None
-            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
             self.assert_json_success(response)
         plan.refresh_from_db()
@@ -2603,8 +2602,7 @@ class StripeTest(StripeTestCase):
         # Check that we downgrade properly if the cycle is over
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
             billing_session.update_license_ledger_if_needed(self.next_year)
-        plan = CustomerPlan.objects.first()
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
         self.check_last_ledger_entry_license_counts(plan, 20, 20)
@@ -2620,8 +2618,7 @@ class StripeTest(StripeTestCase):
 
         # Verify that we call invoice_plan once more after cycle end but
         # don't invoice them for users added after the cycle end
-        plan = CustomerPlan.objects.first()
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertIsNotNone(plan.next_invoice_date)
 
         mocked = self.setup_mocked_stripe(
@@ -2632,8 +2629,7 @@ class StripeTest(StripeTestCase):
         mocked["Invoice"].create.assert_not_called()
 
         # Check that we updated next_invoice_date in invoice_plan
-        plan = CustomerPlan.objects.first()
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertIsNone(plan.next_invoice_date)
 
         # Check that we don't call invoice_plan after that final call
@@ -2655,14 +2651,12 @@ class StripeTest(StripeTestCase):
 
         self.login_user(user)
         self.add_card_and_upgrade(user, schedule="monthly")
-        monthly_plan = get_current_plan_by_realm(user.realm)
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        monthly_plan = get_current_plan_by_customer(customer)
         assert monthly_plan is not None
         self.assertEqual(monthly_plan.automanage_licenses, True)
         self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
-
-        stripe_customer_id = Customer.objects.get(realm=user.realm).id
-        new_plan = get_current_plan_by_realm(user.realm)
-        assert new_plan is not None
 
         with (
             self.assertLogs("corporate.stripe", "INFO") as m,
@@ -2672,7 +2666,7 @@ class StripeTest(StripeTestCase):
                 "/billing/plan",
                 {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
             )
-            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}"
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {monthly_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
             self.assert_json_success(response)
         monthly_plan.refresh_from_db()
@@ -2832,13 +2826,12 @@ class StripeTest(StripeTestCase):
         self.add_card_and_upgrade(
             user, schedule="monthly", license_management="manual", licenses=num_licenses
         )
-        monthly_plan = get_current_plan_by_realm(user.realm)
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        monthly_plan = get_current_plan_by_customer(customer)
         assert monthly_plan is not None
         self.assertEqual(monthly_plan.automanage_licenses, False)
         self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
-        stripe_customer_id = Customer.objects.get(realm=user.realm).id
-        new_plan = get_current_plan_by_realm(user.realm)
-        assert new_plan is not None
         with (
             self.assertLogs("corporate.stripe", "INFO") as m,
             time_machine.travel(self.now, tick=False),
@@ -2849,7 +2842,7 @@ class StripeTest(StripeTestCase):
             )
             self.assertEqual(
                 m.output[0],
-                f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}",
+                f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {monthly_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}",
             )
             self.assert_json_success(response)
         monthly_plan.refresh_from_db()
@@ -2934,14 +2927,12 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         self.add_card_and_upgrade(user, schedule="annual")
-        annual_plan = get_current_plan_by_realm(user.realm)
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        annual_plan = get_current_plan_by_customer(customer)
         assert annual_plan is not None
         self.assertEqual(annual_plan.automanage_licenses, True)
         self.assertEqual(annual_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
-
-        stripe_customer_id = Customer.objects.get(realm=user.realm).id
-        new_plan = get_current_plan_by_realm(user.realm)
-        assert new_plan is not None
 
         assert self.now is not None
         with (
@@ -2952,7 +2943,7 @@ class StripeTest(StripeTestCase):
                 "/billing/plan",
                 {"status": CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE},
             )
-            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE}"
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {annual_plan.id}, status: {CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
             self.assert_json_success(response)
         annual_plan.refresh_from_db()
@@ -3099,14 +3090,14 @@ class StripeTest(StripeTestCase):
                 "/billing/plan",
                 {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
             )
-            stripe_customer_id = Customer.objects.get(realm=user.realm).id
-            new_plan = get_current_plan_by_realm(user.realm)
-            assert new_plan is not None
-            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            customer = get_customer_by_realm(user.realm)
+            assert customer is not None
+            plan = get_current_plan_by_customer(customer)
+            assert plan is not None
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
             self.assert_json_success(response)
-        plan = CustomerPlan.objects.first()
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
         with (
             self.assertLogs("corporate.stripe", "INFO") as m,
@@ -3116,11 +3107,10 @@ class StripeTest(StripeTestCase):
                 "/billing/plan",
                 {"status": CustomerPlan.ACTIVE},
             )
-            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.ACTIVE}"
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.ACTIVE}"
             self.assertEqual(m.output[0], expected_log)
             self.assert_json_success(response)
-        plan = CustomerPlan.objects.first()
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertEqual(plan.status, CustomerPlan.ACTIVE)
 
     @patch("stripe.Invoice.create")
@@ -3138,28 +3128,26 @@ class StripeTest(StripeTestCase):
             self.local_upgrade(
                 self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
             )
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            stripe_customer_id = Customer.objects.get(realm=user.realm).id
-            new_plan = get_current_plan_by_realm(user.realm)
-            assert new_plan is not None
             with time_machine.travel(self.now, tick=False):
                 self.client_billing_patch(
                     "/billing/plan",
                     {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
                 )
-            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
-
-        plan = CustomerPlan.objects.first()
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertIsNotNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
         # Fast forward the next_invoice_date to next year.
         plan.next_invoice_date = self.next_year
         plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year)
-        plan = CustomerPlan.objects.first()
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertIsNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
 
@@ -3320,7 +3308,9 @@ class StripeTest(StripeTestCase):
         with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
                 self.add_card_and_upgrade(user, schedule="annual")
-            plan = get_current_plan_by_realm(user.realm)
+            customer = get_customer_by_realm(user.realm)
+            assert customer is not None
+            plan = get_current_plan_by_customer(customer)
             assert plan is not None
             self.assertEqual(plan.next_invoice_date, free_trial_end_date)
             self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
@@ -3337,10 +3327,7 @@ class StripeTest(StripeTestCase):
                     "/billing/plan",
                     {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
                 )
-                stripe_customer_id = Customer.objects.get(realm=user.realm).id
-                new_plan = get_current_plan_by_realm(user.realm)
-                assert new_plan is not None
-                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
+                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
                 self.assertEqual(m.output[0], expected_log)
                 self.assert_json_success(response)
             plan.refresh_from_db()
@@ -3381,8 +3368,7 @@ class StripeTest(StripeTestCase):
             # Check that we downgrade properly if the cycle is over
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
                 billing_session.update_license_ledger_if_needed(free_trial_end_date)
-            plan = CustomerPlan.objects.first()
-            assert plan is not None
+            plan.refresh_from_db()
             self.assertIsNone(plan.next_invoice_date)
             self.assertEqual(plan.status, CustomerPlan.ENDED)
             self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_LIMITED)
@@ -3417,7 +3403,9 @@ class StripeTest(StripeTestCase):
         with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
                 self.add_card_and_upgrade(user, schedule="annual")
-            plan = get_current_plan_by_realm(user.realm)
+            customer = get_customer_by_realm(user.realm)
+            assert customer is not None
+            plan = get_current_plan_by_customer(customer)
             assert plan is not None
             self.assertEqual(plan.next_invoice_date, free_trial_end_date)
             self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
@@ -3434,10 +3422,7 @@ class StripeTest(StripeTestCase):
                     "/billing/plan",
                     {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
                 )
-                stripe_customer_id = Customer.objects.get(realm=user.realm).id
-                new_plan = get_current_plan_by_realm(user.realm)
-                assert new_plan is not None
-                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
+                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
                 self.assertEqual(m.output[0], expected_log)
                 self.assert_json_success(response)
             plan.refresh_from_db()
@@ -3456,10 +3441,7 @@ class StripeTest(StripeTestCase):
                     "/billing/plan",
                     {"status": CustomerPlan.FREE_TRIAL},
                 )
-                stripe_customer_id = Customer.objects.get(realm=user.realm).id
-                new_plan = get_current_plan_by_realm(user.realm)
-                assert new_plan is not None
-                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.FREE_TRIAL}"
+                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.FREE_TRIAL}"
                 self.assertEqual(m.output[0], expected_log)
                 self.assert_json_success(response)
             plan.refresh_from_db()
@@ -3484,10 +3466,11 @@ class StripeTest(StripeTestCase):
                     "/billing/plan",
                     {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
                 )
-            stripe_customer_id = Customer.objects.get(realm=user.realm).id
-            new_plan = get_current_plan_by_realm(user.realm)
-            assert new_plan is not None
-            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            customer = get_customer_by_realm(user.realm)
+            assert customer is not None
+            plan = get_current_plan_by_customer(customer)
+            assert plan is not None
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
 
         with (
@@ -3507,8 +3490,8 @@ class StripeTest(StripeTestCase):
         )
 
         # Fast forward the next_invoice_date to next year.
-        new_plan.next_invoice_date = self.next_year
-        new_plan.save(update_fields=["next_invoice_date"])
+        plan.next_invoice_date = self.next_year
+        plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year)
 
         with time_machine.travel(self.next_year, tick=False):
@@ -8964,13 +8947,11 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
                 "/billing/plan",
                 {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
             )
-            customer = Customer.objects.get(remote_server=self.remote_server)
-            new_plan = get_current_plan_by_customer(customer)
-            assert new_plan is not None
-            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
             self.assert_json_success(response)
-        self.assertEqual(new_plan.licenses_at_next_renewal(), None)
+        plan.refresh_from_db()
+        self.assertEqual(plan.licenses_at_next_renewal(), None)
 
     @responses.activate
     def test_request_sponsorship(self) -> None:
