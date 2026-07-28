@@ -9,6 +9,7 @@ import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
+import {show_emoji_tooltip} from "./emoji_tooltip.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
@@ -186,6 +187,27 @@ export function initialize(): void {
             instance.setContent(
                 parse_html(render_narrow_tooltip({content: instance.props.content})),
             );
+        },
+    });
+
+    // Enlarged emoji preview in message content. Reactions are excluded
+    // (they live in `.message_reaction`, not `.message_content`) since
+    // their tooltip shows who reacted.
+    message_list_tooltip(".message_content .emoji", {
+        delay: LONG_HOVER_DELAY,
+        onTrigger(instance) {
+            // Remove the native `title` on hover-start so it can't flash
+            // alongside Tippy, but only when the tooltip will actually show:
+            // message_list_tooltip skips showing with no current message list
+            // (e.g. an overlay opened from Inbox), where stripping the title
+            // would leave the emoji with no tooltip at all.
+            if (message_lists.current !== undefined) {
+                instance.reference.removeAttribute("title");
+            }
+        },
+        onShow: show_emoji_tooltip,
+        onHidden(instance) {
+            instance.destroy();
         },
     });
 
