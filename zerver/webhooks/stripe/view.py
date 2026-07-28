@@ -1,6 +1,7 @@
 # Webhooks for external integrations.
 import time
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from django.http import HttpRequest, HttpResponse
 
@@ -314,48 +315,57 @@ def amount_string(amount: int, currency: str) -> str:
     return decimal_amount + f" {currency.upper()}"
 
 
-def linkified_id(object_id: str, lower: bool = False) -> str:
-    names_and_urls: dict[str, tuple[str, str | None]] = {
-        # Core resources
-        "ch": ("Charge", "charges"),
-        "cus": ("Customer", "customers"),
-        "dp": ("Dispute", "disputes"),
-        "du": ("Dispute", "disputes"),
-        "file": ("File", "files"),
-        "link": ("File link", "file_links"),
-        "pi": ("Payment intent", "payment_intents"),
-        "po": ("Payout", "payouts"),
-        "prod": ("Product", "products"),
-        "re": ("Refund", "refunds"),
-        "tok": ("Token", "tokens"),
-        # Payment methods
-        # payment methods have URL prefixes like /customers/cus_id/sources
-        "ba": ("Bank account", None),
-        "card": ("Card", None),
-        "src": ("Source", None),
-        # Billing
-        # coupons have a configurable id, but the URL prefix is /coupons
-        # discounts don't have a URL, I think
-        "in": ("Invoice", "invoices"),
-        "ii": ("Invoice item", "invoiceitems"),
-        # products are covered in core resources
-        # plans have a configurable id, though by default they are created with this pattern
-        # 'plan': ('Plan', 'plans'),
-        "sub": ("Subscription", "subscriptions"),
-        "si": ("Subscription item", "subscription_items"),
-        # I think usage records have URL prefixes like /subscription_items/si_id/usage_record_summaries
-        "mbur": ("Usage record", None),
-        # Undocumented :|
-        "py": ("Payment", "payments"),
-        "pyr": ("Refund", "refunds"),  # Pseudo refunds. Not fully tested.
-        # Connect, Fraud, Orders, etc not implemented
-    }
-    name, url_prefix = names_and_urls[object_id.split("_", 1)[0]]
+@dataclass
+class DisplayInfo:
+    name: str
+    url_prefix: str | None = None
+
+
+STRIPE_OBJECT_TYPES: dict[str, DisplayInfo] = {
+    # CORE RESOURCES
+    "ch": DisplayInfo("Charge", "charges"),
+    "cus": DisplayInfo("Customer", "customers"),
+    "dp": DisplayInfo("Dispute", "disputes"),
+    "du": DisplayInfo("Dispute", "disputes"),
+    "file": DisplayInfo("File", "files"),
+    "link": DisplayInfo("File link", "file_links"),
+    "pi": DisplayInfo("Payment intent", "payment_intents"),
+    "po": DisplayInfo("Payout", "payouts"),
+    "prod": DisplayInfo("Product", "products"),
+    "re": DisplayInfo("Refund", "refunds"),
+    "tok": DisplayInfo("Token", "tokens"),
+    # PAYMENT METHODS
+    # Payment methods have URL prefixes like /customers/cus_id/sources.
+    "ba": DisplayInfo("Bank account"),
+    "card": DisplayInfo("Card"),
+    "src": DisplayInfo("Source"),
+    # BILLING
+    # Coupons have a configurable id, but the URL prefix is /coupons.
+    # It's not clear if discounts have a URL.
+    "in": DisplayInfo("Invoice", "invoices"),
+    "ii": DisplayInfo("Invoice item", "invoiceitems"),
+    # Products are covered in core resources.
+    # Plans have a configurable id, though by default they are created with this pattern:
+    # 'plan': ('Plan', 'plans').
+    "sub": DisplayInfo("Subscription", "subscriptions"),
+    "si": DisplayInfo("Subscription item", "subscription_items"),
+    # Usage records seem to have URL prefixes like /subscription_items/si_id/usage_record_summaries.
+    "mbur": DisplayInfo("Usage record"),
+    # UNDOCUMENTED
+    "py": DisplayInfo("Payment", "payments"),
+    "pyr": DisplayInfo("Refund", "refunds"),
+    # Connect, Fraud, Orders, etc not implemented.
+}
+
+
+def linkified_id(id: str, lower: bool = False) -> str:
+    display_info = STRIPE_OBJECT_TYPES[id.split("_", 1)[0]]
+    name = display_info.name
     if lower:  # nocoverage
         name = name.lower()
-    if url_prefix is None:  # nocoverage
+    if display_info.url_prefix is None:  # nocoverage
         return name
-    return f"[{name}](https://dashboard.stripe.com/{url_prefix}/{object_id})"
+    return f"[{name}](https://dashboard.stripe.com/{display_info.url_prefix}/{id})"
 
 
 def stringify(value: object) -> str:
