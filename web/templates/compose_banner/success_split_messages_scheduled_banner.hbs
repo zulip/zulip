@@ -1,0 +1,12 @@
+<div class="main-view-banner success">
+    <div class="main-view-banner-elements-wrapper">
+        <p class="banner_content">
+            {{#if minimum_scheduled_message_delay_minutes_note}}
+                {{t 'Messages must be scheduled at least {minimum_scheduled_message_delay_minutes} minutes in the future.'}}
+            {{/if}}
+            {{t '{message_count} messages have been scheduled, starting at {deliver_at}.'}}
+            <a href="#scheduled">{{t "View scheduled messages"}}</a>
+        </p>
+    </div>
+    <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button" tabindex="0" aria-label="{{t 'Dismiss' }}"></a>
+</div>

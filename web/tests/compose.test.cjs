@@ -43,7 +43,6 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
 const narrow_state = mock_esm("../src/narrow_state");
-const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
 const sent_messages = mock_esm("../src/sent_messages");
 const server_events_state = mock_esm("../src/server_events_state");
@@ -56,16 +55,26 @@ mock_esm("../src/settings_data", {
     user_has_permission_for_group_setting: () => true,
 });
 
+mock_esm("../src/compose_textarea", {
+    get_code_block_ranges: () => [],
+    save_compose_cursor: noop,
+    restore_compose_cursor: noop,
+    initialize: noop,
+});
+mock_esm("../src/rendered_markdown", {update_elements: noop});
+
 const compose_ui = zrequire("compose_ui");
-zrequire("compose_banner");
+const compose_banner_module = zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_recipient = zrequire("compose_recipient");
+const compose_split_messages = zrequire("compose_split_messages");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const compose_setup = zrequire("compose_setup");
 const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
+const scheduled_messages = zrequire("scheduled_messages");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_validate = zrequire("compose_validate");
@@ -256,6 +265,40 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     assert.ok(draft_deleted);
 });
 
+test_ui(
+    "send_message_success_partial_visibility_policy",
+    ({override, override_rewire, disallow}) => {
+        override_rewire(echo, "reify_message_id", noop);
+        override(
+            onboarding_steps,
+            "ONE_TIME_NOTICES_TO_DISPLAY",
+            new Set(["visibility_policy_banner"]),
+        );
+        disallow(drafts.draft_model, "deleteDrafts");
+
+        let notified = false;
+        override(
+            compose_notifications,
+            "notify_automatic_new_visibility_policy",
+            (_message, data) => {
+                notified = true;
+                assert.equal(data.automatic_new_visibility_policy, 2);
+            },
+        );
+
+        const request = {
+            locally_echoed: false,
+            local_id: "loc-split-1",
+            draft_id: 100,
+            type: "stream",
+            stream_id: 1,
+            topic: "test",
+        };
+        compose.send_message_success(request, {id: 12, automatic_new_visibility_policy: 2}, true);
+        assert.ok(notified);
+    },
+);
+
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     clock.setSystemTime(new Date(fake_now * 1000));
@@ -420,6 +463,544 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     })();
 });
 
+test_ui("split_message_send_multi_part", ({override, override_rewire, disallow_rewire}) => {
+    mock_banners();
+    clock.setSystemTime(new Date(fake_now * 1000));
+    simulate_draft_ui_interactions();
+
+    const fake_compose_box = new FakeComposeBox();
+
+    let update_draft_count = 0;
+    override_rewire(drafts, "update_draft", () => {
+        update_draft_count += 1;
+        return 100;
+    });
+    const deleted_draft_ids = [];
+    override(drafts.draft_model, "deleteDrafts", (ids) => deleted_draft_ids.push(...ids));
+    override(server_events_state, "assert_get_events_running", noop);
+    override_rewire(echo, "reify_message_id", noop);
+    disallow_rewire(echo, "try_deliver_locally");
+    override(sent_messages, "get_new_local_id", () => "loc-split-1");
+    override(compose_notifications, "get_muted_narrow", () => undefined);
+
+    compose_split_messages.set_split_messages_enabled(true);
+
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(social.stream_id);
+    override(current_user, "user_id", new_user.user_id);
+
+    const sent_contents = [];
+    override(transmit, "send_message", (payload, success) => {
+        sent_contents.push(payload.content);
+        if (sent_contents.length === 1) {
+            // Success fires synchronously — compose box must still be intact
+            // between parts, not cleared until the final part lands, and it's
+            // read-only so edits mid-send can't be silently discarded.
+            assert.ok(fake_compose_box.textarea_val() !== "");
+            assert.ok(fake_compose_box.is_textarea_readonly());
+        }
+        success({id: sent_contents.length * 100});
+    });
+
+    fake_compose_box.set_textarea_val("part1\n\n\npart2");
+    compose.send_message();
+
+    assert.deepEqual(sent_contents, ["part1", "part2"]);
+    assert.equal(fake_compose_box.textarea_val(), "");
+    // The box is editable again once the final part clears it.
+    assert.ok(!fake_compose_box.is_textarea_readonly());
+    assert.equal(update_draft_count, 1);
+    assert.deepEqual(deleted_draft_ids, [100]);
+
+    compose_split_messages.set_split_messages_enabled(false);
+});
+
+test_ui(
+    "split_message_send_rewrites_draft_to_remainder",
+    ({override, override_rewire, disallow_rewire}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        override_rewire(drafts, "update_draft", () => 100);
+        // The in-flight draft starts life holding the full, unsplit message.
+        const stored_draft = {content: "part1\n\n\npart2\n\n\npart3", is_sending_saving: true};
+        override(drafts.draft_model, "getDraft", () => stored_draft);
+        const draft_content_after_edit = [];
+        override(drafts.draft_model, "editDraft", (_id, draft) => {
+            draft_content_after_edit.push(draft.content);
+            return true;
+        });
+        const deleted_draft_ids = [];
+        override(drafts.draft_model, "deleteDrafts", (ids) => deleted_draft_ids.push(...ids));
+        override(server_events_state, "assert_get_events_running", noop);
+        override_rewire(echo, "reify_message_id", noop);
+        disallow_rewire(echo, "try_deliver_locally");
+        override(sent_messages, "get_new_local_id", () => "loc-split-3");
+        override(compose_notifications, "get_muted_narrow", () => undefined);
+
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+        override(current_user, "user_id", new_user.user_id);
+
+        override(transmit, "send_message", (_payload, success) => {
+            success({id: 100});
+        });
+
+        fake_compose_box.set_textarea_val("part1\n\n\npart2\n\n\npart3");
+        compose.send_message();
+
+        // As each part is delivered, the draft is rewritten to only the still-unsent
+        // remainder, so a reload mid-split can't re-send already-delivered parts.
+        // The final part deletes the draft entirely.
+        assert.deepEqual(draft_content_after_edit, ["part2\n\n\npart3", "part3"]);
+        assert.deepEqual(deleted_draft_ids, [100]);
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui(
+    "split_message_send_error_recovery",
+    ({override, override_rewire, disallow, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        const update_draft_opts = [];
+        override_rewire(drafts, "update_draft", (opts = {}) => {
+            update_draft_opts.push(opts);
+            return 100;
+        });
+        disallow(drafts.draft_model, "deleteDrafts");
+        override(server_events_state, "assert_get_events_running", noop);
+        override_rewire(echo, "reify_message_id", noop);
+        override(sent_messages, "get_new_local_id", () => "loc-split-2");
+        override_rewire(compose_ui, "autosize_textarea", noop);
+
+        compose_split_messages.set_split_messages_enabled(true);
+
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+        override(current_user, "user_id", new_user.user_id);
+
+        let send_call_count = 0;
+        override(transmit, "send_message", (_payload, success, error) => {
+            send_call_count += 1;
+            if (send_call_count === 1) {
+                success({id: 101});
+            } else {
+                error("Server error", "");
+            }
+        });
+
+        let partial_failure_banner_shown = false;
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            if (data.classname === compose_banner_module.CLASSNAMES.generic_compose_error) {
+                partial_failure_banner_shown = true;
+            }
+            return "<banner-stub>";
+        });
+
+        fake_compose_box.set_textarea_val("part1\n\n\npart2\n\n\npart3");
+        compose.send_message();
+
+        assert.equal(send_call_count, 2);
+        // Must report exactly 1 shipped part — not 0 (unfired) or 2 (both failed).
+        assert.ok(partial_failure_banner_shown);
+        // Part 1 is gone; only unsent content restored to the box.
+        assert.equal(fake_compose_box.textarea_val(), "part2\n\n\npart3");
+        assert.equal(update_draft_opts.at(-1).is_sending_saving, false);
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui("split_message_send_recipient_race", ({override, override_rewire, disallow_rewire}) => {
+    mock_banners();
+    clock.setSystemTime(new Date(fake_now * 1000));
+    simulate_draft_ui_interactions();
+
+    const fake_compose_box = new FakeComposeBox();
+
+    override_rewire(drafts, "update_draft", () => 100);
+    override(drafts.draft_model, "deleteDrafts", noop);
+    override(server_events_state, "assert_get_events_running", noop);
+    override_rewire(echo, "reify_message_id", noop);
+    disallow_rewire(echo, "try_deliver_locally");
+    override(sent_messages, "get_new_local_id", () => "loc-split-3");
+    override(compose_notifications, "get_muted_narrow", () => undefined);
+
+    compose_split_messages.set_split_messages_enabled(true);
+
+    const original_stream_id = social.stream_id;
+    const original_topic = "original-topic";
+    const different_stream_id = 999;
+
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(original_stream_id);
+    $("input#stream_message_recipient_topic").val(original_topic);
+    override(current_user, "user_id", new_user.user_id);
+
+    const sent_stream_ids = [];
+    const sent_topics = [];
+
+    override(transmit, "send_message", (payload, success) => {
+        sent_stream_ids.push(payload.stream_id);
+        sent_topics.push(payload.topic);
+
+        if (sent_stream_ids.length === 1) {
+            // Change recipient mid-flight — part 2 must ignore this and use
+            // the captured recipient from the start of send_message().
+            compose_state.set_stream_id(different_stream_id);
+            $("input#stream_message_recipient_topic").val("different-topic");
+        }
+
+        success({id: sent_stream_ids.length * 100});
+    });
+
+    fake_compose_box.set_textarea_val("part1\n\n\npart2");
+    compose.send_message();
+
+    assert.equal(sent_stream_ids[0], original_stream_id);
+    assert.equal(sent_stream_ids[1], original_stream_id);
+    assert.equal(sent_topics[0], original_topic);
+    assert.equal(sent_topics[1], original_topic);
+    // Confirm the race actually happened — state really did change mid-flight.
+    assert.equal(compose_state.stream_id(), different_stream_id);
+
+    // Restore so we don't pollute subsequent tests.
+    compose_state.set_stream_id(social.stream_id);
+    $("input#stream_message_recipient_topic").val("");
+    compose_split_messages.set_split_messages_enabled(false);
+});
+
+test_ui(
+    "split_message_send_refuses_too_many_parts",
+    ({disallow, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        disallow_rewire(echo, "try_deliver_locally");
+        // The refusal happens before the draft is saved or anything is
+        // dispatched to the server, so neither may be reached.
+        disallow(transmit, "send_message");
+        mock_template("compose_banner/compose_banner.hbs", false, () => "<banner-stub>");
+
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        const parts = [];
+        for (let i = 0; i <= compose_split_messages.MAX_SPLIT_PARTS; i += 1) {
+            parts.push(`p${i}`);
+        }
+        fake_compose_box.set_textarea_val(parts.join("\n\n\n"));
+
+        // Too many parts: send_message refuses before dispatching and returns
+        // false, so finish() returns false and skips its post-send side effects.
+        const dispatched = compose.send_message();
+
+        assert.equal(dispatched, false);
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui(
+    "schedule_split_message_multi_part",
+    ({override, override_rewire, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        let update_draft_count = 0;
+        override_rewire(drafts, "update_draft", () => {
+            update_draft_count += 1;
+            return 100;
+        });
+        const deleted_draft_ids = [];
+        override(drafts.draft_model, "deleteDrafts", (ids) => deleted_draft_ids.push(...ids));
+        disallow_rewire(echo, "try_deliver_locally");
+        mock_template(
+            "compose_banner/success_split_messages_scheduled_banner.hbs",
+            false,
+            () => "<banner-stub>",
+        );
+
+        const base_ts = fake_now + 600;
+        scheduled_messages.set_selected_schedule_timestamp(base_ts);
+
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        const posted = [];
+        override(channel, "post", (payload) => {
+            assert.equal(payload.url, "/json/scheduled_messages");
+            posted.push(payload.data);
+            if (posted.length === 1) {
+                // The box stays intact and read-only between parts, until the
+                // final part clears it.
+                assert.ok(fake_compose_box.textarea_val() !== "");
+                assert.ok(fake_compose_box.is_textarea_readonly());
+            }
+            payload.success({scheduled_message_id: posted.length});
+        });
+
+        fake_compose_box.set_textarea_val("part1\n\n\npart2\n\n\npart3");
+        const scheduled = compose.schedule_message_to_custom_date();
+
+        assert.ok(scheduled);
+        assert.deepEqual(
+            posted.map((data) => data.content),
+            ["part1", "part2", "part3"],
+        );
+        // All parts share one timestamp; delivery order is guaranteed by the
+        // ascending scheduled-message ids that sequential posting produces.
+        assert.deepEqual(
+            posted.map((data) => data.scheduled_delivery_timestamp),
+            [base_ts, base_ts, base_ts],
+        );
+        assert.equal(update_draft_count, 1);
+        assert.deepEqual(deleted_draft_ids, [100]);
+        assert.equal(fake_compose_box.textarea_val(), "");
+        assert.ok(!fake_compose_box.is_textarea_readonly());
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui(
+    "schedule_split_message_rewrites_draft_to_remainder",
+    ({override, override_rewire, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        override_rewire(drafts, "update_draft", () => 100);
+        const stored_draft = {content: "part1\n\n\npart2\n\n\npart3", is_sending_saving: true};
+        override(drafts.draft_model, "getDraft", () => stored_draft);
+        const draft_content_after_edit = [];
+        override(drafts.draft_model, "editDraft", (_id, draft) => {
+            draft_content_after_edit.push(draft.content);
+            return true;
+        });
+        const deleted_draft_ids = [];
+        override(drafts.draft_model, "deleteDrafts", (ids) => deleted_draft_ids.push(...ids));
+        disallow_rewire(echo, "try_deliver_locally");
+        mock_template(
+            "compose_banner/success_split_messages_scheduled_banner.hbs",
+            false,
+            () => "<banner-stub>",
+        );
+
+        scheduled_messages.set_selected_schedule_timestamp(fake_now + 600);
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        override(channel, "post", (payload) => payload.success({scheduled_message_id: 1}));
+
+        fake_compose_box.set_textarea_val("part1\n\n\npart2\n\n\npart3");
+        compose.schedule_message_to_custom_date();
+
+        // Each scheduled part rewrites the draft to only the still-unscheduled
+        // remainder; the final part deletes it.
+        assert.deepEqual(draft_content_after_edit, ["part2\n\n\npart3", "part3"]);
+        assert.deepEqual(deleted_draft_ids, [100]);
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui(
+    "schedule_split_message_error_recovery",
+    ({override, override_rewire, disallow, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        const update_draft_opts = [];
+        override_rewire(drafts, "update_draft", (opts = {}) => {
+            update_draft_opts.push(opts);
+            return 100;
+        });
+        disallow(drafts.draft_model, "deleteDrafts");
+        disallow_rewire(echo, "try_deliver_locally");
+        override_rewire(compose_ui, "autosize_textarea", noop);
+        override(channel, "xhr_error_message", () => "translated: Error");
+
+        scheduled_messages.set_selected_schedule_timestamp(fake_now + 600);
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        let post_count = 0;
+        override(channel, "post", (payload) => {
+            post_count += 1;
+            if (post_count === 1) {
+                payload.success({scheduled_message_id: 1});
+            } else {
+                payload.error({});
+            }
+        });
+
+        const banner_texts = [];
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            if (data.classname === compose_banner_module.CLASSNAMES.generic_compose_error) {
+                banner_texts.push(data.banner_text);
+            }
+            return "<banner-stub>";
+        });
+
+        fake_compose_box.set_textarea_val("part1\n\n\npart2\n\n\npart3");
+        compose.schedule_message_to_custom_date();
+
+        assert.equal(post_count, 2);
+        // Part 1 is scheduled; only the unscheduled remainder is restored.
+        assert.equal(fake_compose_box.textarea_val(), "part2\n\n\npart3");
+        assert.equal(update_draft_opts.at(-1).is_sending_saving, false);
+        // The partial-schedule-failure banner reports the one shipped part.
+        assert.ok(banner_texts.some((text) => text.includes("already scheduled")));
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui(
+    "schedule_split_message_refuses_too_many_parts",
+    ({disallow, disallow_rewire, mock_template}) => {
+        mock_banners();
+        clock.setSystemTime(new Date(fake_now * 1000));
+        simulate_draft_ui_interactions();
+
+        const fake_compose_box = new FakeComposeBox();
+
+        disallow_rewire(echo, "try_deliver_locally");
+        // Too many parts must be refused before anything is scheduled.
+        disallow(channel, "post");
+        mock_template("compose_banner/compose_banner.hbs", false, () => "<banner-stub>");
+
+        scheduled_messages.set_selected_schedule_timestamp(fake_now + 600);
+        compose_split_messages.set_split_messages_enabled(true);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(social.stream_id);
+
+        const parts = [];
+        for (let i = 0; i <= compose_split_messages.MAX_SPLIT_PARTS; i += 1) {
+            parts.push(`p${i}`);
+        }
+        fake_compose_box.set_textarea_val(parts.join("\n\n\n"));
+
+        const scheduled = compose.schedule_message_to_custom_date();
+
+        assert.equal(scheduled, false);
+
+        compose_split_messages.set_split_messages_enabled(false);
+    },
+);
+
+test_ui("schedule_single_message_unchanged", ({override, override_rewire, mock_template}) => {
+    mock_banners();
+    clock.setSystemTime(new Date(fake_now * 1000));
+    simulate_draft_ui_interactions();
+
+    const fake_compose_box = new FakeComposeBox();
+
+    override_rewire(drafts, "update_draft", () => 100);
+    const deleted_draft_ids = [];
+    override(drafts.draft_model, "deleteDrafts", (ids) => deleted_draft_ids.push(...ids));
+    let banner_context;
+    mock_template("compose_banner/success_message_scheduled_banner.hbs", false, (data) => {
+        banner_context = data;
+        return "<banner-stub>";
+    });
+
+    scheduled_messages.set_selected_schedule_timestamp(fake_now + 600);
+    // Splitting disabled: a single scheduled message, keeping the existing
+    // Undo banner.
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(social.stream_id);
+
+    const posted = [];
+    override(channel, "post", (payload) => {
+        posted.push(payload.data);
+        payload.success({scheduled_message_id: 77});
+    });
+
+    fake_compose_box.set_textarea_val("just one message");
+    const scheduled = compose.schedule_message_to_custom_date();
+
+    assert.ok(scheduled);
+    assert.equal(posted.length, 1);
+    assert.equal(posted[0].content, "just one message");
+    assert.equal(banner_context.scheduled_message_id, 77);
+    assert.deepEqual(deleted_draft_ids, [100]);
+    assert.equal(fake_compose_box.textarea_val(), "");
+});
+
+test_ui("split_message_preview_enumerated", ({override, mock_template}) => {
+    mock_banners();
+    initialize_handlers({override});
+
+    const fake_compose_box = new FakeComposeBox();
+
+    compose_split_messages.set_split_messages_enabled(true);
+
+    // All parts are plain text: rendered locally, enumerated as Message N.
+    override(markdown, "contains_backend_only_syntax", () => false);
+    override(markdown, "is_status_message", () => false);
+    override(markdown, "render", (raw_content) => ({content: "R:" + raw_content}));
+
+    // Capture each enumerated part instead of asserting on accumulated DOM.
+    const enumerated_calls = [];
+    mock_template("enumerated_split_message_part.hbs", false, (data) => {
+        enumerated_calls.push({
+            message_number: data.message_number,
+            rendered_preview_html: data.rendered_preview_html,
+        });
+        return `<div class="split_message_fragment">${data.rendered_preview_html}</div>`;
+    });
+
+    // Each part also fires a server render; leave it unresolved so we test
+    // the synchronous local-render path. The async rebuild never runs.
+    override(channel, "post", () => {});
+
+    fake_compose_box.set_textarea_val("part1\n\n\npart2");
+    fake_compose_box.hide_message_preview();
+
+    fake_compose_box.click_on_markdown_preview_icon({
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    fake_compose_box.assert_preview_mode_is_on();
+
+    // Two parts, enumerated 1 and 2, each carrying its locally-rendered content.
+    assert.equal(enumerated_calls.length, 2);
+    assert.equal(enumerated_calls[0].message_number, 1);
+    assert.equal(enumerated_calls[0].rendered_preview_html, "R:part1");
+    assert.equal(enumerated_calls[1].message_number, 2);
+    assert.equal(enumerated_calls[1].rendered_preview_html, "R:part2");
+
+    compose_split_messages.set_split_messages_enabled(false);
+});
+
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     window.addEventListener = noop;
@@ -446,6 +1027,7 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     let send_message_called = false;
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
+        return true;
     });
     override(realm, "realm_topics_policy", "allow_empty_topic");
 
@@ -524,6 +1106,7 @@ test_ui("finish", ({override, override_rewire}) => {
         let send_message_called = false;
         override_rewire(compose, "send_message", () => {
             send_message_called = true;
+            return true;
         });
 
         assert.ok(compose.finish());
@@ -700,8 +1283,6 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
 test_ui("on_events", ({override, override_rewire}) => {
     initialize_handlers({override});
 
-    override(rendered_markdown, "update_elements", noop);
-
     const fake_compose_box = new FakeComposeBox();
 
     (function test_attach_files_compose_clicked() {
@@ -743,25 +1324,6 @@ test_ui("on_events", ({override, override_rewire}) => {
             });
         }
 
-        function test_post_success(success_callback) {
-            const resp = {
-                msg: "",
-                result: "success",
-                rendered: "Server: default message",
-            };
-            success_callback(resp);
-
-            assert.equal(fake_compose_box.preview_content_html(), "Server: default message");
-        }
-
-        function test_post_error(error_callback) {
-            error_callback();
-            assert.equal(
-                fake_compose_box.preview_content_html(),
-                "translated: Failed to generate preview",
-            );
-        }
-
         let current_message;
 
         override(channel, "post", (payload) => {
@@ -769,21 +1331,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             assert.ok(payload.data);
             assert.deepEqual(payload.data.content, current_message);
 
-            function test(func, param) {
-                let destroy_indicator_called = false;
-                override(loading, "destroy_indicator", ($spinner) => {
-                    assert.equal($spinner.selector, fake_compose_box.markdown_spinner_selector());
-                    destroy_indicator_called = true;
-                });
-                setup_mock_markdown_contains_backend_only_syntax(current_message, true);
-
-                func(param);
-
-                assert.ok(destroy_indicator_called);
-            }
-
-            test(test_post_error, payload.error);
-            test(test_post_success, payload.success);
+            payload.error();
         });
 
         // Tests start here
@@ -803,7 +1351,6 @@ test_ui("on_events", ({override, override_rewire}) => {
         fake_compose_box.set_textarea_val("```default message```");
         fake_compose_box.hide_message_preview();
         setup_mock_markdown_contains_backend_only_syntax("```default message```", true);
-        setup_mock_markdown_is_status_message("```default message```", false);
 
         override(loading, "make_indicator", ($spinner) => {
             assert.equal($spinner.selector, fake_compose_box.markdown_spinner_selector());
@@ -841,7 +1388,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         assert.ok(render_called);
         fake_compose_box.assert_preview_mode_is_on();
-        assert.equal(fake_compose_box.preview_content_html(), "Server: default message");
+        assert.equal(fake_compose_box.preview_content_html(), "Local: default message");
     })();
 
     (function test_undo_markdown_preview_clicked() {

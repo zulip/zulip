@@ -194,6 +194,11 @@ test_ui("validate", ({mock_template, override}) => {
         return "<banner-stub>";
     });
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("#send_message_form").set_find_results(
+        ".message-limit-indicator",
+        $.create("message-limit-indicator-stub"),
+    );
+    $("textarea#compose-textarea").set_closest_results(".message_row", []);
     assert.ok(!compose_validate.validate());
     assert.ok(pm_recipient_error_rendered);
     // Textarea should not be disabled for missing recipient.
@@ -254,6 +259,11 @@ test_ui("validate", ({mock_template, override}) => {
     add_content_to_compose_box();
     compose_state.set_private_message_recipient_ids([welcome_bot.user_id]);
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("#send_message_form").set_find_results(
+        ".message-limit-indicator",
+        $.create("message-limit-indicator-stub"),
+    );
+    $("textarea#compose-textarea").set_closest_results(".message_row", []);
     assert.ok(compose_validate.validate());
     assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
@@ -269,6 +279,11 @@ test_ui("validate", ({mock_template, override}) => {
     // Now add content to compose.
     add_content_to_compose_box();
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("#send_message_form").set_find_results(
+        ".message-limit-indicator",
+        $.create("message-limit-indicator-stub"),
+    );
+    $("textarea#compose-textarea").set_closest_results(".message_row", []);
     $("textarea#compose-textarea").addClass("invalid");
     assert.ok(compose_validate.validate());
     assert.ok(!$("textarea#compose-textarea").hasClass("invalid"));
@@ -288,6 +303,11 @@ test_ui("validate", ({mock_template, override}) => {
         return "<banner-stub>";
     });
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("#send_message_form").set_find_results(
+        ".message-limit-indicator",
+        $.create("message-limit-indicator-stub"),
+    );
+    $("textarea#compose-textarea").set_closest_results(".message_row", []);
     assert.ok(!compose_validate.validate());
     assert.ok(empty_stream_error_rendered);
 
@@ -403,6 +423,11 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
 
     compose_state.set_stream_id(special_sub.stream_id);
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("#send_message_form").set_find_results(
+        ".message-limit-indicator",
+        $.create("message-limit-indicator-stub"),
+    );
+    $("textarea#compose-textarea").set_closest_results(".message_row", []);
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 
@@ -484,6 +509,11 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
         return "<banner-stub>";
     });
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("#send_message_form").set_find_results(
+        ".message-limit-indicator",
+        $.create("message-limit-indicator-stub"),
+    );
+    $("textarea#compose-textarea").set_closest_results(".message_row", []);
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
 
@@ -537,6 +567,7 @@ test_ui("test_check_overflow_text", ({override, override_rewire}) => {
         fake_compose_box.set_textarea_val("a".repeat(10005));
         compose_validate.check_overflow_text(fake_compose_box.$send_message_form);
         fake_compose_box.assert_message_size_is_over_the_limit("-5\n");
+        assert.equal($(".message-limit-indicator").attr("data-additional-text"), undefined);
     }
 
     // ORANGE
@@ -552,6 +583,32 @@ test_ui("test_check_overflow_text", ({override, override_rewire}) => {
         compose_validate.check_overflow_text(fake_compose_box.$send_message_form);
         fake_compose_box.assert_message_size_is_under_the_limit();
     }
+});
+
+test_ui("validate_message_length", ({override, override_rewire}) => {
+    const fake_compose_box = new FakeComposeBox();
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
+    override(realm, "max_message_length", 10000);
+
+    fake_compose_box.set_textarea_val("a".repeat(50));
+    assert.ok(compose_validate.validate_message_length(fake_compose_box.$send_message_form, false));
+    fake_compose_box.set_textarea_val("a".repeat(10005));
+    assert.ok(
+        !compose_validate.validate_message_length(fake_compose_box.$send_message_form, false),
+    );
+
+    const $edit_container = $.create("edit-container");
+    const $edit_textarea = $.create("edit-textarea");
+    $edit_container.set_find_results(".message-textarea", $edit_textarea);
+    $edit_container.set_find_results(".message-limit-indicator", $.create("edit-indicator"));
+    $edit_container.set_find_results(".message_edit_save_container", $.create("edit-save-box"));
+    $edit_container.set_find_results(".message_edit_save", $.create("edit-save"));
+    $edit_textarea.set_closest_results(".message_row", $.set_results("edit-row", [{}]));
+
+    $edit_textarea.val("a".repeat(50));
+    assert.ok(compose_validate.validate_message_length($edit_container, false));
+    $edit_textarea.val("a".repeat(10005));
+    assert.ok(!compose_validate.validate_message_length($edit_container, false));
 });
 
 test_ui("needs_subscribe_warning", async () => {
