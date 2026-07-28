@@ -7,18 +7,31 @@ import * as message_viewport from "./message_viewport.ts";
 import * as resize from "./resize.ts";
 import * as scroll_bar from "./scroll_bar.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
+import * as ui_util from "./ui_util.ts";
 import * as util from "./util.ts";
 
 export let _old_width = $(window).width();
+
+let was_left_sidebar_overlay = false;
 
 export function handler(): void {
     const new_width = $(window).width();
     let width_changed = false;
 
     const mobile = util.is_mobile();
-    if (!mobile || new_width !== _old_width) {
+    const left_sidebar_is_overlay = !ui_util.matches_viewport_state("gte_md_min");
+
+    // Only hide sidebars when entering and exiting the smaller viewport state. Repeated resize events
+    // while already narrow (for example, from non-overlay OSKs) should not
+    // close a sidebar the user explicitly opened.
+    if (
+        (!mobile || new_width !== _old_width) &&
+        left_sidebar_is_overlay !== was_left_sidebar_overlay
+    ) {
         sidebar_ui.hide_all();
     }
+
+    was_left_sidebar_overlay = left_sidebar_is_overlay;
 
     if (new_width !== _old_width) {
         _old_width = new_width;
