@@ -74,7 +74,7 @@ jobs:
       HOME: /home/github/
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Create cache directories
         run: |
@@ -83,20 +83,20 @@ jobs:
           sudo chown -R github "${dirs[@]}"
 
       - name: Restore pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /__w/.pnpm-store
           key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore uv cache
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/uv
           key: uv-${{ matrix.os }}-${{ hashFiles('uv.lock') }}
           restore-keys: uv-${{ matrix.os }}-
 
       - name: Restore emoji cache
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /srv/zulip-emoji-cache
           key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json', 'tools/setup/emoji/build_emoji', 'tools/setup/emoji/emoji_setup_utils.py', 'tools/setup/emoji/emoji_names.py', 'package.json') }}
@@ -234,7 +234,7 @@ jobs:
         # Only upload coverage when both frontend and backend
         # tests are run.
         if: ${{ matrix.include_frontend_tests }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: var/coverage.xml,var/node-coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -242,7 +242,7 @@ jobs:
       - name: Store Puppeteer artifacts
         # Upload these on failure, as well
         if: ${{ always() && matrix.include_frontend_tests }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: puppeteer
           path: ./var/puppeteer
@@ -267,7 +267,7 @@ jobs:
 
       - name: Report status to CZO
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
-        uses: zulip/github-actions-zulip/send-message@v1
+        uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
