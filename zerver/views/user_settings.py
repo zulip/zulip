@@ -1,4 +1,5 @@
 from email.headerregistry import Address
+import re
 from typing import Annotated, Any
 
 from django.conf import settings
@@ -210,6 +211,31 @@ emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices
 web_home_view_options = ["recent", "inbox", "all_messages"]
 web_animate_image_previews_options = ["always", "on_hover", "never"]
 
+TEXT_PREVIEW_EXTENSION_RE = re.compile(r"^[a-z0-9]+$")
+
+
+def normalize_file_preview_extensions(raw: str) -> str:
+    """Normalize a comma-separated list of file extensions.
+
+    Strips whitespace, removes leading dots, lowercases, deduplicates,
+    and validates that each extension contains only [a-z0-9].
+    Returns the cleaned comma-separated string.
+    """
+    seen: set[str] = set()
+    result: list[str] = []
+    for part in raw.split(","):
+        ext = part.strip().lower().lstrip(".")
+        if ext == "":
+            continue
+        if not TEXT_PREVIEW_EXTENSION_RE.match(ext):
+            raise JsonableError(
+                _("Invalid text preview extension: '{extension}'").format(extension=ext)
+            )
+        if ext not in seen:
+            seen.add(ext)
+            result.append(ext)
+    return ",".join(result)
+
 
 def check_settings_values(
     notification_sound: str | None,
@@ -345,6 +371,7 @@ def json_change_settings(
     send_stream_typing_notifications: Json[bool] | None = None,
     starred_message_counts: Json[bool] | None = None,
     target_users: Json[TargetUsersData] | None = None,
+    file_preview_extensions: str | None = None,
     timezone: Annotated[str, timezone_validator()] | None = None,
     translate_emoticons: Json[bool] | None = None,
     twenty_four_hour_time: Json[bool] | None = None,
@@ -388,6 +415,9 @@ def json_change_settings(
     # TODO: Change the cache flushing strategy to make sure cache
     # does not contain stale objects.
     user_profile = UserProfile.objects.get(id=user_profile.id)
+
+    if file_preview_extensions is not None:
+        file_preview_extensions = normalize_file_preview_extensions(file_preview_extensions)
 
     # Loop over user_profile.property_types
     request_settings = {

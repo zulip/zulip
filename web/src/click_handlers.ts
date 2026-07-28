@@ -15,6 +15,7 @@ import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
 import * as emoji_picker from "./emoji_picker.ts";
+import * as file_attachment_preview from "./file_attachment_preview.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
@@ -395,6 +396,26 @@ export function initialize(): void {
         const $row = $(this).closest(".message_row");
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
+    });
+    // Intercept clicks on user_uploads links for file attachment preview.
+    // This must be registered before the generic <a> blur handler below.
+    $("body").on("click", "a[href]", function (this: HTMLAnchorElement, e) {
+        const href = this.getAttribute("href");
+        if (
+            href &&
+            href.startsWith("/user_uploads/") &&
+            // Don't intercept image/video links handled by lightbox
+            $(this).closest(".message_inline_image, .message_inline_video").length === 0
+        ) {
+            e.preventDefault();
+            e.stopPropagation();
+            const filename = decodeURIComponent(href.slice(href.lastIndexOf("/") + 1));
+            if (file_attachment_preview.should_preview(href)) {
+                void file_attachment_preview.open_preview(href, filename);
+            } else {
+                file_attachment_preview.open_download_only(href, filename);
+            }
+        }
     });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {

@@ -374,6 +374,7 @@ class ChangeSettingsTest(ZulipTestCase):
             automatically_follow_topics_policy=1,
             automatically_unmute_topics_in_muted_streams_policy=1,
             resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum.always.name,
+            file_preview_extensions="txt,md,py",
         )
 
         self.login("hamlet")
@@ -759,6 +760,104 @@ class ChangeSettingsTest(ZulipTestCase):
         }
         result = self.client_patch("/json/settings", data)
         self.assert_json_error(result, "Either user_ids or group_ids must be provided.")
+
+
+class FilePreviewExtensionsTest(ZulipTestCase):
+    def test_change_file_preview_extensions(self) -> None:
+        self.login("hamlet")
+        user_profile = self.example_user("hamlet")
+        self.assertEqual(user_profile.file_preview_extensions, "")
+
+        # Test successful update with extra extensions
+        result = self.client_patch("/json/settings", {"file_preview_extensions": "log,conf,env"})
+        self.assert_json_success(result)
+        user_profile.refresh_from_db()
+        self.assertEqual(user_profile.file_preview_extensions, "log,conf,env")
+
+    def test_none_disables_previews(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch("/json/settings", {"file_preview_extensions": "none"})
+        self.assert_json_success(result)
+        user_profile = self.example_user("hamlet")
+        self.assertEqual(user_profile.file_preview_extensions, "none")
+
+    def test_normalization_lowercase(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch("/json/settings", {"file_preview_extensions": "TXT,MD,PY"})
+        self.assert_json_success(result)
+        user_profile = self.example_user("hamlet")
+        self.assertEqual(user_profile.file_preview_extensions, "txt,md,py")
+
+    def test_normalization_trim_whitespace(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch(
+            "/json/settings", {"file_preview_extensions": " txt , md , py "}
+        )
+        self.assert_json_success(result)
+        user_profile = self.example_user("hamlet")
+        self.assertEqual(user_profile.file_preview_extensions, "txt,md,py")
+
+    def test_normalization_strip_leading_dots(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch(
+            "/json/settings", {"file_preview_extensions": ".txt,.md,.py"}
+        )
+        self.assert_json_success(result)
+        user_profile = self.example_user("hamlet")
+        self.assertEqual(user_profile.file_preview_extensions, "txt,md,py")
+
+    def test_normalization_deduplicate(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch(
+            "/json/settings", {"file_preview_extensions": "txt,txt,md,md,py"}
+        )
+        self.assert_json_success(result)
+        user_profile = self.example_user("hamlet")
+        self.assertEqual(user_profile.file_preview_extensions, "txt,md,py")
+
+    def test_normalization_empty_parts(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch(
+            "/json/settings", {"file_preview_extensions": "txt,,md,,,py"}
+        )
+        self.assert_json_success(result)
+        user_profile = self.example_user("hamlet")
+        self.assertEqual(user_profile.file_preview_extensions, "txt,md,py")
+
+    def test_invalid_extension_characters(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch(
+            "/json/settings", {"file_preview_extensions": "txt,md,p y"}
+        )
+        self.assert_json_error(result, "Invalid text preview extension: 'p y'")
+
+    def test_invalid_extension_special_chars(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch(
+            "/json/settings", {"file_preview_extensions": "txt,md,py;js"}
+        )
+        self.assert_json_error(result, "Invalid text preview extension: 'py;js'")
+
+    def test_empty_string_accepted(self) -> None:
+        self.login("hamlet")
+        result = self.client_patch("/json/settings", {"file_preview_extensions": ""})
+        self.assert_json_success(result)
+        user_profile = self.example_user("hamlet")
+        self.assertEqual(user_profile.file_preview_extensions, "")
+
+    def test_event_emitted_on_change(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                "/json/settings", {"file_preview_extensions": "rs,toml"}
+            )
+        self.assert_json_success(result)
+        self.assertEqual(events[0]["event"]["type"], "user_settings")
+        self.assertEqual(events[0]["event"]["op"], "update")
+        self.assertEqual(events[0]["event"]["property"], "file_preview_extensions")
+        self.assertEqual(events[0]["event"]["value"], "rs,toml")
 
 
 class UserChangesTest(ZulipTestCase):
