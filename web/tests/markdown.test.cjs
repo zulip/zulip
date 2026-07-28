@@ -154,11 +154,14 @@ people.add_inaccessible_user(108);
 
 people.initialize_current_user(cordelia.user_id);
 
+const can_mention_group = {direct_members: [cordelia.user_id], direct_subgroups: []};
+
 const hamletcharacters = make_user_group({
     name: "hamletcharacters",
     id: 1,
     description: "Characters of Hamlet",
     members: [cordelia.user_id],
+    can_mention_group,
 });
 
 const backend = make_user_group({
@@ -166,6 +169,7 @@ const backend = make_user_group({
     id: 2,
     description: "Backend team",
     members: [],
+    can_mention_group,
 });
 
 const edgecase_group = make_user_group({
@@ -173,6 +177,7 @@ const edgecase_group = make_user_group({
     id: 3,
     description: "HTML syntax to check for Markdown edge cases.",
     members: [],
+    can_mention_group,
 });
 
 const amp_group = make_user_group({
@@ -180,6 +185,7 @@ const amp_group = make_user_group({
     id: 4,
     description: "Check ampersand escaping",
     members: [],
+    can_mention_group,
 });
 
 user_groups.add(hamletcharacters);
@@ -1088,4 +1094,88 @@ test("katex_throws_unexpected_exceptions", ({override}) => {
         name: "Error",
         message: "some-exception\nPlease report this to https://zulip.com/development-community/",
     });
+});
+
+test("get_first_disallowed_group_mention", () => {
+    const helpers = {
+        ...markdown_config.get_helpers(),
+        get_user_group_from_name(name) {
+            if (name === "allowed") {
+                // can_mention_group is group 1, which user 10 belongs to.
+                return {id: 1, name: "allowed", can_mention_group: 1};
+            }
+            if (name === "disallowed") {
+                // can_mention_group is group 3 (admins), which user 10 is not in.
+                return {id: 2, name: "disallowed", can_mention_group: 3};
+            }
+            return undefined;
+        },
+        my_user_id: () => 10,
+    };
+    markdown.initialize(helpers);
+
+    // Set up mock user_groups data
+    user_groups.init();
+
+    const allowed_group = {
+        name: "allowed",
+        id: 1,
+        description: "Allowed group",
+        members: [10],
+        can_mention_group: 1, // Self-mention allowed
+        direct_subgroup_ids: new Set(),
+    };
+    user_groups.add(allowed_group);
+
+    const disallowed_group = {
+        name: "disallowed",
+        id: 2,
+        description: "Disallowed group",
+        members: [99],
+        can_mention_group: 3, // Group 3 (admins) required
+        direct_subgroup_ids: new Set(),
+    };
+    user_groups.add(disallowed_group);
+
+    const admins_group = {
+        name: "admins",
+        id: 3,
+        description: "Admins",
+        members: [5], // User 10 is NOT in this group
+        can_mention_group: 3,
+        direct_subgroup_ids: new Set(),
+    };
+    user_groups.add(admins_group);
+
+    // User 10 is in 'allowed' group, but not in 'admins' (group 3).
+    // So mentioning 'allowed' should succeed, but 'disallowed' (requires admins) should fail.
+
+    // Test: Allowed group returns null
+    assert.equal(markdown.get_first_disallowed_group_mention("@*allowed*"), null);
+
+    // Test: Disallowed group returns the group name
+    assert.equal(markdown.get_first_disallowed_group_mention("@*disallowed*"), "disallowed");
+
+    // Test: Mixed content returns first disallowed group
+    assert.equal(
+        markdown.get_first_disallowed_group_mention("@*allowed* @*disallowed*"),
+        "disallowed",
+    );
+
+    // Test: No mentions returns null
+    assert.equal(markdown.get_first_disallowed_group_mention("hello world"), null);
+
+    // Test: Unknown groups are ignored
+    assert.equal(markdown.get_first_disallowed_group_mention("@*unknown*"), null);
+
+    // Test: Short-circuits after finding first disallowed mention
+    assert.equal(
+        markdown.get_first_disallowed_group_mention("@*disallowed* @*allowed*"),
+        "disallowed",
+    );
+
+    // Test: Uninitialized helpers returns null
+    markdown.initialize(undefined);
+    assert.equal(markdown.get_first_disallowed_group_mention("@*disallowed*"), null);
+    markdown.initialize(helpers);
 });

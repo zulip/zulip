@@ -48,6 +48,7 @@ function is_valid_user_id(user_id) {
 const staff_group = {
     id: 201,
     name: "Staff",
+    can_mention_group: {direct_members: [my_id], direct_subgroups: []},
 };
 
 const user_group_map = new Map([[staff_group.name, staff_group]]);

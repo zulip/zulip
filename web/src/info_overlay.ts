@@ -254,7 +254,11 @@ export function set_up_toggler(): void {
             return 0;
         },
         get_user_group_from_name(name) {
-            return {id: 0, name};
+            return {
+                id: 0,
+                name,
+                can_mention_group: {direct_members: [current_user.user_id], direct_subgroups: []},
+            };
         },
         is_member_of_user_group() {
             return true;
