@@ -102,6 +102,17 @@ from zilencer.models import (
 
 
 class StripeTest(StripeTestCase):
+    def check_initial_ledger_entry(
+        self, plan: CustomerPlan, licenses_purchased: int
+    ) -> LicenseLedger:
+        return LicenseLedger.objects.get(
+            plan=plan,
+            is_renewal=True,
+            event_time=self.now,
+            licenses=licenses_purchased,
+            licenses_at_next_renewal=licenses_purchased,
+        )
+
     def test_catch_stripe_errors(self) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
@@ -225,13 +236,7 @@ class StripeTest(StripeTestCase):
             tier=CustomerPlan.TIER_CLOUD_PLUS,
             status=CustomerPlan.ACTIVE,
         )
-        LicenseLedger.objects.get(
-            plan=plan,
-            is_renewal=True,
-            event_time=self.now,
-            licenses=licenses_purchased,
-            licenses_at_next_renewal=licenses_purchased,
-        )
+        self.check_initial_ledger_entry(plan, licenses_purchased)
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
@@ -348,13 +353,7 @@ class StripeTest(StripeTestCase):
             tier=CustomerPlan.TIER_CLOUD_PLUS,
             status=CustomerPlan.ACTIVE,
         )
-        LicenseLedger.objects.get(
-            plan=plan,
-            is_renewal=True,
-            event_time=self.now,
-            licenses=123,
-            licenses_at_next_renewal=123,
-        )
+        self.check_initial_ledger_entry(plan, 123)
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
@@ -474,13 +473,7 @@ class StripeTest(StripeTestCase):
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.ACTIVE,
         )
-        LicenseLedger.objects.get(
-            plan=plan,
-            is_renewal=True,
-            event_time=self.now,
-            licenses=self.seat_count,
-            licenses_at_next_renewal=self.seat_count,
-        )
+        self.check_initial_ledger_entry(plan, self.seat_count)
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
@@ -608,13 +601,7 @@ class StripeTest(StripeTestCase):
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.ACTIVE,
         )
-        LicenseLedger.objects.get(
-            plan=plan,
-            is_renewal=True,
-            event_time=self.now,
-            licenses=123,
-            licenses_at_next_renewal=123,
-        )
+        self.check_initial_ledger_entry(plan, 123)
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
@@ -722,13 +709,7 @@ class StripeTest(StripeTestCase):
                 # For payment through card.
                 charge_automatically=True,
             )
-            LicenseLedger.objects.get(
-                plan=plan,
-                is_renewal=True,
-                event_time=self.now,
-                licenses=self.seat_count,
-                licenses_at_next_renewal=self.seat_count,
-            )
+            self.check_initial_ledger_entry(plan, self.seat_count)
             audit_log_entries = list(
                 RealmAuditLog.objects.filter(acting_user=user)
                 .values_list("event_type", "event_time")
@@ -940,13 +921,7 @@ class StripeTest(StripeTestCase):
                 charge_automatically=False,
             )
 
-            LicenseLedger.objects.get(
-                plan=plan,
-                is_renewal=True,
-                event_time=self.now,
-                licenses=123,
-                licenses_at_next_renewal=123,
-            )
+            self.check_initial_ledger_entry(plan, 123)
             audit_log_entries = list(
                 RealmAuditLog.objects.filter(acting_user=user)
                 .values_list("event_type", "event_time")
@@ -1140,13 +1115,7 @@ class StripeTest(StripeTestCase):
                 charge_automatically=False,
             )
 
-            LicenseLedger.objects.get(
-                plan=plan,
-                is_renewal=True,
-                event_time=self.now,
-                licenses=123,
-                licenses_at_next_renewal=123,
-            )
+            self.check_initial_ledger_entry(plan, 123)
             audit_log_entries = list(
                 RealmAuditLog.objects.filter(acting_user=user)
                 .values_list("event_type", "event_time")
@@ -1333,13 +1302,7 @@ class StripeTest(StripeTestCase):
                 charge_automatically=False,
             )
 
-            LicenseLedger.objects.get(
-                plan=plan,
-                is_renewal=True,
-                event_time=self.now,
-                licenses=123,
-                licenses_at_next_renewal=123,
-            )
+            self.check_initial_ledger_entry(plan, 123)
             audit_log_entries = list(
                 RealmAuditLog.objects.filter(acting_user=user)
                 .values_list("event_type", "event_time")
@@ -2258,13 +2221,7 @@ class StripeTest(StripeTestCase):
                 # For payment through card.
                 charge_automatically=True,
             )
-            LicenseLedger.objects.get(
-                plan=plan,
-                is_renewal=True,
-                event_time=self.now,
-                licenses=self.seat_count,
-                licenses_at_next_renewal=self.seat_count,
-            )
+            self.check_initial_ledger_entry(plan, self.seat_count)
 
             realm = get_realm("zulip")
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
@@ -3291,13 +3248,7 @@ class StripeTest(StripeTestCase):
                 status=CustomerPlan.FREE_TRIAL,
                 charge_automatically=True,
             )
-            ledger_entry = LicenseLedger.objects.get(
-                plan=new_plan,
-                is_renewal=True,
-                event_time=self.now,
-                licenses=self.seat_count,
-                licenses_at_next_renewal=self.seat_count,
-            )
+            ledger_entry = self.check_initial_ledger_entry(new_plan, self.seat_count)
             self.assertEqual(new_plan.invoiced_through, ledger_entry)
 
             realm_audit_log = RealmAuditLog.objects.filter(
@@ -3345,13 +3296,7 @@ class StripeTest(StripeTestCase):
                 status=CustomerPlan.FREE_TRIAL,
                 charge_automatically=True,
             )
-            ledger_entry = LicenseLedger.objects.get(
-                plan=new_plan,
-                is_renewal=True,
-                event_time=self.now,
-                licenses=self.seat_count,
-                licenses_at_next_renewal=self.seat_count,
-            )
+            ledger_entry = self.check_initial_ledger_entry(new_plan, self.seat_count)
             self.assertEqual(new_plan.invoiced_through, ledger_entry)
 
             realm_audit_log = RealmAuditLog.objects.filter(
