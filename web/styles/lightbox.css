@@ -4,6 +4,55 @@
     flex-direction: column;
     height: 100dvh;
 
+    .lightbox-content-wrapper {
+        flex: 1;
+        display: flex;
+        position: relative;
+        min-height: 0;
+    }
+
+    .lightbox-main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .lightbox-side-nav {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 60px;
+        cursor: pointer;
+        color: hsl(0deg 0% 100% / 60%);
+        font-size: 28px;
+        z-index: 1;
+        user-select: none;
+        transition:
+            color 0.2s ease,
+            background-color 0.2s ease;
+
+        &.visible {
+            display: flex;
+        }
+
+        &:hover {
+            color: hsl(0deg 0% 100%);
+            background-color: hsl(0deg 0% 100% / 8%);
+        }
+    }
+
+    .lightbox-nav-prev {
+        left: 0;
+    }
+
+    .lightbox-nav-next {
+        right: 0;
+    }
+
     .image-preview {
         flex: 1;
         display: flex;
