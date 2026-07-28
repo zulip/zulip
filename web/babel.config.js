@@ -12,15 +12,16 @@ const formatJsOptions = {
 
 /** @type {import("@babel/preset-env").Options} */
 const presetEnvOptions = {
-    corejs: "3.49",
     shippedProposals: true,
-    useBuiltIns: "usage",
 };
 
 /** @type {import("@babel/core").TransformOptions} */
 const config = {
     only: [new RegExp("^" + _.escapeRegExp(path.resolve(import.meta.dirname, "src") + path.sep))],
-    plugins: [["formatjs", formatJsOptions]],
+    plugins: [
+        ["formatjs", formatJsOptions],
+        ["polyfill-corejs3", {method: "usage-global", version: "3.49"}],
+    ],
     presets: [["@babel/preset-env", presetEnvOptions], "@babel/typescript"],
     env: {
         test: {
