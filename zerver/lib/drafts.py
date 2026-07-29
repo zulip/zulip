@@ -15,7 +15,10 @@ from typing_extensions import ParamSpec
 from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.message import normalize_body, truncate_topic
-from zerver.lib.recipient_users import recipient_for_user_profiles
+from zerver.lib.recipient_users import (
+    check_sender_can_access_recipients,
+    recipient_for_user_profiles,
+)
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import RequiredStringConstraint
@@ -77,6 +80,11 @@ def further_validated_draft_dict(
         recipient_id = stream.recipient_id
     elif draft_dict.type == "private" and len(to) != 0:
         to_users = get_user_profiles_by_ids(set(to), user_profile.realm)
+        # Since recipient_for_user_profiles creates the
+        # DirectMessageGroup object, and thus Subscription objects
+        # granting the sender access to the recipients, we need to
+        # check access before calling it.
+        check_sender_can_access_recipients(user_profile.realm, user_profile, to_users)
         try:
             recipient_id = recipient_for_user_profiles(to_users, False, None, user_profile).id
         except ValidationError as e:  # nocoverage
