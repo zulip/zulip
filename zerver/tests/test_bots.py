@@ -2024,6 +2024,97 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         service_payload_url = orjson.loads(result.content)["service_payload_url"]
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
+    def test_patch_outgoing_webhook_bot_interface_only(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.GENERIC,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        patch_info = {"service_interface": Service.SLACK}
+        result = self.client_patch(f"/json/bots/{bot.id}", patch_info)
+        self.assert_json_success(result)
+
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.interface, Service.SLACK)
+        self.assertEqual(service.base_url, "http://foo.bar.com")
+
+    def test_patch_outgoing_webhook_bot_url_only_preserves_interface(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.SLACK,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        patch_info = {"service_payload_url": orjson.dumps("http://foo.bar2.com").decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", patch_info)
+        self.assert_json_success(result)
+
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.base_url, "http://foo.bar2.com")
+        self.assertEqual(service.interface, Service.SLACK)
+
+    def test_patch_bot_rejects_service_fields_on_non_service_bot(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        expected_error = (
+            "Only outgoing-webhook and embedded bots have a service interface and payload URL."
+        )
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_interface": Service.SLACK},
+        )
+        self.assert_json_error(result, expected_error)
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://foo.bar.com").decode()},
+        )
+        self.assert_json_error(result, expected_error)
+
+    def test_patch_embedded_bot_service_fields(self) -> None:
+        self.create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"key": "value"}).decode(),
+        )
+        bot = self.get_bot_user("embeddedservicebot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_interface": Service.SLACK},
+        )
+        self.assert_json_success(result)
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.interface, Service.SLACK)
+
+        new_url = "http://embedded.example.com"
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps(new_url).decode()},
+        )
+        self.assert_json_success(result)
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.base_url, new_url)
+        self.assertEqual(service.interface, Service.SLACK)
+
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
     def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(

@@ -35,7 +35,7 @@ from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
     do_update_bot_config_data,
-    do_update_outgoing_webhook_service,
+    do_update_bot_service,
 )
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
@@ -481,7 +481,7 @@ def patch_bot_backend(
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
-    service_interface: Json[int] = 1,
+    service_interface: Json[int] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
@@ -555,10 +555,19 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        assert service_interface is not None
-        do_update_outgoing_webhook_service(
+    if service_interface is not None or service_payload_url is not None:
+        if bot.bot_type not in (
+            UserProfile.OUTGOING_WEBHOOK_BOT,
+            UserProfile.EMBEDDED_BOT,
+        ):
+            raise JsonableError(
+                _(
+                    "Only outgoing-webhook and embedded bots have a service interface and payload URL."
+                )
+            )
+        if service_interface is not None:
+            check_valid_interface_type(service_interface)
+        do_update_bot_service(
             bot,
             interface=service_interface,
             base_url=service_payload_url,
