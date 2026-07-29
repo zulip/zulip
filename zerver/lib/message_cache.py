@@ -1,5 +1,5 @@
 import copy
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from datetime import datetime
 from email.headerregistry import Address
 from typing import Any, TypedDict
@@ -134,7 +134,12 @@ class MessageDict:
     """
 
     @staticmethod
-    def wide_dict(message: Message, realm_id: int | None = None) -> dict[str, Any]:
+    def wide_dict(
+        message: Message,
+        realm_id: int | None = None,
+        *,
+        dm_involved_user_ids: set[int] | None = None,
+    ) -> dict[str, Any]:
         """
         The next two lines get the cacheable field related
         to our message object, with the side effect of
@@ -150,7 +155,10 @@ class MessageDict:
         processor.
         """
         MessageDict.bulk_hydrate_sender_info([obj])
-        MessageDict.bulk_hydrate_recipient_info([obj])
+        MessageDict.bulk_hydrate_recipient_info(
+            [obj],
+            {} if dm_involved_user_ids is None else {obj["recipient_id"]: dm_involved_user_ids},
+        )
 
         return obj
 
@@ -544,7 +552,10 @@ class MessageDict:
             obj["stream_id"] = recipient_type_id
 
     @staticmethod
-    def bulk_hydrate_recipient_info(objs: list[dict[str, Any]]) -> None:
+    def bulk_hydrate_recipient_info(
+        objs: list[dict[str, Any]],
+        recipient_dm_user_ids: Mapping[int, set[int]] = {},
+    ) -> None:
         recipient_tuples = {  # We use set to eliminate duplicate tuples.
             (
                 obj["recipient_id"],
@@ -553,7 +564,7 @@ class MessageDict:
             )
             for obj in objs
         }
-        display_recipients = bulk_fetch_display_recipients(recipient_tuples)
+        display_recipients = bulk_fetch_display_recipients(recipient_tuples, recipient_dm_user_ids)
 
         for obj in objs:
             MessageDict.hydrate_recipient_info(obj, display_recipients[obj["recipient_id"]])
