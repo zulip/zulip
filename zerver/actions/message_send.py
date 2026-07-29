@@ -262,6 +262,7 @@ def get_recipient_info(
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
+    dm_involved_user_ids: set[int] | None = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: set[int] = set()
     stream_email_user_ids: set[int] = set()
@@ -440,7 +441,15 @@ def get_recipient_info(
             )
 
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        message_to_user_id_set = set(get_direct_message_group_user_ids(recipient))
+        if dm_involved_user_ids is not None:
+            # For production path when sending a direct message
+            # passing through check_message. This avoids an extra db query.
+            message_to_user_id_set = dm_involved_user_ids
+        else:
+            # Other paths like:
+            # Message edit via update_message_content.
+            # Tests that bypass check_message.
+            message_to_user_id_set = set(get_direct_message_group_user_ids(recipient))
 
     else:
         raise ValueError("Bad recipient type")
@@ -673,6 +682,7 @@ def build_message_send_dict(
     no_previews: bool = False,
     user_group_membership_details: UserGroupMembershipDetails | None = None,
     sender_is_subscribed: bool | None = None,
+    dm_involved_user_ids: set[int] | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -706,6 +716,7 @@ def build_message_send_dict(
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
+        dm_involved_user_ids=dm_involved_user_ids,
     )
 
     # Render our message_dicts.
@@ -827,6 +838,7 @@ def build_message_send_dict(
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        dm_involved_user_ids=dm_involved_user_ids,
     )
 
     return message_send_dict
@@ -1191,7 +1203,11 @@ def do_send_messages(
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
+        wide_message_dict = MessageDict.wide_dict(
+            send_request.message,
+            realm_id,
+            dm_involved_user_ids=send_request.dm_involved_user_ids,
+        )
 
         send_request.message_url, send_request.message_link = get_message_url_and_link(
             send_request, wide_message_dict
@@ -1858,6 +1874,10 @@ def check_message(
     if realm is None:
         realm = sender.realm
 
+    # IDs of the DM sender and recipient users, deduplicated.
+    # None for stream message.
+    dm_involved_user_ids: set[int] | None = None
+
     recipients_for_user_creation_events = None
     if addressee.is_stream():
         topic_name = addressee.topic_name()
@@ -1931,6 +1951,8 @@ def check_message(
             "jabber_mirror",
             "JabberMirror",
         ]
+
+        dm_involved_user_ids = {user.id for user in recipient_users} | {sender.id}
 
         check_sender_can_access_recipients(sender, recipient_users)
 
@@ -2009,6 +2031,7 @@ def check_message(
         no_previews=no_previews,
         user_group_membership_details=user_group_membership_details,
         sender_is_subscribed=sender_is_subscribed,
+        dm_involved_user_ids=dm_involved_user_ids,
     )
 
     if (
