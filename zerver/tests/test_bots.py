@@ -2024,6 +2024,69 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         service_payload_url = orjson.loads(result.content)["service_payload_url"]
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
+    def test_patch_outgoing_webhook_bot_interface_only(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.GENERIC,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        patch_info = {"service_interface": Service.SLACK}
+        result = self.client_patch(f"/json/bots/{bot.id}", patch_info)
+        self.assert_json_success(result)
+
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.interface, Service.SLACK)
+        self.assertEqual(service.base_url, "http://foo.bar.com")
+
+    def test_patch_outgoing_webhook_bot_url_only_preserves_interface(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.SLACK,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        patch_info = {"service_payload_url": orjson.dumps("http://foo.bar2.com").decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", patch_info)
+        self.assert_json_success(result)
+
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.base_url, "http://foo.bar2.com")
+        self.assertEqual(service.interface, Service.SLACK)
+
+    def test_patch_non_outgoing_webhook_bot_rejects_service_fields(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        expected_error = (
+            "Cannot set service interface or payload URL on a non-outgoing-webhook bot."
+        )
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_interface": Service.SLACK},
+        )
+        self.assert_json_error(result, expected_error)
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://foo.bar.com").decode()},
+        )
+        self.assert_json_error(result, expected_error)
+
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
     def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(

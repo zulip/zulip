@@ -481,7 +481,7 @@ def patch_bot_backend(
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
-    service_interface: Json[int] = 1,
+    service_interface: Json[int] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
@@ -555,9 +555,13 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        assert service_interface is not None
+    if service_interface is not None or service_payload_url is not None:
+        if bot.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+            raise JsonableError(
+                _("Cannot set service interface or payload URL on a non-outgoing-webhook bot.")
+            )
+        if service_interface is not None:
+            check_valid_interface_type(service_interface)
         do_update_outgoing_webhook_service(
             bot,
             interface=service_interface,
