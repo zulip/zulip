@@ -5,6 +5,7 @@ from typing import Any
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.users import check_can_access_user
 from zerver.models import Draft
 
 
@@ -281,6 +282,44 @@ class DraftCreationTests(ZulipTestCase):
         ]
         self.create_and_check_drafts_for_error(draft_dicts, "Invalid user ID 99999999999999")
 
+    def test_create_personal_message_draft_for_inaccessible_users(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        # Polonius shares a channel subscription with Hamlet, but has
+        # no way to access Othello.
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        draft_dict = {
+            "type": "private",
+            "to": [othello.id],
+            "topic": "",
+            "content": "What if we made it possible to sync drafts in Zulip?",
+            "timestamp": 1595479019,
+        }
+        payload = {"drafts": orjson.dumps([draft_dict]).decode()}
+        resp = self.api_post(polonius, "/api/v1/drafts", payload)
+        self.assert_json_error(resp, "You do not have permission to access some of the recipients.")
+
+        draft_dict["to"] = [hamlet.id, othello.id]
+        payload = {"drafts": orjson.dumps([draft_dict]).decode()}
+        resp = self.api_post(polonius, "/api/v1/drafts", payload)
+        self.assert_json_error(resp, "You do not have permission to access some of the recipients.")
+
+        self.assertFalse(Draft.objects.filter(user_profile=polonius).exists())
+        # Creating those drafts would have created a
+        # DirectMessageGroup, and with it Subscription objects that
+        # grant Polonius access to Othello; verify that didn't happen.
+        self.assertFalse(check_can_access_user(othello, polonius))
+
+        # Drafts addressed only to users Polonius can access still work.
+        draft_dict["to"] = [hamlet.id]
+        payload = {"drafts": orjson.dumps([draft_dict]).decode()}
+        resp = self.api_post(polonius, "/api/v1/drafts", payload)
+        self.assert_json_success(resp)
+        draft = Draft.objects.get(user_profile=polonius)
+        self.assertEqual(draft.to_dict()["to"], [hamlet.id])
+
     def test_create_draft_with_null_bytes(self) -> None:
         draft_dicts = [
             {
@@ -350,6 +389,35 @@ class DraftEditTests(ZulipTestCase):
         new_draft_dict = new_draft.to_dict()
         new_draft_dict.pop("id")
         self.assertEqual(new_draft_dict, draft_dict)
+
+    def test_edit_draft_to_add_inaccessible_user(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        draft_dict = {
+            "type": "private",
+            "to": [hamlet.id],
+            "topic": "",
+            "content": "The API should be good",
+            "timestamp": 1595505700,
+        }
+        resp = self.api_post(
+            polonius, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()}
+        )
+        self.assert_json_success(resp)
+        draft_id = orjson.loads(resp.content)["ids"][0]
+
+        draft_dict["to"] = [hamlet.id, othello.id]
+        resp = self.api_patch(
+            polonius, f"/api/v1/drafts/{draft_id}", {"draft": orjson.dumps(draft_dict).decode()}
+        )
+        self.assert_json_error(resp, "You do not have permission to access some of the recipients.")
+
+        draft = Draft.objects.get(id=draft_id, user_profile=polonius)
+        self.assertEqual(draft.to_dict()["to"], [hamlet.id])
+        self.assertFalse(check_can_access_user(othello, polonius))
 
     def test_edit_non_existent_draft(self) -> None:
         hamlet = self.example_user("hamlet")
