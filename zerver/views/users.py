@@ -41,7 +41,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import set_bot_config
+from zerver.lib.bot_config import ConfigError, get_bot_config, set_bot_config
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -97,6 +97,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import get_bot_services
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -575,6 +576,35 @@ def patch_bot_backend(
         )
 
     if config_data is not None:
+        if bot.bot_type not in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+            raise JsonableError(_("Only incoming-webhook and embedded bots have config data."))
+
+        try:
+            existing_config_data = get_bot_config(bot)
+        except ConfigError:
+            existing_config_data = {}
+
+        merged_config_data = {**existing_config_data, **config_data}
+        if bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+            proposed_service_name = merged_config_data.get("integration_id")
+            # integration_id identifies which integration this bot is
+            # for; it's stored alongside the integration's own config
+            # options but is not itself one of them, so exclude it from
+            # what check_valid_bot_config validates. Matches the shape
+            # of the check_valid_bot_config call in add_bot_backend.
+            config_data_to_validate = {
+                key: value for key, value in merged_config_data.items() if key != "integration_id"
+            }
+        else:
+            existing_service = get_bot_services(bot.id)[0]
+            proposed_service_name = existing_service.name
+            config_data_to_validate = merged_config_data
+        if proposed_service_name is not None:
+            check_valid_bot_config(
+                bot.bot_type,
+                proposed_service_name,
+                config_data_to_validate,
+            )
         do_update_bot_config_data(bot, config_data)
 
     if len(request.FILES) == 0:
