@@ -2,7 +2,7 @@
    textarea correctly. */
 
 import autosize from "autosize";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import {
@@ -204,7 +204,8 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         !stream_data.can_use_empty_topic(opts.stream_id)
     ) {
         return "input#stream_message_recipient_topic";
-    } else if (
+    }
+    if (
         (opts.message_type === "stream" && opts.stream_id !== undefined) ||
         (opts.message_type === "private" && opts.private_message_recipient_ids.length > 0)
     ) {
@@ -260,12 +261,10 @@ export let smart_insert_inline = ($textarea: JQuery<HTMLTextAreaElement>, syntax
 
     // If there isn't whitespace either at the end of the syntax or the
     // start of the content after the syntax, add one.
-    if (
-        !(
-            (after_str.length > 0 && is_space(after_str[0])) ||
-            (syntax.length > 0 && is_space(syntax.slice(-1)))
-        )
-    ) {
+    if (!(
+        (after_str.length > 0 && is_space(after_str[0])) ||
+        (syntax.length > 0 && is_space(syntax.slice(-1)))
+    )) {
         syntax += " ";
     }
 
@@ -321,7 +320,7 @@ export function smart_insert_block(
     // are at least padding_newlines number of new lines between
     // the content block and the content after the cursor, if any.
     const new_lines_needed_after_count = padding_newlines - new_lines_after_count;
-    syntax = syntax + "\n".repeat(new_lines_needed_after_count);
+    syntax += "\n".repeat(new_lines_needed_after_count);
 
     insert_and_scroll_into_view(syntax, $textarea);
 }
@@ -448,7 +447,8 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
                 {defaultMessage: "Message #{channel_name} > {topic_name}"},
                 {channel_name: stream_name, topic_name: topic_display_name},
             );
-        } else if (stream_name) {
+        }
+        if (stream_name) {
             return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
         }
     } else if (opts.direct_message_user_ids.length > 0) {
@@ -756,7 +756,7 @@ export function position_inside_code_block(content: string, position: number): b
         content.slice(0, position) + unique_insert + content.slice(position);
     const rendered_content = markdown.parse_non_message(unique_insert_content);
     const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
-    const code_blocks = rendered_html.querySelectorAll("pre > code");
+    const code_blocks = rendered_html.querySelectorAll(":scope pre > code");
     return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
 }
 
@@ -906,7 +906,7 @@ export let format_text = (
         // partially selected, and those before and after these selected lines.
         const before = text.slice(0, range.start);
         const after = text.slice(range.end);
-        let separating_new_line_before = false;
+        let separating_new_line_before;
         let closest_new_line_beginning_before_index;
         if (before.includes("\n")) {
             separating_new_line_before = true;
@@ -916,7 +916,7 @@ export let format_text = (
             // The beginning of the entire text acts as a new line.
             closest_new_line_beginning_before_index = -1;
         }
-        let separating_new_line_after = false;
+        let separating_new_line_after;
         let closest_new_line_char_after_index;
         if (after.includes("\n")) {
             separating_new_line_after = true;
@@ -1063,7 +1063,8 @@ export let format_text = (
                 range.end - syntax_start.length,
             );
             return false;
-        } else if (is_inner_text_formatted(syntax_start, syntax_end)) {
+        }
+        if (is_inner_text_formatted(syntax_start, syntax_end)) {
             // Remove syntax inside the selection, if present.
             text =
                 text.slice(0, range.start) +
@@ -1215,7 +1216,7 @@ export let format_text = (
             spoiler_syntax_start_without_break = "\n" + spoiler_syntax_start_without_break;
         }
         if (range.end < text.length && text[range.end] !== "\n") {
-            spoiler_syntax_end = spoiler_syntax_end + "\n";
+            spoiler_syntax_end += "\n";
         }
 
         const spoiler_syntax_start_with_header = spoiler_syntax_start_without_break + "Header\n";
@@ -1404,7 +1405,8 @@ export let format_text = (
                     range.end - italic_syntax.length,
                 );
                 break;
-            } else if (
+            }
+            if (
                 selected_text.length > italic_syntax.length * 2 &&
                 // If the selected text contains italic syntax
                 selected_text.startsWith(italic_syntax) &&
@@ -1467,7 +1469,7 @@ export let format_text = (
                     block_code_syntax_start = "\n" + block_code_syntax_start;
                 }
                 if (range.end < text.length && text[range.end] !== "\n") {
-                    block_code_syntax_end = block_code_syntax_end + "\n";
+                    block_code_syntax_end += "\n";
                 }
                 const added_fence = format(block_code_syntax_start, block_code_syntax_end);
                 if (added_fence) {
@@ -1504,7 +1506,7 @@ export let format_text = (
                 quote_syntax_start = "\n" + quote_syntax_start;
             }
             if (range.end < text.length && text[range.end] !== "\n") {
-                quote_syntax_end = quote_syntax_end + "\n";
+                quote_syntax_end += "\n";
             }
             format(quote_syntax_start, quote_syntax_end);
             break;
@@ -1528,7 +1530,7 @@ export let format_text = (
                     block_latex_syntax_start = "\n" + block_latex_syntax_start;
                 }
                 if (range.end < text.length && text[range.end] !== "\n") {
-                    block_latex_syntax_end = block_latex_syntax_end + "\n";
+                    block_latex_syntax_end += "\n";
                 }
                 format(block_latex_syntax_start, block_latex_syntax_end);
             } else {

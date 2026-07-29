@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -207,9 +207,10 @@ export let update_views_filtered_on_message_property = (
                 success(data) {
                     const messages_to_add: Message[] = [];
                     const messages_to_remove = new Set(message_ids);
-                    for (const raw_message of z
+                    const {messages: raw_messages} = z
                         .object({messages: z.array(raw_message_schema)})
-                        .parse(data).messages) {
+                        .parse(data);
+                    for (const raw_message of raw_messages) {
                         messages_to_remove.delete(raw_message.id);
                         const message = message_store.get(raw_message.id);
                         messages_to_add.push(
@@ -308,7 +309,7 @@ export type InsertNewMessagesOpts = {
 
 export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     const deliver_locally = opts.type === "local_message";
-    let messages: Message[] = [];
+    let messages: Message[];
     let local_messages: LocalMessage[] | undefined = [];
     if (opts.type === "server_message") {
         messages = opts.raw_messages.map((raw_message) =>

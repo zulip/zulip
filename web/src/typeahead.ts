@@ -40,14 +40,14 @@ export function get_popular_emojis(): EmojiItem[] {
 export let frequently_used_emojis: EmojiItem[] = [...get_popular_emojis()];
 
 export type Emoji =
+    | UnicodeEmoji
     | {
           emoji_name: string;
           reaction_type: "realm_emoji" | "zulip_extra_emoji";
           is_realm_emoji: true;
           emoji_url?: string | undefined;
           emoji_code?: undefined;
-      }
-    | UnicodeEmoji;
+      };
 
 // emoji_code is only available for unicode emojis.
 type UnicodeEmoji = {
@@ -62,8 +62,7 @@ export type EmojiSuggestion = Emoji & {
 };
 
 export type BaseEmoji = {emoji_name: string} & (
-    | {is_realm_emoji: false; emoji_code: string}
-    | {is_realm_emoji: true; emoji_code?: undefined}
+    {is_realm_emoji: false; emoji_code: string} | {is_realm_emoji: true; emoji_code?: undefined}
 );
 
 export function remove_diacritics(s: string): string {
@@ -215,7 +214,7 @@ function clean_query(query: string, should_remove_diacritics: boolean): string {
     // direct message section, the space at the end was
     // a `no break-space (U+00A0)` instead of `space (U+0020)`,
     // which lead to no matches in those cases.
-    query = query.replaceAll("\u00A0", " ");
+    query = query.replaceAll("\u{A0}", " ");
 
     return query;
 }

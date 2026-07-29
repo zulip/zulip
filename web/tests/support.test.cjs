@@ -8,7 +8,7 @@ const {JSDOM} = require("jsdom");
 
 const {mock_cjs, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const template = fs.readFileSync(
     path.resolve(__dirname, "../../templates/corporate/support/realm_details.html"),

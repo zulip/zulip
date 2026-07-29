@@ -362,17 +362,20 @@ run_test("filter_by_word_prefix_match", () => {
     // stream-hyphen_underscore/slash, we require `-` in the set of
     // characters for it to match.
     assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string), []);
-    assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s/_-]/), [
-        0,
-    ]);
-    assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s-]/), [
-        0,
-    ]);
+    assert.deepEqual(
+        util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s/_-]/),
+        [0],
+    );
+    assert.deepEqual(
+        util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s-]/),
+        [0],
+    );
 
     // Similarly `_` must be in the set of allowed characters to match "underscore".
-    assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /[\s_]/), [
-        0,
-    ]);
+    assert.deepEqual(
+        util.filter_by_word_prefix_match(values, "unders", item_to_string, /[\s_]/),
+        [0],
+    );
     assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
 });
 
@@ -472,7 +475,7 @@ run_test("get_custom_time_in_minutes", () => {
     blueslip.expect("error", "Unexpected custom time unit: invalid");
     assert.equal(util.get_custom_time_in_minutes("invalid", time_input), time_input);
     /// NaN time input returns NaN
-    const invalid_time_input = Number.NaN;
+    const invalid_time_input = NaN;
     assert.equal(util.get_custom_time_in_minutes("hours", invalid_time_input), invalid_time_input);
 });
 
@@ -485,7 +488,7 @@ run_test("check_and_validate_custom_time_input", () => {
 
     const input_is_nan = "24abc";
     checked_input = util.check_time_input(input_is_nan);
-    assert.equal(checked_input, Number.NaN);
+    assert.equal(checked_input, NaN);
     assert.equal(util.validate_custom_time_input(checked_input), false);
 
     const input_is_negative = "-24";

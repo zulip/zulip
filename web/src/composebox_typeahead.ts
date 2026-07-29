@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -482,7 +482,8 @@ export function tokenize_compose_str(s: string): string {
                 // Code block must start on a new line
                 if (i === 2) {
                     return s;
-                } else if (i > 2 && s[i - 3] === "\n") {
+                }
+                if (i > 2 && s[i - 3] === "\n") {
                     return s.slice(i - 2);
                 }
                 break;
@@ -497,7 +498,8 @@ export function tokenize_compose_str(s: string): string {
             case "_":
                 if (i === 0) {
                     return s;
-                } else if (/[\s"'(/<[{]/.test(s[i - 1]!)) {
+                }
+                if (/[\s"'(/<[{]/.test(s[i - 1]!)) {
                     return s.slice(i);
                 }
                 break;
@@ -722,7 +724,6 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
 
     let filtered_persons;
     let participants_people;
-    let dm_people;
 
     if (current_narrow_participant_ids) {
         // Check DM permissions for the user suggestion only, since we
@@ -743,7 +744,7 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
     }
 
     if (!(filtered_persons && filtered_persons?.length >= 3)) {
-        dm_people = util.try_parse_as_truthy(
+        const dm_people = util.try_parse_as_truthy(
             pm_conversations
                 .get_partners()
                 .filter(
@@ -994,7 +995,7 @@ export function get_candidates(
     // already-completed object.
 
     // We will likely want to extend this list to be more i18n-friendly.
-    const terminal_symbols = ",.;?!()[]> \u00A0\"'\n\t";
+    const terminal_symbols = ",.;?!()[]> \u{A0}\"'\n\t";
     if (rest !== "" && !terminal_symbols.includes(rest[0]!)) {
         return [];
     }
@@ -1415,7 +1416,7 @@ export function content_typeahead_selected(
         case "slash":
             beginning = beginning.slice(0, -token.length - 1) + "/" + item.name + " ";
             if (item.placeholder) {
-                beginning = beginning + item.placeholder;
+                beginning += item.placeholder;
                 highlight.start = item.name.length + 2;
                 highlight.end = highlight.start + item.placeholder.length;
             }
@@ -1463,7 +1464,7 @@ export function content_typeahead_selected(
             // If there is more text after the cursor, then don't
             // touch "rest" (i.e. do not add a closing fence)
             if (rest === "") {
-                beginning = beginning + "\n";
+                beginning += "\n";
                 rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
             }
             break;
@@ -1590,7 +1591,7 @@ export function should_suppress_topic_typeahead(
     const normalize = (topic: string): string =>
         util.get_final_topic_display_name(topic).trim().toLowerCase();
     const normalized_query = normalize(query);
-    if (!topics.some((topic) => normalize(topic) === normalized_query)) {
+    if (topics.every((topic) => normalize(topic) !== normalized_query)) {
         return false;
     }
     // Suppress only if every topic is either the one the user already
@@ -1657,7 +1658,7 @@ export function initialize_topic_edit_typeahead(
 }
 
 function get_footer_html(): string | false {
-    let tip_text = "";
+    let tip_text;
     switch (completing) {
         case "silent_mention":
             tip_text = $t({defaultMessage: "This silent mention won't trigger notifications."});
@@ -1737,7 +1738,8 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
                         item.language === realm.realm_default_code_block_language
                     ) {
                         return `<em>${$t({defaultMessage: "(default)"})}</em>`;
-                    } else if (item.language === "text") {
+                    }
+                    if (item.language === "text") {
                         return `<em>${$t({defaultMessage: "(no highlighting)"})}</em>`;
                     }
                 }
@@ -1883,7 +1885,8 @@ export function initialize({
         ): string | false {
             if (typeof item !== "string" && item.type === "user") {
                 return `<em>${$t({defaultMessage: "DM"})}</em>`;
-            } else if (!matching_items.includes(item)) {
+            }
+            if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;

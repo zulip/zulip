@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import loading_black_image from "../../static/images/loading/loader-black.svg";
 import loading_white_image from "../../static/images/loading/loader-white.svg";

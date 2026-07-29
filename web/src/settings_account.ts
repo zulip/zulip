@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -43,8 +43,7 @@ import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 let password_quality:
-    | ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean)
-    | undefined; // Loaded asynchronously
+    ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean) | undefined; // Loaded asynchronously
 let user_avatar_widget_created = false;
 let user_timezone_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
@@ -616,7 +615,8 @@ export function set_up(): void {
                         "Sorry for the trouble!",
                 );
                 return;
-            } else if (!password_quality(new_pw, undefined, $new_pw_field)) {
+            }
+            if (!password_quality(new_pw, undefined, $new_pw_field)) {
                 settings_change_error($t_html({defaultMessage: "New password is too weak!"}));
                 return;
             }
@@ -865,7 +865,7 @@ export function set_up(): void {
                 success() {
                     dialog_widget.hide_dialog_spinner();
                     dialog_widget.close();
-                    window.location.href = "/login/";
+                    window.location.assign("/login/");
                 },
                 error(xhr) {
                     const error_last_owner = $t_html({

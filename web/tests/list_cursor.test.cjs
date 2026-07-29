@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const {ListCursor} = zrequire("list_cursor");
 

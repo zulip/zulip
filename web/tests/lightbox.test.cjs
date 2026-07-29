@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const message_store = mock_esm("../src/message_store");
 const rows = mock_esm("../src/rows");

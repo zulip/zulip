@@ -60,9 +60,7 @@ type Task = {
 };
 
 export type TodoWidgetOutboundData =
-    | NewTaskTitleOutboundData
-    | NewTaskOutboundData
-    | TaskStrikeOutboundData;
+    NewTaskTitleOutboundData | NewTaskOutboundData | TaskStrikeOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -267,7 +265,7 @@ export class TaskData {
     get_widget_data(): {
         all_tasks: Task[];
     } {
-        const all_tasks = [...this.task_map.values()];
+        const all_tasks = this.task_map.values().toArray();
 
         const widget_data = {
             all_tasks,
@@ -293,11 +291,6 @@ export class TaskData {
         }
 
         const {data} = parsed;
-        const type = data.type;
-        if (this.handle[type]) {
-            this.handle[type].inbound(sender_id, data);
-        } else {
-            blueslip.warn(`todo widget: unknown inbound type: ${type}`);
-        }
+        this.handle[data.type].inbound(sender_id, data);
     }
 }

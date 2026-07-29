@@ -3,7 +3,7 @@
 const compose_banner = require("../../src/compose_banner.ts");
 
 const {noop} = require("./test.cjs");
-const $ = require("./zjquery.cjs");
+const {$} = require("./zjquery.cjs");
 
 exports.mock_banners = () => {
     // zjquery doesn't support `remove`, which is used when clearing the compose box.

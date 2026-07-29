@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as inbox_util from "./inbox_util.ts";
 import type {MessageList} from "./message_list.ts";
@@ -65,7 +65,7 @@ export function update_current_message_list(msg_list: MessageList | undefined): 
 }
 
 export function all_rendered_message_lists(): MessageList[] {
-    return [...rendered_message_lists.values()];
+    return rendered_message_lists.values().toArray();
 }
 
 export function non_rendered_data(): MessageListData[] {

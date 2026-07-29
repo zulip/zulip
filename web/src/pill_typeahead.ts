@@ -106,7 +106,7 @@ export function set_up_stream(
         },
         matcher(query: string): (item: StreamPillData) => boolean {
             query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
+            query = query.replaceAll("\u{A0}", " ");
             query = query.trim();
             if (query.startsWith("#")) {
                 query = query.slice(1);
@@ -190,15 +190,10 @@ export function set_up_group_setting_typeahead(
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
         source(_query: string): GroupSettingTypeaheadItem[] {
-            let source: GroupSettingTypeaheadItem[] = [];
-
-            source = user_group_pill.typeahead_source(pills, opts.setting_name, opts.setting_type);
-            source = [
-                ...source,
+            return [
+                ...user_group_pill.typeahead_source(pills, opts.setting_name, opts.setting_type),
                 ...user_pill.typeahead_source(pills, false, opts.setting_name, opts.setting_type),
             ];
-
-            return source;
         },
         item_html(_query: string): (item: GroupSettingTypeaheadItem) => string {
             return (item: GroupSettingTypeaheadItem): string => {
@@ -217,11 +212,9 @@ export function set_up_group_setting_typeahead(
             return (item: GroupSettingTypeaheadItem): boolean => {
                 let matches = false;
                 if (item.type === "user_group") {
-                    matches = matches || group_matcher(query, item, should_remove_diacritics);
-                }
-
-                if (item.type === "user") {
-                    matches = matches || person_matcher(query, item, should_remove_diacritics);
+                    matches ||= group_matcher(query, item, should_remove_diacritics);
+                } else if (item.type === "user") {
+                    matches ||= person_matcher(query, item, should_remove_diacritics);
                 }
                 return matches;
             };
@@ -281,7 +274,7 @@ export function set_up_combined(
         return;
     }
     const include_streams = (query: string): boolean =>
-        opts.stream !== undefined && query.trim().startsWith("#");
+        opts.stream !== undefined && query.trimStart().startsWith("#");
     const include_user_groups = opts.user_group;
     const include_users = opts.user;
     const exclude_bots = opts.exclude_bots;
@@ -381,7 +374,7 @@ export function set_up_combined(
                 }
 
                 if (include_users && item.type === "user") {
-                    matches = matches || person_matcher(query, item, should_remove_diacritics);
+                    matches ||= person_matcher(query, item, should_remove_diacritics);
                 }
                 return matches;
             };

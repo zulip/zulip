@@ -12,13 +12,13 @@ const ignore_missing = Symbol("ignore_missing");
 
 const reject_missing_handler = {
     has(target, property) {
-        if (!(property in target || target[ignore_missing]?.(property))) {
+        if (!(Reflect.has(target, property) || target[ignore_missing]?.(property))) {
             throw new TypeError(`unknown property ${property} of mock ${target.constructor.name}`);
         }
         return Reflect.has(target, property);
     },
     get(target, property, receiver) {
-        if (!(property in target || target[ignore_missing]?.(property))) {
+        if (!(Reflect.has(target, property) || target[ignore_missing]?.(property))) {
             throw new TypeError(`unknown property ${property} of mock ${target.constructor.name}`);
         }
         return Reflect.get(target, property, receiver);
@@ -215,6 +215,11 @@ class FakeElement extends RejectMissing {
     removeAttribute(name) {
         this.#attributes.delete(normalize_attribute(name));
     }
+    replaceChildren(...children) {
+        assert.equal(children.length, 0, "zjquery does not support this replaceChildren() call");
+        fake_element_state.get(this).query_results.clear();
+        this.innerHTML = "";
+    }
     setAttribute(name, value) {
         this.#attributes.set(normalize_attribute(name), String(value));
     }
@@ -339,9 +344,8 @@ exports.FakeJQuery = class extends RejectMissing {
         }
 
         for (const element of this) {
-            for (const [key, value] of Object.entries(
-                typeof property === "string" ? {[property]: args[0]} : property,
-            )) {
+            const properties = typeof property === "string" ? {[property]: args[0]} : property;
+            for (const [key, value] of Object.entries(properties)) {
                 element.style.setProperty(
                     decamel(key),
                     typeof value === "number" &&
@@ -402,8 +406,7 @@ exports.FakeJQuery = class extends RejectMissing {
     }
     empty() {
         for (const element of this) {
-            fake_element_state.get(element).query_results.clear();
-            element.innerHTML = "";
+            element.replaceChildren();
         }
         return this;
     }

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as z from "zod/mini";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";

@@ -1009,8 +1009,6 @@ test("render_person", ({mock_template, override}) => {
 });
 
 test("render_person special_item_text", ({mock_template}) => {
-    let rendered = false;
-
     // Test render_person with special_item_text person
     const special_person = {
         email: "special@example.com",
@@ -1021,7 +1019,7 @@ test("render_person special_item_text", ({mock_template}) => {
         special_item_text: "special_text",
     };
 
-    rendered = false;
+    let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, special_person.special_item_text);
         rendered = true;

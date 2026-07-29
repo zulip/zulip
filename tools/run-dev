@@ -438,7 +438,7 @@ def print_listeners(external_host_url: str) -> None:
     print()
 
 
-runner: web.AppRunner
+runner: web.AppRunner | None = None
 children: list["subprocess.Popen[bytes]"] = []
 
 
@@ -501,8 +501,9 @@ try:
         loop.add_signal_handler(s, loop.stop)
     loop.run_forever()
 finally:
-    loop.run_until_complete(runner.cleanup())
-    loop.run_until_complete(session.close())
+    if runner is not None:
+        loop.run_until_complete(runner.cleanup())
+        loop.run_until_complete(session.close())
 
     for child in children:
         child.terminate()

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
@@ -109,25 +109,29 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             sub,
             group_setting_value_schema.parse(value),
         );
-        if (property === "can_subscribe_group" || property === "can_add_subscribers_group") {
-            stream_settings_ui.update_subscription_elements(sub);
-        }
-        if (property === "can_administer_channel_group") {
-            const settings_sub = stream_settings_data.get_sub_for_settings(sub);
-            stream_ui_updates.update_add_subscriptions_elements(settings_sub);
-        }
-        if (property === "can_resolve_topics_group") {
-            // Technically we just need to rerender the message recipient
-            // bars to update the buttons for editing or resolving a topic,
-            // but because these policies are changed rarely, it's fine to
-            // rerender the entire message feed.
-            message_live_update.rerender_messages_view();
-        }
-        if (property === "can_create_topic_group") {
-            stream_ui_updates.update_history_public_to_subscribers_state(
-                $("#stream_settings"),
-                sub,
-            );
+        switch (property) {
+            case "can_subscribe_group":
+            case "can_add_subscribers_group":
+                stream_settings_ui.update_subscription_elements(sub);
+                break;
+            case "can_administer_channel_group": {
+                const settings_sub = stream_settings_data.get_sub_for_settings(sub);
+                stream_ui_updates.update_add_subscriptions_elements(settings_sub);
+                break;
+            }
+            case "can_resolve_topics_group":
+                // Technically we just need to rerender the message recipient
+                // bars to update the buttons for editing or resolving a topic,
+                // but because these policies are changed rarely, it's fine to
+                // rerender the entire message feed.
+                message_live_update.rerender_messages_view();
+                break;
+            case "can_create_topic_group":
+                stream_ui_updates.update_history_public_to_subscribers_state(
+                    $("#stream_settings"),
+                    sub,
+                );
+                break;
         }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),

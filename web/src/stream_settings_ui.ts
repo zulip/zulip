@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -741,11 +741,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
 
     // If we just re-built the DOM from scratch we wouldn't need
     // all this hidden/notdisplayed logic.
-    const hidden_ids = new Set();
-
-    for (const stream_id of buckets.other) {
-        hidden_ids.add(stream_id);
-    }
+    const hidden_ids = new Set(buckets.other);
 
     for (const row of $("#channels_overlay_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
@@ -1250,13 +1246,15 @@ export function switch_rows(event: string): boolean {
     if (hash_parser.is_create_new_stream_narrow()) {
         // Prevent switching stream rows when creating a new stream
         return false;
-    } else if (
+    }
+    if (
         hash_parser.is_subscribers_section_opened_for_stream() &&
         $add_subscriber_pill_input.is(":focus")
     ) {
         // Prevent switching stream rows when adding a subscriber
         return false;
-    } else if (!active_data.id || active_data.$row.hasClass("notdisplayed")) {
+    }
+    if (!active_data.id || active_data.$row.hasClass("notdisplayed")) {
         $switch_row = $("div.stream-row:not(.notdisplayed)").first();
         if ($("#search_stream_name").is(":focus")) {
             $("#search_stream_name").trigger("blur");
@@ -1383,6 +1381,6 @@ export function initialize(): void {
 
     $("#channels_overlay_container").on("click", "#preview-stream-button", () => {
         const stream_id = Number.parseInt($(".stream-title-buttons").attr("data-stream-id")!, 10);
-        window.location.href = hash_util.channel_url_by_user_setting(stream_id);
+        window.location.assign(hash_util.channel_url_by_user_setting(stream_id));
     });
 }

@@ -1,5 +1,5 @@
 import isUrl from "is-url";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
@@ -51,7 +51,7 @@ function image_to_zulip_markdown(
     // present on both Zulip and third-party Markdown images, but use
     // title as a fallback, since older-style Zulip image previews
     // only set title.
-    let alt = "";
+    let alt;
     if (node.classList.contains("inline-image")) {
         alt = node.getAttribute("alt") ?? "";
     } else {
@@ -106,8 +106,7 @@ function within_single_element(html_fragment: HTMLElement): boolean {
 // be removed (e.g., for headings that contain <br> and other tags in the fragment).
 // Empty nodes like comments or newline-only text should not be counted.
 function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
-    let textful_nodes = 0;
-    textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
+    const textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
     if (textful_nodes >= 2) {
         return false;
     }
@@ -177,7 +176,7 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
         return false;
     }
 
-    if (!excel_namespaces.some((ns) => html_outer.includes(ns))) {
+    if (excel_namespaces.every((ns) => !html_outer.includes(ns))) {
         return false;
     }
 
@@ -233,7 +232,7 @@ function get_code_block_language(
     pre_element: HTMLElement,
     code_element_class_name: string,
 ): string {
-    let language = "";
+    let language;
     const parent_contains_lang_metadata =
         pre_element.parentElement?.classList.contains("zulip-code-block");
 
@@ -352,7 +351,7 @@ export function paste_handler_converter(
             content = content
                 .replace(/^\n+/, "") // remove leading newlines
                 .replace(/\n+$/, "\n") // replace trailing newlines with just a single one
-                .replaceAll(/\n/gm, "\n  "); // custom 2 space indent
+                .replaceAll("\n", "\n  "); // custom 2 space indent
             let prefix = "* ";
             const parent = node.parentElement;
             assert(parent !== null);
@@ -423,7 +422,7 @@ export function paste_handler_converter(
             let consecutive_empty_display_count = 0;
             for (const child of parent.children) {
                 const annotation_element = child.querySelector(
-                    '.katex-mathml annotation[encoding="application/x-tex"]',
+                    ':scope .katex-mathml annotation[encoding="application/x-tex"]',
                 );
                 if (annotation_element?.textContent) {
                     const katex_source = annotation_element.textContent.trim();
@@ -440,7 +439,7 @@ export function paste_handler_converter(
                         continue;
                     }
                     if (consecutive_empty_display_count === 0) {
-                        math_block_markdown += "\n\n\n";
+                        math_block_markdown += "\n".repeat(3);
                     } else {
                         math_block_markdown += "\n\n";
                     }
@@ -449,7 +448,8 @@ export function paste_handler_converter(
             }
             // Don't add extra newline at the end
             math_block_markdown = math_block_markdown.slice(0, -1);
-            return (math_block_markdown += "```");
+            math_block_markdown += "```";
+            return math_block_markdown;
         },
     });
 
@@ -575,7 +575,7 @@ export function paste_handler_converter(
                 let delimiter = "`";
                 const matches: string[] = code.match(/`+/gm) ?? [];
                 while (matches.includes(delimiter)) {
-                    delimiter = delimiter + "`";
+                    delimiter += "`";
                 }
 
                 return delimiter + extraSpace + code + extraSpace + delimiter;

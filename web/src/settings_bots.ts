@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
@@ -742,11 +742,11 @@ function set_up_bot_handlers($container: JQuery): void {
         add_a_new_bot();
     });
 
-    $container.find(".download-botserverrc-file").on("click", (e) => {
+    $container.find(".download-botserverrc-file").on("click", function () {
         void (async () => {
             let content = "";
-            buttons.show_button_loading_indicator($(e.currentTarget));
-            $(e.currentTarget).prop("disabled", true);
+            buttons.show_button_loading_indicator($(this));
+            $(this).prop("disabled", true);
             for (const bot of bot_data.get_all_bots_for_current_user()) {
                 if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
                     const bot_token = bot_helper.get_outgoing_webhook_token(bot.user_id);
@@ -755,15 +755,15 @@ function set_up_bot_handlers($container: JQuery): void {
                         $("#admin-your-bots-list .bot-list-error"),
                     );
                     if (!api_key) {
-                        buttons.hide_button_loading_indicator($(e.currentTarget));
-                        $(e.currentTarget).prop("disabled", false);
+                        buttons.hide_button_loading_indicator($(this));
+                        $(this).prop("disabled", false);
                         return;
                     }
                     content += generate_botserverrc_content(bot.email, api_key, bot_token);
                 }
             }
-            buttons.hide_button_loading_indicator($(e.currentTarget));
-            $(e.currentTarget).prop("disabled", false);
+            buttons.hide_button_loading_indicator($(this));
+            $(this).prop("disabled", false);
 
             $container
                 .find(".hidden-botserverrc-download")

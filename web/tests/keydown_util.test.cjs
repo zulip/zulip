@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const navigator = set_global("navigator", {platform: ""});
 

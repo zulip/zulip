@@ -320,7 +320,6 @@ function get_group_suggestions(
         if (last.operator === "search") {
             new_query = last.operand;
             existing_user_ids = last_complete_term.operand;
-            terms = terms.slice(-1);
         } else if (last.operator === "") {
             // User hasn't started typing the next term yet; use the
             // last complete term to generate suggestions.
@@ -657,7 +656,8 @@ function get_topic_suggestions(
             excluded_channel_ids.has(subscribed_channel_id.toString())
         ) {
             continue;
-        } else if (!show_topics_from_other_channels) {
+        }
+        if (!show_topics_from_other_channels) {
             continue;
         }
 
@@ -718,7 +718,7 @@ function get_topic_suggestions(
         const terms: NarrowTerm[] = [{operator: "channel", operand: topic.channel_id}, topic_term];
         // We don't want to have two channel pills in the search suggestion.
         if (filter.has_operator("channel")) {
-            terms.splice(0, 1);
+            terms.shift();
         }
 
         return format_as_suggestion(terms);

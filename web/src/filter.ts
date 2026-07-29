@@ -356,7 +356,7 @@ export class Filter {
                 // phrase search behavior, however.  So, we replace all instances of
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
-                narrow_term.operand = narrow_term.operand.replaceAll(/[\u201C\u201D]/g, '"');
+                narrow_term.operand = narrow_term.operand.replaceAll(/[\u{201C}\u{201D}]/gu, '"');
                 break;
             case "date":
                 break;
@@ -493,7 +493,7 @@ export class Filter {
                     negated = true;
                     operator = operator.slice(1);
                 }
-                operand = Filter.decodeOperand(parts.join(":"), operator);
+                operand = this.decodeOperand(parts.join(":"), operator);
 
                 // Resolve a user-entered channel name to its id. A purely
                 // numeric operand is taken to be a stream id already.
@@ -634,12 +634,12 @@ export class Filter {
                     };
             }
 
-            potential_narrow_term = Filter.canonicalize_term(potential_narrow_term);
+            potential_narrow_term = this.canonicalize_term(potential_narrow_term);
         } catch {
             return undefined;
         }
 
-        if (!Filter.is_valid_canonical_term(potential_narrow_term)) {
+        if (!this.is_valid_canonical_term(potential_narrow_term)) {
             return undefined;
         }
 
@@ -672,7 +672,7 @@ export class Filter {
                 if (term.negated) {
                     return false;
                 }
-                return Number.isInteger(Number(term.operand));
+                return Number.isSafeInteger(Number(term.operand));
             case "channel":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
@@ -729,7 +729,7 @@ export class Filter {
                 return term.operand;
             }
             const operator = filter_util.canonicalize_operator(term.operator);
-            const operand = is_operator_suggestion ? "" : Filter.encodeOperand(term.operand);
+            const operand = is_operator_suggestion ? "" : this.encodeOperand(term.operand);
             return sign + operator + ":" + operand;
         });
         return term_strings.join(" ");
@@ -944,36 +944,41 @@ export class Filter {
                     content: this.describe_channels_operator(term.negated ?? false, term.operand),
                 };
             }
-            const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
+            const prefix_for_operator = this.operator_to_prefix(term.operator, term.negated);
             if (prefix_for_operator !== "") {
-                if (term.operator === "channel") {
-                    const stream = stream_data.get_sub_by_id_string(term.operand);
-                    const verb = term.negated ? "exclude " : "";
-                    if (stream) {
-                        return {
-                            type: "channel",
-                            prefix_for_operator: verb + "messages in ",
-                            stream,
-                        };
+                switch (term.operator) {
+                    case "channel": {
+                        const stream = stream_data.get_sub_by_id_string(term.operand);
+                        const verb = term.negated ? "exclude " : "";
+                        if (stream) {
+                            return {
+                                type: "channel",
+                                prefix_for_operator: verb + "messages in ",
+                                stream,
+                            };
+                        }
+                        // Assume the operand is a partially formed name and return
+                        // the operator as the channel name in the next block.
+                        /* istanbul ignore next */
+                        break;
                     }
-                    // Assume the operand is a partially formed name and return
-                    // the operator as the channel name in the next block.
-                }
-                if (term.operator === "date") {
-                    return {
-                        type: "prefix_for_operator",
-                        prefix_for_operator:
-                            term.operand === "" ? prefix_for_operator : "messages sent around",
-                        operand: date_util.convert_date_str_to_description_date(term.operand),
-                    };
-                }
-                if (term.operator === "topic" && !is_operator_suggestion) {
-                    return {
-                        type: "prefix_for_operator",
-                        prefix_for_operator,
-                        operand: util.get_final_topic_display_name(term.operand),
-                        is_empty_string_topic: term.operand === "",
-                    };
+                    case "date":
+                        return {
+                            type: "prefix_for_operator",
+                            prefix_for_operator:
+                                term.operand === "" ? prefix_for_operator : "messages sent around",
+                            operand: date_util.convert_date_str_to_description_date(term.operand),
+                        };
+                    case "topic":
+                        if (!is_operator_suggestion) {
+                            return {
+                                type: "prefix_for_operator",
+                                prefix_for_operator,
+                                operand: util.get_final_topic_display_name(term.operand),
+                                is_empty_string_topic: term.operand === "",
+                            };
+                        }
+                        break;
                 }
                 return {
                     type: "prefix_for_operator",
@@ -1010,7 +1015,7 @@ export class Filter {
         is_operator_suggestion: boolean,
     ): string {
         return render_search_description({
-            parts: Filter.parts_for_describe(terms, is_operator_suggestion),
+            parts: this.parts_for_describe(terms, is_operator_suggestion),
         });
     }
 
@@ -1065,17 +1070,14 @@ export class Filter {
         const adjusted_terms = [];
         let terms_changed = false;
 
-        const adjusted_narrow_containing_with = Filter.ensure_channel_topic_terms(
-            raw_terms,
-            message,
-        );
+        const adjusted_narrow_containing_with = this.ensure_channel_topic_terms(raw_terms, message);
 
         if (adjusted_narrow_containing_with !== undefined) {
             return adjusted_narrow_containing_with;
         }
 
         for (const term of raw_terms) {
-            const adjusted_term = Filter.canonicalize_term(term);
+            const adjusted_term = this.canonicalize_term(term);
             if (
                 adjusted_term.operator === "channel" &&
                 term.operand !== message.stream_id.toString()
@@ -1831,7 +1833,7 @@ export class Filter {
 
     _fix_redundant_is_private(terms: NarrowCanonicalTerm[]): NarrowCanonicalTerm[] {
         // Every DM is a DM, so drop `is:dm` if on a DM conversation.
-        if (!terms.some((term) => Filter.term_type(term) === "dm")) {
+        if (terms.every((term) => Filter.term_type(term) !== "dm")) {
             return terms;
         }
 

@@ -1,5 +1,5 @@
 import autosize from "autosize";
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";

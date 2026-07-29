@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import panzoom from "panzoom";
 import type {PanZoom} from "panzoom";
@@ -147,7 +147,7 @@ export class PanZoomControl {
 
         if (modified_x < 0 + border) {
             // Image has been dragged beyond the LEFT of the view.
-            const move_by = modified_x * -1;
+            const move_by = -modified_x;
             e.moveBy(move_by + return_buffer, 0, false);
         } else if (modified_x - image_width > max_translate_x - border) {
             // Image has been dragged beyond the RIGHT of the view.
@@ -157,7 +157,7 @@ export class PanZoomControl {
 
         if (modified_y < 0 + border) {
             // Image has been dragged beyond the TOP of the view.
-            const move_by = modified_y * -1;
+            const move_by = -modified_y;
             e.moveBy(0, move_by + return_buffer, false);
         } else if (modified_y - image_height > max_translate_y - border) {
             // Image has been dragged beyond the BOTTOM of the view.
@@ -438,11 +438,10 @@ export function show_from_selected_message(): void {
                 $prev_traverse = true;
                 $message = $message_selected;
                 break;
-            } else {
-                $message = rows.last_message_in_group($prev_message_group);
-                $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
-                continue;
             }
+            $message = rows.last_message_in_group($prev_message_group);
+            $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
+            continue;
         }
         $message = $message.prev();
         $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
@@ -454,11 +453,10 @@ export function show_from_selected_message(): void {
                 const $next_message_group = $message.parent().nextAll(".recipient_row").first();
                 if ($next_message_group.length === 0) {
                     break;
-                } else {
-                    $message = rows.first_message_in_group($next_message_group);
-                    $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
-                    continue;
                 }
+                $message = rows.first_message_in_group($next_message_group);
+                $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
+                continue;
             }
             $message = $message.next();
             $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
@@ -592,7 +590,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
                 // It's an HEIC and we support it -- don't use the transcoded version
                 source = url;
             } else {
-                source = preview_src.replace(/\/[^/]+$/, "/" + transcoded_image);
+                source = preview_src.replace(/\/[^/]+$/, () => "/" + transcoded_image);
             }
         } else {
             source = url;

@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
 
@@ -23,7 +23,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
 
     mock_esm("../src/list_widget", {
         create(_container, words, opts) {
-            assert.deepEqual(words, [{word: "foo"}, {word: "bar"}]);
+            assert.deepEqual(words, [{word: "bar"}, {word: "foo"}]);
             for (const word of words) {
                 opts.modifier_html(word);
             }

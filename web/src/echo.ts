@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -364,7 +364,7 @@ export function rewire_try_deliver_locally(value: typeof try_deliver_locally): v
     try_deliver_locally = value;
 }
 
-export function edit_locally(message: Message, request: LocalEditRequest): Message {
+export function edit_locally(message: Message, request: LocalEditRequest): void {
     // Responsible for doing the rendering work of locally editing the
     // content of a message.  This is used in several code paths:
     // * Editing a message where a message was locally echoed but
@@ -448,7 +448,6 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
     }
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    return message;
 }
 
 export function update_topic_hash_to_contain_with_term(message: Message): void {

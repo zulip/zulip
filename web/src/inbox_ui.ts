@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -273,10 +273,7 @@ function save_data_to_ls(): void {
     ls.set(ls_filter_key, [...filters]);
     ls.set(
         ls_per_channel_filters_key,
-        [...per_channel_filters.entries()].map(([channel_id, filter_set]) => [
-            channel_id,
-            [...filter_set],
-        ]),
+        [...per_channel_filters].map(([channel_id, filter_set]) => [channel_id, [...filter_set]]),
     );
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
 }
@@ -461,9 +458,9 @@ function load_data_from_ls(): void {
         z.optional(z.array(z.string())).parse(ls.get(ls_collapsed_containers_key)),
     );
     const saved_per_channel_filters = z
-        .optional(z.array(z.tuple([z.number(), z.array(z.string())])))
+        ._default(z.array(z.tuple([z.number(), z.array(z.string())])), [])
         .parse(ls.get(ls_per_channel_filters_key));
-    for (const [channel_id, filter_set] of saved_per_channel_filters ?? []) {
+    for (const [channel_id, filter_set] of saved_per_channel_filters) {
         const valid_filter_set = new Set(filter_set.filter((filter) => valid_filters.has(filter)));
         if (valid_filter_set.size > 0) {
             per_channel_filters.set(channel_id, valid_filter_set);
@@ -524,7 +521,7 @@ function format_dm(
 }
 
 function insert_dms(keys_to_insert: string[]): void {
-    const sorted_keys = [...dms_dict.keys()];
+    const sorted_keys = dms_dict.keys().toArray();
     // If we need to insert at the top, we do it separately to avoid edge case in loop below.
     if (sorted_keys[0] !== undefined && keys_to_insert.includes(sorted_keys[0])) {
         $("#inbox-direct-messages-container").prepend(
@@ -662,7 +659,8 @@ function rerender_stream_inbox_header_if_needed(
 function get_channel_folder_header_id(folder_id: number): string {
     if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
         return OTHER_CHANNEL_HEADER_ID;
-    } else if (folder_id === PINNED_CHANNEL_FOLDER_ID) {
+    }
+    if (folder_id === PINNED_CHANNEL_FOLDER_ID) {
         return PINNED_CHANNEL_HEADER_ID;
     }
     return CHANNEL_FOLDER_HEADER_ID_PREFIX + folder_id;
@@ -738,7 +736,7 @@ function insert_stream(stream_key: string): void {
     const rendered_stream = render_inbox_stream_container({
         stream_key,
         stream_row,
-        topic_rows: [...stream_topics_data.values()],
+        topic_rows: stream_topics_data.values().toArray(),
     });
     const $channel_folder_header = $(`#${get_channel_folder_header_id(channel_folder_id)}`);
     if (stream_index === 0) {
@@ -752,7 +750,7 @@ function insert_stream(stream_key: string): void {
 function insert_topics(keys: string[], stream_key: string): void {
     const stream_topics_data = topics_dict.get(stream_key);
     assert(stream_topics_data !== undefined);
-    const sorted_keys = [...stream_topics_data.keys()];
+    const sorted_keys = stream_topics_data.keys().toArray();
     // If we need to insert at the top, we do it separately to avoid edge case in loop below.
     if (sorted_keys[0] !== undefined && keys.includes(sorted_keys[0])) {
         const $stream = get_stream_container(stream_key);
@@ -829,7 +827,7 @@ function get_sorted_stream_keys(channel_folder_id?: number): string[] {
         return util.strcmp(stream_name_a, stream_name_b);
     }
 
-    return [...topics_dict.keys()].toSorted(compare_function);
+    return topics_dict.keys().toArray().toSorted(compare_function);
 }
 
 function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> {
@@ -854,7 +852,7 @@ function get_folder_stream_rows(folder_id: number): FolderStreamRowsContext[] {
         stream_rows.push({
             stream_key,
             stream_row,
-            topic_rows: [...stream_topics_data.values()],
+            topic_rows: stream_topics_data.values().toArray(),
         });
     }
 
@@ -868,7 +866,7 @@ function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
 }
 
 function sort_channel_folders(): void {
-    const sorted_channel_folders = [...channel_folders_dict.values()];
+    const sorted_channel_folders = channel_folders_dict.values().toArray();
     sorted_channel_folders.sort((a, b) => {
         // Sort OTHER_CHANNELS_FOLDER_ID last, then by order with PINNED_CHANNEL_FOLDER_ID first.
         if (a.id === OTHER_CHANNELS_FOLDER_ID) {
@@ -934,10 +932,8 @@ function update_channel_folder_data(channel_context: StreamContext): void {
     } else {
         folder_context.unread_count =
             (folder_context.unread_count ?? 0) + (channel_context.unread_count ?? 0);
-        folder_context.is_header_visible =
-            folder_context.is_header_visible || !channel_context.is_hidden;
-        folder_context.has_unread_mention =
-            folder_context.has_unread_mention || channel_context.mention_in_unread;
+        folder_context.is_header_visible ||= !channel_context.is_hidden;
+        folder_context.has_unread_mention ||= channel_context.mention_in_unread;
     }
 }
 
@@ -1303,10 +1299,13 @@ export function complete_rerender(coming_from_other_views = false): void {
         } else {
             channel_view_topic_widget = undefined;
             const {has_visible_unreads, ...additional_context} = reset_data();
-            const folders_with_stream_rows = [...channel_folders_dict.values()].map((folder) => ({
-                ...folder,
-                stream_rows: get_folder_stream_rows(folder.id),
-            }));
+            const folders_with_stream_rows = channel_folders_dict
+                .values()
+                .map((folder) => ({
+                    ...folder,
+                    stream_rows: get_folder_stream_rows(folder.id),
+                }))
+                .toArray();
             $("#inbox-pane").html(
                 render_inbox_view({
                     normal_view: true,
@@ -1433,33 +1432,27 @@ export function collapse_or_expand(container_id: string): void {
     let $all_elements = $(".inbox-header.inbox-folder, .inbox-folder-components");
     const $blocker = $("#inbox-animation-extra-content-blocker");
     $all_elements = $all_elements.add($blocker);
-    // If a folder was expanded/collapsed.
+    let $content;
     if ($toggle_container.hasClass("inbox-folder")) {
-        const $content = $toggle_container.next(".inbox-folder-components");
-        animate.collapse_or_expand({
-            toggle_class: "inbox-collapsed-state",
-            $toggle_container,
-            $content,
-            $all_elements,
-            duration: animation_duration,
-        });
-        // If a channel was expanded/collapsed.
+        // If a folder was expanded/collapsed.
+        $content = $toggle_container.next(".inbox-folder-components");
     } else {
-        const $content = $toggle_container.next(".inbox-topic-container");
+        // If a channel was expanded/collapsed.
+        $content = $toggle_container.next(".inbox-topic-container");
         // Remove parent`.inbox-folder-components` and
         // add it's contents to `$all_elements`.
         const $parent_folder_components = $toggle_container.closest(".inbox-folder-components");
         $all_elements = $all_elements.not($parent_folder_components);
         const $parent_folder_components_children = $parent_folder_components.children().children();
         $all_elements = $all_elements.add($parent_folder_components_children);
-        animate.collapse_or_expand({
-            toggle_class: "inbox-collapsed-state",
-            $toggle_container,
-            $content,
-            $all_elements,
-            duration: animation_duration,
-        });
     }
+    animate.collapse_or_expand({
+        toggle_class: "inbox-collapsed-state",
+        $toggle_container,
+        $content,
+        $all_elements,
+        duration: animation_duration,
+    });
 
     if (collapsed_containers.has(container_id)) {
         collapsed_containers.delete(container_id);
@@ -1492,9 +1485,10 @@ function should_show_all_folders_collapsed_note(): boolean {
     // Defined just for code reading clarity.
     const has_visible_but_collapsed_dm_folder = has_visible_dm_folder;
 
-    const visible_folders = [...channel_folders_dict.values()].filter(
-        (folder) => folder.is_header_visible,
-    );
+    const visible_folders = channel_folders_dict
+        .values()
+        .filter((folder) => folder.is_header_visible)
+        .toArray();
     if (visible_folders.length === 0) {
         // Nothing at all is visible; unless there is a visible but collapsed
         // DM folder, we show the empty inbox message.
@@ -1504,12 +1498,14 @@ function should_show_all_folders_collapsed_note(): boolean {
     // At least one uncollapsed row is visible in some folder.
     const has_expanded_content = visible_folders.some((folder) => {
         if (!collapsed_containers.has(folder.header_id)) {
-            const folder_streams = [...streams_dict.values()].filter(
-                (stream) => stream.folder_id === folder.id && !stream.is_hidden,
-            );
-            return folder_streams.some(
-                (stream) => !collapsed_containers.has(STREAM_HEADER_PREFIX + stream.stream_id),
-            );
+            return streams_dict
+                .values()
+                .some(
+                    (stream) =>
+                        stream.folder_id === folder.id &&
+                        !stream.is_hidden &&
+                        !collapsed_containers.has(STREAM_HEADER_PREFIX + stream.stream_id),
+                );
         }
         return false;
     });
@@ -1938,10 +1934,7 @@ export function change_focused_element(input_key: string): boolean {
         const start = textInput.selectionStart ?? 0;
         const end = textInput.selectionEnd ?? 0;
         const text_length = textInput.value.length;
-        let is_selected = false;
-        if (end - start > 0) {
-            is_selected = true;
-        }
+        const is_selected = end > start;
 
         switch (input_key) {
             case "down_arrow":
@@ -2096,7 +2089,7 @@ export function update_internal(): void {
             }
         } else {
             // If it is rendered.
-            if (dms_dict.get(key) !== undefined) {
+            if (dms_dict.has(key)) {
                 dms_dict.delete(key);
                 get_row_from_conversation_key(key).remove();
             }
@@ -2205,7 +2198,7 @@ export function update_internal(): void {
         }
     }
 
-    for (const [folder_id, folder_info] of folders_info.entries()) {
+    for (const [folder_id, folder_info] of folders_info) {
         const folder_dict = channel_folders_dict.get(folder_id);
         const name = get_folder_name_from_id(folder_id);
         const is_collapsed = collapsed_containers.has(get_channel_folder_header_id(folder_id));
@@ -2479,7 +2472,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         const href = $elt.find("a").attr("href");
         col_focus = COLUMNS.FULL_ROW;
         if (href !== undefined) {
-            window.location.href = href;
+            window.location.assign(href);
         } else {
             $elt = $elt.closest(".inbox-header");
             collapse_or_expand($elt.attr("id")!);

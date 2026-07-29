@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -174,7 +174,7 @@ const apps_events = function (): void {
             }
         }
 
-        result = result ?? detect_user_os();
+        result ??= detect_user_os();
         return result;
     }
 

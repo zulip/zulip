@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import checkbox_image from "../images/checkbox-green.svg";
 

@@ -59,5 +59,5 @@ void (async () => {
     const token = await pasted;
     document.querySelector<HTMLFormElement>("form#form")!.hidden = true;
     document.querySelector<HTMLParagraphElement>("p#done")!.hidden = false;
-    window.location.href = "/accounts/login/subdomain/" + encodeURIComponent(token);
+    window.location.assign("/accounts/login/subdomain/" + encodeURIComponent(token));
 })();

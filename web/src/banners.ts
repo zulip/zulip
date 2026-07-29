@@ -1,5 +1,5 @@
 import type Handlebars from "handlebars/runtime.js";
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_banner from "../templates/components/banner.hbs";
 

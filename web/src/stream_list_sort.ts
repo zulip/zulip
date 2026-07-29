@@ -305,14 +305,16 @@ export function sort_groups(
 
     // Demote folders where all channels are muted or inactive.
     const regular_folder_sections = sort_by_order(
-        [...folder_sections.values()].filter(
-            (section) => section.default_visible_streams.length > 0,
-        ),
+        folder_sections
+            .values()
+            .filter((section) => section.default_visible_streams.length > 0)
+            .toArray(),
     );
     const demoted_folder_sections = sort_by_order(
-        [...folder_sections.values()].filter(
-            (section) => section.default_visible_streams.length === 0,
-        ),
+        folder_sections
+            .values()
+            .filter((section) => section.default_visible_streams.length === 0)
+            .toArray(),
     );
 
     if (

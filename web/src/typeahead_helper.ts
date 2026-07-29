@@ -35,8 +35,7 @@ import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
 
 export type UserOrMention =
-    | {type: "broadcast"; user: PseudoMentionUser}
-    | {type: "user"; user: User};
+    {type: "broadcast"; user: PseudoMentionUser} | {type: "user"; user: User};
 export type UserOrMentionPillData = UserOrMention & {
     is_silent?: boolean;
 };
@@ -302,7 +301,8 @@ export function compare_users_for_dms(user_a: User, user_b: User, query = ""): n
     if (a_message_id !== undefined && b_message_id !== undefined) {
         if (a_message_id > b_message_id) {
             return -1;
-        } else if (a_message_id < b_message_id) {
+        }
+        if (a_message_id < b_message_id) {
             return 1;
         }
     } else if (a_message_id !== undefined) {
@@ -472,9 +472,11 @@ function compare_language_by_popularity(lang_a: string, lang_b: string): number 
     // languages seem sensible.
     if (!lang_a_data && !lang_b_data) {
         return 0; // Neither have popularity, so they tie.
-    } else if (!lang_a_data) {
+    }
+    if (!lang_a_data) {
         return 1; // lang_a doesn't have popularity, so sort a after b.
-    } else if (!lang_b_data) {
+    }
+    if (!lang_b_data) {
         return -1; // lang_b doesn't have popularity, so sort a before b.
     }
 
@@ -1016,7 +1018,8 @@ function slash_command_comparator(
 ): number {
     if (slash_command_a.name < slash_command_b.name) {
         return -1;
-    } else if (slash_command_a.name > slash_command_b.name) {
+    }
+    if (slash_command_a.name > slash_command_b.name) {
         return 1;
     }
     /* istanbul ignore next */

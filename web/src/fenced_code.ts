@@ -1,4 +1,4 @@
-import katex from "katex";
+import * as katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 

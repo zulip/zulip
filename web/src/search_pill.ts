@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
@@ -235,7 +235,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                         text_query === "" ||
                         index < search_terms.length - 1 ||
                         // case 2
-                        text_query.trim().endsWith("topic:")
+                        text_query.trimEnd().endsWith("topic:")
                     ) {
                         // We want to show a combined pill for the case
                         // where the preceding operator is a `channel`.
@@ -339,7 +339,8 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 pills: pill_render_data,
                 description_html,
             });
-        } else if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
+        }
+        if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
             const description_html = render_data.negated
                 ? $t({defaultMessage: "Exclude messages you sent"})
                 : $t({defaultMessage: "Messages you sent"});
