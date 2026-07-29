@@ -61,7 +61,10 @@ from zerver.lib.notification_data import (
 )
 from zerver.lib.query_helpers import query_for_ids
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.recipient_users import recipient_for_user_profiles
+from zerver.lib.recipient_users import (
+    check_sender_can_access_recipients,
+    recipient_for_user_profiles,
+)
 from zerver.lib.stream_subscription import (
     get_subscriptions_for_send_message,
     num_subscribers_for_stream_id,
@@ -96,7 +99,6 @@ from zerver.lib.users import (
     get_subscribers_of_target_user_subscriptions,
     get_user_ids_who_can_access_user,
     get_users_involved_in_dms_with_target_users,
-    has_inaccessible_users,
     user_access_restricted_in_realm,
 )
 from zerver.lib.validator import check_widget_content
@@ -1682,14 +1684,6 @@ def check_can_send_direct_message(
     ).exists()
     if not previous_messages_exist:
         raise DirectMessageInitiationError
-
-
-def check_sender_can_access_recipients(
-    sender: UserProfile, user_profiles: Sequence[UserProfile]
-) -> None:
-    recipient_user_ids = [user.id for user in user_profiles]
-    if has_inaccessible_users(recipient_user_ids, sender):
-        raise JsonableError(_("You do not have permission to access some of the recipients."))
 
 
 def get_recipients_for_user_creation_events(
