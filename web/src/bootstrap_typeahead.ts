@@ -157,6 +157,7 @@ import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
+import * as keydown_util from "./keydown_util.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {get_string_diff, the} from "./util.ts";
@@ -195,6 +196,14 @@ const CONTAINER_HTML = '<div class="typeahead dropdown-menu"></div>';
 const MENU_HTML = '<ul class="typeahead-menu" data-simplebar></ul>';
 const ITEM_HTML = '<li class="typeahead-item"><a class="typeahead-item-link"></a></li>';
 const MIN_LENGTH = 1;
+
+function get_typeahead_key(event: JQuery.KeyboardEventBase): string {
+    return keydown_util.get_mac_ctrl_navigation_key(event) ?? event.key;
+}
+
+function is_ctrl_navigation_letter(event: JQuery.KeyboardEventBase): boolean {
+    return ["n", "p"].includes(event.key.toLowerCase()) || ["KeyN", "KeyP"].includes(event.code);
+}
 
 export type TypeaheadInputElement =
     | {
@@ -235,6 +244,7 @@ export class Typeahead<ItemType extends string | object> {
     // returns a string to show in typeahead items or false.
     option_label: (matching_items: ItemType[], item: ItemType) => string | false;
     suppressKeyPressRepeat = false;
+    suppressKeyUpAfterMacCtrlNavigation = false;
     query = "";
     mouse_moved_since_typeahead = false;
     shown = false;
@@ -725,7 +735,9 @@ export class Typeahead<ItemType extends string | object> {
             return;
         }
 
-        switch (e.key) {
+        const key = get_typeahead_key(e);
+
+        switch (key) {
             case "Tab":
                 if (!this.tabIsEnter) {
                     return;
@@ -769,6 +781,8 @@ export class Typeahead<ItemType extends string | object> {
             e.preventDefault();
             this.select(e);
         }
+        this.suppressKeyUpAfterMacCtrlNavigation =
+            keydown_util.get_mac_ctrl_navigation_key(e) !== undefined;
         this.suppressKeyPressRepeat = !["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(
             e.key,
         );
@@ -785,14 +799,23 @@ export class Typeahead<ItemType extends string | object> {
 
     keyup(e: JQuery.KeyUpEvent): void {
         this.mouse_moved_since_typeahead = false;
+        const key = get_typeahead_key(e);
+        const suppressMacCtrlNavigationKeyUp =
+            this.suppressKeyUpAfterMacCtrlNavigation &&
+            (["ArrowDown", "ArrowUp"].includes(key) || is_ctrl_navigation_letter(e));
         // NOTE: Ideally we can ignore meta keyup calls here but
         // it's better to just trigger the lookup call to update the list in case
         // it did modify the query. For example, `Command + delete` on Mac
         // doesn't trigger a keyup event but when `Command` is released, it
         // triggers a keyup event which correctly updates the list.
-        switch (e.key) {
+        switch (key) {
             case "ArrowDown":
             case "ArrowUp":
+                this.suppressKeyUpAfterMacCtrlNavigation = false;
+                break;
+            case "Control":
+                // Ctrl itself does not change the query. Ignoring this keyup
+                // avoids re-rendering after macOS Ctrl-N/Ctrl-P navigation.
                 break;
 
             case "Tab":
@@ -845,6 +868,10 @@ export class Typeahead<ItemType extends string | object> {
                 if (e.key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
+                }
+                if (suppressMacCtrlNavigationKeyUp) {
+                    this.suppressKeyUpAfterMacCtrlNavigation = false;
+                    break;
                 }
                 this.lookup(false);
         }
