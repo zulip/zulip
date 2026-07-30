@@ -227,6 +227,25 @@ export function rewire_get_highlighted_message_ids(
     get_highlighted_message_ids = value;
 }
 
+// Classification of the current DOM text selection, for quoting purposes.
+type HighlightedSelection =
+    | {type: "none"}
+    | {type: "single_message"; message_id: number}
+    | {type: "multi_message"; message_ids: number[]};
+
+function get_highlighted_selection(): HighlightedSelection {
+    const message_ids = get_highlighted_message_ids();
+    if (message_ids === undefined || message_ids.length === 0) {
+        return {type: "none"};
+    }
+    if (message_ids.length === 1) {
+        const message_id = message_ids[0];
+        assert(message_id !== undefined);
+        return {type: "single_message", message_id};
+    }
+    return {type: "multi_message", message_ids};
+}
+
 function get_quote_target_for_single_message(opts: {
     message_id?: number;
     quote_content?: string | undefined;
@@ -532,15 +551,19 @@ export function quote_messages(opts: QuoteMessageOpts): void {
         quote_single_message(opts);
         return;
     }
-    const highlighted_message_ids = get_highlighted_message_ids();
-    if (highlighted_message_ids === undefined || highlighted_message_ids.length === 0) {
-        quote_single_message(opts);
-    } else if (highlighted_message_ids.length === 1) {
-        opts.highlighted_message_ids = highlighted_message_ids;
-        quote_single_message(opts);
-    } else {
-        opts.highlighted_message_ids = highlighted_message_ids;
-        quote_multiple_messages(opts);
+    const selection = get_highlighted_selection();
+    switch (selection.type) {
+        case "none":
+            quote_single_message(opts);
+            return;
+        case "single_message":
+            opts.highlighted_message_ids = [selection.message_id];
+            quote_single_message(opts);
+            return;
+        case "multi_message":
+            opts.highlighted_message_ids = selection.message_ids;
+            quote_multiple_messages(opts);
+            return;
     }
 }
 
