@@ -730,8 +730,8 @@ class LicenseLedgerTest(StripeTestCase):
         self.assertEqual(ledger_entry.plan, plan)
         self.assertTrue(ledger_entry.is_renewal)
         self.assertEqual(ledger_entry.event_time, self.next_year)
-        self.assertEqual(ledger_entry.licenses, self.seat_count)
-        self.assertEqual(ledger_entry.licenses_at_next_renewal, self.seat_count)
+        self.assertEqual(ledger_entry.workplace_licenses, self.seat_count)
+        self.assertEqual(ledger_entry.workplace_licenses_at_next_renewal, self.seat_count)
         # Plan needs to renew, but we already added the plan_renewal ledger entry
         billing_session.make_end_of_cycle_updates_if_needed(
             plan, self.next_year + timedelta(days=1)
@@ -804,7 +804,10 @@ class LicenseLedgerTest(StripeTestCase):
 
         ledger_entries = list(
             LicenseLedger.objects.values_list(
-                "is_renewal", "event_time", "licenses", "licenses_at_next_renewal"
+                "is_renewal",
+                "event_time",
+                "workplace_licenses",
+                "workplace_licenses_at_next_renewal",
             ).order_by("id")
         )
         self.assertEqual(
@@ -873,7 +876,10 @@ class LicenseLedgerTest(StripeTestCase):
 
         ledger_entries = list(
             LicenseLedger.objects.values_list(
-                "is_renewal", "event_time", "licenses", "licenses_at_next_renewal"
+                "is_renewal",
+                "event_time",
+                "workplace_licenses",
+                "workplace_licenses_at_next_renewal",
             ).order_by("id")
         )
 
@@ -917,7 +923,7 @@ class LicenseLedgerTest(StripeTestCase):
         self.set_user_role(guest, UserProfile.ROLE_MODERATOR)
         ledger_entries = list(
             LicenseLedger.objects.values_list(
-                "is_renewal", "licenses", "licenses_at_next_renewal"
+                "is_renewal", "workplace_licenses", "workplace_licenses_at_next_renewal"
             ).order_by("id")
         )
         self.assertEqual(
@@ -1411,8 +1417,8 @@ class TestTestClasses(ZulipTestCase):
 
         ledger.refresh_from_db()
         self.assertEqual(ledger.plan, plan)
-        self.assertEqual(ledger.licenses, 50)
-        self.assertEqual(ledger.licenses_at_next_renewal, 60)
+        self.assertEqual(ledger.workplace_licenses, 50)
+        self.assertEqual(ledger.workplace_licenses_at_next_renewal, 60)
 
         realm.refresh_from_db()
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
@@ -1432,8 +1438,8 @@ class TestTestClasses(ZulipTestCase):
 
         ledger.refresh_from_db()
         self.assertEqual(ledger.plan, plan)
-        self.assertEqual(ledger.licenses, 20)
-        self.assertEqual(ledger.licenses_at_next_renewal, 30)
+        self.assertEqual(ledger.workplace_licenses, 20)
+        self.assertEqual(ledger.workplace_licenses_at_next_renewal, 30)
 
         realm.refresh_from_db()
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)

@@ -1054,6 +1054,6 @@ class StripeTestCase(ZulipTestCase):
     ) -> LicenseLedger:
         ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
         assert ledger_entry is not None
-        self.assertEqual(ledger_entry.licenses, licenses)
-        self.assertEqual(ledger_entry.licenses_at_next_renewal, licenses_at_next_renewal)
+        self.assertEqual(ledger_entry.workplace_licenses, licenses)
+        self.assertEqual(ledger_entry.workplace_licenses_at_next_renewal, licenses_at_next_renewal)
         return ledger_entry
