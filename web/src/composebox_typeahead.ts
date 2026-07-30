@@ -981,6 +981,7 @@ const ALLOWED_MARKDOWN_FEATURES = {
 export function get_candidates(
     query: string,
     input_element: TypeaheadInputElement,
+    typeahead_instance: Typeahead<TypeaheadSuggestion>,
 ): TypeaheadSuggestion[] {
     const split = split_at_cursor(query, input_element.$element);
     let current_token: string | boolean = tokenize_compose_str(split[0]);
@@ -1009,7 +1010,7 @@ export function get_candidates(
         if (
             current_token.length === 3 &&
             !compose_ui.code_formatting_button_triggered &&
-            !compose_ui.compose_textarea_typeahead?.shown
+            !typeahead_instance.shown
         ) {
             return [];
         }
@@ -1703,7 +1704,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
         type: "textarea",
     };
 
-    compose_ui.set_compose_textarea_typeahead(
+    compose_ui.maybe_set_compose_textarea_typeahead(
         new Typeahead(bootstrap_typeahead_input, {
             items: max_num_items,
             dropup: true,

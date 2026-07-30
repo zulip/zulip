@@ -28,7 +28,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
     },
     cursor_inside_code_block: () => false,
     set_code_formatting_button_triggered: noop,
-    set_compose_textarea_typeahead: noop,
+    maybe_set_compose_textarea_typeahead: noop,
 });
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
@@ -2287,7 +2287,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
         override_rewire(ct, "split_at_cursor", () => [input, rest]);
-        const values = ct.get_candidates(input, input_element);
+        const values = ct.get_candidates(input, input_element, {shown: false});
         return values;
     }
 
@@ -2669,6 +2669,12 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test ```a", []);
     assert_typeahead_equals("test\n```", []);
     assert_typeahead_equals("``c", []);
+    // But if the typeahead is already open (e.g. the user typed ```py
+    // and then deleted the "py"), a bare ``` keeps it open.
+    override_rewire(ct, "split_at_cursor", () => ["```", ""]);
+    const shown_typeahead_values = ct.get_candidates("```", input_element, {shown: true});
+    assert.ok(shown_typeahead_values.length > 0);
+    assert.equal(shown_typeahead_values[0].type, "syntax");
     // Languages filtered by a single letter is a very long list.
     // The typeahead displays languages sorted by popularity, so to
     // avoid typing out all of them here we'll just test that the
