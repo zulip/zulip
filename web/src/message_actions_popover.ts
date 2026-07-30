@@ -27,13 +27,51 @@ import {the} from "./util.ts";
 
 let message_actions_popover_keyboard_toggle = false;
 
-// The text selected within the message whose ⋮ button was last pressed,
+// What the message whose ⋮ button was last pressed should quote or forward,
 // recorded on mousedown because the selection does not survive the click.
-let quote_content_at_button_mousedown:
-    {message_id: number; quote_content: string | undefined} | undefined;
+let quote_menu_selection_at_button_mousedown:
+    {message_id: number; quote_menu_selection: compose_reply.QuoteMenuSelection} | undefined;
+
+// What each open menu was rendered to quote or forward. Keyed by instance so
+// that hiding one menu cannot disturb another that has since been opened.
+const quote_menu_selection_by_instance = new WeakMap<
+    tippy.Instance,
+    compose_reply.QuoteMenuSelection
+>();
 
 function get_action_menu_menu_items(): JQuery {
     return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
+}
+
+function quote_from_menu(
+    message_id: number,
+    quote_menu_selection: compose_reply.QuoteMenuSelection,
+    forward_message: boolean,
+): void {
+    switch (quote_menu_selection.kind) {
+        case "full_message":
+            compose_reply.quote_messages({
+                trigger: "popover respond",
+                message_id,
+                forward_message,
+            });
+            return;
+        case "message_selection":
+            compose_reply.quote_messages({
+                trigger: "popover respond",
+                message_id,
+                quote_content: quote_menu_selection.quote_content,
+                forward_message,
+            });
+            return;
+        case "selected_messages":
+            compose_reply.quote_messages({
+                trigger: "popover respond",
+                highlighted_message_ids: quote_menu_selection.message_ids,
+                forward_message,
+            });
+            return;
+    }
 }
 
 function focus_first_action_popover_item(): void {
@@ -70,7 +108,7 @@ export function toggle_message_actions_menu(message: Message): boolean {
     message_actions_popover_keyboard_toggle = true;
     // This synthetic click has no mousedown of its own, so make sure it
     // cannot consume a stale selection left behind by an earlier ⋮ press.
-    quote_content_at_button_mousedown = undefined;
+    quote_menu_selection_at_button_mousedown = undefined;
     $popover_reference.trigger("click");
     return true;
 }
@@ -94,9 +132,9 @@ export function initialize({
                 return;
             }
             const message_id = rows.id($row);
-            quote_content_at_button_mousedown = {
+            quote_menu_selection_at_button_mousedown = {
                 message_id,
-                quote_content: compose_reply.get_selection_within_message(message_id),
+                quote_menu_selection: compose_reply.get_quote_menu_selection(message_id),
             };
         },
     );
@@ -120,22 +158,27 @@ export function initialize({
             popover_menus.on_show_prep(instance);
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
-            const args = popover_menus_data.get_actions_popover_content_context(message_id);
+            // Mouse opens rely on what we read on mousedown; keyboard opens
+            // have no mousedown, but do still have the live selection.
+            const at_mousedown = quote_menu_selection_at_button_mousedown;
+            quote_menu_selection_at_button_mousedown = undefined;
+            const quote_menu_selection =
+                at_mousedown?.message_id === message_id
+                    ? at_mousedown.quote_menu_selection
+                    : compose_reply.get_quote_menu_selection(message_id);
+            quote_menu_selection_by_instance.set(instance, quote_menu_selection);
+            const args = popover_menus_data.get_actions_popover_content_context(
+                message_id,
+                quote_menu_selection,
+            );
             instance.setContent(parse_html(render_message_actions_popover(args)));
             $row.addClass("has_actions_popover");
         },
         onMount(instance) {
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
-            // If the user has selected text within this message, quote only
-            // that. Mouse opens rely on what we read on mousedown; keyboard
-            // opens have no mousedown, but do still have the live selection.
-            const at_mousedown = quote_content_at_button_mousedown;
-            quote_content_at_button_mousedown = undefined;
-            const quote_content =
-                at_mousedown?.message_id === message_id
-                    ? at_mousedown.quote_content
-                    : compose_reply.get_selection_within_message(message_id);
+            const quote_menu_selection = quote_menu_selection_by_instance.get(instance);
+            assert(quote_menu_selection !== undefined);
             if (message_actions_popover_keyboard_toggle) {
                 focus_first_action_popover_item();
                 message_actions_popover_keyboard_toggle = false;
@@ -146,23 +189,14 @@ export function initialize({
             // instance.hide gets called.
             const $popper = $(instance.popper);
             $popper.one("click", ".respond_button", (e) => {
-                compose_reply.quote_messages({
-                    trigger: "popover respond",
-                    message_id,
-                    quote_content,
-                });
+                quote_from_menu(message_id, quote_menu_selection, false);
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".forward_button", (e) => {
-                compose_reply.quote_messages({
-                    trigger: "popover respond",
-                    message_id,
-                    quote_content,
-                    forward_message: true,
-                });
+                quote_from_menu(message_id, quote_menu_selection, true);
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
