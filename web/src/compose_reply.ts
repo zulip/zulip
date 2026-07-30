@@ -246,17 +246,29 @@ function get_highlighted_selection(): HighlightedSelection {
     return {type: "multi_message", message_ids};
 }
 
-// Returns the selected text within `message_id`, if the entire current
-// selection is inside that message, and undefined otherwise. Selecting
-// only a message's sender name or timestamp yields no quotable content,
-// which we report the same way as having no selection at all.
-export function get_selection_within_message(message_id: number): string | undefined {
+// What the message actions menu opened on `message_id` should quote or
+// forward, given the text selection at the time the menu was opened.
+export type QuoteMenuSelection =
+    | {kind: "full_message"}
+    | {kind: "message_selection"; quote_content: string}
+    | {kind: "selected_messages"; message_ids: number[]};
+
+export function get_quote_menu_selection(message_id: number): QuoteMenuSelection {
     const selection = get_highlighted_selection();
-    if (selection.type !== "single_message" || selection.message_id !== message_id) {
-        return undefined;
+    if (selection.type === "multi_message" && selection.message_ids.includes(message_id)) {
+        return {kind: "selected_messages", message_ids: selection.message_ids};
     }
-    const content = get_message_selection();
-    return content.trim() === "" ? undefined : content;
+    if (selection.type === "single_message" && selection.message_id === message_id) {
+        const quote_content = get_message_selection();
+        // Selecting only a sender name or timestamp lands outside
+        // `.message_content`, leaving nothing quotable to offer.
+        if (quote_content.trim() !== "") {
+            return {kind: "message_selection", quote_content};
+        }
+    }
+    // With no selection, or one that does not cover this message, the menu
+    // acts on the message it was opened from.
+    return {kind: "full_message"};
 }
 
 function get_quote_target_for_single_message(opts: {
@@ -560,6 +572,13 @@ function replace_quoting_placeholder_with(info: {
 }
 
 export function quote_messages(opts: QuoteMessageOpts): void {
+    // The message actions menu passes the ids it recorded when the menu was
+    // opened, since the selection they came from no longer exists.
+    const selected_message_ids = opts.highlighted_message_ids;
+    if (selected_message_ids !== undefined && selected_message_ids.length > 1) {
+        quote_multiple_messages(opts);
+        return;
+    }
     if (opts.message_id) {
         quote_single_message(opts);
         return;

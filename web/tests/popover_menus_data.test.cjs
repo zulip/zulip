@@ -240,7 +240,9 @@ test("my_message_all_actions", ({override}) => {
     ];
 
     add_message_with_view(list, messages);
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+    });
     assert.equal(response.message_id, 1);
     assert.equal(response.stream_id, 1);
     assert.equal(response.editability_menu_item, "translated: Edit message");
@@ -256,6 +258,24 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.should_display_quote_message, true);
     assert.equal(response.quote_message_menu_item, "translated: Quote message");
     assert.equal(response.forward_message_menu_item, "translated: Forward message");
+
+    // The Quote/Forward labels spell out what a text selection will act on.
+    const selection_response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "message_selection",
+        quote_content: "selected text",
+    });
+    assert.equal(selection_response.quote_message_menu_item, "translated: Quote selection");
+    assert.equal(selection_response.forward_message_menu_item, "translated: Forward selection");
+
+    const messages_response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "selected_messages",
+        message_ids: [1, 2],
+    });
+    assert.equal(messages_response.quote_message_menu_item, "translated: Quote selected messages");
+    assert.equal(
+        messages_response.forward_message_menu_item,
+        "translated: Forward selected messages",
+    );
 });
 
 test("not_my_message_view_actions", ({override}) => {
@@ -290,7 +310,9 @@ test("not_my_message_view_actions", ({override}) => {
 
     add_message_with_view(list, messages);
 
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+    });
 
     assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
@@ -334,7 +356,9 @@ test("not_my_message_view_source_and_move", ({override}) => {
 
     add_message_with_view(list, messages);
 
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+    });
     assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
     assert.equal(response.move_message_menu_item, "translated: Move messages");
