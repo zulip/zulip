@@ -474,9 +474,9 @@ def send_future_email(
                 assert len(to_emails) == 1
                 email.address = parseaddr(to_emails[0])[1]
                 email.save()
-        except Exception as e:
+        except Exception:
             email.delete()
-            raise e
+            raise
 
 
 def send_email_to_admins(

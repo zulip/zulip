@@ -412,7 +412,7 @@ def webhook_view(
                     # the sender's fault, so tell the owner
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
 
-                raise err
+                raise
 
         # Store the event types registered for this webhook as an attribute, which can be access
         # later conveniently in zerver.lib.test_classes.WebhookTestCase.
@@ -828,7 +828,7 @@ def authenticated_rest_api_view(
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
                 if not webhook_client_name:
-                    raise err
+                    raise
 
                 if not isinstance(err, JsonableError):
                     # An unexpected exception of some form -- log it
@@ -840,7 +840,7 @@ def authenticated_rest_api_view(
                     err.webhook_name = webhook_client_name
                     log_exception_to_webhook_logger(request, err)
 
-                raise err
+                raise
 
         return _wrapped_func_arguments
 

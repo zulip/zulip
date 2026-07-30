@@ -1566,7 +1566,7 @@ def send_push_notifications(
         if is_test_notification:
             # Propagate the exception to the caller to notify the client
             # about the error while attempting to send test push notification.
-            raise e
+            raise
 
         return
 
