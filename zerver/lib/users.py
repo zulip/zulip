@@ -1110,7 +1110,8 @@ def get_users_for_api(
             realm, acting_user, user_ids
         )
 
-    if include_custom_profile_fields:
+    # Spectators must never receive custom profile field values.
+    if include_custom_profile_fields and acting_user is not None:
         base_query = CustomProfileFieldValue.objects.select_related("field")
         # TODO: Consider optimizing this query away with caching.
         if target_user is not None:
