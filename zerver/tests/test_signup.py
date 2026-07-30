@@ -2318,8 +2318,8 @@ class UserSignUpTest(ZulipTestCase):
                 expected_group_direct_message_user_ids,
             )
 
-        ledger.licenses_at_next_renewal = 50
-        ledger.save(update_fields=["licenses_at_next_renewal"])
+        ledger.workplace_licenses_at_next_renewal = 50
+        ledger.save(update_fields=["workplace_licenses_at_next_renewal"])
         with self.settings(BILLING_ENABLED=True):
             form = HomepageForm({"email": self.nonreg_email("test")}, realm=realm)
             self.assertIn(
@@ -2327,9 +2327,9 @@ class UserSignUpTest(ZulipTestCase):
                 form.errors["email"][0],
             )
 
-        ledger.licenses = 50
-        ledger.licenses_at_next_renewal = 5
-        ledger.save(update_fields=["licenses", "licenses_at_next_renewal"])
+        ledger.workplace_licenses = 50
+        ledger.workplace_licenses_at_next_renewal = 5
+        ledger.save(update_fields=["workplace_licenses", "workplace_licenses_at_next_renewal"])
         with self.settings(BILLING_ENABLED=True):
             form = HomepageForm({"email": self.nonreg_email("test")}, realm=realm)
             self.assertIn(
@@ -2347,8 +2347,8 @@ class UserSignUpTest(ZulipTestCase):
                 expected_group_direct_message_user_ids,
             )
 
-        ledger.licenses_at_next_renewal = 50
-        ledger.save(update_fields=["licenses_at_next_renewal"])
+        ledger.workplace_licenses_at_next_renewal = 50
+        ledger.save(update_fields=["workplace_licenses_at_next_renewal"])
         with self.settings(BILLING_ENABLED=True):
             form = HomepageForm({"email": self.nonreg_email("test")}, realm=realm)
             self.assertEqual(form.errors, {})

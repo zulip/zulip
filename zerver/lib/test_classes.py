@@ -1988,8 +1988,8 @@ Output:
             plan=plan,
             is_renewal=True,
             event_time=timezone_now(),
-            licenses=licenses,
-            licenses_at_next_renewal=licenses_at_next_renewal,
+            workplace_licenses=licenses,
+            workplace_licenses_at_next_renewal=licenses_at_next_renewal,
         )
         realm.plan_type = Realm.PLAN_TYPE_STANDARD
         realm.save(update_fields=["plan_type"])
