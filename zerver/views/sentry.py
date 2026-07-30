@@ -87,9 +87,9 @@ def sentry_tunnel(
         sentry_request(url, updated_body)
     except CircuitBreakerError:
         logger.warning("Dropped a client exception due to circuit-breaking")
-    except RequestException as e:
+    except RequestException:
         # This logger has been configured, above, to not report to Sentry
-        logger.exception(e)
+        logger.exception("Error while reporting to Sentry")
     return HttpResponse(status=200)
 
 

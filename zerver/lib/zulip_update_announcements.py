@@ -809,8 +809,8 @@ def send_zulip_update_announcements(skip_delay: bool, progress: bool = False) ->
     for i, realm in enumerate(realms, start=1):
         try:
             send_zulip_update_announcements_to_realm(realm, skip_delay)
-        except Exception as e:  # nocoverage
-            logging.exception(e)
+        except Exception:  # nocoverage
+            logging.exception("Error while sending update announcements")
         finally:
             if progress and i % 50 == 0:  # nocoverage
                 print(f"Processed {i}/{len(realms)} realms...")

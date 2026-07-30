@@ -189,7 +189,7 @@ def import_slack_data(event: dict[str, Any]) -> None:
             preregistration_realm.save()
             logger.info("(%s) All done!", string_id)
     except Exception as e:
-        logger.exception(e)
+        logger.exception("Error during Slack import")
         try:
             preregistration_realm.created_realm = None
             preregistration_realm.data_import_metadata["is_import_work_queued"] = False

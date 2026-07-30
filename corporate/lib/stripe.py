@@ -6012,7 +6012,7 @@ def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
                     stack_info=True,
                 )
             else:
-                billing_logger.exception(e, stack_info=True)  # nocoverage
+                billing_logger.exception("Error while invoicing", stack_info=True)  # nocoverage
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:
