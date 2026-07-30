@@ -25,21 +25,27 @@ class LicenseLedger(models.Model):
 
     event_time = models.DateTimeField()
 
-    # The number of licenses ("seats") purchased by the organization at the time of ledger
-    # entry creation. Normally, to add a user the organization needs at least one spare license.
-    # Once a license is purchased, it is valid till the end of the billing period, irrespective
-    # of whether the license is used or not. So the value of licenses will never decrease for
-    # subsequent LicenseLedger entries in the same billing period.
-    licenses = models.IntegerField()
+    # The number of workplace user licenses ("seats") purchased by the organization at the time
+    # of ledger entry creation. Normally, to add a user the organization needs at least one spare
+    # license. Once a license is purchased, it is valid till the end of the billing period,
+    # irrespective of whether the license is used or not. So the value of workplace_licenses will
+    # never decrease for subsequent LicenseLedger entries in the same billing period.
+    #
+    # The database columns for these fields are still named "licenses" and
+    # "licenses_at_next_renewal". Renaming them would break the previous release's code, which
+    # still queries the old names, during the window where it runs against the migrated database.
+    workplace_licenses = models.IntegerField(db_column="licenses")
 
-    # The number of licenses the organization needs in the next billing cycle. The value of
-    # licenses_at_next_renewal can increase or decrease for subsequent LicenseLedger entries in
-    # the same billing period. For plans on automatic license management this value is usually
-    # equal to the number of activated users in the organization.
-    licenses_at_next_renewal = models.IntegerField(null=True)
+    # The number of workplace user licenses the organization needs in the next billing cycle. The
+    # value of workplace_licenses_at_next_renewal can increase or decrease for subsequent
+    # LicenseLedger entries in the same billing period. For plans on automatic license management
+    # this value is usually equal to the number of activated workplace users in the organization.
+    workplace_licenses_at_next_renewal = models.IntegerField(
+        null=True, db_column="licenses_at_next_renewal"
+    )
 
     @override
     def __str__(self) -> str:
         ledger_type = "renewal" if self.is_renewal else "update"
         ledger_time = self.event_time.replace(tzinfo=None).isoformat(" ", "minutes")
-        return f"License {ledger_type}, {self.licenses} purchased, {self.licenses_at_next_renewal} next cycle, {ledger_time} (id={self.id})"
+        return f"License {ledger_type}, {self.workplace_licenses} purchased, {self.workplace_licenses_at_next_renewal} next cycle, {ledger_time} (id={self.id})"
