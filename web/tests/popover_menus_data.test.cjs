@@ -254,6 +254,8 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.should_display_delete_option, true);
     assert.equal(response.should_display_read_receipts_option, true);
     assert.equal(response.should_display_quote_message, true);
+    assert.equal(response.quote_message_menu_item, "translated: Quote message");
+    assert.equal(response.forward_message_menu_item, "translated: Forward message");
 });
 
 test("not_my_message_view_actions", ({override}) => {
