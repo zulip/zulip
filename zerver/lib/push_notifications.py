@@ -185,6 +185,11 @@ def get_apns_context() -> APNsContext | None:
     if not has_apns_credentials():  # nocoverage
         return None
 
+    key: str | None = None
+    if settings.APNS_TOKEN_KEY_FILE:  # nocoverage
+        with open(settings.APNS_TOKEN_KEY_FILE) as f:
+            key = f.read()
+
     # NB if called concurrently, this will make excess connections.
     # That's a little sloppy, but harmless unless a server gets
     # hammered with a ton of these all at once after startup.
@@ -200,10 +205,6 @@ def get_apns_context() -> APNsContext | None:
         pass  # nocoverage
 
     async def make_apns() -> aioapns.APNs:
-        key: str | None = None
-        if settings.APNS_TOKEN_KEY_FILE:  # nocoverage
-            with open(settings.APNS_TOKEN_KEY_FILE) as f:
-                key = f.read()
         return aioapns.APNs(
             client_cert=settings.APNS_CERT_FILE,
             key=key,
