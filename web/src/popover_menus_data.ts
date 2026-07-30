@@ -45,6 +45,7 @@ type ActionPopoverContext = {
     should_display_quote_message: boolean;
     quote_message_menu_item: string;
     forward_message_menu_item: string;
+    show_quote_and_forward_hotkey_hints: boolean;
     conversation_time_url: string;
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
@@ -252,6 +253,9 @@ export function get_actions_popover_content_context(
     const {quote_message_menu_item, forward_message_menu_item} = get_quote_menu_labels(
         quote_menu_selection.kind,
     );
+    // Showing a hotkey next to a menu item that does something else would be
+    // a lie, so we drop the hint rather than the item.
+    const show_quote_and_forward_hotkey_hints = quote_menu_selection.hotkeys_agree;
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
@@ -302,6 +306,7 @@ export function get_actions_popover_content_context(
         should_display_quote_message,
         quote_message_menu_item,
         forward_message_menu_item,
+        show_quote_and_forward_hotkey_hints,
         should_display_message_report_option: should_display_message_report_option(),
     };
 }

@@ -66,6 +66,7 @@ run_test("t_tag", ({mock_template}) => {
         should_display_quote_message: true,
         quote_message_menu_item: "Citer le message",
         forward_message_menu_item: "Transférer le message",
+        show_quote_and_forward_hotkey_hints: true,
         editability_menu_item: "Edit message",
         conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/channel/101-devel/topic/testing/near/99",

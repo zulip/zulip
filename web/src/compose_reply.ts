@@ -248,27 +248,35 @@ function get_highlighted_selection(): HighlightedSelection {
 
 // What the message actions menu opened on `message_id` should quote or
 // forward, given the text selection at the time the menu was opened.
-export type QuoteMenuSelection =
+export type QuoteMenuSelection = {
+    // Whether > and < would do the same thing as the menu item. They act on
+    // the selection wherever it is, so they disagree with a menu opened on a
+    // message the selection does not cover.
+    hotkeys_agree: boolean;
+} & (
     | {kind: "full_message"}
     | {kind: "message_selection"; quote_content: string}
-    | {kind: "selected_messages"; message_ids: number[]};
+    | {kind: "selected_messages"; message_ids: number[]}
+);
 
 export function get_quote_menu_selection(message_id: number): QuoteMenuSelection {
     const selection = get_highlighted_selection();
     if (selection.type === "multi_message" && selection.message_ids.includes(message_id)) {
-        return {kind: "selected_messages", message_ids: selection.message_ids};
+        return {kind: "selected_messages", message_ids: selection.message_ids, hotkeys_agree: true};
     }
     if (selection.type === "single_message" && selection.message_id === message_id) {
         const quote_content = get_message_selection();
         // Selecting only a sender name or timestamp lands outside
-        // `.message_content`, leaving nothing quotable to offer.
+        // `.message_content`, leaving nothing quotable to offer. The hotkeys
+        // fall back to the whole message too, so they still agree.
         if (quote_content.trim() !== "") {
-            return {kind: "message_selection", quote_content};
+            return {kind: "message_selection", quote_content, hotkeys_agree: true};
         }
+        return {kind: "full_message", hotkeys_agree: true};
     }
     // With no selection, or one that does not cover this message, the menu
     // acts on the message it was opened from.
-    return {kind: "full_message"};
+    return {kind: "full_message", hotkeys_agree: selection.type === "none"};
 }
 
 function get_quote_target_for_single_message(opts: {
