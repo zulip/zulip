@@ -246,6 +246,19 @@ function get_highlighted_selection(): HighlightedSelection {
     return {type: "multi_message", message_ids};
 }
 
+// Returns the selected text within `message_id`, if the entire current
+// selection is inside that message, and undefined otherwise. Selecting
+// only a message's sender name or timestamp yields no quotable content,
+// which we report the same way as having no selection at all.
+export function get_selection_within_message(message_id: number): string | undefined {
+    const selection = get_highlighted_selection();
+    if (selection.type !== "single_message" || selection.message_id !== message_id) {
+        return undefined;
+    }
+    const content = get_message_selection();
+    return content.trim() === "" ? undefined : content;
+}
+
 function get_quote_target_for_single_message(opts: {
     message_id?: number;
     quote_content?: string | undefined;
