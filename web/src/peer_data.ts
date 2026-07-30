@@ -56,7 +56,18 @@ const pending_subscriber_requests = new Map<
     }
 >();
 // Requests for subscriptions for a user
-const pending_subscription_requests = new Map<number, Promise<void>>();
+const pending_subscription_requests = new Map<
+    number,
+    {
+        subscriptions_promise: Promise<void>;
+        // Channels the user was removed from while the request was in
+        // flight. The server may have built its response before those
+        // removals, so we skip these channels instead of re-adding the
+        // user from stale data. We don't need to track additions: the
+        // event already added the user, and re-adding them is harmless.
+        stream_ids_removed_during_fetch: Set<number>;
+    }
+>();
 
 export function clear_for_testing(): void {
     stream_subscribers.clear();
@@ -415,6 +426,7 @@ export function remove_subscriber(stream_id: number, user_id: number): void {
     const subscribers = get_loaded_subscriber_subset(stream_id);
     decrement_subscriber_count(subscribers, stream_id, user_id);
     subscribers.delete(user_id);
+    pending_subscription_requests.get(user_id)?.stream_ids_removed_during_fetch.add(stream_id);
 }
 
 export function bulk_add_subscribers({
@@ -464,6 +476,9 @@ export function bulk_remove_subscribers({
                 decrement_subscriber_count(subscribers, sub.stream_id, user_id);
             }
             subscribers.delete(user_id);
+            pending_subscription_requests
+                .get(user_id)
+                ?.stream_ids_removed_during_fetch.add(stream_id);
         }
 
         if (pending_subscriber_requests.has(stream_id)) {
@@ -537,7 +552,16 @@ async function fetch_subscriptions_for_user_from_server(user_id: number): Promis
             success(raw_data) {
                 const subscriptions =
                     fetch_user_subscriptions_response_schema.parse(raw_data).subscribed_channel_ids;
+                const pending_request = pending_subscription_requests.get(user_id)!;
                 for (const stream_id of subscriptions) {
+                    if (pending_request.stream_ids_removed_during_fetch.has(stream_id)) {
+                        continue;
+                    }
+                    // We already have the exact subscriber set for this
+                    // stream, so a stale response must not re-add the user.
+                    if (fetched_stream_ids.has(stream_id)) {
+                        continue;
+                    }
                     add_subscriber(stream_id, user_id);
                 }
                 fetched_user_subscriptions.add(user_id);
@@ -567,7 +591,7 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
     }
 
     if (pending_subscription_requests.has(user_id)) {
-        return pending_subscription_requests.get(user_id)!;
+        return pending_subscription_requests.get(user_id)!.subscriptions_promise;
     }
 
     const subscriptions_promise = (async () => {
@@ -577,6 +601,8 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
                 blueslip.warn("Failure fetching user's subscribed channels. Retrying.", {
                     user_id,
                 });
+                // The retry's response will already reflect these removals.
+                pending_subscription_requests.get(user_id)!.stream_ids_removed_during_fetch.clear();
             }
             const result = await fetch_subscriptions_for_user_from_server(user_id);
             // Bad request, so just give up here.
@@ -604,7 +630,10 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
         }
     })();
 
-    pending_subscription_requests.set(user_id, subscriptions_promise);
+    pending_subscription_requests.set(user_id, {
+        subscriptions_promise,
+        stream_ids_removed_during_fetch: new Set(),
+    });
     return subscriptions_promise;
 }
 
