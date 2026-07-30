@@ -314,7 +314,7 @@ def get_plan_data_for_support_view(
             plan_data.licenses = None
             plan_data.annual_recurring_revenue = 0
         else:
-            plan_data.licenses = last_ledger_entry.licenses
+            plan_data.licenses = last_ledger_entry.workplace_licenses
             plan_data.annual_recurring_revenue = (
                 billing_session.get_annual_recurring_revenue_for_support_data(
                     plan_data.current_plan, last_ledger_entry

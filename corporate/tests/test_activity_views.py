@@ -159,8 +159,8 @@ class ActivityTest(ZulipTestCase):
             next_invoice_date=add_months(timezone_now(), 12),
         )
         LicenseLedger.objects.create(
-            licenses=10,
-            licenses_at_next_renewal=10,
+            workplace_licenses=10,
+            workplace_licenses_at_next_renewal=10,
             event_time=timezone_now(),
             is_renewal=True,
             plan=plan,
@@ -270,8 +270,8 @@ class ActivityTest(ZulipTestCase):
                     next_invoice_date=add_months(timezone_now(), 12),
                 )
             LicenseLedger.objects.create(
-                licenses=10,
-                licenses_at_next_renewal=10,
+                workplace_licenses=10,
+                workplace_licenses_at_next_renewal=10,
                 event_time=timezone_now(),
                 is_renewal=True,
                 plan=plan,

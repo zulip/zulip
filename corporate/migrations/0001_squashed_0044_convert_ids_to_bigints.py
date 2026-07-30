@@ -226,8 +226,11 @@ class Migration(migrations.Migration):
                 ),
                 ("is_renewal", models.BooleanField(default=False)),
                 ("event_time", models.DateTimeField()),
-                ("licenses", models.IntegerField()),
-                ("licenses_at_next_renewal", models.IntegerField(null=True)),
+                ("workplace_licenses", models.IntegerField(db_column="licenses")),
+                (
+                    "workplace_licenses_at_next_renewal",
+                    models.IntegerField(db_column="licenses_at_next_renewal", null=True),
+                ),
                 (
                     "plan",
                     models.ForeignKey(
