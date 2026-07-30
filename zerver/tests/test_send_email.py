@@ -411,18 +411,22 @@ class TestSendEmail(ZulipTestCase):
         self.assertEqual(mail.extra_headers["From"], f"{from_name} <{FromAddress.NOREPLY}>")
 
         # We test the cases that should raise an EmailNotDeliveredError
-        errors = {
-            f"Unknown error sending password_reset email to {mail.to}": [0],
-            f"Error sending password_reset email to {mail.to}": [SMTPException()],
-            f"Error sending password_reset email to {mail.to}: {{'{address}': (550, b'User unknown')}}": [
-                SMTPRecipientsRefused(recipients={address: (550, b"User unknown")})
-            ],
-            f"Error sending password_reset email to {mail.to} with error code 242: From field too long": [
-                SMTPDataError(242, "From field too long.")
-            ],
-        }
+        errors = [
+            (f"Unknown error sending password_reset email to {mail.to}", None, [0]),
+            (f"Error sending password_reset email to {mail.to}", "", [SMTPException()]),
+            (
+                f"Error sending password_reset email to {mail.to}",
+                f"{{{address!r}: (550, b'User unknown')}}",
+                [SMTPRecipientsRefused(recipients={address: (550, b"User unknown")})],
+            ),
+            (
+                f"Error sending password_reset email to {mail.to} with error code 242: From field too long.",
+                "(242, 'From field too long.')",
+                [SMTPDataError(242, "From field too long.")],
+            ),
+        ]
 
-        for message, side_effect in errors.items():
+        for message, exc_message, side_effect in errors:
             with mock.patch.object(EmailBackend, "send_messages", side_effect=side_effect):
                 with (
                     self.assertLogs(logger=logger) as info_log,
@@ -436,11 +440,16 @@ class TestSendEmail(ZulipTestCase):
                         language="en",
                     )
                 self.assert_length(info_log.records, 2)
+                self.assertEqual(info_log.records[0].levelname, "INFO")
                 self.assertEqual(
-                    info_log.output[0],
-                    f"INFO:{logger.name}:Sending password_reset email to {mail.to}",
+                    info_log.records[0].getMessage(), f"Sending password_reset email to {mail.to}"
                 )
-                self.assertTrue(info_log.output[1].startswith(f"ERROR:zulip.send_email:{message}"))
+                self.assertEqual(info_log.records[1].levelname, "ERROR")
+                self.assertEqual(info_log.records[1].getMessage(), message)
+                self.assertEqual(
+                    info_log.records[1].exc_info and str(info_log.records[1].exc_info[1]),
+                    exc_message,
+                )
 
     def test_send_email_config_error_logging(self) -> None:
         hamlet = self.example_user("hamlet")

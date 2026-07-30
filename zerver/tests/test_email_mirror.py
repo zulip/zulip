@@ -2107,11 +2107,14 @@ class TestEmailMirrorServer(ZulipTestCase):
             self.assertLogs("zerver.lib.email_mirror", "ERROR") as error_log,
         ):
             send_to_postmaster(email)
-            self.assert_length(error_log.output, 1)
+            self.assert_length(error_log.records, 1)
+            self.assertEqual(error_log.records[0].levelname, "ERROR")
             self.assertEqual(
-                error_log.output[0].splitlines()[0],
-                "ERROR:zerver.lib.email_mirror:Error sending bounce email to ['desdemona+admin@zulip.com']: moose",
+                error_log.records[0].getMessage(),
+                "Error sending bounce email to ['desdemona+admin@zulip.com']",
             )
+            assert error_log.records[0].exc_info is not None
+            self.assertEqual(str(error_log.records[0].exc_info[1]), "moose")
 
         with (
             mock.patch.object(

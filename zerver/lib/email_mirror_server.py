@@ -64,8 +64,8 @@ def send_to_postmaster(msg: email.message.Message) -> None:
             e.smtp_error,
             stack_info=True,
         )
-    except smtplib.SMTPException as e:
-        logger.exception("Error sending bounce email to %s: %s", mail.to, str(e), stack_info=True)
+    except smtplib.SMTPException:
+        logger.exception("Error sending bounce email to %s", mail.to, stack_info=True)
 
 
 class ZulipMessageHandler(MessageHandler):
