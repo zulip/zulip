@@ -1071,7 +1071,7 @@ def fix_subscriptions_is_user_active_column(
 
 def process_avatars(sanitized_record: SanitizedRecord) -> None:
     if not sanitized_record.safe_resolved_source_path.endswith(".original"):
-        return None
+        return
     user_profile = get_user_profile_by_id(sanitized_record.raw_record["user_profile_id"])
     if settings.LOCAL_AVATARS_DIR is not None:
         avatar_path = user_avatar_base_path_from_ids(

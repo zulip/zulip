@@ -4151,7 +4151,7 @@ class BillingSession(ABC):
         plan_tier = CustomerPlan.TIER_SELF_HOSTED_LEGACY
         if isinstance(self, RealmBillingSession):  # nocoverage
             # TODO implement a complimentary access plan/tier for Zulip Cloud.
-            return None
+            return
         customer = self.update_or_create_customer()
 
         complimentary_access_plan = self.create_customer_plan(
