@@ -15,6 +15,7 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import Confirmation
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
@@ -3891,6 +3892,38 @@ class GetProfileTest(ZulipTestCase):
             len(all_fetched_users),
             UserProfile.objects.filter(realm=hamlet.realm, is_bot=True).count(),
         )
+
+    def test_spectators_cannot_fetch_custom_profile_fields(self) -> None:
+        # Custom profile fields can hold personal information (phone
+        # numbers, birthdays, etc.), so spectators must never receive
+        # them, even if they pass include_custom_profile_fields=true.
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        phone_field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        sentinel_value = "spectator-must-not-see-this"
+        do_update_user_custom_profile_data_if_changed(
+            hamlet,
+            [{"id": phone_field.id, "value": sentinel_value}],
+            acting_user=None,
+            notify=False,
+        )
+
+        # A spectator passing the flag must not trigger the extra query
+        # for custom profile field values, and the response must not
+        # contain profile_data for any user.
+        with self.assert_database_query_count(4):
+            result = self.client_get("/json/users", {"include_custom_profile_fields": "true"})
+        self.assert_json_success(result)
+        self.assertNotIn(sentinel_value, result.content.decode())
+        for user in orjson.loads(result.content)["members"]:
+            self.assertNotIn("profile_data", user)
+
+        # Sanity check that authenticated users still receive the data,
+        # confirming the fix didn't break the intended behavior.
+        self.login("othello")
+        result = self.client_get("/json/users", {"include_custom_profile_fields": "true"})
+        self.assert_json_success(result)
+        self.assertIn(sentinel_value, result.content.decode())
 
 
 class DeleteUserTest(ZulipTestCase):
