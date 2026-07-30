@@ -529,7 +529,7 @@ def bulk_change_user_setting(
         assert isinstance(db_setting_value, str)
         event["language_name"] = get_language_name(db_setting_value)
 
-    transaction.on_commit(lambda: bulk_flush_users(user_profiles=user_profiles, realm=realm))
+    bulk_flush_users(user_profiles=user_profiles, realm=realm)
 
     user_ids = [u.id for u in user_profiles]
     send_event_on_commit(realm, event, user_ids)
