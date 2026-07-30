@@ -1370,7 +1370,7 @@ class BillingSession(ABC):
             if isinstance(e, stripe.CardError):
                 raise StripeCardError("card error", e.user_message)
             else:  # nocoverage
-                raise e
+                raise
 
         assert stripe_invoice.id is not None
         return stripe_invoice.id

@@ -149,7 +149,7 @@ def make_checker(base_model: type[BaseEvent]) -> Callable[[str, dict[str, object
         del event["id"]
         try:
             validate_with_model(event, base_model)
-        except Exception as e:  # nocoverage
+        except Exception:  # nocoverage
             print(f"""
 FAILURE:
 
@@ -170,7 +170,7 @@ Here is the event:
 """)
 
             PrettyPrinter(indent=4).pprint(event)
-            raise e
+            raise
 
     return f
 

@@ -95,9 +95,9 @@ def rate_limit_remote_server(
 
     try:
         RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
-    except RateLimitedError as e:
+    except RateLimitedError:
         logger.warning("Remote server %s exceeded rate limits on domain %s", remote_server, domain)
-        raise e
+        raise
 
 
 def validate_remote_server(
