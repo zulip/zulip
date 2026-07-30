@@ -80,7 +80,15 @@ export let compose_textarea_typeahead: Typeahead<TypeaheadSuggestion> | undefine
 let full_size_status = false; // true or false
 let expanded_status = false; // true or false
 
-export function set_compose_textarea_typeahead(typeahead: Typeahead<TypeaheadSuggestion>): void {
+export function maybe_set_compose_textarea_typeahead(
+    typeahead: Typeahead<TypeaheadSuggestion>,
+): void {
+    // initialize_compose_typeahead also creates the typeaheads for
+    // message-edit boxes; ignore those so that this variable always
+    // points at the main compose box's typeahead.
+    if (!typeahead.input_element.$element.is("textarea#compose-textarea")) {
+        return;
+    }
     compose_textarea_typeahead = typeahead;
 }
 

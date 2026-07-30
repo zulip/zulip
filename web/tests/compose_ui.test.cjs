@@ -1571,3 +1571,24 @@ run_test("handle_list_indent", ({override}) => {
         assert.equal($t[0].value, "  1. Item 1");
     }
 });
+
+run_test("maybe_set_compose_textarea_typeahead ignores edit box typeaheads", () => {
+    // First, set up the compose box's typeahead.
+    const $compose_textarea = $("textarea#compose-textarea");
+    $compose_textarea.set_matches("textarea#compose-textarea", true);
+    const compose_typeahead = {
+        input_element: {$element: $compose_textarea, type: "textarea"},
+    };
+    compose_ui.maybe_set_compose_textarea_typeahead(compose_typeahead);
+    assert.equal(compose_ui.compose_textarea_typeahead, compose_typeahead);
+
+    // A message-edit box's typeahead must not overwrite the compose
+    // box's typeahead.
+    const $message_edit_content = $(".message_edit_content");
+    $message_edit_content.set_matches("textarea#compose-textarea", false);
+    const edit_typeahead = {
+        input_element: {$element: $message_edit_content, type: "textarea"},
+    };
+    compose_ui.maybe_set_compose_textarea_typeahead(edit_typeahead);
+    assert.equal(compose_ui.compose_textarea_typeahead, compose_typeahead);
+});
