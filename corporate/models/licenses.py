@@ -44,8 +44,31 @@ class LicenseLedger(models.Model):
         null=True, db_column="licenses_at_next_renewal"
     )
 
+    # The number of licenses for users outside the realm's workplace_users_group at the time of
+    # ledger entry creation. These are billed at a discounted rate, so they are counted
+    # separately from workplace_licenses rather than being folded into it. The same "a license is
+    # valid till the end of the billing period" rule applies, so external_licenses never
+    # decreases for subsequent LicenseLedger entries in the same billing period.
+    #
+    # This counts the licenses actually billed at the discounted rate, so it is 0 for a plan
+    # that does not bill an external tier, even if the realm's workplace_users_group happens to
+    # exclude some users. Whether a plan bills an external tier is a property of the plan.
+    external_licenses = models.IntegerField(db_default=0, default=0)
+
+    # The number of external licenses the organization needs in the next billing cycle. Like
+    # workplace_licenses_at_next_renewal, this can increase or decrease for subsequent
+    # LicenseLedger entries in the same billing period.
+    external_licenses_at_next_renewal = models.IntegerField(db_default=0, default=0)
+
     @override
     def __str__(self) -> str:
         ledger_type = "renewal" if self.is_renewal else "update"
         ledger_time = self.event_time.replace(tzinfo=None).isoformat(" ", "minutes")
-        return f"License {ledger_type}, {self.workplace_licenses} purchased, {self.workplace_licenses_at_next_renewal} next cycle, {ledger_time} (id={self.id})"
+        external = ""
+        # Omitted entirely for plans without an external tier, which is the common case.
+        if self.external_licenses or self.external_licenses_at_next_renewal:
+            external = (
+                f", {self.external_licenses} external"
+                f" ({self.external_licenses_at_next_renewal} next cycle)"
+            )
+        return f"License {ledger_type}, {self.workplace_licenses} purchased, {self.workplace_licenses_at_next_renewal} next cycle{external}, {ledger_time} (id={self.id})"
