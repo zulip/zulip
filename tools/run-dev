@@ -477,7 +477,7 @@ async def serve() -> None:
 
     setup_routes(options.help_center_static_build, options.help_center_dev_server)
 
-    children.extend(subprocess.Popen(cmd) for cmd in server_processes())
+    children.extend(subprocess.Popen(cmd) for cmd in server_processes())  # noqa: ASYNC220
 
     session = aiohttp.ClientSession()
     runner = web.AppRunner(app, auto_decompress=False, handler_cancellation=True)
