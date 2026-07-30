@@ -42,6 +42,8 @@ type ActionPopoverContext = {
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
     should_display_quote_message: boolean;
+    quote_message_menu_item: string;
+    forward_message_menu_item: string;
     conversation_time_url: string;
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
@@ -205,6 +207,8 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         !message.locally_echoed && !message.is_me_message && message.collapsed;
 
     const should_display_quote_message = not_spectator;
+    const quote_message_menu_item = $t({defaultMessage: "Quote message"});
+    const forward_message_menu_item = $t({defaultMessage: "Forward message"});
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
@@ -255,6 +259,8 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_delete_option,
         should_display_read_receipts_option,
         should_display_quote_message,
+        quote_message_menu_item,
+        forward_message_menu_item,
         should_display_message_report_option: should_display_message_report_option(),
     };
 }
