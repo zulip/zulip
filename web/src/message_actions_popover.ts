@@ -27,6 +27,11 @@ import {the} from "./util.ts";
 
 let message_actions_popover_keyboard_toggle = false;
 
+// The text selected within the message whose ⋮ button was last pressed,
+// recorded on mousedown because the selection does not survive the click.
+let quote_content_at_button_mousedown:
+    {message_id: number; quote_content: string | undefined} | undefined;
+
 function get_action_menu_menu_items(): JQuery {
     return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
 }
@@ -63,6 +68,9 @@ export function toggle_message_actions_menu(message: Message): boolean {
     message_viewport.maybe_scroll_to_show_message_top();
     const $popover_reference = $(".selected_message .actions_hover .message-actions-menu-button");
     message_actions_popover_keyboard_toggle = true;
+    // This synthetic click has no mousedown of its own, so make sure it
+    // cannot consume a stale selection left behind by an earlier ⋮ press.
+    quote_content_at_button_mousedown = undefined;
     $popover_reference.trigger("click");
     return true;
 }
@@ -75,6 +83,24 @@ export function initialize({
         target: tippy.ReferenceElement,
     ) => void;
 }): void {
+    // Pressing the ⋮ button collapses any text selection on mouseup, well
+    // before the popover opens, so we have to read the selection here.
+    $("#main_div").on(
+        "mousedown",
+        ".actions_hover .message-actions-menu-button",
+        function (this: HTMLElement) {
+            const $row = $(this).closest(".message_row");
+            if ($row.length === 0) {
+                return;
+            }
+            const message_id = rows.id($row);
+            quote_content_at_button_mousedown = {
+                message_id,
+                quote_content: compose_reply.get_selection_within_message(message_id),
+            };
+        },
+    );
+
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
         theme: "popover-menu",
         placement: "bottom",
@@ -101,19 +127,15 @@ export function initialize({
         onMount(instance) {
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
-            let quote_content: string | undefined;
-            const highlighted_message_ids = compose_reply.get_highlighted_message_ids();
-            if (
-                highlighted_message_ids &&
-                highlighted_message_ids?.length === 1 &&
-                highlighted_message_ids[0] === message_id
-            ) {
-                // If the user has selected text within this message, quote only that.
-                // We track the selection right now, before the popover option for Quote
-                // and reply is clicked, since by then the selection is lost, due to the
-                // change in focus.
-                quote_content = compose_reply.get_message_selection();
-            }
+            // If the user has selected text within this message, quote only
+            // that. Mouse opens rely on what we read on mousedown; keyboard
+            // opens have no mousedown, but do still have the live selection.
+            const at_mousedown = quote_content_at_button_mousedown;
+            quote_content_at_button_mousedown = undefined;
+            const quote_content =
+                at_mousedown?.message_id === message_id
+                    ? at_mousedown.quote_content
+                    : compose_reply.get_selection_within_message(message_id);
             if (message_actions_popover_keyboard_toggle) {
                 focus_first_action_popover_item();
                 message_actions_popover_keyboard_toggle = false;

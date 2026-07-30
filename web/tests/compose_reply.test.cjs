@@ -390,3 +390,25 @@ run_test("build_and_process_quote_assets_for_messages", ({override}) => {
         "Fallback to using paste_handler_converter",
     );
 });
+
+run_test("get_selection_within_message", ({override_rewire}) => {
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
+    assert.equal(compose_reply.get_selection_within_message(10), undefined, "no selection");
+
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => [10]);
+    override_rewire(compose_reply, "get_message_selection", () => "partial text");
+    assert.equal(compose_reply.get_selection_within_message(10), "partial text");
+
+    // The selection is inside a different message than the one asked about.
+    assert.equal(compose_reply.get_selection_within_message(99), undefined);
+
+    // Selecting only a sender name or timestamp lands outside
+    // `.message_content`, so there is nothing quotable to return.
+    override_rewire(compose_reply, "get_message_selection", () => " ".repeat(3));
+    assert.equal(compose_reply.get_selection_within_message(10), undefined);
+
+    // A selection spanning several messages is not a within-message one;
+    // we return early without consulting the selected text at all.
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => [10, 11]);
+    assert.equal(compose_reply.get_selection_within_message(10), undefined);
+});
