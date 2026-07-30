@@ -61,7 +61,7 @@ You can publish events to a RabbitMQ queue using the
 
 An interesting challenge with queue processors is what should happen
 when queued events in Zulip's backend tests. Our current solution is
-that in the tests, `queue_event_on_commit` will (by default) simple call
+that in the tests, `queue_event_on_commit` will (by default) simply call
 the `consume` method for the relevant queue processor. However,
 `queue_event_on_commit` also supports being passed a function that should
 be called in the tests instead of the queue processor's `consume`
