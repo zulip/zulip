@@ -393,22 +393,33 @@ run_test("build_and_process_quote_assets_for_messages", ({override}) => {
 
 run_test("get_quote_menu_selection", ({override_rewire}) => {
     override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
-    assert.deepEqual(compose_reply.get_quote_menu_selection(10), {kind: "full_message"});
+    assert.deepEqual(compose_reply.get_quote_menu_selection(10), {
+        kind: "full_message",
+        hotkeys_agree: true,
+    });
 
     override_rewire(compose_reply, "get_highlighted_message_ids", () => [10]);
     override_rewire(compose_reply, "get_message_selection", () => "partial text");
     assert.deepEqual(compose_reply.get_quote_menu_selection(10), {
         kind: "message_selection",
         quote_content: "partial text",
+        hotkeys_agree: true,
     });
 
-    // The selection is inside a different message than the menu was opened on.
-    assert.deepEqual(compose_reply.get_quote_menu_selection(99), {kind: "full_message"});
+    // The selection is inside a different message than the menu was opened
+    // on, so > and < would act on the selection instead: hide their hints.
+    assert.deepEqual(compose_reply.get_quote_menu_selection(99), {
+        kind: "full_message",
+        hotkeys_agree: false,
+    });
 
     // Selecting only a sender name or timestamp lands outside
     // `.message_content`, so there is nothing quotable to offer.
     override_rewire(compose_reply, "get_message_selection", () => " ".repeat(3));
-    assert.deepEqual(compose_reply.get_quote_menu_selection(10), {kind: "full_message"});
+    assert.deepEqual(compose_reply.get_quote_menu_selection(10), {
+        kind: "full_message",
+        hotkeys_agree: true,
+    });
 
     // A selection spanning several messages, opened from inside the range;
     // we return early without consulting the selected text at all.
@@ -416,9 +427,13 @@ run_test("get_quote_menu_selection", ({override_rewire}) => {
     assert.deepEqual(compose_reply.get_quote_menu_selection(11), {
         kind: "selected_messages",
         message_ids: [10, 11, 12],
+        hotkeys_agree: true,
     });
 
     // ...and opened from a message outside the range, where the menu acts on
-    // that one message only.
-    assert.deepEqual(compose_reply.get_quote_menu_selection(99), {kind: "full_message"});
+    // that one message only and the hotkeys would not.
+    assert.deepEqual(compose_reply.get_quote_menu_selection(99), {
+        kind: "full_message",
+        hotkeys_agree: false,
+    });
 });
