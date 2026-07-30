@@ -4,7 +4,11 @@ from typing import Any
 
 from django.db import transaction
 
-from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
+from zerver.lib.attachments import (
+    get_old_unclaimed_attachments,
+    remove_attachment,
+    validate_attachment_request,
+)
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.upload import claim_attachment, delete_message_attachments
 from zerver.models import (
@@ -35,6 +39,13 @@ def notify_attachment_update(
         "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
     }
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+
+@transaction.atomic(durable=True)
+def do_delete_attachment(user_profile: UserProfile, attachment: Attachment) -> None:
+    attachment_id = attachment.id
+    remove_attachment(user_profile, attachment)
+    notify_attachment_update(user_profile, "remove", {"id": attachment_id})
 
 
 def do_claim_attachments(
