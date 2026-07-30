@@ -721,3 +721,103 @@ test("fetch_subscriptions_for_user", async () => {
     await peer_data.fetch_subscriptions_for_user(fred.user_id);
     assert.equal(channel_get_calls, 0);
 });
+
+test("fetch_subscriptions_for_user stale response", async () => {
+    people.add_active_user(fred);
+
+    const social = make_stream({
+        stream_id: 2,
+        name: "social",
+        subscribed: true,
+    });
+    stream_data.add_sub_for_tests(social);
+    const rome = make_stream({
+        name: "Rome",
+        subscribed: true,
+        stream_id: 1001,
+    });
+    stream_data.add_sub_for_tests(rome);
+    const devel = make_stream({
+        name: "devel",
+        subscribed: true,
+        stream_id: 1,
+    });
+    stream_data.add_sub_for_tests(devel);
+    const paris = make_stream({
+        name: "Paris",
+        subscribed: true,
+        stream_id: 1002,
+    });
+    stream_data.add_sub_for_tests(paris);
+
+    peer_data.set_subscribers(social.stream_id, [fred.user_id], false);
+    peer_data.set_subscribers(rome.stream_id, [fred.user_id], false);
+    peer_data.set_subscribers(devel.stream_id, [fred.user_id], false);
+    peer_data.set_subscribers(paris.stream_id, [fred.user_id], false);
+
+    // The server computed this response before the removals below.
+    mock_channel_get(channel, (opts) => {
+        opts.success({
+            subscribed_channel_ids: [
+                social.stream_id,
+                rome.stream_id,
+                devel.stream_id,
+                paris.stream_id,
+            ],
+        });
+    });
+
+    // The mocked response is only delivered once we await the promise,
+    // so the removals below arrive while the request is in flight.
+    const promise = peer_data.fetch_subscriptions_for_user(fred.user_id);
+    peer_data.bulk_remove_subscribers({
+        stream_ids: [social.stream_id],
+        user_ids: [fred.user_id],
+    });
+    peer_data.remove_subscriber(devel.stream_id, fred.user_id);
+    // While the request is in flight, we get the exact subscriber set
+    // for Paris, which no longer includes fred.
+    peer_data.set_subscribers(paris.stream_id, [me.user_id]);
+    assert.ok(!peer_data.subscriber_data_loaded_for_user(fred.user_id));
+    await promise;
+
+    // The stale response must not re-add fred to social, devel, or Paris.
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(social.stream_id, fred.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(devel.stream_id, fred.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(paris.stream_id, fred.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(rome.stream_id, fred.user_id));
+    assert.ok(peer_data.subscriber_data_loaded_for_user(fred.user_id));
+});
+
+test("fetch_subscriptions_for_user removal before retry", async () => {
+    people.add_active_user(fred);
+
+    const social = make_stream({
+        stream_id: 2,
+        name: "social",
+        subscribed: true,
+    });
+    stream_data.add_sub_for_tests(social);
+    peer_data.set_subscribers(social.stream_id, [fred.user_id], false);
+
+    let num_attempts = 0;
+    mock_channel_get(channel, (opts) => {
+        num_attempts += 1;
+        if (num_attempts === 1) {
+            // fred leaves social while the first attempt is in flight,
+            // and then that attempt fails.
+            peer_data.remove_subscriber(social.stream_id, fred.user_id);
+            opts.error({status: 500});
+            return;
+        }
+        // fred rejoined social before the retry, so the retry's
+        // response lists social and must be applied.
+        opts.success({
+            subscribed_channel_ids: [social.stream_id],
+        });
+    });
+    blueslip.expect("warn", "Failure fetching user's subscribed channels. Retrying.");
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
+    assert.equal(num_attempts, 2);
+    assert.ok(stream_data.is_user_loaded_and_subscribed(social.stream_id, fred.user_id));
+});
