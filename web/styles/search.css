@@ -17,6 +17,10 @@
         outline: 2px solid var(--color-outline-focus);
     }
 
+    .navbar-search:not(.expanded) #searchbox-input-container:hover .search_icon {
+        opacity: var(--opacity-search-icon-hover);
+    }
+
     .search_icon {
         grid-area: search-icon;
         align-self: center;

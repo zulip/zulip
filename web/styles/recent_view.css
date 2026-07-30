@@ -31,6 +31,7 @@
     border: var(--recent-view-body-border-width) solid
         var(--color-border-recent-view-table);
     border-top: none;
+    border-bottom-width: 1px;
     border-radius: 0 0 5px 5px;
     overflow: hidden;
 }
