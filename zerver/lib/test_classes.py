@@ -1,5 +1,7 @@
 import asyncio
 import base64
+import hashlib
+import hmac
 import os
 import re
 import shutil
@@ -35,6 +37,7 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, ClientHandler, encod
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
+from django.utils.encoding import force_bytes
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
@@ -54,6 +57,7 @@ from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscript
 from zerver.actions.user_settings import do_change_full_name, do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
+from zerver.lib.bot_config import set_bot_config
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
 from zerver.lib.initial_password import initial_password
@@ -2544,6 +2548,8 @@ class WebhookTestCase(ZulipTestCase):
     DEFAULT_URL_TEMPLATE: str = (
         "/api/v1/external/{webhook_dir_name}?stream={stream}&api_key={api_key}"
     )
+    WEBHOOK_SIGNATURE_HEADER: str | None = None
+    WEBHOOK_TEST_SECRET: str | None = None
 
     def get_webhook_dir_name(self) -> str:
         module_parts = self.__module__.split(".")
@@ -2619,6 +2625,18 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
             **extra,
         )
 
+    def get_webhook_signature(self, raw_payload: bytes) -> str | None:
+        """
+        Generate the signature header value for a given payload.
+        Override this method in child classes if the integration uses different signature format.
+        """
+        secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
+        if secret is None:
+            return None  # nocoverage
+
+        # Default implementation matches the current GitHub standard format
+        return "sha256=" + hmac.new(force_bytes(secret), raw_payload, hashlib.sha256).hexdigest()
+
     def check_webhook(
         self,
         fixture_name: str,
@@ -2650,16 +2668,37 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         """
         self.subscribe(self.test_user, self.channel_name)
 
+        url = getattr(self, "url", None)
+        if url is None:
+            url = self.build_webhook_url()  # nocoverage
+
+        webhook_secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
+        if webhook_secret is not None:
+            set_bot_config(self.test_user, "webhook_secret", webhook_secret)
+
         payload = self.get_payload(fixture_name)
         if content_type is not None:
             extra["content_type"] = content_type
+
+        signature_header_name = getattr(self, "WEBHOOK_SIGNATURE_HEADER", None)
+        if signature_header_name is not None:
+            try:
+                raw_payload = self.get_body(fixture_name)
+            except FileNotFoundError:  # nocoverage
+                raw_payload = ""
+
+            signature_value = self.get_webhook_signature(force_bytes(raw_payload))
+            if signature_value is not None:
+                django_header = "HTTP_" + signature_header_name.upper().replace("-", "_")
+                extra[django_header] = signature_value
+
         headers = call_fixture_to_headers(self.webhook_dir_name, fixture_name)
         headers = standardize_headers(headers)
         extra.update(headers)
         try:
             msg = self.send_webhook_payload(
                 self.test_user,
-                self.url,
+                url,
                 payload,
                 **extra,
             )
@@ -2715,6 +2754,11 @@ one or more new messages.
         Most webhooks send to streams, and you will want to look at
         check_webhook.
         """
+
+        webhook_secret = getattr(self, "WEBHOOK_TEST_SECRET", None)
+        if webhook_secret is not None:
+            set_bot_config(self.test_user, "webhook_secret", webhook_secret)  # nocoverage
+
         payload = self.get_payload(fixture_name)
         extra["content_type"] = content_type
 
