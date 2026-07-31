@@ -50,6 +50,9 @@
                             {{#if is_sending_saving}}
                             {{> ./components/icon_button intent="neutral" custom_classes="outbox-resend-message tippy-zulip-delayed-tooltip" icon="refresh-cw" data-tippy-content=(t "Resend message") aria-label=(t "Resend message") }}
                             {{> ./components/icon_button intent="danger" custom_classes="outbox-cancel-message tippy-zulip-delayed-tooltip" icon="circle-x" data-tippy-content=(t "Cancel message") aria-label=(t "Cancel message") }}
+                            <div class="outbox-selection-tooltip">
+                                <i class="fa fa-square-o fa-lg outbox-selection-checkbox" aria-hidden="true"></i>
+                            </div>
                             {{else}}
                             <span class="copy-button copy-overlay-message tippy-zulip-delayed-tooltip" data-draft-id="{{draft_id}}" data-tippy-content="{{t 'Copy draft' }}" aria-label="{{t 'Copy draft' }}" role="button">
                                 <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
