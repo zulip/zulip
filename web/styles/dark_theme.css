@@ -195,12 +195,6 @@
         color: hsl(200deg 79% 66%);
     }
 
-    #loading_older_messages_indicator,
-    #recent_view_loading_messages_indicator {
-        & path {
-            fill: hsl(0deg 0% 100%);
-        }
-    }
 
     & a:not(:active):focus,
     button:not(.action-button, .icon-button):focus-visible,

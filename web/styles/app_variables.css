@@ -1877,6 +1877,10 @@
         0 0 0 1px hsl(0deg 0% 100% / 33%),
         0 0 0 1px hsl(0deg 0% 0% / 33%)
     );
+    --color-fill-loading-indicator: light-dark(
+        hsl(0deg 0% 0%),
+        hsl(0deg 0% 100%)
+    );
 
     /* Markdown code colors */
     --color-markdown-code-text: light-dark(
