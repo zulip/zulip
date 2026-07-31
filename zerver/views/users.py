@@ -488,6 +488,8 @@ def patch_bot_backend(
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
+    json_result: dict[str, Any] = {}
+
     # Handle short_name change
     if short_name is not None:
         try:
@@ -512,9 +514,11 @@ def patch_bot_backend(
             except ValidationError:
                 raise JsonableError(_("Email address already in use"))
             do_change_user_delivery_email(bot, new_email, acting_user=user_profile)
+            json_result["email"] = bot.email
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
+        json_result["full_name"] = bot.full_name
 
     if role is not None and bot.role != role:
         # Logic duplicated from update_user_backend.
@@ -538,6 +542,7 @@ def patch_bot_backend(
         previous_owner = bot.bot_owner
         if previous_owner != owner:
             do_change_bot_owner(bot, owner, user_profile)
+            json_result["bot_owner"] = owner.email
 
     if default_sending_stream is not None:
         if default_sending_stream == "":
@@ -545,16 +550,21 @@ def patch_bot_backend(
         else:
             (stream, _sub) = access_stream_by_name(user_profile, default_sending_stream)
         do_change_default_sending_stream(bot, stream, acting_user=user_profile)
+        json_result["default_sending_stream"] = get_stream_name(bot.default_sending_stream)
     if default_events_register_stream is not None:
         if default_events_register_stream == "":
             stream = None
         else:
             (stream, _sub) = access_stream_by_name(user_profile, default_events_register_stream)
         do_change_default_events_register_stream(bot, stream, acting_user=user_profile)
+        json_result["default_events_register_stream"] = get_stream_name(
+            bot.default_events_register_stream
+        )
     if default_all_public_streams is not None:
         do_change_default_all_public_streams(
             bot, default_all_public_streams, acting_user=user_profile
         )
+        json_result["default_all_public_streams"] = bot.default_all_public_streams
 
     if service_interface is not None or service_payload_url is not None:
         if bot.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
@@ -569,6 +579,10 @@ def patch_bot_backend(
             base_url=service_payload_url,
             acting_user=user_profile,
         )
+        if service_interface is not None:
+            json_result["service_interface"] = service_interface
+        if service_payload_url is not None:
+            json_result["service_payload_url"] = service_payload_url
 
     if config_data is not None:
         if bot.bot_type not in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
@@ -602,6 +616,7 @@ def patch_bot_backend(
                 config_data_to_validate,
             )
         do_update_bot_config_data(bot, config_data)
+        json_result["config_data"] = merged_config_data
 
     if len(request.FILES) == 0:
         pass
@@ -613,24 +628,9 @@ def patch_bot_backend(
         upload_avatar_image(user_file, bot, content_type=content_type)
         avatar_source = UserProfile.AVATAR_FROM_USER
         do_change_avatar_fields(bot, avatar_source, acting_user=user_profile)
+        json_result["avatar_url"] = avatar_url(bot)
     else:
         raise JsonableError(_("You may only upload one file at a time"))
-
-    json_result = dict(
-        full_name=bot.full_name,
-        avatar_url=avatar_url(bot),
-        service_interface=service_interface,
-        service_payload_url=service_payload_url,
-        config_data=config_data,
-        default_sending_stream=get_stream_name(bot.default_sending_stream),
-        default_events_register_stream=get_stream_name(bot.default_events_register_stream),
-        default_all_public_streams=bot.default_all_public_streams,
-    )
-
-    # Don't include the bot owner in case it is not set.
-    # Default bots have no owner.
-    if bot.bot_owner is not None:
-        json_result["bot_owner"] = bot.bot_owner.email
 
     return json_success(request, data=json_result)
 

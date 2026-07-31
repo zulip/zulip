@@ -1214,6 +1214,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot.refresh_from_db()
         self.assertEqual(bot.email, "newbot-bot@zulip.testserver")
 
+        response_data = orjson.loads(result.content)
+        self.assertEqual(response_data["email"], "newbot-bot@zulip.testserver")
+
     def test_patch_bot_short_name_admin(self) -> None:
         self.login("hamlet")
         bot_info = {
@@ -1304,6 +1307,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         bot.refresh_from_db()
         self.assertEqual(bot.email, "hambot-bot@zulip.testserver")
+
+        response_data = orjson.loads(result.content)
+        self.assertNotIn("email", response_data)
 
     def test_patch_bot_short_name_invalid_fake_email_domain(self) -> None:
         self.login("hamlet")
@@ -2045,6 +2051,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(service.interface, Service.SLACK)
         self.assertEqual(service.base_url, "http://foo.bar.com")
 
+        response_data = orjson.loads(result.content)
+        self.assertEqual(response_data["service_interface"], Service.SLACK)
+        self.assertNotIn("service_payload_url", response_data)
+
     def test_patch_outgoing_webhook_bot_url_only_preserves_interface(self) -> None:
         self.login("hamlet")
         bot_info = {
@@ -2065,6 +2075,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         [service] = get_bot_services(bot.id)
         self.assertEqual(service.base_url, "http://foo.bar2.com")
         self.assertEqual(service.interface, Service.SLACK)
+
+        response_data = orjson.loads(result.content)
+        self.assertEqual(response_data["service_payload_url"], "http://foo.bar2.com")
+        self.assertNotIn("service_interface", response_data)
 
     def test_patch_non_outgoing_webhook_bot_rejects_service_fields(self) -> None:
         self.login("hamlet")
@@ -2209,14 +2223,38 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             full_name="Bot with config data",
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="giphy",
-            config_data=orjson.dumps({"key": "12345678"}).decode(),
+            config_data=orjson.dumps({"key": "12345678", "other_key": "unchanged"}).decode(),
         )
         bot_info = {"config_data": orjson.dumps({"key": "87654321"}).decode()}
         email = "test-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
         self.assert_json_success(result)
         config_data = orjson.loads(result.content)["config_data"]
-        self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
+        self.assertEqual(config_data, {"key": "87654321", "other_key": "unchanged"})
+
+    def test_patch_bot_response_includes_only_sent_parameters(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"full_name": "New name"},
+        )
+        self.assert_json_success(result)
+        response_data = orjson.loads(result.content)
+        self.assertEqual(response_data["full_name"], "New name")
+        for absent_key in (
+            "avatar_url",
+            "service_interface",
+            "service_payload_url",
+            "config_data",
+            "default_sending_stream",
+            "default_events_register_stream",
+            "default_all_public_streams",
+            "bot_owner",
+        ):
+            self.assertNotIn(absent_key, response_data)
 
     def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login("hamlet")
