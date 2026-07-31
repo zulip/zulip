@@ -570,11 +570,11 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".add-users-button-wrapper",
+        target: ".pill-action-button-wrapper",
         onShow(instance) {
             const $wrapper = $(instance.reference);
-            const $button = $wrapper.find(".add-users-button");
-            const $container = $wrapper.closest(".add-button-container").find(".pill-container");
+            const $button = $wrapper.find(".pill-action-button");
+            const $container = $wrapper.closest(".pill-action-container").find(".pill-container");
 
             const button_is_disabled = Boolean($button.prop("disabled"));
             const container_is_enabled =

@@ -154,7 +154,10 @@ export function create({
     });
 
     if (with_add_button) {
-        add_subscribers_pill.set_up_handlers_for_add_button_state(pill_widget, $pill_container);
+        add_subscribers_pill.set_up_handlers_for_pill_action_button_state(
+            pill_widget,
+            $pill_container,
+        );
     }
 
     return pill_widget;

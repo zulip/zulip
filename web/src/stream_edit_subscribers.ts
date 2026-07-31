@@ -164,9 +164,9 @@ export function enable_subscriber_management({
         get_potential_subscribers,
         onPillCreateAction: pill_update_callback,
         onPillRemoveAction: pill_update_callback,
-        add_button_pill_update_callback: pill_update_callback,
+        action_button_pill_update_callback: pill_update_callback,
         get_user_groups: user_groups.get_all_realm_user_groups,
-        with_add_button: true,
+        with_action_button: true,
     });
 
     $pill_container.find(".input").on("input", () => {
