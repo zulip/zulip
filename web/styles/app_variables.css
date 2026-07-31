@@ -1304,6 +1304,10 @@
         hsl(232deg 30% 92%),
         hsl(228deg 11% 17%)
     );
+    --color-background-drafts-button-focus: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(228deg 11% 17%)
+    );
     --color-compose-message-content-background: light-dark(
         hsl(0deg 0% 100%),
         color-mix(

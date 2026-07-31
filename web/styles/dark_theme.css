@@ -95,10 +95,6 @@
         border-bottom-width: 1px;
     }
 
-    .drafts-container .header-body .delete-drafts-group > *:focus {
-        background-color: hsl(228deg 11% 17%);
-    }
-
     .table-striped tbody tr:nth-child(even) td {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: color-mix(
