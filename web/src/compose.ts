@@ -136,8 +136,10 @@ export function send_message_success(
         clear_compose_box();
     }
 
+    // Reification deletes draft_id from a resend's LocalMessage in place.
+    const {draft_id} = sent_message;
     echo.reify_message_id(sent_message.local_id, data.id);
-    drafts.draft_model.deleteDrafts([sent_message.draft_id]);
+    drafts.draft_model.deleteDrafts([draft_id]);
 
     if (sent_message.type === "stream") {
         if (data.automatic_new_visibility_policy) {

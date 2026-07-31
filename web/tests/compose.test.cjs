@@ -256,6 +256,31 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     assert.ok(draft_deleted);
 });
 
+test_ui("send_message_success deletes the draft of a resend", ({override, override_rewire}) => {
+    mock_banners();
+    new FakeComposeBox();
+
+    // Reification deletes draft_id from the LocalMessage a resend passes.
+    const sent_message = {
+        locally_echoed: true,
+        local_id: "123.04",
+        draft_id: "draft-99",
+        type: "private",
+    };
+    override_rewire(echo, "reify_message_id", () => {
+        delete sent_message.draft_id;
+    });
+
+    let deleted_draft_ids;
+    override(drafts.draft_model, "deleteDrafts", (draft_ids) => {
+        deleted_draft_ids = draft_ids;
+    });
+
+    compose.send_message_success(sent_message, {id: 127});
+
+    assert.deepEqual(deleted_draft_ids, ["draft-99"]);
+});
+
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     clock.setSystemTime(new Date(fake_now * 1000));
