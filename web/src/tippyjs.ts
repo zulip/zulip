@@ -586,11 +586,11 @@ export function initialize(): void {
                 !$button.hasClass("hidden-below") &&
                 !has_loading_button
             ) {
-                instance.setContent(
-                    $t({
-                        defaultMessage: "Enter who should be added.",
-                    }),
-                );
+                if ($wrapper.closest(".remove_subscribers_container").length > 0) {
+                    instance.setContent($t({defaultMessage: "Enter who should be removed."}));
+                } else {
+                    instance.setContent($t({defaultMessage: "Enter who should be added."}));
+                }
                 return undefined;
             }
 
