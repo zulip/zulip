@@ -237,8 +237,23 @@ h3,
     }
 }
 
-#playground-settings .new-playground-form input {
+#playground-settings .new-playground-form .playground-language-input-container {
+    display: inline-block;
     width: calc(100% - 10em - 6em);
+}
+
+#playground-settings
+    .new-playground-form
+    .playground-language-input-container
+    input {
+    width: 100%;
+}
+
+#playground-settings
+    .new-playground-form
+    .playground-language-input-container
+    .settings-field-hint {
+    margin-top: 5px;
 }
 
 #language_selection_modal {
@@ -2175,7 +2190,17 @@ label.preferences-radio-choice-label {
         margin: auto;
     }
 
-    #playground-settings .new-playground-form input {
+    #playground-settings
+        .new-playground-form
+        .playground-language-input-container {
+        display: block;
+        width: 100%;
+    }
+
+    #playground-settings
+        .new-playground-form
+        .playground-language-input-container
+        input {
         width: calc(
             100% - 2 * var(--input-horizontal-padding) - 2 *
                 var(--input-border-width)

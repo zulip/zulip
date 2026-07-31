@@ -213,6 +213,14 @@ function build_page(): void {
 
             return begins_with;
         },
+        updater(item: string): string {
+            const canonical_aliases = realm_playground.get_aliases_for_pretty_name(item);
+            const [first_alias] = canonical_aliases;
+            if (first_alias !== undefined) {
+                return first_alias;
+            }
+            return item.toLowerCase();
+        },
     });
 
     $search_pygments_box.on("click", (e) => {
