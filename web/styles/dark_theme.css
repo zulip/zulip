@@ -19,14 +19,6 @@
         }
     }
 
-    .enter_sends_choices {
-        color: hsl(236deg 33% 90%);
-
-        .enter_sends_minor {
-            color: hsl(0deg 0% 80%);
-        }
-    }
-
     .dropdown-list-delete {
         /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
         color: color-mix(
