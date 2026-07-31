@@ -17441,16 +17441,32 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Create a public or a standard [data export][export-data] of the organization.
-
         !!! warn ""
 
             **Note**: If you're the administrator of a self-hosted installation,
             you may be looking for the documentation on [server data export and
             import][data-export] or [server backups][backups].
 
-        **Changes**: Prior to Zulip 10.0 (feature level 304), only
-        public data exports could be created using this endpoint.
+        Create a public or a standard [data export][export-data] of the
+        organization.
+
+        This endpoint only queues the data export; it does not wait for
+        the export to complete, which depending on the size of the
+        organization can take anywhere from seconds to an hour.
+        Therefore, this endpoint's success response does not describe
+        the outcome of the export.
+
+        To find out the outcome of the export, clients should rely on the
+        [`realm_export` event](/api/get-events#realm_export), which is
+        which is sent to every organization administrator immediately
+        when the export is requested, and again once it completes or
+        fails. Additionally, when the export succeeds, the user who
+        requested it will receive a direct message from the Notification
+        Bot with a link to the organization's data exports panel, where
+        the export can be downloaded.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 304), only public
+        data exports could be created using this endpoint.
 
         New in Zulip 2.1.
 
