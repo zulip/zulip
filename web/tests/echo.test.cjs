@@ -11,6 +11,12 @@ const {$} = require("./lib/zjquery.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
+const drafts = mock_esm("../src/drafts", {
+    draft_model: {
+        getDraft: () => false,
+        editDraft: noop,
+    },
+});
 const hash_util = mock_esm("../src/hash_util");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
@@ -210,6 +216,40 @@ run_test("process_from_server for messages to add to narrow", ({override}) => {
             topic_links: new_value,
         },
     ]);
+});
+
+run_test("abort_message keeps the draft and clears is_sending_saving", ({override}) => {
+    const message = {draft_id: "dismiss-me", local_id: "60.01", id: 60};
+    echo_state._patch_waiting_for_ack(new Map([["60.01", message]]));
+
+    const draft = {content: "dismissed", is_sending_saving: true};
+    override(drafts.draft_model, "getDraft", (draft_id) => {
+        assert.equal(draft_id, "dismiss-me");
+        return draft;
+    });
+    let edited_with;
+    override(drafts.draft_model, "editDraft", (draft_id, edited_draft) => {
+        edited_with = {draft_id, edited_draft};
+    });
+    const removed_from_lists = [];
+    override(message_lists.current, "remove_and_rerender", (ids) => {
+        removed_from_lists.push(...ids);
+    });
+
+    echo.abort_message(message);
+
+    assert.deepEqual(edited_with, {
+        draft_id: "dismiss-me",
+        edited_draft: {content: "dismissed", is_sending_saving: false},
+    });
+    assert.deepEqual(removed_from_lists, [60]);
+
+    // A draft deleted from the overlay in the meantime is not resurrected.
+    echo_state._patch_waiting_for_ack(new Map([["60.01", message]]));
+    edited_with = undefined;
+    override(drafts.draft_model, "getDraft", () => false);
+    echo.abort_message(message);
+    assert.equal(edited_with, undefined);
 });
 
 run_test("build_display_recipient", ({override}) => {

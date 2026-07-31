@@ -11,6 +11,7 @@ import * as browser_history from "./browser_history.ts";
 import type * as compose from "./compose.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as drafts from "./drafts.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
@@ -650,7 +651,7 @@ export function rewire_message_send_error(value: typeof message_send_error): voi
     message_send_error = value;
 }
 
-export function abort_message(message: LocalMessage): void {
+function remove_locally_echoed_message(message: LocalMessage): void {
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
@@ -662,6 +663,17 @@ export function abort_message(message: LocalMessage): void {
 
     echo_state.remove_message_from_waiting_for_id(message.local_id);
     echo_state.remove_message_from_waiting_for_ack(message.local_id);
+}
+
+export function abort_message(message: LocalMessage): void {
+    // Dismissing keeps the draft, so move it back out of the Outbox.
+    const draft = drafts.draft_model.getDraft(message.draft_id);
+    if (draft !== false) {
+        draft.is_sending_saving = false;
+        drafts.draft_model.editDraft(message.draft_id, draft);
+    }
+
+    remove_locally_echoed_message(message);
 }
 
 export function display_slow_send_loading_spinner(message: Message): void {
