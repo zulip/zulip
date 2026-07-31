@@ -4,8 +4,8 @@
 
 html {
     overflow: hidden scroll;
+    scrollbar-gutter: stable;
     overscroll-behavior-y: none;
-    width: calc(100% - var(--disabled-scrollbar-width));
 }
 
 body,
@@ -360,7 +360,7 @@ p.n-margin {
    the background when a overlay / modal is open. */
 #navbar-fixed-container,
 #compose {
-    width: calc(100% - var(--disabled-scrollbar-width));
+    width: 100%;
 }
 
 .header {
