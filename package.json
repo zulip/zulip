@@ -114,6 +114,7 @@
     "@types/convert-source-map": "^2.0.3",
     "@types/css-tree": "^2.3.11",
     "@types/eslint-config-prettier": "^6.11.3",
+    "@types/estree": "^1.0.9",
     "@types/gtag.js": "^0.0.20",
     "@types/is-url": "^1.2.32",
     "@types/jquery": "^4.0.0",

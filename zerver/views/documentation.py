@@ -427,7 +427,7 @@ def get_categories_for_integration(integration: Integration) -> list[tuple[str, 
     for display_name in integration.categories:
         slug = display_to_slug.get(display_name)
         assert slug is not None
-        result.append((slug, display_name))
+        result.append((slug, str(display_name)))
 
     return result
 
