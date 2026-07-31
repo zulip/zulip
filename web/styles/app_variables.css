@@ -1857,7 +1857,18 @@
         hsl(0deg 0% 87%),
         hsl(0deg 0% 0% / 20%)
     );
-
+    --color-background-table-striped-even: light-dark(
+        transparent,
+        color-mix(in srgb, hsl(0deg 0% 0%) 20%, var(--color-background-modal))
+    );
+    --color-background-rendered-timestamp: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-box-shadow-rendered-timestamp: light-dark(
+        0 0 0 1px hsl(0deg 0% 80%),
+        0 0 0 1px hsl(0deg 0% 0% / 40%)
+    );
     --color-background-simplebar-scrollbar: light-dark(
         hsl(0deg 0% 0%),
         hsl(0deg 0% 100%)

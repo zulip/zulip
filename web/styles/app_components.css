@@ -548,7 +548,7 @@ input.settings_text_input {
     display: flex;
     justify-content: center;
     background-color: var(--color-background-animated-button);
-    color: hsl(0deg 0% 0%);
+    color: var(--color-animated-button-text);
     border-radius: 4px;
 
     .color-animated-button-text {
@@ -683,6 +683,11 @@ input.settings_text_input {
 
     & td {
         border-top: 1px solid var(--color-border-table-striped);
+    }
+
+    & tbody tr:nth-child(even) td {
+        border-color: var(--color-border-table-striped);
+        background-color: var(--color-background-table-striped-even);
     }
 }
 
