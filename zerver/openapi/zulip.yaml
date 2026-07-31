@@ -17295,6 +17295,19 @@ paths:
             you may be looking for the documentation on [server data export and
             import][data-export] or [server backups][backups].
 
+        This endpoint only queues the data export; it does not wait for
+        the export to complete, which depending on the size of the
+        organization can take anywhere from seconds to an hour. This
+        endpoint's success response does not describe the outcome of
+        the export. To find out the outcome, clients should rely on
+        the `realm_export` event (see [`GET /events`](/api/get-events)),
+        which is sent to every organization administrator immediately
+        when the export is requested, and again once it completes or
+        fails. Additionally, once the export succeeds, the user who
+        requested it gets a direct message from the notification bot
+        linking to the organization's data exports settings, where
+        the export can be downloaded.
+
         **Changes**: Prior to Zulip 10.0 (feature level 304), only
         public data exports could be created using this endpoint.
 
