@@ -19,19 +19,6 @@
         }
     }
 
-    .dropdown-list-delete {
-        /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
-        color: color-mix(
-            in oklch,
-            hsl(7deg 100% 74%) 70%,
-            transparent
-        ) !important;
-
-        &:hover {
-            color: hsl(7deg 100% 74%) !important;
-        }
-    }
-
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
@@ -55,17 +42,6 @@
         opacity: 0.4;
     }
 
-    .popover-filter-input-wrapper .popover-filter-input:focus {
-        background-color: hsl(225deg 6% 7%);
-        border: 1px solid hsl(0deg 0% 100% / 50%);
-        box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
-    }
-
-    & select option {
-        background-color: var(--color-background);
-        color: hsl(236deg 33% 90%);
-    }
-
     .pill-container.not-editable-by-user,
     .group_setting_disabled .pill-container {
         opacity: 0.5;
@@ -80,10 +56,6 @@
             .search_icon {
             opacity: 0.75;
         }
-    }
-
-    textarea.schedule-reminder-note:focus {
-        border-color: hsl(0deg 0% 0% / 90%);
     }
 
     .popover hr,
@@ -195,14 +167,6 @@
         color: hsl(200deg 79% 66%);
     }
 
-
-    & a:not(:active):focus,
-    button:not(.action-button, .icon-button):focus-visible,
-    i.fa:focus,
-    i.zulip-icon:focus,
-    [role="button"]:focus {
-        outline-color: hsl(0deg 0% 67%);
-    }
 
     .color_animated_button {
         .zulip-icon {

@@ -1019,7 +1019,7 @@
         hsl(0deg 0% 0% / 19%),
         hsl(0deg 0% 100% / 19%)
     );
-    --color-outline-focus: hsl(215deg 47% 50%);
+    --color-outline-focus: light-dark(hsl(215deg 47% 50%), hsl(0deg 0% 67%));
     --focus-ring-width-in-views: 1.5px;
     /* Standard focus ring stroke; used by `:focus-visible`
        outlines on inbox rows, recent-view rows, action-button
@@ -1086,6 +1086,14 @@
     --color-border-popover-menu: light-dark(
         hsl(0deg 0% 0% / 40%),
         hsl(0deg 0% 0%)
+    );
+    --color-border-popover-filter-input-focus: light-dark(
+        hsl(229.09deg 21.57% 10% / 80%),
+        hsl(0deg 0% 100% / 50%)
+    );
+    --color-box-shadow-popover-filter-input-focus: light-dark(
+        0 0 6px hsl(228deg 9.8% 20% / 30%),
+        0 0 5px hsl(0deg 0% 100% / 40%)
     );
     --color-border-personal-menu-avatar: light-dark(
         hsl(0deg 0% 0% / 10%),
@@ -1562,6 +1570,7 @@
         hsl(0deg 0% 13.33%),
         hsl(0deg 0% 95%)
     );
+    --color-text-select-option: light-dark(currentcolor, hsl(236deg 33% 90%));
     --color-text-self-direct-mention: light-dark(
         hsl(240deg 52% 45% / 100%),
         hsl(240deg 100% 88% / 100%)
