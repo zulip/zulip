@@ -178,13 +178,17 @@ export function resend_message(
 
     message.resend = true;
 
+    // A resend's message event can arrive before its response, and reifying
+    // converts the message in place, so snapshot what we actually sent.
+    const sent_message = {...message};
+
     function on_success(raw_data: unknown): void {
         const data = send_message_api_response_schema.parse(raw_data);
         const message_id = data.id;
 
         hide_retry_spinner($row);
 
-        on_send_message_success(message, data);
+        on_send_message_success(sent_message, data);
 
         // Resend succeeded, so mark as no longer failed
         failed_message_success(message_id);

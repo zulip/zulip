@@ -530,13 +530,13 @@ run_test("resend success clears the failed flag", ({override}) => {
     // local id, waiting to be retried.
     stored_messages.set(message.id, message);
 
-    const on_send_message_success = (msg, data) => {
+    const on_send_message_success = (_sent_message, data) => {
         // Mirror the store re-keying that compose.send_message_success ->
         // echo.reify_message_id performs once the server acks the resend.
-        stored_messages.delete(msg.id);
-        msg.id = data.id;
-        msg.locally_echoed = false;
-        stored_messages.set(data.id, msg);
+        stored_messages.delete(message.id);
+        message.id = data.id;
+        message.locally_echoed = false;
+        stored_messages.set(data.id, message);
     };
     const send_message = (_msg, on_success) => {
         on_success({id: server_id});
@@ -546,6 +546,67 @@ run_test("resend success clears the failed flag", ({override}) => {
 
     assert.equal(message.failed_request, false);
     assert.equal(stored_messages.get(server_id), message);
+});
+
+run_test("resend gives the success path a pre-send snapshot", ({override}) => {
+    // The resent message's event can beat its send response, and
+    // process_from_server reifies on arrival -- converting the message in
+    // place, so it no longer describes what we sent.
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+    override(compose_notifications, "reify_message_id", noop);
+    override(hash_util, "search_terms_to_hash", noop);
+    override(browser_history, "update_current_history_state_data", noop);
+    override(message_lists, "all_rendered_message_lists", () => [
+        {
+            view: {rerender_messages: noop, change_message_id: noop},
+            data: {filter: {can_apply_locally: () => true}},
+            change_message_id: noop,
+            add_messages: noop,
+        },
+    ]);
+
+    const local_id = "320.01";
+    const server_id = 330;
+    const message = {
+        id: Number.parseFloat(local_id),
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "retry me",
+        content: "<p>retry me</p>",
+        draft_id: "draft-320",
+        locally_echoed: true,
+        failed_request: true,
+    };
+    stored_messages.set(message.id, message);
+    echo_state.set_message_waiting_for_id(local_id, message);
+    echo_state._patch_waiting_for_ack(new Map([[local_id, message]]));
+
+    override(message_store, "reify_message_id", ({old_id, new_id}) => {
+        // Mirror the real conversion: re-key, and drop the local-echo fields.
+        delete message.draft_id;
+        stored_messages.delete(old_id);
+        stored_messages.set(new_id, message);
+    });
+
+    let sent_message;
+    const on_send_message_success = (msg) => {
+        sent_message = msg;
+    };
+    const send_message = (_request, on_success) => {
+        echo.process_from_server([{id: server_id, local_id, content: message.content}]);
+        on_success({id: server_id});
+    };
+
+    echo.resend_message(message, make_spinner_row(), {on_send_message_success, send_message});
+
+    // Confirm the ordering under test: reification ran before the response.
+    assert.equal(message.draft_id, undefined);
+    assert.equal(message.locally_echoed, false);
+    assert.equal(sent_message.draft_id, "draft-320");
+    assert.equal(sent_message.locally_echoed, true);
 });
 
 run_test("resend error re-marks a present message as failed", ({override}) => {
