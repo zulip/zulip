@@ -58,7 +58,11 @@ function get_html_for_bookend_message_content(
     const is_partial =
         selected_message_content_element.innerHTML.trim() !==
         original_message_content_element.innerHTML.trim();
-    const $ellipsis_span = $("<span>").text("[...]");
+    // For a start bookend, also insert a zero-width space after the marker.
+    // If the selection continues with "(", converting the HTML to markdown
+    // would otherwise treat the marker as the label of a link.
+    const ellipsis_text = type === "start" ? "[...]\u{200B}" : "[...]";
+    const $ellipsis_span = $("<span>").text(ellipsis_text);
 
     // Special case for /me messages.
     // We wrap the /me message content in a `div` to ensure newlines are
