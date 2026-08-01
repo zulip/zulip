@@ -855,6 +855,27 @@
         .data-container {
             grid-area: data-container;
         }
+
+        /* When no preview image is available, the embed renders
+           as a text-only card. Remove the image column from the
+           grid and let height fit the content naturally. */
+        &:not(:has(.message_embed_image)) {
+            grid-template-columns:
+                [data-container-start] minmax(0, 1fr)
+                [data-container-end];
+            grid-template-rows:
+                [data-container-start] auto
+                [data-container-end];
+            height: auto;
+
+            .data-container {
+                /* On narrow screens the base styles add
+                   margin-top to separate text from the stacked
+                   image above. Reset it here since there is no
+                   image to separate from. */
+                margin-top: 0;
+            }
+        }
     }
 
     & a:not(.icon-button) {
