@@ -248,7 +248,7 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
         // w/o partial selection: "copy paste test B",
-        "[...]paste test B",
+        "[...]\u{200B}paste test B",
         "Verona > copy-paste-topic #2 | Today",
         "Desdemona:",
         "copy paste test C",
@@ -311,6 +311,30 @@ async function test_copying_selection_with_no_message_content(page: Page): Promi
     assert.ok(result.selection_text.length > 0);
 }
 
+async function test_partial_bookend_before_url_keeps_raw_link(page: Page): Promise<void> {
+    // Selection starts at the "(" before an auto-linked URL. Without a
+    // zero-width space after the start ellipsis, the bookend would look
+    // like a markdown link labeled "...".
+    const actual_copied_lines = await copy_messages(
+        page,
+        "Prefix before paren (https://example.com) trailing words",
+        "Second message after partial URL bookend",
+        {
+            select_start_message_partially: true,
+            select_end_message_partially: false,
+            // Offset of "(" in the leading text node.
+            start_text_node_offset: 20,
+        },
+    );
+    const expected_copied_lines = [
+        "Desdemona:",
+        "[...]\u{200B}(https://example.com) trailing words",
+        "Desdemona:",
+        "Second message after partial URL bookend",
+    ];
+    assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
+}
+
 async function test_partial_me_bookend_copy_includes_ellipsis(page: Page): Promise<void> {
     // A partial `/me` bookend should copy the selected status text with
     // the same `[...]` marker as a normal bookend.
@@ -328,7 +352,7 @@ async function test_partial_me_bookend_copy_includes_ellipsis(page: Page): Promi
     );
     assert.deepStrictEqual(actual_first, [
         "Desdemona:",
-        "[...]camera for status bookend",
+        "[...]\u{200B}camera for status bookend",
         "Desdemona:",
         "BBB after first status message brav[...]",
     ]);
@@ -347,7 +371,7 @@ async function test_partial_me_bookend_copy_includes_ellipsis(page: Page): Promi
     );
     assert.deepStrictEqual(actual_last, [
         "Desdemona:",
-        "[...]start normal message alpha",
+        "[...]\u{200B}start normal message alpha",
         "Desdemona:",
         "waves at the camera for status[...]",
     ]);
@@ -375,6 +399,18 @@ async function copy_paste_test(page: Page): Promise<void> {
         {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test F"},
 
         {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test G"},
+
+        {
+            stream_name: "Verona",
+            topic: "copy-paste-topic #4",
+            content: "Prefix before paren (https://example.com) trailing words",
+        },
+
+        {
+            stream_name: "Verona",
+            topic: "copy-paste-topic #4",
+            content: "Second message after partial URL bookend",
+        },
 
         {
             stream_name: "Verona",
@@ -406,6 +442,13 @@ async function copy_paste_test(page: Page): Promise<void> {
         ],
         ["Verona > copy-paste-topic #3", ["copy paste test F", "copy paste test G"]],
         [
+            "Verona > copy-paste-topic #4",
+            [
+                "Prefix before paren (https://example.com) trailing words",
+                "Second message after partial URL bookend",
+            ],
+        ],
+        [
             "Verona > copy-paste-topic #5",
             [
                 "AAA start normal message alpha",
@@ -427,6 +470,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_timestamp_clipboard_has_datetime(page);
     await test_copying_selection_with_no_message_content(page);
     await test_multiple_message_selection_with_partially_selected_bookend_messages(page);
+    await test_partial_bookend_before_url_keeps_raw_link(page);
     await test_partial_me_bookend_copy_includes_ellipsis(page);
 }
 
