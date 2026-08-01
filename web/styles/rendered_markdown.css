@@ -789,14 +789,11 @@
     .message_embed {
         display: grid;
         grid-template-columns:
-            [thumbnail-start] var(--length-message-preview-embeds)
-            [thumbnail-end fader-start data-container-start] minmax(0, 1fr)
-            [data-container-end fader-end];
+            [data-container-start] minmax(0, 1fr)
+            [data-container-end];
         grid-template-rows:
-            [border-start thumbnail-start data-container-start] calc(
-                var(--length-message-preview-embeds) - 10%
-            )
-            [fader-start] 10% [data-container-end thumbnail-end border-end fader-end];
+            [data-container-start] auto
+            [data-container-end];
         column-gap: 5px;
         /* We want to control the height without worrying about
            padding... */
@@ -804,8 +801,23 @@
         /* ...though we will account for 10px of padding in the
            height itself, so that the fade effect on long description
            text works as expected. */
-        height: calc(var(--length-message-preview-embeds) + 10px);
+        height: auto;
         padding: 5px;
+
+        /* When a preview image is available, add the thumbnail
+           column and set a fixed height for the card. */
+        &:has(.message_embed_image) {
+            grid-template-columns:
+                [thumbnail-start] var(--length-message-preview-embeds)
+                [thumbnail-end fader-start data-container-start] minmax(0, 1fr)
+                [data-container-end fader-end];
+            grid-template-rows:
+                [border-start thumbnail-start data-container-start] calc(
+                    var(--length-message-preview-embeds) - 10%
+                )
+                [fader-start] 10% [data-container-end thumbnail-end border-end fader-end];
+            height: calc(var(--length-message-preview-embeds) + 10px);
+        }
 
         .message_embed_title {
             font-size: 1.2em;
