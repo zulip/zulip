@@ -245,7 +245,7 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
         // w/o partial selection: "copy paste test B",
-        "[...]paste test B",
+        "[...]\u{200B}paste test B",
         "Verona > copy-paste-topic #2 | Today",
         "Desdemona:",
         "copy paste test C",
@@ -257,6 +257,31 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
         "Desdemona:",
         // w/o partial selection: "copy paste test F",
         "copy paste[...]",
+    ];
+    assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
+}
+
+async function test_partial_bookend_before_url_keeps_raw_link(page: Page): Promise<void> {
+    // Selection starts at the "(" before an auto-linked URL. Without a
+    // zero-width space after the start ellipsis, the bookend would look
+    // like a markdown link labeled "...".
+    const actual_copied_lines = await copy_messages(
+        page,
+        "Prefix before paren (https://example.com) trailing words",
+        "Second message after partial URL bookend",
+        {
+            select_start_message_partially: true,
+            select_end_message_partially: false,
+            // Offset of "(" in the leading text node.
+            start_text_node_offset: 20,
+        },
+    );
+    const expected_copied_lines = [
+        "Desdemona:",
+        // without ZWSP: [...](https://example.com) trailing words
+        "[...]\u{200B}(https://example.com) trailing words",
+        "Desdemona:",
+        "Second message after partial URL bookend",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
@@ -283,6 +308,18 @@ async function copy_paste_test(page: Page): Promise<void> {
         {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test F"},
 
         {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test G"},
+
+        {
+            stream_name: "Verona",
+            topic: "copy-paste-topic #4",
+            content: "Prefix before paren (https://example.com) trailing words",
+        },
+
+        {
+            stream_name: "Verona",
+            topic: "copy-paste-topic #4",
+            content: "Second message after partial URL bookend",
+        },
     ]);
 
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
@@ -295,6 +332,13 @@ async function copy_paste_test(page: Page): Promise<void> {
             ["copy paste test C", "copy paste test D", "copy paste test E"],
         ],
         ["Verona > copy-paste-topic #3", ["copy paste test F", "copy paste test G"]],
+        [
+            "Verona > copy-paste-topic #4",
+            [
+                "Prefix before paren (https://example.com) trailing words",
+                "Second message after partial URL bookend",
+            ],
+        ],
     ]);
     console.log("Messages were sent successfully");
 
@@ -308,6 +352,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_messages_from_several_topics(page);
     await test_timestamp_clipboard_has_datetime(page);
     await test_multiple_message_selection_with_partially_selected_bookend_messages(page);
+    await test_partial_bookend_before_url_keeps_raw_link(page);
 }
 
 await common.run_test(copy_paste_test);

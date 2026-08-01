@@ -84,7 +84,12 @@ function get_html_for_bookend_message_content(
     // inside the first/last paragraph (rather than as a sibling of it) keeps
     // turndown from rendering it on its own line, separated from the text by
     // a blank line.
-    const $ellipsis_span = $("<span>").text("[...]");
+    //
+    // For a start bookend, also insert a zero-width space after the marker.
+    // If the selection continues with "(", converting the HTML to markdown
+    // would otherwise treat the marker as the label of a link.
+    const ellipsis_text = type === "start" ? "[...]\u{200B}" : "[...]";
+    const $ellipsis_span = $("<span>").text(ellipsis_text);
     const $content_children = $(selected_message_content_element).children();
     if (type === "start") {
         const $first_child = $content_children.first();
