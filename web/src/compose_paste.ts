@@ -246,6 +246,26 @@ function get_code_block_language(
     return language;
 }
 
+// Whether the link text is the same as the URL, so we can paste it as bare
+// markdown rather than as a labeled markdown link.
+function is_raw_url_link_text(content: string, node: HTMLAnchorElement): boolean {
+    const href_attr = node.getAttribute("href") ?? "";
+    if (content === href_attr || content === node.href) {
+        return true;
+    }
+    // node.href is a serialized URL and may include a trailing slash that the
+    // attribute and link text do not.
+    // https://url.spec.whatwg.org/#path-state
+    // https://url.spec.whatwg.org/#url-path-serializer
+    // https://html.spec.whatwg.org/multipage/links.html#dom-hyperlink-href
+    const without_trailing_slashes = (url: string): string => url.replace(/\/+$/, "");
+    const normalized_content = without_trailing_slashes(content);
+    return (
+        normalized_content === without_trailing_slashes(href_attr) ||
+        normalized_content === without_trailing_slashes(node.href)
+    );
+}
+
 export function paste_handler_converter(
     paste_html: string,
     $textarea?: JQuery<HTMLTextAreaElement>,
@@ -332,8 +352,8 @@ export function paste_handler_converter(
         filter: ["a"],
         replacement(content, node) {
             assert(node instanceof HTMLAnchorElement);
-            if (node.href === content) {
-                // Checks for raw links without custom text.
+            // Checks for raw links without custom text.
+            if (is_raw_url_link_text(content, node)) {
                 return content;
             }
             if (node.childNodes.length === 1 && node.firstChild!.nodeName === "IMG") {
