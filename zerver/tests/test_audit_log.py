@@ -2007,6 +2007,96 @@ class TestRealmAuditLog(ZulipTestCase):
             .count(),
         )
 
+    def test_workplace_users_count_when_creating_user(self) -> None:
+        """
+        This test checks that the USER_CREATED RealmAuditLog entry
+        is created after the group memberships are updated so that
+        the workplace users count in ROLE_COUNT is correct.
+        """
+        realm = get_realm("zulip")
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Check when workplace_users_group is set to a system group
+        # where just role counts are enough to compute workplace
+        # users count.
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", moderators_group, acting_user=None
+        )
+        realm.refresh_from_db()
+        user_profile = do_create_user(
+            "moderators@zulip.com", "password", realm, "Moderators case", acting_user=None
+        )
+        user_created_audit_log = RealmAuditLog.objects.filter(
+            realm=realm,
+            modified_user=user_profile,
+            event_type=AuditLogEventType.USER_CREATED,
+        ).latest("id")
+        self.assertEqual(
+            user_created_audit_log.extra_data[RealmAuditLog.ROLE_COUNT][
+                RealmAuditLog.ROLE_COUNT_HUMANS
+            ]["workplace_users"],
+            get_recursive_group_members(realm.workplace_users_group_id)
+            .filter(is_bot=False, is_active=True)
+            .count(),
+        )
+
+        # Check when workplace_users_group is set to a system group
+        # where just role counts are not enough and group membership
+        # is used to compute workplace users count.
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", full_members_group, acting_user=None
+        )
+        realm.refresh_from_db()
+        user_profile = do_create_user(
+            "full-members@zulip.com", "password", realm, "Full members case", acting_user=None
+        )
+        user_created_audit_log = RealmAuditLog.objects.filter(
+            realm=realm,
+            modified_user=user_profile,
+            event_type=AuditLogEventType.USER_CREATED,
+        ).latest("id")
+        self.assertEqual(
+            user_created_audit_log.extra_data[RealmAuditLog.ROLE_COUNT][
+                RealmAuditLog.ROLE_COUNT_HUMANS
+            ]["workplace_users"],
+            get_recursive_group_members(realm.workplace_users_group_id)
+            .filter(is_bot=False, is_active=True)
+            .count(),
+        )
+
+        # Check with workplace_users_group set to an anonymous group.
+        do_change_realm_permission_group_setting(
+            realm,
+            "workplace_users_group",
+            self.create_or_update_anonymous_group_for_setting([], [members_group]),
+            acting_user=None,
+        )
+        realm.refresh_from_db()
+        user_profile = do_create_user(
+            "anonymous@zulip.com", "password", realm, "Anonymous group case", acting_user=None
+        )
+        user_created_audit_log = RealmAuditLog.objects.filter(
+            realm=realm,
+            modified_user=user_profile,
+            event_type=AuditLogEventType.USER_CREATED,
+        ).latest("id")
+        self.assertEqual(
+            user_created_audit_log.extra_data[RealmAuditLog.ROLE_COUNT][
+                RealmAuditLog.ROLE_COUNT_HUMANS
+            ]["workplace_users"],
+            get_recursive_group_members(realm.workplace_users_group_id)
+            .filter(is_bot=False, is_active=True)
+            .count(),
+        )
+
     def test_workplace_users_group_changed_entries_on_updating_group_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
