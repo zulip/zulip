@@ -203,6 +203,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issues__opened", expected_topic_name, expected_message)
 
     def test_pull_request_title_edit_moves_topic(self) -> None:
+        self.url = self.build_webhook_url(enable_topic_rename="true")
         old_topic = "public-repo / PR #1 This is a very long Pull request titl..."
         new_topic = "public-repo / PR #1 New Short Title"
         opened_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n``` quote\nThis is a pretty simple change that we need to pull into master.\n```"
@@ -214,6 +215,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=new_topic), 2)
 
     def test_issue_title_edit_moves_topic(self) -> None:
+        self.url = self.build_webhook_url(enable_topic_rename="true")
         old_topic = "zulip-test / issue #33 This is a very long Issue title to..."
         opened_message = "DhruvShetty22 opened [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n``` quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n```"
         new_topic = "zulip-test / issue #33 New Short Title."
@@ -224,8 +226,22 @@ class GitHubWebhookTest(WebhookTestCase):
         self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=old_topic), 0)
         self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=new_topic), 2)
 
+    def test_title_edit_moves_topic_with_channel_id_in_url(self) -> None:
+        channel_id = self.subscribe(self.test_user, self.channel_name).id
+        self.url = self.build_webhook_url(enable_topic_rename="true").replace(
+            f"stream={self.channel_name}", f"stream={channel_id}"
+        )
+        old_topic = "public-repo / PR #1 This is a very long Pull request titl..."
+        new_topic = "public-repo / PR #1 New Short Title"
+        opened_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n``` quote\nThis is a pretty simple change that we need to pull into master.\n```"
+        edited_message = "baxterthehacker renamed [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from:\n``` quote\nThis is a very long Pull request title to test topic truncation when renaming\n```\nto\n``` quote\nNew Short Title\n```"
+        self.check_webhook("pull_request__opened", old_topic, opened_message)
+        self.check_webhook("pull_request__edited_title", new_topic, edited_message)
+        self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=old_topic), 0)
+        self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=new_topic), 2)
+
     def test_title_edit_with_custom_topic_does_not_rename(self) -> None:
-        self.url = self.build_webhook_url(topic="notifications")
+        self.url = self.build_webhook_url(topic="notifications", enable_topic_rename="true")
         edited_message = "baxterthehacker renamed [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from:\n``` quote\nThis is a very long Pull request title to test topic truncation when renaming\n```\nto\n``` quote\nNew Short Title\n```"
         self.check_webhook("pull_request__edited_title", "notifications", edited_message)
         self.assert_length(
@@ -237,6 +253,19 @@ class GitHubWebhookTest(WebhookTestCase):
             ),
             0,
         )
+
+    def test_title_edit_does_not_move_topic_by_default(self) -> None:
+        # With enable_topic_rename turned off, a title edit leaves the
+        # original topic and its history in place instead of moving it.
+        old_topic = "public-repo / PR #1 This is a very long Pull request titl..."
+        new_topic = "public-repo / PR #1 New Short Title"
+        opened_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n``` quote\nThis is a pretty simple change that we need to pull into master.\n```"
+        edited_message = "baxterthehacker renamed [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from:\n``` quote\nThis is a very long Pull request title to test topic truncation when renaming\n```\nto\n``` quote\nNew Short Title\n```"
+        self.check_webhook("pull_request__opened", old_topic, opened_message)
+        self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=old_topic), 1)
+        self.check_webhook("pull_request__edited_title", new_topic, edited_message)
+        self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=old_topic), 1)
+        self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=new_topic), 1)
 
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")

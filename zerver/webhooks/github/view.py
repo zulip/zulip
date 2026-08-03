@@ -1248,6 +1248,7 @@ def api_github_webhook(
     ignore_private_repositories: Json[bool] = False,
     include_repository_name: Json[bool] = False,
     include_emoji_indicators: Json[bool] = True,
+    enable_topic_rename: Json[bool] = False,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -1302,6 +1303,7 @@ def api_github_webhook(
     # Handle topic renaming for PRs and Issues with edited titles
     if (
         sent_message_id is not None
+        and enable_topic_rename
         and user_specified_topic is None
         and header_event in ("pull_request", "issues")
         and payload["action"].tame(check_string) == "edited"
