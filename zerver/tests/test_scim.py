@@ -685,6 +685,39 @@ class TestSCIMUser(SCIMTestCase):
         expected_response_schema = self.generate_user_schema(hamlet)
         self.assertEqual(output_data, expected_response_schema)
 
+    def test_put_change_fails_atomically(self) -> None:
+        """
+        If one of the changes requested in a SCIM update fails partway
+        through, none of the other changes in that same request should
+        be persisted either.
+        """
+        hamlet = self.example_user("hamlet")
+        original_email = hamlet.delivery_email
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MEMBER)
+
+        # This payload changes both the email and the role. We simulate
+        # the role change failing after the email change has already run,
+        # to verify the email change gets rolled back too.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "id": hamlet.id,
+            "userName": "bjensen@zulip.com",
+            "role": "administrator",
+        }
+        with (
+            mock.patch(
+                "zerver.lib.scim.do_change_user_role", side_effect=Exception("simulated failure")
+            ),
+            self.assertLogs("django_scim.views", "ERROR"),
+            self.assertLogs("django.request", "ERROR"),
+        ):
+            result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 500)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.delivery_email, original_email)
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MEMBER)
+
     def test_put_deactivate_reactivate_user(self) -> None:
         hamlet = self.example_user("hamlet")
         # This payload flips the active attribute to deactivate the user.

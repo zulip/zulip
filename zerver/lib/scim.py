@@ -399,30 +399,44 @@ class ZulipSCIMUser(SCIMUser):
                 )
             return
 
-        # TODO: The below operations should ideally be executed in a single
-        # atomic block to avoid failing with partial changes getting saved.
-        # This can be fixed once we figure out how do_deactivate_user can be run
-        # inside an atomic block.
+        # We run the update in a single transaction so that if any of
+        # these operations fails partway through, none of the changes
+        # from this SCIM request are persisted. This used to not be
+        # possible because do_deactivate_user independently deleted
+        # the user's sessions outside of any atomic block, but it now
+        # defers that via transaction.on_commit, which correctly waits
+        # for the outermost transaction to commit.
+        #
+        # We intentionally use a savepoint here, unlike the action
+        # functions called below (which use savepoint=False).
+        # django_scim.views.SCIMView.dispatch wraps view calls in a
+        # bare "except Exception", logs it, and returns a normal error
+        # HttpResponse without re-raising -- so request processing
+        # continues normally after a failure here. Without a
+        # savepoint, that failure would otherwise leave the
+        # connection's outer transaction needing a rollback that
+        # nothing later in the request performs, breaking any further
+        # database access for the rest of the request.
+        with transaction.atomic(savepoint=True):  # intentional use of savepoint=True
+            # We process full_name first here, since it's the only one that can fail.
+            if full_name_new_value:
+                check_change_full_name(self.obj, full_name_new_value, acting_user=None)
 
-        # We process full_name first here, since it's the only one that can fail.
-        if full_name_new_value:
-            check_change_full_name(self.obj, full_name_new_value, acting_user=None)
+            if email_new_value is not None:
+                do_change_user_delivery_email(self.obj, email_new_value, acting_user=None)
 
-        if email_new_value is not None:
-            do_change_user_delivery_email(self.obj, email_new_value, acting_user=None)
+            if role_new_value is not None:
+                do_change_user_role(self.obj, role_new_value, acting_user=None, notify=True)
 
-        if role_new_value is not None:
-            do_change_user_role(self.obj, role_new_value, acting_user=None, notify=True)
+            if is_active_new_value is not None and is_active_new_value:
+                do_reactivate_user(self.obj, acting_user=None)
+            elif is_active_new_value is not None and not is_active_new_value:
+                do_deactivate_user(self.obj, acting_user=None)
 
-        if is_active_new_value is not None and is_active_new_value:
-            do_reactivate_user(self.obj, acting_user=None)
-        elif is_active_new_value is not None and not is_active_new_value:
-            do_deactivate_user(self.obj, acting_user=None)
-
-        if custom_profile_data:
-            do_update_user_custom_profile_data_if_changed(
-                self.obj, custom_profile_data, None, notify=True
-            )
+            if custom_profile_data:
+                do_update_user_custom_profile_data_if_changed(
+                    self.obj, custom_profile_data, None, notify=True
+                )
 
     def delete(self) -> None:
         """
