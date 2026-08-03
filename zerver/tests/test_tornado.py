@@ -196,3 +196,34 @@ class EventsTestCase(TornadoWebTestCase):
 
                 self.assert_length(queries, 1)
                 self.assertIn("django_session", queries[0].sql)
+
+
+class ErrorHandlingTestCase(TornadoWebTestCase):
+    async def test_url_not_found(self) -> None:
+        # nginx merges the duplicate slashes when matching its
+        # `location` block, but proxies the original path.
+        async with self.with_tornado():
+            response = await self.fetch_async(
+                "GET", "//api/v1/events", subdomain="zulip", raise_error=False
+            )
+            self.assertEqual(response.code, 404)
+            self.assertEqual(orjson.loads(response.body), {"result": "error", "msg": "Not found"})
+
+    async def test_uncaught_exception(self) -> None:
+        async with self.with_tornado():
+            await sync_to_async(lambda: self.login_user(self.example_user("hamlet")))()
+            with (
+                mock.patch(
+                    "zerver.tornado.views.fetch_events", side_effect=Exception("test error")
+                ),
+                self.assertLogs("django.request", level="ERROR") as error_log,
+            ):
+                response = await self.fetch_async(
+                    "GET", "/json/events?dont_block=true", subdomain="zulip", raise_error=False
+                )
+            self.assertEqual(response.code, 500)
+            self.assertEqual(
+                orjson.loads(response.body),
+                {"result": "error", "msg": "Internal server error"},
+            )
+            self.assertIn("Internal Server Error: /json/events", error_log.output[0])
