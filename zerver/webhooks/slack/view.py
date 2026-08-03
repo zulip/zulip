@@ -69,7 +69,13 @@ def get_slack_sender_name(user_id: str, token: str) -> str:
         token=token,
         user=user_id,
     )
-    return slack_user_data["real_name"]
+    # The "real_name" field is not guaranteed to be included.
+    # If it is included -- although unlikely -- its type could
+    # be null, an empty string, or None.
+    user_name = slack_user_data.get("real_name")
+    if isinstance(user_name, str) and user_name.strip():
+        return user_name
+    return f"Slack user {user_id}"
 
 
 def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
