@@ -64,6 +64,7 @@ from zerver.lib.users import (
     Account,
     access_user_by_id,
     access_user_by_id_including_cross_realm,
+    bulk_get_subscribers_of_target_user_subscriptions,
     check_can_access_user,
     get_accessible_user_ids,
     get_accounts_for_email,
@@ -3591,7 +3592,7 @@ class GetProfileTest(ZulipTestCase):
         self.set_up_db_for_testing_user_access()
 
         self.login("polonius")
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(6):
             result = orjson.loads(self.client_get("/json/users").content)
         accessible_users = result["members"]
         # The user can access 3 bot users and 7 human users.
@@ -3684,7 +3685,7 @@ class GetProfileTest(ZulipTestCase):
         accessible_user_ids_subset = [hamlet.id, iago.id, aaron.id, zoe.id, webhook_bot.id]
         inaccessible_user_ids_subset = [cordelia.id, desdemona.id]
         user_ids_to_fetch = accessible_user_ids_subset + inaccessible_user_ids_subset
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(6):
             result = orjson.loads(
                 self.client_get(
                     "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
@@ -3753,7 +3754,7 @@ class GetProfileTest(ZulipTestCase):
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
 
-        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(7):
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(6):
             result = self.client_get("/json/users")
         self.assert_json_success(result)
 
@@ -3848,6 +3849,81 @@ class GetProfileTest(ZulipTestCase):
         # already have very limited access to users.
         hamlet = self.example_user("hamlet")
         self.assertTrue(check_can_access_user(hamlet, None))
+
+    def test_bulk_get_subscribers_of_target_user_subscriptions(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        shiva = self.example_user("shiva")
+        zoe = self.example_user("ZOE")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        polonius = self.example_user("polonius")
+        imported_user = self.example_user("imported_user")
+
+        # Unsubscribe cordelia and polonius from their
+        # ONLY stream subscription, so we can be sure
+        # they are included/excluded only because of DM interactions.
+        self.unsubscribe(cordelia, "Verona")
+        self.unsubscribe(polonius, "Verona")
+
+        self.send_group_direct_message(hamlet, [cordelia, polonius, othello])
+        self.send_personal_message(aaron, cordelia)
+
+        do_deactivate_user(cordelia, acting_user=None)
+        do_deactivate_user(zoe, acting_user=None)
+
+        subscribers_dict = bulk_get_subscribers_of_target_user_subscriptions([hamlet, aaron])
+
+        # polonius shares a DirectMessage group with hamlet.
+        # The rest share a stream with hamlet.
+        hamlet_subscribers = {
+            polonius.id,
+            aaron.id,
+            hamlet.id,
+            othello.id,
+            desdemona.id,
+            iago.id,
+            prospero.id,
+            shiva.id,
+            imported_user.id,
+        }
+
+        # polonius does NOT share any subscription with aaron.
+        # The rest share a stream with aaron.
+        aaron_subscribers = {
+            aaron.id,
+            hamlet.id,
+            othello.id,
+            desdemona.id,
+            iago.id,
+            prospero.id,
+            shiva.id,
+        }
+
+        # By default, all deactivated subscribers, cordelia and zoe,
+        # are excluded.
+
+        self.assertEqual(hamlet_subscribers, subscribers_dict[hamlet.id])
+        self.assertEqual(aaron_subscribers, subscribers_dict[aaron.id])
+
+        # We use the flag to also include deactivated subscribers
+        # who share a DirectMessage (1:1 or group) subscription.
+        subscribers_dict = bulk_get_subscribers_of_target_user_subscriptions(
+            [hamlet, aaron], include_deactivated_users_for_dm_groups=True
+        )
+
+        # Same subscribers as above BUT with cordelia,
+        # who shares a DirectMessage with hamlet and aaron,
+        # now included, since the flag is scoped to DM interaction.
+        # Deactivated stream subscribers (zoe) are still excluded.
+        hamlet_subscribers.add(cordelia.id)
+        aaron_subscribers.add(cordelia.id)
+
+        self.assertEqual(hamlet_subscribers, subscribers_dict[hamlet.id])
+        self.assertEqual(aaron_subscribers, subscribers_dict[aaron.id])
 
     def test_get_users_for_spectators(self) -> None:
         # Checks that spectators can fetch users data.
