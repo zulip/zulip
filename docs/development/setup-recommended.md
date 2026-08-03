@@ -119,8 +119,19 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    which includes installing an Ubuntu WSL distribution.
 
 1. **Create a new WSL instance for Zulip development**.
-   You can refer [this article](https://cloudbytes.dev/snippets/how-to-install-multiple-instances-of-ubuntu-in-wsl2)
-   for instructions on how to do so. Using an existing instance will
+   You can create a dedicated WSL instance with the following command:
+
+   ```console
+   wsl --install Ubuntu --name zulip
+   ```
+
+   To login to that instance, if using [Windows Terminal](https://learn.microsoft.com/en-us/windows/terminal/install), select it from the new tab dropdown, or run this Windows command:
+
+   ```console
+   wsl -d zulip
+   ```
+
+   Using an existing instance will
    probably work, but a fresh distribution is recommended if you
    previously installed other software like `node` in your WSL environment that
    might conflict with the Zulip environment.
