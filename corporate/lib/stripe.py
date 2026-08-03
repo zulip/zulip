@@ -1355,7 +1355,7 @@ class BillingSession(ABC):
                 is_created_for_free_trial_upgrade=current_plan_id is not None and on_free_trial,
             )
 
-            if stripe_invoice.status != "paid" and charge_automatically:
+            if charge_automatically and stripe_invoice.status != "paid":
                 # Stripe can take its sweet hour to charge customers after creating an invoice.
                 # Since we want to charge customers immediately, we charge them manually.
                 # Then poll for the status of the invoice to see if the payment succeeded.
