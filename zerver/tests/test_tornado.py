@@ -43,7 +43,9 @@ class TornadoWebTestCase(ZulipTestCase):
         signals.request_finished.disconnect(close_old_connections)
         self.session_cookie: dict[str, str] | None = None
         try:
-            yield
+            # Match production, where Tornado uses its own minimal urlconf.
+            with override_settings(ROOT_URLCONF="zproject.tornado_urls"):
+                yield
         finally:
             self.http_client.close()
             self.http_server.stop()
