@@ -399,30 +399,29 @@ class ZulipSCIMUser(SCIMUser):
                 )
             return
 
-        # TODO: The below operations should ideally be executed in a single
-        # atomic block to avoid failing with partial changes getting saved.
-        # This can be fixed once we figure out how do_deactivate_user can be run
-        # inside an atomic block.
+        # We create a savepoint here, unlike the savepoint=False
+        # convention followed by the action functions below, so that a
+        # failure rolls back only our own changes when this runs nested
+        # inside an outer atomic block during tests in Django's TestCase.
+        with transaction.atomic(savepoint=True):  # intentional use of savepoint=True
+            if full_name_new_value:
+                check_change_full_name(self.obj, full_name_new_value, acting_user=None)
 
-        # We process full_name first here, since it's the only one that can fail.
-        if full_name_new_value:
-            check_change_full_name(self.obj, full_name_new_value, acting_user=None)
+            if email_new_value is not None:
+                do_change_user_delivery_email(self.obj, email_new_value, acting_user=None)
 
-        if email_new_value is not None:
-            do_change_user_delivery_email(self.obj, email_new_value, acting_user=None)
+            if role_new_value is not None:
+                do_change_user_role(self.obj, role_new_value, acting_user=None, notify=True)
 
-        if role_new_value is not None:
-            do_change_user_role(self.obj, role_new_value, acting_user=None, notify=True)
+            if is_active_new_value is not None and is_active_new_value:
+                do_reactivate_user(self.obj, acting_user=None)
+            elif is_active_new_value is not None and not is_active_new_value:
+                do_deactivate_user(self.obj, acting_user=None)
 
-        if is_active_new_value is not None and is_active_new_value:
-            do_reactivate_user(self.obj, acting_user=None)
-        elif is_active_new_value is not None and not is_active_new_value:
-            do_deactivate_user(self.obj, acting_user=None)
-
-        if custom_profile_data:
-            do_update_user_custom_profile_data_if_changed(
-                self.obj, custom_profile_data, None, notify=True
-            )
+            if custom_profile_data:
+                do_update_user_custom_profile_data_if_changed(
+                    self.obj, custom_profile_data, None, notify=True
+                )
 
     def delete(self) -> None:
         """
