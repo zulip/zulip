@@ -386,8 +386,8 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
     non_guest_user_ids = active_non_guest_user_ids(realm.id)
     users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([user_profile], realm)
 
-    # This code path is parallel to
-    # bulk_get_subscribers_of_target_user_subscriptions, but can't reuse it
+    # This code path is similar to
+    # get_subscribers_of_target_user_subscriptions, but can't reuse it
     # because we need to process stream and direct_message_group
     # subscriptions separately.
     deactivated_user_subs = Subscription.objects.filter(
