@@ -180,7 +180,7 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 1. [Create a new SSH key][create-ssh-key] for the WSL 2 virtual
    machine and add it to your GitHub account. Note that SSH keys
    linked to your Windows computer will not work within the virtual
-   machine.
+   machine without additional configuration not covered in this guide.
 
 WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
