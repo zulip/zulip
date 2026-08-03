@@ -557,18 +557,6 @@ def do_create_user(
     event_time = user_profile.date_joined
     if not acting_user:
         acting_user = user_profile
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        acting_user=acting_user,
-        modified_user=user_profile,
-        event_type=AuditLogEventType.USER_CREATED,
-        event_time=event_time,
-        extra_data={
-            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-        },
-    )
-    maybe_enqueue_audit_log_upload(user_profile.realm)
-
     if realm_creation:
         # If this user just created a realm, make sure they are
         # properly tagged as the creator of the realm.
@@ -581,22 +569,12 @@ def do_create_user(
         realm_creation_audit_log.acting_user = user_profile
         realm_creation_audit_log.save(update_fields=["acting_user"])
 
-    if settings.BILLING_ENABLED:
-        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-        billing_session.update_license_ledger_if_needed(event_time)
-
     system_user_group = get_system_user_group_for_user(user_profile)
     UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        modified_user=user_profile,
-        modified_user_group=system_user_group,
-        event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-        event_time=event_time,
-        acting_user=acting_user,
+    is_new_full_member = (
+        user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member
     )
-
-    if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+    if is_new_full_member:
         full_members_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.FULL_MEMBERS,
             realm_for_sharding=user_profile.realm,
@@ -605,6 +583,30 @@ def do_create_user(
         UserGroupMembership.objects.create(
             user_profile=user_profile, user_group=full_members_system_group
         )
+
+    # These are recorded only once the system group memberships above
+    # have been created, because realm_user_count_by_role counts the
+    # workplace users from memberships of realm.workplace_users_group,
+    # for cases where we cannot compute it directly from role counts.
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        event_type=AuditLogEventType.USER_CREATED,
+        event_time=event_time,
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+        },
+    )
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        modified_user=user_profile,
+        modified_user_group=system_user_group,
+        event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        event_time=event_time,
+        acting_user=acting_user,
+    )
+    if is_new_full_member:
         RealmAuditLog.objects.create(
             realm=user_profile.realm,
             modified_user=user_profile,
@@ -613,13 +615,18 @@ def do_create_user(
             event_time=event_time,
             acting_user=acting_user,
         )
+    maybe_enqueue_audit_log_upload(user_profile.realm)
+
+    if settings.BILLING_ENABLED:
+        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+        billing_session.update_license_ledger_if_needed(event_time)
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
     notify_created_user(user_profile, [])
 
     do_send_user_group_members_update_event("add_members", system_user_group, [user_profile.id])
-    if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+    if is_new_full_member:
         do_send_user_group_members_update_event(
             "add_members", full_members_system_group, [user_profile.id]
         )
