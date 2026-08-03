@@ -2,7 +2,7 @@ import os
 import re
 import tempfile
 from datetime import timedelta
-from io import StringIO
+from io import BytesIO, StringIO
 from unittest import mock
 from unittest.mock import patch
 from urllib.parse import quote
@@ -52,6 +52,7 @@ from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, Message, OnboardingStep, Realm, RealmDomain, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
+from zerver.upload_handler import TEMPORARY_FILE_MAX_EXTENSION_LENGTH, truncate_filename_extension
 
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
@@ -2251,6 +2252,51 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/realm/emoji/new", {"f1": f})
             self.assert_json_error(result, "Image size exceeds limit")
             resize_mock.assert_called_once()
+
+
+class TemporaryFileUploadExtensionTests(ZulipTestCase):
+    def make_file(self, filename: str) -> BytesIO:
+        # We cannot use SimpleUploadedFile here, because Django truncates the
+        # name of an UploadedFile to 255 characters, which is precisely the
+        # sanitization we want to test happening without.
+        uploaded_file = BytesIO(b"zulip!")
+        uploaded_file.name = filename
+        return uploaded_file
+
+    def test_truncate_filename_extension(self) -> None:
+        self.assertEqual(truncate_filename_extension("test.txt"), "test.txt")
+        self.assertEqual(truncate_filename_extension("no_extension"), "no_extension")
+        self.assertEqual(truncate_filename_extension("tarball.tar.gz"), "tarball.tar.gz")
+
+        # A long extension is truncated, leaving the rest of the name alone.
+        truncated = truncate_filename_extension("test." + "a" * 300)
+        self.assertEqual(truncated, "test." + "a" * (TEMPORARY_FILE_MAX_EXTENSION_LENGTH - 1))
+
+        # Truncation happens on encoded bytes, and never leaves a character
+        # partially encoded. Each snowman takes 3 bytes, so 78 of them plus
+        # the "." fit in the 237 bytes available.
+        truncated = truncate_filename_extension("test." + "☃" * 200)
+        self.assertEqual(truncated, "test." + "☃" * 78)
+
+    def test_upload_file_with_long_extension(self) -> None:
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/user_uploads", {"file": self.make_file("test." + "a" * 300)}
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            "test." + "a" * (TEMPORARY_FILE_MAX_EXTENSION_LENGTH - 1), response_dict["filename"]
+        )
+
+    def test_multipart_request_to_nonexistent_endpoint(self) -> None:
+        # Our logging middleware parses the request body looking for a
+        # "client" parameter before the URL has been resolved, so a filename
+        # too long to spool to disk raised an unhandled OSError (500), rather
+        # than the 404. See #39874 description for details.
+        result = self.client_post(
+            "/json/nonexistent_endpoint", {"file": self.make_file("test." + "a" * 300)}
+        )
+        self.assertEqual(result.status_code, 404)
 
 
 class SanitizeNameTests(ZulipTestCase):
