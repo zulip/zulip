@@ -136,7 +136,7 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    previously installed other software like `node` in your WSL environment that
    might conflict with the Zulip environment.
 
-1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
+1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services. (This is the default setting since the [Ubuntu 23.04 release](https://canonical.com/blog/ubuntu-desktop-23-04-release-roundup#:~:text=Systemd%20becomes%20the%20default%20for%20Ubuntu%20on%20WSL))
    To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
    Then, you will need to restart WSL 2 before continuing.
 
