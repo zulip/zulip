@@ -219,7 +219,14 @@ class DemoCreationTest(ZulipTestCase):
 
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
-    def check_able_to_create_realm(self, email: str, password: str = "test") -> None:
+    def check_able_to_create_realm(
+        self,
+        email: str,
+        password: str = "test",
+        *,
+        full_name: str = "Test User",
+        expected_full_name: str | None = None,
+    ) -> None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
         signups_stream, _ = create_stream_if_needed(notification_bot.realm, "signups")
@@ -260,7 +267,11 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
         result = self.submit_reg_form_for_user(
-            email, password, realm_subdomain=string_id, realm_name=org_name
+            email,
+            password,
+            full_name=full_name,
+            realm_subdomain=string_id,
+            realm_name=org_name,
         )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
@@ -272,6 +283,8 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(realm.string_id, string_id)
         user = get_user(email, realm)
         self.assertEqual(user.realm, realm)
+        if expected_full_name is not None:
+            self.assertEqual(user.full_name, expected_full_name)
 
         # Check that user is the owner.
         self.assertEqual(user.role, UserProfile.ROLE_REALM_OWNER)
@@ -347,7 +360,11 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(realm.display_subdomain, ".")
 
     def test_create_realm_non_existing_email(self) -> None:
-        self.check_able_to_create_realm("user1@test.com")
+        self.check_able_to_create_realm(
+            "user1@test.com",
+            full_name="New Realm Owner",
+            expected_full_name="New Realm Owner",
+        )
 
     def test_create_realm_existing_email(self) -> None:
         self.check_able_to_create_realm("hamlet@zulip.com")
