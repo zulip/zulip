@@ -225,6 +225,31 @@ def store_message_attachment(
     )
 
 
+# Most Linux filesystems limit each component of a path to 255 bytes,
+# and we store uploaded files with their sanitized name as the last
+# component of the path.
+MAX_FILE_NAME_LENGTH = 255
+
+
+def truncate_file_name(file_name: str, max_length: int) -> str:
+    """Truncates a file name to at most max_length bytes, preserving its
+    extension if that leaves room for the rest of the name.
+    """
+    if len(file_name.encode()) <= max_length:
+        return file_name
+
+    stem, extension = os.path.splitext(file_name)
+    if len(extension.encode()) >= max_length:
+        # The extension alone is too long to preserve, so truncate the
+        # name as a whole instead.
+        stem, extension = file_name, ""
+
+    # Slicing the encoded name can cut a multi-byte character in half;
+    # errors="ignore" discards such a partial character.
+    stem_length = max_length - len(extension.encode())
+    return stem.encode()[:stem_length].decode(errors="ignore") + extension
+
+
 def sanitize_name(value: str, *, strict: bool = False) -> str:
     """Sanitizes a value to be safe to store in a Linux filesystem, in
     S3, and in a URL.  So Unicode is allowed, but not special
@@ -239,6 +264,7 @@ def sanitize_name(value: str, *, strict: bool = False) -> str:
     * adding '.' to the list of allowed characters.
     * preserving the case of the value.
     * not stripping trailing dashes and underscores.
+    * limiting the length of the result.
 
     """
     if strict:
@@ -247,6 +273,11 @@ def sanitize_name(value: str, *, strict: bool = False) -> str:
         value = unicodedata.normalize("NFKC", value)
         value = re.sub(r"[^\w\s.-]", "", value).strip()
     value = re.sub(r"[-\s]+", "-", value)
+
+    # NFKC normalization can make the value considerably longer -- a
+    # single character can normalize to dozens of them -- so this has
+    # to happen after normalizing, not to the caller's value.
+    value = truncate_file_name(value, MAX_FILE_NAME_LENGTH)
 
     # Django's MultiPartParser never returns files named this, but we
     # could get them after removing spaces; change the name to a safer

@@ -45,7 +45,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     ratelimit_rule,
 )
-from zerver.lib.upload import sanitize_name, upload_message_attachment
+from zerver.lib.upload import MAX_FILE_NAME_LENGTH, sanitize_name, upload_message_attachment
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
@@ -2313,6 +2313,15 @@ class SanitizeNameTests(ZulipTestCase):
         self.assertEqual(
             sanitize_name('~/."\\`\\?*"u0`000ssh/test.t**{}ar.gz'), ".u0000sshtest.tar.gz"
         )
+
+    def test_long_file_name(self) -> None:
+        self.assertEqual(sanitize_name("a" * 300 + ".txt"), "a" * 251 + ".txt")
+        self.assertEqual(sanitize_name("test." + "a" * 300), "test." + "a" * 250)
+        # Truncation counts bytes, not characters.
+        self.assertEqual(sanitize_name("테" * 100 + ".txt"), "테" * 83 + ".txt")
+        # A single character can normalize to many more, so the result
+        # has to be measured after normalizing rather than before.
+        self.assertEqual(len(sanitize_name("ﷺ" * 79).encode()), MAX_FILE_NAME_LENGTH)
 
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
