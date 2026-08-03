@@ -834,14 +834,10 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 
     active_non_guest_user_ids_in_realm = active_non_guest_user_ids(realm.id)
 
-    users_sharing_any_subscription = bulk_get_subscribers_of_target_user_subscriptions(
-        [target_user]
-    )
+    users_sharing_any_subscription = get_subscribers_of_target_user_subscriptions(target_user)
 
     user_ids_who_can_access_target_user = (
-        {target_user.id}
-        | set(active_non_guest_user_ids_in_realm)
-        | users_sharing_any_subscription[target_user.id]
+        {target_user.id} | set(active_non_guest_user_ids_in_realm) | users_sharing_any_subscription
     )
     return list(user_ids_who_can_access_target_user)
 
@@ -850,6 +846,9 @@ def bulk_get_subscribers_of_target_user_subscriptions(
     target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
 ) -> dict[int, set[int]]:
     """Get all users involved in stream and direct message groups with target_users."""
+    # For a single target_user, use
+    # get_subscribers_of_target_user_subscriptions
+    # as it's more efficient.
     target_user_ids = [user.id for user in target_users]
     target_user_subscriptions = (
         Subscription.objects.filter(
@@ -907,6 +906,33 @@ def bulk_get_subscribers_of_target_user_subscriptions(
             )
 
     return users_subbed_to_target_user_subscriptions_dict
+
+
+def get_subscribers_of_target_user_subscriptions(
+    target_user: UserProfile, include_deactivated_users_for_dm_groups: bool = False
+) -> set[int]:
+    target_user_subbed_recipient_ids = Subscription.objects.filter(
+        user_profile=target_user,
+        active=True,
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+    ).values("recipient_id")
+
+    subs_in_target_user_subscriptions_query = Subscription.objects.filter(
+        recipient_id__in=target_user_subbed_recipient_ids,
+        active=True,
+    )
+
+    if include_deactivated_users_for_dm_groups:
+        subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
+            Q(recipient__type=Recipient.STREAM, is_user_active=True)
+            | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
+        )
+    else:
+        subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
+            is_user_active=True,
+        )
+
+    return set(subs_in_target_user_subscriptions_query.values_list("user_profile_id", flat=True))
 
 
 def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
@@ -989,17 +1015,13 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
 def get_accessible_user_ids(
     user_profile: UserProfile, include_deactivated_users: bool = False
 ) -> set[int]:
-    subscribers_dict_of_target_user_subscriptions = (
-        bulk_get_subscribers_of_target_user_subscriptions(
-            [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
-        )
+    users_sharing_any_subscription = get_subscribers_of_target_user_subscriptions(
+        user_profile, include_deactivated_users_for_dm_groups=include_deactivated_users
     )
 
     # This does not include bots, because either the caller
     # wants only human users or it handles bots separately.
-    accessible_user_ids = {user_profile.id} | subscribers_dict_of_target_user_subscriptions[
-        user_profile.id
-    ]
+    accessible_user_ids = {user_profile.id} | users_sharing_any_subscription
 
     return accessible_user_ids
 
