@@ -174,7 +174,7 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_issues_edited_title(self) -> None:
         expected_topic_name = "zulip-test / issue #33 New Short Title."
-        expected_message = "DhruvShetty22 edited [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n``` quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n```"
+        expected_message = "DhruvShetty22 renamed [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33) from:\n``` quote\nThis is a very long Issue title to test topic truncation when renaming.\n```\nto\n``` quote\nNew Short Title.\n```"
         self.check_webhook("issues__edited_title", expected_topic_name, expected_message)
 
     def test_issue_comment_msg(self) -> None:
@@ -206,9 +206,7 @@ class GitHubWebhookTest(WebhookTestCase):
         old_topic = "public-repo / PR #1 This is a very long Pull request titl..."
         new_topic = "public-repo / PR #1 New Short Title"
         opened_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n``` quote\nThis is a pretty simple change that we need to pull into master.\n```"
-        edited_message = (
-            "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
-        )
+        edited_message = "baxterthehacker renamed [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from:\n``` quote\nThis is a very long Pull request title to test topic truncation when renaming\n```\nto\n``` quote\nNew Short Title\n```"
         self.check_webhook("pull_request__opened", old_topic, opened_message)
         self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=old_topic), 1)
         self.check_webhook("pull_request__edited_title", new_topic, edited_message)
@@ -219,7 +217,7 @@ class GitHubWebhookTest(WebhookTestCase):
         old_topic = "zulip-test / issue #33 This is a very long Issue title to..."
         opened_message = "DhruvShetty22 opened [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n``` quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n```"
         new_topic = "zulip-test / issue #33 New Short Title."
-        edited_message = "DhruvShetty22 edited [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n``` quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n```"
+        edited_message = "DhruvShetty22 renamed [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33) from:\n``` quote\nThis is a very long Issue title to test topic truncation when renaming.\n```\nto\n``` quote\nNew Short Title.\n```"
         self.check_webhook("issues__opened", old_topic, opened_message)
         self.assert_length(Message.objects.filter(realm=self.test_user.realm, subject=old_topic), 1)
         self.check_webhook("issues__edited_title", new_topic, edited_message)
@@ -228,7 +226,7 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_title_edit_with_custom_topic_does_not_rename(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
-        edited_message = "baxterthehacker edited [PR #1 New Short Title](https://github.com/baxterthehacker/public-repo/pull/1)."
+        edited_message = "baxterthehacker renamed [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from:\n``` quote\nThis is a very long Pull request title to test topic truncation when renaming\n```\nto\n``` quote\nNew Short Title\n```"
         self.check_webhook("pull_request__edited_title", "notifications", edited_message)
         self.assert_length(
             Message.objects.filter(realm=self.test_user.realm, subject="notifications"), 1
@@ -513,9 +511,7 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_pull_request_edited_msg(self) -> None:
         expected_topic = "public-repo / PR #1 New Short Title"
-        expected_message = (
-            "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
-        )
+        expected_message = "baxterthehacker renamed [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from:\n``` quote\nThis is a very long Pull request title to test topic truncation when renaming\n```\nto\n``` quote\nNew Short Title\n```"
         self.check_webhook("pull_request__edited_title", expected_topic, expected_message)
 
     def test_pull_request_edited_with_body_change(self) -> None:
