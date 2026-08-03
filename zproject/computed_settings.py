@@ -631,8 +631,13 @@ if not DEBUG:
 # our compilemessages management command.
 LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, "locale"),)
 
-# We want all temporary uploaded files to be stored on disk.
+# We want all temporary uploaded files to be stored on disk, so the
+# memory handler that Django lists first is never activated.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "zerver.lib.upload.ZulipTemporaryFileUploadHandler",
+]
 
 if DEVELOPMENT or "ZULIP_COLLECTING_STATIC" in os.environ:
     STATICFILES_DIRS = [os.path.join(DEPLOY_ROOT, "static")]

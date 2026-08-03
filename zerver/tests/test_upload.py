@@ -743,6 +743,32 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertTrue(response_dict["url"].endswith("/" + expected_url))
             self.assertEqual(response_dict["filename"], expected_filename)
 
+    def test_long_file_name(self) -> None:
+        """
+        File names too long to be a filesystem path component are
+        truncated, rather than failing the request.
+        """
+        self.login("hamlet")
+        for uploaded_filename, expected_filename in [
+            # An extension too long to preserve is truncated along with
+            # the rest of the name.
+            ("zulip." + "a" * 300, "zulip." + "a" * 231),
+            # A short extension is preserved.
+            ("a" * 300 + ".txt", "a" * 233 + ".txt"),
+            # Truncation counts bytes rather than characters, and never
+            # cuts a multi-byte character in half.
+            ("日" * 100 + ".txt", "日" * 77 + ".txt"),
+        ]:
+            fp = StringIO("bah!")
+            fp.name = uploaded_filename
+
+            result = self.client_post("/json/user_uploads", {"f1": fp})
+            response_dict = self.assert_json_success(result)
+            self.assertEqual(response_dict["filename"], expected_filename)
+            path_component = response_dict["url"].rsplit("/", 1)[1]
+            self.assertEqual(path_component, sanitize_name(expected_filename))
+            self.assertLessEqual(len(path_component.encode()), MAX_FILE_NAME_LENGTH)
+
     def test_realm_quota(self) -> None:
         """
         Realm quota for uploading should not be exceeded.

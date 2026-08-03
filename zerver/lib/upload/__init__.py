@@ -14,8 +14,10 @@ import chardet
 import pyvips
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
+from django.core.files.uploadhandler import TemporaryFileUploadHandler
 from django.db import transaction
 from django.utils.translation import gettext as _
+from typing_extensions import override
 
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -230,6 +232,12 @@ def store_message_attachment(
 # component of the path.
 MAX_FILE_NAME_LENGTH = 255
 
+# Django's TemporaryUploadedFile, which every upload is streamed
+# through, names its temporary file "tmpXXXXXXXX.upload" followed by
+# the extension of the name we hand it, so that name has to be short
+# enough to leave room for the prefix.
+MAX_UPLOADED_FILE_NAME_LENGTH = MAX_FILE_NAME_LENGTH - len("tmpXXXXXXXX.upload")
+
 
 def truncate_file_name(file_name: str, max_length: int) -> str:
     """Truncates a file name to at most max_length bytes, preserving its
@@ -248,6 +256,35 @@ def truncate_file_name(file_name: str, max_length: int) -> str:
     # errors="ignore" discards such a partial character.
     stem_length = max_length - len(extension.encode())
     return stem.encode()[:stem_length].decode(errors="ignore") + extension
+
+
+class ZulipTemporaryFileUploadHandler(TemporaryFileUploadHandler):
+    """Django places no limit on the length of the extension it appends to
+    the name of the temporary file it streams an upload into, so a
+    client can make creating that file fail with ENAMETOOLONG just by
+    sending a long enough file name. Django does truncate the name that
+    it hands to the application, but only once that temporary file
+    already exists.
+    """
+
+    @override
+    def new_file(
+        self,
+        field_name: str,
+        file_name: str,
+        content_type: str,
+        content_length: int | None,
+        charset: str | None = None,
+        content_type_extra: dict[str, bytes] | None = None,
+    ) -> None:
+        super().new_file(
+            field_name,
+            truncate_file_name(file_name, MAX_UPLOADED_FILE_NAME_LENGTH),
+            content_type,
+            content_length,
+            charset,
+            content_type_extra,
+        )
 
 
 def sanitize_name(value: str, *, strict: bool = False) -> str:
