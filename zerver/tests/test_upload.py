@@ -46,6 +46,7 @@ from zerver.lib.test_helpers import (
     ratelimit_rule,
 )
 from zerver.lib.upload import (
+    clean_uploaded_content_type,
     clean_uploaded_file_name,
     remove_control_characters,
     sanitize_name,
@@ -202,6 +203,28 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertEqual(result.status_code, 200)
                 self.assertEqual(result["Content-Disposition"], f'inline; filename="{stored_name}"')
                 consume_response(result)
+
+    def test_content_type_with_control_characters(self) -> None:
+        """
+        Django does not sanitize the content type of an uploaded part, so
+        control characters in it reach us here; one which is nothing
+        but them is guessed from the filename, as a missing one is.
+        """
+        self.login("hamlet")
+
+        uploaded_file = SimpleUploadedFile("zulip.png", b"zulip!", content_type="\x01")
+        result = self.api_post(
+            self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
+        )
+        url = self.assert_json_success(result)["url"]
+
+        attachment = Attachment.objects.get(path_id=url.removeprefix("/user_uploads/"))
+        self.assertEqual(attachment.content_type, "image/png")
+
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], "image/png")
+        consume_response(result)
 
     def test_guess_content_type_from_filename(self) -> None:
         """
@@ -2307,6 +2330,12 @@ class RemoveControlCharactersTests(ZulipTestCase):
         # fails to escape.
         self.assertEqual(remove_control_characters("report.pdf\n"), "report.pdf")
         self.assertEqual(remove_control_characters("\n"), "")
+        # Content types get the same treatment; a CR or LF in one
+        # would otherwise be injected into the Content-Type header.
+        self.assertEqual(remove_control_characters("image/png\n"), "image/png")
+        self.assertEqual(
+            remove_control_characters("text/plain\r\nX-Foo: bar"), "text/plainX-Foo: bar"
+        )
 
 
 class CleanUploadedFileNameTests(ZulipTestCase):
@@ -2318,6 +2347,21 @@ class CleanUploadedFileNameTests(ZulipTestCase):
         self.assertEqual(clean_uploaded_file_name("\n\n"), "uploaded-file")
         self.assertEqual(clean_uploaded_file_name("\x01.\x02"), "uploaded-file")
         self.assertEqual(clean_uploaded_file_name(".."), "uploaded-file")
+
+
+class CleanUploadedContentTypeTests(ZulipTestCase):
+    def test_clean_uploaded_content_type(self) -> None:
+        self.assertEqual(clean_uploaded_content_type("image/png\n", "zulip.png"), "image/png")
+        self.assertEqual(
+            clean_uploaded_content_type("text/plain; charset=utf-8", "zulip.txt"),
+            "text/plain; charset=utf-8",
+        )
+        # A type which stripping leaves empty is guessed from the
+        # filename, exactly as a missing one is.
+        self.assertEqual(clean_uploaded_content_type("\x01", "zulip.png"), "image/png")
+        self.assertEqual(
+            clean_uploaded_content_type("", "uploaded-file"), "application/octet-stream"
+        )
 
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):

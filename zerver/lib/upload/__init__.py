@@ -256,18 +256,17 @@ def sanitize_name(value: str, *, strict: bool = False) -> str:
     return value
 
 
-def remove_control_characters(filename: str) -> str:
+def remove_control_characters(value: str) -> str:
     """Strips ASCII control characters -- RFC 5234's CTL set, %x00-1F and
-    %x7F -- from a filename.
+    %x7F -- from a client-supplied filename or content type.
     https://www.rfc-editor.org/rfc/rfc5234#appendix-B.1
 
-    NULL bytes can't be stored in the "file_name" column, and a
-    trailing newline yields a Content-Disposition header that S3, like
-    any HTTP recipient, rejects as an illegal field value (RFC 9110
-    section 5.5).
+    NULL bytes can't be stored in the "file_name" column, and a CR or
+    LF yields a header that S3, Django, and Python's email module all
+    reject as an illegal field value (RFC 9110 section 5.5).
 
     """
-    return re.sub(r"[\x00-\x1f\x7f]", "", filename)
+    return re.sub(r"[\x00-\x1f\x7f]", "", value)
 
 
 def clean_uploaded_file_name(file_name: str) -> str:
@@ -281,6 +280,18 @@ def clean_uploaded_file_name(file_name: str) -> str:
     if file_name in {"", ".", ".."}:
         return "uploaded-file"
     return file_name
+
+
+def clean_uploaded_content_type(content_type: str, file_name: str) -> str:
+    """The content type we store in Attachment.content_type and serve in
+    Content-Type, guessed from the cleaned filename when the client
+    leaves us nothing usable.
+
+    """
+    content_type = remove_control_characters(content_type)
+    if not content_type:
+        content_type = guess_type(file_name)[0] or "application/octet-stream"
+    return content_type
 
 
 def upload_message_attachment(
@@ -298,6 +309,7 @@ def upload_message_attachment(
     path_id = get_upload_backend().generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
+    content_type = clean_uploaded_content_type(content_type, uploaded_file_name)
     if needs_charset_detection(content_type):
         content_type = maybe_add_charset(content_type, file_data)
 

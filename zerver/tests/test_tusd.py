@@ -535,6 +535,67 @@ class TusdPreFinishTest(ZulipTestCase):
         self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
         self.assertTrue(os.path.exists(os.path.join(settings.LOCAL_FILES_DIR, f"{path_id}.info")))
 
+    def test_content_type_with_control_characters(self) -> None:
+        # tusd passes the client's "filetype" through verbatim, and we
+        # store it and serve it back as Content-Type; a control
+        # character in it must not reach that header.
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        path_id = generate_message_upload_path(str(hamlet.realm.id), sanitize_name("zulip.png"))
+        store_message_attachment(
+            path_id,
+            "zulip.png",
+            "image/png",
+            b"zulip!",
+            hamlet,
+            hamlet.realm,
+        )
+
+        info = TusUpload(
+            id=path_id,
+            size=len("zulip!"),
+            offset=0,
+            size_is_deferred=False,
+            meta_data={
+                "filename": "zulip.png",
+                "filetype": "image/png\n",
+                "name": "zulip.png",
+                "type": "image/png\n",
+            },
+            is_final=False,
+            is_partial=False,
+            partial_uploads=None,
+            storage=None,
+        )
+        store_message_attachment(
+            f"{path_id}.info",
+            "zulip.png.info",
+            "application/octet-stream",
+            info.model_dump_json().encode(),
+            hamlet,
+            hamlet.realm,
+        )
+
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(info).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json()["HttpResponse"]["StatusCode"], 200)
+
+        attachment = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(attachment.content_type, "image/png")
+
+        # Against the previous code the newline reached the stored
+        # content type, and serving the file then raised
+        # BadHeaderError -- leaving the attachment permanently
+        # undownloadable, since we compute this header on every read.
+        result = self.client_get(f"/user_uploads/{path_id}")
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.headers["Content-Type"], "image/png")
+
     def test_no_metadata(self) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
@@ -714,6 +775,51 @@ class TusdPreFinishTest(ZulipTestCase):
 
         content_disposition = bucket.Object(path_id).get()["ContentDisposition"]
         self.assertEqual(content_disposition, f'inline; filename="{clean_filename}"')
+
+    @use_s3_backend
+    def test_s3_upload_content_type_with_control_characters(self) -> None:
+        # The client's "filetype" is passed to S3 as the object's
+        # Content-Type; a control character in it must not reach that
+        # header.
+        hamlet = self.example_user("hamlet")
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        upload_backend = S3UploadBackend()
+        path_id = upload_backend.generate_message_upload_path(
+            str(hamlet.realm.id), sanitize_name("report.png", strict=True)
+        )
+        info = TusUpload(
+            id=path_id,
+            size=len("zulip!"),
+            offset=0,
+            size_is_deferred=False,
+            meta_data={
+                "filename": "report.png",
+                "filetype": "image/png\n",
+                "name": "report.png",
+                "type": "image/png\n",
+            },
+            is_final=False,
+            is_partial=False,
+            partial_uploads=None,
+            storage=None,
+        )
+        bucket.Object(path_id).put(Body=b"zulip!", ContentType="application/octet-stream")
+        bucket.Object(f"{path_id}.info").put(Body=info.model_dump_json().encode())
+
+        self.login("hamlet")
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(info).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json()["HttpResponse"]["StatusCode"], 200)
+
+        attachment = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(attachment.content_type, "image/png")
+
+        self.assertEqual(bucket.Object(path_id).get()["ContentType"], "image/png")
 
     @use_s3_backend
     def test_s3_upload_streaming_chardet(self) -> None:
