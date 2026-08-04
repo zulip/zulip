@@ -12,6 +12,7 @@ import render_user_card_popover_for_unknown_user from "../templates/popovers/use
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
+import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
@@ -38,6 +39,7 @@ import * as popovers from "./popovers.ts";
 import {hide_all} from "./popovers.ts";
 import * as presence from "./presence.ts";
 import * as rows from "./rows.ts";
+import * as scroll_util from "./scroll_util.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -408,6 +410,22 @@ function get_user_card_popover_data(
     return args;
 }
 
+function get_buddy_list_row_reference(user_id: number): tippy.GetReferenceClientRect {
+    const get_reference_client_rect = (): DOMRect => {
+        const $row = buddy_list.get_li_from_user_id({user_id});
+        if ($row.length === 0) {
+            // No row to anchor to, so an empty rect makes Popper hide the popover.
+            return new DOMRect(0, 0, 0, 0);
+        }
+        return the($row).getBoundingClientRect();
+    };
+    // Popper clips the reference against this context element, which survives rerenders.
+    get_reference_client_rect.contextElement = the(
+        scroll_util.get_content_element($("#buddy_list_wrapper")),
+    );
+    return get_reference_client_rect;
+}
+
 function show_user_card_popover(
     user: User,
     $popover_element: JQuery,
@@ -459,6 +477,10 @@ function show_user_card_popover(
         {
             theme: "popover-menu",
             placement: popover_placement,
+            getReferenceClientRect:
+                template_class === "user_sidebar"
+                    ? get_buddy_list_row_reference(user.user_id)
+                    : null,
             onCreate(instance) {
                 instance.setContent(ui_util.parse_html(popover_html));
                 user_card_popovers[template_class].instance = instance;
@@ -706,11 +728,6 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
         "compose_private_message",
         "user_sidebar",
         "left",
-        false,
-        (instance) => {
-            /* See comment in get_props_for_popover_centering for explanation of this. */
-            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
-        },
     );
 
     current_user_sidebar_user_id = user.user_id;
