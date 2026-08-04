@@ -273,6 +273,7 @@ INSECURE_OPERATIONS = [
     "/dev_list_users:get",
     "/remotes/server/register:post",
     "/remotes/server/register/transfer:post",
+    "/remotes/server/register/verify_challenge:post",
 ]
 
 
