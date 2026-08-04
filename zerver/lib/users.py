@@ -4,7 +4,7 @@ import unicodedata
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from email.headerregistry import Address
-from operator import itemgetter
+from operator import attrgetter
 from typing import Any, TypedDict
 
 from django.conf import settings
@@ -857,16 +857,17 @@ def bulk_get_subscribers_of_target_user_subscriptions(
             recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
         )
         .order_by("user_profile_id")
-        .values("user_profile_id", "recipient_id")
+        .values_list("user_profile_id", "recipient_id", named=True)
     )
 
     target_users_subbed_recipient_ids = set()
     target_user_subscriptions_dict: dict[int, set[int]] = defaultdict(set)
 
-    for user_profile_id, sub_rows in itertools.groupby(
-        target_user_subscriptions, itemgetter("user_profile_id")
+    for user_profile_id, target_sub_rows in itertools.groupby(
+        target_user_subscriptions,
+        attrgetter("user_profile_id"),
     ):
-        recipient_ids = {row["recipient_id"] for row in sub_rows}
+        recipient_ids = {row.recipient_id for row in target_sub_rows}
         target_user_subscriptions_dict[user_profile_id] = recipient_ids
         target_users_subbed_recipient_ids |= recipient_ids
 
@@ -882,26 +883,24 @@ def bulk_get_subscribers_of_target_user_subscriptions(
         )
     else:
         subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
-            recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
             is_user_active=True,
         )
 
     subs_in_target_user_subscriptions = subs_in_target_user_subscriptions_query.order_by(
         "recipient_id"
-    ).values("user_profile_id", "recipient_id")
+    ).values_list("user_profile_id", "recipient_id", named=True)
 
     subscribers_dict_by_recipient_ids: dict[int, set[int]] = defaultdict(set)
     for recipient_id, sub_rows in itertools.groupby(
-        subs_in_target_user_subscriptions, itemgetter("recipient_id")
+        subs_in_target_user_subscriptions, attrgetter("recipient_id")
     ):
-        user_ids = {row["user_profile_id"] for row in sub_rows}
+        user_ids = {row.user_profile_id for row in sub_rows}
         subscribers_dict_by_recipient_ids[recipient_id] = user_ids
 
     users_subbed_to_target_user_subscriptions_dict: dict[int, set[int]] = defaultdict(set)
-    for user_id in target_user_ids:
-        target_user_subbed_recipients = target_user_subscriptions_dict[user_id]
+    for target_user_id, target_user_subbed_recipients in target_user_subscriptions_dict.items():
         for recipient_id in target_user_subbed_recipients:
-            users_subbed_to_target_user_subscriptions_dict[user_id] |= (
+            users_subbed_to_target_user_subscriptions_dict[target_user_id] |= (
                 subscribers_dict_by_recipient_ids[recipient_id]
             )
 
