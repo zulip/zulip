@@ -7,7 +7,7 @@ import responses
 from typing_extensions import ParamSpec, override
 
 from zerver.actions.create_user import do_create_user
-from zerver.actions.message_send import get_service_bot_events
+from zerver.actions.message_send import get_message_triggered_bot_events
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import Recipient, UserProfile
@@ -21,7 +21,7 @@ BOT_TYPE_TO_QUEUE_NAME = {
 }
 
 
-class TestServiceBotBasics(ZulipTestCase):
+class TestMessageTriggeredBotBasics(ZulipTestCase):
     def _get_outgoing_bot(self) -> UserProfile:
         outgoing_bot = do_create_user(
             email="bar-bot@zulip.com",
@@ -35,16 +35,16 @@ class TestServiceBotBasics(ZulipTestCase):
 
         return outgoing_bot
 
-    def test_service_events_for_pms(self) -> None:
+    def test_message_triggered_bot_events_for_direct_messages(self) -> None:
         sender = self.example_user("hamlet")
         assert not sender.is_bot
 
         outgoing_bot = self._get_outgoing_bot()
         assert outgoing_bot.bot_type is not None
 
-        event_dict = get_service_bot_events(
+        event_dict = get_message_triggered_bot_events(
             sender=sender,
-            service_bot_tuples=[
+            message_triggered_bot_tuples=[
                 (outgoing_bot.id, outgoing_bot.bot_type),
             ],
             active_user_ids={outgoing_bot.id},
@@ -71,10 +71,10 @@ class TestServiceBotBasics(ZulipTestCase):
         # we will skip over it.  This tests an anomaly
         # of the code that our query for bots can include
         # bots that may not actually be mentioned, and it's
-        # easiest to just filter them in get_service_bot_events.
-        event_dict = get_service_bot_events(
+        # easiest to just filter them in get_message_triggered_bot_events.
+        event_dict = get_message_triggered_bot_events(
             sender=sender,
-            service_bot_tuples=[
+            message_triggered_bot_tuples=[
                 (outgoing_bot.id, outgoing_bot.bot_type),
             ],
             active_user_ids={outgoing_bot.id},
@@ -84,7 +84,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
         self.assert_length(event_dict, 0)
 
-    def test_service_events_for_stream_mentions(self) -> None:
+    def test_message_triggered_bot_events_for_channel_mentions(self) -> None:
         sender = self.example_user("hamlet")
         assert not sender.is_bot
 
@@ -98,9 +98,9 @@ class TestServiceBotBasics(ZulipTestCase):
             user_profile=cordelia,
         )
 
-        event_dict = get_service_bot_events(
+        event_dict = get_message_triggered_bot_events(
             sender=sender,
-            service_bot_tuples=[
+            message_triggered_bot_tuples=[
                 (outgoing_bot.id, outgoing_bot.bot_type),
                 (red_herring_bot.id, UserProfile.OUTGOING_WEBHOOK_BOT),
             ],
@@ -117,18 +117,18 @@ class TestServiceBotBasics(ZulipTestCase):
 
         self.assertEqual(event_dict, expected)
 
-    def test_service_events_for_private_mentions(self) -> None:
-        """Service bots should not get access to mentions if they aren't a
-        direct recipient."""
+    def test_no_bot_events_when_mentioned_without_being_recipient(self) -> None:
+        """Message-triggered bots should not get access to mentions if they
+        aren't a direct recipient."""
         sender = self.example_user("hamlet")
         assert not sender.is_bot
 
         outgoing_bot = self._get_outgoing_bot()
         assert outgoing_bot.bot_type is not None
 
-        event_dict = get_service_bot_events(
+        event_dict = get_message_triggered_bot_events(
             sender=sender,
-            service_bot_tuples=[
+            message_triggered_bot_tuples=[
                 (outgoing_bot.id, outgoing_bot.bot_type),
             ],
             active_user_ids=set(),
@@ -138,7 +138,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
         self.assert_length(event_dict, 0)
 
-    def test_service_events_with_unexpected_bot_type(self) -> None:
+    def test_message_triggered_bot_events_with_unexpected_bot_type(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
@@ -151,9 +151,9 @@ class TestServiceBotBasics(ZulipTestCase):
         bot.save()
 
         with self.assertLogs(level="ERROR") as m:
-            event_dict = get_service_bot_events(
+            event_dict = get_message_triggered_bot_events(
                 sender=hamlet,
-                service_bot_tuples=[
+                message_triggered_bot_tuples=[
                     (bot.id, wrong_bot_type),
                 ],
                 active_user_ids=set(),
@@ -164,7 +164,9 @@ class TestServiceBotBasics(ZulipTestCase):
         self.assert_length(event_dict, 0)
         self.assertEqual(
             m.output,
-            [f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}"],
+            [
+                f"ERROR:root:Unexpected bot_type for message-triggered bot id={bot.id}: {wrong_bot_type}"
+            ],
         )
 
 
@@ -172,11 +174,11 @@ ParamT = ParamSpec("ParamT")
 
 
 def for_all_bot_types(
-    test_func: Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None],
-) -> Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]:
+    test_func: Callable[Concatenate["TestMessageTriggeredBotEventTriggers", ParamT], None],
+) -> Callable[Concatenate["TestMessageTriggeredBotEventTriggers", ParamT], None]:
     @wraps(test_func)
     def _wrapped(
-        self: "TestServiceBotEventTriggers", /, *args: ParamT.args, **kwargs: ParamT.kwargs
+        self: "TestMessageTriggeredBotEventTriggers", /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> None:
         for bot_type in BOT_TYPE_TO_QUEUE_NAME:
             self.bot_profile.bot_type = bot_type
@@ -189,14 +191,14 @@ def for_all_bot_types(
 def patch_queue_publish(
     method_to_patch: str,
 ) -> Callable[
-    [Callable[["TestServiceBotEventTriggers", mock.Mock], None]],
-    Callable[["TestServiceBotEventTriggers"], None],
+    [Callable[["TestMessageTriggeredBotEventTriggers", mock.Mock], None]],
+    Callable[["TestMessageTriggeredBotEventTriggers"], None],
 ]:
     def inner(
-        func: Callable[["TestServiceBotEventTriggers", mock.Mock], None],
-    ) -> Callable[["TestServiceBotEventTriggers"], None]:
+        func: Callable[["TestMessageTriggeredBotEventTriggers", mock.Mock], None],
+    ) -> Callable[["TestMessageTriggeredBotEventTriggers"], None]:
         @wraps(func)
-        def _wrapped(self: "TestServiceBotEventTriggers") -> None:
+        def _wrapped(self: "TestMessageTriggeredBotEventTriggers") -> None:
             with mock_queue_publish(method_to_patch) as m:
                 func(self, m)
 
@@ -205,7 +207,7 @@ def patch_queue_publish(
     return inner
 
 
-class TestServiceBotEventTriggers(ZulipTestCase):
+class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
@@ -356,10 +358,11 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
     @responses.activate
     @for_all_bot_types
-    def test_flag_messages_service_bots_has_processed(self) -> None:
+    def test_message_flagged_read_after_bot_processes_event(self) -> None:
         """
-        Verifies that once an event has been processed by the service bot's
-        queue processor, the message is marked as processed (flagged with `read`).
+        Verifies that once an event has been processed by the message-triggered
+        bot's queue processor, the message is marked as processed (flagged with
+        `read`).
         """
         sender = self.user_profile
         recipients = [self.user_profile, self.bot_profile, self.second_bot_profile]

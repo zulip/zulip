@@ -135,7 +135,7 @@ class TestEmbeddedBotFailures(ZulipTestCase):
             )
 
 
-class TestServiceBotStateHandler(ZulipTestCase):
+class TestEmbeddedBotStateHandler(ZulipTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
@@ -322,7 +322,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertEqual(response_dict["storage"], {})
 
 
-class TestServiceBotConfigHandler(ZulipTestCase):
+class TestEmbeddedBotConfigHandler(ZulipTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
