@@ -30545,10 +30545,11 @@ components:
             msg: {}
             code: {}
             retry-after:
-              type: integer
+              type: number
               description: |
                 How many seconds the client must wait before making
-                additional requests.
+                additional requests. May be a fractional number of
+                seconds.
           example:
             {
               "code": "RATE_LIMIT_HIT",
