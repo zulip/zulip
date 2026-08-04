@@ -249,7 +249,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Higher priority to document
         "/remotes/push/e2ee/notify",
         # Lower priority to document
-        "/remotes/server/register/verify_challenge",
         "/remotes/server/analytics",
         "/remotes/server/billing",
     }
@@ -262,6 +261,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "jwt/fetch_api_key",
         "remotes/server/register",
         "remotes/server/register/transfer",
+        "remotes/server/register/verify_challenge",
     }
 
     # Endpoints where the documentation is currently failing our

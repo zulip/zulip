@@ -14374,6 +14374,152 @@ paths:
                         "result": "success",
                         "verification_secret": "3430...",
                       }
+  /remotes/server/register/verify_challenge:
+    post:
+      operationId: verify-registration-transfer-challenge
+      summary: Acknowledge a registration transfer challenge
+      tags: ["server_and_organizations"]
+      description: |
+        Complete a registration transfer started with [begin transferring a
+        server registration](/api/transfer-remote-server-registration).
+
+        After obtaining a `verification_secret` and serving it at
+        `https://{hostname}/api/v1/zulip-services/verify/{access_token}/`,
+        the requesting server calls this endpoint to announce that it is
+        ready. The [Mobile Push Notification Service][mobile-push] then
+        fetches the secret from that URL to confirm the server controls the
+        hostname, and on success reissues the registration credentials in
+        the response. The `access_token` is chosen by the requesting server
+        so that only it can read the secret served at that URL.
+
+        This endpoint is unauthenticated, since a server completing a
+        transfer does not have valid credentials to authenticate with. It is
+        not meant to be used by mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                hostname:
+                  description: |
+                    The hostname whose registration is being transferred. It
+                    must already be registered with the service.
+                  type: string
+                  example: "zulip.example.com"
+                access_token:
+                  description: |
+                    A random token, chosen by the requesting server, that
+                    forms part of the URL at which it serves the
+                    `verification_secret`.
+                  type: string
+                  example: "0bad1dea0bad1dea0bad1dea0bad1dea"
+              required:
+                - hostname
+                - access_token
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      zulip_org_id:
+                        type: string
+                        description: |
+                          The server's UUID, which is unchanged by the
+                          transfer.
+                      zulip_org_key:
+                        type: string
+                        description: |
+                          The newly issued secret key for the server. It
+                          replaces the server's previous key.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "zulip_org_id": "0a3bf9bf-8b8b-4f8a-8f9e-1d6d1f9c1a2b",
+                        "zulip_org_key": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+                      }
+        "400":
+          description: |
+            The challenge could not be verified. The `msg` field explains
+            which step failed.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Registration not found for this hostname",
+                            "result": "error",
+                          }
+                        description: |
+                          No active registration exists for the given
+                          `hostname`.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "The host reported it has no verification secret.",
+                            "result": "error",
+                          }
+                        description: |
+                          The host has not prepared a verification secret to
+                          serve.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "The verification secret is invalid",
+                            "result": "error",
+                          }
+                        description: |
+                          The secret served by the host did not validate; it
+                          may be invalid, expired, malformed, or for a
+                          different hostname.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "The request timed out while communicating with the host.",
+                            "result": "error",
+                          }
+                        description: |
+                          The service could not reach the host or read its
+                          response while fetching the secret.
+        "429":
+          description: |
+            The global usage limit for this endpoint has been reached.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "RATE_LIMIT_HIT",
+                        "msg": "The global limits on recent usage of this endpoint have been reached. Please try again later or reach out to support@zulip.com for assistance.",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the endpoint's global
+                      rate limit has been reached:
   /register_client_device:
     post:
       operationId: register-client-device
