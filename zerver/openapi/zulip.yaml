@@ -14159,6 +14159,165 @@ paths:
                         "msg": "",
                         "result": "success",
                       }
+  /remotes/server/register:
+    post:
+      operationId: register-remote-server
+      summary: Register a server
+      tags: ["server_and_organizations"]
+      description: |
+        Register a self-hosted Zulip server with the [Mobile Push
+        Notification Service][mobile-push], or update an existing
+        registration.
+
+        A self-hosted server generates its `zulip_org_id` and
+        `zulip_org_key` locally (with `scripts/setup/generate_secrets.py`)
+        and uses this endpoint to register them with the service, so that
+        they are accepted as credentials on all other, authenticated
+        bouncer requests. It is not meant to be used by mobile clients
+        directly.
+
+        This endpoint is unauthenticated: a server registering for the
+        first time has no registered credentials yet. When updating an
+        existing registration, the request must present the current
+        `zulip_org_key` for the given `zulip_org_id`.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                zulip_org_id:
+                  description: |
+                    The globally unique UUID identifying the server, generated
+                    locally by `scripts/setup/generate_secrets.py`.
+                  type: string
+                  example: "0a3bf9bf-8b8b-4f8a-8f9e-1d6d1f9c1a2b"
+                zulip_org_key:
+                  description: |
+                    The server's secret key. On an initial registration, this
+                    is the key the server will use to authenticate future
+                    requests; when updating an existing registration, it must
+                    match the currently stored key.
+                  type: string
+                  example: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+                hostname:
+                  description: |
+                    The server's hostname, which the service uses to reach it.
+                    May include a port.
+                  type: string
+                  example: "zulip.example.com"
+                contact_email:
+                  description: |
+                    An email address for the server administrator. Must be a
+                    real, deliverable address; disposable domains and
+                    `example.com` are rejected.
+                  type: string
+                  example: "admin@example.org"
+                new_org_key:
+                  description: |
+                    When updating an existing registration, a new secret key
+                    to replace the current `zulip_org_key`.
+                  type: string
+                  example: "0011223344556677889900aabbccddee0011223344556677889900aabbccddee"
+              required:
+                - zulip_org_id
+                - zulip_org_key
+                - hostname
+                - contact_email
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      created:
+                        type: boolean
+                        description: |
+                          Whether a new registration was created (`true`) or an
+                          existing registration for this `zulip_org_id` was
+                          updated (`false`).
+                    example: {"created": true, "msg": "", "result": "success"}
+        "400":
+          description: |
+            Bad request; the registration was rejected. The `code` field
+            distinguishes the cases below.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "zulip.example.com/path contains invalid components (e.g., path, query, fragment).",
+                            "result": "error",
+                          }
+                        description: |
+                          The `hostname` is malformed or contains extra URL
+                          components (a path, query, or fragment).
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid server administrator email address: example.com is not a valid email domain.",
+                            "result": "error",
+                          }
+                        description: |
+                          The `contact_email` is invalid, uses a disposable
+                          domain, or its domain has no MX record; the `msg`
+                          gives the specific reason.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "INVALID_ZULIP_SERVER",
+                            "msg": "Zulip server auth failure: key does not match role 0a3bf9bf-8b8b-4f8a-8f9e-1d6d1f9c1a2b",
+                            "result": "error",
+                          }
+                        description: |
+                          A registration already exists for the given
+                          `zulip_org_id`, but the presented `zulip_org_key`
+                          does not match it.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR",
+                            "msg": "A server with hostname zulip.example.com already exists",
+                            "result": "error",
+                          }
+                        description: |
+                          A different server is already registered with the
+                          given `hostname`.
+        "401":
+          description: |
+            The registration for this `zulip_org_id` has been deactivated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "REALM_DEACTIVATED",
+                        "msg": "The mobile push notification service registration for your server has been deactivated",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the registration for
+                      this `zulip_org_id` has been deactivated:
   /remotes/server/register/transfer:
     post:
       operationId: transfer-remote-server-registration
