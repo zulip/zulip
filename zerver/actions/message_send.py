@@ -1795,10 +1795,6 @@ def get_recipients_for_user_creation_events(
     ).exists():
         return recipients_for_user_creation_events
 
-    # TODO: bulk_get_subscribers_of_target_user_subscriptions
-    # executes 2 queries. While this is only for a new DirectMessageGroup,
-    # it's still worth optimizing, also because it's called
-    # in other code paths.
     subscribers_of_guest_recipient_subscriptions = (
         bulk_get_subscribers_of_target_user_subscriptions(guest_recipients)
     )
