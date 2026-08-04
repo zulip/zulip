@@ -257,16 +257,8 @@ export const default_popover_props: Partial<tippy.Props> = {
                     const is_reference_outside_window =
                         $tippy_box.attr("data-reference-hidden") !== undefined;
 
+                    // Virtual-reference overlays always look reference-hidden, so leave them alone.
                     if ($tippy_box.hasClass("show-when-reference-hidden")) {
-                        // Show user card popover as an overlay if we are not sure about position of the
-                        // reference. This can happen when popover reference has been replaced or hidden.
-                        if (
-                            is_reference_outside_window &&
-                            $tippy_box.find("#user_card_popover").length > 0
-                        ) {
-                            $("body").append($("<div>").attr("id", "popover-overlay-background"));
-                            instance.setProps(get_props_for_popover_centering(instance.props));
-                        }
                         return;
                     }
 
