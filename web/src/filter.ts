@@ -768,6 +768,7 @@ export class Filter {
             "sender",
             "mentions",
             "near",
+            "date",
             "id",
             "is-alerted",
             "is-mentioned",
@@ -781,6 +782,7 @@ export class Filter {
             "has-link",
             "has-image",
             "has-attachment",
+            "has-reaction",
             "search",
         ];
 
