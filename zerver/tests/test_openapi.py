@@ -208,12 +208,17 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### For current endpoint documentation priorities see
         #### https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/Undocumented.20endpoint.20priorities/with/2397881
         #### TODO: These endpoints are a priority to document:
-        # These are a priority to document but don't match our normal URL schemes
-        # and thus may be complicated to document with our current tooling.
+        #### non_v1_api_or_json_media_endpoints - These are a priority to document but
+        # don't match our normal URL schemes and thus may be complicated to document
+        # with our current tooling.
         # (No /api/v1/ or /json prefix).
-        "/avatar/{email_or_id}",
-        ## This one isn't really representable
+        "/thumbnail",
+        "/user_avatars/{path}",
+        ## These aren't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
+        "/user_uploads/temporary/{token}/{filename}",
+        "/user_uploads/download/{realm_id_str}/{filename}",
+        "/user_uploads/thumbnail/{realm_id_str}/{filename}/{thumbnail_format}",
         #### These realm administration settings are valuable to document:
         # Delete a data export.
         "/export/realm/{export_id}",
@@ -557,6 +562,7 @@ so maybe we shouldn't include it in pending_endpoints.
             + urlconf.v1_api_mobile_patterns
             + zilencer_urlconf.v1_api_bouncer_patterns
             + tornado_urlconf.api_and_json_patterns
+            + urlconf.non_v1_api_or_json_media_endpoints
         ):
             methods_endpoints: dict[str, Any] = {}
             if p.callback not in [rest_dispatch, remote_server_dispatch]:
@@ -903,6 +909,48 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
+    def test_generate_and_render_curl_example_for_user_id_avatar_endpoints(self) -> None:
+        generated_curl_example = self.curl_example("/avatar/{user_id}", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/12 \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i ^location:",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+        generated_curl_example = self.curl_example("/avatar/{user_id}/medium", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/12/medium \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i ^location:",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    def test_generate_and_render_curl_example_for_email_avatar_endpoints(self) -> None:
+        generated_curl_example = self.curl_example("/avatar/{email}", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/iago@zulip.com \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i ^location:",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+        generated_curl_example = self.curl_example("/avatar/{email}/medium", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/iago@zulip.com/medium \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i ^location:",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
 
 class OpenAPIAttributesTest(ZulipTestCase):
     def test_attributes(self) -> None:
@@ -913,7 +961,16 @@ class OpenAPIAttributesTest(ZulipTestCase):
         * All example events in `/get-events` match an event schema.
         * That no opaque object exists.
         """
-        EXCLUDE = ["/real-time"]
+        EXCLUDE = [
+            "/real-time",
+            # The avatar endpoints doesn't return a JSON body, instead it
+            # redirects to the requested avatar URL. So their schema don't
+            # have attributes like `examples` and `type`.
+            "/avatar/{user_id}",
+            "/avatar/{email}",
+            "/avatar/{user_id}/medium",
+            "/avatar/{email}/medium",
+        ]
         VALID_TAGS = [
             "users",
             "server_and_organizations",
