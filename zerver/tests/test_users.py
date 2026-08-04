@@ -2928,7 +2928,7 @@ class RecipientInfoTest(ZulipTestCase):
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
-            service_bot_tuples=[],
+            message_triggered_bot_tuples=[],
             all_bot_user_ids=set(),
             topic_participant_user_ids=set(),
             sender_muted_stream=False,
@@ -3151,9 +3151,9 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info.stream_push_user_ids, set())
         self.assertEqual(info.stream_wildcard_mention_user_ids, {othello.id})
 
-        # Add a service bot.
-        service_bot = do_create_user(
-            email="service-bot@zulip.com",
+        # Add a message-triggered bot.
+        message_triggered_bot = do_create_user(
+            email="message-triggered-bot@zulip.com",
             password="",
             realm=realm,
             full_name="",
@@ -3166,12 +3166,12 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possibly_mentioned_user_ids={service_bot.id},
+            possibly_mentioned_user_ids={message_triggered_bot.id},
         )
         self.assertEqual(
-            info.service_bot_tuples,
+            info.message_triggered_bot_tuples,
             [
-                (service_bot.id, UserProfile.EMBEDDED_BOT),
+                (message_triggered_bot.id, UserProfile.EMBEDDED_BOT),
             ],
         )
 
@@ -3190,10 +3190,10 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
+            possibly_mentioned_user_ids={message_triggered_bot.id, normal_bot.id},
         )
         self.assertEqual(info.default_bot_user_ids, {normal_bot.id})
-        self.assertEqual(info.all_bot_user_ids, {normal_bot.id, service_bot.id})
+        self.assertEqual(info.all_bot_user_ids, {normal_bot.id, message_triggered_bot.id})
 
         # Now Hamlet follows the topic with the 'followed_topic_email_notifications',
         # 'followed_topic_push_notifications' and 'followed_topic_wildcard_mention_notify'

@@ -10,9 +10,8 @@ const bot_data = zrequire("bot_data");
 
 const people = zrequire("people");
 
-// Bot types and service bot types can be found
-// in zerver/models/users.py - UserProfile Class or
-// zever/openapi/zulip.yaml
+// Bot types can be found in zerver/models/users.py
+// UserProfile class or zerver/openapi/zulip.yaml
 
 const me = make_user({
     email: "me@zulip.com",
