@@ -509,7 +509,25 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         recipient_str = stream.name
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(recipient)
-        emails = [user_dict["email"] for user_dict in display_recipient]
+        # Drop members who have been deactivated, matching the check in
+        # validate_recipient_user_profiles. The web app blocks composing
+        # to such a group entirely, but the email gateway can receive
+        # replies to notification emails that predate the deactivation.
+        user_ids = [user_dict["id"] for user_dict in display_recipient]
+        emails = list(
+            UserProfile.objects.filter(id__in=user_ids)
+            .exclude(is_active=False, is_mirror_dummy=False)
+            .values_list("email", flat=True)
+        )
+        if len(emails) <= 1:
+            # Everyone but the sender (whom we verified active above)
+            # has been deactivated; there is nobody left to receive
+            # the reply.
+            logger.info(
+                "Dropping message notification email reply from user %s to a group direct message with no active recipients",
+                user_profile.id,
+            )
+            return
         recipient_str = ", ".join(emails)
         internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
     else:
