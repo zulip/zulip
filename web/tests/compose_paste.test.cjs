@@ -412,6 +412,18 @@ run_test("paste_handler_converter", () => {
         "https://zulip.readthedocs.io/en/latest/subsystems/logging.html",
     );
 
+    // Raw link where node.href has a trailing slash the text does not.
+    // Without the fix this becomes a labeled markdown link.
+    input =
+        '<a href="https://google.com" target="_blank" rel="noopener noreferrer" title="https://google.com/">https://google.com</a>';
+    assert.equal(compose_paste.paste_handler_converter(input), "https://google.com");
+    input =
+        '<p>Check this link <a href="https://google.com" target="_blank" rel="noopener noreferrer" title="https://google.com/">https://google.com</a> please</p>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "Check this link https://google.com please",
+    );
+
     // Links with custom text
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><a class="reference external" href="https://zulip.readthedocs.io/en/latest/contributing/contributing.html" style="box-sizing: border-box; color: hsl(283, 39%, 53%); text-decoration: none; cursor: pointer; outline: 0px; font-family: Lato, proxima-nova, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 99%);">Contributing guide</a>';
