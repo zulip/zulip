@@ -106,7 +106,9 @@ class RateLimitTests(ZulipTestCase):
             json = result.json()
             self.assertEqual(json.get("result"), "error")
             self.assertIn("API usage exceeded rate limit", json.get("msg"))
-            self.assertAlmostEqual(json.get("retry-after"), 0.195, places=2)
+            # The underlying wait is 0.195 seconds, rounded up to the
+            # nearest hundredth of a second.
+            self.assertEqual(json.get("retry-after"), 0.2)
             self.assertTrue("Retry-After" in result.headers)
             self.assertAlmostEqual(float(result["Retry-After"]), 0.195, places=2)
 
