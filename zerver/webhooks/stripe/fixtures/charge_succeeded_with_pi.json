@@ -1,0 +1,128 @@
+{
+  "id": "evt_3TbGBUJEe0yY0QKr1eTEBGsV",
+  "object": "event",
+  "api_version": "2026-04-22.dahlia",
+  "created": 1779783477,
+  "data": {
+    "object": {
+      "id": "ch_3TbGBUJEe0yY0QKr18Sf1VVH",
+      "object": "charge",
+      "amount": 22200,
+      "amount_captured": 22200,
+      "amount_refunded": 0,
+      "application": null,
+      "application_fee": null,
+      "application_fee_amount": null,
+      "balance_transaction": "txn_3TbGBUJEe0yY0QKr1CDjmSO5",
+      "billing_details": {
+        "address": {
+          "city": null,
+          "country": null,
+          "line1": null,
+          "line2": null,
+          "postal_code": "89000",
+          "state": null
+        },
+        "email": null,
+        "name": null,
+        "phone": null,
+        "tax_id": null
+      },
+      "calculated_statement_descriptor": "DVSCVSVCS",
+      "captured": true,
+      "created": 1779783476,
+      "currency": "usd",
+      "customer": null,
+      "description": "dfdfvds",
+      "destination": null,
+      "dispute": null,
+      "disputed": false,
+      "failure_balance_transaction": null,
+      "failure_code": null,
+      "failure_message": null,
+      "fraud_details": {},
+      "livemode": false,
+      "metadata": {},
+      "on_behalf_of": null,
+      "order": null,
+      "outcome": {
+        "advice_code": null,
+        "network_advice_code": null,
+        "network_decline_code": null,
+        "network_status": "approved_by_network",
+        "reason": null,
+        "risk_level": "normal",
+        "risk_score": 47,
+        "seller_message": "Payment complete.",
+        "type": "authorized"
+      },
+      "paid": true,
+      "payment_intent": "pi_3TbGBUJEe0yY0QKr1NhtlhQp",
+      "payment_method": "pm_1TbGBTJEe0yY0QKrnlc9x8bY",
+      "payment_method_details": {
+        "card": {
+          "amount_authorized": 22200,
+          "authorization_code": "659476",
+          "brand": "visa",
+          "checks": {
+            "address_line1_check": null,
+            "address_postal_code_check": "pass",
+            "cvc_check": "pass"
+          },
+          "country": "US",
+          "ds_transaction_id": null,
+          "exp_month": 12,
+          "exp_year": 2034,
+          "extended_authorization": {
+            "status": "disabled"
+          },
+          "fingerprint": "exampleFingerpr1",
+          "funding": "credit",
+          "incremental_authorization": {
+            "status": "unavailable"
+          },
+          "installments": null,
+          "last4": "0002",
+          "mandate": null,
+          "multicapture": {
+            "status": "unavailable"
+          },
+          "network": "visa",
+          "network_token": {
+            "used": false
+          },
+          "network_transaction_id": "122547268103849",
+          "overcapture": {
+            "maximum_amount_capturable": 22200,
+            "status": "unavailable"
+          },
+          "regulated_status": "unregulated",
+          "three_d_secure": null,
+          "wallet": null
+        },
+        "type": "card"
+      },
+      "radar_options": {},
+      "receipt_email": null,
+      "receipt_number": null,
+      "receipt_url": "https://pay.stripe.com/receipts/payment/exampleReceiptToken",
+      "refunded": false,
+      "review": null,
+      "shipping": null,
+      "source": null,
+      "source_transfer": null,
+      "statement_descriptor": "dvscvsvcs",
+      "statement_descriptor_suffix": null,
+      "status": "succeeded",
+      "transfer_data": null,
+      "transfer_group": null
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": "req_iNHOyacAIM38T3",
+    "idempotency_key": "c154b458-e07d-4672-962c-aab59cd23443"
+  },
+  "type": "charge.succeeded"
+}
