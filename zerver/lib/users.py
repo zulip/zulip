@@ -28,8 +28,6 @@ from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
-    DirectMessageGroup,
-    Message,
     Realm,
     Recipient,
     Service,
@@ -824,13 +822,11 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
     active_non_guest_user_ids_in_realm = active_non_guest_user_ids(realm.id)
 
     users_sharing_any_subscription = get_subscribers_of_target_user_subscriptions([target_user])
-    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([target_user], realm)
 
     user_ids_who_can_access_target_user = (
         {target_user.id}
         | set(active_non_guest_user_ids_in_realm)
         | users_sharing_any_subscription[target_user.id]
-        | users_involved_in_dms_dict[target_user.id]
     )
     return list(user_ids_who_can_access_target_user)
 
@@ -838,6 +834,7 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 def get_subscribers_of_target_user_subscriptions(
     target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
 ) -> dict[int, set[int]]:
+    """Get all users involved in stream and direct message groups with target_users."""
     target_user_ids = [user.id for user in target_users]
     target_user_subscriptions = (
         Subscription.objects.filter(
@@ -895,46 +892,6 @@ def get_subscribers_of_target_user_subscriptions(
             )
 
     return users_subbed_to_target_user_subscriptions_dict
-
-
-def get_users_involved_in_dms_with_target_users(
-    target_users: list[UserProfile], realm: Realm, include_deactivated_users: bool = False
-) -> dict[int, set[int]]:
-    # Find DM partners via 1:1 DM groups with message history.
-    # Push the message-existence check into the subscription query
-    # as a subquery, so we only fetch DMGs that actually have messages.
-    target_dmg_subs = Subscription.objects.filter(
-        user_profile_id__in=[user.id for user in target_users],
-        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-        recipient__type_id__in=DirectMessageGroup.objects.filter(
-            group_size__lte=2,
-        ),
-        recipient_id__in=Message.objects.filter(realm=realm).values("recipient_id"),
-    ).values_list("user_profile_id", "recipient_id")
-
-    dmg_to_targets: dict[int, set[int]] = defaultdict(set)
-    for target_id, recipient_id in target_dmg_subs:
-        dmg_to_targets[recipient_id].add(target_id)
-
-    if not dmg_to_targets:
-        return defaultdict(set)
-
-    # Now that we know the set of relevant recipients, and which of
-    # users we care about are in each, we pull the full subscription
-    # set to map user -> recipient -> full list of other users
-    partner_query = Subscription.objects.filter(
-        recipient_id__in=dmg_to_targets.keys(),
-    )
-    if not include_deactivated_users:
-        partner_query = partner_query.filter(is_user_active=True)
-
-    direct_message_participants_dict: dict[int, set[int]] = defaultdict(set)
-    for recipient_id, user_id in partner_query.values_list("recipient_id", "user_profile_id"):
-        for target_id in dmg_to_targets[recipient_id]:
-            if user_id != target_id:
-                direct_message_participants_dict[target_id].add(user_id)
-
-    return direct_message_participants_dict
 
 
 def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
@@ -1020,17 +977,12 @@ def get_accessible_user_ids(
     subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
         [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
     )
-    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
-        [user_profile], realm, include_deactivated_users=include_deactivated_users
-    )
 
     # This does not include bots, because either the caller
     # wants only human users or it handles bots separately.
-    accessible_user_ids = (
-        {user_profile.id}
-        | subscribers_dict_of_target_user_subscriptions[user_profile.id]
-        | users_involved_in_dms_dict[user_profile.id]
-    )
+    accessible_user_ids = {user_profile.id} | subscribers_dict_of_target_user_subscriptions[
+        user_profile.id
+    ]
 
     return list(accessible_user_ids)
 

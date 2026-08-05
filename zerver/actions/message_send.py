@@ -96,7 +96,6 @@ from zerver.lib.users import (
     get_inaccessible_user_ids,
     get_subscribers_of_target_user_subscriptions,
     get_user_ids_who_can_access_user,
-    get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
 )
 from zerver.lib.validator import check_widget_content
@@ -1706,7 +1705,6 @@ def get_recipients_for_user_creation_events(
             recipients_for_user_creation_events[sender].add(user_profiles[0].id)
         return recipients_for_user_creation_events
 
-    users_involved_in_dms = get_users_involved_in_dms_with_target_users(guest_recipients, realm)
     subscribers_of_guest_recipient_subscriptions = get_subscribers_of_target_user_subscriptions(
         guest_recipients
     )
@@ -1716,15 +1714,11 @@ def get_recipients_for_user_creation_events(
             if user.id == recipient_user.id or user.is_bot:
                 continue
 
-            if (
-                user.id not in users_involved_in_dms[recipient_user.id]
-                and user.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
-            ):
+            if user.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]:
                 recipients_for_user_creation_events[user].add(recipient_user.id)
 
         if (
             not sender.is_bot
-            and sender.id not in users_involved_in_dms[recipient_user.id]
             and sender.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
         ):
             recipients_for_user_creation_events[sender].add(recipient_user.id)
