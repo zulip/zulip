@@ -248,6 +248,7 @@ def get_recipient_info(
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
+    dm_involved_user_ids: set[int] | None = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: set[int] = set()
     stream_email_user_ids: set[int] = set()
@@ -426,7 +427,15 @@ def get_recipient_info(
             )
 
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        message_to_user_id_set = set(get_direct_message_group_user_ids(recipient))
+        if dm_involved_user_ids is not None:
+            # For production path when sending a direct message
+            # passing through check_message. This avoids an extra db query.
+            message_to_user_id_set = dm_involved_user_ids
+        else:
+            # Other paths like:
+            # Message edit via update_message_content.
+            # Tests that bypass check_message.
+            message_to_user_id_set = set(get_direct_message_group_user_ids(recipient))
 
     else:
         raise ValueError("Bad recipient type")
@@ -657,6 +666,7 @@ def build_message_send_dict(
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
     no_previews: bool = False,
+    dm_involved_user_ids: set[int] | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -690,6 +700,7 @@ def build_message_send_dict(
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
+        dm_involved_user_ids=dm_involved_user_ids,
     )
 
     # Render our message_dicts.
@@ -789,6 +800,7 @@ def build_message_send_dict(
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        dm_involved_user_ids=dm_involved_user_ids,
     )
 
     return message_send_dict
@@ -1119,7 +1131,11 @@ def do_send_messages(
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
+        wide_message_dict = MessageDict.wide_dict(
+            send_request.message,
+            realm_id,
+            dm_involved_user_ids=send_request.dm_involved_user_ids,
+        )
 
         user_flags = user_message_flags.get(send_request.message.id, {})
 
@@ -1768,6 +1784,10 @@ def check_message(
     if realm is None:
         realm = sender.realm
 
+    # IDs of the DM sender and recipient users, deduplicated.
+    # None for stream message.
+    dm_involved_user_ids: set[int] | None = None
+
     recipients_for_user_creation_events = None
     if addressee.is_stream():
         topic_name = addressee.topic_name()
@@ -1834,17 +1854,19 @@ def check_message(
             raise TopicsNotAllowedError(empty_topic_display_name)
 
     elif addressee.is_private():
-        user_profiles = addressee.user_profiles()
+        recipient_users = addressee.user_profiles()
         mirror_message = client.name in [
             "irc_mirror",
             "jabber_mirror",
             "JabberMirror",
         ]
 
-        check_sender_can_access_recipients(realm, sender, user_profiles)
+        dm_involved_user_ids = {user.id for user in recipient_users} | {sender.id}
+
+        check_sender_can_access_recipients(realm, sender, recipient_users)
 
         recipients_for_user_creation_events = get_recipients_for_user_creation_events(
-            realm, sender, user_profiles
+            realm, sender, recipient_users
         )
 
         # API super-users who set the `forged` flag are allowed to
@@ -1853,13 +1875,13 @@ def check_message(
         forwarded_mirror_message = mirror_message and not forged
         try:
             recipient = recipient_for_user_profiles(
-                user_profiles, forwarded_mirror_message, forwarder_user_profile, sender
+                recipient_users, forwarded_mirror_message, forwarder_user_profile, sender
             )
         except ValidationError as e:
             assert isinstance(e.messages[0], str)
             raise JsonableError(e.messages[0])
 
-        check_can_send_direct_message(realm, sender, user_profiles, recipient)
+        check_can_send_direct_message(realm, sender, recipient_users, recipient)
     else:
         # This is defensive code--Addressee already validates
         # the message type.
@@ -1916,6 +1938,7 @@ def check_message(
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
         no_previews=no_previews,
+        dm_involved_user_ids=dm_involved_user_ids,
     )
 
     if (

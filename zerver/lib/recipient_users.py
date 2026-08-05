@@ -19,7 +19,7 @@ def get_recipient_from_user_profiles(
     create: bool = True,
 ) -> Recipient:
     # Avoid mutating the passed in list of recipient_profiles.
-    recipient_profiles_map = {user_profile.id: user_profile for user_profile in recipient_profiles}
+    recipient_user_ids = {user_profile.id for user_profile in recipient_profiles}
 
     if forwarded_mirror_message:
         # In our mirroring integrations with some third-party
@@ -31,12 +31,12 @@ def get_recipient_from_user_profiles(
         # for whether forwarder_user_profile is among the private
         # message recipients of the message.
         assert forwarder_user_profile is not None
-        if forwarder_user_profile.id not in recipient_profiles_map:
+        if forwarder_user_profile.id not in recipient_user_ids:
             raise ValidationError(_("User not authorized for this query"))
 
-    # Make sure the sender is included in the group direct messages.
-    recipient_profiles_map[sender.id] = sender
-    user_ids = list(recipient_profiles_map)
+    # Make sure the sender is included in the group direct message.
+    recipient_user_ids.add(sender.id)
+    user_ids = list(recipient_user_ids)
 
     if create:
         direct_message_group = get_or_create_direct_message_group(user_ids)
