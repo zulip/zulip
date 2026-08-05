@@ -128,6 +128,21 @@ def iago_message_id() -> dict[str, object]:
     }
 
 
+@openapi_param_value_generator(["/messages/{message_id}/link_previews:patch"])
+def message_with_previewed_url_id() -> dict[str, object]:
+    iago = helpers.example_user("iago")
+    helpers.subscribe(iago, "Denmark")
+    # The message must link to the URL in the endpoint's example, and that
+    # URL must be one the message has a preview for. An image link is used
+    # because inline image previews are on by default, while website
+    # previews are an organization-level setting that is off by default.
+    return {
+        "message_id": helpers.send_stream_message(
+            iago, "Denmark", content="https://example.com/photo.jpg"
+        ),
+    }
+
+
 @openapi_param_value_generator(["/messages/{message_id}/reactions:delete"])
 def add_emoji_to_message() -> dict[str, object]:
     user_profile = helpers.example_user("iago")

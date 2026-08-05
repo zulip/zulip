@@ -26,7 +26,12 @@ from zerver.actions.message_send import (
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib import utils
-from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
+from zerver.lib.cache import (
+    cache_delete_many,
+    cache_get_many,
+    preview_url_cache_key,
+    to_dict_cache_key_id,
+)
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
@@ -36,7 +41,12 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
-from zerver.lib.markdown import MessageRenderingResult, topic_links
+from zerver.lib.markdown import (
+    MessageRenderingResult,
+    image_preview_enabled,
+    topic_links,
+    url_embed_preview_enabled,
+)
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
@@ -1874,6 +1884,87 @@ def check_update_message(
             notify_stream_is_recently_active_update(new_stream, is_stream_active)
 
     return updated_message_result
+
+
+@transaction.atomic(durable=True)
+def check_remove_link_previews(
+    user_profile: UserProfile,
+    message_id: int,
+    urls: list[str],
+) -> None:
+    """Removes the link previews for the given URLs on a message, and
+    re-renders it. Requires the permission to edit the message's content,
+    since this changes how the message looks for everyone.
+    """
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
+    validate_user_can_edit_message(user_profile, message, MESSAGE_EDIT_TIME_LIMIT_BUFFER_SECONDS)
+
+    removed_preview_urls = message.removed_preview_urls
+    # Removing an already-removed preview is a no-op, and is not validated
+    # below, so that a client removing several previews at once doesn't fail
+    # on one it already removed. dict.fromkeys drops duplicates while
+    # keeping the order the URLs were sent in.
+    urls_to_remove = [url for url in dict.fromkeys(urls) if url not in removed_preview_urls]
+    if not urls_to_remove:
+        return
+
+    realm = message.get_realm()
+    # An organization that generates neither kind of preview has none to
+    # remove, so the request can be rejected without rendering the message.
+    if not image_preview_enabled(message, realm) and not url_embed_preview_enabled(message, realm):
+        raise JsonableError(
+            _("URL does not have a link preview: {url}").format(url=urls_to_remove[0])
+        )
+
+    mention_data = MentionData(
+        mention_backend=MentionBackend(message.realm_id),
+        content=message.content,
+        message_sender=message.sender,
+    )
+    # Render before applying the removals, so that the URLs being removed
+    # are still among the ones this render generates a preview for.
+    rendering_result = render_incoming_message(
+        message,
+        message.content,
+        realm,
+        mention_data=mention_data,
+    )
+    for url in urls_to_remove:
+        if url not in rendering_result.removable_preview_urls:
+            raise JsonableError(_("URL does not have a link preview: {url}").format(url=url))
+
+    message.removed_preview_urls = [*removed_preview_urls, *urls_to_remove]
+
+    # Embed HTML is rendered inline and not stored, so re-rendering drops
+    # the previews that are staying. Reuse their cached embed data to keep
+    # them inline; those missing from the cache are left to the worker.
+    remaining_preview_urls = rendering_result.links_for_preview - set(urls_to_remove)
+    cache_keys = {preview_url_cache_key(url): url for url in remaining_preview_urls}
+    url_embed_data = {
+        cache_keys[key]: cached[0] for key, cached in cache_get_many(list(cache_keys)).items()
+    }
+    rendering_result = render_incoming_message(
+        message,
+        message.content,
+        realm,
+        url_embed_data=url_embed_data,
+        mention_data=mention_data,
+    )
+
+    message.save(update_fields=["removed_preview_urls"])
+
+    if remaining_preview_urls - url_embed_data.keys():
+        # The worker re-renders with only the embed data it fetches, so
+        # omitting the cached URLs would drop their previews again.
+        event_data = {
+            "message_id": message.id,
+            "message_content": message.content,
+            "message_realm_id": realm.id,
+            "urls": list(remaining_preview_urls),
+        }
+        queue_event_on_commit("embed_links", event_data)
+
+    do_update_embedded_data(user_profile, message, rendering_result, mention_data)
 
 
 @transaction.atomic(durable=True)
