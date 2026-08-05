@@ -30,7 +30,10 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             content=content,
         )
 
-        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
+        with (
+            mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             result = self.client_patch(url, request)
 
         self.assert_json_success(result)
