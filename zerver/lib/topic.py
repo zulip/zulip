@@ -136,6 +136,7 @@ def save_message_for_edit_use_case(message: Message) -> None:
             "has_attachment",
             "has_image",
             "has_link",
+            "removed_preview_urls",
             "recipient_id",
         ]
     )
