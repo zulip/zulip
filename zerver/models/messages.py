@@ -106,6 +106,10 @@ class AbstractMessage(models.Model):
     # message, oldest first.
     edit_history = models.TextField(null=True)
 
+    # A list of URL strings whose link previews have been removed by a
+    # user with permission to edit the message content.
+    removed_preview_urls = models.JSONField(default=list, db_default=[])
+
     # Whether the message contains a (link to) an uploaded file.
     has_attachment = models.BooleanField(default=False, db_index=True)
     # Whether the message contains a visible image element.
