@@ -10,13 +10,15 @@ from typing import Any, Literal, TypedDict, cast
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 from django.db.models import Exists, F, OuterRef, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from django_stubs_ext import WithAnnotations
+from psycopg2.sql import SQL
+from psycopg2.sql import Literal as SQLLiteral
 
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_topics import (
@@ -116,7 +118,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
-from zerver.models.recipients import get_direct_message_group_user_ids
+from zerver.models.recipients import DirectMessageGroup, get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
@@ -657,6 +659,7 @@ def build_message_send_dict(
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
     no_previews: bool = False,
+    direct_message_group: DirectMessageGroup | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -789,6 +792,7 @@ def build_message_send_dict(
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        direct_message_group=direct_message_group,
     )
 
     return message_send_dict
@@ -1019,6 +1023,8 @@ def do_send_messages(
         )
 
     bulk_insert_ums(ums)
+
+    update_direct_message_group_stats(send_message_requests)
 
     for send_request in send_message_requests:
         do_widget_post_save_actions(send_request)
@@ -1335,6 +1341,66 @@ def do_send_messages(
         for send_request in send_message_requests
     ]
     return sent_message_results
+
+
+def update_direct_message_group_stats(send_message_requests: Sequence[SendMessageRequest]) -> None:
+    """Update first_message, last_message, and total_messages for DirectMessageGroups."""
+    # Sort send_requests by message ID to ensure correct ordering when
+    # multiple messages are sent to the same DM group
+    dm_group_send_requests = [
+        send_request
+        for send_request in send_message_requests
+        if send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        and send_request.direct_message_group is not None
+    ]
+
+    if not dm_group_send_requests:
+        return
+
+    adjustments: dict[int, tuple[int, int, int]] = {}
+    for req in dm_group_send_requests:
+        assert req.direct_message_group is not None
+        dmg_id = req.direct_message_group.id
+        msg_id = req.message.id
+        if dmg_id in adjustments:
+            cur_min, cur_max, cur_cnt = adjustments[dmg_id]
+            adjustments[dmg_id] = (
+                min(cur_min, msg_id),
+                max(cur_max, msg_id),
+                cur_cnt + 1,
+            )
+        else:
+            adjustments[dmg_id] = (msg_id, msg_id, 1)
+
+    rows = sorted((dmg_id, mn, mx, cnt) for dmg_id, (mn, mx, cnt) in adjustments.items())
+    values_clause = SQL(", ").join(
+        SQL("({}, {}, {}, {})").format(
+            SQLLiteral(dmg_id), SQLLiteral(mn), SQLLiteral(mx), SQLLiteral(cnt)
+        )
+        for dmg_id, mn, mx, cnt in rows
+    )
+
+    sql = SQL("""
+        WITH adjustments(dmg_id, min_msg, max_msg, cnt) AS (
+            VALUES {values}
+        ),
+        locked AS (
+            SELECT id FROM zerver_huddle
+            WHERE id IN (SELECT dmg_id FROM adjustments)
+            ORDER BY id
+            FOR NO KEY UPDATE
+        )
+        UPDATE zerver_huddle h
+        SET total_messages = h.total_messages + a.cnt,
+            first_message_id = COALESCE(h.first_message_id, a.min_msg),
+            last_message_id = GREATEST(h.last_message_id, a.max_msg)
+        FROM adjustments a
+        WHERE h.id = a.dmg_id
+        AND h.id IN (SELECT id FROM locked);
+    """).format(values=values_clause)
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
 
 
 def extract_stream_indicator(s: str) -> str | int:
@@ -1762,6 +1828,7 @@ def check_message(
     for high-level documentation on this subsystem.
     """
     stream = None
+    direct_message_group = None
 
     message_content = normalize_body(message_content_raw)
 
@@ -1852,7 +1919,7 @@ def check_message(
         # `forwarded_mirror_message` security check in that case.
         forwarded_mirror_message = mirror_message and not forged
         try:
-            recipient = recipient_for_user_profiles(
+            recipient, direct_message_group = recipient_for_user_profiles(
                 user_profiles, forwarded_mirror_message, forwarder_user_profile, sender
             )
         except ValidationError as e:
@@ -1916,6 +1983,7 @@ def check_message(
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
         no_previews=no_previews,
+        direct_message_group=direct_message_group,
     )
 
     if (
