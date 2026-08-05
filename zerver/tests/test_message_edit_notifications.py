@@ -23,12 +23,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         self.register_push_device(cordelia.id)
 
-    def _assert_update_does_not_notify_anybody(self, message_id: int, content: str) -> None:
+    def _assert_update_does_not_notify_anybody(self, message_id: int, **request: str) -> None:
         url = "/json/messages/" + str(message_id)
-
-        request = dict(
-            content=content,
-        )
 
         with (
             mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m,
@@ -85,7 +81,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         return message_id
 
     def _get_queued_data_for_message_update(
-        self, message_id: int, content: str, expect_short_circuit: bool = False
+        self, message_id: int, expect_short_circuit: bool = False, **request: str
     ) -> dict[str, Any]:
         """
         This function updates a message with a post to
@@ -105,10 +101,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         queuing the final messages.
         """
         url = "/json/messages/" + str(message_id)
-
-        request = dict(
-            content=content,
-        )
 
         with (
             mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m,
